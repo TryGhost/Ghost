@@ -20,7 +20,8 @@ const rejectPrivateFieldsTransformer = input => mapQuery(input, function (value,
     };
 });
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'pages',
 
     browse: {
@@ -103,3 +104,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

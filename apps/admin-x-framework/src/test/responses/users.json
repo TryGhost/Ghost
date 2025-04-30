@@ -25,6 +25,7 @@
             "mention_notifications": true,
             "recommendation_notifications": true,
             "milestone_notifications": true,
+            "donation_notifications": true,
             "created_at": "2023-06-26T00:21:57.000Z",
             "updated_at": "2023-06-26T00:21:58.000Z",
             "roles": [
@@ -63,6 +64,7 @@
             "mention_notifications": true,
             "recommendation_notifications": true,
             "milestone_notifications": true,
+            "donation_notifications": true,
             "created_at": "2023-06-26T00:21:22.000Z",
             "updated_at": "2023-06-26T00:21:22.000Z",
             "roles": [
@@ -101,6 +103,7 @@
             "mention_notifications": true,
             "recommendation_notifications": true,
             "milestone_notifications": true,
+            "donation_notifications": true,
             "created_at": "2023-06-26T00:20:56.000Z",
             "updated_at": "2023-06-26T00:20:57.000Z",
             "roles": [
@@ -139,6 +142,7 @@
             "mention_notifications": true,
             "recommendation_notifications": true,
             "milestone_notifications": true,
+            "donation_notifications": true,
             "created_at": "2023-05-05T00:55:15.000Z",
             "updated_at": "2023-06-25T23:34:33.000Z",
             "roles": [
@@ -177,6 +181,7 @@
             "mention_notifications": true,
             "recommendation_notifications": true,
             "milestone_notifications": true,
+            "donation_notifications": true,
             "created_at": "2023-06-22T05:39:57.000Z",
             "updated_at": "2023-06-22T05:39:58.000Z",
             "roles": [

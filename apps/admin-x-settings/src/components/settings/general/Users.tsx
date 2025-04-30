@@ -1,11 +1,13 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import clsx from 'clsx';
+import useQueryParams from '../../../hooks/useQueryParams';
 import useStaffUsers from '../../../hooks/useStaffUsers';
-import {Avatar, Button, List, ListItem, NoValueLabel, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, List, ListItem, NoValueLabel, Separator, TabView, Toggle, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {User, hasAdminAccess, isContributorUser, isEditorUser} from '@tryghost/admin-x-framework/api/users';
 import {UserInvite, useAddInvite, useDeleteInvite} from '@tryghost/admin-x-framework/api/invites';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
+import {getSettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -126,7 +128,8 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                         setRevokeState('progress');
                         await deleteInvite(invite.id);
                         showToast({
-                            message: `Invitation revoked (${invite.email})`,
+                            title: `Invitation revoked`,
+                            message: invite.email,
                             type: 'success'
                         });
                     } catch (e) {
@@ -150,7 +153,8 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                             roleId: invite.role_id
                         });
                         showToast({
-                            message: `Invitation resent! (${invite.email})`,
+                            title: `Invitation resent`,
+                            message: invite.email,
                             type: 'success'
                         });
                     } catch (e) {
@@ -180,7 +184,7 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
                     <ListItem
                         key={user.id}
                         action={<UserInviteActions invite={user} />}
-                        avatar={(<Avatar bgColor={generateAvatarColor((user.email))} image={''} label={''} labelColor='white' />)}
+                        avatar={(<Avatar bgColor={generateAvatarColor((user.email))} image={''} label={user.email.charAt(0).toUpperCase()} labelColor='white' />)}
                         className='min-h-[64px]'
                         detail={user.role}
                         hideActions={true}
@@ -212,46 +216,69 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         fetchNextPage
     } = useStaffUsers();
     const {updateRoute} = useRouting();
+    const {settings, config, currentUser} = useGlobalData();
 
     const showInviteModal = () => {
         updateRoute('staff/invite');
     };
 
     const buttons = (
-        <Button color='green' label='Invite people' link={true} linkWithPadding onClick={() => {
+        <Button className='mt-[-5px]' color='clear' label='Invite people' size='sm' linkWithPadding onClick={() => {
             showInviteModal();
         }} />
     );
 
-    const [selectedTab, setSelectedTab] = useState('users-admins');
+    const tabParam = useQueryParams().getParam('tab');
+    const defaultTab = tabParam || 'administrators';
+    const [selectedTab, setSelectedTab] = useState(defaultTab);
+
+    useEffect(() => {
+        if (tabParam) {
+            setSelectedTab(tabParam);
+        }
+    }, [tabParam]);
+
+    const updateSelectedTab = (newTab: string) => {
+        updateRoute(`staff?tab=${newTab}`);
+        setSelectedTab(newTab);
+    };
 
     const tabs = [
         {
-            id: 'users-admins',
+            id: 'administrators',
             title: 'Administrators',
-            contents: (<UsersList groupname='administrators' users={adminUsers} />)
+            contents: (<UsersList groupname='administrators' users={adminUsers} />),
+            counter: adminUsers.length ? adminUsers.length : undefined
         },
         {
-            id: 'users-editors',
+            id: 'editors',
             title: 'Editors',
-            contents: (<UsersList groupname='editors' users={editorUsers} />)
+            contents: (<UsersList groupname='editors' users={editorUsers} />),
+            counter: editorUsers.length ? editorUsers.length : undefined
         },
         {
-            id: 'users-authors',
+            id: 'authors',
             title: 'Authors',
-            contents: (<UsersList groupname='authors' users={authorUsers} />)
+            contents: (<UsersList groupname='authors' users={authorUsers} />),
+            counter: authorUsers.length ? authorUsers.length : undefined
         },
         {
-            id: 'users-contributors',
+            id: 'contributors',
             title: 'Contributors',
-            contents: (<UsersList groupname='contributors' users={contributorUsers} />)
+            contents: (<UsersList groupname='contributors' users={contributorUsers} />),
+            counter: contributorUsers.length ? contributorUsers.length : undefined
         },
         {
-            id: 'users-invited',
+            id: 'invited',
             title: 'Invited',
-            contents: (<InvitesUserList users={invites} />)
+            contents: (<InvitesUserList users={invites} />),
+            counter: invites.length ? invites.length : undefined
         }
     ];
+
+    const require2fa = getSettingValue<boolean>(settings, 'require_email_mfa') || false;
+    const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
 
     return (
         <TopLevelGroup
@@ -263,12 +290,40 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
             title='Staff'
         >
             <Owner user={ownerUser} />
-            <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
+            {(users.length > 1 || invites.length > 0) && <TabView selectedTab={selectedTab} tabs={tabs} testId='user-tabview' onTabChange={updateSelectedTab} />}
             {hasNextPage && <Button
                 label={`Load more (showing ${users.length}/${totalUsers} users)`}
                 link
                 onClick={() => fetchNextPage()}
             />}
+
+            {config?.security?.staffDeviceVerification && hasAdminAccess(currentUser) && (
+                <div className={`flex flex-col gap-6 ${users.length > 1 || invites.length > 0 ? '-mt-6' : ''}`}>
+                    <Separator />
+                    <div className='flex items-baseline justify-between'>
+                        <div className='flex flex-col'>
+                            <span className='text-[1.5rem] font-semibold tracking-tight'>Security settings</span>
+                            <span>Require email 2FA codes to be used on all staff logins</span>
+                        </div>
+                        <Toggle
+                            checked={require2fa}
+                            direction='rtl'
+                            gap='gap-0'
+                            onChange={async () => {
+                                const newValue = !require2fa;
+                                try {
+                                    await editSettings([{
+                                        key: 'require_email_mfa',
+                                        value: newValue
+                                    }]);
+                                } catch (error) {
+                                    handleError(error);
+                                }
+                            }}
+                        />
+                    </div>
+                </div>
+            )}
         </TopLevelGroup>
     );
 };

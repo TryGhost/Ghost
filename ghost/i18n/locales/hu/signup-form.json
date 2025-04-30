@@ -1,9 +1,9 @@
 {
-    "Email sent": "Email elküldve",
-    "Now check your email!": "Ellenőrizze az email-jeit",
-    "Please enter a valid email address": "Kérjük valós email címet adjon meg",
-    "Something went wrong, please try again.": "Hiba történt, kérjük próbálja újra",
+    "Email sent": "E-mail elküldve",
+    "Now check your email!": "Ellenőrizd az e-mailed",
+    "Please enter a valid email address": "Kérjük, érvényes e-mail-címet adjál meg",
+    "Something went wrong, please try again.": "Hiba történt! Kérjük, próbáld újra.",
     "Subscribe": "Feliratkozás",
-    "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "A regisztráció befejezéséhez kattintson a beérkező leveleiben található megerősítő hivatkozásra. Ha nem érkezik meg 3 percen belül, ellenőrizze a spam mappát!",
-    "Your email address": "Az Ön email címe:"
+    "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "A regisztráció befejezéséhez kattints az e-mailben küldött megerősítő linkre. Ha nem érkezik meg 3 percen belül, ellenőrizd a spam mappát!",
+    "Your email address": "E-mail-címed:"
 }

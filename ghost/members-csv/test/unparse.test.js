@@ -103,4 +103,32 @@ third-member-email@email.com,"banana, avocado"`;
         const expected = `email,tiers\r\nmember-email@email.com,Bronze Level`;
         assert.equal(result, expected);
     });
+
+    it('escapes fields starting with CSV injection characters', async function () {
+        const json = [{
+            email: 'email@example.com',
+            name: '=1+2',
+            note: 'Early supporter'
+        }];
+
+        const result = unparse(json);
+        assert.ok(result);
+
+        const expected = `id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers\r\n,email@example.com,"'=1+2",Early supporter,,,,,,,`;
+        assert.equal(result, expected);
+    });
+
+    it('escapes fields with CSV injection characters and quotes', async function () {
+        const json = [{
+            email: 'email@example.com',
+            name: `=1+2'" `,
+            note: 'Early supporter'
+        }];
+
+        const result = unparse(json);
+        assert.ok(result);
+
+        const expected = `id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers\r\n,email@example.com,"'=1+2'"" ",Early supporter,,,,,,,`;
+        assert.equal(result, expected);
+    });
 });

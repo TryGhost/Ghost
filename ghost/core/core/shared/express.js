@@ -5,6 +5,11 @@ const sentry = require('./sentry');
 
 const lazyLoad = createLazyRouter();
 
+/**
+ *
+ * @param {String} name
+ * @returns {import('express').Application}
+ */
 module.exports = (name) => {
     debug('new app start', name);
     const app = express();

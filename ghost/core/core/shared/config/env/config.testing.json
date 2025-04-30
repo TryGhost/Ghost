@@ -14,6 +14,9 @@
     "logging": {
         "level": "error"
     },
+    "security": {
+        "staffDeviceVerification": false
+    },
     "spam": {
         "user_login": {
             "minWait": 600000,
@@ -21,6 +24,18 @@
             "freeRetries": 3
         },
         "user_reset": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 4
+        },
+        "user_verification": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 4
+        },
+        "send_verification_code": {
             "minWait": 3600000,
             "maxWait": 3600000,
             "lifetime": 3600,

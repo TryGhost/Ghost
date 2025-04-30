@@ -55,7 +55,7 @@ class PostSchedulingService {
      *
      * @param {Object} scheduledResource post or page resource object
      * @param {Object} preScheduledResource post or page resource object in state before publishing
-     * @returns {Boolean|Object}
+     * @returns {boolean|{value: string}}
      */
     handleCacheInvalidation(scheduledResource, preScheduledResource) {
         if (

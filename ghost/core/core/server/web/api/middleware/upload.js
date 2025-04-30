@@ -2,10 +2,15 @@ const path = require('path');
 const os = require('os');
 const multer = require('multer');
 const fs = require('fs-extra');
+const zlib = require('zlib');
+const util = require('util');
 const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
+
+const gunzip = util.promisify(zlib.gunzip);
+const gzip = util.promisify(zlib.gzip);
 
 const messages = {
     db: {
@@ -24,9 +29,17 @@ const messages = {
         missingFile: 'Please select a theme.',
         invalidFile: 'Please select a valid zip file.'
     },
+    members: {
+        missingFile: 'Please select a members CSV file.',
+        invalidFile: 'Please select a valid CSV file.'
+    },
     images: {
         missingFile: 'Please select an image.',
         invalidFile: 'Please select a valid image.'
+    },
+    svg: {
+        missingFile: 'Please select a SVG image.',
+        invalidFile: 'Please select a valid SVG image'
     },
     icons: {
         missingFile: 'Please select an icon.',
@@ -45,13 +58,26 @@ const messages = {
 const enabledClear = config.get('uploadClear') || true;
 const upload = multer({dest: os.tmpdir()});
 
-const deleteSingleFile = file => fs.unlink(file.path).catch(err => logging.error(err));
+const deleteSingleFile = (file) => {
+    if (!file.path) {
+        return;
+    }
+
+    fs.unlink(file.path).catch(err => logging.error(err));
+};
 
 const single = name => function singleUploadFunction(req, res, next) {
     const singleUpload = upload.single(name);
 
     singleUpload(req, res, (err) => {
         if (err) {
+            // Busboy, Multer or Dicer errors are usually caused by invalid file uploads
+            if (err instanceof multer.MulterError || err.stack?.includes('dicer') || err.stack?.includes('busboy')) {
+                return next(new errors.BadRequestError({
+                    err
+                }));
+            }
+
             return next(err);
         }
         if (enabledClear) {
@@ -88,6 +114,13 @@ const media = (fileName, thumbName) => function mediaUploadFunction(req, res, ne
 
     mediaUpload(req, res, (err) => {
         if (err) {
+            // Busboy, Multer or Dicer errors are usually caused by invalid file uploads
+            if (err instanceof multer.MulterError || err.stack?.includes('dicer') || err.stack?.includes('busboy')) {
+                return next(new errors.BadRequestError({
+                    err
+                }));
+            }
+
             return next(err);
         }
 
@@ -130,13 +163,104 @@ const checkFileIsValid = (fileData, types, extensions) => {
 
 /**
  *
+ * @param {String} filepath
+ * @returns {String | null}
+ *
+ * Reads the SVG file, sanitizes it, and writes the sanitized content back to the file.
+ * Returns the sanitized content or null if the SVG could not be sanitized.
+ */
+
+const sanitizeSvg = async (filepath, isZipped = false) => {
+    try {
+        const original = await readSvg(filepath, isZipped);
+        const sanitized = sanitizeSvgContent(original);
+
+        if (!sanitized) {
+            return null;
+        }
+
+        await writeSvg(filepath, sanitized, isZipped);
+        return sanitized;
+    } catch (error) {
+        logging.error('Error sanitizing SVG:', error);
+        return null;
+    }
+};
+
+/**
+ *
+ * @param {String} content
+ * @returns {String | null}
+ *
+ * Returns sanitized SVG content, or null if the content is invalid.
+ *
+ */
+const sanitizeSvgContent = (content) => {
+    const {JSDOM} = require('jsdom');
+    const createDOMPurify = require('dompurify');
+    const window = new JSDOM('').window;
+    const DOMPurify = createDOMPurify(window);
+
+    const sanitized = DOMPurify.sanitize(content, {USE_PROFILES: {svg: true, svgFilters: true}});
+
+    // Check whether the sanitized content still contains a non-empty <svg> tag
+    const validSvgTag = sanitized?.match(/<svg[^>]*>\s*[\S]+[\S\s]*<\/svg>/);
+    if (!sanitized || sanitized.trim() === '' || !validSvgTag) {
+        return null;
+    }
+
+    return sanitized;
+};
+
+/**
+ *
+ * @param {String} filepath
+ * @param {Boolean} isZipped
+ * @returns {String | null}
+ *
+ * Reads .svg or .svgz files and returns the content as a string.
+ *
+ */
+const readSvg = async (filepath, isZipped = false) => {
+    if (isZipped) {
+        const compressed = await fs.readFile(filepath);
+        return (await gunzip(compressed)).toString();
+    }
+
+    return await fs.readFile(filepath, 'utf8');
+};
+
+/**
+ *
+ * @param {String} filepath
+ * @param {String} content
+ * @param {Boolean} isZipped
+ *
+ * Writes SVG content to a .svg or .svgz file.
+ */
+const writeSvg = async (filepath, content, isZipped = false) => {
+    if (isZipped) {
+        const compressed = await gzip(content);
+        return await fs.writeFile(filepath, compressed);
+    }
+
+    return await fs.writeFile(filepath, content);
+};
+/**
+ *
  * @param {Object} options
  * @param {String} options.type - type of the file
- * @returns {Function}
+ * @returns {import('express').RequestHandler}
  */
 const validation = function ({type}) {
     // if we finish the data/importer logic, we forward the request to the specified importer
-    return function uploadValidation(req, res, next) {
+
+    /**
+     * @param {import('express').Request} req
+     * @param {import('express').Response} res
+     * @param {import('express').NextFunction} next
+     */
+    return async function uploadValidation(req, res, next) {
         const extensions = (config.get('uploads')[type] && config.get('uploads')[type].extensions) || [];
         const contentTypes = (config.get('uploads')[type] && config.get('uploads')[type].contentTypes) || [];
 
@@ -160,6 +284,17 @@ const validation = function ({type}) {
             }));
         }
 
+        // Sanitize SVG files
+        if (req.file.ext === '.svg' || req.file.ext === '.svgz') {
+            const sanitized = await sanitizeSvg(req.file.path, req.file.ext === '.svgz');
+
+            if (!sanitized) {
+                return next(new errors.UnsupportedMediaTypeError({
+                    message: tpl(messages.svg.invalidFile)
+                }));
+            }
+        }
+
         next();
     };
 };
@@ -168,7 +303,7 @@ const validation = function ({type}) {
  *
  * @param {Object} options
  * @param {String} options.type - type of the file
- * @returns {Function}
+ * @returns {import('express').RequestHandler}
  */
 const mediaValidation = function ({type}) {
     return function mediaUploadValidation(req, res, next) {
@@ -231,5 +366,6 @@ module.exports = {
 // Exports for testing only
 module.exports._test = {
     checkFileExists,
-    checkFileIsValid
+    checkFileIsValid,
+    sanitizeSvgContent
 };

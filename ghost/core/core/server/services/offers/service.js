@@ -1,6 +1,6 @@
-const DynamicRedirectManager = require('@tryghost/express-dynamic-redirects');
 const OffersModule = require('@tryghost/members-offers');
 
+const DynamicRedirectManager = require('../lib/DynamicRedirectManager');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 const models = require('../../models');

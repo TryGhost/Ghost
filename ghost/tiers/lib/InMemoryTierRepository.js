@@ -55,7 +55,8 @@ class InMemoryTierRepository {
      * @returns {Promise<Tier[]>}
      */
     async getAll(options = {}) {
-        const filter = nql(options.filter, {});
+        const filter = nql();
+        filter.filter = options.filter || {};
         return this.#store.slice().filter((item) => {
             return filter.queryJSON(this.toPrimitive(item));
         });

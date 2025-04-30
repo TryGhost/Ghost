@@ -12,6 +12,7 @@ type DonationEventModelInstance = BookshelfModelInstance & {
     member_id: string | null;
     amount: number;
     currency: string;
+    donation_message: string | null;
 
     attribution_id: string | null;
     attribution_url: string | null;
@@ -36,6 +37,7 @@ export class DonationBookshelfRepository implements DonationRepository {
             member_id: event.memberId,
             amount: event.amount,
             currency: event.currency,
+            donation_message: event.donationMessage,
 
             attribution_id: event.attributionId,
             attribution_url: event.attributionUrl,

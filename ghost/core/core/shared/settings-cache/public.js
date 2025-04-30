@@ -30,6 +30,7 @@ module.exports = {
     members_enabled: 'members_enabled',
     allow_self_signup: 'allow_self_signup',
     members_invite_only: 'members_invite_only',
+    members_signup_access: 'members_signup_access',
     paid_members_enabled: 'paid_members_enabled',
     firstpromoter_account: 'firstpromoter_account',
     portal_button_style: 'portal_button_style',
@@ -45,5 +46,7 @@ module.exports = {
     recommendations_enabled: 'recommendations_enabled',
     outbound_link_tagging: 'outbound_link_tagging',
     default_email_address: 'default_email_address',
-    support_email_address: 'support_email_address'
+    support_email_address: 'support_email_address',
+    editor_default_email_recipients: 'editor_default_email_recipients',
+    labs: 'labs'
 };

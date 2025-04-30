@@ -1,6 +1,18 @@
 module.exports = {
     darkMode: 'class',
     theme: {
+        extend: {
+            animation: {
+                heartbeat: 'heartbeat 0.35s ease-in-out forwards',
+                pulse: 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+            },
+            keyframes: {
+                heartbeat: {
+                    '0%, 100%': {transform: 'scale(1)'},
+                    '50%': {transform: 'scale(1.3)'}
+                }
+            }
+        },
         screens: {
             sm: '481px',
             md: '768px',
@@ -101,9 +113,10 @@ module.exports = {
         },
         fontSize: {
             xs: '1.2rem',
+            base: '1.3rem',
             sm: '1.4rem',
             md: '1.5rem',
-            lg: '1.8rem',
+            lg: '1.65rem',
             xl: '2rem',
             '2xl': '2.4rem',
             '3xl': '3rem',
@@ -125,9 +138,12 @@ module.exports = {
         },
         boxShadow: {
             lg: [
-                '0px 0px 1px rgba(0, 0, 0, 0.12)', 
-                '0px 4px 8px rgba(0, 0, 0, 0.04)', 
-                '0px 8px 48px rgba(0, 0, 0, 0.05)'
+                'rgba(0, 0, 0, 0.06) 0px 0px 0px 1px',
+                'rgba(0, 0, 0, 0.04) 0px 2px 2px -1px',
+                'rgba(0, 0, 0, 0.04) 0px 3px 3px -1px',
+                'rgba(0, 0, 0, 0.03) 0px 5px 5px -2px',
+                'rgba(0, 0, 0, 0.03) 0px 10px 10px -3px',
+                'rgba(0, 0, 0, 0.03) 0px 24px 24px -8px'
             ],
             xl: [
                 '0px 0px 1px rgba(0, 0, 0, 0.12)', 
@@ -154,12 +170,16 @@ module.exports = {
             ]
         },
         animation: {
-            heartbeat: 'heartbeat 0.35s ease-in-out forwards'
+            heartbeat: 'heartbeat 0.35s ease-in-out forwards',
+            highlight: 'highlight 1s steps(1) forwards'
         },
         keyframes: {
             heartbeat: {
                 '0%, 100%': {transform: 'scale(1)'},
                 '50%': {transform: 'scale(1.3)'}
+            },
+            highlight: {
+                '100%': {backgroundColor: 'transparent'}
             }
         }
     },

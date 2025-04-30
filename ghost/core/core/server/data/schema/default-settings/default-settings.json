@@ -82,6 +82,14 @@
             "flags": "PUBLIC",
             "type": "string"
         },
+        "heading_font": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "body_font": {
+            "defaultValue": "",
+            "type": "string"
+        },
         "logo": {
             "defaultValue": "",
             "type": "string"
@@ -251,7 +259,7 @@
             "defaultValue": "all",
             "validations": {
                 "isEmpty": false,
-                "isIn": [["all", "invite", "none"]]
+                "isIn": [["all", "paid", "invite", "none"]]
             },
             "type": "string"
         },
@@ -307,6 +315,10 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "blocked_email_domains": {
+            "defaultValue": "[]",
+            "type": "array"
         }
     },
     "portal": {
@@ -319,7 +331,7 @@
             "type": "boolean"
         },
         "portal_button": {
-            "defaultValue": "true",
+            "defaultValue": "false",
             "validations": {
                 "isEmpty": false,
                 "isIn": [["true", "false"]]
@@ -567,7 +579,7 @@
             "type": "string"
         },
         "donations_suggested_amount": {
-            "defaultValue": 0,
+            "defaultValue": 500,
             "validations": {
                 "isEmpty": false
             },
@@ -581,6 +593,12 @@
                 "isEmpty": false,
                 "isIn": [["true", "false"]]
             },
+            "type": "boolean"
+        }
+    },
+    "security": {
+        "require_email_mfa": {
+            "defaultValue": false,
             "type": "boolean"
         }
     }

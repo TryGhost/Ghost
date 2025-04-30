@@ -22,15 +22,17 @@
 
                         -
                     </span>
-                    <span class="gh-content-entry-date">
-                        {{#if this.isHovered}}
-                            {{gh-format-post-time @post.updatedAtUTC format="D MMM YYYY"}}
-                        {{else}}
-                            {{gh-format-post-time @post.updatedAtUTC draft=true}}
-                        {{/if}}
-                    </span>
+                    {{#if (or @post.isDraft @post.isScheduled)}}
+                        <span class="gh-content-entry-date" title="Updated {{gh-format-post-time @post.updatedAtUTC absolute=true}}">
+                            {{gh-format-post-time @post.updatedAtUTC absolute=true short=true}}
+                        </span>
+                    {{else}}
+                        <span class="gh-content-entry-date" title="Published {{gh-format-post-time @post.publishedAtUTC absolute=true}}">
+                            {{gh-format-post-time @post.publishedAtUTC absolute=true short=true}}
+                        </span>
+                    {{/if}}
                 </p>
-                <p class="gh-content-entry-status">
+                <p class="gh-content-entry-status" data-test-editor-post-status>
                     <span class="published">
                         Published
                         {{#if @post.hasEmail}}
@@ -72,17 +74,20 @@
                         {{/if}}
                         -
                     </span>
-                    <span class="gh-content-entry-date" {{on "mouseover" (fn (mut this.isDateHovered) true)}} {{on "mouseleave" (fn (mut this.isDateHovered) false)}}>
-                        {{gh-format-post-time @post.updatedAtUTC draft=true}}
-                        {{#if this.isDateHovered}}
-                            <span {{css-transition "anim-fade-in-scale"}}>on {{gh-format-post-time @post.updatedAtUTC format="D MMM YYYY"}}</span>
-                        {{/if}}
-                    </span>
+                    {{#if (or @post.isDraft @post.isScheduled)}}
+                        <span class="gh-content-entry-date" title="Updated {{gh-format-post-time @post.updatedAtUTC absolute=true}}">
+                            {{gh-format-post-time @post.updatedAtUTC absolute=true short=true}}
+                        </span>
+                    {{else}}
+                        <span class="gh-content-entry-date" title="Published {{gh-format-post-time @post.publishedAtUTC absolute=true}}">
+                            {{gh-format-post-time @post.publishedAtUTC absolute=true short=true}}
+                        </span>
+                    {{/if}}
                     {{!-- {{#if @post.lexical}}
                         <span class="gh-content-entry-date">– Lexical</span>
                     {{/if}} --}}
                 </p>
-                <p class="gh-content-entry-status">
+                <p class="gh-content-entry-status" data-test-editor-post-status>
                     {{#if @post.isScheduled}}
                         <span class="scheduled">
                             Scheduled
@@ -90,10 +95,14 @@
                                 <span class="schedule-details" {{css-transition "anim-fade-in-scale"}}>
                                     {{#if @post.emailOnly}}
                                         to be sent
+                                        {{this.scheduledText}} to {{humanize-recipient-filter @post.emailSegment}}
                                     {{else}}
                                         to be published {{if @post.newsletter "and sent "}}
+                                        {{this.scheduledText}}
+                                        {{#if @post.newsletter}}
+                                            to {{humanize-recipient-filter @post.emailSegment}}
+                                        {{/if}}
                                     {{/if}}
-                                    {{this.scheduledText}} to {{humanize-recipient-filter @post.emailSegment}}
                                 </span>
                             {{/if}}
                         </span>
@@ -136,42 +145,10 @@
         </LinkTo>
     {{/if}}
 
-    {{!-- Opened / Signups column --}}
-    {{#if (and @post.showEmailOpenAnalytics @post.showEmailClickAnalytics) }}
-        <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
-            <span class="gh-content-email-stats-value">
-                {{#if this.isHovered}}
-                    {{format-number @post.email.openedCount}}
-                {{else}}
-                    {{@post.email.openRate}}<sup>%</sup>
-                {{/if}}
-            </span>
-            <span class="gh-content-email-stats">
-                opened
-            </span>
-        </LinkTo>
-    {{else}}
-        <LinkTo @route={{this.editorRoute}} @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data">
-            {{!-- Empty on purpose --}}
-        </LinkTo>
-    {{/if}}
-
-    {{!-- Clicked / Conversions column --}}
-    {{#if @post.showEmailClickAnalytics }}
-        <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
-            <span class="gh-content-email-stats-value">
-                {{#if this.isHovered}}
-                    {{format-number @post.count.clicks}}
-                {{else}}
-                    {{@post.clickRate}}<sup>%</sup>
-                {{/if}}
-            </span>
-            <span class="gh-content-email-stats">
-                clicked
-            </span>
-        </LinkTo>
-    {{else}}
-        {{#if @post.showEmailOpenAnalytics }}
+    {{!-- Metrics columns wrapper --}}
+    <div class="gh-post-list-metrics-container">
+        {{!-- Opened / Signups column --}}
+        {{#if (and @post.showEmailOpenAnalytics @post.showEmailClickAnalytics) }}
             <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
                 <span class="gh-content-email-stats-value">
                     {{#if this.isHovered}}
@@ -189,7 +166,42 @@
                 {{!-- Empty on purpose --}}
             </LinkTo>
         {{/if}}
-    {{/if}}
+
+        {{!-- Clicked / Conversions column --}}
+        {{#if @post.showEmailClickAnalytics }}
+            <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
+                <span class="gh-content-email-stats-value">
+                    {{#if this.isHovered}}
+                        {{format-number @post.count.clicks}}
+                    {{else}}
+                        {{@post.clickRate}}<sup>%</sup>
+                    {{/if}}
+                </span>
+                <span class="gh-content-email-stats">
+                    clicked
+                </span>
+            </LinkTo>
+        {{else}}
+            {{#if @post.showEmailOpenAnalytics }}
+                <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
+                    <span class="gh-content-email-stats-value">
+                        {{#if this.isHovered}}
+                            {{format-number @post.email.openedCount}}
+                        {{else}}
+                            {{@post.email.openRate}}<sup>%</sup>
+                        {{/if}}
+                    </span>
+                    <span class="gh-content-email-stats">
+                        opened
+                    </span>
+                </LinkTo>
+            {{else}}
+                <LinkTo @route={{this.editorRoute}} @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data">
+                    {{!-- Empty on purpose --}}
+                </LinkTo>
+            {{/if}}
+        {{/if}}
+    </div>
 
     {{!-- Button column --}}
     {{#if @post.hasAnalyticsPage }}

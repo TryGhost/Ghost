@@ -40,6 +40,16 @@ describe('Admin API key authentication', function () {
         sinon.assert.calledOnce(loggingStub);
     });
 
+    it('Responds with a 401 when token is used before not before', async function () {
+        await request.get(localUtils.API.getApiQuery('posts/'))
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/', 0, {
+                notBefore: '7d'
+            })}`)
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(401);
+    });
+
     it('Can access browse endpoint with correct token', async function () {
         await request.get(localUtils.API.getApiQuery('posts/'))
             .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/')}`)

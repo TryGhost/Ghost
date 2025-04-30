@@ -20,6 +20,12 @@ export default class PublishFlowCompleteWithEmailError extends Component {
         return this.newEmailErrorMessage || this.args.emailErrorMessage;
     }
 
+    get isPartialError() {
+        // For now we look at the error message.
+        // This is covered in E2E tests so we'll be notified when this changes.
+        return this.emailErrorMessage && this.emailErrorMessage.includes('partially');
+    }
+
     @task({drop: true})
     *retryEmailTask() {
         this.retryErrorMessage = null;

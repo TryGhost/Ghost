@@ -2,14 +2,17 @@ const debug = require('@tryghost/debug')('web:endpoints:admin:app');
 const boolParser = require('express-query-boolean');
 const bodyParser = require('body-parser');
 const errorHandler = require('@tryghost/mw-error-handler');
-const versionMatch = require('@tryghost/mw-version-match');
 
+const versionMatch = require('../../middleware/version-match');
 const shared = require('../../../shared');
 const express = require('../../../../../shared/express');
 const sentry = require('../../../../../shared/sentry');
 const routes = require('./routes');
 const APIVersionCompatibilityService = require('../../../../services/api-version-compatibility');
 
+/**
+ * @returns {import('express').Application}
+ */
 module.exports = function setupApiApp() {
     debug('Admin API setup start');
     const apiApp = express('admin api');

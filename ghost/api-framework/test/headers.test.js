@@ -1,15 +1,16 @@
 const shared = require('../');
+const Frame = require('../lib/Frame');
 
 describe('Headers', function () {
     it('empty headers config', function () {
-        return shared.headers.get().then((result) => {
+        return shared.headers.get({}, {}, new Frame()).then((result) => {
             result.should.eql({});
         });
     });
 
     describe('config.disposition', function () {
         it('json', function () {
-            return shared.headers.get({}, {disposition: {type: 'json', value: 'value'}})
+            return shared.headers.get({}, {disposition: {type: 'json', value: 'value'}}, new Frame())
                 .then((result) => {
                     result.should.eql({
                         'Content-Disposition': 'Attachment; filename="value"',
@@ -20,7 +21,7 @@ describe('Headers', function () {
         });
 
         it('csv', function () {
-            return shared.headers.get({}, {disposition: {type: 'csv', value: 'my.csv'}})
+            return shared.headers.get({}, {disposition: {type: 'csv', value: 'my.csv'}}, new Frame())
                 .then((result) => {
                     result.should.eql({
                         'Content-Disposition': 'Attachment; filename="my.csv"',
@@ -39,7 +40,7 @@ describe('Headers', function () {
                         return filename;
                     }
                 }
-            });
+            }, new Frame());
             result.should.eql({
                 'Content-Disposition': 'Attachment; filename="awesome-data-2022-08-01.csv"',
                 'Content-Type': 'text/csv'
@@ -47,7 +48,7 @@ describe('Headers', function () {
         });
 
         it('file', async function () {
-            const result = await shared.headers.get({}, {disposition: {type: 'file', value: 'my.txt'}});
+            const result = await shared.headers.get({}, {disposition: {type: 'file', value: 'my.txt'}}, new Frame());
             result.should.eql({
                 'Content-Disposition': 'Attachment; filename="my.txt"'
             });
@@ -63,14 +64,14 @@ describe('Headers', function () {
                         return filename;
                     }
                 }
-            });
+            }, new Frame());
             result.should.eql({
                 'Content-Disposition': 'Attachment; filename="awesome-data-2022-08-01.txt"'
             });
         });
 
         it('yaml', function () {
-            return shared.headers.get('yaml file', {disposition: {type: 'yaml', value: 'my.yaml'}})
+            return shared.headers.get('yaml file', {disposition: {type: 'yaml', value: 'my.yaml'}}, new Frame())
                 .then((result) => {
                     result.should.eql({
                         'Content-Disposition': 'Attachment; filename="my.yaml"',
@@ -83,7 +84,7 @@ describe('Headers', function () {
 
     describe('config.cacheInvalidate', function () {
         it('default', function () {
-            return shared.headers.get({}, {cacheInvalidate: true})
+            return shared.headers.get({}, {cacheInvalidate: true}, new Frame())
                 .then((result) => {
                     result.should.eql({
                         'X-Cache-Invalidate': '/*'
@@ -92,7 +93,7 @@ describe('Headers', function () {
         });
 
         it('custom value', function () {
-            return shared.headers.get({}, {cacheInvalidate: {value: 'value'}})
+            return shared.headers.get({}, {cacheInvalidate: {value: 'value'}}, new Frame())
                 .then((result) => {
                     result.should.eql({
                         'X-Cache-Invalidate': 'value'
@@ -110,14 +111,13 @@ describe('Headers', function () {
             };
 
             const apiConfigHeaders = {};
-            const frame = {
-                docName: 'posts',
-                method: 'add',
-                original: {
-                    url: {
-                        host: 'example.com',
-                        pathname: `/api/content/posts/`
-                    }
+            const frame = new Frame();
+            frame.docName = 'posts',
+            frame.method = 'add',
+            frame.original = {
+                url: {
+                    host: 'example.com',
+                    pathname: `/api/content/posts/`
                 }
             };
 
@@ -146,14 +146,13 @@ describe('Headers', function () {
                     }
                 }
             };
-            const frame = {
-                docName: 'posts',
-                method: 'copy',
-                original: {
-                    url: {
-                        host: 'example.com',
-                        pathname: `/api/content/posts/existing_post_id_value/copy`
-                    }
+            const frame = new Frame();
+            frame.docName = 'posts';
+            frame.method = 'copy';
+            frame.original = {
+                url: {
+                    host: 'example.com',
+                    pathname: `/api/content/posts/existing_post_id_value/copy`
                 }
             };
 
@@ -173,15 +172,15 @@ describe('Headers', function () {
             };
 
             const apiConfigHeaders = {};
-            const frame = {
-                docName: 'posts',
-                method: 'add',
-                original: {
-                    url: {
-                        host: 'example.com',
-                        pathname: `/api/content/posts/`,
-                        secure: false
-                    }
+            const frame = new Frame();
+
+            frame.docName = 'posts';
+            frame.method = 'add';
+            frame.original = {
+                url: {
+                    host: 'example.com',
+                    pathname: `/api/content/posts/`,
+                    secure: false
                 }
             };
 
@@ -200,14 +199,13 @@ describe('Headers', function () {
             };
 
             const apiConfigHeaders = {};
-            const frame = {
-                docName: 'posts',
-                method: 'add',
-                original: {
-                    url: {
-                        host: 'example.com',
-                        pathname: `/api/content/posts`
-                    }
+            const frame = new Frame();
+            frame.docName = 'posts';
+            frame.method = 'add';
+            frame.original = {
+                url: {
+                    host: 'example.com',
+                    pathname: `/api/content/posts`
                 }
             };
 
@@ -224,14 +222,13 @@ describe('Headers', function () {
             const apiResult = {};
 
             const apiConfigHeaders = {};
-            const frame = {
-                docName: 'posts',
-                method: 'add',
-                original: {
-                    url: {
-                        host: 'example.com',
-                        pathname: `/api/content/posts/`
-                    }
+            const frame = new Frame();
+            frame.docName = 'posts';
+            frame.method = 'add';
+            frame.original = {
+                url: {
+                    host: 'example.com',
+                    pathname: `/api/content/posts/`
                 }
             };
 

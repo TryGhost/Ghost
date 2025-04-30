@@ -3,6 +3,9 @@ const api = require('../../api').endpoints;
 const {http} = require('@tryghost/api-framework');
 const shared = require('../shared');
 
+/**
+ * @returns {import('express').Router}
+ */
 module.exports = function apiRoutes() {
     const router = express.Router('announcements');
 

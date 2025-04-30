@@ -1,7 +1,7 @@
 import {MATCH_RELATION_OPTIONS} from './relation-options';
 
 export const OFFERS_FILTER = {
-    label: 'Offers', 
+    label: 'Offers',
     name: 'offer_redemptions',
     group: 'Subscription',
     relationOptions: MATCH_RELATION_OPTIONS,

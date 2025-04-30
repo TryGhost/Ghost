@@ -1,7 +1,6 @@
 import GhostLogo from '../assets/images/orb-pink.png';
 import React, {useEffect, useRef} from 'react';
 import clsx from 'clsx';
-import useFeatureFlag from '../hooks/useFeatureFlag';
 import {Button, Icon, SettingNavItem, SettingNavItemProps, SettingNavSection, TextField, useFocusContext} from '@tryghost/admin-x-design-system';
 import {searchKeywords as advancedSearchKeywords} from './settings/advanced/AdvancedSettings';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -35,7 +34,6 @@ const Sidebar: React.FC = () => {
     const {updateRoute} = useRouting();
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const {isAnyTextFieldFocused} = useFocusContext();
-    // const hasOffersLabs = useFeatureFlag('adminXOffers');
 
     // Focus in on search field when pressing "/"
     useEffect(() => {
@@ -78,6 +76,26 @@ const Sidebar: React.FC = () => {
         }
     }, [checkVisible, setNoResult, filter]);
 
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && filter) {
+                // Blur the field
+                searchInputRef.current?.blur();
+
+                // Prevent the event from bubbling up to the window level
+                event.stopPropagation();
+            }
+        };
+
+        // Add the event listener to the searchInputRef field
+        searchInputRef.current?.addEventListener('keydown', handleKeyDown);
+
+        // Clean up the event listener when the component unmounts
+        return () => {
+            searchInputRef.current?.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [filter]);
+
     const {settings, config} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
@@ -89,9 +107,6 @@ const Sidebar: React.FC = () => {
             updateRoute(e.currentTarget.id);
         }
     };
-
-    const hasTipsAndDonations = useFeatureFlag('tipsAndDonations');
-    const hasRecommendations = useFeatureFlag('recommendations');
 
     const updateSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFilter(e.target.value);
@@ -107,12 +122,12 @@ const Sidebar: React.FC = () => {
 
     return (
         <div className='ml-auto flex w-full flex-col pt-0 tablet:max-w-[240px]' data-testid="sidebar">
-            <div className='sticky top-0 flex content-stretch items-end bg-grey-50 dark:bg-grey-975 tablet:h-28 dark:tablet:bg-black xl:h-20'>
+            <div className='sticky top-0 flex content-stretch items-end tablet:h-20 tablet:bg-grey-50 xl:h-20 dark:bg-grey-975 dark:tablet:bg-[#101114]'>
                 <div className='relative w-full'>
                     <Icon className='absolute left-3 top-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
                     <TextField
                         autoComplete="off"
-                        className='flex h-10 w-full items-center rounded-lg border border-transparent bg-white px-[33px] py-1.5 text-[14px] shadow-[0_0_1px_rgba(21,23,26,0.25),0_1px_3px_rgba(0,0,0,0.03),0_8px_10px_-12px_rgba(0,0,0,.1)] transition-colors hover:shadow-sm focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,0.25)] focus:outline-2 dark:border-transparent dark:bg-grey-925 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green dark:focus:bg-grey-950'
+                        className='mr-12 flex h-10 w-full items-center rounded-lg border border-transparent bg-white px-[33px] py-1.5 text-[14px] shadow-[0_0_1px_rgba(21,23,26,0.25),0_1px_3px_rgba(0,0,0,0.03),0_8px_10px_-12px_rgba(0,0,0,.1)] transition-colors hover:shadow-sm focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,0.25)] focus:outline-2 tablet:mr-0 dark:border-transparent dark:bg-grey-925 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green dark:focus:bg-grey-950'
                         containerClassName='w-100'
                         inputRef={searchInputRef}
                         placeholder="Search settings"
@@ -123,10 +138,10 @@ const Sidebar: React.FC = () => {
                         unstyled
                         onChange={updateSearch}
                     />
-                    {filter ? <Button className='absolute right-3 top-3 p-1' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
+                    {filter ? <Button className='absolute right-14 top-3 p-1 tablet:right-3' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
                         setFilter('');
                         searchInputRef.current?.focus();
-                    }} /> : <div className='absolute -right-1/2 top-[9px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] dark:border-grey-800 dark:bg-grey-900 dark:text-grey-500 dark:shadow-[0px_1px_#626D79] tablet:!visible tablet:right-3 tablet:!block'>/</div>}
+                    }} /> : <div className='absolute -right-1/2 top-[9px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] tablet:!visible tablet:right-3 tablet:!block dark:border-grey-800 dark:bg-grey-900 dark:text-grey-500 dark:shadow-[0px_1px_#626D79]'>/</div>}
                 </div>
             </div>
             <nav className={navClasses} id='admin-x-settings-sidebar'>
@@ -152,6 +167,7 @@ const Sidebar: React.FC = () => {
 
                 <SettingNavSection isVisible={checkVisible(Object.values(siteSearchKeywords).flat())} title="Site">
                     <NavItem icon='palette' keywords={siteSearchKeywords.design} navid='design' title="Design & branding" onClick={handleSectionClick} />
+                    <NavItem icon='layout-2-col' keywords={siteSearchKeywords.theme} navid='theme' title="Theme" onClick={handleSectionClick} />
                     <NavItem icon='navigation' keywords={siteSearchKeywords.navigation} navid='navigation' title="Navigation" onClick={handleSectionClick} />
                     <NavItem icon='megaphone' keywords={siteSearchKeywords.announcementBar} navid='announcement-bar' title="Announcement bar" onClick={handleSectionClick} />
                 </SettingNavSection>
@@ -164,10 +180,10 @@ const Sidebar: React.FC = () => {
                 </SettingNavSection>
 
                 <SettingNavSection isVisible={checkVisible(Object.values(growthSearchKeywords).flat())} title="Growth">
-                    {hasRecommendations && <NavItem icon='heart' keywords={growthSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />}
+                    <NavItem icon='heart' keywords={growthSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />
                     <NavItem icon='emailfield' keywords={growthSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Embeddable signup form" onClick={handleSectionClick} />
                     {hasStripeEnabled && <NavItem icon='discount' keywords={growthSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
-                    {hasTipsAndDonations && <NavItem icon='piggybank' keywords={growthSearchKeywords.tips} navid='tips-or-donations' title="Tips or donations" onClick={handleSectionClick} />}
+                    {hasStripeEnabled && <NavItem icon='piggybank' keywords={growthSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
                 </SettingNavSection>
 
                 <SettingNavSection isVisible={checkVisible(Object.values(emailSearchKeywords).flat())} title="Email newsletter">
@@ -184,6 +200,7 @@ const Sidebar: React.FC = () => {
                 <SettingNavSection isVisible={checkVisible(Object.values(advancedSearchKeywords).flat())} title="Advanced">
                     <NavItem icon='modules-3' keywords={advancedSearchKeywords.integrations} navid='integrations' title="Integrations" onClick={handleSectionClick} />
                     <NavItem icon='download' keywords={advancedSearchKeywords.migrationtools} navid='migration' title="Import/Export" onClick={handleSectionClick} />
+                    <NavItem icon='block' keywords={advancedSearchKeywords.spamFilters} navid='spam-filters' title="Spam filters" onClick={handleSectionClick} />
                     <NavItem icon='brackets' keywords={advancedSearchKeywords.codeInjection} navid='code-injection' title="Code injection" onClick={handleSectionClick} />
                     <NavItem icon='labs-flask' keywords={advancedSearchKeywords.labs} navid='labs' title="Labs" onClick={handleSectionClick} />
                     <NavItem icon='time-back' keywords={advancedSearchKeywords.history} navid='history' title="History" onClick={handleSectionClick} />
@@ -193,7 +210,7 @@ const Sidebar: React.FC = () => {
                 <a className='w-100 mb-10 mt-1 flex h-[38px] cursor-pointer items-center rounded-lg px-3 py-2 text-left text-[14px] font-medium text-grey-800 transition-all hover:bg-grey-200 focus:bg-grey-100 dark:text-grey-600 dark:hover:bg-grey-950 dark:focus:bg-grey-925' onClick={() => {
                     updateRoute('about');
                 }}>
-                    <img alt='Ghost Logo' className='mr-[7px] h-[18px] w-[18px]' src={GhostLogo} />
+                    <img alt='Ghost Logo' className='mr-[7px] size-[18px]' src={GhostLogo} />
                     About Ghost
                 </a>
                 }

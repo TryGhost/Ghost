@@ -25,7 +25,7 @@ describe('Acceptance: Error Handling', function () {
                 let role = this.server.create('role', {name: 'Administrator'});
                 this.server.create('user', {roles: [role]});
 
-                return await authenticateSession();
+                await authenticateSession();
             });
 
             // TODO: can't replicate this with the Lexical editor... skip for now
@@ -90,7 +90,7 @@ describe('Acceptance: Error Handling', function () {
             let roles = this.server.schema.roles.where({name: 'Administrator'});
             this.server.create('user', {roles});
 
-            return await authenticateSession();
+            await authenticateSession();
         });
 
         it('handles Ember Data HTML response', async function () {

@@ -9,7 +9,12 @@ const shared = require('../shared');
 const errorHandler = require('@tryghost/mw-error-handler');
 const sentry = require('../../../shared/sentry');
 const redirectAdminUrls = require('./middleware/redirect-admin-urls');
+const createServeAuthFrameFileMw = require('./middleware/serve-auth-frame-file');
 
+/**
+ *
+ * @returns {import('express').Application}
+ */
 module.exports = function setupAdminApp() {
     debug('Admin setup start');
     const adminApp = express('admin');
@@ -30,9 +35,24 @@ module.exports = function setupAdminApp() {
         }
     ));
 
-    adminApp.use('/auth-frame', serveStatic(
-        path.join(config.getContentPath('public'), 'admin-auth')
-    ));
+    // Auth Frame renders a HTML page that loads some JS which then makes an API
+    // request to the Admin API /users/me/ endpoint to check if the user is logged in.
+    //
+    // Used by comments-ui to add moderation options to front-end comments when logged in.
+    adminApp.use('/auth-frame', function authFrameMw(req, res, next) {
+        // only render content when we have an Admin session cookie,
+        // otherwise return a 204 to avoid JS and API requests being made unnecessarily
+        try {
+            if (req.headers.cookie?.includes('ghost-admin-api-session')) {
+                next();
+            } else {
+                res.setHeader('Cache-Control', 'public, max-age=0');
+                res.sendStatus(204);
+            }
+        } catch (err) {
+            next(err);
+        }
+    }, createServeAuthFrameFileMw(config, urlUtils));
 
     // Ember CLI's live-reload script
     if (config.get('env') === 'development') {

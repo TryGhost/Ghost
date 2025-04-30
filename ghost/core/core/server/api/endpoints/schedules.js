@@ -1,8 +1,8 @@
 const models = require('../../models');
-
 const postSchedulingService = require('../../services/posts/post-scheduling-service')();
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'schedules',
     publish: {
         headers: {
@@ -40,8 +40,13 @@ module.exports = {
             };
 
             const {scheduledResource, preScheduledResource} = await postSchedulingService.publish(resourceType, frame.options.id, frame.data.force, options);
-            const cacheInvalidate = postSchedulingService.handleCacheInvalidation(scheduledResource, preScheduledResource);
-            this.headers.cacheInvalidate = cacheInvalidate;
+            const cacheInvalidation = postSchedulingService.handleCacheInvalidation(scheduledResource, preScheduledResource);
+
+            if (cacheInvalidation === true) {
+                frame.setHeader('X-Cache-Invalidate', '/*');
+            } else if (cacheInvalidation.value) {
+                frame.setHeader('X-Cache-Invalidate', cacheInvalidation.value);
+            }
 
             const response = {};
             response[resourceType] = [scheduledResource];
@@ -80,3 +85,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

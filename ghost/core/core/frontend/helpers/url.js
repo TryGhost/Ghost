@@ -7,7 +7,6 @@
 const {metaData} = require('../services/proxy');
 const {SafeString} = require('../services/handlebars');
 const logging = require('@tryghost/logging');
-const sentry = require('../../shared/sentry');
 const errors = require('@tryghost/errors');
 
 const {getMetaDataUrl} = metaData;
@@ -26,7 +25,6 @@ module.exports = function url(options) {
             message: `The url "${outputUrl}" couldn't be escaped correctly`,
             err: err
         });
-        sentry.captureException(error);
         logging.error(error);
 
         return new SafeString('');

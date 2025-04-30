@@ -1,0 +1,140 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Adding components" />
+
+<div className="sb-doc">
+
+# Adding new components
+
+<p className="excerpt">ShadCN/UI is not a library, it's a starting point — this means that whenever you install a new ShadCN/UI component it adds new React component(s) with the default implementation for the given UI component. Then you can customize the implementation by applying TW classes, creating new variants and so on.</p>
+
+As an example, let's see how to add a "Button" component.
+
+---
+
+**Step 1:** Go to [ShadCN/UI component list](https://ui.shadcn.com/docs/components) and find **Button**
+
+> ⚠️ Sometimes the npx command fails with a massive error. This usually happens if ShadCN tries to reinstall an already existing third party library or component (e.g. `radix-ui/dialog` or `lucide-react`). In these cases, find out which package causes the issue (usually it's the one indicated under the manual installation of the given component), remove it from Shade's `package.json` and retry adding the ShadCN component via the CLI command.
+
+---
+
+**Step 2:** Install the component
+
+In the `shade` folder follow the ShadCN/UI CLI install instructions:
+
+```
+npx shadcn@latest add button
+```
+
+This creates a new component in Shade in `src/components/ui`:
+
+```
+src/
+└── components/
+    └── ui/
+        └── button.tsx
+
+```
+
+If you take a look at the source of this component you'll see that the whole button component is directly implemented, it's not a dependency. This means a couple of things:
+
+- You can't "update" ShadCN/UI components, you can only reinstall. This means that if you re-run the install command it overwrites the existing implementation including all your changes, so be careful.
+- You can change the implementation as you wish. You can add, remove or CSS classes, create new variants and add UI logic if you want.
+
+---
+
+**Step 3:** Create stories for the new component
+
+In order to make the new component appear in Storybook, you need to create at least one story for it. You can use the Boilerplate story as a starting point: copy it as `[component].stories.tsx` to the same folder as your component:
+
+```
+src/
+└── components/
+    └── ui/
+        ├── button.tsx
+        └── button.stories.tsx
+
+```
+
+For a story, at a minimum you'll need to:
+
+- Update the imported component (for the button example: `import {Button} from './button'`), and update all references in the stories file
+- Change the meta data (most imporantly, `title: 'Components / Button'`, where "Components" will be the parent directory of Button in Storybook — this is a meta directory it doesn't have to exist in the file system)
+
+---
+
+**Step 4:** (Optional) Add or remove component variants
+
+ShadCN/UI uses [Class Variance Authority](https://cva.style/docs) to manage variants for UI components. If you look at the Button component, you'll see an example implementation of this:
+
+```
+const buttonVariants = cva(
+    [default CSS classes],
+    {
+        variants: {
+            [variant property e.g. "variant" or "size"]: {
+                [variant name]: [variant CSS classes]
+            }
+        },
+        defaultVariants: {
+            [variant property e.g. "variant" or "size"]: [default value]
+        }
+    }
+);
+```
+
+Further down the code you'll see that these variants are also added to the interface of the component, which makes it appear in Storybook automatically. That's great because there's no need to create separate stories to test variants 🎉.
+
+```
+export interface ButtonProps
+    extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> { // Variants are added to the Button interface
+    asChild?: boolean
+}
+```
+
+---
+
+**Step 5:** Export the component
+
+In order to be able to import the new component in apps, you'll need to export it in the `index.ts` file of Shade, like this:
+
+```
+export * from './components/ui/button';
+```
+
+That's it — you've just added a new component to Shade and made it ready to use in other React apps.
+
+---
+
+**Note:** ShadCN uses a few third party libraries. Since we export everything from Shade under the project `@tryghost/shade` there might be conflicts if a third party library uses similar component names as some other components in Shade. For example, ShadCN uses Recharts to display charts. Recharts has a `<Tooltip>` component and Shade also has one. To overcome this issue we alias all third party exports (e.g. `export * as Recharts from "recharts"`).
+
+---
+
+## Stories
+
+With the automatic variant method, most of the _style related_ documentation is handled automatically in Shade. New stories should be created for non-stylistic use cases which are imporant to be able check. For the Button component an example could be related to the contents of the button: text-only, icon-only and icon-text buttons should be separated into different stories.
+
+## UI component API's
+
+ShadCN/UI uses [RadixUI](https://www.radix-ui.com/) under the hood which allows to use the full RadixUI API in each component. E.g. if you need a dropdown menu to be open by default you can just use the `defaultOpen` prop from [RadixUI dropdown API](https://www.radix-ui.com/primitives/docs/components/dropdown-menu).
+
+For [Charts](https://ui.shadcn.com/charts), ShadCN/UI uses [Recharts](https://recharts.org/en-US/). Similarly to RadixUI, you can use the Recharts API to customize and use charting features.
+
+## ShadCN/UI configuration
+
+The `components.json` file contains the ShadCN/UI default configuration, so when you install a new component these options are taken into consideration. There are some of them worth mentioning:
+
+- `"style": "new-york"` — We chose "New York" because visually it's closer to Ghost's UI style than the "Default" style
+- `"baseColor": "gray"` — This means that all newly installed ShadCN/UI component will use the color code `gray` (with an `a`, not `grey`) to set default colors
+- `"cssVariables": true` — This ensures to use CSS variable names instead of colors as a default in new components which means less more consistency and less code. However if a component doesn't work with the default colors, there's always an option to override colors in the component implementation.
+
+## Custom components
+
+It is of course possible to create our own components. Examine how ShadCN components are structured and follow their patterns:
+
+- Create a single file for each UI component
+- Create [composable components](https://blog.tomaszgil.me/choosing-the-right-path-composable-vs-configurable-components-in-react) (multiple React components), _not_ configurable ones (lots of props). Create all corresponding React components in the same file (take a look at the Dropdown Menu implementation for an example).
+- Export custom components the same way as you would with ShadCN ones.
+
+</div>

@@ -12,7 +12,8 @@ const messages = {
 const allowedBatchIncludes = ['count.recipients'];
 const allowedFailureIncludes = ['member', 'email_recipient'];
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'emails',
 
     browse: {
@@ -180,3 +181,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

@@ -60,8 +60,13 @@ class CommentsServiceEmails {
         }
     }
 
-    async notifyParentCommentAuthor(reply) {
-        const parent = await this.models.Comment.findOne({id: reply.get('parent_id')});
+    async notifyParentCommentAuthor(reply, {type = 'parent'} = {}) {
+        let parent;
+        if (type === 'in_reply_to') {
+            parent = await this.models.Comment.findOne({id: reply.get('in_reply_to_id')});
+        } else {
+            parent = await this.models.Comment.findOne({id: reply.get('parent_id')});
+        }
         const parentMember = parent.related('member');
 
         if (parent?.get('status') !== 'published' || !parentMember.get('enable_comment_notifications')) {

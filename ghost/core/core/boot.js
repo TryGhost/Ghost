@@ -78,10 +78,9 @@ async function initDatabase({config}) {
  * @param {object} options
  * @param {object} options.ghostServer
  * @param {object} options.config
- * @param {object} options.bootLogger
  * @param {boolean} options.frontend
  */
-async function initCore({ghostServer, config, bootLogger, frontend}) {
+async function initCore({ghostServer, config, frontend}) {
     debug('Begin: initCore');
 
     // URL Utils is a bit slow, put it here so the timing is visible separate from models
@@ -110,15 +109,10 @@ async function initCore({ghostServer, config, bootLogger, frontend}) {
     // The URLService is a core part of Ghost, which depends on models.
     debug('Begin: Url Service');
     const urlService = require('./server/services/url');
-    const urlServiceStart = Date.now();
     // Note: there is no await here, we do not wait for the url service to finish
     // We can return, but the site will remain in maintenance mode until this finishes
     // This is managed on request: https://github.com/TryGhost/Ghost/blob/main/core/app.js#L10
     urlService.init({
-        onFinished: () => {
-            bootLogger.metric('url-service', urlServiceStart);
-            bootLogger.log('URL Service Ready');
-        },
         urlCache: !frontend // hacky parameter to make the cache initialization kick in as we can't initialize labs before the boot
     });
     debug('End: Url Service');
@@ -254,6 +248,19 @@ async function initExpressApps({frontend, backend, config}) {
 }
 
 /**
+ * Initialize prometheus client
+ */
+function initPrometheusClient({config}) {
+    if (config.get('prometheus:enabled')) {
+        debug('Begin: initPrometheusClient');
+        const prometheusClient = require('./shared/prometheus-client');
+        debug('End: initPrometheusClient');
+        return prometheusClient;
+    }
+    return null;
+}
+
+/**
  * Dynamic routing is generated from the routes.yaml file
  * When Ghost's DB and core are loaded, we can access this file and call routing.routingManager.start
  * However this _must_ happen after the express Apps are loaded, hence why this is here and not in initFrontend
@@ -297,6 +304,7 @@ async function initServices() {
     debug('Begin: initServices');
 
     debug('Begin: Services');
+    const identityTokens = require('./server/services/identity-tokens');
     const stripe = require('./server/services/stripe');
     const members = require('./server/services/members');
     const tiers = require('./server/services/tiers');
@@ -322,13 +330,12 @@ async function initServices() {
     const postsPublic = require('./server/services/posts-public');
     const slackNotifications = require('./server/services/slack-notifications');
     const mediaInliner = require('./server/services/media-inliner');
-    const collections = require('./server/services/collections');
-    const modelToDomainEventInterceptor = require('./server/services/model-to-domain-event-interceptor');
     const mailEvents = require('./server/services/mail-events');
     const donationService = require('./server/services/donations');
     const recommendationsService = require('./server/services/recommendations');
     const emailAddressService = require('./server/services/email-address');
     const statsService = require('./server/services/stats');
+    const explorePingService = require('./server/services/explore-ping');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -344,6 +351,7 @@ async function initServices() {
     await emailAddressService.init(),
 
     await Promise.all([
+        identityTokens.init(),
         memberAttribution.init(),
         mentionsService.init(),
         mentionsEmailReport.init(),
@@ -368,13 +376,12 @@ async function initServices() {
         linkTracking.init(),
         emailSuppressionList.init(),
         slackNotifications.init(),
-        collections.init(),
-        modelToDomainEventInterceptor.init(),
         mediaInliner.init(),
         mailEvents.init(),
         donationService.init(),
         recommendationsService.init(),
-        statsService.init()
+        statsService.init(),
+        explorePingService.init()
     ]);
     debug('End: Services');
 
@@ -401,13 +408,15 @@ async function initBackgroundServices({config}) {
         return;
     }
 
+    const activitypub = require('./server/services/activitypub');
+    await activitypub.init();
     // Load email analytics recurring jobs
     if (config.get('backgroundJobs:emailAnalytics')) {
         const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
         await emailAnalyticsJobs.scheduleRecurringJobs();
     }
 
-    const updateCheck = require('./server/update-check');
+    const updateCheck = require('./server/services/update-check');
     updateCheck.scheduleRecurringJobs();
 
     const milestonesService = require('./server/services/milestones');
@@ -480,6 +489,10 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         const sentry = require('./shared/sentry');
         debug('End: Load sentry');
 
+        // Initialize prometheus client early to enable metrics collection during boot
+        // Note: this does not start the metrics server yet to avoid increasing boot time
+        const prometheusClient = initPrometheusClient({config});
+
         // Step 2 - Start server with minimal app in global maintenance mode
         debug('Begin: load server + minimal app');
         const rootApp = require('./app')();
@@ -489,6 +502,13 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
             ghostServer = new GhostServer({url: config.getSiteUrl(), env: config.get('env'), serverConfig: config.get('server')});
             await ghostServer.start(rootApp);
             bootLogger.log('server started');
+
+            // Ensure the prometheus client is stopped when the server shuts down
+            ghostServer.registerCleanupTask(async () => {
+                if (prometheusClient) {
+                    prometheusClient.stop();
+                }
+            });
             debug('End: load server + minimal app');
         }
 
@@ -496,14 +516,22 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         debug('Begin: Get DB ready');
         await initDatabase({config});
         bootLogger.log('database ready');
+        const connection = require('./server/data/db/connection');
         sentry.initQueryTracing(
-            require('./server/data/db/connection')
+            connection
         );
         debug('End: Get DB ready');
 
         // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
-        await initCore({ghostServer, config, bootLogger, frontend});
+        await initCore({ghostServer, config, frontend});
+
+        // Instrument the knex instance and connection pool if prometheus is enabled
+        // Needs to be after initCore because the pool is destroyed and recreated in initCore, which removes the event listeners
+        if (prometheusClient) {
+            prometheusClient.instrumentKnex(connection);
+        }
+
         const {dataService} = await initServicesForFrontend({bootLogger});
 
         if (frontend) {
@@ -516,18 +544,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
             await initAppService();
         }
 
-        // TODO: move this to the correct place once we figure out where that is
-        if (ghostServer) {
-            //  NOTE: changes in this labs setting requires server reboot since we don't re-init services after changes a labs flag
-            const websockets = require('./server/services/websockets');
-            await websockets.init(ghostServer);
-
-            const lexicalMultiplayer = require('./server/services/lexical-multiplayer');
-            await lexicalMultiplayer.init(ghostServer);
-            await lexicalMultiplayer.enable();
-        }
-
-        await initServices({config});
+        await initServices();
         debug('End: Load Ghost Services & Apps');
 
         // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode

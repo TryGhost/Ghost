@@ -103,4 +103,24 @@ describe('DB API', function () {
             }]
         });
     });
+
+    it('Handles invalid zip file uploads (central directory)', async function () {
+        const res = await request.post(localUtils.API.getApiQuery('db/'))
+            .set('Origin', config.get('url'))
+            .attach('importfile', 'test/utils/fixtures/import/zips/empty.zip')
+            .expect('Content-Type', /json/)
+            .expect(415);
+
+        res.body.errors[0].message.should.eql('The uploaded zip could not be read');
+    });
+
+    it('Handles invalid zip file uploads (malformed comments)', async function () {
+        const res = await request.post(localUtils.API.getApiQuery('db/'))
+            .set('Origin', config.get('url'))
+            .attach('importfile', 'test/utils/fixtures/import/zips/malformed-comments.zip')
+            .expect('Content-Type', /json/)
+            .expect(415);
+
+        res.body.errors[0].message.should.eql('The uploaded zip could not be read');
+    });
 });

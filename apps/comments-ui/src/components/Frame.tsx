@@ -15,7 +15,7 @@ type TailwindFrameProps = FrameProps & {
 /**
  * Loads all the CSS styles inside an iFrame. Only shows the visible content as soon as the CSS file with the tailwind classes has loaded.
  */
-const TailwindFrame: React.FC<TailwindFrameProps> = ({children, onResize, style, title}) => {
+const TailwindFrame = React.forwardRef<HTMLIFrameElement, React.PropsWithChildren<TailwindFrameProps>>(function TailwindFrame({children, onResize, style, title}, ref: React.ForwardedRef<HTMLIFrameElement>) {
     const head = (
         <>
             <style dangerouslySetInnerHTML={{__html: styles}} />
@@ -25,11 +25,11 @@ const TailwindFrame: React.FC<TailwindFrameProps> = ({children, onResize, style,
 
     // For now we're using <NewFrame> because using a functional component with portal caused some weird issues with modals
     return (
-        <IFrame head={head} style={style} title={title} onResize={onResize}>
+        <IFrame ref={ref} head={head} style={style} title={title} onResize={onResize}>
             {children}
         </IFrame>
     );
-};
+});
 
 type ResizableFrameProps = FrameProps & {
     style: React.CSSProperties,
@@ -39,7 +39,7 @@ type ResizableFrameProps = FrameProps & {
 /**
  * This iframe has the same height as it contents and mimics a shadow DOM component
  */
-const ResizableFrame: React.FC<ResizableFrameProps> = ({children, style, title}) => {
+const ResizableFrame = React.forwardRef<HTMLIFrameElement, React.PropsWithChildren<ResizableFrameProps>>(function ResizableFrame({children, style, title}, ref: React.ForwardedRef<HTMLIFrameElement>) {
     const [iframeStyle, setIframeStyle] = useState(style);
     const onResize = useCallback((iframeRoot) => {
         setIframeStyle((current) => {
@@ -51,23 +51,25 @@ const ResizableFrame: React.FC<ResizableFrameProps> = ({children, style, title})
     }, []);
 
     return (
-        <TailwindFrame style={iframeStyle} title={title} onResize={onResize}>
+        <TailwindFrame ref={ref} style={iframeStyle} title={title} onResize={onResize}>
             {children}
         </TailwindFrame>
     );
-};
+});
 
-export const CommentsFrame: React.FC<FrameProps> = ({children}) => {
+type CommentsFrameProps = Record<never, any>;
+
+export const CommentsFrame = React.forwardRef<HTMLIFrameElement, React.PropsWithChildren<CommentsFrameProps>>(function CommentsFrame({children}, ref: React.ForwardedRef<HTMLIFrameElement>) {
     const style = {
         width: '100%',
         height: '400px'
     };
     return (
-        <ResizableFrame style={style} title="comments-frame">
+        <ResizableFrame ref={ref} style={style} title="comments-frame">
             {children}
         </ResizableFrame>
     );
-};
+});
 
 type PopupFrameProps = FrameProps & {
     title: string

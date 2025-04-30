@@ -1,5 +1,7 @@
+const debug = require('@tryghost/debug')('i18n');
 const logging = require('@tryghost/logging');
 const url = require('../../api/endpoints/utils/serializers/output/utils/url');
+const events = require('../../lib/common/events');
 
 class EmailServiceWrapper {
     getPostUrl(post) {
@@ -15,7 +17,7 @@ class EmailServiceWrapper {
 
         const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter, MailgunEmailProvider} = require('@tryghost/email-service');
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
-        const MailgunClient = require('@tryghost/mailgun-client');
+        const MailgunClient = require('../lib/MailgunClient');
         const configService = require('../../../shared/config');
         const settingsCache = require('../../../shared/settings-cache');
         const settingsHelpers = require('../settings-helpers');
@@ -27,7 +29,7 @@ class EmailServiceWrapper {
         const limitService = require('../limits');
         const labs = require('../../../shared/labs');
         const emailAddressService = require('../email-address');
-
+        const i18nLib = require('@tryghost/i18n');
         const mobiledocLib = require('../../lib/mobiledoc');
         const lexicalLib = require('../../lib/lexical');
         const urlUtils = require('../../../shared/url-utils');
@@ -49,6 +51,25 @@ class EmailServiceWrapper {
         const mailgunClient = new MailgunClient({
             config: configService, settings: settingsCache
         });
+        const i18nLanguage = labs.isSet('i18n') ? settingsCache.get('locale') || 'en' : 'en';
+        const i18n = i18nLib(i18nLanguage, 'newsletter');
+
+        events.on('settings.labs.edited', () => {
+            if (labs.isSet('i18n')) {
+                debug('labs i18n enabled, updating i18n to', settingsCache.get('locale'));
+                i18n.changeLanguage(settingsCache.get('locale'));
+            } else {
+                debug('labs i18n disabled, updating i18n to en');
+                i18n.changeLanguage('en');
+            }
+        });
+
+        events.on('settings.locale.edited', (model) => {
+            if (labs.isSet('i18n')) {
+                debug('locale changed, updating i18n to', model.get('value'));
+                i18n.changeLanguage(model.get('value'));
+            }
+        });
 
         const mailgunEmailProvider = new MailgunEmailProvider({
             mailgunClient,
@@ -59,7 +80,7 @@ class EmailServiceWrapper {
             settingsCache,
             settingsHelpers,
             renderers: {
-                mobiledoc: mobiledocLib.mobiledocHtmlRenderer,
+                mobiledoc: mobiledocLib,
                 lexical: lexicalLib
             },
             imageSize,
@@ -73,7 +94,8 @@ class EmailServiceWrapper {
             outboundLinkTagger: memberAttribution.outboundLinkTagger,
             emailAddressService: emailAddressService.service,
             labs,
-            models: {Post}
+            models: {Post},
+            t: i18n.t
         });
 
         const sendingService = new SendingService({

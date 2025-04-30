@@ -144,7 +144,7 @@ const activityFeedMapper = (event, frame) => {
         return clickEventMapper(event, frame);
     }
     if (event.type === 'aggregated_click_event') {
-        return aggregatedClickEventMapper(event, frame);
+        return aggregatedClickEventMapper(event);
     }
     if (event.type === 'feedback_event') {
         return feedbackEventMapper(event, frame);

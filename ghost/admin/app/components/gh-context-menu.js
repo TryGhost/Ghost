@@ -1,5 +1,5 @@
 import Component from '@glimmer/component';
-import SelectionList from '../utils/selection-list';
+import SelectionList from './posts-list/selection-list';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';

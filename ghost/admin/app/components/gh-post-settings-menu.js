@@ -114,7 +114,7 @@ export default class GhPostSettingsMenu extends Component {
     @or(
         'session.user.isOwnerOnly',
         'session.user.isAdminOnly',
-        'session.user.isEditor'
+        'session.user.isEitherEditor'
     )
         showVisibilityInput;
 
@@ -618,6 +618,14 @@ export default class GhPostSettingsMenu extends Component {
         this.savePostTask.perform().catch((error) => {
             this.showError(error);
             post.rollbackAttributes();
+        });
+    }
+
+    @action
+    savePost() {
+        this.savePostTask.perform().catch((error) => {
+            this.showError(error);
+            this.post.rollbackAttributes();
         });
     }
 

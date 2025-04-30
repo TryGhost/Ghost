@@ -71,6 +71,14 @@ class TwitterOEmbedProvider {
                 oembedData.tweet_data = body.data;
                 oembedData.tweet_data.includes = body.includes;
             } catch (err) {
+                if (err.response?.body) {
+                    try {
+                        const parsed = JSON.parse(err.response.body);
+                        err.context = parsed;
+                    } catch (e) {
+                        err.context = err.response.body;
+                    }
+                }
                 logging.error(err);
             }
         }

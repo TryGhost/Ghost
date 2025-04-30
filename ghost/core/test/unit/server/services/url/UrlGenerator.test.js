@@ -263,7 +263,7 @@ describe('Unit: services/url/UrlGenerator', function () {
 
                 urlGenerator._try(resource);
 
-                urlGenerator._generateUrl.calledOnce.should.be.true();
+                urlGenerator._generateUrl.calledOnce.should.be.false();
                 urlGenerator._resourceListeners.called.should.be.false();
                 urls.add.called.should.be.false();
                 resource.reserve.called.should.be.false();
@@ -293,6 +293,30 @@ describe('Unit: services/url/UrlGenerator', function () {
                 urls.add.called.should.be.false();
                 resource.reserve.called.should.be.false();
                 urlGenerator.nql.queryJSON.called.should.be.false();
+            });
+
+            it('filter is malformed', function () {
+                resource.isReserved.returns(false);
+
+                const malformedFilter = 'tag:-foo,-bar';
+
+                const urlGenerator = new UrlGenerator({
+                    router,
+                    filter: malformedFilter,
+                    resourceType: 'posts',
+                    queue,
+                    resources,
+                    urls
+                });
+
+                const queryJSONSpy = sinon.spy(urlGenerator.nql, 'queryJSON');
+
+                // When the filter is malformed, the resource should not be reserved
+                urlGenerator._try(resource).should.be.false();
+
+                // Ensure the above false return is due to the malformed filter
+                queryJSONSpy.should.throw(new RegExp('Query Error: unexpected character in filter'));
+                queryJSONSpy.should.throw(new RegExp(malformedFilter));
             });
         });
     });

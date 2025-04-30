@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
 const models = require('../../../core/server/models');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
@@ -141,149 +140,60 @@ describe('Pages API', function () {
                 });
         });
 
-        it('Works with latest collection card', async function () {
-            const initialLexical = {
-                root: {
-                    children: [
-                        {
-                            type: 'collection',
-                            version: 1,
-                            collection: 'latest',
-                            postCount: 3,
-                            layout: 'grid',
-                            columns: 3,
-                            header: 'Latest'
-                        }
-                    ],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            };
+        describe('Access', function () {
+            describe('Visibility is set to tiers', function () {
+                it('Saves only paid tiers', async function () {
+                    const page = {
+                        title: 'Test Page',
+                        status: 'draft'
+                    };
 
-            const updatedLexical = _.cloneDeep(initialLexical);
-            updatedLexical.root.children.push({
-                children: [
-                    {
-                        detail: 0,
-                        format: 0,
-                        mode: 'normal',
-                        style: '',
-                        text: 'Testing',
-                        type: 'text',
-                        version: 1
-                    }
-                ],
-                direction: 'ltr',
-                format: '',
-                indent: 0,
-                type: 'paragraph',
-                version: 1
+                    // @ts-ignore
+                    const products = await models.Product.findAll();
+
+                    const freeTier = products.models[0];
+                    const paidTier = products.models[1];
+
+                    const {body: pageBody} = await agent
+                        .post('/pages/', {
+                            headers: {
+                                'content-type': 'application/json'
+                            }
+                        })
+                        .body({pages: [page]})
+                        .expectStatus(201);
+
+                    const [pageResponse] = pageBody.pages;
+
+                    await agent
+                        .put(`/pages/${pageResponse.id}`)
+                        .body({
+                            pages: [{
+                                id: pageResponse.id,
+                                updated_at: pageResponse.updated_at,
+                                visibility: 'tiers',
+                                tiers: [
+                                    {id: freeTier.id},
+                                    {id: paidTier.id}
+                                ]
+                            }]
+                        })
+                        .expectStatus(200)
+                        .matchHeaderSnapshot({
+                            'content-version': anyContentVersion,
+                            etag: anyEtag,
+                            'x-cache-invalidate': anyString
+                        })
+                        .matchBodySnapshot({
+                            pages: [Object.assign({}, matchPageShallowIncludes, {
+                                published_at: null,
+                                tiers: [
+                                    {type: paidTier.get('type'), ...tierSnapshot}
+                                ]
+                            })]
+                        });
+                });
             });
-
-            const page = {
-                title: 'Latest Collection Card Test',
-                status: 'draft',
-                lexical: JSON.stringify(initialLexical)
-            };
-
-            const {body: createBody} = await agent
-                .post('/pages/?formats=mobiledoc,lexical,html', {
-                    headers: {
-                        'content-type': 'application/json'
-                    }
-                })
-                .body({pages: [page]})
-                .expectStatus(201);
-
-            const [createResponse] = createBody.pages;
-
-            // does not match body snapshot as we mostly only care about the request succeeding.
-            // matching body snapshots is tricky because collection cards have dynamic content,
-            // most notably the post dates which are always changing.
-            await agent
-                .put(`/pages/${createResponse.id}/?formats=mobiledoc,lexical,html`)
-                .body({
-                    pages: [{
-                        id: createResponse.id,
-                        lexical: JSON.stringify(updatedLexical),
-                        updated_at: createResponse.updated_at // satisfy collision detection
-                    }]
-                })
-                .expectStatus(200);
-        });
-
-        it('Works with featured collection card', async function () {
-            const initialLexical = {
-                root: {
-                    children: [
-                        {
-                            type: 'collection',
-                            version: 1,
-                            collection: 'featured',
-                            postCount: 3,
-                            layout: 'grid',
-                            columns: 3,
-                            header: 'Featured'
-                        }
-                    ],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            };
-
-            const updatedLexical = _.cloneDeep(initialLexical);
-            updatedLexical.root.children.push({
-                children: [
-                    {
-                        detail: 0,
-                        format: 0,
-                        mode: 'normal',
-                        style: '',
-                        text: 'Testing',
-                        type: 'text',
-                        version: 1
-                    }
-                ],
-                direction: 'ltr',
-                format: '',
-                indent: 0,
-                type: 'paragraph',
-                version: 1
-            });
-
-            const page = {
-                title: 'Latest Collection Card Test',
-                status: 'draft',
-                lexical: JSON.stringify(initialLexical)
-            };
-
-            const {body: createBody} = await agent
-                .post('/pages/?formats=mobiledoc,lexical,html', {
-                    headers: {
-                        'content-type': 'application/json'
-                    }
-                })
-                .body({pages: [page]})
-                .expectStatus(201);
-
-            const [createResponse] = createBody.pages;
-
-            await agent
-                .put(`/pages/${createResponse.id}/?formats=mobiledoc,lexical,html`)
-                .body({
-                    pages: [{
-                        id: createResponse.id,
-                        lexical: JSON.stringify(updatedLexical),
-                        updated_at: createResponse.updated_at // satisfy collision detection
-                    }]
-                })
-                .expectStatus(200);
         });
     });
 

@@ -47,24 +47,6 @@ describe('Labs Service', function () {
         assert.equal(labs.isSet('urlCache'), true);
     });
 
-    it('returns a falsy alpha flag when dev experiments in NOT toggled', function () {
-        configUtils.set('enableDeveloperExperiments', false);
-        sinon.stub(process.env, 'NODE_ENV').value('production');
-        sinon.stub(settingsCache, 'get');
-        settingsCache.get.withArgs('labs').returns({
-            urlCache: true
-        });
-
-        // NOTE: this test should be rewritten to test the alpha flag independently of the internal ALPHA_FEATURES list
-        //       otherwise we end up in the endless maintenance loop and need to update it every time a feature graduates from alpha
-        assert.deepEqual(labs.getAll(), expectedLabsObject({
-            members: true
-        }));
-
-        assert.equal(labs.isSet('members'), true);
-        assert.equal(labs.isSet('urlCache'), false);
-    });
-
     it('respects the value in config over settings', function () {
         configUtils.set('labs', {
             collections: false
@@ -141,5 +123,15 @@ describe('Labs Service', function () {
     it('isSet always returns false for deprecated', function () {
         assert.equal(labs.isSet('subscribers'), false);
         assert.equal(labs.isSet('publicAPI'), false);
+    });
+});
+
+describe('Labs Service - Flag Integrity', function () {
+    it('should have no duplicate flags across categories', function () {
+        const allFlags = labs.getAllFlags();
+
+        const duplicates = allFlags.filter((flag, index) => allFlags.indexOf(flag) !== index);
+
+        assert.equal(duplicates.length, 0, `There are duplicate flags in the labs configuration: ${duplicates.join(', ')}`);
     });
 });

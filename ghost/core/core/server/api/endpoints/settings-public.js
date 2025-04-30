@@ -2,7 +2,8 @@ const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
 const ghostVersion = require('@tryghost/version');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'settings',
 
     browse: {
@@ -22,3 +23,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

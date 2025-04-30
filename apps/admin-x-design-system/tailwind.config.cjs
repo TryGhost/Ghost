@@ -6,18 +6,22 @@ module.exports = {
     corePlugins: {
         preflight: false // we're providing our own scoped CSS reset
     },
-    darkMode: 'class',
+    // darkMode: 'class',
+    darkMode: ['variant', [':is(.dark &):not(.light &)']],
     theme: {
         screens: {
             sm: '480px',
             md: '640px',
             lg: '1024px',
             xl: '1320px',
+            xxl: '1440px',
+            xxxl: '1600px',
             tablet: '860px'
         },
         colors: {
             transparent: 'transparent',
             current: 'currentColor',
+            accent: 'var(--accent-color, #ff0095)',
             white: '#FFF',
             black: '#15171A',
             grey: {
@@ -86,17 +90,38 @@ module.exports = {
             }
         },
         fontFamily: {
+            cardo: 'Cardo',
+            manrope: 'Manrope',
+            merriweather: 'Merriweather',
+            nunito: 'Nunito',
+            'tenor-sans': 'Tenor Sans',
+            'old-standard-tt': 'Old Standard TT',
+            prata: 'Prata',
+            roboto: 'Roboto',
+            rufina: 'Rufina',
             inter: 'Inter',
             sans: 'Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif',
             serif: 'Georgia, serif',
             mono: 'Consolas, Liberation Mono, Menlo, Courier, monospace',
-            inherit: 'inherit'
+            inherit: 'inherit',
+            'space-grotesk': 'Space Grotesk',
+            'chakra-petch': 'Chakra Petch',
+            'noto-sans': 'Noto Sans',
+            poppins: 'Poppins',
+            'fira-sans': 'Fira Sans',
+            'noto-serif': 'Noto Serif',
+            lora: 'Lora',
+            'ibm-plex-serif': 'IBM Plex Serif',
+            'space-mono': 'Space Mono',
+            'fira-mono': 'Fira Mono',
+            'jetbrains-mono': 'JetBrains Mono'
         },
         boxShadow: {
             DEFAULT: '0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08)',
             xs: '0 0 1px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03), 0 8px 10px -12px rgba(0,0,0,.1)',
             sm: '0 0 1px rgba(0,0,0,.12), 0 1px 6px rgba(0,0,0,0.03), 0 8px 10px -8px rgba(0,0,0,.1)',
             md: '0 0 1px rgba(0,0,0,0.12), 0 1px 6px rgba(0,0,0,0.03), 0 8px 10px -8px rgba(0,0,0,0.05), 0px 24px 37px -21px rgba(0, 0, 0, 0.05)',
+            'md-heavy': '0 0 1px rgba(0,0,0,0.22), 0 1px 6px rgba(0,0,0,0.15), 0 8px 10px -8px rgba(0,0,0,0.16), 0px 24px 37px -21px rgba(0, 0, 0, 0.46)',
             lg: '0 0 7px rgba(0, 0, 0, 0.08), 0 2.1px 2.2px -5px rgba(0, 0, 0, 0.011), 0 5.1px 5.3px -5px rgba(0, 0, 0, 0.016), 0 9.5px 10px -5px rgba(0, 0, 0, 0.02), 0 17px 17.9px -5px rgba(0, 0, 0, 0.024), 0 31.8px 33.4px -5px rgba(0, 0, 0, 0.029), 0 76px 80px -5px rgba(0, 0, 0, 0.04)',
             xl: '0 2.8px 2.2px rgba(0, 0, 0, 0.02), 0 6.7px 5.3px rgba(0, 0, 0, 0.028), 0 12.5px 10px rgba(0, 0, 0, 0.035), 0 22.3px 17.9px rgba(0, 0, 0, 0.042), 0 41.8px 33.4px rgba(0, 0, 0, 0.05), 0 100px 80px rgba(0, 0, 0, 0.07)',
             inner: 'inset 0 0 4px 0 rgb(0 0 0 / 0.08)',
@@ -106,32 +131,26 @@ module.exports = {
             keyframes: {
                 toasterIn: {
                     '0.00%': {
-                        opacity: '0',
-                        transform: 'translateX(-232.05px)'
+                        transform: 'translateY(100%)'
                     },
                     '26.52%': {
-                        opacity: '0.5',
-                        transform: 'translateX(5.90px)'
+                        transform: 'translateY(-3.90px)'
                     },
                     '63.26%': {
-                        opacity: '1',
-                        transform: 'translateX(-1.77px)'
+                        transform: 'translateY(1.2px)'
                     },
                     '100.00%': {
-                        transform: 'translateX(0px)'
+                        transform: 'translateY(0px)'
                     }
                 },
                 toasterTopIn: {
                     '0.00%': {
-                        opacity: '0',
                         transform: 'translateY(-82px)'
                     },
                     '26.52%': {
-                        opacity: '0.5',
                         transform: 'translateY(5.90px)'
                     },
                     '63.26%': {
-                        opacity: '1',
                         transform: 'translateY(-1.77px)'
                     },
                     '100.00%': {
@@ -170,6 +189,16 @@ module.exports = {
                         transform: 'translateY(0px)'
                     }
                 },
+                modalInFromRight: {
+                    '0%': {
+                        transform: 'translateX(32px)',
+                        opacity: '0'
+                    },
+                    '100%': {
+                        transform: 'translateX(0px)',
+                        opacity: '1'
+                    }
+                },
                 modalInReverse: {
                     '0%': {
                         transform: 'translateY(-32px)'
@@ -196,6 +225,7 @@ module.exports = {
                 'setting-highlight-fade-out': 'fadeOut 0.2s 1.4s ease forwards',
                 'modal-backdrop-in': 'fadeIn 0.15s ease forwards',
                 'modal-in': 'modalIn 0.25s ease forwards',
+                'modal-in-from-right': 'modalInFromRight 0.25s ease forwards',
                 'modal-in-reverse': 'modalInReverse 0.25s ease forwards',
                 spin: 'spin 1s linear infinite'
             },
@@ -264,7 +294,7 @@ module.exports = {
                 sm: '0.3rem',
                 DEFAULT: '0.4rem',
                 md: '0.6rem',
-                lg: '0.7rem',
+                lg: '0.8rem',
                 xl: '1.2rem',
                 '2xl': '1.6rem',
                 '3xl': '2.4rem',
@@ -274,12 +304,12 @@ module.exports = {
                 '2xs': '1.0rem',
                 base: '1.4rem',
                 xs: '1.2rem',
-                sm: '1.32rem',
-                md: '1.40rem',
+                sm: '1.3rem',
+                md: '1.4rem',
                 lg: '1.65rem',
                 xl: '2rem',
                 '2xl': '2.4rem',
-                '3xl': '3.2rem',
+                '3xl': '2.8rem',
                 '4xl': '3.6rem',
                 '5xl': ['4.2rem', '1.15'],
                 '6xl': ['6rem', '1'],

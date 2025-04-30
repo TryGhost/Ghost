@@ -101,10 +101,9 @@ describe('Integration: Service: feature', function () {
 
         let service = this.owner.lookup('service:feature');
 
-        return service.fetch().then(() => {
-            expect(service.get('testFlag')).to.be.true;
-            expect(service.get('testUserFlag')).to.be.true;
-        });
+        await service.fetch();
+        expect(service.get('testFlag')).to.be.true;
+        expect(service.get('testUserFlag')).to.be.true;
     });
 
     it('returns false for set flag with config false and labs false', async function () {
@@ -119,10 +118,9 @@ describe('Integration: Service: feature', function () {
         let service = this.owner.lookup('service:feature');
         service.config.testFlag = false;
 
-        return service.fetch().then(() => {
-            expect(service.get('labs.testFlag')).to.be.false;
-            expect(service.get('testFlag')).to.be.false;
-        });
+        await service.fetch();
+        expect(service.get('labs.testFlag')).to.be.false;
+        expect(service.get('testFlag')).to.be.false;
     });
 
     it('returns true for set flag with config true and labs false', async function () {
@@ -137,10 +135,9 @@ describe('Integration: Service: feature', function () {
         let service = this.owner.lookup('service:feature');
         service.config.testFlag = true;
 
-        return service.fetch().then(() => {
-            expect(service.get('labs.testFlag')).to.be.false;
-            expect(service.get('testFlag')).to.be.true;
-        });
+        await service.fetch();
+        expect(service.get('labs.testFlag')).to.be.false;
+        expect(service.get('testFlag')).to.be.true;
     });
 
     it('returns true for set flag with config is an object and labs true', async function () {
@@ -155,10 +152,9 @@ describe('Integration: Service: feature', function () {
         let service = this.owner.lookup('service:feature');
         service.config.testFlag = {key: 'value'};
 
-        return service.fetch().then(() => {
-            expect(service.get('labs.testFlag')).to.be.true;
-            expect(service.get('testFlag')).to.be.true;
-        });
+        await service.fetch();
+        expect(service.get('labs.testFlag')).to.be.true;
+        expect(service.get('testFlag')).to.be.true;
     });
 
     it('returns true for set flag with config true and labs true', async function () {
@@ -173,10 +169,9 @@ describe('Integration: Service: feature', function () {
         let service = this.owner.lookup('service:feature');
         service.config.testFlag = true;
 
-        return service.fetch().then(() => {
-            expect(service.get('labs.testFlag')).to.be.true;
-            expect(service.get('testFlag')).to.be.true;
-        });
+        await service.fetch();
+        expect(service.get('labs.testFlag')).to.be.true;
+        expect(service.get('testFlag')).to.be.true;
     });
 
     it('returns false for set flag with accessibility false', async function () {
@@ -190,10 +185,9 @@ describe('Integration: Service: feature', function () {
 
         let service = this.owner.lookup('service:feature');
 
-        return service.fetch().then(() => {
-            expect(service.get('accessibility.testUserFlag')).to.be.false;
-            expect(service.get('testUserFlag')).to.be.false;
-        });
+        await service.fetch();
+        expect(service.get('accessibility.testUserFlag')).to.be.false;
+        expect(service.get('testUserFlag')).to.be.false;
     });
 
     it('returns true for set flag with accessibility true', async function () {
@@ -207,10 +201,9 @@ describe('Integration: Service: feature', function () {
 
         let service = this.owner.lookup('service:feature');
 
-        return service.fetch().then(() => {
-            expect(service.get('accessibility.testUserFlag')).to.be.true;
-            expect(service.get('testUserFlag')).to.be.true;
-        });
+        await service.fetch();
+        expect(service.get('accessibility.testUserFlag')).to.be.true;
+        expect(service.get('testUserFlag')).to.be.true;
     });
 
     it('saves labs setting correctly', async function () {
@@ -225,18 +218,17 @@ describe('Integration: Service: feature', function () {
         let service = this.owner.lookup('service:feature');
         service.config.testFlag = {key: 'value'};
 
-        return service.fetch().then(() => {
-            expect(service.get('testFlag')).to.be.false;
+        await service.fetch();
+        expect(service.get('testFlag')).to.be.false;
 
-            run(() => {
-                service.set('testFlag', true);
-            });
-
-            return settled().then(() => {
-                expect(server.handlers[2].numberOfCalls).to.equal(1);
-                expect(service.get('testFlag')).to.be.true;
-            });
+        run(() => {
+            service.set('testFlag', true);
         });
+
+        await settled();
+
+        expect(server.handlers[2].numberOfCalls).to.equal(1);
+        expect(service.get('testFlag')).to.be.true;
     });
 
     it('saves accessibility setting correctly', async function () {
@@ -250,18 +242,16 @@ describe('Integration: Service: feature', function () {
 
         let service = this.owner.lookup('service:feature');
 
-        return service.fetch().then(() => {
-            expect(service.get('testUserFlag')).to.be.false;
+        await service.fetch();
+        expect(service.get('testUserFlag')).to.be.false;
 
-            run(() => {
-                service.set('testUserFlag', true);
-            });
-
-            return settled().then(() => {
-                expect(server.handlers[4].numberOfCalls).to.equal(1);
-                expect(service.get('testUserFlag')).to.be.true;
-            });
+        run(() => {
+            service.set('testUserFlag', true);
         });
+
+        await settled();
+        expect(server.handlers[4].numberOfCalls).to.equal(1);
+        expect(service.get('testUserFlag')).to.be.true;
     });
 
     it('notifies for server errors on labs save', async function () {
@@ -276,27 +266,25 @@ describe('Integration: Service: feature', function () {
         let service = this.owner.lookup('service:feature');
         service.config.testFlag = false;
 
-        return service.fetch().then(() => {
-            expect(service.get('testFlag')).to.be.false;
+        await service.fetch();
+        expect(service.get('testFlag')).to.be.false;
 
-            run(() => {
-                service.set('testFlag', true);
-            });
-
-            return settled().then(() => {
-                expect(
-                    server.handlers[2].numberOfCalls,
-                    'PUT call is made'
-                ).to.equal(1);
-
-                expect(
-                    service.get('notifications.alerts').length,
-                    'number of alerts shown'
-                ).to.equal(1);
-
-                expect(service.get('testFlag')).to.be.false;
-            });
+        run(() => {
+            service.set('testFlag', true);
         });
+
+        await settled();
+        expect(
+            server.handlers[2].numberOfCalls,
+            'PUT call is made'
+        ).to.equal(1);
+
+        expect(
+            service.get('notifications.alerts').length,
+            'number of alerts shown'
+        ).to.equal(1);
+
+        expect(service.get('testFlag')).to.be.false;
     });
 
     it('notifies for server errors on accessibility save', async function () {
@@ -310,27 +298,25 @@ describe('Integration: Service: feature', function () {
 
         let service = this.owner.lookup('service:feature');
 
-        return service.fetch().then(() => {
-            expect(service.get('testUserFlag')).to.be.false;
+        await service.fetch();
+        expect(service.get('testUserFlag')).to.be.false;
 
-            run(() => {
-                service.set('testUserFlag', true);
-            });
-
-            return settled().then(() => {
-                expect(
-                    server.handlers[3].numberOfCalls,
-                    'PUT call is made'
-                ).to.equal(1);
-
-                expect(
-                    service.get('notifications.alerts').length,
-                    'number of alerts shown'
-                ).to.equal(1);
-
-                expect(service.get('testUserFlag')).to.be.false;
-            });
+        run(() => {
+            service.set('testUserFlag', true);
         });
+
+        await settled();
+        expect(
+            server.handlers[3].numberOfCalls,
+            'PUT call is made'
+        ).to.equal(1);
+
+        expect(
+            service.get('notifications.alerts').length,
+            'number of alerts shown'
+        ).to.equal(1);
+
+        expect(service.get('testUserFlag')).to.be.false;
     });
 
     it('notifies for validation errors', async function () {
@@ -345,21 +331,19 @@ describe('Integration: Service: feature', function () {
         let featureService = this.owner.lookup('service:feature');
         featureService.config.testFlag = false;
 
-        return featureService.fetch().then(() => {
-            expect(featureService.get('testFlag'), 'testFlag before set').to.be.false;
+        await featureService.fetch();
+        expect(featureService.get('testFlag'), 'testFlag before set').to.be.false;
 
-            run(() => {
-                expect(() => {
-                    featureService.set('testFlag', true);
-                }, EmberError, 'threw validation error');
-            });
-
-            return settled().then(() => {
-                // ensure validation is happening before the API is hit
-                expect(server.handlers[2].numberOfCalls).to.equal(0);
-                expect(featureService.get('testFlag')).to.be.false;
-            });
+        run(() => {
+            expect(() => {
+                featureService.set('testFlag', true);
+            }, EmberError, 'threw validation error');
         });
+
+        await settled();
+        // ensure validation is happening before the API is hit
+        expect(server.handlers[2].numberOfCalls).to.equal(0);
+        expect(featureService.get('testFlag')).to.be.false;
     });
 
     it('has correct labs flags when accessed before and after settings load', async function () {

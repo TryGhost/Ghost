@@ -7,8 +7,7 @@ import Route from '@ember/routing/route';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
-import {Debug} from '@sentry/integrations';
-import {beforeSend} from 'ghost-admin/utils/sentry';
+import {getSentryConfig} from '../utils/sentry';
 import {importComponent} from '../components/admin-x/admin-x-component';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
@@ -105,7 +104,7 @@ export default Route.extend(ShortcutsRoute, {
         save: K,
 
         error(error, transition) {
-            // unauthoirized errors are already handled in the ajax service
+            // unauthorized errors are already handled in the ajax service
             if (isUnauthorizedError(error)) {
                 return false;
             }
@@ -113,22 +112,27 @@ export default Route.extend(ShortcutsRoute, {
             if (isNotFoundError(error)) {
                 if (transition) {
                     transition.abort();
+
+                    let routeInfo = transition?.to;
+                    let router = this.router;
+                    let params = [];
+
+                    if (routeInfo) {
+                        for (let key of Object.keys(routeInfo.params)) {
+                            params.push(routeInfo.params[key]);
+                        }
+
+                        let url = router.urlFor(routeInfo.name, ...params)
+                            .replace(/^#\//, '')
+                            .replace(/^\//, '')
+                            .replace(/^ghost\//, '');
+
+                        return this.replaceWith('error404', url);
+                    }
                 }
 
-                let routeInfo = transition.to;
-                let router = this.router;
-                let params = [];
-
-                for (let key of Object.keys(routeInfo.params)) {
-                    params.push(routeInfo.params[key]);
-                }
-
-                let url = router.urlFor(routeInfo.name, ...params)
-                    .replace(/^#\//, '')
-                    .replace(/^\//, '')
-                    .replace(/^ghost\//, '');
-
-                return this.replaceWith('error404', url);
+                // when there's no transition we fall through to our generic error handler
+                // for network errors that will hit the isAjaxError branch below
             }
 
             if (isVersionMismatchError(error)) {
@@ -178,23 +182,7 @@ export default Route.extend(ShortcutsRoute, {
         // init Sentry here rather than app.js so that we can use API-supplied
         // sentry_dsn and sentry_env rather than building it into release assets
         if (this.config.sentry_dsn) {
-            const sentryConfig = {
-                dsn: this.config.sentry_dsn,
-                environment: this.config.sentry_env,
-                release: `ghost@${this.config.version}`,
-                beforeSend,
-                ignoreErrors: [
-                    // TransitionAborted errors surface from normal application behaviour
-                    // - https://github.com/emberjs/ember.js/issues/12505
-                    /^TransitionAborted$/,
-                    // ResizeObserver loop errors occur often from extensions and
-                    // embedded content, generally harmless and not useful to report
-                    /^ResizeObserver loop completed with undelivered notifications/
-                ]
-            };
-            if (this.config.sentry_env === 'development') {
-                sentryConfig.integrations = [new Debug()];
-            }
+            const sentryConfig = getSentryConfig(this.config.sentry_dsn, this.config.sentry_env, this.config.version);
             Sentry.init(sentryConfig);
         }
 

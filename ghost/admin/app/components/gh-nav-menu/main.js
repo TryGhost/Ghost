@@ -23,10 +23,10 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @service router;
     @service session;
     @service ui;
-    @service whatsNew;
     @service membersStats;
     @service settings;
     @service explore;
+    @service notifications;
 
     @inject config;
 
@@ -42,7 +42,7 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @equal('router.currentRouteName', 'site')
         isOnSite;
 
-    @or('session.user.isAdmin', 'session.user.isEditor')
+    @or('session.user.isAdmin', 'session.user.isEitherEditor')
         showTagsNavigation;
 
     @and('config.clientExtensions.menu', 'session.user.isOwnerOnly')
@@ -57,6 +57,7 @@ export default class Main extends Component.extend(ShortcutsMixin) {
         let shortcuts = {};
 
         shortcuts[`${ctrlOrCmd}+k`] = {action: 'openSearchModal'};
+        shortcuts[`${ctrlOrCmd}+,`] = {action: 'openSettings'};
         this.shortcuts = shortcuts;
     }
 
@@ -96,6 +97,11 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @action
     openSearchModal() {
         return this.modals.open(SearchModal);
+    }
+
+    @action
+    openSettings() {
+        this.router.transitionTo('settings-x');
     }
 
     @action

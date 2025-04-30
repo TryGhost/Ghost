@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>💸 Paid subscription started: {{memberData.name}}</title>
+    {{> styles}}
+  </head>
+  <body style="background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.5em; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;">
+    <table border="0" cellpadding="0" cellspacing="0" class="body" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
+      <tr>
+        <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">&nbsp;</td>
+        <td class="container" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; max-width: 540px; padding: 10px; width: 540px;">
+          <div class="content" style="box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;">
+
+            <!-- START CENTERED CONTAINER -->
+            {{#> preview}}
+              {{#*inline "content"}}
+                {{tierData.name}}: {{tierData.details}} {{#if offerData}}- Offer: {{offerData.name}} - {{offerData.details}}{{/if}}
+              {{/inline}}
+            {{/preview}}
+
+            <table class="main" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;">
+
+              <!-- START MAIN CONTENT AREA -->
+              <tr>
+                <td class="wrapper" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; box-sizing: border-box;">
+                  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
+                    {{#if siteIconUrl}}
+                      <tr>
+                        <td align="center" style="padding-bottom: 56px; text-align: center;"><a href="{{siteUrl}}"><img src="{{siteIconUrl}}" alt="{{siteTitle}}" border="0" width="48" height="48"></a></td>
+                      </tr>
+                    {{/if}}
+                    <tr>
+                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">
+                        <h1 style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 26px; color: #15212A; font-weight: bold; line-height: 28px; margin: 0; padding-bottom: 24px;">You have a new paid&nbsp;subscriber</h1>
+                        <table width="100" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; table-layout: fixed; width: 100%; min-width: 100%; box-sizing: border-box; background: #F4F5F6; border-radius: 8px;">
+                          <tbody>
+                            <tr>
+                              <td align="left" style="padding: 24px;">
+                                <table border="0" cellpadding="0" cellspacing="0">
+                                  <tr>
+                                    <td style="padding-right: 8px; background-color: #F4F5F6; text-align: left; vertical-align: middle;" valign="middle">
+                                      <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; margin: 0; padding-bottom: 4px; color: #15171A; font-weight: 400;">Name:</p>
+                                      <p class="text-link large" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 18px; margin: 0; padding-bottom: 24px; color: #15171A; font-weight: 600;">{{memberData.name}}{{#if memberData.showEmail}} ({{memberData.email}}){{/if}}</p>
+                                      <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; margin: 0; padding-bottom: 4px; color: #15171A; font-weight: 400;">Tier:</p>
+                                      <p class="text-link large" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 18px; margin: 0; padding-bottom: 24px; color: #15171A; font-weight: 600;">{{tierData.name}}{{#if tierData.details}} &bull; {{tierData.details}}{{/if}}</p>
+                                      {{#if offerData}}
+                                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; margin: 0; padding-bottom: 4px; color: #15171A; font-weight: 400;">Offer:</p>
+                                        <p class="text-link large" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 18px; margin: 0; padding-bottom: 24px; color: #15171A; font-weight: 600;">{{offerData.name}} &bull; <span style="color: {{accentColor}};">{{offerData.details}}</span></p>
+                                      {{/if}}
+                                      {{#if referrerSource}}
+                                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; margin: 0; padding-bottom: 4px; color: #15171A; font-weight: 400;">Source:</p>
+                                        <p class="large" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 18px; margin: 0; padding-bottom: 24px; color: #15171A; font-weight: 600;">{{referrerSource}}</p>
+                                        {{#if attributionTitle}}
+                                          <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; margin: 0; padding-bottom: 4px; color: #15171A; font-weight: 400;">Page:</p>
+                                          <p class="text-link large" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 18px; margin: 0; padding-bottom: 24px; color: #15171A; font-weight: 600;"><a href="{{attributionUrl}}">{{attributionTitle}}</a></p>
+                                        {{/if}}
+                                      {{/if}}
+                                    </td>
+                                  </tr>
+                                </table>
+                                <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;">
+                                  <tbody>
+                                    <tr>
+                                      <td align="left" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top;">
+                                        <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
+                                          <tbody>
+                                            <tr>
+                                              <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; vertical-align: top; background-color: {{accentColor}}; border-radius: 8px; text-align: center;"> <a href="{{memberData.adminUrl}}" target="_blank" style="display: inline-block; color: #ffffff; background-color: {{accentColor}}; border: solid 1px {{accentColor}}; border-radius: 8px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 15px; font-weight: normal; margin: 0; padding: 10px 20px; border-color: {{accentColor}};">View member</a></td>
+                                            </tr>
+                                          </tbody>
+                                        </table>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+
+                        <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
+                          <tbody>
+                            <tr>
+                              <td align="left" style="padding-top: 24px;">
+                                <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #7c8b9a; font-weight: normal; margin: 0; line-height: 25px;">Or copy and paste this URL into your browser:</p>
+                                <p class="text-link" style="word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; line-height: 25px; margin:0; color: #7c8b9a; font-weight: normal;">{{memberData.adminUrl}}</p>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+
+                    <!-- START FOOTER -->
+                    <tr>
+                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 12px; vertical-align: top; padding-top: 56px;">
+                        <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 18px; font-size: 12px; color: #7C8B9A; font-weight: normal; margin: 0;">This message was sent from <a class="small" href="{{siteUrl}}" style="text-decoration: underline; color: #7C8B9A; font-size: 12px;">{{siteDomain}}</a> to <a class="small" href="mailto:{{toEmail}}" style="text-decoration: underline; color: #7C8B9A; font-size: 12px;">{{toEmail}}</a></p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 12px; vertical-align: top;">
+                        <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 18px; font-size: 12px; color: #7C8B9A; font-weight: normal; margin: 0;">Don’t want to receive these emails? Manage your preferences <a class="small" href="{{staffUrl}}" style="text-decoration: underline; color: #7C8B9A; font-size: 12px;">here</a>.</p>
+                      </td>
+                    </tr>
+
+                    <!-- END FOOTER -->
+                  </table>
+                </td>
+              </tr>
+
+            <!-- END MAIN CONTENT AREA -->
+            </table>
+
+
+          <!-- END CENTERED CONTAINER -->
+          </div>
+        </td>
+        <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">&nbsp;</td>
+      </tr>
+    </table>
+  </body>
+</html>

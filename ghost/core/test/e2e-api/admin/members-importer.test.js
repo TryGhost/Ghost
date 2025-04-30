@@ -1,4 +1,5 @@
 const path = require('path');
+const assert = require('assert/strict');
 const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
@@ -311,5 +312,16 @@ describe('Members Importer API', function () {
             .expect(200);
 
         postLabelRemoveBrowseResponse.body.members.should.have.length(0);
+    });
+
+    it('Can handle empty body', async function () {
+        const res = await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(422);
+
+        assert.equal(res.body.errors[0].message, 'Please select a members CSV file.');
     });
 });

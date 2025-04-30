@@ -2,6 +2,10 @@ const logging = require('@tryghost/logging');
 
 /**
  * @TODO: move this middleware to Framework monorepo?
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
  */
 module.exports = function logRequest(req, res, next) {
     const startTime = Date.now();

@@ -106,8 +106,8 @@ test.describe('Portal', () => {
             await portalTriggerButton.click();
             await portalFrame.locator('[data-test-button="manage-newsletters"]').click();
 
-            // check amount of newsletterss
-            const newsletters = await portalFrame.locator('[data-test-toggle-wrapper="true"]');
+            // check amount of newsletters
+            const newsletters = await portalFrame.locator('.gh-portal-list-toggle-wrapper');
             const count = await newsletters.count();
             await expect(count).toEqual(2);
 
@@ -120,8 +120,8 @@ test.describe('Portal', () => {
             await portalFrame.locator('[data-test-button="unsubscribe-from-all-emails"]').click();
 
             // todo: replace class locator on data-attr locator
-            await expect(await portalFrame.locator('.gh-portal-popupnotification.success')).toBeVisible();
-            await expect(await portalFrame.locator('.gh-portal-popupnotification.success')).toBeHidden();
+            await expect(portalFrame.locator('.gh-portal-popupnotification.success')).toBeVisible();
+            await expect(portalFrame.locator('.gh-portal-popupnotification.success')).toBeHidden();
 
             // all newsletters should be disabled
             for (let i = 0; i < count; i++) {

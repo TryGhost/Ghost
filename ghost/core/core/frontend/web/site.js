@@ -16,6 +16,7 @@ const membersService = require('../../server/services/members');
 const offersService = require('../../server/services/offers');
 const customRedirects = require('../../server/services/custom-redirects');
 const linkRedirects = require('../../server/services/link-redirection');
+const {cardAssets} = require('../services/assets-minification');
 const siteRoutes = require('./routes');
 const shared = require('../../server/web/shared');
 const errorHandler = require('@tryghost/mw-error-handler');
@@ -71,15 +72,36 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(mw.servePublicFile('static', 'public/ghost.css', 'text/css', config.get('caching:publicAssets:maxAge')));
     siteApp.use(mw.servePublicFile('static', 'public/ghost.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
 
+    // Traffic analytics tracking script
+    siteApp.use(mw.servePublicFile('static', 'public/ghost-stats.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+
     // Card assets
-    siteApp.use(mw.servePublicFile('built', 'public/cards.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
-    siteApp.use(mw.servePublicFile('built', 'public/cards.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+    const cardAssetsCSSPath = 'public/cards.min.css';
+    const cardAssetsJSPath = 'public/cards.min.js';
+    siteApp.use(
+        function serveCardAssetsCssMiddleware(req, res, next) {
+            if (req.path === `/${cardAssetsCSSPath}`) {
+                return cardAssets.serveMiddleware()(req, res, next);
+            }
+            next();
+        },
+        mw.servePublicFile('built', cardAssetsCSSPath, 'text/css', config.get('caching:publicAssets:maxAge'))
+    );
+    siteApp.use(
+        function serveCardAssetsJsMiddleware(req, res, next) {
+            if (req.path === `/${cardAssetsJSPath}`) {
+                return cardAssets.serveMiddleware()(req, res, next);
+            }
+            next();
+        },
+        mw.servePublicFile('built', cardAssetsJSPath, 'application/javascript', config.get('caching:publicAssets:maxAge'))
+    );
 
     // Comment counts
-    siteApp.use(mw.servePublicFile('built', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+    siteApp.use(mw.servePublicFile('static', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Member attribution
-    siteApp.use(mw.servePublicFile('built', 'public/member-attribution.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+    siteApp.use(mw.servePublicFile('static', 'public/member-attribution.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Serve site images using the storage adapter
     siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage('images').serve());
@@ -88,14 +110,13 @@ module.exports = function setupSiteApp(routerConfig) {
     // Serve site files using the storage adapter
     siteApp.use(STATIC_FILES_URL_PREFIX, storage.getStorage('files').serve());
 
-    // Global handling for member session, ensures a member is logged in to the frontend
-    siteApp.use(membersService.middleware.loadMemberSession);
-
     // /member/.well-known/* serves files (e.g. jwks.json) so it needs to be mounted before the prettyUrl mw to avoid trailing slashes
     siteApp.use(
         '/members/.well-known',
         shared.middleware.cacheControl('public', {maxAge: config.get('caching:wellKnown:maxAge')}),
-        (req, res, next) => membersService.api.middleware.wellKnown(req, res, next)
+        function lazyWellKnownMw(req, res, next) {
+            return membersService.api.middleware.wellKnown(req, res, next);
+        }
     );
 
     // Recommendations well-known
@@ -113,18 +134,23 @@ module.exports = function setupSiteApp(routerConfig) {
 
     // Theme static assets/files
     siteApp.use(mw.staticTheme());
+
+    // Serve robots.txt if not found in theme
+    siteApp.use(mw.servePublicFile('static', 'robots.txt', 'text/plain', config.get('caching:robotstxt:maxAge')));
+
     debug('Static content done');
+
+    // site map - this should probably be refactored to be an internal app
+    sitemapHandler(siteApp);
+
+    // Global handling for member session, ensures a member is logged in to the frontend
+    siteApp.use(membersService.middleware.loadMemberSession);
 
     // Theme middleware
     // This should happen AFTER any shared assets are served, as it only changes things to do with templates
     siteApp.use(themeMiddleware);
     debug('Themes done');
 
-    // Serve robots.txt if not found in theme
-    siteApp.use(mw.servePublicFile('static', 'robots.txt', 'text/plain', config.get('caching:robotstxt:maxAge')));
-
-    // site map - this should probably be refactored to be an internal app
-    sitemapHandler(siteApp);
     debug('Internal apps done');
 
     // Add in all trailing slashes & remove uppercase
@@ -132,12 +158,12 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(shared.middleware.prettyUrls);
 
     // ### Caching
-    siteApp.use(function frontendCaching(req, res, next) {
-        // Site frontend is cacheable UNLESS request made by a member or site is in private mode
-        if (req.member || res.isPrivateBlog) {
-            return shared.middleware.cacheControl('private')(req, res, next);
-        } else {
-            return shared.middleware.cacheControl('public', {maxAge: config.get('caching:frontend:maxAge')})(req, res, next);
+    siteApp.use(async function frontendCaching(req, res, next) {
+        try {
+            const middleware = await mw.frontendCaching.getMiddleware();
+            return middleware(req, res, next);
+        } catch {
+            return next();
         }
     });
 

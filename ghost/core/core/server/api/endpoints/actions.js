@@ -1,6 +1,7 @@
 const models = require('../../models');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'actions',
 
     browse: {
@@ -20,3 +21,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

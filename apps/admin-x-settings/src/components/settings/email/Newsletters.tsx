@@ -71,10 +71,10 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     onOk: confirmModal => confirmModal?.remove()
                 });
             } catch (e) {
-                let prompt = 'There was an error verifying your email address. Please try again.';
+                let prompt = 'There was an error verifying your email address. Try again later.';
 
                 if (e instanceof APIError && e.message === 'Token expired') {
-                    prompt = 'The verification link has expired. Please try again.';
+                    prompt = 'Verification link has expired.';
                 }
                 NiceModal.show(ConfirmationModal, {
                     title: 'Error verifying email address',
@@ -90,7 +90,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     }, [verifyEmailToken, handleError, verifyEmail]);
 
     const buttons = (
-        <Button color='green' label='Add newsletter' link linkWithPadding onClick={() => {
+        <Button className='mt-[-5px]' color='clear' label='Add newsletter' size='sm' onClick={() => {
             openNewsletterModal();
         }} />
     );
@@ -150,6 +150,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <TopLevelGroup
             customButtons={buttons}
+            description="Edit details and customize your design"
             keywords={keywords}
             navid='newsletters'
             testId='newsletters'

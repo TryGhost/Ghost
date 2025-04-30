@@ -58,7 +58,15 @@ class LocalStorageBase extends StorageBase {
         targetFilename = filename;
         await fs.mkdirs(targetDir);
 
-        await fs.copy(file.path, targetFilename);
+        try {
+            await fs.copy(file.path, targetFilename);
+        } catch (err) {
+            if (err.code === 'ENAMETOOLONG') {
+                throw new errors.BadRequestError({err});
+            }
+
+            throw err;
+        }
 
         // The src for the image must be in URI format, not a file system path, which in Windows uses \
         // For local file system storage can use relative path so add a slash
@@ -67,6 +75,29 @@ class LocalStorageBase extends StorageBase {
                 urlUtils.getSubdir(),
                 this.staticFileURLPrefix,
                 path.relative(this.storagePath, targetFilename))
+        ).replace(new RegExp(`\\${path.sep}`, 'g'), '/');
+
+        return fullUrl;
+    }
+
+    /**
+     * Saves a buffer in the targetPath
+     * @param {Buffer} buffer is an instance of Buffer
+     * @param {String} targetPath relative path NOT including storage path to which the buffer should be written
+     * @returns {Promise<String>} a URL to retrieve the data
+     */
+    async saveRaw(buffer, targetPath) {
+        const storagePath = path.join(this.storagePath, targetPath);
+        const targetDir = path.dirname(storagePath);
+
+        await fs.mkdirs(targetDir);
+        await fs.writeFile(storagePath, buffer);
+
+        // For local file system storage can use relative path so add a slash
+        const fullUrl = (
+            urlUtils.urlJoin('/', urlUtils.getSubdir(),
+                this.staticFileURLPrefix,
+                targetPath)
         ).replace(new RegExp(`\\${path.sep}`, 'g'), '/');
 
         return fullUrl;
@@ -147,6 +178,10 @@ class LocalStorageBase extends StorageBase {
 
                     if (err.statusCode === 403) {
                         return next(new errors.NoPermissionError({err: err}));
+                    }
+
+                    if (err.name === 'RangeNotSatisfiableError') {
+                        return next(new errors.RangeNotSatisfiableError({err}));
                     }
 
                     return next(new errors.InternalServerError({err: err}));

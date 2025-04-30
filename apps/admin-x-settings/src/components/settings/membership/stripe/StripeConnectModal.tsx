@@ -136,7 +136,7 @@ const Connect: React.FC = () => {
             </div>
             <StripeButton href={stripeConnectUrl} tag='a' target='_blank' />
             <Heading className='mb-2 mt-8' level={6} grey>Step 2 — <span className='text-black dark:text-white'>Paste secure key</span></Heading>
-            <TextArea clearBg={false} error={Boolean(error)} hint={error || undefined} placeholder='Paste your secure key here' onChange={onTokenChange}></TextArea>
+            <TextArea error={Boolean(error)} hint={error || undefined} placeholder='Paste your secure key here' onChange={onTokenChange}></TextArea>
             {submitEnabled && <Button className='mt-5' color='green' label='Save Stripe settings' onClick={onSubmit} />}
         </div>
     );
@@ -162,8 +162,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
         // this.ghostPaths.url.api('/members/') + '?filter=status:paid&limit=0';
         NiceModal.show(ConfirmationModal, {
             title: 'Disconnect Stripe',
-            prompt: (hasActiveStripeSubscriptions ? 'Cannot disconnect while there are members with active Stripe subscriptions.' : <>You&lsquo;re about to disconnect your Stripe account {stripeConnectAccountName}
-                from this site. This will automatically turn off paid memberships on this site.</>),
+            prompt: (hasActiveStripeSubscriptions ? 'Cannot disconnect while there are members with active Stripe subscriptions.' : <>You&lsquo;re about to disconnect your Stripe account {stripeConnectAccountName} from this site. This will automatically turn off paid memberships on this site.</>),
             okLabel: hasActiveStripeSubscriptions ? '' : 'Disconnect',
             onOk: async (modal) => {
                 try {
@@ -185,20 +184,20 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
             </div>
             <div className='my-20 flex flex-col items-center'>
                 <div className='relative h-20 w-[200px]'>
-                    <img alt='Ghost Logo' className='absolute left-10 h-16 w-16' src={GhostLogo} />
-                    <img alt='Stripe Logo' className='absolute right-10 h-16 w-16 rounded-2xl shadow-[-1.5px_0_0_1.5px_#fff] dark:shadow-[-1.5px_0_0_1.5px_black]' src={StripeLogo} />
+                    <img alt='Ghost Logo' className='absolute left-10 size-16' src={GhostLogo} />
+                    <img alt='Stripe Logo' className='absolute right-10 size-16 rounded-2xl shadow-[-1.5px_0_0_1.5px_#fff] dark:shadow-[-1.5px_0_0_1.5px_black]' src={StripeLogo} />
                 </div>
                 <Heading className='text-center' level={3}>You are connected with Stripe!{stripeConnectLivemode ? null : ' (Test mode)'}</Heading>
                 <div className='mt-1'>Connected to <strong>{stripeConnectAccountName ? stripeConnectAccountName : 'Test mode'}</strong></div>
             </div>
             <div className='flex flex-col items-center'>
                 <Heading level={6}>Read next</Heading>
-                <a className='w-100 mt-5 flex flex-col items-stretch justify-between rounded-sm border border-grey-200 transition-all hover:border-grey-400 dark:border-grey-900 md:flex-row' href="https://ghost.org/resources/managing-your-stripe-account/?ref=admin" rel="noopener noreferrer" target="_blank">
+                <a className='w-100 mt-5 flex flex-col items-stretch justify-between rounded-sm border border-grey-200 transition-all hover:border-grey-400 md:flex-row dark:border-grey-900' href="https://ghost.org/resources/managing-your-stripe-account/?ref=admin" rel="noopener noreferrer" target="_blank">
                     <div className='order-2 p-4 md:order-1'>
                         <div className='font-bold'>How to setup and manage your Stripe account</div>
                         <div className='mt-1 text-sm text-grey-800 dark:text-grey-500'>Learn how to configure your Stripe account to work with Ghost, from custom branding to payment receipt emails.</div>
                         <div className='mt-3 flex items-center gap-1 text-sm text-grey-800 dark:text-grey-500'>
-                            <img alt='Ghost Logo' className='h-4 w-4' src={GhostLogoPink} />
+                            <img alt='Ghost Logo' className='size-4' src={GhostLogoPink} />
                             <strong>Ghost Resources</strong>
                             <span>&middot;</span>
                             <span>by Kym Ellis</span>
@@ -225,8 +224,9 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
         } catch (e) {
             if (e instanceof JSONError) {
                 showToast({
-                    type: 'pageError',
-                    message: 'Failed to save settings. Please check you copied both keys correctly.'
+                    title: 'Failed to save settings',
+                    type: 'error',
+                    message: 'Check you copied both keys correctly'
                 });
                 return;
             }

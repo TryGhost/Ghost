@@ -15,6 +15,7 @@ Router.map(function () {
     this.route('setup.done', {path: '/setup/done'});
 
     this.route('signin');
+    this.route('signin-verify', {path: '/signin/verify'});
     this.route('signout');
     this.route('signup', {path: '/signup/:token'});
     this.route('reset', {path: '/reset/:token'});
@@ -24,14 +25,23 @@ Router.map(function () {
     this.route('dashboard');
     this.route('launch');
 
+    this.route('stats-x', {path: '/stats'}, function () {
+        this.route('stats-x', {path: '/*sub'});
+    });
+
     this.route('pro', function () {
         this.route('pro-sub', {path: '/*sub'});
     });
 
     this.route('posts');
-    this.route('posts.analytics', {path: '/posts/analytics/:post_id'});
+    this.route('posts.analytics', {path: '/posts/analytics/:post_id'}, function () {
+        this.route('web-stats', {path: '/web', templateName: 'posts-x', componentName: 'posts-x'});
+        this.route('growth-stats', {path: '/growth', templateName: 'posts-x', componentName: 'posts-x'});
+    });
     this.route('posts.mentions', {path: '/posts/analytics/:post_id/mentions'});
     this.route('posts.debug', {path: '/posts/analytics/:post_id/debug'});
+
+    this.route('restore-posts', {path: '/restore'});
 
     this.route('pages');
 
@@ -44,10 +54,6 @@ Router.map(function () {
     this.route('tag.new', {path: '/tags/new'});
     this.route('tag', {path: '/tags/:tag_slug'});
 
-    this.route('collections');
-    this.route('collection.new', {path: '/collections/new'});
-    this.route('collection', {path: '/collections/:collection_slug'});
-
     this.route('demo-x', function () {
         this.route('demo-x', {path: '/*sub'});
     });
@@ -56,8 +62,9 @@ Router.map(function () {
         this.route('settings-x', {path: '/*sub'});
     });
 
-    // testing websockets
-    this.route('websockets');
+    this.route('activitypub-x',{path: '/activitypub'}, function () {
+        this.route('activitypub-x', {path: '/*sub'});
+    });
 
     this.route('explore', function () {
         // actual Ember route, not rendered in iframe
@@ -81,11 +88,6 @@ Router.map(function () {
     this.route('member.new', {path: '/members/new'});
     this.route('member', {path: '/members/:member_id'});
     this.route('members-activity');
-
-    // this.route('offers');
-
-    // this.route('offer.new', {path: '/offers/new'});
-    // this.route('offer', {path: '/offers/:offer_id'});
 
     this.route('error404', {path: '/*path'});
 

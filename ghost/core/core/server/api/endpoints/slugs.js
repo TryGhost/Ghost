@@ -12,15 +12,17 @@ const allowedTypes = {
     user: models.User
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'slugs',
     generate: {
         headers: {
-            cacheInvalidate: true
+            cacheInvalidate: false
         },
         options: [
             'include',
-            'type'
+            'type',
+            'id'
         ],
         data: [
             'name'
@@ -31,6 +33,9 @@ module.exports = {
                 type: {
                     required: true,
                     values: Object.keys(allowedTypes)
+                },
+                id: {
+                    required: false
                 }
             },
             data: {
@@ -40,7 +45,7 @@ module.exports = {
             }
         },
         query(frame) {
-            return models.Base.Model.generateSlug(allowedTypes[frame.options.type], frame.data.name, {status: 'all'})
+            return models.Base.Model.generateSlug(allowedTypes[frame.options.type], frame.data.name, {status: 'all', modelId: frame.options.id})
                 .then((slug) => {
                     if (!slug) {
                         return Promise.reject(new errors.InternalServerError({
@@ -52,3 +57,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

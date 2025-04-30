@@ -2,7 +2,7 @@ import AddRecommendationModal from './AddRecommendationModal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationDescriptionForm, {validateDescriptionForm} from './RecommendationDescriptionForm';
-import trackEvent from '../../../../utils/plausible';
+import trackEvent from '../../../../utils/analytics';
 import {EditOrAddRecommendation, useAddRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design-system';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -27,7 +27,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             await addRecommendation(state);
             modal.remove();
             showToast({
-                message: 'Successfully added a recommendation',
+                title: 'Recommendation added',
                 type: 'success'
             });
             trackEvent('Recommendation Added', {
@@ -38,14 +38,6 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         onSaveError: handleError,
         onValidate: (state) => {
             const newErrors = validateDescriptionForm(state);
-
-            if (Object.keys(newErrors).length !== 0) {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t add recommendation, please double check that you\'ve filled all mandatory fields correctly.'
-                });
-            }
-
             return newErrors;
         }
     });
@@ -119,8 +111,8 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
                 await handleSave({force: true});
             } catch (e) {
                 showToast({
-                    type: 'pageError',
-                    message: 'Something went wrong when adding this recommendation, please try again.'
+                    type: 'error',
+                    title: 'Something went wrong when adding this recommendation, please try again.'
                 });
             }
         }}

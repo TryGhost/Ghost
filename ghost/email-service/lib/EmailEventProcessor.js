@@ -1,4 +1,11 @@
-const {EmailDeliveredEvent, EmailOpenedEvent, EmailBouncedEvent, SpamComplaintEvent, EmailUnsubscribedEvent, EmailTemporaryBouncedEvent} = require('@tryghost/email-events');
+const logging = require('@tryghost/logging');
+
+const EmailDeliveredEvent = require('./events/EmailDeliveredEvent');
+const EmailOpenedEvent = require('./events/EmailOpenedEvent');
+const EmailBouncedEvent = require('./events/EmailBouncedEvent');
+const EmailTemporaryBouncedEvent = require('./events/EmailTemporaryBouncedEvent');
+const EmailUnsubscribedEvent = require('./events/EmailUnsubscribedEvent');
+const SpamComplaintEvent = require('./events/SpamComplaintEvent');
 
 async function waitForEvent() {
     return new Promise((resolve) => {
@@ -37,14 +44,22 @@ class EmailEventProcessor {
     #domainEvents;
     #db;
     #eventStorage;
-
-    constructor({domainEvents, db, eventStorage}) {
+    #prometheusClient;
+    constructor({domainEvents, db, eventStorage, prometheusClient}) {
         this.#domainEvents = domainEvents;
         this.#db = db;
         this.#eventStorage = eventStorage;
-
+        this.#prometheusClient = prometheusClient;
         // Avoid having to query email_batch by provider_id for every event
         this.providerIdEmailIdMap = {};
+
+        if (this.#prometheusClient) {
+            this.#prometheusClient.registerCounter({
+                name: 'email_analytics_events_processed',
+                help: 'Number of email analytics events processed',
+                labelNames: ['event']
+            });
+        }
     }
 
     /**
@@ -64,6 +79,7 @@ class EmailEventProcessor {
             await this.#eventStorage.handleDelivered(event);
 
             this.#domainEvents.dispatch(event);
+            this.recordEventProcessed('delivered');
         }
         return recipient;
     }
@@ -84,6 +100,7 @@ class EmailEventProcessor {
             });
             this.#domainEvents.dispatch(event);
             await this.#eventStorage.handleOpened(event);
+            this.recordEventProcessed('opened');
         }
         return recipient;
     }
@@ -206,6 +223,20 @@ class EmailEventProcessor {
                 memberId,
                 emailId
             };
+        }
+    }
+
+    /**
+     * Record event processed
+     * @param {string} event
+     */
+    recordEventProcessed(event) {
+        try {
+            if (this.#prometheusClient) {
+                this.#prometheusClient.getMetric('email_analytics_events_processed')?.inc({event});
+            }
+        } catch (err) {
+            logging.error('Error recording email analytics event processed', err);
         }
     }
 

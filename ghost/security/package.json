@@ -19,13 +19,13 @@
   ],
   "devDependencies": {
     "c8": "8.0.1",
-    "mocha": "10.2.0",
+    "mocha": "10.8.2",
     "should": "13.2.3",
     "sinon": "15.2.0",
     "uuid": "9.0.1"
   },
   "dependencies": {
-    "@tryghost/string": "0.2.10",
+    "@tryghost/string": "0.2.13",
     "bcryptjs": "2.4.3"
   }
 }

@@ -5,8 +5,8 @@ import Heading from '../Heading';
 export interface FormProps {
     title?: string;
     grouped?: boolean;
-    gap?: 'none' | 'sm' | 'md' | 'lg';
-    margins?: 'none' | 'sm' | 'md' | 'lg';
+    gap?: 'none' | 'xs' | 'sm' | 'md' | 'lg';
+    margins?: 'none' | 'xs' | 'sm' | 'md' | 'lg';
     marginTop?: boolean;
     marginBottom?: boolean;
     className?: string;
@@ -28,6 +28,7 @@ const Form: React.FC<FormProps> = ({
 }) => {
     let classes = clsx(
         'flex flex-col',
+        (gap === 'xs' && 'gap-4'),
         (gap === 'sm' && 'gap-6'),
         (gap === 'md' && 'gap-8'),
         (gap === 'lg' && 'gap-11')
@@ -41,8 +42,8 @@ const Form: React.FC<FormProps> = ({
         classes = clsx(
             classes,
             (margins === 'sm' && 'mb-7'),
-            (margins === 'md' && 'mb-11'),
-            (margins === 'lg' && 'mb-14')
+            (margins === 'md' && 'mb-10'),
+            (margins === 'lg' && 'mb-12')
         );
     }
 
@@ -50,15 +51,15 @@ const Form: React.FC<FormProps> = ({
         classes = clsx(
             classes,
             (margins === 'sm' && 'mt-7'),
-            (margins === 'md' && 'mt-11'),
-            (margins === 'lg' && 'mt-14')
+            (margins === 'md' && 'mt-10'),
+            (margins === 'lg' && 'mt-12')
         );
     }
 
     if (grouped) {
         classes = clsx(
             classes,
-            'rounded-sm border border-grey-200 p-4 dark:border-grey-900 md:p-7'
+            'rounded-sm border border-grey-200 p-4 md:p-7 dark:border-grey-900'
         );
     }
 
@@ -78,7 +79,7 @@ const Form: React.FC<FormProps> = ({
     }
 
     return (
-        <div className={classes + className}>
+        <div className={clsx(classes, className)}>
             {children}
         </div>
     );

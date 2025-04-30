@@ -1,10 +1,10 @@
-import {Component} from 'react';
+import {Component, forwardRef} from 'react';
 import {createPortal} from 'react-dom';
 
 /**
  * This is still a class component because it causes issues with the behaviour (DOM recreation and layout glitches) if we switch to a functional component. Feel free to refactor.
  */
-export default class IFrame extends Component<any> {
+class IFrame extends Component<any> {
     node: any;
     iframeHtml: any;
     iframeHead: any;
@@ -59,6 +59,9 @@ export default class IFrame extends Component<any> {
 
     setNode(node: any) {
         this.node = node;
+        if (this.props.innerRef) {
+            this.props.innerRef.current = node;
+        }
     }
 
     render() {
@@ -71,3 +74,9 @@ export default class IFrame extends Component<any> {
         );
     }
 }
+
+const IFrameFC = forwardRef<HTMLIFrameElement, any>(function IFrameFC(props, ref) {
+    return <IFrame {...props} innerRef={ref} />;
+});
+
+export default IFrameFC;

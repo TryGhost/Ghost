@@ -13,6 +13,7 @@ export default class TagSerializer extends ApplicationSerializer {
 
         // Properties that exist on the model but we don't want sent in the payload
         delete json.count;
+        delete json.url;
 
         return json;
     }

@@ -1,7 +1,12 @@
 const ghostVersion = require('@tryghost/version');
 
-// ### GhostLocals Middleware
-// Expose the standard locals that every request will need to have available
+/**
+ * Expose the standard locals that every request will need to have available
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
+ */
 module.exports = function ghostLocals(req, res, next) {
     // Make sure we have a locals value.
     res.locals = res.locals || {};

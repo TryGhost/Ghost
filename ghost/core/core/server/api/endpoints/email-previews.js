@@ -1,6 +1,7 @@
 const emailService = require('../../services/email-service');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'email_previews',
 
     read: {
@@ -47,3 +48,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

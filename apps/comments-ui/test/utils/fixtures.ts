@@ -16,6 +16,22 @@ export function buildMember(override: any = {}) {
     };
 }
 
+export function buildDeletedMember() {
+    return null;
+}
+
+export function buildAnonymousMember(override: any = {}) {
+    return buildMember({...override, name: ''});
+}
+
+export function buildSettings(override: any = {}) {
+    return {
+        meta: {},
+        settings: {},
+        ...override
+    };
+}
+
 export function buildComment(override: any = {}) {
     return {
         id: ObjectId().toString(),
@@ -31,7 +47,7 @@ export function buildComment(override: any = {}) {
             replies: 0,
             likes: 0,
             ...override.count
-        },
+        }
     };
 }
 

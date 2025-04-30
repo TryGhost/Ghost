@@ -11,7 +11,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
     });
     if (newsletter.paid) {
         return (
-            <section className='gh-portal-list-toggle-wrapper' data-test-toggle-wrapper>
+            <section className='gh-portal-list-toggle-wrapper' data-testid="toggle-wrapper">
                 <div className='gh-portal-list-detail gh-portal-list-big'>
                     <h3>{newsletter.name}</h3>
                     <p>{newsletter.description}</p>
@@ -23,7 +23,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
         );
     }
     return (
-        <section className='gh-portal-list-toggle-wrapper' data-test-toggle-wrapper>
+        <section className='gh-portal-list-toggle-wrapper' data-testid="toggle-wrapper">
             <div className='gh-portal-list-detail gh-portal-list-big'>
                 <h3>{newsletter.name}</h3>
                 <p>{newsletter.description}</p>
@@ -106,11 +106,12 @@ export default function NewsletterSelectionPage({pageData, onBack}) {
                             onClick={() => {
                                 let newsletters = subscribedNewsletters.map((d) => {
                                     return {
-                                        id: d.id
+                                        id: d.id,
+                                        name: d.name
                                     };
                                 });
-                                const {name, email, plan, offerId} = pageData;
-                                onAction('signup', {name, email, plan, newsletters, offerId});
+                                const {name, email, plan, phonenumber, offerId} = pageData;
+                                onAction('signup', {name, email, plan, phonenumber, newsletters, offerId});
                             }}
                             brandColor={brandColor}
                             label={label}

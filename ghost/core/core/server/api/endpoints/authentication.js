@@ -18,7 +18,8 @@ const messages = {
     notTheBlogOwner: 'You are not the site owner.'
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'authentication',
 
     setup: {
@@ -250,3 +251,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

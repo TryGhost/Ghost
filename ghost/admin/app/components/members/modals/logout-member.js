@@ -19,7 +19,7 @@ export default class LogoutMemberModal extends Component {
             yield this.ajax.delete(url, options);
 
             this.args.data.afterLogout?.();
-            this.notifications.showNotification(`${this.member.name || this.member.email} has been successfully signed out from all devices.`, {type: 'success'});
+            this.notifications.showNotification(`${this.member.name || this.member.email} has been signed out from all devices.`, {type: 'success'});
             this.args.close(true);
             return true;
         } catch (e) {

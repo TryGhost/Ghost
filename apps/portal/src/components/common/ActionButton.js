@@ -35,12 +35,16 @@ export const ActionButtonStyles = `
         border: none;
         box-shadow: none;
     }
+    html[dir="rtl"] .gh-portal-btn-text span.right-arrow {
+        transform: scale(-1, 1);
+        display: inline-flex;
+    }
 
     .gh-portal-loadingicon {
         position: absolute;
         left: 50%;
         display: inline-block;
-        margin-left: -19px;
+        margin-inline-start: -19px;
         height: 31px;
     }
 

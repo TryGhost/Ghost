@@ -71,7 +71,7 @@ class PopupContent extends React.Component {
 }
 
 function SearchBox() {
-    const {searchValue, dispatch, inputRef} = useContext(AppContext);
+    const {searchValue, dispatch, inputRef, t} = useContext(AppContext);
     const containerRef = useRef(null);
     useEffect(() => {
         setTimeout(() => {
@@ -100,7 +100,7 @@ function SearchBox() {
 
     return (
         <div className={className} ref={containerRef}>
-            <div className='flex items-center justify-center w-4 h-4 mr-3'>
+            <div className='flex items-center justify-center w-4 h-4 me-3'>
                 <SearchClearIcon />
             </div>
             <input
@@ -116,8 +116,8 @@ function SearchBox() {
                         e.preventDefault();
                     }
                 }}
-                className='grow -my-5 py-5 -ml-3 pl-3 text-[1.65rem] focus-visible:outline-none placeholder:text-gray-400 outline-none truncate'
-                placeholder='Search posts, tags and authors'
+                className='grow -my-5 py-5 -ms-3 ps-3 text-[1.65rem] focus-visible:outline-none placeholder:text-gray-400 outline-none truncate'
+                placeholder={t('Search posts, tags and authors')}
             />
             <Loading />
             <CancelButton />
@@ -154,18 +154,18 @@ function Loading() {
 }
 
 function CancelButton() {
-    const {dispatch} = useContext(AppContext);
+    const {dispatch, t} = useContext(AppContext);
 
     return (
         <button
-            className='ml-3 text-sm text-neutral-500 sm:hidden' alt='Cancel'
+            className='ms-3 text-sm text-neutral-500 sm:hidden' alt='Cancel'
             onClick={() => {
                 dispatch('update', {
                     showPopup: false
                 });
             }}
         >
-            Cancel
+            {t('Cancel')}
         </button>
     );
 }
@@ -188,13 +188,15 @@ function TagListItem({tag, selectedResult, setSelectedResult}) {
                 setSelectedResult(id);
             }}
         >
-            <p className='mr-2 text-sm font-bold text-neutral-400'>#</p>
+            <p className='me-2 text-sm font-bold text-neutral-400'>#</p>
             <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-900 truncate'>{name}</h2>
         </div>
     );
 }
 
 function TagResults({tags, selectedResult, setSelectedResult}) {
+    const {t} = useContext(AppContext);
+
     if (!tags?.length) {
         return null;
     }
@@ -210,7 +212,7 @@ function TagResults({tags, selectedResult, setSelectedResult}) {
     });
     return (
         <div className='border-t border-gray-200 py-3 px-4 sm:px-7'>
-            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>Tags</h1>
+            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>{t('Tags')}</h1>
             {TagItems}
         </div>
     );
@@ -355,6 +357,8 @@ function HighlightWord({word, isExcerpt}) {
 }
 
 function ShowMoreButton({posts, maxPosts, setMaxPosts}) {
+    const {t} = useContext(AppContext);
+
     if (!posts?.length || maxPosts >= posts?.length) {
         return null;
     }
@@ -366,34 +370,37 @@ function ShowMoreButton({posts, maxPosts, setMaxPosts}) {
                 setMaxPosts(updatedMaxPosts);
             }}
         >
-            Show more results
+            {t('Show more results')}
         </button>
     );
 }
 
 function PostResults({posts, selectedResult, setSelectedResult}) {
+    const {t} = useContext(AppContext);
     const [maxPosts, setMaxPosts] = useState(DEFAULT_MAX_POSTS);
+    const [paginatedPosts, setPaginatedPosts] = useState([]);
     useEffect(() => {
         setMaxPosts(DEFAULT_MAX_POSTS);
     }, [posts]);
-
+    useEffect(() => {
+        setPaginatedPosts(posts?.slice(0, maxPosts + 1));
+    }, [maxPosts, posts]);
     if (!posts?.length) {
         return null;
     }
-    const paginatedPosts = posts?.slice(0, maxPosts);
-    const PostItems = paginatedPosts.map((d) => {
-        return (
+    function PostItems() {
+        return paginatedPosts.map(d => (
             <PostListItem
                 key={d.title}
                 post={d}
                 {...{selectedResult, setSelectedResult}}
             />
-        );
-    });
+        ));
+    }
     return (
         <div className='border-t border-neutral-200 py-3 px-4 sm:px-7'>
-            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>Posts</h1>
-            {PostItems}
+            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>{t('Posts')}</h1>
+            <PostItems/>
             <ShowMoreButton setMaxPosts={setMaxPosts} maxPosts={maxPosts} posts={posts} />
         </div>
     );
@@ -428,15 +435,17 @@ function AuthorAvatar({name, avatar}) {
     const Character = name.charAt(0);
     if (Avatar) {
         return (
-            <img className='rounded-full bg-neutral-300 w-7 h-7 mr-2 object-cover' src={avatar} alt={name}/>
+            <img className='rounded-full bg-neutral-300 w-7 h-7 me-2 object-cover' src={avatar} alt={name}/>
         );
     }
     return (
-        <div className='rounded-full bg-neutral-200 w-7 h-7 mr-2 flex items-center justify-center font-bold'><span className="text-neutral-400">{Character}</span></div>
+        <div className='rounded-full bg-neutral-200 w-7 h-7 me-2 flex items-center justify-center font-bold'><span className="text-neutral-400">{Character}</span></div>
     );
 }
 
 function AuthorResults({authors, selectedResult, setSelectedResult}) {
+    const {t} = useContext(AppContext);
+
     if (!authors?.length) {
         return null;
     }
@@ -453,7 +462,7 @@ function AuthorResults({authors, selectedResult, setSelectedResult}) {
 
     return (
         <div className='border-t border-neutral-200 py-3 px-4 sm:px-7'>
-            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>Authors</h1>
+            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>{t('Authors')}</h1>
             {AuthorItems}
         </div>
     );
@@ -572,9 +581,10 @@ function Results({posts, authors, tags}) {
 }
 
 function NoResultsBox() {
+    const {t} = useContext(AppContext);
     return (
         <div className='py-4 px-7'>
-            <p className='text-[1.65rem] text-neutral-400 leading-normal'>No matches found</p>
+            <p className='text-[1.65rem] text-neutral-400 leading-normal'>{t('No matches found')}</p>
         </div>
     );
 }
@@ -664,7 +674,7 @@ export default class PopupModal extends React.Component {
 
         return (
             <div style={Styles.modalContainer} className='gh-root-frame'>
-                <Frame style={frameStyle} title='portal-popup' head={this.renderFrameStyles()}>
+                <Frame style={frameStyle} title='portal-popup' head={this.renderFrameStyles()} searchdir={this.context.dir}>
                     <div
                         onClick = {e => this.handlePopupClose(e)}
                         className='absolute top-0 bottom-0 left-0 right-0 block backdrop-blur-[2px] animate-fadein z-0 bg-gradient-to-br from-[rgba(0,0,0,0.2)] to-[rgba(0,0,0,0.1)]' />

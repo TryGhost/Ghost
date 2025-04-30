@@ -2,7 +2,7 @@ const {agentProvider, fixtureManager, mockManager, matchers} = require('../../ut
 const {anyObjectId, anyErrorId, anyISODateTime, anyContentVersion, anyLocationFor, anyEtag} = matchers;
 const assert = require('assert/strict');
 const recommendationsService = require('../../../core/server/services/recommendations');
-const {Recommendation, ClickEvent, SubscribeEvent} = require('@tryghost/recommendations');
+const {Recommendation, ClickEvent, SubscribeEvent} = require('../../../core/server/services/recommendations/service');
 const nock = require('nock');
 
 async function addDummyRecommendation(i = 0) {
@@ -702,6 +702,33 @@ describe('Recommendations Admin API', function () {
             assert.equal(body.recommendations[0].featured_image, 'https://dogpictures.com/dog.jpg');
             assert.equal(body.recommendations[0].favicon, 'https://dogpictures.com/favicon.ico');
             assert.equal(body.recommendations[0].one_click_subscribe, true);
+        });
+
+        it('Returns nullified values if site fails to fetch', async function () {
+            nock('https://dogpictures.com')
+                .get('/')
+                .reply(404);
+
+            const {body} = await agent.post('recommendations/check/')
+                .body({
+                    recommendations: [{
+                        url: 'https://dogpictures.com'
+                    }]
+                })
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({});
+
+            assert.equal(body.recommendations[0].title, null);
+            assert.equal(body.recommendations[0].url, 'https://dogpictures.com/');
+            assert.equal(body.recommendations[0].description, null);
+            assert.equal(body.recommendations[0].excerpt, null);
+            assert.equal(body.recommendations[0].featured_image, null);
+            assert.equal(body.recommendations[0].favicon, null);
+            assert.equal(body.recommendations[0].one_click_subscribe, false);
         });
     });
 

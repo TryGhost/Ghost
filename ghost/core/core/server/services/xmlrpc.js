@@ -7,7 +7,6 @@ const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
 const settingsCache = require('../../shared/settings-cache');
-const sentry = require('../../shared/sentry');
 
 // Used to receive post.published model event
 const events = require('../lib/common/events');
@@ -110,12 +109,11 @@ function ping(post) {
                     });
                 }
                 logging.error(error);
-                sentry.captureException(error);
             });
     });
 }
 
-function listener(model, options) {
+function xmlrpcListener(model, options) {
     // CASE: do not rpc ping if we import a database
     // TODO: refactor post.published events to never fire on importing
     if (options && options.importing) {
@@ -126,7 +124,9 @@ function listener(model, options) {
 }
 
 function listen() {
-    events.on('post.published', listener);
+    events
+        .removeListener('post.published', xmlrpcListener)
+        .on('post.published', xmlrpcListener);
 }
 
 module.exports = {

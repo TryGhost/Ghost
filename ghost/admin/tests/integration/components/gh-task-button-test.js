@@ -3,12 +3,16 @@ import {click, find, render, settled, waitFor} from '@ember/test-helpers';
 import {defineProperty} from '@ember/object';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {run} from '@ember/runloop';
 import {setupRenderingTest} from 'ember-mocha';
 import {task, timeout} from 'ember-concurrency';
 
 describe('Integration: Component: gh-task-button', function () {
     setupRenderingTest();
+
+    beforeEach(function () {
+        const config = this.owner.lookup('config:main');
+        config.accent_color = '#123456';
+    });
 
     it('renders', async function () {
         // sets button text using positional param
@@ -47,7 +51,6 @@ describe('Integration: Component: gh-task-button', function () {
         this.myTask.perform();
 
         await waitFor('button svg', {timeout: 50});
-        await settled();
     });
 
     it('shows running text when passed whilst running', async function () {
@@ -61,8 +64,6 @@ describe('Integration: Component: gh-task-button', function () {
 
         await waitFor('button svg', {timeout: 50});
         expect(find('button')).to.contain.text('Running');
-
-        await settled();
     });
 
     it('appears disabled whilst running', async function () {
@@ -83,7 +84,7 @@ describe('Integration: Component: gh-task-button', function () {
 
     it('shows success on success', async function () {
         defineProperty(this, 'myTask', task(function* () {
-            yield timeout(50);
+            yield timeout(1);
             return true;
         }));
 
@@ -97,7 +98,7 @@ describe('Integration: Component: gh-task-button', function () {
 
     it('assigns specified success class on success', async function () {
         defineProperty(this, 'myTask', task(function* () {
-            yield timeout(50);
+            yield timeout(1);
             return true;
         }));
 
@@ -113,7 +114,7 @@ describe('Integration: Component: gh-task-button', function () {
     it('shows failure when task errors', async function () {
         defineProperty(this, 'myTask', task(function* () {
             try {
-                yield timeout(50);
+                yield timeout(1);
                 throw new ReferenceError('test error');
             } catch (error) {
                 // noop, prevent mocha triggering unhandled error assert
@@ -126,13 +127,11 @@ describe('Integration: Component: gh-task-button', function () {
         await waitFor('button.is-failed');
 
         expect(find('button')).to.contain.text('Retry');
-
-        await settled();
     });
 
     it('shows failure on falsy response', async function () {
         defineProperty(this, 'myTask', task(function* () {
-            yield timeout(50);
+            yield timeout(1);
             return false;
         }));
 
@@ -142,13 +141,11 @@ describe('Integration: Component: gh-task-button', function () {
         await waitFor('button.gh-btn-red', {timeout: 50});
 
         expect(find('button')).to.contain.text('Retry');
-
-        await settled();
     });
 
     it('shows idle on canceled response', async function () {
         defineProperty(this, 'myTask', task(function* () {
-            yield timeout(50);
+            yield timeout(1);
             return 'canceled';
         }));
 
@@ -156,13 +153,11 @@ describe('Integration: Component: gh-task-button', function () {
 
         this.myTask.perform();
         await waitFor('[data-test-task-button-state="idle"]', {timeout: 50});
-
-        await settled();
     });
 
     it('assigns specified failure class on failure', async function () {
         defineProperty(this, 'myTask', task(function* () {
-            yield timeout(50);
+            yield timeout(1);
             return false;
         }));
 
@@ -174,15 +169,13 @@ describe('Integration: Component: gh-task-button', function () {
 
         expect(find('button')).to.not.have.class('gh-btn-red');
         expect(find('button')).to.contain.text('Retry');
-
-        await settled();
     });
 
     it('performs task on click', async function () {
         let taskCount = 0;
 
         defineProperty(this, 'myTask', task(function* () {
-            yield timeout(50);
+            yield timeout(1);
             taskCount = taskCount + 1;
         }));
 
@@ -192,33 +185,37 @@ describe('Integration: Component: gh-task-button', function () {
         expect(taskCount, 'taskCount').to.equal(1);
     });
 
-    it.skip('keeps button size when showing spinner', async function () {
+    it('@useAccentColor=true adds style attr', async function () {
         defineProperty(this, 'myTask', task(function* () {
-            yield timeout(50);
+            yield timeout(1);
         }));
 
-        await render(hbs`<GhTaskButton @task={{myTask}} />`);
-        let width = find('button').clientWidth;
-        let height = find('button').clientHeight;
-        expect(find('button')).to.not.have.attr('style');
+        await render(hbs`<GhTaskButton @task={{myTask}} @useAccentColor={{true}} />`);
 
-        this.myTask.perform();
+        expect(find('button')).to.have.attr('style', 'background-color: #123456');
+    });
 
-        run.later(this, function () {
-            // we can't test exact width/height because Chrome/Firefox use different rounding methods
-            // expect(find('button')).to.have.attr('style', `width: ${width}px; height: ${height}px;`);
+    it('@useAccentColor=true removes style attr when in failure state', async function () {
+        defineProperty(this, 'myTask', task(function* () {
+            yield timeout(1);
+            return false;
+        }));
 
-            let [widthInt] = width.toString().split('.');
-            let [heightInt] = height.toString().split('.');
+        await render(hbs`<GhTaskButton @task={{myTask}} @useAccentColor={{false}} />`);
+        await click('button');
+        await waitFor('button.gh-btn-red', {timeout: 50});
 
-            expect(find('button')).to.have.attr('style', `width: ${widthInt}`);
-            expect(find('button')).to.have.attr('style', `height: ${heightInt}`);
-        }, 20);
+        expect(find('button')).to.contain.text('Retry');
+        expect(find('button')).not.to.have.attr('style');
+    });
 
-        run.later(this, function () {
-            expect(find('button').getAttribute('style')).to.be.empty;
-        }, 100);
+    it('@useAccentColor=false does not add style attr', async function () {
+        defineProperty(this, 'myTask', task(function* () {
+            yield timeout(1);
+        }));
 
-        await settled();
+        await render(hbs`<GhTaskButton @task={{myTask}} @useAccentColor={{false}} />`);
+
+        expect(find('button')).not.to.have.attr('style');
     });
 });

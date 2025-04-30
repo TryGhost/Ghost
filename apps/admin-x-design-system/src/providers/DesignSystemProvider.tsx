@@ -9,12 +9,14 @@ interface DesignSystemContextType {
     isAnyTextFieldFocused: boolean;
     setFocusState: (value: boolean) => void;
     fetchKoenigLexical: FetchKoenigLexical;
+    darkMode: boolean;
 }
 
 const DesignSystemContext = createContext<DesignSystemContextType>({
     isAnyTextFieldFocused: false,
     setFocusState: () => {},
-    fetchKoenigLexical: async () => {}
+    fetchKoenigLexical: async () => {},
+    darkMode: false
 });
 
 export const useDesignSystem = () => useContext(DesignSystemContext);
@@ -29,10 +31,11 @@ export const useFocusContext = () => {
 
 interface DesignSystemProviderProps {
     fetchKoenigLexical: FetchKoenigLexical;
+    darkMode: boolean;
     children: React.ReactNode;
 }
 
-const DesignSystemProvider: React.FC<DesignSystemProviderProps> = ({fetchKoenigLexical, children}) => {
+const DesignSystemProvider: React.FC<DesignSystemProviderProps> = ({fetchKoenigLexical, darkMode, children}) => {
     const [isAnyTextFieldFocused, setIsAnyTextFieldFocused] = useState(false);
 
     const setFocusState = (value: boolean) => {
@@ -40,7 +43,7 @@ const DesignSystemProvider: React.FC<DesignSystemProviderProps> = ({fetchKoenigL
     };
 
     return (
-        <DesignSystemContext.Provider value={{isAnyTextFieldFocused, setFocusState, fetchKoenigLexical}}>
+        <DesignSystemContext.Provider value={{isAnyTextFieldFocused, setFocusState, fetchKoenigLexical, darkMode}}>
             <GlobalDirtyStateProvider>
                 <Toaster />
                 <NiceModal.Provider>

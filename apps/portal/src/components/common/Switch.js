@@ -55,6 +55,10 @@ export const SwitchStyles = `
         transition: .3s;
         border-radius: 999px;
     }
+    html[dir="rtl"] .gh-portal-for-switch .input-toggle-component:before {
+        left: unset !important;
+        right: 3px !important;
+    }
 
     .gh-portal-for-switch input:checked + .input-toggle-component {
         background: var(--brandcolor);
@@ -64,6 +68,9 @@ export const SwitchStyles = `
     .gh-portal-for-switch input:checked + .input-toggle-component:before {
         transform: translateX(18px);
         box-shadow: none;
+    }
+    html[dir="rtl"] .gh-portal-for-switch input:checked + .input-toggle-component:before {
+        transform: translateX(-18px);
     }
 
     .gh-portal-for-switch .container {

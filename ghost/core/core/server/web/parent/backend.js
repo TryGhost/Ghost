@@ -4,7 +4,7 @@ const {BASE_API_PATH} = require('../../../shared/url-utils');
 
 /**
  *
- * @returns {import('express').RequestHandler}
+ * @returns {import('express').Application}
  */
 module.exports = () => {
     debug('BackendApp setup start');
@@ -15,7 +15,7 @@ module.exports = () => {
     backendApp.lazyUse(BASE_API_PATH, require('../api'));
     backendApp.lazyUse('/ghost/.well-known', require('../well-known'));
 
-    backendApp.use('/ghost', require('../../services/auth/session').createSessionFromToken, require('../admin')());
+    backendApp.use('/ghost', require('../../services/auth/session').createSessionFromToken(), require('../admin')());
 
     return backendApp;
 };

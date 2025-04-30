@@ -1,10 +1,11 @@
 const {agentProvider, fixtureManager, matchers, regexes, mockManager} = require('../../utils/e2e-framework');
-const {anyErrorId, stringMatching, anyObjectId, anyLocationFor, anyISODateTime, anyEtag, anyString, anyContentLength, anyContentVersion} = matchers;
+const {anyErrorId, stringMatching, anyObjectId, anyLocationFor, anyISODateTime, anyEtag, anyString, anyContentLength, anyContentVersion, anyObject} = matchers;
 const {anyMajorMinorVersion} = regexes;
 
 const settingsMatcher = {
     settings: {
-        version: anyString
+        version: anyString,
+        labs: anyObject
     }
 };
 

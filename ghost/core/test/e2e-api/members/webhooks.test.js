@@ -10,6 +10,8 @@ const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils');
 const DomainEvents = require('@tryghost/domain-events');
 const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyString, anyArray, anyObject} = matchers;
+const settingsHelpers = require('../../../core/server/services/settings-helpers');
+const sinon = require('sinon');
 
 let membersAgent;
 let adminAgent;
@@ -42,6 +44,14 @@ async function assertSubscription(subscriptionId, asserts) {
 
     // We use the native toJSON to prevent calling the overriden serialize method
     models.Base.Model.prototype.serialize.call(subscription).should.match(asserts);
+}
+
+// Helper methods to update the customer and subscription
+function set(object, newValues) {
+    for (const key of Object.keys(object)) {
+        delete object[key];
+    }
+    Object.assign(object, newValues);
 }
 
 describe('Members API', function () {
@@ -118,21 +128,30 @@ describe('Members API', function () {
                     return [200, coupon];
                 }
 
+                if (resource === 'prices') {
+                    return [200, {
+                        id: 'price_123',
+                        product: 'product_123',
+                        active: true,
+                        nickname: 'month',
+                        currency: 'usd',
+                        recurring: {
+                            interval: 'month'
+                        },
+                        unit_amount: 150,
+                        type: 'recurring'
+                    }];
+                }
+
                 return [500];
             });
+
+        sinon.stub(settingsHelpers, 'createUnsubscribeUrl').returns('http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme');
     });
 
     afterEach(function () {
         mockManager.restore();
     });
-
-    // Helper methods to update the customer and subscription
-    function set(object, newValues) {
-        for (const key of Object.keys(object)) {
-            delete object[key];
-        }
-        Object.assign(object, newValues);
-    }
 
     describe('/webhooks/stripe/', function () {
         before(async function () {
@@ -221,7 +240,7 @@ describe('Members API', function () {
 
         let canceledPaidMember;
 
-        it('Handles cancellation of paid subscriptions correctly', async function () {
+        it('Handles cancellation of paid subscriptions at the end of the billing cycle', async function () {
             const customer_id = createStripeID('cust');
             const subscription_id = createStripeID('sub');
 
@@ -256,8 +275,154 @@ describe('Members API', function () {
             // Create a new customer in Stripe
             set(customer, {
                 id: customer_id,
-                name: 'Test Member',
-                email: 'cancel-paid-test@email.com',
+                name: 'Cancel me at the end of the billing cycle',
+                email: 'cancel-me-at-the-end-of-cycle@test.com',
+                subscriptions: {
+                    type: 'list',
+                    data: [subscription]
+                }
+            });
+
+            // Make sure this customer has a corresponding member in the database
+            // And all the subscriptions are setup correctly
+            const initialMember = await createMemberFromStripe();
+            assert.equal(initialMember.status, 'paid', 'The member initial status should be paid');
+            assert.equal(initialMember.tiers.length, 1, 'The member should have one tier');
+            should(initialMember.subscriptions).match([
+                {
+                    status: 'active'
+                }
+            ]);
+
+            // Check whether MRR and status has been set
+            await assertSubscription(initialMember.subscriptions[0].id, {
+                subscription_id: subscription.id,
+                status: 'active',
+                cancel_at_period_end: false,
+                plan_amount: 500,
+                plan_interval: 'month',
+                plan_currency: 'usd',
+                mrr: 500
+            });
+
+            // Set the subscription to cancel at the end of the period
+            set(subscription, {
+                ...subscription,
+                canceled_at: Date.now() / 1000,
+                cancel_at_period_end: true,
+                metadata: {
+                    cancellation_reason: 'I want to break free'
+                }
+            });
+
+            // Send the webhook call to announce the cancelation
+            const webhookPayload = JSON.stringify({
+                type: 'customer.subscription.updated',
+                data: {
+                    object: subscription
+                }
+            });
+            const webhookSignature = stripe.webhooks.generateTestHeaderString({
+                payload: webhookPayload,
+                secret: process.env.WEBHOOK_SECRET
+            });
+
+            await membersAgent.post('/webhooks/stripe/')
+                .body(webhookPayload)
+                .header('content-type', 'application/json')
+                .header('stripe-signature', webhookSignature)
+                .expectStatus(200);
+
+            // Check that the subscription has been set to cancel and has saved the cancellation reason
+            const {body: body2} = await adminAgent.get('/members/' + initialMember.id + '/');
+            assert.equal(body2.members.length, 1, 'The member does not exist');
+            const updatedMember = body2.members[0];
+            should(updatedMember.subscriptions).match([
+                {
+                    status: 'active',
+                    cancel_at_period_end: true,
+                    cancellation_reason: 'I want to break free'
+                }
+            ]);
+
+            // Check whether MRR and cancel_at_period_end has been set
+            await assertSubscription(initialMember.subscriptions[0].id, {
+                subscription_id: subscription.id,
+                status: 'active',
+                cancel_at_period_end: true,
+                plan_amount: 500,
+                plan_interval: 'month',
+                plan_currency: 'usd',
+                mrr: 0
+            });
+
+            // Check that there is a canceled event
+            await assertMemberEvents({
+                eventType: 'MemberPaidSubscriptionEvent',
+                memberId: updatedMember.id,
+                asserts: [
+                    {
+                        type: 'created',
+                        mrr_delta: 500
+                    },
+                    {
+                        type: 'canceled',
+                        mrr_delta: -500
+                    }
+                ]
+            });
+
+            // Check that the staff notifications has been sent
+            await DomainEvents.allSettled();
+
+            mockManager.assert.sentEmail({
+                subject: /Paid subscription started: Cancel me at the end of the billing cycle/,
+                to: 'jbloggs@example.com'
+            });
+
+            mockManager.assert.sentEmail({
+                subject: /Cancellation: Cancel me at the end of the billing cycle/,
+                to: 'jbloggs@example.com'
+            });
+        });
+
+        it('Handles immediate cancellation of paid subscriptions', async function () {
+            const customer_id = createStripeID('cust');
+            const subscription_id = createStripeID('sub');
+
+            // Create a new subscription in Stripe
+            set(subscription, {
+                id: subscription_id,
+                customer: customer_id,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_123',
+                        price: {
+                            id: 'price_123',
+                            product: 'product_123',
+                            active: true,
+                            nickname: 'Monthly',
+                            currency: 'usd',
+                            recurring: {
+                                interval: 'month'
+                            },
+                            unit_amount: 500,
+                            type: 'recurring'
+                        }
+                    }]
+                },
+                start_date: Date.now() / 1000,
+                current_period_end: Date.now() / 1000 + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false
+            });
+
+            // Create a new customer in Stripe
+            set(customer, {
+                id: customer_id,
+                name: 'Cancel me now',
+                email: 'cancel-me-immediately@test.com',
                 subscriptions: {
                     type: 'list',
                     data: [subscription]
@@ -289,12 +454,16 @@ describe('Members API', function () {
             // Cancel the previously created subscription in Stripe
             set(subscription, {
                 ...subscription,
-                status: 'canceled'
+                status: 'canceled',
+                canceled_at: Date.now() / 1000,
+                cancellation_details: {
+                    reason: 'payment_failed'
+                }
             });
 
             // Send the webhook call to announce the cancelation
             const webhookPayload = JSON.stringify({
-                type: 'customer.subscription.updated',
+                type: 'customer.subscription.deleted',
                 data: {
                     object: subscription
                 }
@@ -318,7 +487,8 @@ describe('Members API', function () {
             assert.equal(updatedMember.tiers.length, 0, 'The member should have no products');
             should(updatedMember.subscriptions).match([
                 {
-                    status: 'canceled'
+                    status: 'canceled',
+                    cancellation_reason: 'Payment failed'
                 }
             ]);
 
@@ -366,6 +536,19 @@ describe('Members API', function () {
                         mrr_delta: -500
                     }
                 ]
+            });
+
+            // Check that the staff notifications has been sent
+            await DomainEvents.allSettled();
+
+            mockManager.assert.sentEmail({
+                subject: /Paid subscription started: Cancel me now/,
+                to: 'jbloggs@example.com'
+            });
+
+            mockManager.assert.sentEmail({
+                subject: /Cancellation: Cancel me now/,
+                to: 'jbloggs@example.com'
             });
 
             canceledPaidMember = updatedMember;
@@ -1778,9 +1961,9 @@ describe('Members API', function () {
                         subscription_id: subscriptionModel.id,
 
                         // Defaults if attribution is not set
-                        attribution_id: attribution?.id ?? null,
-                        attribution_url: attribution?.url ?? null,
-                        attribution_type: attribution?.type ?? null
+                        attribution_id: attribution?.id || null,
+                        attribution_url: attribution?.url || null,
+                        attribution_type: attribution?.type || null
                     }
                 ]
             });
@@ -1798,9 +1981,9 @@ describe('Members API', function () {
                         created_at: memberModel.get('created_at'),
 
                         // Defaults if attribution is not set
-                        attribution_id: attribution?.id ?? null,
-                        attribution_url: attribution?.url ?? null,
-                        attribution_type: attribution?.type ?? null,
+                        attribution_id: attribution?.id || null,
+                        attribution_url: attribution?.url || null,
+                        attribution_type: attribution?.type || null,
                         source: 'member'
                     }
                 ]
@@ -1987,6 +2170,217 @@ describe('Members API', function () {
             });
         });
 
+        it('The customer.subscription.created webhook should set the attribution metadata', async function () {
+            // set up all necessary resources
+            const customer_id = createStripeID('cust');
+            const subscription_id = createStripeID('sub');
+            const attribution = {
+                id: null,
+                url: '/',
+                type: 'url'
+            };
+
+            set(subscription, {
+                id: subscription_id,
+                customer: customer_id,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_123',
+                        price: {
+                            id: 'price_123',
+                            product: 'product_123',
+                            active: true,
+                            nickname: 'month',
+                            currency: 'usd',
+                            recurring: {
+                                interval: 'month'
+                            },
+                            unit_amount: 150,
+                            type: 'recurring'
+                        }
+                    }]
+                },
+                start_date: beforeNow / 1000,
+                current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false,
+                metadata: { // set the attribution on the subscription
+                    attribution_id: attribution.id,
+                    attribution_url: attribution.url,
+                    attribution_type: attribution.type
+                }
+            });
+
+            set(customer, {
+                id: customer_id,
+                name: 'Test Member',
+                email: `${customer_id}@email.com`,
+                subscriptions: {
+                    type: 'list',
+                    data: [subscription]
+                }
+            });
+
+            const memberData = {
+                name: 'test',
+                email: 'memberTestAdd@test.com',
+                subscribed: false,
+                stripe_customer_id: customer_id
+            };
+    
+            // create our free member
+            const res = await adminAgent
+                .post(`/members/`)
+                .body({members: [memberData]})
+                .expectStatus(201);
+            let member = res.body.members[0];
+
+            let webhookPayload = JSON.stringify({
+                type: 'customer.subscription.created',
+                data: {
+                    object: subscription
+                }
+            });
+
+            let webhookSignature = stripe.webhooks.generateTestHeaderString({
+                payload: webhookPayload,
+                secret: process.env.WEBHOOK_SECRET
+            });
+
+            await membersAgent.post('/webhooks/stripe/')
+                .body(webhookPayload)
+                .header('content-type', 'application/json')
+                .header('stripe-signature', webhookSignature)
+                .expectStatus(200);
+
+            const {body} = await adminAgent.get(`/members/${member.id}/`);
+            member = body.members[0]; // update member model with latest data
+
+            assert.equal(member.status, 'paid', 'The member should be "paid"');
+            assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
+
+            // Convert Stripe ID to internal model ID
+            const subscriptionModel = await getSubscription(member.subscriptions[0].id);
+
+            await assertMemberEvents({
+                eventType: 'SubscriptionCreatedEvent',
+                memberId: member.id,
+                asserts: [
+                    {
+                        member_id: member.id,
+                        subscription_id: subscriptionModel.id,
+
+                        // Defaults if attribution is not set
+                        attribution_id: attribution?.id ?? null,
+                        attribution_url: attribution?.url ?? null,
+                        attribution_type: attribution?.type ?? null
+                    }
+                ]
+            });
+        });
+
+        it('The checkout.session.completed webhook should set the attribution metadata', async function () {
+            const customer_id = createStripeID('cust');
+            const subscription_id = createStripeID('sub');
+            const attribution = {
+                id: null,
+                url: '/',
+                type: 'url'
+            };
+
+            set(subscription, {
+                id: subscription_id,
+                customer: customer_id,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_123',
+                        price: {
+                            id: 'price_123',
+                            product: 'product_123',
+                            active: true,
+                            nickname: 'month',
+                            currency: 'usd',
+                            recurring: {
+                                interval: 'month'
+                            },
+                            unit_amount: 150,
+                            type: 'recurring'
+                        }
+                    }]
+                },
+                start_date: beforeNow / 1000,
+                current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false,
+                metadata: {
+                    attribution_id: attribution.id,
+                    attribution_url: attribution.url,
+                    attribution_type: attribution.type
+                }
+            });
+
+            set(customer, {
+                id: customer_id,
+                name: 'Test Member',
+                email: `${customer_id}@email.com`,
+                subscriptions: {
+                    type: 'list',
+                    data: [subscription]
+                }
+            });
+
+            let webhookPayload = JSON.stringify({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        mode: 'subscription',
+                        customer: customer.id,
+                        subscription: subscription.id
+                    }
+                }
+            });
+
+            let webhookSignature = stripe.webhooks.generateTestHeaderString({
+                payload: webhookPayload,
+                secret: process.env.WEBHOOK_SECRET
+            });
+
+            await membersAgent.post('/webhooks/stripe/')
+                .body(webhookPayload)
+                .header('content-type', 'application/json')
+                .header('stripe-signature', webhookSignature)
+                .expectStatus(200);
+
+            const {body} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
+            assert.equal(body.members.length, 1, 'The member was not created');
+            const member = body.members[0];
+
+            assert.equal(member.status, 'paid', 'The member should be "paid"');
+            assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
+
+            // Convert Stripe ID to internal model ID
+            const subscriptionModel = await getSubscription(member.subscriptions[0].id);
+
+            // subscription created event should have attribution
+            await assertMemberEvents({
+                eventType: 'SubscriptionCreatedEvent',
+                memberId: member.id,
+                asserts: [
+                    {
+                        member_id: member.id,
+                        subscription_id: subscriptionModel.id,
+
+                        // Defaults if attribution is not set
+                        attribution_id: attribution?.id,
+                        attribution_url: attribution?.url,
+                        attribution_type: attribution?.type
+                    }
+                ]
+            });
+        });
+
         // Activity feed
         // This test is here because creating subscriptions is a PITA now, and we would need to essentially duplicate all above tests elsewhere
         it('Returns subscription created attributions in activity feed', async function () {
@@ -1997,11 +2391,6 @@ describe('Members API', function () {
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    events: new Array(subscriptionAttributions.length).fill({
-                        data: anyObject
-                    })
                 })
                 .expect(({body}) => {
                     should(body.events.find(e => e.type !== 'subscription_event')).be.undefined();

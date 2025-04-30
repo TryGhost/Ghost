@@ -8,6 +8,7 @@ export interface SettingValueProps {
     value: ReactNode;
     hint?: ReactNode;
     hideEmptyValue?: boolean;
+    'data-testid'?: string;
 }
 
 const SettingValue: React.FC<SettingValueProps> = ({heading, value, hint, hideEmptyValue, ...props}) => {

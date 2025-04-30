@@ -1,6 +1,4 @@
 const should = require('should');
-const assert = require('assert/strict');
-const DomainEvents = require('@tryghost/domain-events');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {anyArray, anyContentVersion, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
 const models = require('../../../core/server/models');
@@ -26,23 +24,6 @@ const matchPostShallowIncludes = {
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
     published_at: anyISODateTime
-};
-
-const buildMatchPostShallowIncludes = (tiersCount = 2) => {
-    return {
-        id: anyObjectId,
-        uuid: anyUuid,
-        comment_id: anyString,
-        url: anyString,
-        authors: anyArray,
-        primary_author: anyObject,
-        tags: anyArray,
-        primary_tag: anyObject,
-        tiers: Array(tiersCount).fill(tierSnapshot),
-        created_at: anyISODateTime,
-        updated_at: anyISODateTime,
-        published_at: anyISODateTime
-    };
 };
 
 function testCleanedSnapshot(text, ignoreReplacements) {
@@ -107,7 +88,6 @@ describe('Posts API', function () {
     let agent;
 
     before(async function () {
-        mockManager.mockLabsEnabled('collections', true);
         mockManager.mockLabsEnabled('collectionsCard', true);
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts');
@@ -149,35 +129,6 @@ describe('Posts API', function () {
             })
             .matchBodySnapshot({
                 posts: new Array(2).fill(matchPostShallowIncludes)
-            });
-    });
-
-    it('Can browse filtering by a collection', async function () {
-        await agent.get('posts/?collection=featured')
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                posts: new Array(2).fill(matchPostShallowIncludes)
-            });
-    });
-
-    it('Can browse filtering by collection using paging parameters', async function () {
-        await agent
-            .get(`posts/?collection=latest&limit=1&page=6`)
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                posts: Array(1).fill(buildMatchPostShallowIncludes(2))
-            })
-            .expect((res) => {
-                // the total of posts with any status is 13
-                assert.equal(res.body.meta.pagination.total, 13);
             });
     });
 
@@ -390,6 +341,25 @@ describe('Posts API', function () {
                 });
         });
 
+        it('Errors if feature_image_alt is too long', async function () {
+            const post = {
+                title: 'Feature image alt too long',
+                feature_image_alt: 'a'.repeat(201)
+            };
+
+            await agent
+                .post('/posts/?formats=mobiledoc,lexical,html')
+                .body({posts: [post]})
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId,
+                        // TODO: this should be `posts.feature_image_alt` but we're hitting revision errors first
+                        context: stringMatching(/.*post_revisions\.feature_image_alt] exceeds maximum length of 191 characters.*/)
+                    }]
+                });
+        });
+
         it('Clears all page html fields when creating published post', async function () {
             const totalPageCount = await models.Post.where({type: 'page'}).count();
             should.exist(totalPageCount, 'total page count');
@@ -433,6 +403,33 @@ describe('Posts API', function () {
             should.exist(emptyPageCount);
             emptyPageCount.should.equal(0, 'post-creation empty page count');
         });
+
+        it('invalidates preview cache when updating a draft post', async function () {
+            const post = {
+                title: 'Cache invalidation test',
+                status: 'draft'
+            };
+
+            const {body: postBody} = await agent
+                .post('/posts/?formats=mobiledoc,lexical,html')
+                .body({posts: [post]})
+                .expectStatus(201);
+
+            const [postResponse] = postBody.posts;
+
+            // check that header contains the correct cache invalidation pattern which is the post url and the post url with member_status=anonymous, free, paid
+            await agent
+                .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html`)
+                .body({posts: [Object.assign({}, postResponse, {status: 'draft'})]})
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
+                });
+        });
+
+        // update when updating a scheduled post
     });
 
     describe('Update', function () {
@@ -544,103 +541,6 @@ describe('Posts API', function () {
             mobiledocRevisions.length.should.equal(0);
         });
 
-        it('Can add and remove collections', async function () {
-            const {body: postBody} = await agent
-                .post('/posts/')
-                .body({
-                    posts: [{
-                        title: 'Collection update test'
-                    }]
-                })
-                .expectStatus(201)
-                .matchBodySnapshot({
-                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('posts')
-                });
-
-            const [postResponse] = postBody.posts;
-
-            const {body: {
-                collections: [collectionToAdd]
-            }} = await agent
-                .post('/collections/')
-                .body({
-                    collections: [{
-                        title: 'Collection to add.'
-                    }]
-                });
-
-            const {body: {
-                collections: [collectionToRemove]
-            }} = await agent
-                .post('/collections/')
-                .body({
-                    collections: [{
-                        title: 'Collection to remove.'
-                    }]
-                });
-
-            const collectionPostMatcher = {
-                id: anyObjectId
-            };
-            const collectionMatcher = {
-                id: anyObjectId,
-                created_at: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/),
-                updated_at: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/),
-                posts: [{
-                    id: anyObjectId
-                }]
-            };
-            const buildCollectionMatcher = (postsCount) => {
-                return {
-                    id: anyObjectId,
-                    created_at: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/),
-                    updated_at: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/),
-                    posts: Array(postsCount).fill(collectionPostMatcher)
-                };
-            };
-
-            await agent.put(`/posts/${postResponse.id}/`)
-                .body({posts: [Object.assign({}, postResponse, {collections: [collectionToRemove.id]})]})
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    posts: [
-                        Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [
-                            // collectionToRemove
-                            collectionMatcher,
-                            // automatic "latest" collection which cannot be removed
-                            buildCollectionMatcher(21)
-                        ]})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    'x-cache-invalidate': stringMatching(/\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/)
-                });
-
-            await agent.put(`/posts/${postResponse.id}/`)
-                .body({posts: [Object.assign({}, postResponse, {collections: [collectionToAdd.id]})]})
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    posts: [
-                        Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [
-                            // collectionToAdd
-                            collectionMatcher,
-                            // automatic "latest" collection which cannot be removed
-                            buildCollectionMatcher(21)
-                        ]})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    'x-cache-invalidate': stringMatching(/\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/)
-                });
-        });
-
         it('Clears all page html fields when publishing a post', async function () {
             const totalPageCount = await models.Post.where({type: 'page'}).count();
             should.exist(totalPageCount, 'total page count');
@@ -671,6 +571,62 @@ describe('Posts API', function () {
             should.exist(emptyPageCount);
             emptyPageCount.should.equal(totalPageCount, 'post-update empty page count');
         });
+
+        describe('Access', function () {
+            describe('Visibility is set to tiers', function () {
+                it('Saves only paid tiers', async function () {
+                    const post = {
+                        title: 'Test Page',
+                        status: 'draft'
+                    };
+
+                    // @ts-ignore
+                    const products = await models.Product.findAll();
+
+                    const freeTier = products.models[0];
+                    const paidTier = products.models[1];
+
+                    const {body: pageBody} = await agent
+                        .post('/posts/', {
+                            headers: {
+                                'content-type': 'application/json'
+                            }
+                        })
+                        .body({posts: [post]})
+                        .expectStatus(201);
+
+                    const [pageResponse] = pageBody.posts;
+
+                    await agent
+                        .put(`/posts/${pageResponse.id}`)
+                        .body({
+                            posts: [{
+                                id: pageResponse.id,
+                                updated_at: pageResponse.updated_at,
+                                visibility: 'tiers',
+                                tiers: [
+                                    {id: freeTier.id},
+                                    {id: paidTier.id}
+                                ]
+                            }]
+                        })
+                        .expectStatus(200)
+                        .matchHeaderSnapshot({
+                            'content-version': anyContentVersion,
+                            etag: anyEtag,
+                            'x-cache-invalidate': anyString
+                        })
+                        .matchBodySnapshot({
+                            posts: [Object.assign({}, matchPostShallowIncludes, {
+                                published_at: null,
+                                tiers: [
+                                    {type: paidTier.get('type'), ...tierSnapshot}
+                                ]
+                            })]
+                        });
+                });
+            });
+        });
     });
 
     describe('Delete', function () {
@@ -700,34 +656,6 @@ describe('Posts API', function () {
                         id: anyErrorId
                     }]
                 });
-        });
-
-        it('Can delete posts belonging to a collection and returns empty response when filtering by that collection', async function () {
-            const res = await agent.get('posts/?collection=featured')
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    posts: new Array(2).fill(matchPostShallowIncludes)
-                });
-
-            const posts = res.body.posts;
-
-            await agent.delete(`posts/${posts[0].id}/`).expectStatus(204);
-            await agent.delete(`posts/${posts[1].id}/`).expectStatus(204);
-
-            await DomainEvents.allSettled();
-
-            await agent
-                .get(`posts/?collection=featured`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot();
         });
 
         it('Clears all page html fields when deleting a published post', async function () {
@@ -821,7 +749,7 @@ describe('Posts API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
-                
+
             const convertedPost = conversionResponse.body.posts[0];
             const expectedConvertedLexical = convertedPost.lexical;
             await agent

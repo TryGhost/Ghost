@@ -333,12 +333,12 @@ describe('Integration: Component: gh-date-picker', function () {
             this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
             this.set('maxDate', moment('2022-02-25 12:00:00.000').toDate());
 
-            await render(hbs`<GhDatePicker @value={{this.date}} @maxDate={{this.maxDate}} @maxDateError="Must be in the past" @onChange={{this.onChange}} />`);
+            await render(hbs`<GhDatePicker @value={{this.date}} @maxDate={{this.maxDate}} @maxDateError="Please choose a past date." @onChange={{this.onChange}} />`);
 
             await fillIn('[data-test-date-picker-input]', '2022-02-28');
             await blur('[data-test-date-picker-input]');
 
-            expect(find('[data-test-date-picker-error]')).to.have.text('Must be in the past');
+            expect(find('[data-test-date-picker-error]')).to.have.text('Please choose a past date.');
         });
     });
 

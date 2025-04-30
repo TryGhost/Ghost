@@ -6,13 +6,9 @@ import {setApplication} from '@ember/test-helpers';
 
 import chai from 'chai';
 import chaiDom from 'chai-dom';
+import sinonChai from 'sinon-chai';
 chai.use(chaiDom);
-
-// stub loaded external module to avoid loading of external dep
-window['@tryghost/koenig-lexical'] = {
-    KoenigComposer: () => null,
-    KoenigEditor: () => null
-};
+chai.use(sinonChai);
 
 setApplication(Application.create(config.APP));
 

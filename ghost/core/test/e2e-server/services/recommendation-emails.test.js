@@ -1,4 +1,4 @@
-const {agentProvider, fixtureManager, mockManager, dbUtils} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const assert = require('assert/strict');
 const mentionsService = require('../../../core/server/services/mentions');
 const recommendationsService = require('../../../core/server/services/recommendations');
@@ -6,7 +6,7 @@ const recommendationsService = require('../../../core/server/services/recommenda
 let agent;
 const DomainEvents = require('@tryghost/domain-events');
 const {Mention} = require('@tryghost/webmentions');
-const {Recommendation} = require('@tryghost/recommendations');
+const {Recommendation} = require('../../../core/server/services/recommendations/service');
 
 describe('Incoming Recommendation Emails', function () {
     let emailMockReceiver;
@@ -66,10 +66,6 @@ describe('Incoming Recommendation Emails', function () {
     });
 
     it('Sends a different email if we receive a recommendation back', async function () {
-        if (dbUtils.isSQLite()) {
-            this.skip();
-        }
-
         // Create a recommendation to otherghostsite.com
         const recommendation = Recommendation.create({
             title: `Recommendation`,
@@ -147,7 +143,7 @@ describe('Incoming Recommendation Emails', function () {
 
         await DomainEvents.allSettled();
 
-        mockManager.assert.sentEmailCount(0);
+        emailMockReceiver.assertSentEmailCount(0);
     });
 
     it('Does not send an email for an unverified webmention', async function () {
@@ -175,6 +171,6 @@ describe('Incoming Recommendation Emails', function () {
 
         await DomainEvents.allSettled();
 
-        mockManager.assert.sentEmailCount(0);
+        emailMockReceiver.assertSentEmailCount(0);
     });
 });

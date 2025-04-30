@@ -12,11 +12,12 @@
 .kg-bookmark-card a.kg-bookmark-container,
 .kg-bookmark-card a.kg-bookmark-container:hover {
     display: flex;
+    background: #fff;
     text-decoration: none;
-    border-radius: 3px;
+    border-radius: 6px;
     border: 1px solid rgb(124 139 154 / 25%);
     overflow: hidden;
-    color: inherit;
+    color: #222;
 }
 
 .kg-bookmark-content {
@@ -28,17 +29,18 @@
     justify-content: flex-start;
     padding: 20px;
     overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 }
 
 .kg-bookmark-title {
-    font-size: 1.5rem;
+    font-size: 15px;
     line-height: 1.4em;
     font-weight: 600;
 }
 
 .kg-bookmark-description {
     display: -webkit-box;
-    font-size: 1.4rem;
+    font-size: 14px;
     line-height: 1.5em;
     margin-top: 3px;
     font-weight: 400;
@@ -54,7 +56,7 @@
     align-items: center;
     margin-top: 22px;
     width: 100%;
-    font-size: 1.4rem;
+    font-size: 14px;
     font-weight: 500;
     white-space: nowrap;
 }

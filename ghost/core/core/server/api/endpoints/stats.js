@@ -1,6 +1,7 @@
 const statsService = require('../../services/stats');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'stats',
     memberCountHistory: {
         headers: {
@@ -102,5 +103,33 @@ module.exports = {
         async query() {
             return await statsService.api.getReferrersHistory();
         }
+    },
+    topContent: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'date_from',
+            'date_to',
+            'timezone',
+            'member_status',
+            'tb_version'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'topContent',
+                options: frame.options
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getTopContent(frame.options);
+        }
     }
 };
+
+module.exports = controller;

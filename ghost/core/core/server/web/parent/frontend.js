@@ -5,7 +5,7 @@ const shared = require('../shared');
 /**
  *
  * @param {import('../../../frontend/services/routing/RouterManager').RouterConfig} routerConfig
- * @returns {import('express').RequestHandler}
+ * @returns {import('express').Application}
  */
 module.exports = (routerConfig) => {
     debug('FrontendApp setup start', routerConfig);

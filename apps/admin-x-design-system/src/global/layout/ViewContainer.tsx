@@ -172,15 +172,15 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
 
     toolbarWrapperClassName = clsx(
         'z-50',
-        type === 'page' && 'mx-auto w-full max-w-7xl bg-white px-[4vw] dark:bg-black tablet:px-12',
+        type === 'page' && 'mx-auto w-full max-w-7xl bg-white px-[4vw] tablet:px-12 dark:bg-black',
         (type === 'page' && stickyHeader) && (firstOnPage ? 'sticky top-0 pt-8' : 'sticky top-22 pt-[3vmin]'),
         toolbarContainerClassName
     );
 
     toolbarContainerClassName = clsx(
         'flex justify-between gap-5',
-        (type === 'page' && actions?.length) ? 'flex-col md:flex-row md:items-end' : 'items-end',
-        (firstOnPage && type === 'page') ? 'pb-3 tablet:pb-8' : (tabs?.length ? '' : 'pb-2'),
+        (type === 'page' && actions?.length) ? (tabs?.length ? 'flex-col md:flex-row md:items-start' : 'flex-col md:flex-row md:items-end') : 'items-end',
+        (firstOnPage && type === 'page' && !tabs?.length) ? 'pb-3 tablet:pb-8' : (tabs?.length ? '' : 'pb-2'),
         toolbarBorder && 'border-b border-grey-200 dark:border-grey-900',
         toolbarContainerClassName
     );
@@ -251,7 +251,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
 
     return (
         <section className={mainContainerClassName}>
-            {(title || actions || headerContent) && toolbar}
+            {(title || actions || headerContent || tabs) && toolbar}
             <div className={contentWrapperClassName}>
                 {mainContent}
             </div>

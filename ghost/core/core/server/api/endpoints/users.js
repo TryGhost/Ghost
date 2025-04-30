@@ -53,6 +53,13 @@ function shouldInvalidateCacheAfterChange(model) {
         'location',
         'facebook',
         'twitter',
+        'mastodon',
+        'youtube',
+        'linkedin',
+        'bluesky',
+        'instagram',
+        'tiktok',
+        'threads',
         'status',
         'visibility',
         'meta_title',
@@ -73,7 +80,8 @@ function shouldInvalidateCacheAfterChange(model) {
     return false;
 }
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'users',
 
     browse: {
@@ -170,7 +178,9 @@ module.exports = {
                         }));
                     }
 
-                    this.headers.cacheInvalidate = shouldInvalidateCacheAfterChange(model);
+                    if (shouldInvalidateCacheAfterChange(model)) {
+                        frame.setHeader('X-Cache-Invalidate', '/*');
+                    }
 
                     return model;
                 });
@@ -285,3 +295,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

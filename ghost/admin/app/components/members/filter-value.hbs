@@ -118,7 +118,7 @@
     <GhDatePicker
         @value={{@filter.value}}
         @maxDate={{now}}
-        @maxDateError="Must be in the past"
+        @maxDateError="Please choose a past date."
         @onChange={{fn @setFilterValue @filter}}
         data-test-input="members-filter-value"
     />

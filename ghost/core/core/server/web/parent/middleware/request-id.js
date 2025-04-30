@@ -1,10 +1,14 @@
-const uuid = require('uuid');
+const crypto = require('crypto');
 
 /**
  * @TODO: move this middleware to Framework monorepo?
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
  */
 module.exports = function requestIdMw(req, res, next) {
-    const requestId = req.get('X-Request-ID') || uuid.v4();
+    const requestId = req.get('X-Request-ID') || crypto.randomUUID();
 
     // Set a value for internal use
     req.requestId = requestId;

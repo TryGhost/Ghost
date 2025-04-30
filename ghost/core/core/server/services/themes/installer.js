@@ -3,7 +3,7 @@ const os = require('os');
 const path = require('path');
 const security = require('@tryghost/security');
 const request = require('@tryghost/request');
-const errors = require('@tryghost/errors/lib/errors');
+const errors = require('@tryghost/errors');
 const limitService = require('../../services/limits');
 const {setFromZip} = require('./storage');
 

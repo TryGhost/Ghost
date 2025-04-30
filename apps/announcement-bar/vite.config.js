@@ -17,7 +17,11 @@ export default defineConfig((config) => {
             'process.env.NODE_ENV': JSON.stringify(config.mode)
         },
         preview: {
-            port: 4177
+            host: '0.0.0.0',
+            port: 4177,
+            cors: [
+                'http://localhost:2368'
+            ]
         },
         plugins: [
             reactPlugin(),

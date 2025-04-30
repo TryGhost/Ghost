@@ -20,11 +20,11 @@ describe('Acceptance: Mentions', function () {
         beforeEach(async function () {
             this.server.loadFixtures('configs');
             this.server.loadFixtures('settings');
-    
+
             let role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role]});
             enableLabsFlag(this.server, 'webmentions');
-            return await authenticateSession();
+            await authenticateSession();
         });
         it('can render mentions page', async function () {
             await visit('/mentions');

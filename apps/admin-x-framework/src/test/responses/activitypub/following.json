@@ -1,0 +1,13 @@
+{
+    "@context": "https://www.w3.org/ns/activitystreams",
+    "id": "https://0a2e-129-222-88-174.ngrok-free.app/activitypub/following/deadbeefdeadbeefdeadbeef",
+    "summary": "Following collection for index",
+    "type": "Collection",
+    "totalItems": 1,
+    "items": [
+      {
+        "id": "https://main.ghost.org/activitypub/actor/deadbeefdeadbeefdeadbeef",
+        "username": "@index@main.ghost.org"
+      }
+    ]
+  }

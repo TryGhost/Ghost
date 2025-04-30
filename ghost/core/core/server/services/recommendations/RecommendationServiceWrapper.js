@@ -4,47 +4,51 @@ const logging = require('@tryghost/logging');
 
 class RecommendationServiceWrapper {
     /**
-     * @type {import('@tryghost/recommendations').RecommendationRepository}
+     * @type {import('./service').RecommendationRepository}
      */
     repository;
 
     /**
-     * @type {import('@tryghost/recommendations').BookshelfClickEventRepository}
+     * @type {import('./service').BookshelfClickEventRepository}
      */
     clickEventRepository;
 
     /**
-     * @type {import('@tryghost/recommendations').BookshelfSubscribeEventRepository}
+     * @type {import('./service').BookshelfSubscribeEventRepository}
      */
     subscribeEventRepository;
 
     /**
-     * @type {import('@tryghost/recommendations').RecommendationController}
+     * @type {import('./service').RecommendationController}
      */
     controller;
 
     /**
-     * @type {import('@tryghost/recommendations').RecommendationService}
+     * @type {import('./service').RecommendationService}
      */
     service;
 
     /**
-     * @type {import('@tryghost/recommendations').IncomingRecommendationController}
+     * @type {import('./service').IncomingRecommendationController}
      */
     incomingRecommendationController;
 
     /**
-     * @type {import('@tryghost/recommendations').IncomingRecommendationService}
+     * @type {import('./service').IncomingRecommendationService}
      */
     incomingRecommendationService;
 
     init() {
+        const config = require('../../../shared/config');
+        if (config.get('services:recommendations:enabled') === false) {
+            logging.info('[Recommendations] Service is disabled via config');
+            return;
+        }
+
         if (this.repository) {
             return;
         }
 
-        const labs = require('../../../shared/labs');
-        const config = require('../../../shared/config');
         const urlUtils = require('../../../shared/url-utils');
         const models = require('../../models');
         const sentry = require('../../../shared/sentry');
@@ -61,7 +65,7 @@ class RecommendationServiceWrapper {
             IncomingRecommendationService,
             IncomingRecommendationEmailRenderer,
             RecommendationMetadataService
-        } = require('@tryghost/recommendations');
+        } = require('./service');
 
         const mentions = require('../mentions');
 
@@ -146,10 +150,8 @@ class RecommendationServiceWrapper {
             service: this.incomingRecommendationService
         });
 
-        if (labs.isSet('recommendations')) {
-            this.service.init().catch(logging.error);
-            this.incomingRecommendationService.init().catch(logging.error);
-        }
+        this.service.init().catch(logging.error);
+        this.incomingRecommendationService.init().catch(logging.error);
 
         const PATH_SUFFIX = '/.well-known/recommendations.json';
 
@@ -169,12 +171,10 @@ class RecommendationServiceWrapper {
 
         // Listen for incoming webmentions
         DomainEvents.subscribe(MentionCreatedEvent, async (event) => {
-            if (labs.isSet('recommendations')) {
-                // Check if this is a recommendation
-                if (event.data.mention.verified && isRecommendationUrl(event.data.mention.source)) {
-                    logging.info('[INCOMING RECOMMENDATION] Received recommendation from ' + event.data.mention.source);
-                    await this.incomingRecommendationService.sendRecommendationEmail(event.data.mention);
-                }
+            // Check if this is a recommendation
+            if (event.data.mention.verified && isRecommendationUrl(event.data.mention.source)) {
+                logging.info('[INCOMING RECOMMENDATION] Received recommendation from ' + event.data.mention.source);
+                await this.incomingRecommendationService.sendRecommendationEmail(event.data.mention);
             }
         });
     }

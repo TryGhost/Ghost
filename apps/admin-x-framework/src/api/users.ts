@@ -18,6 +18,13 @@ export type User = {
     location: string|null;
     facebook: string|null;
     twitter: string|null;
+    threads: string|null;
+    bluesky: string|null;
+    mastodon: string|null;
+    tiktok: string|null;
+    youtube: string|null;
+    instagram: string|null;
+    linkedin: string|null;
     accessibility: string|null;
     status: string;
     meta_title: string|null;
@@ -33,6 +40,7 @@ export type User = {
     mention_notifications: boolean;
     recommendation_notifications: boolean;
     milestone_notifications: boolean;
+    donation_notifications: boolean;
     roles: UserRole[];
     url: string;
 }
@@ -76,7 +84,7 @@ export const useBrowseUsers = createInfiniteQuery<UsersResponseType & {isEnd: bo
     returnData: (originalData) => {
         const {pages} = originalData as InfiniteData<UsersResponseType>;
         const users = pages.flatMap(page => page.users);
-        const meta = pages.at(-1)!.meta;
+        const meta = pages[pages.length - 1].meta;
 
         return {
             users: users,
@@ -147,7 +155,9 @@ export function isAdminUser(user: User) {
 }
 
 export function isEditorUser(user: User) {
-    return user.roles.some(role => role.name === 'Editor');
+    const isAnyEditor = user.roles.some(role => role.name === 'Editor') 
+        || user.roles.some(role => role.name === 'Super Editor');
+    return isAnyEditor;
 }
 
 export function isAuthorUser(user: User) {

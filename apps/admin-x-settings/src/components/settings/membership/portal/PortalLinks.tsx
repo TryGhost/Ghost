@@ -24,7 +24,7 @@ const PortalLink: React.FC<PortalLinkPrefs> = ({name, value}) => {
             }}/>}
             separator
         >
-            <div className='flex w-full grow flex-col py-3 lg:flex-row lg:items-center lg:gap-2'>
+            <div className='flex w-full grow flex-col py-3 lg:flex-row lg:items-center lg:gap-5'>
                 <label className='inline-block whitespace-nowrap lg:w-[180px] lg:min-w-[180px]' htmlFor={id}>{name}:</label>
                 <TextField className='border-b-500 grow bg-transparent py-1 text-grey-700 lg:p-1' id={id} value={value} disabled unstyled />
             </div>
@@ -59,7 +59,7 @@ const PortalLinks: React.FC = () => {
     const homePageURL = getHomepageUrl(siteData!);
 
     return (
-        <ModalPage className='max-w-[920px] text-base text-black' heading='Links'>
+        <ModalPage className='max-w-[920px] text-base text-black dark:text-white' heading='Links'>
             <p className='-mt-6 mb-16'>Use these {isDataAttributes ? 'data attributes' : 'links'} in your theme to show pages of Portal.</p>
 
             <List actions={<Button color='green' label={isDataAttributes ? 'Links' : 'Data attributes'} link onClick={toggleIsDataAttributes}/>} title='Generic' titleSize='lg'>
@@ -96,6 +96,7 @@ const PortalLinks: React.FC = () => {
                 <PortalLink name='Account / Plans' value={isDataAttributes ? 'data-portal="account/plans"' : `${homePageURL}#/portal/account/plans`} />
                 <PortalLink name='Account / Profile' value={isDataAttributes ? 'data-portal="account/profile"' : `${homePageURL}#/portal/account/profile`} />
                 <PortalLink name='Account / Newsletters' value={isDataAttributes ? 'data-portal="account/newsletters"' : `${homePageURL}#/portal/account/newsletters`} />
+                <PortalLink name='Account / Newsletter help' value={isDataAttributes ? 'data-portal="account/newsletters/help"' : `${homePageURL}#/portal/account/newsletters/help`} />
             </List>
         </ModalPage>
 

@@ -542,7 +542,7 @@
             "type": "string"
         },
         "donations_suggested_amount": {
-            "defaultValue": 0,
+            "defaultValue": 500,
             "validations": {
                 "isEmpty": false
             },

@@ -1,4 +1,4 @@
-const uuid = require('uuid');
+const crypto = require('crypto');
 const ghostBookshelf = require('./base');
 
 const Email = ghostBookshelf.Model.extend({
@@ -6,7 +6,7 @@ const Email = ghostBookshelf.Model.extend({
 
     defaults: function defaults() {
         return {
-            uuid: uuid.v4(),
+            uuid: crypto.randomUUID(),
             status: 'pending',
             recipient_filter: 'status:-free',
             track_opens: false,

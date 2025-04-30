@@ -11,12 +11,31 @@ export default Authenticator.extend({
         return `${this.ghostPaths.apiRoot}/session`;
     }),
 
+    sessionVerifyEndpoint: computed('ghostPaths.apiRoot', function () {
+        return `${this.ghostPaths.apiRoot}/session/verify`;
+    }),
+
     restore: function () {
         return RSVP.resolve();
     },
 
-    authenticate(identification, password) {
+    authenticate({identification, password, token, skipEmailVerification}) {
+        if (token) {
+            const data = {token};
+            const options = {
+                data,
+                contentType: 'application/json;charset=utf-8',
+                // ember-ajax will try and parse the response as JSON if not explicitly set
+                dataType: 'text'
+            };
+
+            return this.ajax.put(this.sessionVerifyEndpoint, options);
+        }
+
         const data = {username: identification, password};
+        if (skipEmailVerification) {
+            data.skipEmailVerification = true;
+        }
         const options = {
             data,
             contentType: 'application/json;charset=utf-8',

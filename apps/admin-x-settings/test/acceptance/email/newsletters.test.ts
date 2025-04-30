@@ -27,8 +27,7 @@ test.describe('Newsletter settings', async () => {
         const modal = page.getByTestId('add-newsletter-modal');
         await modal.getByRole('button', {name: 'Create'}).click();
 
-        await expect(page.getByTestId('toast-error')).toHaveText(/Can't save newsletter/);
-        await expect(modal).toHaveText(/Name is required/);
+        await expect(modal).toHaveText(/A name is required for your newsletter/);
 
         // Shouldn't be necessary, but without these Playwright doesn't click Create the second time for some reason
         await modal.getByRole('button', {name: 'Cancel'}).click();
@@ -70,8 +69,7 @@ test.describe('Newsletter settings', async () => {
         await modal.getByPlaceholder('Weekly Roundup').fill('');
         await modal.getByRole('button', {name: 'Save'}).click();
 
-        await expect(page.getByTestId('toast-error')).toHaveText(/Can't save newsletter/);
-        await expect(modal).toHaveText(/Name is required/);
+        await expect(modal).toHaveText(/A name is required for your newsletter/);
 
         await modal.getByPlaceholder('Weekly Roundup').fill('Updated newsletter');
 
@@ -116,14 +114,13 @@ test.describe('Newsletter settings', async () => {
                 await modal.getByLabel('Sender email').fill('not-an-email');
                 await modal.getByRole('button', {name: 'Save'}).click();
 
-                await expect(page.getByTestId('toast-error')).toHaveText(/Can't save newsletter/);
-                await expect(modal).toHaveText(/Invalid email/);
+                await expect(modal).toHaveText(/Enter a valid email address/);
 
                 await modal.getByLabel('Sender email').fill('test@test.com');
                 await modal.getByRole('button', {name: 'Save'}).click();
 
-                await expect(page.getByTestId('toast-neutral')).toHaveCount(1);
-                await expect(page.getByTestId('toast-neutral')).toHaveText(/sent a confirmation email to the new address/);
+                await expect(page.getByTestId('toast-info')).toHaveCount(1);
+                await expect(page.getByTestId('toast-info')).toHaveText(/sent a confirmation email to the new address/);
             });
         });
 
@@ -194,14 +191,13 @@ test.describe('Newsletter settings', async () => {
                 await replyToEmail.fill('not-an-email');
                 await modal.getByRole('button', {name: 'Save'}).click();
 
-                await expect(page.getByTestId('toast-error')).toHaveText(/Can't save newsletter/);
-                await expect(modal).toHaveText(/Invalid email/);
+                await expect(modal).toHaveText(/Enter a valid email address/);
 
                 await replyToEmail.fill('test@test.com');
                 await modal.getByRole('button', {name: 'Save'}).click();
 
-                await expect(page.getByTestId('toast-neutral')).toHaveCount(1);
-                await expect(page.getByTestId('toast-neutral')).toHaveText(/sent a confirmation email to the new address/);
+                await expect(page.getByTestId('toast-info')).toHaveCount(1);
+                await expect(page.getByTestId('toast-info')).toHaveText(/sent a confirmation email to the new address/);
             });
         });
 
@@ -241,14 +237,12 @@ test.describe('Newsletter settings', async () => {
                 // Error case #1: add invalid email address
                 await senderEmail.fill('Harry Potter');
                 await modal.getByRole('button', {name: 'Save'}).click();
-                await expect(page.getByTestId('toast-error').first()).toHaveText(/Can't save newsletter/);
-                await expect(modal).toHaveText(/Invalid email/);
+                await expect(modal).toHaveText(/Enter a valid email address/);
 
                 // Error case #2: the sender email address doesn't match the custom sending domain
                 await senderEmail.fill('harry@potter.com');
                 await modal.getByRole('button', {name: 'Save'}).click();
-                await expect(page.getByTestId('toast-error').first()).toHaveText(/Can't save newsletter/);
-                await expect(modal).toHaveText(/Email must end with @customdomain.com/);
+                await expect(modal).toHaveText(/Email address must end with @customdomain.com/);
 
                 // But can have any address on the same domain, without verification
                 await senderEmail.fill('harry@customdomain.com');
@@ -294,8 +288,8 @@ test.describe('Newsletter settings', async () => {
 
                 // There is a verification popup for the new reply-to address
                 await modal.getByRole('button', {name: 'Save'}).click();
-                await expect(page.getByTestId('toast-neutral')).toHaveCount(1);
-                await expect(page.getByTestId('toast-neutral')).toHaveText(/sent a confirmation email to the new address/);
+                await expect(page.getByTestId('toast-info')).toHaveCount(1);
+                await expect(page.getByTestId('toast-info')).toHaveText(/sent a confirmation email to the new address/);
             });
         });
     });
@@ -348,9 +342,13 @@ test.describe('Newsletter settings', async () => {
                 }]
             }}
         }});
+        
+        const awesomeNewsletterRow = section.getByRole('row', {name: /Awesome newsletter/});
+        await awesomeNewsletterRow.hover();
 
-        await section.getByText('Awesome newsletter').hover();
-        await section.getByRole('button', {name: 'Edit'}).click();
+        const editButton = awesomeNewsletterRow.getByTestId('edit-newsletter-button');
+        await editButton.waitFor({state: 'visible', timeout: 5000});
+        await editButton.click();
 
         const activeNewsletterModal = page.getByTestId('newsletter-modal');
         await activeNewsletterModal.getByRole('button', {name: 'Archive newsletter'}).click();

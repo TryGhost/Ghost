@@ -19,27 +19,128 @@ no_color='\033[0m'
 grey='\033[0;90m'
 red='\033[0;31m'
 
+##
+## 1) Check and remove submodules before committing
+##
+
 ROOT_DIR=$(git rev-parse --show-cdup)
 SUBMODULES=$(grep path ${ROOT_DIR}.gitmodules | sed 's/^.*path = //')
 MOD_SUBMODULES=$(git diff --cached --name-only --ignore-submodules=none | grep -F "$SUBMODULES")
 
 echo -e "Checking submodules ${grey}(pre-commit hook)${no_color} "
 
-# If no modified submodules, exit with status code 0, else prompt the
-# user and exit accordingly
+# If no modified submodules, exit with status code 0, else remove them and continue
 if [[ -n "$MOD_SUBMODULES" ]]; then
-    echo "Submodules to be committed:"
-    echo "  (use \"git reset HEAD <file>...\" to unstage)"
-    echo
-
+    echo -e "${grey}Removing submodules from commit...${no_color}"
     for SUB in $MOD_SUBMODULES
     do
-        echo -e "\t${green}modified:\t$SUB${no_color}"
+        git reset --quiet HEAD "$SUB"
+        echo -e "\t${grey}removed:\t$SUB${no_color}"
     done
     echo
-    echo -e "${red}Aborting commit due to submodule update. Please unstage the submodule(s) and commit again.${no_color}"
-    exit 1
+    echo -e "${grey}Submodules removed from commit, continuing...${no_color}"
+
+    # If there are no changes to commit after removing submodules, abort to avoid an empty commit
+    if output=$(git status --porcelain) && [ -z "$output" ]; then
+        echo -e "nothing to commit, working tree clean"
+        exit 1
+    fi
 else
     echo "No submodules in commit, continuing..."
-    exit 0
 fi
+
+##
+## 2) Suggest shipping a new version of @tryghost/admin-x-activitypub when changes are detected
+##    The intent is to ship smaller changes more frequently to production
+##
+
+increment_version() {
+    local package_json_path=$1
+    local version_type=$2
+
+    local current_version
+    current_version=$(grep '"version":' "$package_json_path" | awk -F '"' '{print $4}')
+
+    IFS='.' read -r major minor patch <<< "$current_version"
+
+    case "$version_type" in
+        major) ((major++)); minor=0; patch=0 ;;
+        minor) ((minor++)); patch=0 ;;
+        patch) ((patch++)) ;;
+        *) echo "Invalid version type"; exit 1 ;;
+    esac
+
+    new_version="$major.$minor.$patch"
+
+    # Update package.json with new version
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        sed -i '' -E "s/\"version\": \"[0-9]+\.[0-9]+\.[0-9]+\"/\"version\": \"$new_version\"/" "$package_json_path"
+    else
+        # Linux and others
+        sed -i -E "s/\"version\": \"[0-9]+\.[0-9]+\.[0-9]+\"/\"version\": \"$new_version\"/" "$package_json_path"
+    fi
+
+    echo "Updated version to $new_version in $package_json_path"
+}
+
+AP_BUMP_NEEDED=false
+MODIFIED_FILES=$(git diff --cached --name-only)
+
+for FILE in $MODIFIED_FILES; do
+    if [[ "$FILE" == apps/admin-x-activitypub/* ]]; then
+        AP_BUMP_NEEDED=true
+        break
+    fi
+done
+
+if [[ "$AP_BUMP_NEEDED" == true ]]; then
+    echo -e "\nYou have made changes to @tryghost/admin-x-activitypub."
+    echo -e "Would you like to ship a new version? (yes)"
+    read -r new_version </dev/tty
+
+    if [[ -z "$new_version" || "$new_version" == "yes" || "$new_version" == "y" ]]; then
+        echo -e "Is that a patch, minor or major? (patch)"
+        read -r version_type </dev/tty
+
+        # Default to patch
+        if [[ -z "$version_type" ]]; then
+            version_type="patch"
+        fi
+
+        if [[ "$version_type" != "patch" && "$version_type" != "minor" && "$version_type" != "major" ]]; then
+            echo -e "${red}Invalid input. Skipping version bump.${no_color}"
+        else
+            echo "Bumping version ($version_type)..."
+            increment_version "apps/admin-x-activitypub/package.json" "$version_type"
+            git add apps/admin-x-activitypub/package.json
+        fi
+    fi
+fi
+
+##
+## 3) Lint Tinybird datafiles if they have been modified
+##
+
+echo -e "Checking Tinybird datafiles ${grey}(pre-commit hook)${no_color}"
+
+MODIFIED_FILES=$(git diff --cached --name-only)
+TINYBIRD_FILES_MODIFIED=false
+
+for FILE in $MODIFIED_FILES; do
+    if [[ "$FILE" == ghost/web-analytics/*.pipe || "$FILE" == ghost/web-analytics/*.datasource ]]; then
+        TINYBIRD_FILES_MODIFIED=true
+        break
+    fi
+done
+
+if [[ "$TINYBIRD_FILES_MODIFIED" == true ]]; then
+    echo -e "Tinybird datafiles have been modified. Running linter..."
+    if ! ghost/web-analytics/scripts/lint.sh; then
+        echo -e "${red}❌ Tinybird datafile linting failed${no_color}"
+        exit 1
+    fi
+    echo -e "${green}✓ Tinybird datafile linting passed${no_color}"
+fi
+
+exit 0

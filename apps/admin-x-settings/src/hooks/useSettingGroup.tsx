@@ -2,9 +2,8 @@ import React, {useEffect, useRef, useState} from 'react';
 import {ErrorMessages, OkProps, SaveHandler, SaveState, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {Setting, SettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {SiteData} from '@tryghost/admin-x-framework/api/site';
-import {showToast, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
-import {toast} from 'react-hot-toast';
 import {useGlobalData} from '../components/providers/GlobalDataProvider';
+import {useGlobalDirtyState} from '@tryghost/admin-x-design-system';
 
 interface LocalSetting extends Setting {
     dirty?: boolean;
@@ -107,15 +106,10 @@ const useSettingGroup = ({savingDelay, onValidate}: {savingDelay?: number; onVal
         focusRef,
         siteData,
         handleSave: async () => {
-            toast.remove();
             const result = await handleSave();
             if (result) {
                 setEditing(false);
             } else {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save settings! One or more fields have errors, please double check that you\'ve filled all mandatory fields.'
-                });
             }
             return result;
         },

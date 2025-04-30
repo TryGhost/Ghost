@@ -62,11 +62,11 @@ const useDefaultRecipientsOptions = (selectedOption: string, defaultEmailRecipie
 
     const initSelectedSegments = async () => {
         const filters = defaultEmailRecipientsFilter?.split(',') || [];
-        const tierIds: string[] = [], labelIds: string[] = [], offerIds: string[] = [];
+        const tierIds: string[] = [], labelSlugs: string[] = [], offerIds: string[] = [];
 
         for (const filter of filters) {
             if (filter.startsWith('label:')) {
-                labelIds.push(filter.replace('label:', ''));
+                labelSlugs.push(filter.replace('label:', ''));
             } else if (filter.startsWith('offer_redemptions:')) {
                 offerIds.push(filter.replace('offer_redemptions:', ''));
             } else if (isObjectId(filter)) {
@@ -75,9 +75,9 @@ const useDefaultRecipientsOptions = (selectedOption: string, defaultEmailRecipie
         }
 
         const options = await Promise.all([
-            tiers.loadInitialValues(tierIds).then(data => data.map(tierOption)),
-            labels.loadInitialValues(labelIds).then(data => data.map(labelOption)),
-            offers.loadInitialValues(offerIds).then(data => data.map(offerOption))
+            tiers.loadInitialValues(tierIds, 'id').then(data => data.map(tierOption)),
+            labels.loadInitialValues(labelSlugs, 'slug').then(data => data.map(labelOption)),
+            offers.loadInitialValues(offerIds, 'id').then(data => data.map(offerOption))
         ]).then(results => results.flat());
 
         setSelectedSegments(filters.map(filter => options.find(option => option.value === filter)!));

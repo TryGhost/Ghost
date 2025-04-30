@@ -29,7 +29,7 @@ const SortMenu: React.FC<SortMenuProps> = ({
     onDirectionChange,
     trigger,
     triggerButtonProps,
-    position = 'left'
+    position = 'start'
 }) => {
     const [localItems, setLocalItems] = useState<SortItem[]>(items);
     const [localDirection, setLocalDirection] = useState<SortDirection>(direction || 'desc');

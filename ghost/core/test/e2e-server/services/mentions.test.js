@@ -368,7 +368,7 @@ describe('Mentions Service', function () {
                 assert.equal(endpointMock.isDone(), true);
             });
 
-            it('Unpublished post (post.unpublished)', async function () {
+            it('Unpublished page (page.unpublished)', async function () {
                 const publishedPage = {status: 'published', ...mentionsPost};
                 const res = await agent
                     .post('pages/')
