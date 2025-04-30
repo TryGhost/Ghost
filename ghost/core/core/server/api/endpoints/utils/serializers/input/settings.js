@@ -76,7 +76,6 @@ const EDITABLE_SETTINGS = [
     'body_font',
     'heading_font',
     'blocked_email_domains',
-    'captcha_enabled',
     'require_email_mfa'
 ];
 

@@ -1376,44 +1376,6 @@ describe('{{ghost_head}} helper', function () {
         });
     });
 
-    describe('CAPTCHA', function () {
-        beforeEach(function () {
-            configUtils.set({
-                captcha: {
-                    enabled: true
-                }
-            });
-        });
-
-        it('returns CAPTCHA script when enabled', async function () {
-            sinon.stub(labs, 'isSet').withArgs('captcha').returns(true);
-
-            const rendered = await testGhostHead(testUtils.createHbsResponse({
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '4.3'
-                }
-            }));
-
-            rendered.should.match(/hcaptcha/);
-        });
-
-        it('does not return CAPTCHA script when disabled', async function () {
-            sinon.stub(labs, 'isSet').withArgs('captcha').returns(false);
-
-            const rendered = await testGhostHead(testUtils.createHbsResponse({
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '4.3'
-                }
-            }));
-
-            rendered.should.not.match(/hcaptcha/);
-        });
-    });
-
     describe('attribution scripts', function () {
         it('is included when tracking setting is enabled', async function () {
             settingsCache.get.withArgs('members_track_sources').returns(true);

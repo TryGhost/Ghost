@@ -130,8 +130,7 @@
             "lifetime": 3600,
             "freeRetries": 10
         },
-        "blocked_email_domains": [],
-        "captcha_enabled": false
+        "blocked_email_domains": []
     },
     "caching": {
         "301": {

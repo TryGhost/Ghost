@@ -97,8 +97,5 @@
     "vite-plugin-css-injected-by-js": "3.5.2",
     "vite-plugin-svgr": "3.3.0",
     "vitest": "0.34.3"
-  },
-  "dependencies": {
-    "@hcaptcha/react-hcaptcha": "1.12.0"
   }
 }
