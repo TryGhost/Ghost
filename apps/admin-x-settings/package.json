@@ -51,7 +51,7 @@
     "@tryghost/admin-x-framework": "0.0.0",
     "@tryghost/custom-fonts": "0.0.0",
     "@types/react": "18.3.20",
-    "@types/react-dom": "18.3.6",
+    "@types/react-dom": "18.3.7",
     "@types/validator": "13.15.0",
     "@vitejs/plugin-react": "4.4.1",
     "eslint-plugin-react-hooks": "4.6.2",

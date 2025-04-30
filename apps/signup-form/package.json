@@ -51,7 +51,7 @@
         "@tailwindcss/line-clamp": "0.4.4",
         "@tryghost/i18n": "0.0.0",
         "@types/react": "18.3.20",
-        "@types/react-dom": "18.3.6",
+        "@types/react-dom": "18.3.7",
         "@vitejs/plugin-react": "4.4.1",
         "autoprefixer": "10.4.19",
         "concurrently": "8.2.2",

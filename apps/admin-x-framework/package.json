@@ -87,7 +87,7 @@
         "@tryghost/admin-x-design-system": "0.0.0",
         "@tryghost/shade": "0.0.0",
         "@types/react": "18.3.20",
-        "@types/react-dom": "18.3.6",
+        "@types/react-dom": "18.3.7",
         "@vitejs/plugin-react": "4.4.1",
         "react": "18.3.1",
         "react-dom": "18.3.1",
