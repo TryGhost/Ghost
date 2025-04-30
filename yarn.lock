@@ -6993,15 +6993,15 @@
     echarts "^5.5.0"
     swr "^2.2.5"
 
-"@tiptap/core@2.11.7":
-  version "2.11.7"
-  resolved "https://registry.yarnpkg.com/@tiptap/core/-/core-2.11.7.tgz#38600a7dabc42ea84e8dfb7a74c19df10db95d14"
-  integrity sha512-zN+NFFxLsxNEL8Qioc+DL6b8+Tt2bmRbXH22Gk6F6nD30x83eaUSFlSv3wqvgyCq3I1i1NO394So+Agmayx6rQ==
+"@tiptap/core@2.11.8":
+  version "2.11.8"
+  resolved "https://registry.yarnpkg.com/@tiptap/core/-/core-2.11.8.tgz#4f00fe9b3cb28ae095c4669421e618b25e219e8f"
+  integrity sha512-AR2jP3pGk5ftBQSW8szod0SajqtaywsVsVN1Jx6l2mYIBBVqXJlY21u6Hr7mUL08XRYpHo08UwGm8R7p7FWGmQ==
 
-"@tiptap/extension-blockquote@2.11.7":
-  version "2.11.7"
-  resolved "https://registry.yarnpkg.com/@tiptap/extension-blockquote/-/extension-blockquote-2.11.7.tgz#ccbabedd2e19581424730613f00e971b527198ee"
-  integrity sha512-liD8kWowl3CcYCG9JQlVx1eSNc/aHlt6JpVsuWvzq6J8APWX693i3+zFqyK2eCDn0k+vW62muhSBe3u09hA3Zw==
+"@tiptap/extension-blockquote@2.11.8":
+  version "2.11.8"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-blockquote/-/extension-blockquote-2.11.8.tgz#d88c29724113d99433153f0e97d86fa80a2be8e5"
+  integrity sha512-syqURLNz4k4Eczg4VmvIgVxh468XjYQg/S3fVUriqHZkJnRip/YSgOyou+i8ZHrARXnEIKS3tYFrsEKhjOFw5Q==
 
 "@tiptap/extension-bubble-menu@^2.11.7":
   version "2.11.7"
@@ -21173,12 +21173,12 @@ json5@^2.1.1, json5@^2.1.2, json5@^2.2.2, json5@^2.2.3:
   resolved "https://registry.yarnpkg.com/json5/-/json5-2.2.3.tgz#78cd6f1a19bdc12b73db5ad0c61efd66c1e29283"
   integrity sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==
 
-jsonc-parser@3.2.0, jsonc-parser@^3.2.0:
+jsonc-parser@3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/jsonc-parser/-/jsonc-parser-3.2.0.tgz#31ff3f4c2b9793f89c67212627c51c6394f88e76"
   integrity sha512-gfFQZrcTc8CnKXp6Y4/CBT3fTc0OVuDofpre4aEeEpSBPV5X5v4+Vmx+8snU7RLPrNHPKSgLxGo9YuQzz20o+w==
 
-jsonc-parser@^3.3.1:
+jsonc-parser@3.3.1, jsonc-parser@^3.2.0:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/jsonc-parser/-/jsonc-parser-3.3.1.tgz#f2a524b4f7fd11e3d791e559977ad60b98b798b4"
   integrity sha512-HUgH65KyejrUFPvHFPbqOY0rsFip3Bo5wb4ngvdi1EpCYWUQDC5V+Y7mZws+DLkr4M//zQJoanu1SP+87Dv1oQ==
