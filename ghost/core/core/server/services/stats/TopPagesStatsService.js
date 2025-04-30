@@ -1,12 +1,15 @@
 const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
 
 class TopPagesStatsService {
     /**
      * @param {object} deps
      * @param {import('knex').Knex} deps.knex
+     * @param {object} deps.urlService - Ghost URL service for resource lookups
      */
     constructor(deps) {
         this.knex = deps.knex;
+        this.urlService = deps.urlService;
     }
 
     /**
@@ -163,8 +166,8 @@ class TopPagesStatsService {
 
             logging.info('Title map created with keys:', Object.keys(titleMap));
 
-            // Enrich the data with post titles
-            const enrichedData = responseData.data.map((item) => {
+            // Enrich the data with post titles or UrlService lookups
+            const enrichedData = await Promise.all(responseData.data.map(async (item) => {
                 // First check if post_uuid is available directly
                 if (item.post_uuid && titleMap[item.post_uuid]) {
                     return {
@@ -185,13 +188,47 @@ class TopPagesStatsService {
                     };
                 }
                 
+                // Use UrlService for pages without post_uuid
+                if (this.urlService) {
+                    try {
+                        const resource = this.urlService.getResource(item.pathname);
+                        if (resource) {
+                            logging.info(`UrlService found resource for: ${item.pathname}`);
+                            // Extract title from resource based on resource type
+                            if (resource.data) {
+                                if (resource.data.title) {
+                                    return {
+                                        ...item,
+                                        title: resource.data.title,
+                                        resourceType: resource.data.type
+                                    };
+                                } else if (resource.data.name) {
+                                    // For authors, tags, etc.
+                                    return {
+                                        ...item,
+                                        title: resource.data.name,
+                                        resourceType: resource.data.type
+                                    };
+                                }
+                            }
+                        } else {
+                            logging.info(`UrlService did not find resource for: ${item.pathname}`);
+                        }
+                    } catch (err) {
+                        if (err.code !== 'URLSERVICE_NOT_READY') {
+                            logging.warn(`Error looking up resource for ${item.pathname}: ${err.message}`);
+                        }
+                        // Continue with fallback if UrlService errors
+                    }
+                }
+                
                 // Otherwise fallback to pathname (removing leading/trailing slashes)
                 const formattedPath = item.pathname.replace(/^\/|\/$/g, '') || 'Home';
                 return {
                     ...item,
                     title: formattedPath
                 };
-            });
+            }));
 
             logging.info('Data enriched with titles/pathnames, sample:', enrichedData[0]);
 
