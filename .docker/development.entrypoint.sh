@@ -24,6 +24,15 @@ if getent hosts announcement-bar > /dev/null 2>&1; then
   echo "Announcement bar service detected - enabling announcement bar integration"
 fi
 
+# Check if search service is running by attempting DNS resolution
+if getent hosts sodo-search > /dev/null 2>&1; then
+  # If search service exists, set the environment variable
+  export sodoSearch__url="http://localhost:4178/sodo-search.min.js"
+  export sodoSearch__styles="http://localhost:4178/main.css"
+  echo "Search service detected - enabling search integration"
+fi
+
+
 
 
 # Execute the CMD

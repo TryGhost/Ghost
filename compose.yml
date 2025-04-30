@@ -123,6 +123,8 @@ services:
     ports:
       - "4175:4175"
       - "4176:4176"
+    environment:
+      - NX_DAEMON=false
     profiles: [ portal ]
 
 
@@ -136,6 +138,8 @@ services:
     command: [ "yarn", "dev" ]
     ports:
       - "6174:6174"
+    environment:
+      - NX_DAEMON=false
     profiles: [ signup-form ]
 
   announcement-bar:
@@ -148,7 +152,24 @@ services:
     command: [ "yarn", "dev" ]
     ports:
       - "4177:4177"
+    environment:
+      - NX_DAEMON=false
     profiles: [ announcement-bar ]
+
+
+  sodo-search:
+    <<: *ghost-base
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+    working_dir: /home/ghost/apps/sodo-search
+    command: [ "yarn", "dev" ]
+    ports:
+      - "4178:4178"
+    environment:
+      - NX_DAEMON=false
+    profiles: [ sodo-search ]
 
   ghost:
     <<: *ghost-base # Merge the base configuration
