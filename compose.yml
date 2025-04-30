@@ -37,7 +37,6 @@ services:
       - node_modules_ghost_constants:/home/ghost/ghost/constants/node_modules:delegated
       - node_modules_ghost_core:/home/ghost/ghost/core/node_modules:delegated
       - node_modules_ghost_custom-fonts:/home/ghost/ghost/custom-fonts/node_modules:delegated
-      - node_modules_ghost_custom-theme-settings-service:/home/ghost/ghost/custom-theme-settings-service/node_modules:delegated
       - node_modules_ghost_domain-events:/home/ghost/ghost/domain-events/node_modules:delegated
       - node_modules_ghost_donations:/home/ghost/ghost/donations/node_modules:delegated
       - node_modules_ghost_email-addresses:/home/ghost/ghost/email-addresses/node_modules:delegated
@@ -169,7 +168,6 @@ volumes:
   node_modules_ghost_constants: {}
   node_modules_ghost_core: {}
   node_modules_ghost_custom-fonts: {}
-  node_modules_ghost_custom-theme-settings-service: {}
   node_modules_ghost_domain-events: {}
   node_modules_ghost_donations: {}
   node_modules_ghost_email-addresses: {}
