@@ -460,7 +460,7 @@ describe('TopContentStatsService', function () {
             tinybirdOptions.should.have.property('memberStatus', 'paid');
         });
 
-        it('handles null response from tinybird client', async function() {
+        it('handles null response from tinybird client', async function () {
             mockTinybirdClient.fetch.resolves(null);
             
             const result = await service.getTopContent({});
