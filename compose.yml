@@ -125,6 +125,19 @@ services:
       - "4176:4176" # Portal HTTPS
     profiles: [ portal ]
 
+
+  signup-form:
+    <<: *ghost-base
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+    working_dir: /home/ghost/apps/signup-form
+    command: [ "yarn", "dev" ]
+    ports:
+      - "6174:6174" # Signup form
+    profiles: [ signup-form ]
+
   ghost:
     <<: *ghost-base # Merge the base configuration
     build:

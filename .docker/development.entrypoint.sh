@@ -10,5 +10,11 @@ if getent hosts portal > /dev/null 2>&1; then
   echo "Portal service detected - enabling portal integration"
 fi
 
+# Check if signup form service is running by attempting DNS resolution
+if getent hosts signup-form > /dev/null 2>&1; then
+  # If signup form service exists, set the environment variable
+  export signupForm__url="http://localhost:6174/signup-form.min.js"
+  echo "Signup form service detected - enabling signup form integration"
+fi
 # Execute the CMD
 exec "$@"
