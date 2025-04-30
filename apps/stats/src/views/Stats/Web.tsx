@@ -198,10 +198,10 @@ const Web:React.FC = () => {
     // Include essential query parameters that change frequently
     // Server will use defaults for other values
     const queryParams: Record<string, string> = {
-        dateFrom: formatQueryDate(startDate),
-        dateTo: formatQueryDate(endDate),
-        memberStatus: getAudienceQueryParam(audience),
-        tbVersion: TB_VERSION?.toString()
+        date_from: formatQueryDate(startDate),
+        date_to: formatQueryDate(endDate),
+        member_status: getAudienceQueryParam(audience),
+        tb_version: TB_VERSION?.toString()
     };
 
     // Add timezone only if it differs from default
