@@ -11,13 +11,12 @@ const create = ({config, request}) => {
     /**
      * Builds a Tinybird API request
      * @param {string} pipeName - The name of the Tinybird pipe to query
-     * @param {Object} options - Request options
+     * @param {Object} options - Request options in camelCase format
      * @param {string} [options.dateFrom] - Start date in YYYY-MM-DD format
      * @param {string} [options.dateTo] - End date in YYYY-MM-DD format
      * @param {string} [options.timezone] - Timezone for the query
      * @param {string} [options.memberStatus] - Member status filter (defaults to 'all')
      * @param {string} [options.tbVersion] - Tinybird version for API URL
-     * @param {string} [options.siteUuid] - The site UUID (optional, will use site config if not provided)
      * @returns {Object} Object with URL and request options
      */
     const buildRequest = (pipeName, options = {}) => {
@@ -33,8 +32,9 @@ const create = ({config, request}) => {
         
         const tinybirdUrl = `${endpoint}${pipeUrl}`;
 
+        // Use snake_case for query parameters as expected by Tinybird API
         const searchParams = {
-            site_uuid: options.siteUuid || statsConfig.id,
+            site_uuid: statsConfig.id,
             date_from: options.dateFrom,
             date_to: options.dateTo,
             timezone: options.timezone || config.get('timezone'),

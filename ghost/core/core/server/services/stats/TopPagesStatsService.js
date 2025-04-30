@@ -24,12 +24,11 @@ class TopPagesStatsService {
     /**
      * Fetches top pages data from Tinybird and enriches it with post titles
      * @param {Object} options
-     * @param {string} [options.dateFrom] - Start date in YYYY-MM-DD format
-     * @param {string} [options.dateTo] - End date in YYYY-MM-DD format
+     * @param {string} [options.date_from] - Start date in YYYY-MM-DD format
+     * @param {string} [options.date_to] - End date in YYYY-MM-DD format
      * @param {string} [options.timezone] - Timezone for the query
-     * @param {string} [options.memberStatus] - Member status filter (defaults to 'all')
-     * @param {string} [options.tbVersion] - Tinybird version for API URL
-     * @param {string} [options.siteUuid] - The site UUID (optional, will use site config if not provided)
+     * @param {string} [options.member_status] - Member status filter (defaults to 'all')
+     * @param {string} [options.tb_version] - Tinybird version for API URL
      * @returns {Promise<Object>} The enriched top pages data
      */
     async getTopPages(options = {}) {
@@ -59,11 +58,20 @@ class TopPagesStatsService {
     
     /**
      * Fetch raw top pages data from Tinybird
-     * @param {Object} options - Query options
+     * @param {Object} options - Query options with snake_case keys
      * @returns {Promise<Array<TopPageDataItem>|null>} Raw data or null on error
      */
     async fetchRawTopPagesData(options = {}) {
-        return await this.tinybirdClient.fetch('api_top_pages', options);
+        // Convert snake_case to camelCase for Tinybird
+        const tinybirdOptions = {
+            dateFrom: options.date_from,
+            dateTo: options.date_to,
+            timezone: options.timezone,
+            memberStatus: options.member_status,
+            tbVersion: options.tb_version
+        };
+        
+        return await this.tinybirdClient.fetch('api_top_pages', tinybirdOptions);
     }
     
     /**

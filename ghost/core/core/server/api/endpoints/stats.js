@@ -109,12 +109,11 @@ const controller = {
             cacheInvalidate: false
         },
         options: [
-            'siteUuid',
-            'dateFrom',
-            'dateTo',
+            'date_from',
+            'date_to',
             'timezone',
-            'memberStatus',
-            'tbVersion'
+            'member_status',
+            'tb_version'
         ],
         permissions: {
             docName: 'posts',

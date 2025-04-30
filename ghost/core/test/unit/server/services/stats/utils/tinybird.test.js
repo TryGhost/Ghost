@@ -71,11 +71,10 @@ describe('Tinybird Client', function () {
                 dateFrom: '2023-01-01',
                 dateTo: '2023-01-31',
                 timezone: 'America/New_York',
-                memberStatus: 'paid',
-                siteUuid: 'custom-site-id'
+                memberStatus: 'paid'
             });
 
-            url.should.containEql('site_uuid=custom-site-id');
+            url.should.containEql('site_uuid=site-id');
             url.should.containEql('timezone=America%2FNew_York');
             url.should.containEql('member_status=paid');
         });

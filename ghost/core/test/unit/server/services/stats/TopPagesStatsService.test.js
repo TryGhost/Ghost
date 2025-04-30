@@ -338,9 +338,10 @@ describe('TopPagesStatsService', function () {
             
             mockTinybirdClient.fetch.resolves(expectedData);
             
+            // Use snake_case parameters as expected in the API
             const options = {
-                dateFrom: '2023-01-01',
-                dateTo: '2023-01-31'
+                date_from: '2023-01-01',
+                date_to: '2023-01-31'
             };
             
             const result = await service.fetchRawTopPagesData(options);
@@ -351,21 +352,35 @@ describe('TopPagesStatsService', function () {
             result[0].visits.should.equal(100);
             
             mockTinybirdClient.fetch.calledOnce.should.be.true();
-            mockTinybirdClient.fetch.calledWith('api_top_pages', options).should.be.true();
+            
+            // Verify that camelCase conversion happened - the first param should be the pipe name
+            const calledWith = mockTinybirdClient.fetch.firstCall.args;
+            calledWith[0].should.equal('api_top_pages');
+            
+            // The second param should have camelCase properties
+            calledWith[1].should.have.property('dateFrom', '2023-01-01');
+            calledWith[1].should.have.property('dateTo', '2023-01-31');
+            // site_uuid should not be passed through options
+            calledWith[1].should.not.have.property('siteUuid');
         });
 
         it('returns null on API request failure', async function () {
             mockTinybirdClient.fetch.resolves(null);
             
             const options = {
-                dateFrom: '2023-01-01',
-                dateTo: '2023-01-31'
+                date_from: '2023-01-01',
+                date_to: '2023-01-31'
             };
             
             const result = await service.fetchRawTopPagesData(options);
             
             should.not.exist(result);
-            mockTinybirdClient.fetch.calledWith('api_top_pages', options).should.be.true();
+            
+            // Verify that camelCase conversion happened
+            const calledWith = mockTinybirdClient.fetch.firstCall.args;
+            calledWith[0].should.equal('api_top_pages');
+            calledWith[1].should.have.property('dateFrom', '2023-01-01');
+            calledWith[1].should.have.property('dateTo', '2023-01-31');
         });
     });
 
@@ -384,8 +399,8 @@ describe('TopPagesStatsService', function () {
             service.fetchRawTopPagesData.resolves(mockRawData);
             
             const result = await service.getTopPages({
-                dateFrom: '2023-01-01',
-                dateTo: '2023-01-31'
+                date_from: '2023-01-01',
+                date_to: '2023-01-31'
             });
             
             should.exist(result);
@@ -394,14 +409,19 @@ describe('TopPagesStatsService', function () {
             result.data[0].should.have.property('title');
             
             service.fetchRawTopPagesData.calledOnce.should.be.true();
+            
+            // Verify the parameters were passed properly
+            const options = service.fetchRawTopPagesData.firstCall.args[0];
+            options.should.have.property('date_from', '2023-01-01');
+            options.should.have.property('date_to', '2023-01-31');
         });
 
         it('returns empty data array when fetch returns no data', async function () {
             service.fetchRawTopPagesData.resolves(null);
             
             const result = await service.getTopPages({
-                dateFrom: '2023-01-01',
-                dateTo: '2023-01-31'
+                date_from: '2023-01-01',
+                date_to: '2023-01-31'
             });
             
             should.exist(result);
@@ -415,8 +435,8 @@ describe('TopPagesStatsService', function () {
             service.fetchRawTopPagesData.rejects(new Error('Test error'));
             
             const result = await service.getTopPages({
-                dateFrom: '2023-01-01',
-                dateTo: '2023-01-31'
+                date_from: '2023-01-01',
+                date_to: '2023-01-31'
             });
             
             should.exist(result);
@@ -432,8 +452,8 @@ describe('TopPagesStatsService', function () {
             });
             
             const result = await serviceNoTinybird.getTopPages({
-                dateFrom: '2023-01-01',
-                dateTo: '2023-01-31'
+                date_from: '2023-01-01',
+                date_to: '2023-01-31'
             });
             
             should.exist(result);
