@@ -111,6 +111,20 @@ services:
     environment:
       - NX_DAEMON=true
 
+
+  portal:
+    <<: *ghost-base
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+    working_dir: /home/ghost/apps/portal
+    command: [ "yarn", "dev" ]
+    ports:
+      - "4175:4175" # Portal
+      - "4176:4176" # Portal HTTPS
+    profiles: [ portal ]
+
   ghost:
     <<: *ghost-base # Merge the base configuration
     build:
