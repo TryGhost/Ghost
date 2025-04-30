@@ -169,6 +169,7 @@ function getTinybirdTrackerScript(dataRoot) {
     const tbParams = _.map({
         site_uuid: config.get('tinybird:tracker:id'),
         post_uuid: dataRoot.post?.uuid,
+        post_type: dataRoot.context.includes('post') ? 'post' : dataRoot.context.includes('page') ? 'page' : null,
         member_uuid: dataRoot.member?.uuid,
         member_status: dataRoot.member?.status
     }, (value, key) => `tb_${key}="${value}"`).join(' ');
