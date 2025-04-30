@@ -1,25 +1,15 @@
 name: ghost
 
-# This is the base configuration for the Ghost container
-# Multiple services can re-use this configuration
-# Any parameters defined on the service itself will override the base configuration
+# Base configuration for the Ghost Monorepo container
 # Ref: https://docs.docker.com/reference/compose-file/fragments/
 x-ghost-base: &ghost-base
-  image: ghost-dev:latest
+  image: ghost-monorepo:latest
   pull_policy: never
   entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
   volumes:
-      # Mount the source code
+      # Mount source code
       - .:/home/ghost
-
-      ## SSH Agent forwarding
-      - ${SSH_AUTH_SOCK}:/ssh-agent
-
-      ## Git config
-      - ${HOME}/.gitconfig:/root/.gitconfig:ro
-
-      # Volume exclusions:
-      ## Prevent collisions between host and container node_modules
+      # Mask node_modules with named volumes to prevent collisions between host and container
       - node_modules_ghost_root:/home/ghost/node_modules:delegated
       - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
       - node_modules_ghost_api-framework:/home/ghost/ghost/api-framework/node_modules:delegated
@@ -61,19 +51,66 @@ x-ghost-base: &ghost-base
       - node_modules_apps_signup-form:/home/ghost/apps/signup-form/node_modules:delegated
       - node_modules_apps_sodo-search:/home/ghost/apps/sodo-search/node_modules:delegated
       - node_modules_apps_stats:/home/ghost/apps/stats/node_modules:delegated
-  tty: true
-  environment:
-    - DEBUG=${DEBUG:-}
-    - SSH_AUTH_SOCK=/ssh-agent
-    - NX_DAEMON=${NX_DAEMON:-true}
-    - GHOST_DEV_IS_DOCKER=true
-    - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
-    - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
-    - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
-    - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
-    - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
+
 
 services:
+  server:
+    <<: *ghost-base
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+    working_dir: /home/ghost/ghost/core
+    command: [ "yarn", "dev" ]
+    ports:
+      - "2368:2368"
+    profiles: [ split ]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - DEBUG=${DEBUG:-}
+      - SSH_AUTH_SOCK=/ssh-agent
+      - NX_DAEMON=false
+      - GHOST_DEV_IS_DOCKER=true
+      - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
+      - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+      - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
+
+  admin:
+    <<: *ghost-base
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+    working_dir: /home/ghost/ghost/admin
+    command: [ "yarn", "dev" ]
+    ports:
+      - "4200:4200"
+      - "4201:4201"
+    environment:
+      - NX_DAEMON=false
+    profiles: [ split ]
+    depends_on:
+      server:
+        condition: service_started
+
+
+  daemon:
+    <<: *ghost-base
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+    profiles: [ split, daemon ]
+    entrypoint: [ "/home/ghost/.docker/daemon.entrypoint.sh" ]
+    environment:
+      - NX_DAEMON=true
+
   ghost:
     <<: *ghost-base # Merge the base configuration
     build:
@@ -98,6 +135,21 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    environment:
+      - DEBUG=${DEBUG:-}
+      - SSH_AUTH_SOCK=/ssh-agent
+      - NX_DAEMON=${NX_DAEMON:-true}
+      - GHOST_DEV_IS_DOCKER=true
+      - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
+      - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+      - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
+    volumes:
+      - ${HOME}/.gitconfig:/root/.gitconfig:ro
+      - ${SSH_AUTH_SOCK}:/ssh-agent
+
+
   storybook:
     <<: *ghost-base
     command: [ "yarn", "storybook", "dev", "-p", "6006", "-h", "0.0.0.0", "--no-open"]
