@@ -1,6 +1,6 @@
 import AnalyticsRoute from '../analytics';
 
-export default class PostsXRoute extends AnalyticsRoute {
+export default class WebStatsRoute extends AnalyticsRoute {
     renderTemplate() {
         this.render('posts-x', {
             controller: 'posts/analytics/posts-x',

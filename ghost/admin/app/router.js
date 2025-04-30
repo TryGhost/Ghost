@@ -35,7 +35,8 @@ Router.map(function () {
 
     this.route('posts');
     this.route('posts.analytics', {path: '/posts/analytics/:post_id'}, function () {
-        this.route('posts-x', {path: '/web', templateName: 'posts-x', componentName: 'posts-x'});
+        this.route('web-stats', {path: '/web', templateName: 'posts-x', componentName: 'posts-x'});
+        this.route('growth-stats', {path: '/growth', templateName: 'posts-x', componentName: 'posts-x'});
     });
     this.route('posts.mentions', {path: '/posts/analytics/:post_id/mentions'});
     this.route('posts.debug', {path: '/posts/analytics/:post_id/debug'});

@@ -2268,6 +2268,10 @@ span.dropdown .gh-post-list-cta > span {
     font-weight: 500;
     cursor: pointer;
 }
+.feature-trafficAnalytics .gh-post-analytics-sidebar-item:hover {
+    color: var(--black);
+    background: var(--whitegrey);
+}
 
 .feature-trafficAnalytics .gh-post-analytics-sidebar-item.active {
     background: var(--whitegrey);
