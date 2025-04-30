@@ -103,6 +103,24 @@ const controller = {
         async query() {
             return await statsService.api.getReferrersHistory();
         }
+    },
+    topPerformingPosts: {
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData() {
+            return {
+                method: 'topPerformingPosts'
+            };
+        },
+        async query() {
+            return await statsService.api.getTopPerformingPosts();
+        }
     }
 };
 

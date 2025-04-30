@@ -23,7 +23,11 @@ module.exports = {
         frame.response = {};
 
         if (response.data) {
-            frame.response[docName] = response.data.map(model => mapResponse(docName, model, frame));
+            try {
+                frame.response[docName] = response.data.map(model => mapResponse(docName, model, frame));
+            } catch (error) {
+                console.log(response.data);
+            }
         } else {
             frame.response[docName] = [mapResponse(docName, response, frame)];
         }

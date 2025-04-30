@@ -2,7 +2,7 @@ const MRRService = require('./MrrStatsService');
 const MembersService = require('./MembersStatsService');
 const SubscriptionStatsService = require('./SubscriptionStatsService');
 const ReferrersStatsService = require('./ReferrersStatsService');
-
+const PostsStatsService = require('./PostsStatsService');
 class StatsService {
     /**
      * @param {object} deps
@@ -10,12 +10,14 @@ class StatsService {
      * @param {MembersService} deps.members
      * @param {SubscriptionStatsService} deps.subscriptions
      * @param {ReferrersStatsService} deps.referrers
+     * @param {PostsStatsService} deps.posts
      **/
     constructor(deps) {
         this.mrr = deps.mrr;
         this.members = deps.members;
         this.subscriptions = deps.subscriptions;
         this.referrers = deps.referrers;
+        this.posts = deps.posts;
     }
 
     async getMRRHistory() {
@@ -44,6 +46,13 @@ class StatsService {
         };
     }
 
+    async getTopPerformingPosts() {
+        return {
+            data: await this.posts.getTopPerformingPosts(),
+            meta: {}
+        }
+    }
+
     /**
      * @param {object} deps
      * @param {import('knex').Knex} deps.knex
@@ -55,7 +64,8 @@ class StatsService {
             mrr: new MRRService(deps),
             members: new MembersService(deps),
             subscriptions: new SubscriptionStatsService(deps),
-            referrers: new ReferrersStatsService(deps)
+            referrers: new ReferrersStatsService(deps),
+            posts: new PostsStatsService(deps)
         });
     }
 }

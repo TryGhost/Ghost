@@ -9,6 +9,7 @@ import {Navigate} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useTopPerformingPosts} from '@tryghost/admin-x-framework/api/stats';
 
 const GrowthKPIs:React.FC = () => {
     const [currentTab, setCurrentTab] = useState('free-members');
@@ -298,7 +299,10 @@ const GrowthKPIs:React.FC = () => {
 };
 
 const Growth:React.FC = () => {
-    // const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
+    const {isLoading, data} = useTopPerformingPosts();
+
+    const topPosts = data?.stats;
+
     // const {startDate, endDate, timezone} = getRangeDates(range);
 
     // const isLoading = isConfigLoading || loading;
@@ -351,11 +355,11 @@ const Growth:React.FC = () => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {mockTopPosts.map(post => (
+                                {topPosts?.map(post => (
                                     <TableRow key={post.id}>
                                         <TableCell className="font-medium">{post.title}</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>+{formatNumber(post.freeMembers)}</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>+{formatNumber(post.paidMembers)}</TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>+{formatNumber(post.free_members)}</TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>+{formatNumber(post.paid_members)}</TableCell>
                                         <TableCell className='text-right font-mono text-sm'>+${post.mrr}</TableCell>
                                     </TableRow>
                                 ))}
