@@ -22,7 +22,10 @@ export default defineConfig((config) => {
         },
         preview: {
             host: '0.0.0.0',
-            port: 4175
+            port: 4175,
+            cors: [
+                'http://localhost:2368'
+            ]
         },
         server: {
             port: 5368

@@ -7,7 +7,6 @@ import {resolve} from 'path';
 
 const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
 
-// https://vitejs.dev/config/
 export default (function viteConfig() {
     return defineConfig({
         logLevel: process.env.CI ? 'info' : 'warn',
@@ -21,7 +20,10 @@ export default (function viteConfig() {
         },
         preview: {
             host: '0.0.0.0',
-            port: 7173
+            port: 7173,
+            cors: [
+                'http://localhost:2368'
+            ]
         },
         server: {
             port: 5368
