@@ -100,7 +100,7 @@ services:
         condition: service_healthy
   storybook:
     <<: *ghost-base
-    command: [ "yarn", "storybook" ]
+    command: [ "yarn", "storybook", "dev", "-p", "6006", "-h", "0.0.0.0", "--no-open"]
     working_dir: /home/ghost/apps/shade
     profiles: [ storybook ]
     ports:
