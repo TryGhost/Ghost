@@ -17768,6 +17768,11 @@ flexsearch@0.7.43:
   resolved "https://registry.yarnpkg.com/flexsearch/-/flexsearch-0.7.43.tgz#34f89b36278a466ce379c5bf6fb341965ed3f16c"
   integrity sha512-c5o/+Um8aqCSOXGcZoqZOm+NqtVwNsvVpWv6lfmSclU954O3wvQKxxK8zj74fPaSJbXpSLTs4PRhh+wnoCXnKg==
 
+flexsearch@0.8.153:
+  version "0.8.153"
+  resolved "https://registry.yarnpkg.com/flexsearch/-/flexsearch-0.8.153.tgz#31b60df47280929a026121f185972271bdfa5daf"
+  integrity sha512-IwD3iA4OcN+H5XihfbWEhK/QShx/31WT+RAB2ni/ICguQX+1w3iyP1w8mYEnCkQvj4jbAAE/uujaZocoB8TLKg==
+
 flush-write-stream@^1.0.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/flush-write-stream/-/flush-write-stream-1.1.1.tgz#8dd7d873a1babc207d94ead0c2e0e44276ebf2e8"
