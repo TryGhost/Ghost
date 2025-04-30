@@ -4,9 +4,6 @@ import PostAnalyticsContent from './components/PostAnalyticsContent';
 import PostAnalyticsHeader from './components/PostAnalyticsHeader';
 import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber} from '@tryghost/shade';
-import {Navigate, useParams} from '@tryghost/admin-x-framework';
-import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
-import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
 const STATS_DEFAULT_SOURCE_ICON_URL = 'https://static.ghost.org/v5.0.0/images/globe-icon.svg';
 
@@ -15,15 +12,6 @@ interface postAnalyticsProps {}
 const Growth: React.FC<postAnalyticsProps> = () => {
     // const {isLoading: isConfigLoading} = useGlobalData();
     // const {range} = useGlobalData();
-    const {postId} = useParams();
-    const {settings} = useGlobalData();
-    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
-
-    if (!labs.trafficAnalyticsAlpha) {
-        return (
-            <Navigate to={`/analytics/${postId}/web`} />
-        );
-    }
 
     const isLoading = false;
 
