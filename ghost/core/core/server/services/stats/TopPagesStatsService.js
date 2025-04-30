@@ -1,20 +1,28 @@
 const logging = require('@tryghost/logging');
 
+/**
+ * @typedef {Object} TopPageDataItem
+ * @property {string} pathname - Page path
+ * @property {number} visits - Number of visits
+ * @property {string} [post_uuid] - Associated post UUID if available
+ * @property {string} [title] - Page title
+ */
+
 class TopPagesStatsService {
     /**
      * @param {object} deps
-     * @param {import('knex').Knex} deps.knex
+     * @param {import('knex').Knex} deps.knex - Database client
      * @param {object} deps.urlService - Ghost URL service for resource lookups
+     * @param {object} [deps.tinybirdClient] - Configured Tinybird client
      */
     constructor(deps) {
         this.knex = deps.knex;
         this.urlService = deps.urlService;
-        this.config = require('../../../shared/config');
-        this.statsConfig = this.config.get('tinybird:stats');
+        this.tinybirdClient = deps.tinybirdClient;
     }
 
     /**
-     * Fetches top pages data from Tinybird and enriches it with post titles from the database
+     * Fetches top pages data from Tinybird and enriches it with post titles
      * @param {Object} options
      * @param {string} [options.dateFrom] - Start date in YYYY-MM-DD format
      * @param {string} [options.dateTo] - End date in YYYY-MM-DD format
@@ -25,172 +33,150 @@ class TopPagesStatsService {
      * @returns {Promise<Object>} The enriched top pages data
      */
     async getTopPages(options = {}) {
-        // First fetch data from Tinybird
-        const externalRequest = require('../../lib/request-external');
-        
-        const localEnabled = this.statsConfig?.local?.enabled ?? false;
-        const endpoint = localEnabled ? this.statsConfig.local.endpoint : this.statsConfig.endpoint;
-        const token = localEnabled ? this.statsConfig.local.token : this.statsConfig.token;
-
-        // Use tbVersion if provided for constructing the URL
-        const pipeUrl = (options.tbVersion && !localEnabled) ? 
-            `/v0/pipes/api_top_pages__v${options.tbVersion}.json` : 
-            `/v0/pipes/api_top_pages.json`;
-        
-        const tinybirdUrl = `${endpoint}${pipeUrl}`;
-
-        const searchParams = {
-            site_uuid: options.siteUuid || this.statsConfig.id,
-            date_from: options.dateFrom,
-            date_to: options.dateTo,
-            timezone: options.timezone || this.config.get('timezone'),
-            member_status: options.memberStatus || 'all'
-        };
-        
         try {
-            // Convert searchParams to query string and append to URL
-            const queryString = new URLSearchParams(searchParams).toString();
-            const fullUrl = `${tinybirdUrl}?${queryString}`;
-            
-            const response = await externalRequest.get(fullUrl, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                },
-                timeout: {
-                    request: 10000
-                }
-            });
-
-            // The response might be already parsed JSON or a string that needs parsing
-            let responseData;
-            
-            if (response.body) {
-                if (typeof response.body === 'string') {
-                    try {
-                        responseData = JSON.parse(response.body);
-                    } catch (e) {
-                        logging.error(`Error parsing response body: ${e.message}`);
-                        responseData = {data: []};
-                    }
-                } else {
-                    responseData = response.body;
-                }
-            } else if (typeof response === 'string') {
-                try {
-                    responseData = JSON.parse(response);
-                } catch (e) {
-                    logging.error(`Error parsing response string: ${e.message}`);
-                    responseData = {data: []};
-                }
-            } else {
-                responseData = response;
-            }
-
-            if (!responseData || !responseData.data || !responseData.data.length) {
+            // Check if Tinybird client is available
+            if (!this.tinybirdClient) {
                 return {data: []};
             }
-
-            // Extract post UUIDs from the data
-            const postUuids = responseData.data
-                .map((item) => {
-                    // Check if post_uuid exists and isn't empty
-                    if (item.post_uuid && item.post_uuid.trim() !== '') {
-                        return item.post_uuid;
-                    }
-                    // Otherwise try extracting from pathname
-                    const match = item.pathname.match(/\/p\/([a-f0-9-]+)\/|\/([a-f0-9-]+)\//);
-                    return match ? (match[1] || match[2]) : null;
-                })
-                .filter(Boolean);
-
-            if (!postUuids.length) {
-                return {data: responseData.data};
-            }
-
-            // Lookup post titles in the database
-            const posts = await this.knex.select('uuid', 'title')
-                .from('posts')
-                .whereIn('uuid', postUuids);
-
-            // Create a map of UUID to title
-            const titleMap = posts.reduce((map, post) => {
-                map[post.uuid] = post.title;
-                return map;
-            }, {});
-
-            // Enrich the data with post titles or UrlService lookups
-            let urlServiceLookups = 0;
-            let urlServiceHits = 0;
             
-            const enrichedData = await Promise.all(responseData.data.map(async (item) => {
-                // First check if post_uuid is available directly
-                if (item.post_uuid && titleMap[item.post_uuid]) {
-                    return {
-                        ...item,
-                        title: titleMap[item.post_uuid]
-                    };
-                }
-                
-                // If not, try extracting from pathname
-                const match = item.pathname.match(/\/p\/([a-f0-9-]+)\/|\/([a-f0-9-]+)\//);
-                const uuid = match ? (match[1] || match[2]) : null;
-                
-                // If we have a UUID match in the database, use that title
-                if (uuid && titleMap[uuid]) {
-                    return {
-                        ...item,
-                        title: titleMap[uuid]
-                    };
-                }
-                
-                // Use UrlService for pages without post_uuid
-                if (this.urlService) {
-                    try {
-                        urlServiceLookups = urlServiceLookups + 1;
-                        const resource = this.urlService.getResource(item.pathname);
-                        
-                        if (resource) {
-                            urlServiceHits = urlServiceHits + 1;
-                            // Extract title from resource based on resource type
-                            if (resource.data) {
-                                if (resource.data.title) {
-                                    return {
-                                        ...item,
-                                        title: resource.data.title,
-                                        resourceType: resource.data.type
-                                    };
-                                } else if (resource.data.name) {
-                                    // For authors, tags, etc.
-                                    return {
-                                        ...item,
-                                        title: resource.data.name,
-                                        resourceType: resource.data.type
-                                    };
-                                }
-                            }
-                        }
-                    } catch (err) {
-                        if (err.code !== 'URLSERVICE_NOT_READY') {
-                            logging.warn(`Error looking up resource for ${item.pathname}: ${err.message}`);
-                        }
-                        // Continue with fallback if UrlService errors
-                    }
-                }
-                
-                // Otherwise fallback to pathname (removing leading/trailing slashes)
-                const formattedPath = item.pathname.replace(/^\/|\/$/g, '') || 'Home';
-                return {
-                    ...item,
-                    title: formattedPath
-                };
-            }));
+            // Step 1: Get raw data from Tinybird
+            const rawData = await this.fetchRawTopPagesData(options);
+            
+            if (!rawData || !rawData.length) {
+                return {data: []};
+            }
+            
+            // Step 2: Enrich the data with titles
+            const enrichedData = await this.enrichTopPagesData(rawData);
             
             return {data: enrichedData};
         } catch (error) {
-            logging.error('Error fetching top pages from Tinybird:');
+            logging.error('Error fetching top pages:');
             logging.error(error);
             return {data: []};
         }
+    }
+    
+    /**
+     * Fetch raw top pages data from Tinybird
+     * @param {Object} options - Query options
+     * @returns {Promise<Array<TopPageDataItem>|null>} Raw data or null on error
+     */
+    async fetchRawTopPagesData(options = {}) {
+        return await this.tinybirdClient.fetch('api_top_pages', options);
+    }
+    
+    /**
+     * Extract post UUIDs from page data (internal method)
+     * @param {Array<TopPageDataItem>} data - Raw page data
+     * @returns {Array<string>} Array of post UUIDs
+     */
+    extractPostUuids(data) {
+        return data
+            .map((item) => {
+                // Only use explicit post_uuid property
+                return (item.post_uuid && item.post_uuid.trim() !== '') ? item.post_uuid : null;
+            })
+            .filter(Boolean);
+    }
+    
+    /**
+     * Lookup post titles in the database
+     * @param {Array<string>} uuids - Post UUIDs to look up
+     * @returns {Promise<Object>} Map of UUID to title
+     */
+    async lookupPostTitles(uuids) {
+        if (!uuids.length) {
+            return {};
+        }
+        
+        const posts = await this.knex.select('uuid', 'title')
+            .from('posts')
+            .whereIn('uuid', uuids);
+            
+        return posts.reduce((map, post) => {
+            map[post.uuid] = post.title;
+            return map;
+        }, {});
+    }
+    
+    /**
+     * Get resource title using UrlService
+     * @param {string} pathname - Path to look up
+     * @returns {Object|null} Resource title and type, or null if not found
+     */
+    getResourceTitle(pathname) {
+        if (!this.urlService) {
+            return null;
+        }
+        
+        try {
+            const resource = this.urlService.getResource(pathname);
+            
+            if (resource && resource.data) {
+                if (resource.data.title) {
+                    return {
+                        title: resource.data.title,
+                        resourceType: resource.data.type
+                    };
+                } else if (resource.data.name) {
+                    // For authors, tags, etc.
+                    return {
+                        title: resource.data.name,
+                        resourceType: resource.data.type
+                    };
+                }
+            }
+        } catch (err) {
+            if (err.code !== 'URLSERVICE_NOT_READY') {
+                logging.warn(`Error looking up resource for ${pathname}: ${err.message}`);
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Enrich top pages data with titles
+     * @param {Array<TopPageDataItem>} data - Raw page data
+     * @returns {Promise<Array<TopPageDataItem>>} Enriched page data
+     */
+    async enrichTopPagesData(data) {
+        if (!data || !data.length) {
+            return [];
+        }
+        
+        // Extract post UUIDs and lookup titles
+        const postUuids = this.extractPostUuids(data);
+        const titleMap = await this.lookupPostTitles(postUuids);
+        
+        // Enrich the data with post titles or UrlService lookups
+        return Promise.all(data.map(async (item) => {
+            // Check if post_uuid is available directly
+            if (item.post_uuid && titleMap[item.post_uuid]) {
+                return {
+                    ...item,
+                    title: titleMap[item.post_uuid]
+                };
+            }
+            
+            // Use UrlService for pages without post_uuid
+            const resourceInfo = this.getResourceTitle(item.pathname);
+            if (resourceInfo) {
+                return {
+                    ...item,
+                    title: resourceInfo.title,
+                    resourceType: resourceInfo.resourceType
+                };
+            }
+            
+            // Otherwise fallback to pathname (removing leading/trailing slashes)
+            const formattedPath = item.pathname.replace(/^\/|\/$/g, '') || 'Home';
+            return {
+                ...item,
+                title: formattedPath
+            };
+        }));
     }
 }
 
