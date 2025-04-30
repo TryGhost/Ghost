@@ -9,7 +9,7 @@ import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 import {Heading, Icon, NoValueLabel, Button as OldButton, Tab, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {ProfileTab} from '../Profile';
 import {SettingAction} from '@src/views/Preferences/components/Settings';
-import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
+import {useAccountForUser, useBlockMutationForUser, useUnblockMutationForUser} from '@src/hooks/use-activity-pub-queries';
 import {useEffect, useRef, useState} from 'react';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigationStack, useParams} from '@tryghost/admin-x-framework';
@@ -48,17 +48,22 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
         setSelectedTab('posts');
     }, [params.handle]);
 
+    const blockMutation = useBlockMutationForUser('index');
+    const unblockMutation = useUnblockMutationForUser('index');
+
     const currentAccountQuery = useAccountForUser('index', 'me');
     const {data: currentUser} = params.handle ? currentAccountQuery : {data: undefined};
     const isCurrentUser = params.handle === currentUser?.handle || !params.handle;
 
-    // TODO: Wire up the block state
-    const [isBlocked, setIsBlocked] = useState(false);
+    const isBlocked = account?.blockedByMe;
     const [viewBlockedPosts, setViewBlockedPosts] = useState(false);
 
-    // TODO: Wire up the block functionality
     const handleBlock = () => {
-        setIsBlocked(!isBlocked);
+        if (isBlocked) {
+            unblockMutation.mutate(account);
+        } else {
+            blockMutation.mutate(account);
+        }
         setViewBlockedPosts(false);
     };
 

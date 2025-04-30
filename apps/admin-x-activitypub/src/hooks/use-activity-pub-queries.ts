@@ -275,6 +275,62 @@ export function useUnlikeMutationForUser(handle: string) {
     });
 }
 
+export function useBlockMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(account: Account) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.block(new URL(account.apId));
+        },
+        onMutate: (account: Account) => {
+            queryClient.setQueryData(
+                QUERY_KEYS.account(account.handle),
+                (currentAccount?: Account) => {
+                    if (!currentAccount) {
+                        return currentAccount;
+                    }
+                    return {
+                        ...currentAccount,
+                        blockedByMe: true,
+                        followedByMe: false,
+                        followsMe: false
+                    };
+                }
+            );
+        }
+    });
+}
+
+export function useUnblockMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(account: Account) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.unblock(new URL(account.apId));
+        },
+        onMutate: (account: Account) => {
+            queryClient.setQueryData(
+                QUERY_KEYS.account(account.handle),
+                (currentAccount?: Account) => {
+                    if (!currentAccount) {
+                        return currentAccount;
+                    }
+                    return {
+                        ...currentAccount,
+                        blockedByMe: false
+                    };
+                }
+            );
+        }
+    });
+}
+
 function updateRepostCache(queryClient: QueryClient, queryKey: string[], id: string, reposted: boolean) {
     queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
         if (current === undefined) {
