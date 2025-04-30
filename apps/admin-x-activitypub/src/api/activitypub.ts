@@ -94,7 +94,8 @@ export interface Notification {
         title: string | null;
         content: string;
         url: string;
-    }
+    },
+    createdAt: string;
 }
 
 export interface GetNotificationsResponse {
