@@ -3,28 +3,23 @@ import DateRangeSelect from './components/DateRangeSelect';
 import Kpis from './components/Web/Kpis';
 import Locations from './components/Web/Locations';
 import PostAnalyticsContent from './components/PostAnalyticsContent';
+import PostAnalyticsHeader from './components/PostAnalyticsHeader';
 import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
 import Sources from './components/Web/Sources';
-import moment from 'moment-timezone';
-import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, H1, ViewHeader, ViewHeaderActions, formatQueryDate} from '@tryghost/shade';
-import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
+import {ViewHeader, ViewHeaderActions, formatQueryDate} from '@tryghost/shade';
 import {getRangeDates} from '@src/utils/chart-helpers';
+import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useMemo} from 'react';
-import {useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {useParams} from '@tryghost/admin-x-framework';
 
 interface postAnalyticsProps {}
 
-interface PostWithPublishedAt extends Post {
-    published_at?: string;
-}
-
-const PostAnalytics: React.FC<postAnalyticsProps> = () => {
+const Web: React.FC<postAnalyticsProps> = () => {
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {postId} = useParams();
-    const navigate = useNavigate();
 
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
@@ -32,9 +27,6 @@ const PostAnalytics: React.FC<postAnalyticsProps> = () => {
             fields: 'title,slug,published_at,uuid'
         }
     });
-
-    // Type assertion for post
-    const typedPost = post as PostWithPublishedAt;
 
     const params = useMemo(() => {
         const baseParams = {
@@ -61,37 +53,7 @@ const PostAnalytics: React.FC<postAnalyticsProps> = () => {
     return (
         <PostAnalyticsLayout>
             <ViewHeader className='items-end pb-4'>
-                <div className='flex w-full max-w-[700px] grow flex-col'>
-                    <Breadcrumb>
-                        <BreadcrumbList>
-                            <BreadcrumbItem>
-                                <BreadcrumbLink className='cursor-pointer leading-[24px]' onClick={() => navigate('/posts/', {crossApp: true})}>
-                                Posts
-                                </BreadcrumbLink>
-                            </BreadcrumbItem>
-                            <BreadcrumbSeparator />
-                            <BreadcrumbItem>
-                                <BreadcrumbLink className='cursor-pointer leading-[24px]' onClick={() => navigate(`/posts/analytics/${postId}`, {crossApp: true})}>
-                                Analytics
-                                </BreadcrumbLink>
-                            </BreadcrumbItem>
-                            <BreadcrumbSeparator />
-                            <BreadcrumbItem>
-                                <BreadcrumbPage className='leading-[24px]'>
-                                Web
-                                </BreadcrumbPage>
-                            </BreadcrumbItem>
-                        </BreadcrumbList>
-                    </Breadcrumb>
-                    <H1 className='min-h-[35px] indent-0 leading-[1.2em]'>
-                        {post && post.title}
-                    </H1>
-                    {typedPost && typedPost.published_at && (
-                        <div className='flex h-9 items-center justify-start text-sm leading-[1.65em] text-grey-600'>
-                            Published on your site on {moment.utc(typedPost.published_at).format('D MMM YYYY')} at {moment.utc(typedPost.published_at).format('HH:mm')}
-                        </div>
-                    )}
-                </div>
+                <PostAnalyticsHeader currentTab='Web' />
                 <ViewHeaderActions className='mb-2'>
                     <AudienceSelect />
                     <DateRangeSelect />
@@ -112,4 +74,4 @@ const PostAnalytics: React.FC<postAnalyticsProps> = () => {
     );
 };
 
-export default PostAnalytics;
+export default Web;

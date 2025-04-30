@@ -315,31 +315,6 @@ const Sidebar: React.FC<{
                         label='Feature image'
                         onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
                     />
-                    <div className='flex w-full justify-between'>
-                        <div>Alignment</div>
-                        <ButtonGroup activeKey={newsletter.title_alignment} buttons={[
-                            {
-                                key: 'left',
-                                icon: 'align-left',
-                                label: 'Align left',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({title_alignment: 'left'}),
-                                disabled: !newsletter.show_post_title_section
-                            },
-                            {
-                                key: 'center',
-                                icon: 'align-center',
-                                label: 'Align center',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({title_alignment: 'center'}),
-                                disabled: !newsletter.show_post_title_section
-                            }
-                        ]} clearBg={false} />
-                    </div>
                 </Form>
 
                 <Form className='mt-6' gap='sm' margins='lg' title='Footer'>
@@ -406,24 +381,20 @@ const Sidebar: React.FC<{
             contents:
             <>
                 <Form className='mt-6' gap='xs' margins='lg' title='Typography'>
-                    <div className="w-full">
-                        <Select
-                            disabled={!newsletter.show_post_title_section}
-                            options={fontOptions}
-                            selectedOption={fontOptions.find(option => option.value === newsletter.title_font_category)}
-                            title='Heading font'
-                            onSelect={option => updateNewsletter({title_font_category: option?.value})}
-                        />
-                    </div>
-                    <div className='w-full'>
-                        <Select
-                            disabled={!newsletter.show_post_title_section}
-                            options={fontWeightOptions}
-                            selectedOption={fontWeightOptions.find(option => option.value === newsletter.title_font_weight)}
-                            title='Heading weight'
-                            onSelect={option => updateNewsletter({title_font_weight: option?.value})}
-                        />
-                    </div>
+                    <Select
+                        disabled={!newsletter.show_post_title_section}
+                        options={fontOptions}
+                        selectedOption={fontOptions.find(option => option.value === newsletter.title_font_category)}
+                        title='Heading font'
+                        onSelect={option => updateNewsletter({title_font_category: option?.value})}
+                    />
+                    <Select
+                        disabled={!newsletter.show_post_title_section}
+                        options={fontWeightOptions}
+                        selectedOption={fontWeightOptions.find(option => option.value === newsletter.title_font_weight)}
+                        title='Heading weight'
+                        onSelect={option => updateNewsletter({title_font_weight: option?.value})}
+                    />
                     <Select
                         options={fontOptions}
                         selectedOption={fontOptions.find(option => option.value === newsletter.body_font_category)}
@@ -433,6 +404,19 @@ const Sidebar: React.FC<{
                     />
                 </Form>
                 <Form className='mt-6' gap='xs' margins='lg' title='Colors'>
+                    <ColorPickerField
+                        direction='rtl'
+                        swatches={[
+                            {
+                                hex: '#ffffff',
+                                value: 'light',
+                                title: 'White'
+                            }
+                        ]}
+                        title='Background color'
+                        value={newsletter.background_color || 'light'}
+                        onChange={color => updateNewsletter({background_color: color!})}
+                    />
                     <ColorPickerField
                         direction='rtl'
                         swatches={[
@@ -455,8 +439,8 @@ const Sidebar: React.FC<{
                         direction='rtl'
                         swatches={[
                             {
-                                value: null,
-                                title: 'Auto',
+                                value: 'light',
+                                title: 'Light',
                                 hex: '#e0e7eb'
                             },
                             {
@@ -466,21 +450,44 @@ const Sidebar: React.FC<{
                             }
                         ]}
                         title='Divider color'
-                        value={newsletter.divider_color}
+                        value={newsletter.divider_color || 'light'}
                         onChange={color => updateNewsletter({divider_color: color})}
                     />
                     <ColorPickerField
                         direction='rtl'
                         swatches={[
                             {
-                                hex: '#ffffff',
-                                value: 'light',
-                                title: 'White'
+                                value: 'accent',
+                                title: 'Accent',
+                                hex: siteData.accent_color
+                            },
+                            {
+                                value: null,
+                                title: 'Auto',
+                                hex: backgroundColorIsDark() ? '#ffffff' : '#000000'
                             }
                         ]}
-                        title='Background color'
-                        value={newsletter.background_color || 'light'}
-                        onChange={color => updateNewsletter({background_color: color!})}
+                        title='Button color'
+                        value={newsletter.button_color}
+                        onChange={color => updateNewsletter({button_color: color})}
+                    />
+                    <ColorPickerField
+                        direction='rtl'
+                        swatches={[
+                            {
+                                value: 'accent',
+                                title: 'Accent',
+                                hex: siteData.accent_color
+                            },
+                            {
+                                value: null,
+                                title: 'Auto',
+                                hex: backgroundColorIsDark() ? '#ffffff' : '#000000'
+                            }
+                        ]}
+                        title='Link color'
+                        value={newsletter.link_color}
+                        onChange={color => updateNewsletter({link_color: color})}
                     />
                     {/* <ColorPickerField
                         clearButtonValue={null}
@@ -509,10 +516,163 @@ const Sidebar: React.FC<{
                 </Form>
 
                 <Form className='mt-6' gap='xs' margins='lg' title='Elements'>
-                    <div>Button style</div>
-                    <div>Button corners</div>
-                    <div>Link style</div>
-                    <div>Divider style</div>
+                    <div className='flex w-full justify-between'>
+                        <div>Title alignment</div>
+                        <ButtonGroup activeKey={newsletter.title_alignment} buttons={[
+                            {
+                                key: 'left',
+                                icon: 'align-left',
+                                label: 'Align left',
+                                tooltip: 'Left',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({title_alignment: 'left'}),
+                                disabled: !newsletter.show_post_title_section
+                            },
+                            {
+                                key: 'center',
+                                icon: 'align-center',
+                                label: 'Align center',
+                                tooltip: 'Center',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({title_alignment: 'center'}),
+                                disabled: !newsletter.show_post_title_section
+                            }
+                        ]} clearBg={false} />
+                    </div>
+                    <div className='flex w-full justify-between'>
+                        <div>Button style</div>
+                        <ButtonGroup activeKey={newsletter.button_style || 'fill'} buttons={[
+                            {
+                                key: 'fill',
+                                icon: 'squircle-fill',
+                                label: 'Fill',
+                                tooltip: 'Fill',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({button_style: 'fill'})
+                            },
+                            {
+                                key: 'outline',
+                                icon: 'squircle',
+                                label: 'Outline',
+                                tooltip: 'Outline',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({button_style: 'outline'})
+                            }
+                        ]} clearBg={false} />
+                    </div>
+                    <div className='flex w-full justify-between'>
+                        <div>Button corners</div>
+                        <ButtonGroup activeKey={newsletter.button_corners || 'squircle'} buttons={[
+                            {
+                                key: 'square',
+                                icon: 'square',
+                                label: 'Square',
+                                tooltip: 'Squared',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({button_corners: 'square'})
+                            },
+                            {
+                                key: 'squircle',
+                                icon: 'squircle',
+                                label: 'Squircle',
+                                tooltip: 'Slightly rounded',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({button_corners: 'squircle'})
+                            },
+                            {
+                                key: 'rounded',
+                                icon: 'circle',
+                                label: 'Rounded',
+                                tooltip: 'Fully rounded',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({button_corners: 'rounded'})
+                            }
+                        ]} clearBg={false} />
+                    </div>
+                    <div className='flex w-full justify-between'>
+                        <div>Link style</div>
+                        <ButtonGroup activeKey={newsletter.link_style || 'underline'} buttons={[
+                            {
+                                key: 'underline',
+                                icon: 'text-underline',
+                                label: 'Underline',
+                                tooltip: 'Underline',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({link_style: 'underline'})
+                            },
+                            {
+                                key: 'regular',
+                                icon: 'text-regular',
+                                label: 'Regular',
+                                tooltip: 'Regular',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({link_style: 'regular'})
+                            },
+                            {
+                                key: 'bold',
+                                icon: 'text-bold',
+                                label: 'Bold',
+                                tooltip: 'Bold',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({link_style: 'bold'})
+                            }
+                        ]} clearBg={false} />
+                    </div>
+                    <div className='flex w-full justify-between'>
+                        <div>Divider style</div>
+                        <ButtonGroup activeKey={newsletter.divider_style || 'solid'} buttons={[
+                            {
+                                key: 'solid',
+                                icon: 'line-solid',
+                                label: 'Solid',
+                                tooltip: 'Solid',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({divider_style: 'solid'})
+                            },
+                            {
+                                key: 'dashed',
+                                icon: 'line-dashed',
+                                label: 'Dashed',
+                                tooltip: 'Dashed',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({divider_style: 'dashed'})
+                            },
+                            {
+                                key: 'dotted',
+                                icon: 'line-dotted',
+                                label: 'Dotted',
+                                tooltip: 'Dotted',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({divider_style: 'dotted'})
+                            }
+                        ]} clearBg={false} />
+                    </div>
                 </Form>
             </>
         }

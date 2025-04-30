@@ -296,7 +296,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                         {(type === 'Announce') && <div className='z-10 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
                             <Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'} />
                             <div className='flex min-w-0 items-center gap-1 text-sm'>
-                                <span className='truncate break-all hover:underline' title={getUsername(actor)} onClick={(e) => {
+                                <span className='truncate break-anywhere hover:underline' title={getUsername(actor)} onClick={(e) => {
                                     handleProfileClickRR(actor, navigate, e);
                                 }}>{actor.name}</span>
                                 reposted
@@ -408,7 +408,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             <div className={`z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 pb-3 pt-4`} data-test-activity>
                                 {(type === 'Announce') && <div className='z-10 col-span-2 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
                                     <div><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon></div>
-                                    <span className='flex min-w-0 items-center gap-1'><span className='truncate break-all hover:underline' title={getUsername(actor)} onClick={(e) => {
+                                    <span className='flex min-w-0 items-center gap-1'><span className='truncate break-anywhere hover:underline' title={getUsername(actor)} onClick={(e) => {
                                         handleProfileClickRR(actor, navigate, e);
                                     }}>{actor.name}</span> reposted</span>
                                 </div>}
@@ -558,7 +558,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             }}
                                         >{author.name}
                                         </span>
-                                        {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600'><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon><span className='hover:underline' title={getUsername(actor)} onClick={(e) => {
+                                        {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600'><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon><span className='line-clamp-1 hover:underline' title={getUsername(actor)} onClick={(e) => {
                                             handleProfileClickRR(actor, navigate, e);
                                         }}>{actor.name}</span> reposted</span>}
                                         <span className='shrink-0 whitespace-nowrap text-gray-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object, !object.authored)}</span>
