@@ -5,12 +5,12 @@ const createSessionMiddleware = require('./middleware');
 const settingsCache = require('../../../../shared/settings-cache');
 const {GhostMailer} = require('../../mail');
 const {t} = require('../../i18n');
-const labs = require('../../../../shared/labs');
 
 const expressSession = require('./express-session');
 
 const models = require('../../../models');
 const urlUtils = require('../../../../shared/url-utils');
+const config = require('../../../../shared/config');
 const {blogIcon} = require('../../../lib/image');
 const url = require('url');
 
@@ -47,13 +47,16 @@ const sessionService = createSessionService({
     getSettingsCache(key) {
         return settingsCache.get(key);
     },
+    isStaffDeviceVerificationDisabled() {
+        // This config flag is set to true by default, so we need to check for false
+        return config.get('security:staffDeviceVerification') !== true;
+    },
     getBlogLogo() {
         return blogIcon.getIconUrl({absolute: true, fallbackToDefault: false})
             || 'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png';
     },
     mailer,
     urlUtils,
-    labs,
     t
 });
 

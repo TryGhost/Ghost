@@ -551,3 +551,10 @@ add|ember-template-lint|require-iframe-title|27|20|27|20|94e58d11848d5613900c218
 add|ember-template-lint|require-iframe-title|42|16|42|16|a3292b469dc37f2f4791e7f224b0b65c8ecf5d18|1743984000000|1754352000000|1759536000000|app/components/modals/email-preview.hbs
 add|ember-template-lint|no-autofocus-attribute|21|20|21|20|942419d05c04ded6716f09faecd6b1ab55418121|1743984000000|1754352000000|1759536000000|app/components/modals/new-custom-integration.hbs
 add|ember-template-lint|no-invalid-interactive|2|37|2|37|e21ba31f54b631a428c28a1c9f88d0dc66f2f5fc|1743984000000|1754352000000|1759536000000|app/components/modals/search.hbs
+add|ember-template-lint|no-redundant-role|6|20|6|20|bc4fbabe3d468440d8a2c70e92cec991caca41e2|1745798400000|1756166400000|1761350400000|app/components/gh-post-bookmark.hbs
+add|ember-template-lint|no-redundant-role|14|64|14|64|ce988c0098c6e4845fc3307eb523b8b1687a3ecf|1745798400000|1756166400000|1761350400000|app/components/gh-post-bookmark.hbs
+add|ember-template-lint|no-redundant-role|85|24|85|24|ce988c0098c6e4845fc3307eb523b8b1687a3ecf|1745798400000|1756166400000|1761350400000|app/components/modal-post-success.hbs
+add|ember-template-lint|no-redundant-role|136|24|136|24|ce988c0098c6e4845fc3307eb523b8b1687a3ecf|1745798400000|1756166400000|1761350400000|app/components/modal-post-success.hbs
+add|ember-template-lint|no-redundant-role|91|40|91|40|9d2eded16257516b455504637aab4057b3c0c9ef|1745798400000|1756166400000|1761350400000|app/templates/mentions.hbs
+add|ember-template-lint|no-redundant-role|113|20|113|20|0418319e2dce98b674dbb6657d185f465d21f87d|1745798400000|1756166400000|1761350400000|app/templates/mentions.hbs
+add|ember-template-lint|no-redundant-role|11|20|11|20|bc4fbabe3d468440d8a2c70e92cec991caca41e2|1745798400000|1756166400000|1761350400000|app/components/dashboard/onboarding/share-modal.hbs

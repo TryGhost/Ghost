@@ -5,10 +5,10 @@
         </div>
         <div class="gh-post-preview-btn-group">
             <div class="gh-contentfilter gh-btn-group">
-                <button type="button" class="gh-btn gh-post-preview-mode {{if (eq this.previewFormat "browser") "gh-btn-group-selected"}}" {{on "click" (fn this.changePreviewFormat "browser")}}><span>Web</span></button>
+                <button type="button" class="gh-btn gh-post-preview-mode {{if (eq this.previewFormat "browser") "gh-btn-group-selected"}}" {{on "click" (fn this.changePreviewFormat "browser")}} data-test-button="browser-preview" data-test-selected={{eq this.previewFormat "browser"}}><span>Web</span></button>
                 {{#if (and this.settings.membersEnabled (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
                     {{#if (and @data.publishOptions.post.isPost (not @data.publishOptions.user.isContributor))}}
-                        <button type="button" class="gh-btn {{if (eq this.previewFormat "email") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changePreviewFormat "email")}} data-test-button="email-preview"><span>Email</span></button>
+                        <button type="button" class="gh-btn {{if (eq this.previewFormat "email") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changePreviewFormat "email")}} data-test-button="email-preview" data-test-selected={{eq this.previewFormat "email"}}><span>Email</span></button>
                     {{/if}}
                 {{/if}}
             </div>
@@ -39,7 +39,7 @@
                 <GhDropdownButton
                     @dropdownName="post-preview-share"
                     @classNames="gh-btn gh-btn-preview gh-post-preview-url"
-                    data-test-button="post-preview-test-email"
+                    data-test-button="share-preview"
                 >
                     <span>{{svg-jar "share"}}</span>
                 </GhDropdownButton>
@@ -59,7 +59,7 @@
                             @class="gh-btn gh-btn-icon gh-btn-preview gh-post-copy-url"
                             data-test-button="copy-draft-link"
                         />
-                        <a href={{@data.publishOptions.post.previewUrl}} target="_blank" rel="noopener noreferrer" class="gh-btn gh-btn-preview gh-publish-preview-newtab" data-test-link="open-draft">
+                        <a href={{this.browserPreviewUrl}} target="_blank" rel="noopener noreferrer" class="gh-btn gh-btn-preview gh-publish-preview-newtab" data-test-link="open-draft">
                             <span>{{svg-jar "external"}}Open in new tab</span>
                         </a>
                     </div>

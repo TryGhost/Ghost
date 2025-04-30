@@ -1,15 +1,13 @@
 import MainLayout from '@src/components/layout';
 import React from 'react';
-import Sidebar from './Sidebar';
 
 const StatsLayout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children}) => {
     return (
         <MainLayout>
-            <div className='grid w-full grow grid-cols-[auto_320px]'>
-                <div className='px-8'>
+            <div className='grid w-full grow'>
+                <div className='flex h-full flex-col px-8'>
                     {children}
                 </div>
-                <Sidebar />
             </div>
         </MainLayout>
     );

@@ -1,6 +1,7 @@
-import {APP_ROUTE_PREFIX, routes} from './routes';
-import {FrameworkProvider, RouterProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
-import {ShadeApp, ShadeAppProps, SidebarProvider} from '@tryghost/shade';
+import GlobalDataProvider from './providers/GlobalDataProvider';
+import {APP_ROUTE_PREFIX, routes} from '@src/routes';
+import {FrameworkProvider, Outlet, RouterProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
+import {ShadeApp, ShadeAppProps} from '@tryghost/shade';
 
 interface AppProps {
     framework: TopLevelFrameworkProps;
@@ -10,11 +11,13 @@ interface AppProps {
 const App: React.FC<AppProps> = ({framework, designSystem}) => {
     return (
         <FrameworkProvider {...framework}>
-            <ShadeApp className='posts' {...designSystem}>
-                <SidebarProvider>
-                    <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes} />
-                </SidebarProvider>
-            </ShadeApp>
+            <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
+                <GlobalDataProvider>
+                    <ShadeApp darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
+                        <Outlet />
+                    </ShadeApp>
+                </GlobalDataProvider>
+            </RouterProvider>
         </FrameworkProvider>
     );
 };

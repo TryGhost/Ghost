@@ -48,6 +48,10 @@ const Sidebar: React.FC = () => {
                             <LucideIcon.User size={18} strokeWidth={1.5} />
                             Profile
                         </SidebarMenuLink>
+                        <SidebarMenuLink to='/preferences'>
+                            <LucideIcon.Settings2 size={18} strokeWidth={1.5} />
+                            Preferences
+                        </SidebarMenuLink>
                     </div>
                     <NewNoteModal>
                         <Button className='h-9 rounded-full bg-purple-500 px-3 text-md text-white dark:hover:bg-purple-500'>
