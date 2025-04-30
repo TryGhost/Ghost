@@ -3,7 +3,7 @@
 echo "hello from daemon"
 
 # Default value for tsPackages if not provided as an environment variable
-: "${tsPackages:=@tryghost/post-revisions}"
+: "${tsPackages:=@tryghost/post-revisions,@tryghost/post-events}"
 
 echo "Watching packages: $tsPackages"
 
@@ -23,7 +23,7 @@ cleanup() {
 trap cleanup SIGTERM SIGINT SIGQUIT
 
 # Run the nx watch command in the background
-yarn nx -- watch --projects=@tryghost/post-revisions -- nx run \$NX_PROJECT_NAME:build:ts &
+yarn nx -- watch --projects=${tsPackages} -- nx run \$NX_PROJECT_NAME:build:ts &
 
 # Store the PID of the background process
 child_pid=$!
