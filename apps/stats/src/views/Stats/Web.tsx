@@ -1,7 +1,7 @@
 import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import DateRangeSelect from './components/DateRangeSelect';
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
@@ -12,6 +12,7 @@ import {calculateYAxisWidth, getPeriodText, getRangeDates, getYTicks} from '@src
 import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
+import {useTopPages} from '@tryghost/admin-x-framework/api/stats';
 
 // Define types for our page data
 interface TopPageData {
@@ -19,84 +20,6 @@ interface TopPageData {
     visits: number;
     title?: string;
 }
-
-interface TopPageQueryParams {
-    site_uuid: string;
-    date_from: string;
-    date_to: string;
-    timezone: string;
-    member_status: string;
-    tb_version?: number;
-}
-
-// Custom hook to fetch data from the Ghost API instead of Tinybird directly
-const useGhostTopPagesQuery = (params: TopPageQueryParams) => {
-    const [data, setData] = useState<TopPageData[] | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<Error | null>(null);
-    
-    // Use a ref to track if a request is in progress
-    const requestInProgress = React.useRef(false);
-    
-    // Memoize the fetch function to prevent unnecessary re-creation
-    const fetchData = React.useCallback(async () => {
-        // Skip if a request is already in progress
-        if (requestInProgress.current) { 
-            return;
-        }
-        
-        requestInProgress.current = true;
-        setLoading(true);
-        
-        try {
-            // Adjust query parameters to match the API endpoint
-            const queryParams = new URLSearchParams({
-                siteUuid: params.site_uuid || '',
-                dateFrom: params.date_from || '',
-                dateTo: params.date_to || '',
-                timezone: params.timezone || '',
-                memberStatus: params.member_status || '',
-                tbVersion: params.tb_version?.toString() || TB_VERSION.toString()
-            }).toString();
-
-            // Call the Ghost API endpoint
-            const response = await fetch(`/ghost/api/admin/stats/top-pages?${queryParams}`, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch top pages data');
-            }
-
-            const result = await response.json();
-            setData(result.stats);
-        } catch (err) {
-            setError(err instanceof Error ? err : new Error('An error occurred'));
-            // Log error without using console.log directly
-            if (process.env.NODE_ENV !== 'production') {
-                // eslint-disable-next-line no-console
-                console.error('Error fetching top pages data:', err);
-            }
-        } finally {
-            setLoading(false);
-            requestInProgress.current = false;
-        }
-    }, [params.site_uuid, params.date_from, params.date_to, params.timezone, params.member_status, params.tb_version]);
-
-    // Only trigger fetch when the memoized fetch function changes
-    useEffect(() => {
-        fetchData();
-        
-        return () => {
-            // Cleanup on component unmount or when dependencies change
-            requestInProgress.current = false;
-        };
-    }, [fetchData]);
-
-    return {data, loading, error};
-};
 
 const KPI_METRICS: Record<string, KpiMetric> = {
     visits: {
@@ -272,19 +195,25 @@ const Web:React.FC = () => {
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
-    const params = {
-        site_uuid: statsConfig?.id || '',
-        date_from: formatQueryDate(startDate),
-        date_to: formatQueryDate(endDate),
+    // Prepare parameters for the admin-x-framework hook
+    const queryParams = {
+        siteUuid: statsConfig?.id || '',
+        dateFrom: formatQueryDate(startDate),
+        dateTo: formatQueryDate(endDate),
         timezone: timezone,
-        member_status: getAudienceQueryParam(audience),
-        tb_version: TB_VERSION
+        memberStatus: getAudienceQueryParam(audience),
+        tbVersion: TB_VERSION?.toString()
     };
 
-    // Use our custom hook instead of the direct Tinybird call
-    const {data, loading} = useGhostTopPagesQuery(params);
+    // Use the admin-x-framework hook instead of our custom hook
+    const {data, isLoading: isDataLoading} = useTopPages({
+        searchParams: queryParams
+    });
 
-    const isLoading = isConfigLoading || loading;
+    const isLoading = isConfigLoading || isDataLoading;
+    
+    // The data structure from the hook is {stats: TopPageData[]}
+    const topPages = data?.stats || [];
 
     return (
         <StatsLayout>
@@ -295,7 +224,7 @@ const Web:React.FC = () => {
                     <DateRangeSelect />
                 </ViewHeaderActions>
             </ViewHeader>
-            <StatsView data={data} isLoading={isLoading}>
+            <StatsView data={topPages} isLoading={isLoading}>
                 <Card variant='plain'>
                     <CardContent>
                         <WebKPIs />
@@ -315,7 +244,7 @@ const Web:React.FC = () => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {data?.map((row: TopPageData) => {
+                                {topPages?.map((row: TopPageData) => {
                                     return (
                                         <TableRow key={row.pathname}>
                                             <TableCell className="font-medium"><a className='-mx-2 inline-block px-2 hover:underline' href={`${row.pathname}`} rel="noreferrer" target='_blank'>{row.title || row.pathname}</a></TableCell>
