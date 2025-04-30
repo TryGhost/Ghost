@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "hello from daemon"
+yarn nx reset
 
 # Dynamically discover TypeScript packages using nx show projects
 echo "Discovering TypeScript packages..."
@@ -25,7 +25,7 @@ cleanup() {
 trap cleanup SIGTERM SIGINT SIGQUIT
 
 # Run the nx watch command in the background
-yarn nx -- watch --projects=${tsPackagesList} -- nx run \$NX_PROJECT_NAME:build &
+yarn nx -- watch --projects=${tsPackagesList} -- nx run --disableNxCache \$NX_PROJECT_NAME:build &
 
 # Store the PID of the background process
 child_pid=$!
