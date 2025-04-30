@@ -1,6 +1,6 @@
 require('should');
 
-const {Cache} = require('../');
+const Cache = require('../../../../core/shared/custom-theme-settings-cache/CustomThemeSettingsCache');
 
 describe('Cache', function () {
     describe('populate()', function () {

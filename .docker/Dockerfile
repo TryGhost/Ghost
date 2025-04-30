@@ -74,7 +74,6 @@ COPY ghost/api-framework/package.json ghost/api-framework/package.json
 COPY ghost/constants/package.json ghost/constants/package.json
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/custom-fonts/package.json ghost/custom-fonts/package.json
-COPY ghost/custom-theme-settings-service/package.json ghost/custom-theme-settings-service/package.json
 COPY ghost/domain-events/package.json ghost/domain-events/package.json
 COPY ghost/donations/package.json ghost/donations/package.json
 COPY ghost/email-addresses/package.json ghost/email-addresses/package.json
