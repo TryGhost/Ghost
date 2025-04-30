@@ -13,7 +13,6 @@ Object {
       "additionalPaymentMethods": true,
       "announcementBar": true,
       "audienceFeedback": true,
-      "captcha": true,
       "collectionsCard": true,
       "contentVisibility": true,
       "contentVisibilityAlpha": true,
