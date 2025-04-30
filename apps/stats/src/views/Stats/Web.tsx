@@ -12,10 +12,10 @@ import {calculateYAxisWidth, getPeriodText, getRangeDates, getYTicks} from '@src
 import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
-import {useTopPages} from '@tryghost/admin-x-framework/api/stats';
+import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
 // Define types for our page data
-interface TopPageData {
+interface TopContentData {
     pathname: string;
     visits: number;
     title?: string;
@@ -210,14 +210,14 @@ const Web:React.FC = () => {
     }
 
     // Use the admin-x-framework hook
-    const {data, isLoading: isDataLoading} = useTopPages({
+    const {data, isLoading: isDataLoading} = useTopContent({
         searchParams: queryParams
     });
 
     const isLoading = isConfigLoading || isDataLoading;
     
-    // The data structure from the hook is {stats: TopPageData[]}
-    const topPages = data?.stats || [];
+    // The data structure from the hook is {stats: TopContentData[]}
+    const topContent = data?.stats || [];
 
     return (
         <StatsLayout>
@@ -228,7 +228,7 @@ const Web:React.FC = () => {
                     <DateRangeSelect />
                 </ViewHeaderActions>
             </ViewHeader>
-            <StatsView data={topPages} isLoading={isLoading}>
+            <StatsView data={topContent} isLoading={isLoading}>
                 <Card variant='plain'>
                     <CardContent>
                         <WebKPIs />
@@ -248,7 +248,7 @@ const Web:React.FC = () => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {topPages?.map((row: TopPageData) => {
+                                {topContent?.map((row: TopContentData) => {
                                     return (
                                         <TableRow key={row.pathname}>
                                             <TableCell className="font-medium"><a className='-mx-2 inline-block px-2 hover:underline' href={`${row.pathname}`} rel="noreferrer" target='_blank'>{row.title || row.pathname}</a></TableCell>
