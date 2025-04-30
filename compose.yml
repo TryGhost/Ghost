@@ -6,8 +6,6 @@ x-service-template: &service-template
   image: ghost-monorepo:latest
   pull_policy: never
   entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
-  environment:
-    - NX_DAEMON=false
   volumes:
       # Main bind mount to sync source code
       - .:/home/ghost
@@ -70,13 +68,14 @@ services:
     command: [ "yarn", "dev" ]
     ports:
       - "2368:2368"
-    profiles: [ split ]
+    profiles: [ split, all ]
     depends_on:
       mysql:
         condition: service_healthy
       redis:
         condition: service_healthy
     environment:
+      - NX_DAEMON=false
       - DEBUG=${DEBUG:-}
       - SSH_AUTH_SOCK=/ssh-agent
       - GHOST_DEV_IS_DOCKER=true
@@ -93,15 +92,17 @@ services:
     ports:
       - "4200:4200"
       - "4201:4201"
-    profiles: [ split ]
+    profiles: [ split, all ]
     depends_on:
       server:
         condition: service_started
+    environment:
+      - NX_DAEMON=false
 
 
   daemon:
     <<: *service-template
-    profiles: [ split, daemon ]
+    profiles: [ split, daemon, all ]
     entrypoint: [ "/home/ghost/.docker/daemon.entrypoint.sh" ]
     environment:
       - NX_DAEMON=true
@@ -114,7 +115,9 @@ services:
     ports:
       - "4175:4175"
       - "4176:4176"
-    profiles: [ portal ]
+    profiles: [ portal, all ]
+    environment:
+      - NX_DAEMON=false
 
 
   signup-form:
@@ -123,7 +126,9 @@ services:
     command: [ "yarn", "dev" ]
     ports:
       - "6174:6174"
-    profiles: [ signup-form ]
+    profiles: [ signup-form, all ]
+    environment:
+      - NX_DAEMON=false
 
   announcement-bar:
     <<: *service-template
@@ -131,7 +136,9 @@ services:
     command: [ "yarn", "dev" ]
     ports:
       - "4177:4177"
-    profiles: [ announcement-bar ]
+    profiles: [ announcement-bar, all ]
+    environment:
+      - NX_DAEMON=false
 
 
   sodo-search:
@@ -140,7 +147,9 @@ services:
     command: [ "yarn", "dev" ]
     ports:
       - "4178:4178"
-    profiles: [ sodo-search ]
+    profiles: [ sodo-search, all ]
+    environment:
+      - NX_DAEMON=false
 
   comments-ui:
     <<: *service-template
@@ -148,7 +157,9 @@ services:
     command: [ "yarn", "dev" ]
     ports:
       - "7173:7173"
-    profiles: [ comments-ui ]
+    profiles: [ comments-ui, all ]
+    environment:
+      - NX_DAEMON=false
 
   ghost:
     <<: *service-template # Merge the base configuration
@@ -177,7 +188,7 @@ services:
     environment:
       - DEBUG=${DEBUG:-}
       - SSH_AUTH_SOCK=/ssh-agent
-      - NX_DAEMON=${NX_DAEMON:-true}
+      - NX_DAEMON=true
       - GHOST_DEV_IS_DOCKER=true
       - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
       - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
