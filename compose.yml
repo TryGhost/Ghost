@@ -121,8 +121,8 @@ services:
     working_dir: /home/ghost/apps/portal
     command: [ "yarn", "dev" ]
     ports:
-      - "4175:4175" # Portal
-      - "4176:4176" # Portal HTTPS
+      - "4175:4175"
+      - "4176:4176"
     profiles: [ portal ]
 
 
@@ -135,8 +135,20 @@ services:
     working_dir: /home/ghost/apps/signup-form
     command: [ "yarn", "dev" ]
     ports:
-      - "6174:6174" # Signup form
+      - "6174:6174"
     profiles: [ signup-form ]
+
+  announcement-bar:
+    <<: *ghost-base
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+    working_dir: /home/ghost/apps/announcement-bar
+    command: [ "yarn", "dev" ]
+    ports:
+      - "4177:4177"
+    profiles: [ announcement-bar ]
 
   ghost:
     <<: *ghost-base # Merge the base configuration
