@@ -5,6 +5,7 @@ export type Post = {
     url: string;
     slug: string;
     title: string;
+    uuid: string;
 };
 
 export interface PostsResponseType {

@@ -37,7 +37,7 @@ const ColorSwatch: React.FC<{
         <button
             ref={ref}
             className={clsx(
-                `relative flex shrink-0 cursor-pointer items-center rounded-full border border-grey-200 dark:border-grey-800`,
+                `relative flex shrink-0 cursor-pointer items-center rounded-full border border-grey-250 dark:border-grey-800`,
                 sizeClass,
                 isSelected && 'outline outline-2 outline-green'
             )}
@@ -92,7 +92,7 @@ const ColorIndicator: React.FC<ColorIndicatorProps> = ({title, value, swatches, 
                     ))}
                 </div>
                 {picker &&
-                    <button aria-label="Pick color" className="relative size-6 cursor-pointer rounded-full border border-grey-200 dark:border-grey-800" type="button" onClick={onTogglePicker}>
+                    <button aria-label="Pick color" className="relative size-6 cursor-pointer rounded-full border border-grey-250 dark:border-grey-800" type="button" onClick={onTogglePicker}>
                         <div className='absolute inset-0 rounded-full bg-[conic-gradient(hsl(360,100%,50%),hsl(315,100%,50%),hsl(270,100%,50%),hsl(225,100%,50%),hsl(180,100%,50%),hsl(135,100%,50%),hsl(90,100%,50%),hsl(45,100%,50%),hsl(0,100%,50%))]' />
                         {value && !selectedSwatch && (
                             <div className="absolute inset-[3px] overflow-hidden rounded-full border border-white dark:border-grey-950" style={{backgroundColor: value}}>

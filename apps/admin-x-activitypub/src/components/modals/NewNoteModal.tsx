@@ -4,10 +4,9 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, LucideIcon, Skeleton} from '@tryghost/shade';
 import {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {ComponentPropsWithoutRef, ReactNode} from 'react';
-import {FILE_SIZE_ERROR_MESSAGE, COVER_MAX_DIMENSIONS as IMAGE_MAX_DIMENSIONS, MAX_FILE_SIZE, checkImageDimensions, getDimensionErrorMessage} from '@utils/image';
-import {showToast} from '@tryghost/admin-x-design-system';
+import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE} from '@utils/image';
+import {LoadingIndicator, showToast} from '@tryghost/admin-x-design-system';
 import {uploadFile, useAccountForUser, useNoteMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface NewNoteModalProps extends ComponentPropsWithoutRef<typeof Dialog> {
@@ -15,7 +14,6 @@ interface NewNoteModalProps extends ComponentPropsWithoutRef<typeof Dialog> {
 }
 
 const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
-    const {isEnabled} = useFeatureFlags();
     const {data: user} = useUserDataForUser('index');
     const noteMutation = useNoteMutationForUser('index', user);
     const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', 'me');
@@ -102,22 +100,6 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
                     type: 'error'
                 });
                 e.target.value = '';
-                return;
-            }
-
-            const withinMaxDimensions = await checkImageDimensions(
-                file,
-                IMAGE_MAX_DIMENSIONS.width,
-                IMAGE_MAX_DIMENSIONS.height
-            );
-            if (!withinMaxDimensions) {
-                showToast({
-                    message: getDimensionErrorMessage(
-                        IMAGE_MAX_DIMENSIONS.width,
-                        IMAGE_MAX_DIMENSIONS.height
-                    ),
-                    type: 'error'
-                });
                 return;
             }
 
@@ -209,15 +191,18 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
                     </FormPrimitive.Root>
                 </div>
                 {imagePreview &&
-                    <div className='group relative w-fit grow'>
-                        <img alt='Image attachment preview' className={`max-h-[420px] w-full rounded-sm object-cover outline outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'animate-pulse'}`} src={imagePreview} />
+                    <div className='group relative flex w-fit grow items-center justify-center'>
+                        <img alt='Image attachment preview' className={`max-h-[420px] w-full rounded-sm object-cover outline outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'opacity-10'}`} src={imagePreview} />
+                        {isImageUploading &&
+                            <div className='absolute leading-[0]'>
+                                <LoadingIndicator size='md' />
+                            </div>
+                        }
                         <Button className='absolute right-3 top-3 size-8 bg-black/60 opacity-0 hover:bg-black/80 group-hover:opacity-100' onClick={handleClearImage}><LucideIcon.Trash2 /></Button>
                     </div>
                 }
                 <DialogFooter>
-                    {isEnabled('note-image') &&
-                        <Button className='mr-auto w-[34px] !min-w-0' variant='outline' onClick={() => imageInputRef.current?.click()}><LucideIcon.Image /></Button>
-                    }
+                    <Button className='mr-auto w-[34px] !min-w-0' variant='outline' onClick={() => imageInputRef.current?.click()}><LucideIcon.Image /></Button>
                     <DialogClose>
                         <Button className='min-w-16' variant='outline'>Cancel</Button>
                     </DialogClose>

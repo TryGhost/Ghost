@@ -76,7 +76,7 @@ const tabsTriggerVariants = cva(
             variant: {
                 segmented: 'h-7 rounded-md text-sm font-medium data-[state=active]:shadow-md',
                 button: 'h-[34px] gap-1.5 rounded-md border border-input py-2 text-sm font-medium hover:bg-muted/50 data-[state=active]:bg-muted/70 data-[state=active]:font-semibold',
-                underline: 'relative h-[34px] px-0 text-md font-semibold text-muted-foreground after:absolute after:inset-x-0 after:bottom-[-5px] after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:!opacity-100'
+                underline: 'relative h-[34px] px-0 text-md font-semibold text-foreground/70 after:absolute after:inset-x-0 after:bottom-[-5px] after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:!opacity-100'
             }
         },
         defaultVariants: {

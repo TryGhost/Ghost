@@ -1,4 +1,5 @@
-"pathname","visits"
-"/blog/hello-world/",10
-"/about/",8
-"/",7
+"post_uuid","pathname","visits"
+"6b8635fb-292f-4422-9fe4-d76cfab2ba31","/blog/hello-world/",9
+"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","/about/",8
+"","/",7
+"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","/blog/hello-world/",1

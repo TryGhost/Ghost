@@ -90,7 +90,7 @@ services:
       - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
       - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
   mysql:
-    image: mysql:8.0.35
+    image: mysql:8.4.5
     container_name: ghost-mysql
     command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
     ports:
@@ -125,7 +125,7 @@ services:
       retries: 120
   prometheus:
     profiles: [ monitoring ]
-    image: prom/prometheus:v2.30.3
+    image: prom/prometheus:v2.55.1
     container_name: ghost-prometheus
     ports:
       - 9090:9090
@@ -134,7 +134,7 @@ services:
       - ./.docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
   grafana:
     profiles: [ monitoring ]
-    image: grafana/grafana:8.3.0
+    image: grafana/grafana:8.5.27
     container_name: ghost-grafana
     ports:
       - 3000:3000
@@ -148,7 +148,7 @@ services:
       - ./.docker/grafana/dashboards:/var/lib/grafana/dashboards
   pushgateway:
     profiles: [ monitoring ]
-    image: prom/pushgateway:v1.6.0
+    image: prom/pushgateway:v1.11.1
     container_name: ghost-pushgateway
     ports:
       - 9091:9091

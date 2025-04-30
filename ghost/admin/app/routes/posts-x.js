@@ -5,6 +5,7 @@ import {inject as service} from '@ember/service';
 export default class PostsXRoute extends AuthenticatedRoute {
     @inject config;
     @service session;
+    @service feature;
 
     beforeModel() {
         super.beforeModel(...arguments);
@@ -17,7 +18,7 @@ export default class PostsXRoute extends AuthenticatedRoute {
         }
 
         // This ensures that we don't load this page if the stats config is not set
-        if (!this.config.stats) {
+        if (!(this.config.stats && this.feature.trafficAnalytics)) {
             return this.transitionTo('home');
         }
     }

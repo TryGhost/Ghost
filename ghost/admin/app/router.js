@@ -24,7 +24,6 @@ Router.map(function () {
     this.route('site');
     this.route('dashboard');
     this.route('launch');
-    // this.route('stats');
 
     this.route('stats-x', {path: '/stats'}, function () {
         this.route('stats-x', {path: '/*sub'});
