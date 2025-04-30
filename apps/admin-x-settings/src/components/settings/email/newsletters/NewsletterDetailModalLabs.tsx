@@ -381,24 +381,20 @@ const Sidebar: React.FC<{
             contents:
             <>
                 <Form className='mt-6' gap='xs' margins='lg' title='Typography'>
-                    <div className="w-full">
-                        <Select
-                            disabled={!newsletter.show_post_title_section}
-                            options={fontOptions}
-                            selectedOption={fontOptions.find(option => option.value === newsletter.title_font_category)}
-                            title='Heading font'
-                            onSelect={option => updateNewsletter({title_font_category: option?.value})}
-                        />
-                    </div>
-                    <div className='w-full'>
-                        <Select
-                            disabled={!newsletter.show_post_title_section}
-                            options={fontWeightOptions}
-                            selectedOption={fontWeightOptions.find(option => option.value === newsletter.title_font_weight)}
-                            title='Heading weight'
-                            onSelect={option => updateNewsletter({title_font_weight: option?.value})}
-                        />
-                    </div>
+                    <Select
+                        disabled={!newsletter.show_post_title_section}
+                        options={fontOptions}
+                        selectedOption={fontOptions.find(option => option.value === newsletter.title_font_category)}
+                        title='Heading font'
+                        onSelect={option => updateNewsletter({title_font_category: option?.value})}
+                    />
+                    <Select
+                        disabled={!newsletter.show_post_title_section}
+                        options={fontWeightOptions}
+                        selectedOption={fontWeightOptions.find(option => option.value === newsletter.title_font_weight)}
+                        title='Heading weight'
+                        onSelect={option => updateNewsletter({title_font_weight: option?.value})}
+                    />
                     <Select
                         options={fontOptions}
                         selectedOption={fontOptions.find(option => option.value === newsletter.body_font_category)}
@@ -527,6 +523,7 @@ const Sidebar: React.FC<{
                                 key: 'left',
                                 icon: 'align-left',
                                 label: 'Align left',
+                                tooltip: 'Left',
                                 hideLabel: true,
                                 link: false,
                                 size: 'sm',
@@ -537,6 +534,7 @@ const Sidebar: React.FC<{
                                 key: 'center',
                                 icon: 'align-center',
                                 label: 'Align center',
+                                tooltip: 'Center',
                                 hideLabel: true,
                                 link: false,
                                 size: 'sm',
@@ -552,6 +550,7 @@ const Sidebar: React.FC<{
                                 key: 'fill',
                                 icon: 'squircle-fill',
                                 label: 'Fill',
+                                tooltip: 'Fill',
                                 hideLabel: true,
                                 link: false,
                                 size: 'sm',
@@ -561,6 +560,7 @@ const Sidebar: React.FC<{
                                 key: 'outline',
                                 icon: 'squircle',
                                 label: 'Outline',
+                                tooltip: 'Outline',
                                 hideLabel: true,
                                 link: false,
                                 size: 'sm',
@@ -575,6 +575,7 @@ const Sidebar: React.FC<{
                                 key: 'square',
                                 icon: 'square',
                                 label: 'Square',
+                                tooltip: 'Squared',
                                 hideLabel: true,
                                 link: false,
                                 size: 'sm',
@@ -584,6 +585,7 @@ const Sidebar: React.FC<{
                                 key: 'squircle',
                                 icon: 'squircle',
                                 label: 'Squircle',
+                                tooltip: 'Slightly rounded',
                                 hideLabel: true,
                                 link: false,
                                 size: 'sm',
@@ -593,6 +595,7 @@ const Sidebar: React.FC<{
                                 key: 'rounded',
                                 icon: 'circle',
                                 label: 'Rounded',
+                                tooltip: 'Fully rounded',
                                 hideLabel: true,
                                 link: false,
                                 size: 'sm',
@@ -600,8 +603,76 @@ const Sidebar: React.FC<{
                             }
                         ]} clearBg={false} />
                     </div>
-                    <div>Link style</div>
-                    <div>Divider style</div>
+                    <div className='flex w-full justify-between'>
+                        <div>Link style</div>
+                        <ButtonGroup activeKey={newsletter.link_style || 'underline'} buttons={[
+                            {
+                                key: 'underline',
+                                icon: 'text-underline',
+                                label: 'Underline',
+                                tooltip: 'Underline',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({link_style: 'underline'})
+                            },
+                            {
+                                key: 'regular',
+                                icon: 'text-regular',
+                                label: 'Regular',
+                                tooltip: 'Regular',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({link_style: 'regular'})
+                            },
+                            {
+                                key: 'bold',
+                                icon: 'text-bold',
+                                label: 'Bold',
+                                tooltip: 'Bold',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({link_style: 'bold'})
+                            }
+                        ]} clearBg={false} />
+                    </div>
+                    <div className='flex w-full justify-between'>
+                        <div>Divider style</div>
+                        <ButtonGroup activeKey={newsletter.divider_style || 'solid'} buttons={[
+                            {
+                                key: 'solid',
+                                icon: 'line-solid',
+                                label: 'Solid',
+                                tooltip: 'Solid',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({divider_style: 'solid'})
+                            },
+                            {
+                                key: 'dashed',
+                                icon: 'line-dashed',
+                                label: 'Dashed',
+                                tooltip: 'Dashed',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({divider_style: 'dashed'})
+                            },
+                            {
+                                key: 'dotted',
+                                icon: 'line-dotted',
+                                label: 'Dotted',
+                                tooltip: 'Dotted',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({divider_style: 'dotted'})
+                            }
+                        ]} clearBg={false} />
+                    </div>
                 </Form>
             </>
         }

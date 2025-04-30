@@ -8,6 +8,7 @@ export type Activity = any;
 
 export interface Account {
     id: string;
+    apId: string;
     name: string;
     handle: string;
     bio: string;
@@ -21,7 +22,8 @@ export interface Account {
     followerCount: number;
     followsMe: boolean;
     followedByMe: boolean;
-    attachment: {name: string, value: string}[];
+    blockedByMe: boolean;
+    attachment: { name: string; value: string }[];
 }
 
 export type AccountSearchResult = Pick<
@@ -189,6 +191,24 @@ export class ActivityPubAPI {
 
         const json = await response.json();
         return json;
+    }
+
+    async block(id: URL): Promise<boolean> {
+        const url = new URL(
+            `.ghost/activitypub/actions/block/${encodeURIComponent(id.href)}`,
+            this.apiUrl
+        );
+        await this.fetchJSON(url, 'POST');
+        return true;
+    }
+
+    async unblock(id: URL): Promise<boolean> {
+        const url = new URL(
+            `.ghost/activitypub/actions/unblock/${encodeURIComponent(id.href)}`,
+            this.apiUrl
+        );
+        await this.fetchJSON(url, 'POST');
+        return true;
     }
 
     async follow(username: string): Promise<Actor> {
