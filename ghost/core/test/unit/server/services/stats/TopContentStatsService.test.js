@@ -7,8 +7,6 @@ describe('TopContentStatsService', function () {
     let service;
     let mockKnex;
     let mockUrlService;
-    let mockConfig;
-    let mockRequest;
     let mockTinybirdClient;
 
     beforeEach(function () {
@@ -25,23 +23,7 @@ describe('TopContentStatsService', function () {
         mockUrlService = {
             getResource: sinon.stub()
         };
-
-        mockConfig = {
-            get: sinon.stub()
-        };
         
-        mockRequest = {
-            get: sinon.stub()
-        };
-
-        // Configure mocks
-        mockConfig.get.withArgs('timezone').returns('UTC');
-        mockConfig.get.withArgs('tinybird:stats').returns({
-            id: 'site-id',
-            endpoint: 'https://api.tinybird.co',
-            token: 'tb-token'
-        });
-
         // Create mock Tinybird client
         mockTinybirdClient = {
             buildRequest: sinon.stub(),
@@ -56,8 +38,6 @@ describe('TopContentStatsService', function () {
         service = new TopContentStatsService({
             knex: mockKnex,
             urlService: mockUrlService,
-            config: mockConfig,
-            request: mockRequest,
             tinybirdClient: mockTinybirdClient
         });
     });
@@ -123,19 +103,6 @@ describe('TopContentStatsService', function () {
             
             mockTinybirdClient.parseResponse.calledWith(mockResponse).should.be.true();
         });
-
-        it('returns null for empty data', function () {
-            const mockResponse = {
-                body: {data: []}
-            };
-
-            mockTinybirdClient.parseResponse.returns(null);
-
-            const result = mockTinybirdClient.parseResponse(mockResponse);
-            should.equal(result, null);
-            
-            mockTinybirdClient.parseResponse.calledWith(mockResponse).should.be.true();
-        });
     });
 
     describe('extractPostUuids', function () {
@@ -192,8 +159,7 @@ describe('TopContentStatsService', function () {
             // Create service without urlService
             const serviceNoUrl = new TopContentStatsService({
                 knex: mockKnex,
-                urlService: null,
-                config: mockConfig
+                urlService: null
             });
             
             const result = serviceNoUrl.getResourceTitle('/about/');
@@ -459,6 +425,48 @@ describe('TopContentStatsService', function () {
             should.exist(result);
             should.exist(result.data);
             result.data.should.be.an.Array().with.lengthOf(0);
+        });
+    });
+
+    describe('tinybird integration', function () {
+        it('fetchRawTopContentData calls tinybird client with correct parameters', async function () {
+            // Mock the fetch method instead of internal implementation details
+            mockTinybirdClient.fetch.resolves([
+                {pathname: '/test-1/', visits: 100},
+                {pathname: '/test-2/', visits: 50}
+            ]);
+
+            const options = {
+                date_from: '2023-01-01',
+                date_to: '2023-01-31',
+                timezone: 'America/New_York',
+                member_status: 'paid'
+            };
+
+            const result = await service.fetchRawTopContentData(options);
+
+            // Verify result is correct
+            should.exist(result);
+            result.should.be.an.Array().with.lengthOf(2);
+            
+            // Verify tinybird client was called with correct parameters
+            mockTinybirdClient.fetch.calledOnce.should.be.true();
+            mockTinybirdClient.fetch.firstCall.args[0].should.equal('api_top_pages');
+            
+            const tinybirdOptions = mockTinybirdClient.fetch.firstCall.args[1];
+            tinybirdOptions.should.have.property('dateFrom', '2023-01-01');
+            tinybirdOptions.should.have.property('dateTo', '2023-01-31');
+            tinybirdOptions.should.have.property('timezone', 'America/New_York');
+            tinybirdOptions.should.have.property('memberStatus', 'paid');
+        });
+
+        it('handles null response from tinybird client', async function() {
+            mockTinybirdClient.fetch.resolves(null);
+            
+            const result = await service.getTopContent({});
+            
+            should.exist(result);
+            result.should.have.property('data').which.is.an.Array().with.lengthOf(0);
         });
     });
 }); 
