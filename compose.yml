@@ -139,10 +139,6 @@ services:
 
   sodo-search:
     <<: *ghost-base
-    build:
-      context: .
-      dockerfile: ./.docker/Dockerfile
-      target: development
     working_dir: /home/ghost/apps/sodo-search
     command: [ "yarn", "dev" ]
     ports:
@@ -150,6 +146,16 @@ services:
     environment:
       - NX_DAEMON=false
     profiles: [ sodo-search ]
+
+  comments-ui:
+    <<: *ghost-base
+    working_dir: /home/ghost/apps/comments-ui
+    command: [ "yarn", "dev" ]
+    ports:
+      - "7173:7173"
+    environment:
+      - NX_DAEMON=false
+    profiles: [ comments-ui ]
 
   ghost:
     <<: *ghost-base # Merge the base configuration

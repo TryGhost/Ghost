@@ -32,6 +32,12 @@ if getent hosts sodo-search > /dev/null 2>&1; then
   echo "Search service detected - enabling search integration"
 fi
 
+# Check if comments service is running by attempting DNS resolution
+if getent hosts comments-ui > /dev/null 2>&1; then
+  # If comments service exists, set the environment variable
+  export comments__url="http://localhost:7173/comments-ui.min.js"
+  echo "Comments service detected - enabling comments integration"
+fi
 
 
 
