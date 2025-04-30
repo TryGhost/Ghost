@@ -15,8 +15,8 @@ describe('TopContentStatsService', function () {
             select: sinon.stub().returnsThis(),
             from: sinon.stub().returnsThis(),
             whereIn: sinon.stub().resolves([
-                {uuid: 'post-1', title: 'Test Post 1'},
-                {uuid: 'post-2', title: 'Test Post 2'}
+                {uuid: 'post-1', title: 'Test Post 1', id: 'post-id-1'},
+                {uuid: 'post-2', title: 'Test Post 2', id: 'post-id-2'}
             ])
         };
 
@@ -144,11 +144,13 @@ describe('TopContentStatsService', function () {
             
             should.exist(result);
             result.should.have.properties(['post-1', 'post-2']);
-            result['post-1'].should.equal('Test Post 1');
-            result['post-2'].should.equal('Test Post 2');
+            result['post-1'].should.have.property('title', 'Test Post 1');
+            result['post-1'].should.have.property('id', 'post-id-1');
+            result['post-2'].should.have.property('title', 'Test Post 2');
+            result['post-2'].should.have.property('id', 'post-id-2');
             
             // Verify knex was called correctly
-            mockKnex.select.calledWith('uuid', 'title').should.be.true();
+            mockKnex.select.calledWith('uuid', 'title', 'id').should.be.true();
             mockKnex.from.calledWith('posts').should.be.true();
             mockKnex.whereIn.calledWith('uuid', ['post-1', 'post-2']).should.be.true();
         });
@@ -239,7 +241,9 @@ describe('TopContentStatsService', function () {
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(2);
             result[0].title.should.equal('Test Post 1');
+            result[0].post_id.should.equal('post-id-1');
             result[1].title.should.equal('Test Post 2');
+            result[1].post_id.should.equal('post-id-2');
             
             service.extractPostUuids.calledOnce.should.be.true();
             service.lookupPostTitles.calledOnce.should.be.true();
@@ -373,6 +377,9 @@ describe('TopContentStatsService', function () {
             should.exist(result.data);
             result.data.should.be.an.Array().with.lengthOf(2);
             result.data[0].should.have.property('title');
+            result.data[0].should.have.property('post_id');
+            result.data[1].should.have.property('title');
+            result.data[1].should.have.property('post_id');
             
             service.fetchRawTopContentData.calledOnce.should.be.true();
             
