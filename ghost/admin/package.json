@@ -29,9 +29,9 @@
     "node": "^18.12.1 || ^20.11.1 || ^22.13.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.27.0",
+    "@babel/eslint-parser": "7.27.1",
     "@babel/plugin-proposal-class-properties": "7.18.6",
-    "@babel/plugin-proposal-decorators": "7.25.9",
+    "@babel/plugin-proposal-decorators": "7.27.1",
     "@ember/jquery": "2.0.0",
     "@ember/optional-features": "2.1.0",
     "@ember/render-modifiers": "2.1.0",
@@ -108,7 +108,7 @@
     "ember-load-initializers": "2.1.2",
     "ember-mocha": "0.16.2",
     "ember-modifier": "4.2.0",
-    "ember-moment": "10.0.0",
+    "ember-moment": "10.0.1",
     "ember-one-way-select": "4.0.1",
     "ember-power-datepicker": "cibernox/ember-power-datepicker",
     "ember-power-select": "6.0.1",

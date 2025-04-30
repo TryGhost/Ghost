@@ -115,6 +115,7 @@ test/functional/*.png
 
 # ignore all custom json files for config
 /ghost/core/config.*.json
+/ghost/core/config.*.jsonc
 
 # Built asset files
 /ghost/core/core/built

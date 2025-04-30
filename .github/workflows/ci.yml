@@ -101,6 +101,7 @@ jobs:
               - 'ghost/**'
               - '!ghost/admin/**'
               - '!ghost/web-analytics/**'
+              - '!ghost/core/core/server/data/tinybird/**'
             admin:
               - *shared
               - 'ghost/admin/**'
@@ -108,6 +109,7 @@ jobs:
               - *shared
               - 'apps/admin-x-settings/**'
               - 'apps/admin-x-design-system/**'
+              - 'apps/admin-x-framework/**'
             announcement-bar:
               - *shared
               - 'apps/announcement-bar/**'
@@ -884,7 +886,7 @@ jobs:
 
   # Tinyird Tests (Classic) — This test suite is deprecated and will be removed very soon.
   job_tinybird:
-    name: Tinybird Tests (Web Analytics)
+    name: Tinybird Tests (Classic)
     runs-on: ubuntu-latest
     env:
       TB_VERSION_WARNING: 0
@@ -1337,7 +1339,7 @@ jobs:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
 
   deploy_tinybird_forward:
-    name: Deploy Tinybird Forward
+    name: Deploy Tinybird (Forward)
     runs-on: ubuntu-latest
     needs: [
       job_setup,
@@ -1373,7 +1375,7 @@ jobs:
     strategy:
       matrix:
         environment: [ 'staging', 'production']
-    name: Deploy Tinybird
+    name: Deploy Tinybird (Classic)
     defaults:
       run:
         working-directory: ghost/web-analytics

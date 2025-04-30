@@ -5,11 +5,11 @@ import Layout from '@src/components/layout';
 import ProfileMenu from './ProfileMenu';
 import UnblockButton from './UnblockButton';
 import {Account} from '@src/api/activitypub';
-import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, LucideIcon, Skeleton} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LucideIcon, Skeleton} from '@tryghost/shade';
 import {Heading, Icon, NoValueLabel, Button as OldButton, Tab, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {ProfileTab} from '../Profile';
 import {SettingAction} from '@src/views/Preferences/components/Settings';
-import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
+import {useAccountForUser, useBlockMutationForUser, useUnblockMutationForUser} from '@src/hooks/use-activity-pub-queries';
 import {useEffect, useRef, useState} from 'react';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigationStack, useParams} from '@tryghost/admin-x-framework';
@@ -48,16 +48,23 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
         setSelectedTab('posts');
     }, [params.handle]);
 
+    const blockMutation = useBlockMutationForUser('index');
+    const unblockMutation = useUnblockMutationForUser('index');
+
     const currentAccountQuery = useAccountForUser('index', 'me');
     const {data: currentUser} = params.handle ? currentAccountQuery : {data: undefined};
     const isCurrentUser = params.handle === currentUser?.handle || !params.handle;
 
-    // TODO: Wire up the block state
-    const [isBlocked, setIsBlocked] = useState(false);
+    const isBlocked = account?.blockedByMe;
+    const [viewBlockedPosts, setViewBlockedPosts] = useState(false);
 
-    // TODO: Wire up the block functionality
     const handleBlock = () => {
-        setIsBlocked(!isBlocked);
+        if (isBlocked) {
+            unblockMutation.mutate(account);
+        } else {
+            blockMutation.mutate(account);
+        }
+        setViewBlockedPosts(false);
     };
 
     const handleCopy = async () => {
@@ -72,8 +79,12 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
         {
             id: 'posts',
             title: 'Posts',
-            contents: !isBlocked ? postsTab : <NoValueLabel icon='block'>
-                {account.name} is blocked
+            contents: (!isBlocked || viewBlockedPosts) ? postsTab : <NoValueLabel icon='block'>
+                <div className='mt-2 flex flex-col items-center gap-0.5'>
+                    <H4>{account.name} is blocked</H4>
+                    <p>You can view the posts, but it won&apos;t unblock the user.</p>
+                    <Button className='mt-4' variant='secondary' onClick={() => setViewBlockedPosts(true)}>View posts</Button>
+                </div>
             </NoValueLabel>
         },
         !params.handle && {
@@ -190,12 +201,12 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                     </Dialog>
                                 }
                             </div>
-                            <Heading className='mt-4' level={3}>{!isLoadingAccount ? account?.name : <Skeleton className='w-32' />}</Heading>
-                            <a className='group/handle mb-4 inline-flex items-center gap-1 text-[1.5rem] text-gray-800 hover:text-gray-900' href={account?.url} rel='noopener noreferrer' target='_blank'>
-                                <span>{!isLoadingAccount ? account?.handle : <Skeleton className='w-full max-w-56' />}</span>
+                            <Heading className='mt-4 truncate break-anywhere' level={3}>{!isLoadingAccount ? account?.name : <Skeleton className='w-32' />}</Heading>
+                            <a className='group/handle mb-4 inline-flex max-w-full items-center gap-1 text-[1.5rem] text-gray-800 break-anywhere hover:text-gray-900' href={account?.url} rel='noopener noreferrer' target='_blank'>
+                                <span className='truncate'>{!isLoadingAccount ? account?.handle : <Skeleton className='w-full max-w-56' />}</span>
                                 <Icon className='opacity-0 transition-opacity group-hover/handle:opacity-100' name='arrow-top-right' size='xs'/>
                             </a>
-                            {(account?.bio || customFields?.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
+                            {(account?.bio || customFields?.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out break-anywhere [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
                                 {!isLoadingAccount ?
                                     <div dangerouslySetInnerHTML={{__html: account?.bio ?? ''}} /> :
                                     <>

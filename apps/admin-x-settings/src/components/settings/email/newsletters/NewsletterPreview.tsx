@@ -60,6 +60,43 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         return null;
     };
 
+    const buttonColor = () => {
+        const value = newsletter.button_color;
+
+        const validHex = /#([0-9a-f]{3}){1,2}$/i;
+
+        if (validHex.test(value || '')) {
+            return value;
+        }
+
+        if (value === 'accent') {
+            return siteData.accent_color;
+        }
+
+        if (value === null) {
+            const bg = backgroundColor();
+            return textColorForBackgroundColor(bg).hex();
+        }
+
+        return null;
+    };
+
+    const linkColor = () => {
+        const value = newsletter.link_color === undefined ? 'accent' : newsletter.link_color;
+
+        const validHex = /#([0-9a-f]{3}){1,2}$/i;
+
+        if (value === 'accent') {
+            return siteData.accent_color;
+        }
+
+        if (validHex.test(value || '')) {
+            return value;
+        }
+
+        return textColorForBackgroundColor(backgroundColor()).hex();
+    };
+
     const secondaryBorderColor = textColorForBackgroundColor(backgroundColor()).alpha(0.12).toString();
 
     const titleColor = () => {
@@ -103,6 +140,8 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         borderColor: borderColor() || undefined,
         secondaryBorderColor,
         titleColor: titleColor() || undefined,
+        buttonColor: buttonColor() || undefined,
+        linkColor: linkColor() || undefined,
         dividerColor: dividerColor() || undefined,
         textColor,
         secondaryTextColor
@@ -113,11 +152,15 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         authorPlaceholder={currentUser.name || currentUser.email}
         backgroundColor={colors.backgroundColor || '#ffffff'}
         bodyFontCategory={newsletter.body_font_category}
+        buttonCorners={newsletter.button_corners || 'squircle'}
+        buttonStyle={newsletter.button_style || 'fill'}
+        dividerStyle={newsletter.divider_style || 'solid'}
         footerContent={newsletter.footer_content}
         headerIcon={newsletter.show_header_icon ? icon : undefined}
         headerImage={newsletter.header_image}
         headerSubtitle={headerSubtitle}
         headerTitle={headerTitle}
+        linkStyle={newsletter.link_style || 'underline'}
         senderEmail={renderSenderEmail(newsletter, config, defaultEmailAddress)}
         senderName={newsletter.sender_name || title}
         senderReplyTo={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress)}
