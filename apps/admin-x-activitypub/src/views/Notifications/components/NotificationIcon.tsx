@@ -37,7 +37,7 @@ const NotificationIcon: React.FC<NotificationIconProps> = ({notificationType, cl
     }
 
     return (
-        <div className={`flex h-10 w-10 items-center justify-center rounded-full ${badgeColor} ${className && className}`}>
+        <div className={`flex size-10 items-center justify-center rounded-full ${badgeColor} ${className && className}`}>
             <Icon colorClass={iconColor} name={icon} size='sm' />
         </div>
     );

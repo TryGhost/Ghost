@@ -5,7 +5,7 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LoadingIndicator} from '@tryghost/admin-x-design-system';
 
 import APAvatar from '@components/global/APAvatar';
-import NotificationItem from '@components/activities/NotificationItem';
+import NotificationItem from './components/NotificationItem';
 import Separator from '@components/global/Separator';
 
 import Layout from '@components/layout';
