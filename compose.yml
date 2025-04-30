@@ -9,8 +9,12 @@ x-service-template: &service-template
   environment:
     - NX_DAEMON=false
   volumes:
-      # Mount source code
+      # Main bind mount to sync source code
       - .:/home/ghost
+      # Use the host's git config
+      - ${HOME}/.gitconfig:/root/.gitconfig:ro
+      # Use the host's SSH agent
+      - ${SSH_AUTH_SOCK}:/ssh-agent
       # Mask node_modules with named volumes to prevent collisions between host and container
       - node_modules_ghost_root:/home/ghost/node_modules:delegated
       - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
@@ -180,10 +184,6 @@ services:
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
       - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
       - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
-    volumes:
-      - ${HOME}/.gitconfig:/root/.gitconfig:ro
-      - ${SSH_AUTH_SOCK}:/ssh-agent
-
 
   storybook:
     <<: *service-template
