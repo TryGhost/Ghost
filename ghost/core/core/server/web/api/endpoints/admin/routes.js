@@ -154,7 +154,7 @@ module.exports = function apiRoutes() {
     router.get('/stats/subscriptions', mw.authAdminApi, http(api.stats.subscriptions));
     router.get('/stats/referrers/posts/:id', mw.authAdminApi, http(api.stats.postReferrers));
     router.get('/stats/referrers', mw.authAdminApi, http(api.stats.referrersHistory));
-    router.get('/stats/top-pages', mw.authAdminApi, http(api.stats.topPages));
+    router.get('/stats/top-content', mw.authAdminApi, http(api.stats.topContent));
 
     // ## Labels
     router.get('/labels', mw.authAdminApi, http(api.labels.browse));

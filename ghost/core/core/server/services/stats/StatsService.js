@@ -2,7 +2,7 @@ const MRRService = require('./MrrStatsService');
 const MembersService = require('./MembersStatsService');
 const SubscriptionStatsService = require('./SubscriptionStatsService');
 const ReferrersStatsService = require('./ReferrersStatsService');
-const TopPagesStatsService = require('./TopPagesStatsService');
+const TopContentStatsService = require('./TopContentStatsService');
 const tinybird = require('./utils/tinybird');
 
 class StatsService {
@@ -12,14 +12,14 @@ class StatsService {
      * @param {MembersService} deps.members
      * @param {SubscriptionStatsService} deps.subscriptions
      * @param {ReferrersStatsService} deps.referrers
-     * @param {TopPagesStatsService} deps.topPages
+     * @param {TopContentStatsService} deps.topContent
      **/
     constructor(deps) {
         this.mrr = deps.mrr;
         this.members = deps.members;
         this.subscriptions = deps.subscriptions;
         this.referrers = deps.referrers;
-        this.topPages = deps.topPages;
+        this.topContent = deps.topContent;
     }
 
     async getMRRHistory() {
@@ -51,8 +51,8 @@ class StatsService {
     /**
      * @param {Object} options
      */
-    async getTopPages(options = {}) {
-        return await this.topPages.getTopPages(options);
+    async getTopContent(options = {}) {
+        return await this.topContent.getTopContent(options);
     }
 
     /**
@@ -85,7 +85,7 @@ class StatsService {
             members: new MembersService(deps),
             subscriptions: new SubscriptionStatsService(deps),
             referrers: new ReferrersStatsService(deps),
-            topPages: new TopPagesStatsService(depsWithTinybird)
+            topContent: new TopContentStatsService(depsWithTinybird)
         });
     }
 }

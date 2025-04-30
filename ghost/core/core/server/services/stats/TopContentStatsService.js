@@ -1,14 +1,14 @@
 const logging = require('@tryghost/logging');
 
 /**
- * @typedef {Object} TopPageDataItem
+ * @typedef {Object} TopContentDataItem
  * @property {string} pathname - Page path
  * @property {number} visits - Number of visits
  * @property {string} [post_uuid] - Associated post UUID if available
  * @property {string} [title] - Page title
  */
 
-class TopPagesStatsService {
+class TopContentStatsService {
     /**
      * @param {object} deps
      * @param {import('knex').Knex} deps.knex - Database client
@@ -31,7 +31,7 @@ class TopPagesStatsService {
      * @param {string} [options.tb_version] - Tinybird version for API URL
      * @returns {Promise<Object>} The enriched top pages data
      */
-    async getTopPages(options = {}) {
+    async getTopContent(options = {}) {
         try {
             // Check if Tinybird client is available
             if (!this.tinybirdClient) {
@@ -39,18 +39,18 @@ class TopPagesStatsService {
             }
             
             // Step 1: Get raw data from Tinybird
-            const rawData = await this.fetchRawTopPagesData(options);
+            const rawData = await this.fetchRawTopContentData(options);
             
             if (!rawData || !rawData.length) {
                 return {data: []};
             }
             
             // Step 2: Enrich the data with titles
-            const enrichedData = await this.enrichTopPagesData(rawData);
+            const enrichedData = await this.enrichTopContentData(rawData);
             
             return {data: enrichedData};
         } catch (error) {
-            logging.error('Error fetching top pages:');
+            logging.error('Error fetching top content:');
             logging.error(error);
             return {data: []};
         }
@@ -59,9 +59,9 @@ class TopPagesStatsService {
     /**
      * Fetch raw top pages data from Tinybird
      * @param {Object} options - Query options with snake_case keys
-     * @returns {Promise<Array<TopPageDataItem>|null>} Raw data or null on error
+     * @returns {Promise<Array<TopContentDataItem>|null>} Raw data or null on error
      */
-    async fetchRawTopPagesData(options = {}) {
+    async fetchRawTopContentData(options = {}) {
         // Convert snake_case to camelCase for Tinybird
         const tinybirdOptions = {
             dateFrom: options.date_from,
@@ -76,7 +76,7 @@ class TopPagesStatsService {
     
     /**
      * Extract post UUIDs from page data (internal method)
-     * @param {Array<TopPageDataItem>} data - Raw page data
+     * @param {Array<TopContentDataItem>} data - Raw page data
      * @returns {Array<string>} Array of post UUIDs
      */
     extractPostUuids(data) {
@@ -146,10 +146,10 @@ class TopPagesStatsService {
     
     /**
      * Enrich top pages data with titles
-     * @param {Array<TopPageDataItem>} data - Raw page data
-     * @returns {Promise<Array<TopPageDataItem>>} Enriched page data
+     * @param {Array<TopContentDataItem>} data - Raw page data
+     * @returns {Promise<Array<TopContentDataItem>>} Enriched page data
      */
-    async enrichTopPagesData(data) {
+    async enrichTopContentData(data) {
         if (!data || !data.length) {
             return [];
         }
@@ -188,4 +188,4 @@ class TopPagesStatsService {
     }
 }
 
-module.exports = TopPagesStatsService; 
+module.exports = TopContentStatsService; 

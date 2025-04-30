@@ -1,9 +1,9 @@
 const sinon = require('sinon');
 const should = require('should');
-const TopPagesStatsService = require('../../../../../core/server/services/stats/TopPagesStatsService');
+const TopContentStatsService = require('../../../../../core/server/services/stats/TopContentStatsService');
 const tinybird = require('../../../../../core/server/services/stats/utils/tinybird');
 
-describe('TopPagesStatsService', function () {
+describe('TopContentStatsService', function () {
     let service;
     let mockKnex;
     let mockUrlService;
@@ -53,7 +53,7 @@ describe('TopPagesStatsService', function () {
         sinon.stub(tinybird, 'create').returns(mockTinybirdClient);
 
         // Create service instance with mocked dependencies
-        service = new TopPagesStatsService({
+        service = new TopContentStatsService({
             knex: mockKnex,
             urlService: mockUrlService,
             config: mockConfig,
@@ -190,7 +190,7 @@ describe('TopPagesStatsService', function () {
     describe('getResourceTitle', function () {
         it('returns null if urlService is not available', function () {
             // Create service without urlService
-            const serviceNoUrl = new TopPagesStatsService({
+            const serviceNoUrl = new TopContentStatsService({
                 knex: mockKnex,
                 urlService: null,
                 config: mockConfig
@@ -245,7 +245,7 @@ describe('TopPagesStatsService', function () {
         });
     });
 
-    describe('enrichTopPagesData', function () {
+    describe('enrichTopContentData', function () {
         beforeEach(function () {
             // Spy on internal methods
             sinon.spy(service, 'extractPostUuids');
@@ -254,7 +254,7 @@ describe('TopPagesStatsService', function () {
         });
 
         it('returns empty array for empty input', async function () {
-            const result = await service.enrichTopPagesData([]);
+            const result = await service.enrichTopContentData([]);
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(0);
             
@@ -268,7 +268,7 @@ describe('TopPagesStatsService', function () {
                 {pathname: '/post-2/', post_uuid: 'post-2', visits: 50}
             ];
             
-            const result = await service.enrichTopPagesData(data);
+            const result = await service.enrichTopContentData(data);
             
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(2);
@@ -291,7 +291,7 @@ describe('TopPagesStatsService', function () {
                 }
             });
             
-            const result = await service.enrichTopPagesData(data);
+            const result = await service.enrichTopContentData(data);
             
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(1);
@@ -308,7 +308,7 @@ describe('TopPagesStatsService', function () {
             
             mockUrlService.getResource.withArgs('/unknown-page/').returns(null);
             
-            const result = await service.enrichTopPagesData(data);
+            const result = await service.enrichTopContentData(data);
             
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(1);
@@ -322,7 +322,7 @@ describe('TopPagesStatsService', function () {
             
             mockUrlService.getResource.withArgs('/').returns(null);
             
-            const result = await service.enrichTopPagesData(data);
+            const result = await service.enrichTopContentData(data);
             
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(1);
@@ -330,7 +330,7 @@ describe('TopPagesStatsService', function () {
         });
     });
 
-    describe('fetchRawTopPagesData', function () {
+    describe('fetchRawTopContentData', function () {
         it('returns data from successful API request', async function () {
             const expectedData = [
                 {pathname: '/test/', visits: 100}
@@ -344,7 +344,7 @@ describe('TopPagesStatsService', function () {
                 date_to: '2023-01-31'
             };
             
-            const result = await service.fetchRawTopPagesData(options);
+            const result = await service.fetchRawTopContentData(options);
             
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(1);
@@ -372,7 +372,7 @@ describe('TopPagesStatsService', function () {
                 date_to: '2023-01-31'
             };
             
-            const result = await service.fetchRawTopPagesData(options);
+            const result = await service.fetchRawTopContentData(options);
             
             should.not.exist(result);
             
@@ -384,10 +384,10 @@ describe('TopPagesStatsService', function () {
         });
     });
 
-    describe('getTopPages', function () {
+    describe('getTopContent', function () {
         beforeEach(function () {
-            // Use real methods but stub fetchRawTopPagesData
-            sinon.stub(service, 'fetchRawTopPagesData');
+            // Use real methods but stub fetchRawTopContentData
+            sinon.stub(service, 'fetchRawTopContentData');
         });
 
         it('returns enriched data for successful request', async function () {
@@ -396,9 +396,9 @@ describe('TopPagesStatsService', function () {
                 {pathname: '/test-1/', post_uuid: 'post-1', visits: 100},
                 {pathname: '/test-2/', post_uuid: 'post-2', visits: 50}
             ];
-            service.fetchRawTopPagesData.resolves(mockRawData);
+            service.fetchRawTopContentData.resolves(mockRawData);
             
-            const result = await service.getTopPages({
+            const result = await service.getTopContent({
                 date_from: '2023-01-01',
                 date_to: '2023-01-31'
             });
@@ -408,18 +408,18 @@ describe('TopPagesStatsService', function () {
             result.data.should.be.an.Array().with.lengthOf(2);
             result.data[0].should.have.property('title');
             
-            service.fetchRawTopPagesData.calledOnce.should.be.true();
+            service.fetchRawTopContentData.calledOnce.should.be.true();
             
             // Verify the parameters were passed properly
-            const options = service.fetchRawTopPagesData.firstCall.args[0];
+            const options = service.fetchRawTopContentData.firstCall.args[0];
             options.should.have.property('date_from', '2023-01-01');
             options.should.have.property('date_to', '2023-01-31');
         });
 
         it('returns empty data array when fetch returns no data', async function () {
-            service.fetchRawTopPagesData.resolves(null);
+            service.fetchRawTopContentData.resolves(null);
             
-            const result = await service.getTopPages({
+            const result = await service.getTopContent({
                 date_from: '2023-01-01',
                 date_to: '2023-01-31'
             });
@@ -428,13 +428,13 @@ describe('TopPagesStatsService', function () {
             should.exist(result.data);
             result.data.should.be.an.Array().with.lengthOf(0);
             
-            service.fetchRawTopPagesData.calledOnce.should.be.true();
+            service.fetchRawTopContentData.calledOnce.should.be.true();
         });
 
         it('returns empty data array on error', async function () {
-            service.fetchRawTopPagesData.rejects(new Error('Test error'));
+            service.fetchRawTopContentData.rejects(new Error('Test error'));
             
-            const result = await service.getTopPages({
+            const result = await service.getTopContent({
                 date_from: '2023-01-01',
                 date_to: '2023-01-31'
             });
@@ -446,12 +446,12 @@ describe('TopPagesStatsService', function () {
 
         it('returns empty data array when tinybirdClient is not available', async function () {
             // Create a service without tinybirdClient
-            const serviceNoTinybird = new TopPagesStatsService({
+            const serviceNoTinybird = new TopContentStatsService({
                 knex: mockKnex,
                 urlService: mockUrlService
             });
             
-            const result = await serviceNoTinybird.getTopPages({
+            const result = await serviceNoTinybird.getTopContent({
                 date_from: '2023-01-01',
                 date_to: '2023-01-31'
             });

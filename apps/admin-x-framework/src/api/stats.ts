@@ -2,22 +2,22 @@ import {Meta, createQuery} from '../utils/api/hooks';
 
 // Types
 
-export type TopPagesItem = {
+export type TopContentItem = {
     pathname: string;
     visits: number;
     title?: string;
 }
 
-export type TopPagesResponseType = {
-    stats: TopPagesItem[];
+export type TopContentResponseType = {
+    stats: TopContentItem[];
     meta: Meta;
 }
 
 // Requests
 
-const dataType = 'TopPagesResponseType';
+const dataType = 'TopContentResponseType';
 
-export const useTopPages = createQuery<TopPagesResponseType>({
+export const useTopContent = createQuery<TopContentResponseType>({
     dataType,
-    path: '/stats/top-pages/'
+    path: '/stats/top-content/'
 });

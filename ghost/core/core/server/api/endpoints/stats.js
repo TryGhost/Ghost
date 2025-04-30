@@ -104,7 +104,7 @@ const controller = {
             return await statsService.api.getReferrersHistory();
         }
     },
-    topPages: {
+    topContent: {
         headers: {
             cacheInvalidate: false
         },
@@ -122,12 +122,12 @@ const controller = {
         cache: statsService.cache,
         generateCacheKeyData(frame) {
             return {
-                method: 'topPages',
+                method: 'topContent',
                 options: frame.options
             };
         },
         async query(frame) {
-            return await statsService.api.getTopPages(frame.options);
+            return await statsService.api.getTopContent(frame.options);
         }
     }
 };
