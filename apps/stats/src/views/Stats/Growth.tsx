@@ -156,7 +156,7 @@ const GrowthKPIs: React.FC = () => {
                             isAnimationActive={false}
                             stroke="hsl(var(--chart-1))"
                             strokeWidth={2}
-                            type='bump'
+                            type='monotone'
                         />
                     </Recharts.LineChart>
                 </ChartContainer>
