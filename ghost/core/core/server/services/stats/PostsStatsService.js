@@ -38,7 +38,8 @@ class PostsStatsService {
         logging.info('TopPostsStatsService.getTopPosts called with options:', options);
         try {
             const order = options.order || 'free_members desc';
-            const limit = options.limit || 20;
+            const limitRaw = Number.parseInt(options.limit, 10);
+            const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 20;
             const [orderField, orderDirection = 'desc'] = order.split(' ');
 
             if (!['free_members', 'paid_members', 'mrr'].includes(orderField)) {
