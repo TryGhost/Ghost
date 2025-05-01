@@ -32,11 +32,17 @@ class MembersStatsService {
 
     /**
      * Get the member deltas by status for all days, sorted ascending
+     * @param {Object} options
+     * @param {string|Date} [options.startDate] - Start date for fetching deltas (ISO format or Date object, defaults to 91 days ago)
      * @returns {Promise<MemberStatusDelta[]>} The deltas of paid, free and comped users per day, sorted ascending
      */
-    async fetchAllStatusDeltas() {
+    async fetchAllStatusDeltas(options = {}) {
         const knex = this.knex;
-        const ninetyDaysAgo = moment.utc().subtract(91, 'days').startOf('day').utc().format('YYYY-MM-DD HH:mm:ss');
+        const startDate = options.startDate ? 
+            moment.utc(options.startDate).startOf('day') : 
+            moment.utc().subtract(91, 'days').startOf('day');
+        
+        const formattedStartDate = startDate.format('YYYY-MM-DD HH:mm:ss');
         const rows = await knex('members_status_events')
             .select(knex.raw('DATE(created_at) as date'))
             .select(knex.raw(`SUM(
@@ -57,17 +63,19 @@ class MembersStatsService {
                 WHEN from_status='free' THEN -1
                 ELSE 0 END
             ) as free_delta`))
-            .where('created_at', '>=', ninetyDaysAgo)
+            .where('created_at', '>=', formattedStartDate)
             .groupByRaw('DATE(created_at)');
         return rows;
     }
 
     /**
      * Returns a list of the total members by status for each day, including the paid deltas paid_subscribed and paid_canceled
+     * @param {Object} options
+     * @param {string|Date} [options.startDate] - Start date for fetching history (ISO format or Date object, defaults to 91 days ago). Note: result always includes one day before the startDate as a baseline.
      * @returns {Promise<CountHistory>}
      */
-    async getCountHistory() {
-        const rows = await this.fetchAllStatusDeltas();
+    async getCountHistory(options = {}) {
+        const rows = await this.fetchAllStatusDeltas(options);
 
         // Fetch current total amounts and start counting from there
         const totals = await this.getCount();
@@ -134,7 +142,7 @@ module.exports = MembersStatsService;
 /**
  * @typedef MemberStatusDelta
  * @type {Object}
- * @property {Date} date
+ * @property {string|Date} date Date in SQL format or Date object
  * @property {number} paid_subscribed Paid members that subscribed on this day
  * @property {number} paid_canceled Paid members that canceled on this day
  * @property {number} comped_delta Total net comped members on this day

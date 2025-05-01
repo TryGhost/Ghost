@@ -1,19 +1,87 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import DateRangeSelect from './components/DateRangeSelect';
-import React, {useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
 import {Navigate} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
-const GrowthKPIs:React.FC = () => {
-    const [currentTab, setCurrentTab] = useState('free-members');
+type ChartDataItem = {
+    date: string;
+    value: number;
+    free: number;
+    paid: number;
+    comped: number;
+    formattedValue: string;
+    label?: string;
+};
+
+type Totals = {
+    totalMembers: number;
+    freeMembers: number;
+    paidMembers: number;
+    percentChanges: {
+        total: string;
+        free: string;
+        paid: string;
+    };
+    directions: {
+        total: DiffDirection;
+        free: DiffDirection;
+        paid: DiffDirection;
+    };
+};
+
+const GrowthKPIs: React.FC<{
+    chartData: ChartDataItem[];
+    totals: Totals;
+}> = ({chartData: allChartData, totals}) => {
+    const [currentTab, setCurrentTab] = useState('total-members');
     const {settings} = useGlobalData();
     const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
+
+    const {totalMembers, freeMembers, paidMembers, percentChanges, directions} = totals;
+
+    // Create chart data based on selected tab
+    const chartData = useMemo(() => {
+        if (!allChartData || allChartData.length === 0) {
+            return [];
+        }
+        
+        switch (currentTab) {
+        case 'free-members':
+            return allChartData.map(item => ({
+                ...item,
+                value: item.free,
+                formattedValue: formatNumber(item.free),
+                label: 'Free members'
+            }));
+        case 'paid-members':
+            return allChartData.map(item => ({
+                ...item,
+                value: item.paid,
+                formattedValue: formatNumber(item.paid),
+                label: 'Paid members'
+            }));
+        case 'mrr': {
+            // TODO: replace the hard-coded 958 once real MRR is available
+            const avgMrrPerMember = paidMembers > 0 ? 958 / paidMembers : 0;
+            return allChartData.map(item => ({
+                ...item,
+                value: item.paid * avgMrrPerMember,
+                formattedValue: `$${(item.paid * avgMrrPerMember).toFixed(0)}`,
+                label: 'MRR'
+            }));
+        }
+        default:
+            return allChartData;
+        }
+    }, [currentTab, allChartData, paidMembers]);
 
     if (!labs.trafficAnalyticsAlpha) {
         return <Navigate to='/' />;
@@ -21,198 +89,9 @@ const GrowthKPIs:React.FC = () => {
 
     const chartConfig = {
         value: {
-            label: 'Total members'
+            label: currentTab === 'mrr' ? 'MRR' : 'Members'
         }
     } satisfies ChartConfig;
-
-    const chartData = [
-        {
-            date: '2025-03-30',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-03-31',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-01',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-02',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-03',
-            value: 15,
-            formattedValue: '15',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-04',
-            value: 5,
-            formattedValue: '5',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-05',
-            value: 8,
-            formattedValue: '8',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-06',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-07',
-            value: 7,
-            formattedValue: '7',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-08',
-            value: 4,
-            formattedValue: '4',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-09',
-            value: 4,
-            formattedValue: '4',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-10',
-            value: 1,
-            formattedValue: '1',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-11',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-12',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-13',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-14',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-15',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-16',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-17',
-            value: 8,
-            formattedValue: '8',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-18',
-            value: 2,
-            formattedValue: '2',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-19',
-            value: 3,
-            formattedValue: '3',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-20',
-            value: 2,
-            formattedValue: '2',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-21',
-            value: 5,
-            formattedValue: '5',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-22',
-            value: 5,
-            formattedValue: '5',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-23',
-            value: 4,
-            formattedValue: '4',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-24',
-            value: 6,
-            formattedValue: '6',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-25',
-            value: 1,
-            formattedValue: '1',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-26',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-27',
-            value: 3,
-            formattedValue: '3',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-28',
-            value: 14,
-            formattedValue: '14',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-29',
-            value: 10,
-            formattedValue: '10',
-            label: 'Total members'
-        }
-    ];
 
     return (
         <Tabs defaultValue="total-members" variant='underline'>
@@ -220,17 +99,32 @@ const GrowthKPIs:React.FC = () => {
                 <KpiTabTrigger value="total-members" onClick={() => {
                     setCurrentTab('total-members');
                 }}>
-                    <KpiTabValue diffDirection='up' diffValue={'+3%'} label="Total members" value={formatNumber(1504)} />
+                    <KpiTabValue 
+                        diffDirection={directions.total} 
+                        diffValue={percentChanges.total} 
+                        label="Total members" 
+                        value={formatNumber(totalMembers)} 
+                    />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="free-members" onClick={() => {
                     setCurrentTab('free-members');
                 }}>
-                    <KpiTabValue diffDirection='down' diffValue={'-1.2%'} label="Free members" value={formatNumber(1246)} />
+                    <KpiTabValue 
+                        diffDirection={directions.free} 
+                        diffValue={percentChanges.free} 
+                        label="Free members" 
+                        value={formatNumber(freeMembers)} 
+                    />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="paid-members" onClick={() => {
                     setCurrentTab('paid-members');
                 }}>
-                    <KpiTabValue diffDirection='up' diffValue={'-1.3%'} label="Paid members" value={formatNumber(258)} />
+                    <KpiTabValue 
+                        diffDirection={directions.paid} 
+                        diffValue={percentChanges.paid} 
+                        label="Paid members" 
+                        value={formatNumber(paidMembers)} 
+                    />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="mrr" onClick={() => {
                     setCurrentTab('mrr');
@@ -258,10 +152,11 @@ const GrowthKPIs:React.FC = () => {
                             tickFormatter={formatDisplayDate}
                             tickLine={false}
                             tickMargin={8}
-                            ticks={chartData && chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}
+                            ticks={chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}
                         />
                         <Recharts.YAxis
                             axisLine={false}
+                            domain={['dataMin', 'auto']}
                             tickFormatter={(value) => {
                                 switch (currentTab) {
                                 case 'total-members':
@@ -269,14 +164,14 @@ const GrowthKPIs:React.FC = () => {
                                 case 'paid-members':
                                     return formatNumber(value);
                                 case 'mrr':
-                                    return value;
+                                    return `$${value}`;
                                 default:
                                     return value.toLocaleString();
                                 }
                             }}
                             tickLine={false}
-                            ticks={getYTicks(chartData || [])}
-                            width={calculateYAxisWidth(getYTicks(chartData || []), formatNumber)}
+                            ticks={getYTicks(chartData)}
+                            width={calculateYAxisWidth(getYTicks(chartData), formatNumber)}
                         />
                         <ChartTooltip
                             content={<CustomTooltipContent />}
@@ -288,7 +183,7 @@ const GrowthKPIs:React.FC = () => {
                             isAnimationActive={false}
                             stroke="hsl(var(--chart-1))"
                             strokeWidth={2}
-                            type='bump'
+                            type='monotone'
                         />
                     </Recharts.LineChart>
                 </ChartContainer>
@@ -297,12 +192,13 @@ const GrowthKPIs:React.FC = () => {
     );
 };
 
-const Growth:React.FC = () => {
-    // const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    // const {startDate, endDate, timezone} = getRangeDates(range);
-
-    // const isLoading = isConfigLoading || loading;
-
+const Growth: React.FC = () => {
+    const {range} = useGlobalData();
+    
+    // Get stats from custom hook once
+    const {isLoading, chartData, totals} = useGrowthStats(range);
+    
+    // TODO: Replace this with real top posts data from API
     const mockTopPosts = [
         {id: 'post-001', title: 'Minimal & Functional White Desk Setup in Italy', freeMembers: 17, paidMembers: 7, mrr: 8},
         {id: 'post-002', title: 'The Ultimate Guide to Productivity Hacks', freeMembers: 12, paidMembers: 5, mrr: 6},
@@ -329,10 +225,10 @@ const Growth:React.FC = () => {
                     <DateRangeSelect />
                 </ViewHeaderActions>
             </ViewHeader>
-            <StatsView data={['a']} isLoading={false}>
+            <StatsView data={chartData} isLoading={isLoading}>
                 <Card variant='plain'>
                     <CardContent>
-                        <GrowthKPIs />
+                        <GrowthKPIs chartData={chartData} totals={totals} />
                     </CardContent>
                 </Card>
                 <Card variant='plain'>
