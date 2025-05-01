@@ -86,6 +86,7 @@ export function renderFeedAttachment(
     case 'image/jpeg':
     case 'image/png':
     case 'image/gif':
+    case 'image/webp':
         return <img alt={attachment.name || 'Image'} className={`cursor-pointer ${object.type === 'Article' ? 'w-full rounded-t-md' : 'mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10'}`} src={attachment.url} onClick={onImageClick ? handleImageClick(attachment.url) : undefined} />;
     case 'video/mp4':
     case 'video/webm':
