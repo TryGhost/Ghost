@@ -150,7 +150,7 @@ describe('PostsStatsService', function () {
         await _createPost('post1', 'Post 1');
         await _createPost('post2', 'Post 2');
         await _createPost('post3', 'Post 3');
-        await _createPost('post_other', 'Other Post');
+        await _createPost('post4', 'Post 4');
     });
 
     afterEach(async function () {
@@ -184,11 +184,12 @@ describe('PostsStatsService', function () {
             const result = await service.getTopPosts({order: 'free_members desc'});
 
             assert.ok(result.data, 'Result should have a data property');
-            assert.equal(result.data.length, 2, 'Should return 2 posts with free_members > 0');
+            assert.equal(result.data.length, 3, 'Should return 3 posts with some activity');
 
             const expectedResults = [
                 {post_id: 'post1', title: 'Post 1', free_members: 2, paid_members: 1, mrr: 500},
-                {post_id: 'post2', title: 'Post 2', free_members: 1, paid_members: 1, mrr: 500}
+                {post_id: 'post2', title: 'Post 2', free_members: 1, paid_members: 1, mrr: 500},
+                {post_id: 'post3', title: 'Post 3', free_members: 0, paid_members: 1, mrr: 1000}
             ];
 
             assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
@@ -198,38 +199,56 @@ describe('PostsStatsService', function () {
             await _createFreeSignup('post3');
             await _createPaidSignup('post1', 600);
             await _createPaidConversion('post1', 'post2', 500);
-            await _createPaidConversion('post_other', 'post2', 700);
+            await _createPaidConversion('post4', 'post2', 700);
 
             const result = await service.getTopPosts({order: 'paid_members desc'});
 
             assert.ok(result.data, 'Result should have a data property');
-            assert.equal(result.data.length, 2, 'Should return 2 posts with paid_members > 0');
+            assert.equal(result.data.length, 4, 'Should return 4 posts with some activity');
 
             const expectedResults = [
                 {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200},
-                {post_id: 'post1', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600}
+                {post_id: 'post1', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600},
+                {post_id: 'post3', title: 'Post 3', free_members: 1, paid_members: 0, mrr: 0},
+                {post_id: 'post4', title: 'Post 4', free_members: 1, paid_members: 0, mrr: 0}
             ];
 
-            assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for paid_members desc');
+            const sortedResults = result.data.sort((a, b) => {
+                if (a.paid_members === 0 && b.paid_members === 0) {
+                    return a.post_id.localeCompare(b.post_id);
+                }
+                return 0;
+            });
+
+            assert.deepEqual(sortedResults, expectedResults, 'Results should match expected order and counts for paid_members desc');
         });
 
         it('correctly ranks posts by mrr', async function () {
             await _createFreeSignup('post3');
             await _createPaidSignup('post1', 600);
             await _createPaidConversion('post1', 'post2', 500);
-            await _createPaidConversion('post_other', 'post2', 700);
+            await _createPaidConversion('post4', 'post2', 700);
 
             const result = await service.getTopPosts({order: 'mrr desc'});
 
             assert.ok(result.data, 'Result should have a data property');
-            assert.equal(result.data.length, 2, 'Should return 2 posts with mrr > 0');
+            assert.equal(result.data.length, 4, 'Should return 4 posts with some activity');
 
             const expectedResults = [
                 {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200},
-                {post_id: 'post1', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600}
+                {post_id: 'post1', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600},
+                {post_id: 'post3', title: 'Post 3', free_members: 1, paid_members: 0, mrr: 0},
+                {post_id: 'post4', title: 'Post 4', free_members: 1, paid_members: 0, mrr: 0}
             ];
 
-            assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for mrr desc');
+            const sortedResults = result.data.sort((a, b) => {
+                if (a.mrr === 0 && b.mrr === 0) {
+                    return a.post_id.localeCompare(b.post_id);
+                }
+                return 0;
+            });
+
+            assert.deepEqual(sortedResults, expectedResults, 'Results should match expected order and counts for mrr desc');
         });
     });
 });

@@ -74,18 +74,12 @@ class PostsStatsService {
                 .leftJoin('paid', 'p.id', 'paid.post_id')
                 .leftJoin('mrr', 'p.id', 'mrr.post_id');
 
-            // Filter out posts with zero count/value for the metric being ordered by
-            switch (orderField) {
-            case 'free_members':
-                query = query.whereRaw('COALESCE(free.free_members, 0) > 0');
-                break;
-            case 'paid_members':
-                query = query.whereRaw('COALESCE(paid.paid_members, 0) > 0');
-                break;
-            case 'mrr':
-                query = query.whereRaw('COALESCE(mrr.mrr, 0) > 0');
-                break;
-            }
+            // Include only posts that have some attributed activity
+            query = query.whereRaw(`(
+                COALESCE(free.free_members, 0) > 0 OR
+                COALESCE(paid.paid_members, 0) > 0 OR
+                COALESCE(mrr.mrr, 0) > 0
+            )`);
 
             // Apply final ordering and limiting
             const results = await query
