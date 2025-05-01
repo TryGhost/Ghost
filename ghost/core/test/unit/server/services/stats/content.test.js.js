@@ -3,7 +3,7 @@ const should = require('should');
 const ContentStatsService = require('../../../../../core/server/services/stats/ContentStatsService');
 const tinybird = require('../../../../../core/server/services/stats/utils/tinybird');
 
-describe('TopContentStatsService', function () {
+describe('ContentStatsService', function () {
     let service;
     let mockKnex;
     let mockUrlService;
