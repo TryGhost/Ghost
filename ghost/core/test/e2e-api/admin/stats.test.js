@@ -1,6 +1,6 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {mockStripe, stripeMocker} = require('../../utils/e2e-framework-mock-manager');
-const {anyContentVersion, anyEtag, anyISODate, anyObjectId} = matchers;
+const {anyContentVersion, anyEtag, anyISODate, anyObjectId, anyContentLength} = matchers;
 const assert = require('assert/strict');
 
 let agent;
@@ -225,6 +225,23 @@ describe('Stats API', function () {
                         }
                     ],
                     meta: {}
+                });
+        });
+    });
+
+    describe('Top Posts by Attribution', function () {
+        it('Can fetch top posts ordered by free members', async function () {
+            await agent
+                .get(`/stats/top-posts/?order=free_members%20desc&limit=5`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
+                    etag: anyEtag
+                })
+                .expect(({body}) => {
+                    assert.ok(body.stats, 'Response should contain a stats property');
+                    assert.ok(Array.isArray(body.stats), 'body.stats should be an array');
                 });
         });
     });

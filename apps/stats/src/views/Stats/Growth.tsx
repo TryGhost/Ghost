@@ -10,6 +10,7 @@ import {Navigate} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 
 type ChartDataItem = {
     date: string;
@@ -52,7 +53,7 @@ const GrowthKPIs: React.FC<{
         if (!allChartData || allChartData.length === 0) {
             return [];
         }
-        
+
         switch (currentTab) {
         case 'free-members':
             return allChartData.map(item => ({
@@ -99,31 +100,31 @@ const GrowthKPIs: React.FC<{
                 <KpiTabTrigger value="total-members" onClick={() => {
                     setCurrentTab('total-members');
                 }}>
-                    <KpiTabValue 
-                        diffDirection={directions.total} 
-                        diffValue={percentChanges.total} 
-                        label="Total members" 
-                        value={formatNumber(totalMembers)} 
+                    <KpiTabValue
+                        diffDirection={directions.total}
+                        diffValue={percentChanges.total}
+                        label="Total members"
+                        value={formatNumber(totalMembers)}
                     />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="free-members" onClick={() => {
                     setCurrentTab('free-members');
                 }}>
-                    <KpiTabValue 
-                        diffDirection={directions.free} 
-                        diffValue={percentChanges.free} 
-                        label="Free members" 
-                        value={formatNumber(freeMembers)} 
+                    <KpiTabValue
+                        diffDirection={directions.free}
+                        diffValue={percentChanges.free}
+                        label="Free members"
+                        value={formatNumber(freeMembers)}
                     />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="paid-members" onClick={() => {
                     setCurrentTab('paid-members');
                 }}>
-                    <KpiTabValue 
-                        diffDirection={directions.paid} 
-                        diffValue={percentChanges.paid} 
-                        label="Paid members" 
-                        value={formatNumber(paidMembers)} 
+                    <KpiTabValue
+                        diffDirection={directions.paid}
+                        diffValue={percentChanges.paid}
+                        label="Paid members"
+                        value={formatNumber(paidMembers)}
                     />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="mrr" onClick={() => {
@@ -194,28 +195,13 @@ const GrowthKPIs: React.FC<{
 
 const Growth: React.FC = () => {
     const {range} = useGlobalData();
-    
+
     // Get stats from custom hook once
     const {isLoading, chartData, totals} = useGrowthStats(range);
-    
-    // TODO: Replace this with real top posts data from API
-    const mockTopPosts = [
-        {id: 'post-001', title: 'Minimal & Functional White Desk Setup in Italy', freeMembers: 17, paidMembers: 7, mrr: 8},
-        {id: 'post-002', title: 'The Ultimate Guide to Productivity Hacks', freeMembers: 12, paidMembers: 5, mrr: 6},
-        {id: 'post-003', title: 'Building a Sustainable Morning Routine', freeMembers: 9, paidMembers: 4, mrr: 5},
-        {id: 'post-004', title: 'Digital Nomad Lifestyle: Tips and Tricks', freeMembers: 8, paidMembers: 3, mrr: 4},
-        {id: 'post-005', title: 'Minimalist Wardrobe: A Complete Guide', freeMembers: 7, paidMembers: 2, mrr: 3},
-        {id: 'post-006', title: 'The Science of Habit Formation', freeMembers: 6, paidMembers: 2, mrr: 3},
-        {id: 'post-007', title: 'Remote Work: Setting Up Your Home Office', freeMembers: 5, paidMembers: 2, mrr: 2},
-        {id: 'post-008', title: 'Mindfulness Meditation for Beginners', freeMembers: 4, paidMembers: 1, mrr: 2},
-        {id: 'post-009', title: 'Sustainable Living: Small Changes, Big Impact', freeMembers: 3, paidMembers: 1, mrr: 1},
-        {id: 'post-010', title: 'The Art of Decluttering Your Digital Life', freeMembers: 3, paidMembers: 1, mrr: 1},
-        {id: 'post-011', title: 'Healthy Meal Prep: Time-Saving Tips', freeMembers: 2, paidMembers: 1, mrr: 1},
-        {id: 'post-012', title: 'Financial Freedom: A Step-by-Step Guide', freeMembers: 2, paidMembers: 1, mrr: 1},
-        {id: 'post-013', title: 'The Power of Journaling for Personal Growth', freeMembers: 2, paidMembers: 0, mrr: 0},
-        {id: 'post-014', title: 'Creating a Productive Workspace on a Budget', freeMembers: 1, paidMembers: 0, mrr: 0},
-        {id: 'post-015', title: 'Simple Ways to Reduce Your Carbon Footprint', freeMembers: 1, paidMembers: 0, mrr: 0}
-    ];
+
+    const {data: topPostsData} = useTopPostsStatsWithRange(range, 'free_members desc');
+
+    const topPosts = topPostsData?.stats || [];
 
     return (
         <StatsLayout>
@@ -247,11 +233,11 @@ const Growth: React.FC = () => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {mockTopPosts.map(post => (
-                                    <TableRow key={post.id}>
+                                {topPosts.map(post => (
+                                    <TableRow key={post.post_id}>
                                         <TableCell className="font-medium">{post.title}</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>+{formatNumber(post.freeMembers)}</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>+{formatNumber(post.paidMembers)}</TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>+{formatNumber(post.free_members)}</TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>+{formatNumber(post.paid_members)}</TableCell>
                                         <TableCell className='text-right font-mono text-sm'>+${post.mrr}</TableCell>
                                     </TableRow>
                                 ))}
