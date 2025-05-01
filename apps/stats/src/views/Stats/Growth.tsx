@@ -226,7 +226,7 @@ const Growth: React.FC = () => {
                     <DateRangeSelect />
                 </ViewHeaderActions>
             </ViewHeader>
-            <StatsView data={['a']} isLoading={isLoading}>
+            <StatsView data={chartData} isLoading={isLoading}>
                 <Card variant='plain'>
                     <CardContent>
                         <GrowthKPIs chartData={chartData} totals={totals} />
