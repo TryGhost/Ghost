@@ -1,6 +1,6 @@
-import {getRangeDates} from './useGrowthStats'; // Import the helper
+import {getRangeDates} from './useGrowthStats';
+import {useMemo} from 'react';
 import {useTopPostsStats} from '@tryghost/admin-x-framework/api/stats';
-import {useMemo} from 'react'; // Import useMemo
 
 /**
  * Represents the possible fields to order top posts by.

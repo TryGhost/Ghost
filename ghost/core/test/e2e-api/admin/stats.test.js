@@ -1,6 +1,6 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {mockStripe, stripeMocker} = require('../../utils/e2e-framework-mock-manager');
-const {anyContentVersion, anyEtag, anyISODate, anyObjectId} = matchers;
+const {anyContentVersion, anyEtag, anyISODate, anyObjectId, anyContentLength} = matchers;
 const assert = require('assert/strict');
 
 let agent;
@@ -236,6 +236,7 @@ describe('Stats API', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 })
                 .expect(({body}) => {
