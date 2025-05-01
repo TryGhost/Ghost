@@ -45,7 +45,6 @@ services:
       - node_modules_ghost_i18n:/home/ghost/ghost/i18n/node_modules:delegated
       - node_modules_ghost_job-manager:/home/ghost/ghost/job-manager/node_modules:delegated
       - node_modules_ghost_link-replacer:/home/ghost/ghost/link-replacer/node_modules:delegated
-      - node_modules_ghost_magic-link:/home/ghost/ghost/magic-link/node_modules:delegated
       - node_modules_ghost_member-attribution:/home/ghost/ghost/member-attribution/node_modules:delegated
       - node_modules_ghost_members-csv:/home/ghost/ghost/members-csv/node_modules:delegated
       - node_modules_ghost_mw-error-handler:/home/ghost/ghost/mw-error-handler/node_modules:delegated
