@@ -76,26 +76,8 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(mw.servePublicFile('static', 'public/ghost-stats.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Card assets
-    const cardAssetsCSSPath = 'public/cards.min.css';
-    const cardAssetsJSPath = 'public/cards.min.js';
-    siteApp.use(
-        function serveCardAssetsCssMiddleware(req, res, next) {
-            if (req.path === `/${cardAssetsCSSPath}`) {
-                return cardAssets.serveMiddleware()(req, res, next);
-            }
-            next();
-        },
-        mw.servePublicFile('built', cardAssetsCSSPath, 'text/css', config.get('caching:publicAssets:maxAge'))
-    );
-    siteApp.use(
-        function serveCardAssetsJsMiddleware(req, res, next) {
-            if (req.path === `/${cardAssetsJSPath}`) {
-                return cardAssets.serveMiddleware()(req, res, next);
-            }
-            next();
-        },
-        mw.servePublicFile('built', cardAssetsJSPath, 'application/javascript', config.get('caching:publicAssets:maxAge'))
-    );
+    siteApp.use(cardAssets.serveMiddleware(), mw.servePublicFile('built', 'public/cards.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
+    siteApp.use(cardAssets.serveMiddleware(), mw.servePublicFile('built', 'public/cards.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Comment counts
     siteApp.use(mw.servePublicFile('static', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
