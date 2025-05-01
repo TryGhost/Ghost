@@ -322,7 +322,7 @@ const Notifications: React.FC = () => {
                                                             dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '')}}
                                                             className='ap-note-content mt-0.5 line-clamp-2 text-pretty text-black dark:text-white'
                                                         /> :
-                                                        <div className='mt-4 flex flex-col gap-1 rounded-md border border-gray-150 p-4 text-black dark:border-gray-950 dark:text-white'>
+                                                        <div className='mt-3 flex flex-col gap-1 rounded-md border border-gray-150 p-4 text-black dark:border-gray-950 dark:text-white'>
                                                             <span className='-mt-0.5 font-semibold'>{group.post?.title}</span>
                                                             <div
                                                                 dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '')}}
