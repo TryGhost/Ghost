@@ -87,7 +87,7 @@ describe('TopPostsStatsService', function () {
                 await db('members_subscription_created_events').insert(subCreatedEvents);
             }
             if (paidSubEvents.length > 0) {
-                 await db('members_paid_subscription_events').insert(paidSubEvents);
+                await db('members_paid_subscription_events').insert(paidSubEvents);
             }
         }
     }
@@ -165,22 +165,22 @@ describe('TopPostsStatsService', function () {
                     {id: 'post3', title: 'Post 3'}
                 ],
                 freeSignups: [
-                    {postId: 'post1', memberId: 'm1_free_paid_elsewhere'}, // Counts as free for Post 1
-                    {postId: 'post1', memberId: 'm2_free_paid_same'},      // Does NOT count as free for Post 1
-                    {postId: 'post2', memberId: 'm3_free_only'},          // Counts as free for Post 2
-                    {postId: 'post3', memberId: 'm4_paid_only'}           // Does NOT count as free for Post 3
+                    {postId: 'post1', memberId: 'm1_free_paid_elsewhere'},
+                    {postId: 'post1', memberId: 'm2_free_paid_same'},
+                    {postId: 'post2', memberId: 'm3_free_only'},
+                    {postId: 'post3', memberId: 'm4_paid_only'}
                 ],
                 paidSignups: [
                     // Paid conversion for m1, but attributed to Post 2 (not Post 1)
                     {postId: 'post2', memberId: 'm1_free_paid_elsewhere', subscriptionId: 'sub1', mrr: 500},
                     // Paid conversion for m2, attributed to Post 1 (same as signup)
                     {postId: 'post1', memberId: 'm2_free_paid_same', subscriptionId: 'sub2', mrr: 500},
-                     // Paid conversion for m4, attributed to Post 3 (same as signup)
+                    // Paid conversion for m4, attributed to Post 3 (same as signup)
                     {postId: 'post3', memberId: 'm4_paid_only', subscriptionId: 'sub3', mrr: 1000}
                 ]
             });
 
-            const result = await service.getTopPosts({ order: 'free_members desc' });
+            const result = await service.getTopPosts({order: 'free_members desc'});
 
             assert.ok(result.data, 'Result should have a data property');
             // Only posts with free_members > 0 according to the new definition
@@ -220,10 +220,10 @@ describe('TopPostsStatsService', function () {
                     {id: 'post3', title: 'Post 3'}
                 ],
                 freeSignups: [
-                    {postId: 'post1', memberId: 'm1_free_paid_elsewhere'}, // Free signup for Post 1
-                    {postId: 'post1', memberId: 'm2_free_paid_same'},      // Free signup for Post 1
-                    {postId: 'post3', memberId: 'm3_free_only'},          // Free signup for Post 3
-                    {postId: 'post_other', memberId: 'm4_paid_on_post2'}  // Signup elsewhere, paid on Post 2
+                    {postId: 'post1', memberId: 'm1_free_paid_elsewhere'},
+                    {postId: 'post1', memberId: 'm2_free_paid_same'},
+                    {postId: 'post3', memberId: 'm3_free_only'},
+                    {postId: 'post_other', memberId: 'm4_paid_on_post2'}
                 ],
                 paidSignups: [
                     // Paid conversion for m1, but attributed to Post 2 (NOT Post 1)
@@ -235,7 +235,7 @@ describe('TopPostsStatsService', function () {
                 ]
             });
 
-            const result = await service.getTopPosts({ order: 'paid_members desc' });
+            const result = await service.getTopPosts({order: 'paid_members desc'});
 
             assert.ok(result.data, 'Result should have a data property');
             // Only posts with paid_members > 0 according to the new definition
@@ -244,7 +244,7 @@ describe('TopPostsStatsService', function () {
             assert.equal(result.data[0].post_id, 'post1', 'Post 1 should be ranked first');
             assert.equal(result.data[0].title, 'Post 1');
             assert.equal(result.data[0].paid_members, 1, 'Post 1 should have 1 paid member');
-             // Post 1 also had a free signup (m1) who converted elsewhere
+            // Post 1 also had a free signup (m1) who converted elsewhere
             assert.equal(result.data[0].free_members, 1, 'Post 1 should have 1 free member');
             // MRR should be sum of all paid conversions attributed to Post 1 (just m2)
             assert.equal(result.data[0].mrr, 600, 'Post 1 should have 600 mrr');
@@ -263,10 +263,10 @@ describe('TopPostsStatsService', function () {
                     {id: 'post3', title: 'Post 3'}
                 ],
                 freeSignups: [
-                    {postId: 'post1', memberId: 'm1_free_paid_elsewhere'}, // Free signup for Post 1
-                    {postId: 'post1', memberId: 'm2_free_paid_same'},      // Free signup for Post 1
-                    {postId: 'post3', memberId: 'm3_free_only'},          // Free signup for Post 3
-                    {postId: 'post_other', memberId: 'm4_paid_on_post2'}  // Signup elsewhere, paid on Post 2
+                    {postId: 'post1', memberId: 'm1_free_paid_elsewhere'},
+                    {postId: 'post1', memberId: 'm2_free_paid_same'},
+                    {postId: 'post3', memberId: 'm3_free_only'},
+                    {postId: 'post_other', memberId: 'm4_paid_on_post2'}
                 ],
                 paidSignups: [
                     // Paid conversion for m1, attributed to Post 2 (MRR=500)
@@ -278,7 +278,7 @@ describe('TopPostsStatsService', function () {
                 ]
             });
 
-            const result = await service.getTopPosts({ order: 'mrr desc' });
+            const result = await service.getTopPosts({order: 'mrr desc'});
 
             assert.ok(result.data, 'Result should have a data property');
             // Only posts with mrr > 0
@@ -298,7 +298,7 @@ describe('TopPostsStatsService', function () {
             assert.equal(result.data[1].mrr, 600, 'Post 1 should have 600 mrr');
             // Post 1 had one signup (m2) that converted immediately on Post 1
             assert.equal(result.data[1].paid_members, 1, 'Post 1 should have 1 paid member (by new def)');
-             // Post 1 had one signup (m1) that converted elsewhere
+            // Post 1 had one signup (m1) that converted elsewhere
             assert.equal(result.data[1].free_members, 1, 'Post 1 should have 1 free member (by new def)');
         });
     });

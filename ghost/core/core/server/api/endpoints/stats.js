@@ -141,11 +141,11 @@ const controller = {
             cacheInvalidate: false
         },
         options: [
-            'order',      // e.g., 'free_members desc', 'paid_members desc', 'mrr desc'
-            'limit',      // e.g., 10
-            'date_from',  // e.g., 'YYYY-MM-DD'
-            'date_to',    // e.g., 'YYYY-MM-DD'
-            'timezone'    // e.g., 'UTC'
+            'order',
+            'limit',
+            'date_from',
+            'date_to',
+            'timezone'
         ],
         permissions: {
             docName: 'posts',

@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
 
 /**
  * @typedef {Object} TopPostsOptions
@@ -41,10 +42,14 @@ class TopPostsStatsService {
             const [orderField, orderDirection = 'desc'] = order.split(' ');
 
             if (!['free_members', 'paid_members', 'mrr'].includes(orderField)) {
-                throw new Error(`Invalid order field: ${orderField}. Must be one of: free_members, paid_members, mrr`);
+                throw new errors.BadRequestError({
+                    message: `Invalid order field: ${orderField}. Must be one of: free_members, paid_members, mrr`
+                });
             }
             if (!['asc', 'desc'].includes(orderDirection.toLowerCase())) {
-                throw new Error(`Invalid order direction: ${orderDirection}`);
+                throw new errors.BadRequestError({
+                    message: `Invalid order direction: ${orderDirection}`
+                });
             }
 
             // Build the main query using CTEs for clarity with the new logic
