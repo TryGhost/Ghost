@@ -306,7 +306,7 @@ const Notifications: React.FC = () => {
                                                             <Skeleton className='w-full max-w-60' />
                                                         </> :
                                                         <div className='flex items-center gap-1'>
-                                                            <span><NotificationGroupDescription group={group} /></span>
+                                                            <span className='truncate'><NotificationGroupDescription group={group} /></span>
                                                             <span className='mt-px text-[8px]'>&bull;</span>
                                                             <span className='mt-0.5 text-sm'>{renderTimestamp(group, false)}</span>
                                                         </div>
