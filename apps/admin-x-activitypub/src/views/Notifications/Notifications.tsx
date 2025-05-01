@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from 'react';
-import {LucideIcon, Skeleton} from '@tryghost/shade';
+import {Button, LucideIcon, Skeleton} from '@tryghost/shade';
 
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
@@ -255,23 +255,24 @@ const Notifications: React.FC = () => {
                                                             />
                                                         ))}
                                                         {group.actors.length > maxAvatars && (!openStates[group.id || `${group.type}_${index}`]) && (
-                                                            <div
-                                                                className='absolute right-0 z-10 flex size-10 items-center justify-center rounded-full bg-black/50 text-lg font-semibold text-white'
-                                                            >
+                                                            <div className='absolute right-[28px] z-10 flex size-9 items-center justify-center rounded-full bg-black/50 text-base font-semibold tracking-tightest text-white'>
                                                                 {`+${group.actors.length - maxAvatars}`}
                                                             </div>
                                                         )}
 
                                                         {group.actors.length > 1 && (
-                                                            <div className='flex items-center gap-0.5 text-gray-700 dark:text-gray-600'>
-                                                                <LucideIcon.ChevronDown className={`ml-1.5 text-gray-500 dark:text-gray-400 ${openStates[group.id || `${group.type}_${index}`] ? 'ml-[-10px] rotate-180' : ''}`} size={18} strokeWidth={1.5} />
+                                                            <Button className={`group flex items-center gap-0.5 text-gray-700 hover:bg-transparent hover:text-black dark:text-gray-600 dark:hover:text-white ${openStates[group.id || `${group.type}_${index}`] ? 'ml-[-20px]' : 'ml-0 w-[28px]'}`} variant='ghost' onClick={(event) => {
+                                                                event?.stopPropagation();
+                                                                toggleOpen(group.id || `${group.type}_${index}`);
+                                                            }}>
+                                                                <LucideIcon.ChevronDown className={`${openStates[group.id || `${group.type}_${index}`] ? 'rotate-180' : ''}`} size={20} strokeWidth={1.5} />
                                                                 {openStates[group.id || `${group.type}_${index}`] ? 'Hide' : <span className='sr-only'>Show all</span>}
-                                                            </div>
+                                                            </Button>
                                                         )}
                                                     </div>
                                                     <div className={`overflow-hidden transition-all duration-300 ease-in-out  ${openStates[group.id || `${group.type}_${index}`] ? 'mb-2 max-h-[1384px] opacity-100' : 'max-h-0 opacity-0'}`}>
                                                         {openStates[group.id || `${group.type}_${index}`] && group.actors.length > 1 && (
-                                                            <div className='flex flex-col gap-2 pt-4'>
+                                                            <div className='flex flex-col gap-2 pt-2'>
                                                                 {group.actors.map((actor: ActorProperties) => (
                                                                     <div
                                                                         key={actor.id}
