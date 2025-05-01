@@ -78,7 +78,6 @@ COPY ghost/domain-events/package.json ghost/domain-events/package.json
 COPY ghost/donations/package.json ghost/donations/package.json
 COPY ghost/email-addresses/package.json ghost/email-addresses/package.json
 COPY ghost/email-service/package.json ghost/email-service/package.json
-COPY ghost/email-suppression-list/package.json ghost/email-suppression-list/package.json
 COPY ghost/html-to-plaintext/package.json ghost/html-to-plaintext/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
 COPY ghost/job-manager/package.json ghost/job-manager/package.json
