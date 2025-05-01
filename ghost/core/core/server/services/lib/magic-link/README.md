@@ -5,7 +5,7 @@
 ```js
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-const MagicLink = require('@tryghost/magic-link');
+const MagicLink = require('./MagicLink');
 
 async function main() {
     const jwtSecret = crypto.randomBytes(16).toString('hex');

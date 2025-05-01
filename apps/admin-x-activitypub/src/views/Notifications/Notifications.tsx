@@ -1,18 +1,19 @@
 import React, {useEffect, useRef} from 'react';
-import {LucideIcon, Skeleton} from '@tryghost/shade';
+import {Button, LucideIcon, Skeleton} from '@tryghost/shade';
 
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {LoadingIndicator} from '@tryghost/admin-x-design-system';
 
 import APAvatar from '@components/global/APAvatar';
-import NotificationItem from '@components/activities/NotificationItem';
+import NotificationItem from './components/NotificationItem';
 import Separator from '@components/global/Separator';
 
 import Layout from '@components/layout';
-import truncate from '@utils/truncate';
+import NotificationIcon from './components/NotificationIcon';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {Notification} from '@src/api/activitypub';
 import {handleProfileClickRR} from '@utils/handle-profile-click';
+import {renderTimestamp} from '@src/utils/render-timestamp';
 import {stripHtml} from '@src/utils/content-formatters';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useNotificationsForUser} from '@hooks/use-activity-pub-queries';
@@ -23,6 +24,7 @@ interface NotificationGroup {
     actors: Notification['actor'][];
     post: Notification['post'];
     inReplyTo: Notification['inReplyTo'];
+    createdAt: string;
 }
 
 interface NotificationGroupDescriptionProps {
@@ -66,7 +68,8 @@ function groupNotifications(notifications: Notification[]): NotificationGroup[] 
                 type: notification.type,
                 actors: [],
                 post: notification.post,
-                inReplyTo: notification.inReplyTo
+                inReplyTo: notification.inReplyTo,
+                createdAt: notification.createdAt
             };
         }
 
@@ -80,10 +83,10 @@ function groupNotifications(notifications: Notification[]): NotificationGroup[] 
 };
 
 const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> = ({group}) => {
-    const [firstActor, secondActor, ...otherActors] = group.actors;
+    const [firstActor, ...otherActors] = group.actors;
     const hasOthers = otherActors.length > 0;
 
-    const actorClass = 'cursor-pointer font-semibold hover:underline';
+    const actorClass = 'cursor-pointer font-semibold hover:underline text-black dark:text-white';
 
     const navigate = useNavigate();
 
@@ -98,41 +101,20 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
             >
                 {firstActor.name}
             </span>
-            {secondActor && (
-                <>
-                    {hasOthers ? ', ' : ' and '}
-                    <span
-                        className={actorClass}
-                        onClick={(e) => {
-                            e?.stopPropagation();
-                            handleProfileClickRR(secondActor.handle, navigate);
-                        }}
-                    >
-                        {secondActor.name}
-                    </span>
-                </>
-            )}
-            {hasOthers && ' and others'}
+            {hasOthers && ` and ${otherActors.length} ${otherActors.length > 1 ? 'others' : 'other'}`}
         </>
     );
 
     switch (group.type) {
     case 'follow':
-        return <>{actorText} started following you</>;
+        return <>{actorText} followed you</>;
     case 'like':
-        return <>{actorText} liked your {group.post?.type === 'article' ? 'post' : 'note'} <span className='font-semibold'>{group.post?.title || ''}</span></>;
+        return <>{actorText} liked your {group.post?.type === 'article' ? 'post' : 'note'}</>;
     case 'repost':
-        return <>{actorText} reposted your {group.post?.type === 'article' ? 'post' : 'note'} <span className='font-semibold'>{group.post?.title || ''}</span></>;
+        return <>{actorText} reposted your {group.post?.type === 'article' ? 'post' : 'note'}</>;
     case 'reply':
         if (group.inReplyTo && typeof group.inReplyTo !== 'string') {
-            let content = stripHtml(group.inReplyTo.content || '');
-
-            // If the post has a title, use that instead of the content (notes do not have a title)
-            if (group.inReplyTo.title) {
-                content = stripHtml(group.inReplyTo.title);
-            }
-
-            return <>{actorText} replied to your {group.inReplyTo?.type === 'article' ? 'post' : 'note'} <span className='font-semibold'>{truncate(content, 80)}</span></>;
+            return <>{actorText} replied to your {group.inReplyTo?.type === 'article' ? 'post' : 'note'}</>;
         }
     }
 
@@ -232,15 +214,32 @@ const Notifications: React.FC = () => {
                                     <React.Fragment key={group.id || `${group.type}_${index}`}>
                                         <NotificationItem
                                             className='hover:bg-gray-75 dark:hover:bg-gray-950'
+                                            isGrouped={group.actors.length > 1}
                                             onClick={() => handleNotificationClick(group, index)}
                                         >
                                             {isLoading ?
                                                 <Skeleton className='rounded-full' containerClassName='flex h-10 w-10' /> :
-                                                <NotificationItem.Icon type={group.type} />
+                                                (group.actors.length > 1 ?
+                                                    <NotificationItem.Icon type={group.type} /> :
+                                                    <div className='relative mt-0.5'>
+                                                        <APAvatar
+                                                            key={group.actors[0].id}
+                                                            author={{
+                                                                icon: {
+                                                                    url: group.actors[0].avatarUrl || ''
+                                                                },
+                                                                name: group.actors[0].name,
+                                                                handle: group.actors[0].handle
+                                                            }}
+                                                            size='notification'
+                                                        />
+                                                        <NotificationIcon className='absolute -bottom-1 -right-1 z-10 border-2 border-white dark:border-black' notificationType={group.type} size='sm' />
+                                                    </div>
+                                                )
                                             }
-                                            <NotificationItem.Avatars>
+                                            {group.actors.length > 1 && <NotificationItem.Avatars>
                                                 <div className='flex flex-col'>
-                                                    <div className='mt-0.5 flex items-center gap-1.5'>
+                                                    <div className='relative flex items-center pl-2'>
                                                         {!openStates[group.id || `${group.type}_${index}`] && group.actors.slice(0, maxAvatars).map((actor: ActorProperties) => (
                                                             <APAvatar
                                                                 key={actor.id}
@@ -251,34 +250,29 @@ const Notifications: React.FC = () => {
                                                                     name: actor.name,
                                                                     handle: actor.handle
                                                                 }}
+                                                                className='-ml-2 !bg-[#F3F3F3] outline outline-2 outline-white group-hover:!bg-[#EDEEF0] group-hover:outline-gray-75 dark:outline-black group-hover:dark:outline-gray-950'
                                                                 size='notification'
                                                             />
                                                         ))}
                                                         {group.actors.length > maxAvatars && (!openStates[group.id || `${group.type}_${index}`]) && (
-                                                            <div
-                                                                className='flex h-9 w-5 items-center justify-center text-sm text-gray-700'
-                                                            >
+                                                            <div className='absolute right-[28px] z-10 flex size-9 items-center justify-center rounded-full bg-black/50 text-base font-semibold tracking-tightest text-white'>
                                                                 {`+${group.actors.length - maxAvatars}`}
                                                             </div>
                                                         )}
 
                                                         {group.actors.length > 1 && (
-                                                            <Button
-                                                                className={`transition-color flex h-9 items-center rounded-full bg-transparent text-gray-700 hover:opacity-60 dark:text-gray-600 ${openStates[group.id || `${group.type}_${index}`] ? 'w-full justify-start pl-1' : '-ml-2 w-9 justify-center'}`}
-                                                                hideLabel={!openStates[group.id || `${group.type}_${index}`]}
-                                                                icon='chevron-down'
-                                                                iconColorClass={`w-[12px] h-[12px] ${openStates[group.id || `${group.type}_${index}`] ? 'rotate-180' : ''}`}
-                                                                label={`${openStates[group.id || `${group.type}_${index}`] ? 'Hide' : 'Show all'}`}
-                                                                unstyled
-                                                                onClick={(event) => {
-                                                                    event?.stopPropagation();
-                                                                    toggleOpen(group.id || `${group.type}_${index}`);
-                                                                }}/>
+                                                            <Button className={`group flex items-center gap-0.5 text-gray-700 hover:bg-transparent hover:text-black dark:text-gray-600 dark:hover:text-white ${openStates[group.id || `${group.type}_${index}`] ? 'ml-[-20px]' : 'ml-0 w-[28px]'}`} variant='ghost' onClick={(event) => {
+                                                                event?.stopPropagation();
+                                                                toggleOpen(group.id || `${group.type}_${index}`);
+                                                            }}>
+                                                                <LucideIcon.ChevronDown className={`${openStates[group.id || `${group.type}_${index}`] ? 'rotate-180' : ''}`} size={20} strokeWidth={1.5} />
+                                                                {openStates[group.id || `${group.type}_${index}`] ? 'Hide' : <span className='sr-only'>Show all</span>}
+                                                            </Button>
                                                         )}
                                                     </div>
                                                     <div className={`overflow-hidden transition-all duration-300 ease-in-out  ${openStates[group.id || `${group.type}_${index}`] ? 'mb-2 max-h-[1384px] opacity-100' : 'max-h-0 opacity-0'}`}>
                                                         {openStates[group.id || `${group.type}_${index}`] && group.actors.length > 1 && (
-                                                            <div className='flex flex-col gap-2 pt-4'>
+                                                            <div className='flex flex-col gap-2 pt-2'>
                                                                 {group.actors.map((actor: ActorProperties) => (
                                                                     <div
                                                                         key={actor.id}
@@ -303,15 +297,19 @@ const Notifications: React.FC = () => {
                                                         )}
                                                     </div>
                                                 </div>
-                                            </NotificationItem.Avatars>
+                                            </NotificationItem.Avatars>}
                                             <NotificationItem.Content>
-                                                <div className='line-clamp-2 text-pretty text-black dark:text-white'>
+                                                <div className='text-gray-700 dark:text-gray-600'>
                                                     {isLoading ?
                                                         <>
                                                             <Skeleton />
                                                             <Skeleton className='w-full max-w-60' />
                                                         </> :
-                                                        <NotificationGroupDescription group={group} />
+                                                        <div className='flex items-center gap-1'>
+                                                            <span className='truncate'><NotificationGroupDescription group={group} /></span>
+                                                            <span className='mt-px text-[8px]'>&bull;</span>
+                                                            <span className='mt-0.5 text-sm'>{renderTimestamp(group, false)}</span>
+                                                        </div>
                                                     }
                                                 </div>
                                                 {(
@@ -319,20 +317,29 @@ const Notifications: React.FC = () => {
                                                     (group.type === 'like' && !group.post?.name && group.post?.content) ||
                                                     (group.type === 'repost' && !group.post?.name && group.post?.content)
                                                 ) && (
-                                                    <div
-                                                        dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '')}}
-                                                        className='ap-note-content mt-1 line-clamp-2 text-pretty text-gray-700 dark:text-gray-600'
-                                                    />
+                                                    (group.post?.type === 'note' ?
+                                                        <div
+                                                            dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '')}}
+                                                            className='ap-note-content mt-0.5 line-clamp-2 text-pretty text-black dark:text-white'
+                                                        /> :
+                                                        <div className='mt-3 flex flex-col gap-1 rounded-md border border-gray-150 p-4 text-black dark:border-gray-950 dark:text-white'>
+                                                            <span className='-mt-0.5 font-semibold'>{group.post?.title}</span>
+                                                            <div
+                                                                dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '')}}
+                                                                className='ap-note-content line-clamp-2 text-pretty'
+                                                            />
+                                                        </div>
+                                                    )
                                                 )}
                                             </NotificationItem.Content>
                                         </NotificationItem>
-                                        {index < notificationGroups.length - 1 && <Separator />}
+                                        {index < notificationGroups.length - 1 && <div className='pl-14'><Separator /></div>}
                                     </React.Fragment>
                                 ))}
                             </div>
                             <div ref={loadMoreRef} className='h-1'></div>
                             {isFetchingNextPage && (
-                                <div className='flex flex-col items-center justify-center space-y-4 text-center'>
+                                <div className='-mt-4 mb-8 flex flex-col items-center justify-center space-y-4 text-center'>
                                     <LoadingIndicator size='md' />
                                 </div>
                             )}

@@ -78,21 +78,17 @@ COPY ghost/domain-events/package.json ghost/domain-events/package.json
 COPY ghost/donations/package.json ghost/donations/package.json
 COPY ghost/email-addresses/package.json ghost/email-addresses/package.json
 COPY ghost/email-service/package.json ghost/email-service/package.json
-COPY ghost/email-suppression-list/package.json ghost/email-suppression-list/package.json
 COPY ghost/html-to-plaintext/package.json ghost/html-to-plaintext/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
 COPY ghost/job-manager/package.json ghost/job-manager/package.json
 COPY ghost/link-replacer/package.json ghost/link-replacer/package.json
-COPY ghost/magic-link/package.json ghost/magic-link/package.json
 COPY ghost/member-attribution/package.json ghost/member-attribution/package.json
-COPY ghost/member-events/package.json ghost/member-events/package.json
 COPY ghost/members-csv/package.json ghost/members-csv/package.json
 COPY ghost/mw-error-handler/package.json ghost/mw-error-handler/package.json
 COPY ghost/mw-vhost/package.json ghost/mw-vhost/package.json
 COPY ghost/offers/package.json ghost/offers/package.json
 COPY ghost/post-events/package.json ghost/post-events/package.json
 COPY ghost/post-revisions/package.json ghost/post-revisions/package.json
-COPY ghost/posts-service/package.json ghost/posts-service/package.json
 COPY ghost/prometheus-metrics/package.json ghost/prometheus-metrics/package.json
 COPY ghost/security/package.json ghost/security/package.json
 COPY ghost/tiers/package.json ghost/tiers/package.json
@@ -124,7 +120,6 @@ EXPOSE 4175
 EXPOSE 4176
 EXPOSE 4177
 EXPOSE 4178
-EXPOSE 6006
 EXPOSE 6174
 EXPOSE 7173
 EXPOSE 7174

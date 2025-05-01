@@ -18,10 +18,7 @@ export default defineConfig((config) => {
         },
         preview: {
             host: '0.0.0.0',
-            port: 4177,
-            cors: [
-                'http://localhost:2368'
-            ]
+            port: 4177
         },
         plugins: [
             reactPlugin(),
