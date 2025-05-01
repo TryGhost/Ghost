@@ -50,7 +50,6 @@ const PRIVATE_FEATURES = [
     'collectionsCard',
     'lexicalIndicators',
     'trafficAnalyticsAlpha',
-    'captcha',
     'contentVisibilityAlpha',
     'explore'
 ];
