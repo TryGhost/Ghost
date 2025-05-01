@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const should = require('should');
-const TopContentStatsService = require('../../../../../core/server/services/stats/TopContentStatsService');
+const TopContentStatsService = require('../../../../../core/server/services/stats/ContentStatsService');
 const tinybird = require('../../../../../core/server/services/stats/utils/tinybird');
 
 describe('TopContentStatsService', function () {
@@ -23,7 +23,7 @@ describe('TopContentStatsService', function () {
         mockUrlService = {
             getResource: sinon.stub()
         };
-        
+
         // Create mock Tinybird client
         mockTinybirdClient = {
             buildRequest: sinon.stub(),
@@ -78,7 +78,7 @@ describe('TopContentStatsService', function () {
             should.exist(result.options);
             should.exist(result.options.headers);
             result.options.headers.Authorization.should.equal('Bearer tb-token');
-            
+
             mockTinybirdClient.buildRequest.calledWith('api_top_pages', options).should.be.true();
         });
 
@@ -100,7 +100,7 @@ describe('TopContentStatsService', function () {
             const result = mockTinybirdClient.parseResponse(mockResponse);
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(2);
-            
+
             mockTinybirdClient.parseResponse.calledWith(mockResponse).should.be.true();
         });
     });
@@ -141,14 +141,14 @@ describe('TopContentStatsService', function () {
 
         it('queries database and builds title map', async function () {
             const result = await service.lookupPostTitles(['post-1', 'post-2']);
-            
+
             should.exist(result);
             result.should.have.properties(['post-1', 'post-2']);
             result['post-1'].should.have.property('title', 'Test Post 1');
             result['post-1'].should.have.property('id', 'post-id-1');
             result['post-2'].should.have.property('title', 'Test Post 2');
             result['post-2'].should.have.property('id', 'post-id-2');
-            
+
             // Verify knex was called correctly
             mockKnex.select.calledWith('uuid', 'title', 'id').should.be.true();
             mockKnex.from.calledWith('posts').should.be.true();
@@ -163,7 +163,7 @@ describe('TopContentStatsService', function () {
                 knex: mockKnex,
                 urlService: null
             });
-            
+
             const result = serviceNoUrl.getResourceTitle('/about/');
             should.not.exist(result);
         });
@@ -175,7 +175,7 @@ describe('TopContentStatsService', function () {
                     type: 'page'
                 }
             });
-            
+
             const result = service.getResourceTitle('/about/');
             should.exist(result);
             result.should.have.properties(['title', 'resourceType']);
@@ -190,7 +190,7 @@ describe('TopContentStatsService', function () {
                     type: 'tag'
                 }
             });
-            
+
             const result = service.getResourceTitle('/tag/news/');
             should.exist(result);
             result.should.have.properties(['title', 'resourceType']);
@@ -200,14 +200,14 @@ describe('TopContentStatsService', function () {
 
         it('returns null if resource lookup fails', function () {
             mockUrlService.getResource.withArgs('/not-found/').throws(new Error('Resource not found'));
-            
+
             const result = service.getResourceTitle('/not-found/');
             should.not.exist(result);
         });
 
         it('returns null if resource has no data or title/name', function () {
             mockUrlService.getResource.withArgs('/empty/').returns({});
-            
+
             const result = service.getResourceTitle('/empty/');
             should.not.exist(result);
         });
@@ -225,7 +225,7 @@ describe('TopContentStatsService', function () {
             const result = await service.enrichTopContentData([]);
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(0);
-            
+
             service.extractPostUuids.called.should.be.false();
             service.lookupPostTitles.called.should.be.false();
         });
@@ -235,16 +235,16 @@ describe('TopContentStatsService', function () {
                 {pathname: '/post-1/', post_uuid: 'post-1', visits: 100},
                 {pathname: '/post-2/', post_uuid: 'post-2', visits: 50}
             ];
-            
+
             const result = await service.enrichTopContentData(data);
-            
+
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(2);
             result[0].title.should.equal('Test Post 1');
             result[0].post_id.should.equal('post-id-1');
             result[1].title.should.equal('Test Post 2');
             result[1].post_id.should.equal('post-id-2');
-            
+
             service.extractPostUuids.calledOnce.should.be.true();
             service.lookupPostTitles.calledOnce.should.be.true();
         });
@@ -253,21 +253,21 @@ describe('TopContentStatsService', function () {
             const data = [
                 {pathname: '/about/', visits: 100}
             ];
-            
+
             mockUrlService.getResource.withArgs('/about/').returns({
                 data: {
                     title: 'About Us',
                     type: 'page'
                 }
             });
-            
+
             const result = await service.enrichTopContentData(data);
-            
+
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(1);
             result[0].title.should.equal('About Us');
             result[0].resourceType.should.equal('page');
-            
+
             service.getResourceTitle.calledWith('/about/').should.be.true();
         });
 
@@ -275,11 +275,11 @@ describe('TopContentStatsService', function () {
             const data = [
                 {pathname: '/unknown-page/', visits: 100}
             ];
-            
+
             mockUrlService.getResource.withArgs('/unknown-page/').returns(null);
-            
+
             const result = await service.enrichTopContentData(data);
-            
+
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(1);
             result[0].title.should.equal('unknown-page');
@@ -289,11 +289,11 @@ describe('TopContentStatsService', function () {
             const data = [
                 {pathname: '/', visits: 100}
             ];
-            
+
             mockUrlService.getResource.withArgs('/').returns(null);
-            
+
             const result = await service.enrichTopContentData(data);
-            
+
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(1);
             result[0].title.should.equal('Home');
@@ -305,28 +305,28 @@ describe('TopContentStatsService', function () {
             const expectedData = [
                 {pathname: '/test/', visits: 100}
             ];
-            
+
             mockTinybirdClient.fetch.resolves(expectedData);
-            
+
             // Use snake_case parameters as expected in the API
             const options = {
                 date_from: '2023-01-01',
                 date_to: '2023-01-31'
             };
-            
+
             const result = await service.fetchRawTopContentData(options);
-            
+
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(1);
             result[0].pathname.should.equal('/test/');
             result[0].visits.should.equal(100);
-            
+
             mockTinybirdClient.fetch.calledOnce.should.be.true();
-            
+
             // Verify that camelCase conversion happened - the first param should be the pipe name
             const calledWith = mockTinybirdClient.fetch.firstCall.args;
             calledWith[0].should.equal('api_top_pages');
-            
+
             // The second param should have camelCase properties
             calledWith[1].should.have.property('dateFrom', '2023-01-01');
             calledWith[1].should.have.property('dateTo', '2023-01-31');
@@ -336,16 +336,16 @@ describe('TopContentStatsService', function () {
 
         it('returns null on API request failure', async function () {
             mockTinybirdClient.fetch.resolves(null);
-            
+
             const options = {
                 date_from: '2023-01-01',
                 date_to: '2023-01-31'
             };
-            
+
             const result = await service.fetchRawTopContentData(options);
-            
+
             should.not.exist(result);
-            
+
             // Verify that camelCase conversion happened
             const calledWith = mockTinybirdClient.fetch.firstCall.args;
             calledWith[0].should.equal('api_top_pages');
@@ -367,12 +367,12 @@ describe('TopContentStatsService', function () {
                 {pathname: '/test-2/', post_uuid: 'post-2', visits: 50}
             ];
             service.fetchRawTopContentData.resolves(mockRawData);
-            
+
             const result = await service.getTopContent({
                 date_from: '2023-01-01',
                 date_to: '2023-01-31'
             });
-            
+
             should.exist(result);
             should.exist(result.data);
             result.data.should.be.an.Array().with.lengthOf(2);
@@ -380,9 +380,9 @@ describe('TopContentStatsService', function () {
             result.data[0].should.have.property('post_id');
             result.data[1].should.have.property('title');
             result.data[1].should.have.property('post_id');
-            
+
             service.fetchRawTopContentData.calledOnce.should.be.true();
-            
+
             // Verify the parameters were passed properly
             const options = service.fetchRawTopContentData.firstCall.args[0];
             options.should.have.property('date_from', '2023-01-01');
@@ -391,27 +391,27 @@ describe('TopContentStatsService', function () {
 
         it('returns empty data array when fetch returns no data', async function () {
             service.fetchRawTopContentData.resolves(null);
-            
+
             const result = await service.getTopContent({
                 date_from: '2023-01-01',
                 date_to: '2023-01-31'
             });
-            
+
             should.exist(result);
             should.exist(result.data);
             result.data.should.be.an.Array().with.lengthOf(0);
-            
+
             service.fetchRawTopContentData.calledOnce.should.be.true();
         });
 
         it('returns empty data array on error', async function () {
             service.fetchRawTopContentData.rejects(new Error('Test error'));
-            
+
             const result = await service.getTopContent({
                 date_from: '2023-01-01',
                 date_to: '2023-01-31'
             });
-            
+
             should.exist(result);
             should.exist(result.data);
             result.data.should.be.an.Array().with.lengthOf(0);
@@ -423,12 +423,12 @@ describe('TopContentStatsService', function () {
                 knex: mockKnex,
                 urlService: mockUrlService
             });
-            
+
             const result = await serviceNoTinybird.getTopContent({
                 date_from: '2023-01-01',
                 date_to: '2023-01-31'
             });
-            
+
             should.exist(result);
             should.exist(result.data);
             result.data.should.be.an.Array().with.lengthOf(0);
@@ -455,11 +455,11 @@ describe('TopContentStatsService', function () {
             // Verify result is correct
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(2);
-            
+
             // Verify tinybird client was called with correct parameters
             mockTinybirdClient.fetch.calledOnce.should.be.true();
             mockTinybirdClient.fetch.firstCall.args[0].should.equal('api_top_pages');
-            
+
             const tinybirdOptions = mockTinybirdClient.fetch.firstCall.args[1];
             tinybirdOptions.should.have.property('dateFrom', '2023-01-01');
             tinybirdOptions.should.have.property('dateTo', '2023-01-31');
@@ -469,11 +469,11 @@ describe('TopContentStatsService', function () {
 
         it('handles null response from tinybird client', async function () {
             mockTinybirdClient.fetch.resolves(null);
-            
+
             const result = await service.getTopContent({});
-            
+
             should.exist(result);
             result.should.have.property('data').which.is.an.Array().with.lengthOf(0);
         });
     });
-}); 
+});
