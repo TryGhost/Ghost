@@ -5,7 +5,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const {mockManager} = require('../../../../utils/e2e-framework');
 const models = require('../../../../../core/server/models');
 
-const {SubscriptionCancelledEvent, MemberCreatedEvent, SubscriptionActivatedEvent} = require('@tryghost/member-events');
+const {SubscriptionCancelledEvent, MemberCreatedEvent, SubscriptionActivatedEvent} = require('../../../../../core/shared/events');
 const MilestoneCreatedEvent = require('../../../../../core/server/services/milestones/MilestoneCreatedEvent');
 
 describe('Staff Service:', function () {

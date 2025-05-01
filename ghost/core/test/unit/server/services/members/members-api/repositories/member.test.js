@@ -2,7 +2,7 @@ const assert = require('assert/strict');
 const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
 const MemberRepository = require('../../../../../../../core/server/services/members/members-api/repositories/MemberRepository');
-const {SubscriptionCreatedEvent, OfferRedemptionEvent} = require('@tryghost/member-events');
+const {SubscriptionCreatedEvent, OfferRedemptionEvent} = require('../../../../../../../core/shared/events');
 
 const mockOfferRedemption = {
     add: sinon.stub(),

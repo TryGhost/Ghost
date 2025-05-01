@@ -1,6 +1,6 @@
 const errors = require('@tryghost/errors');
 const DomainEvents = require('@tryghost/domain-events');
-const {MemberCreatedEvent} = require('@tryghost/member-events');
+const {MemberCreatedEvent} = require('../../shared/events');
 
 const messages = {
     emailVerificationNeeded: `We're hard at work processing your import. To make sure you get great deliverability, we'll need to enable some extra features for your account. A member of our team will be in touch with you by email to review your account make sure everything is configured correctly so you're ready to go.`,

@@ -1,4 +1,4 @@
-const {MemberCreatedEvent, SubscriptionCreatedEvent} = require('@tryghost/member-events');
+const {MemberCreatedEvent, SubscriptionCreatedEvent} = require('../../../shared/events');
 
 /**
  * Store events in the database
