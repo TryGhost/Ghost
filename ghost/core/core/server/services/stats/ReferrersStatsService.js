@@ -18,46 +18,68 @@ class ReferrersStatsService {
      * @returns {Promise<AttributionCountStat[]>}
      */
     async getForPost(postId, options = {}) {
-        console.log('getForPost', postId, options);
         const knex = this.knex;
-        const query = knex('members_created_events')
-            .select('referrer_source')
-            .select(knex.raw('COUNT(id) AS total'))
-            .where('attribution_id', postId)
-            .where('attribution_type', 'post');
         
-        if (options.date_from) {
-            query.where('created_at', '>=', `${options.date_from} 00:00:00`);
-        }
-        
-        if (options.date_to) {
-            query.where('created_at', '<=', `${options.date_to} 23:59:59`);
-        }
-        
-        const signupRows = await query.groupBy('referrer_source');
-        console.log('signupRows', signupRows);
-
-        const conversionQuery = knex('members_subscription_created_events')
-            .select('referrer_source')
-            .select(knex.raw('COUNT(id) AS total'))
+        // First, get all members who have paid conversions, so we can exclude them from free signups
+        const paidMembersQuery = knex('members_subscription_created_events')
+            .select('member_id')
             .where('attribution_id', postId)
             .where('attribution_type', 'post');
             
         if (options.date_from) {
-            conversionQuery.where('created_at', '>=', `${options.date_from} 00:00:00`);
+            paidMembersQuery.where('created_at', '>=', `${options.date_from} 00:00:00`);
         }
             
         if (options.date_to) {
-            conversionQuery.where('created_at', '<=', `${options.date_to} 23:59:59`);
+            paidMembersQuery.where('created_at', '<=', `${options.date_to} 23:59:59`);
+        }
+        
+        const paidMemberIds = await paidMembersQuery;
+        
+        // Get all free signups, excluding members who have paid subscriptions
+        const freeSignupsQuery = knex('members_created_events')
+            .select('referrer_source')
+            .select(knex.raw('COUNT(id) AS total'))
+            .where('attribution_id', postId)
+            .where('attribution_type', 'post');
+            
+        if (paidMemberIds.length > 0) {
+            freeSignupsQuery.whereNotIn(
+                'member_id', 
+                paidMemberIds.map(row => row.member_id)
+            );
+        }
+        
+        if (options.date_from) {
+            freeSignupsQuery.where('created_at', '>=', `${options.date_from} 00:00:00`);
+        }
+        
+        if (options.date_to) {
+            freeSignupsQuery.where('created_at', '<=', `${options.date_to} 23:59:59`);
+        }
+        
+        const freeSignupRows = await freeSignupsQuery.groupBy('referrer_source');
+
+        // Get all paid conversions
+        const paidConversionsQuery = knex('members_subscription_created_events')
+            .select('referrer_source')
+            .select(knex.raw('COUNT(id) AS total'))
+            .where('attribution_id', postId)
+            .where('attribution_type', 'post');
+            
+        if (options.date_from) {
+            paidConversionsQuery.where('created_at', '>=', `${options.date_from} 00:00:00`);
         }
             
-        const conversionRows = await conversionQuery.groupBy('referrer_source');
-        // console.log('conversionQuery', conversionQuery.toSQL());
-        console.log('conversionRows', conversionRows);
+        if (options.date_to) {
+            paidConversionsQuery.where('created_at', '<=', `${options.date_to} 23:59:59`);
+        }
+            
+        const paidConversionRows = await paidConversionsQuery.groupBy('referrer_source');
 
-        // Stitch them together, grouping them by source
+        // Combine free signups and paid conversions by referrer source
         const map = new Map();
-        for (const row of signupRows) {
+        for (const row of freeSignupRows) {
             map.set(row.referrer_source, {
                 source: row.referrer_source,
                 signups: row.total,
@@ -65,7 +87,7 @@ class ReferrersStatsService {
             });
         }
 
-        for (const row of conversionRows) {
+        for (const row of paidConversionRows) {
             const existing = map.get(row.referrer_source) ?? {
                 source: row.referrer_source,
                 signups: 0,
@@ -75,12 +97,8 @@ class ReferrersStatsService {
             map.set(row.referrer_source, existing);
         }
 
-        const result = [...map.values()].sort((a, b) => b.paid_conversions - a.paid_conversions);
-        
-        // Log the result to debug the structure
-        console.log('Post referrers result:', JSON.stringify(result));
-        
-        return result;
+        // Sort results by paid conversions (most first)
+        return [...map.values()].sort((a, b) => b.paid_conversions - a.paid_conversions);
     }
 
     /**

@@ -7,8 +7,8 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, S
 import {PostReferrerItem, usePostReferrers} from '@tryghost/admin-x-framework/api/stats';
 import {getRangeDates} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useMemo} from 'react';
 import {useParams} from '@tryghost/admin-x-framework';
+import {useMemo} from 'react';
 
 const STATS_DEFAULT_SOURCE_ICON_URL = 'https://static.ghost.org/v5.0.0/images/globe-icon.svg';
 
@@ -38,26 +38,20 @@ const Growth: React.FC<PostAnalyticsProps> = () => {
         },
         enabled: !!postId
     });
-
-    console.log('data', data);
-    console.log('data.stats', data?.stats);
-    console.log('data.stats[0]', data?.stats[0]);
     
     const {topSources, totals} = useMemo(() => {
-        if (!data) {
+        if (!data || !data.stats) {
             return {topSources: [], totals: {freeMembers: 0, paidMembers: 0, mrr: 0}};
         }
         
         // Convert API response to the format needed by our component
-        const sources = data.stats[0].map((stat: PostReferrerItem) => (
-            console.log('stat', stat),
-            {
-                id: `source-${stat.source || 'direct'}`,
-                title: stat.source || 'Direct',
-                freeMembers: (stat.signups || 0) - (stat.paid_conversions || 0),
-                paidMembers: stat.paid_conversions || 0,
-                mrr: (stat.paid_conversions || 0) * 10 // Assuming $10 MRR per conversion
-            }));
+        const sources = data.stats[0].map((stat: PostReferrerItem) => ({
+            id: `source-${stat.source || 'direct'}`,
+            title: stat.source || 'Direct',
+            freeMembers: (stat.signups || 0),
+            paidMembers: (stat.paid_conversions || 0),
+            mrr: (stat.paid_conversions || 0) * 10 // Assuming $10 MRR per conversion
+        }));
         
         // Calculate totals
         const freeTotal = sources.reduce((sum: number, source: SourceData) => sum + source.freeMembers, 0);
@@ -127,7 +121,7 @@ const Growth: React.FC<PostAnalyticsProps> = () => {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {topSources.length > 0 ? topSources.map(source => (
+                                        {topSources.length > 0 ? topSources.map((source: SourceData) => (
                                             <TableRow key={source.id}>
                                                 <TableCell>
                                                     <a className='inline-flex items-center gap-2 font-medium' href={source.title ? `https://${source.title}` : undefined} rel="noreferrer" target='_blank'>
