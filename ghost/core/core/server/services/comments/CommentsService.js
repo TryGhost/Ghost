@@ -1,6 +1,6 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const {MemberCommentEvent} = require('@tryghost/member-events');
+const {MemberCommentEvent} = require('../../../shared/events');
 const DomainEvents = require('@tryghost/domain-events');
 
 const messages = {
