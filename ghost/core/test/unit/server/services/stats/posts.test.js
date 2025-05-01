@@ -35,61 +35,65 @@ describe('PostsStatsService', function () {
     /** @type {import('knex').Knex} */
     let db;
     let service;
+    let eventIdCounter = 0; // Simple counter for unique event IDs
 
-    /**
-     * Helper function to insert test data
-     * @param {TestData} data
-     */
-    async function setupDbData(data) {
-        const now = new Date();
+    // Helper Functions for Setup
+    async function _createPost(id, title) {
+        await db('posts').insert({ id, title });
+    }
 
-        if (data.posts) {
-            await db('posts').insert(data.posts);
-        }
+    async function _createFreeSignupEvent(postId, memberId, createdAt = new Date()) {
+        eventIdCounter += 1;
+        const eventId = `free_event_${eventIdCounter}`;
+        await db('members_created_events').insert({
+            id: eventId,
+            member_id: memberId,
+            attribution_id: postId,
+            attribution_type: 'post',
+            created_at: createdAt
+        });
+    }
 
-        if (data.freeSignups) {
-            const freeEvents = data.freeSignups.map((signup, index) => ({
-                id: `free_event_${index}`,
-                member_id: signup.memberId,
-                attribution_id: signup.postId,
-                attribution_type: 'post',
-                created_at: signup.createdAt || now
-            }));
-            if (freeEvents.length > 0) {
-                await db('members_created_events').insert(freeEvents);
-            }
-        }
+    async function _createPaidConversionEvent(postId, memberId, subscriptionId, mrr, createdAt = new Date()) {
+        eventIdCounter += 1;
+        const subCreatedEventId = `sub_created_${eventIdCounter}`;
+        const paidEventId = `paid_event_${eventIdCounter}`;
 
-        if (data.paidSignups) {
-            const subCreatedEvents = [];
-            const paidSubEvents = [];
+        await db('members_subscription_created_events').insert({
+            id: subCreatedEventId,
+            member_id: memberId,
+            subscription_id: subscriptionId,
+            attribution_id: postId, // Conversion attributed to this post
+            attribution_type: 'post',
+            created_at: createdAt
+        });
 
-            data.paidSignups.forEach((signup, index) => {
-                const createdAt = signup.createdAt || now;
-                subCreatedEvents.push({
-                    id: `sub_created_${index}`,
-                    member_id: signup.memberId,
-                    subscription_id: signup.subscriptionId,
-                    attribution_id: signup.postId,
-                    attribution_type: 'post',
-                    created_at: createdAt
-                });
-                paidSubEvents.push({
-                    id: `paid_event_${index}`,
-                    member_id: signup.memberId,
-                    subscription_id: signup.subscriptionId,
-                    mrr_delta: signup.mrr,
-                    created_at: createdAt // Assuming paid event happens at the same time
-                });
-            });
+        await db('members_paid_subscription_events').insert({
+            id: paidEventId,
+            member_id: memberId,
+            subscription_id: subscriptionId,
+            mrr_delta: mrr,
+            created_at: createdAt // Assuming paid event happens at the same time
+        });
+    }
 
-            if (subCreatedEvents.length > 0) {
-                await db('members_subscription_created_events').insert(subCreatedEvents);
-            }
-            if (paidSubEvents.length > 0) {
-                await db('members_paid_subscription_events').insert(paidSubEvents);
-            }
-        }
+    // Higher-level scenario creators (used in tests)
+    /** Creates only a free signup event attributed to the post */
+    async function _createFreeSignup(postId, memberId, createdAt = new Date()) {
+        await _createFreeSignupEvent(postId, memberId, createdAt);
+    }
+
+    /** Creates a free signup AND a paid conversion event, both attributed to the SAME post */
+    async function _createPaidSignup(postId, memberId, subscriptionId, mrr, createdAt = new Date()) {
+        await _createFreeSignupEvent(postId, memberId, createdAt);
+        await _createPaidConversionEvent(postId, memberId, subscriptionId, mrr, createdAt);
+    }
+
+    /** Creates a free signup attributed to signupPostId, and a paid conversion attributed to conversionPostId */
+    async function _createPaidConversion(signupPostId, conversionPostId, memberId, subscriptionId, mrr, createdAt = new Date()) {
+        await _createFreeSignupEvent(signupPostId, memberId, createdAt);
+        // Allow signup and conversion posts to be the same if needed, although _createPaidSignup is clearer for that
+        await _createPaidConversionEvent(conversionPostId, memberId, subscriptionId, mrr, createdAt);
     }
 
     beforeEach(async function () {
@@ -100,6 +104,9 @@ describe('PostsStatsService', function () {
                 filename: ':memory:'
             }
         });
+
+        // Reset counter for each test
+        eventIdCounter = 0;
 
         await db.schema.createTable('posts', function (table) {
             table.string('id').primary();
@@ -156,34 +163,23 @@ describe('PostsStatsService', function () {
         });
 
         it('correctly ranks posts by free_members', async function () {
-            // Test Scenario:
-            // Post 1: 2 free signups (one paid elsewhere, one never paid), 1 immediate paid signup (same post)
-            // Post 2: 1 free signup (never paid)
-            // Post 3: 1 immediate paid signup (same post)
-            // Expected free_members: Post 1 = 2, Post 2 = 1, Post 3 = 0
-            // Expected order: Post 1, Post 2, Post 3 excluded
-            await setupDbData({
-                posts: [
-                    {id: 'post1', title: 'Post 1'},
-                    {id: 'post2', title: 'Post 2'},
-                    {id: 'post3', title: 'Post 3'}
-                ],
-                freeSignups: [
-                    {postId: 'post1', memberId: 'm1_free_paid_elsewhere'},
-                    {postId: 'post1', memberId: 'm2_free_paid_same'},
-                    {postId: 'post1', memberId: 'm5_free_only'},
-                    {postId: 'post2', memberId: 'm3_free_only'},
-                    {postId: 'post3', memberId: 'm4_paid_only'}
-                ],
-                paidSignups: [
-                    // Paid conversion for m1, but attributed to Post 2 (not Post 1)
-                    {postId: 'post2', memberId: 'm1_free_paid_elsewhere', subscriptionId: 'sub1', mrr: 500},
-                    // Paid conversion for m2, attributed to Post 1 (same as signup)
-                    {postId: 'post1', memberId: 'm2_free_paid_same', subscriptionId: 'sub2', mrr: 500},
-                    // Paid conversion for m4, attributed to Post 3 (same as signup)
-                    {postId: 'post3', memberId: 'm4_paid_only', subscriptionId: 'sub3', mrr: 1000}
-                ]
-            });
+            // Test Scenario: Using higher-level helpers
+            // Post 1: 1 free signup (m5), 1 paid signup (m2), 1 signup who paid elsewhere (m1)
+            // Post 2: 1 free signup (m3)
+            // Post 3: 1 paid signup (m4)
+            // Expected free_members: Post 1 = 2 (m5, m1), Post 2 = 1 (m3) -> Order: Post 1, Post 2
+
+            // Setup posts
+            await _createPost('post1', 'Post 1');
+            await _createPost('post2', 'Post 2');
+            await _createPost('post3', 'Post 3');
+
+            // Create member scenarios
+            await _createFreeSignup('post1', 'm5_free_only');          // Free signup via Post 1
+            await _createFreeSignup('post2', 'm3_free_only');          // Free signup via Post 2
+            await _createPaidSignup('post1', 'm2_free_paid_same', 'sub2', 500); // Signed up & Paid via Post 1
+            await _createPaidSignup('post3', 'm4_paid_only', 'sub3', 1000); // Signed up & Paid via Post 3
+            await _createPaidConversion('post1', 'post2', 'm1_free_paid_elsewhere', 'sub1', 500); // Signed up Post 1, Paid via Post 2
 
             const result = await service.getTopPosts({order: 'free_members desc'});
 
@@ -200,33 +196,23 @@ describe('PostsStatsService', function () {
         });
 
         it('correctly ranks posts by paid_members', async function () {
-            // Test Scenario: (Assuming paid_members = count of paid conversions attributed to the post)
-            // Post 1: 1 paid conversion (m2), 1 free signup (m1) who paid elsewhere.
-            // Post 2: 2 paid conversions (m1, m4), signups happened elsewhere.
-            // Post 3: 1 free signup only (m3).
-            // Expected paid_members: Post 1 = 1, Post 2 = 2, Post 3 = 0
-            // Expected order: Post 2, Post 1, Post 3 excluded
-            await setupDbData({
-                posts: [
-                    {id: 'post1', title: 'Post 1'},
-                    {id: 'post2', title: 'Post 2'},
-                    {id: 'post3', title: 'Post 3'}
-                ],
-                freeSignups: [
-                    {postId: 'post1', memberId: 'm1_free_paid_elsewhere'}, // Signed up post1
-                    {postId: 'post1', memberId: 'm2_free_paid_same'},     // Signed up post1
-                    {postId: 'post3', memberId: 'm3_free_only'},          // Signed up post3
-                    {postId: 'post_other', memberId: 'm4_paid_on_post2'} // Signed up elsewhere
-                ],
-                paidSignups: [
-                    // Paid conversion for m1, attributed to Post 2 (signup was post1) -> Counts for Post 2 paid_members
-                    {postId: 'post2', memberId: 'm1_free_paid_elsewhere', subscriptionId: 'sub1', mrr: 500},
-                    // Paid conversion for m2, attributed to Post 1 (signup was post1) -> Counts for Post 1 paid_members
-                    {postId: 'post1', memberId: 'm2_free_paid_same', subscriptionId: 'sub2', mrr: 600},
-                    // Paid conversion for m4, attributed to Post 2 (signup was elsewhere) -> Counts for Post 2 paid_members
-                    {postId: 'post2', memberId: 'm4_paid_on_post2', subscriptionId: 'sub3', mrr: 700}
-                ]
-            });
+            // Test Scenario: Using higher-level helpers
+            // Post 1: 1 paid signup (m2), 1 signup who paid elsewhere (m1)
+            // Post 2: 1 conversion from signup elsewhere (m4), 1 conversion from signup on Post 1 (m1)
+            // Post 3: 1 free signup (m3)
+            // Expected paid_members: Post 1 = 1 (m2), Post 2 = 2 (m1, m4) -> Order: Post 2, Post 1
+
+            // Setup posts
+            await _createPost('post1', 'Post 1');
+            await _createPost('post2', 'Post 2');
+            await _createPost('post3', 'Post 3');
+            await _createPost('post_other', 'Other Post'); // Post for m4's signup
+
+            // Create member scenarios
+            await _createFreeSignup('post3', 'm3_free_only');          // Free signup via Post 3
+            await _createPaidSignup('post1', 'm2_free_paid_same', 'sub2', 600); // Signed up & Paid via Post 1
+            await _createPaidConversion('post1', 'post2', 'm1_free_paid_elsewhere', 'sub1', 500); // Signed up Post 1, Paid via Post 2
+            await _createPaidConversion('post_other', 'post2', 'm4_paid_on_post2', 'sub3', 700); // Signed up Elsewhere, Paid via Post 2
 
             const result = await service.getTopPosts({order: 'paid_members desc'});
 
@@ -243,32 +229,23 @@ describe('PostsStatsService', function () {
         });
 
         it('correctly ranks posts by mrr', async function () {
-            // Test Scenario:
-            // Post 1: MRR = 600 (1 * 600), also 1 free signup paid elsewhere
-            // Post 2: MRR = 1200 (500 + 700), signup for one was elsewhere
-            // Post 3: MRR = 0
-            // Expected MRR order: Post 2 (1200), Post 1 (600), Post 3 excluded
-            await setupDbData({
-                posts: [
-                    {id: 'post1', title: 'Post 1'},
-                    {id: 'post2', title: 'Post 2'},
-                    {id: 'post3', title: 'Post 3'}
-                ],
-                freeSignups: [
-                    {postId: 'post1', memberId: 'm1_free_paid_elsewhere'},
-                    {postId: 'post1', memberId: 'm2_free_paid_same'},
-                    {postId: 'post3', memberId: 'm3_free_only'},
-                    {postId: 'post_other', memberId: 'm4_paid_on_post2'}
-                ],
-                paidSignups: [
-                    // Paid conversion for m1, attributed to Post 2 (MRR=500)
-                    {postId: 'post2', memberId: 'm1_free_paid_elsewhere', subscriptionId: 'sub1', mrr: 500},
-                    // Paid conversion for m2, attributed to Post 1 (MRR=600)
-                    {postId: 'post1', memberId: 'm2_free_paid_same', subscriptionId: 'sub2', mrr: 600},
-                    // Paid conversion for m4, attributed to Post 2 (MRR=700)
-                    {postId: 'post2', memberId: 'm4_paid_on_post2', subscriptionId: 'sub3', mrr: 700}
-                ]
-            });
+            // Test Scenario: Using higher-level helpers
+            // Post 1: 1 paid signup (m2, MRR=600)
+            // Post 2: 2 paid conversions (m1 MRR=500, m4 MRR=700 -> Total=1200)
+            // Post 3: 1 free signup (m3)
+            // Expected MRR: Post 1 = 600, Post 2 = 1200 -> Order: Post 2, Post 1
+
+            // Setup posts
+            await _createPost('post1', 'Post 1');
+            await _createPost('post2', 'Post 2');
+            await _createPost('post3', 'Post 3');
+            await _createPost('post_other', 'Other Post'); // Post for m4's signup
+
+            // Create member scenarios
+            await _createFreeSignup('post3', 'm3_free_only');          // Free signup via Post 3
+            await _createPaidSignup('post1', 'm2_free_paid_same', 'sub2', 600); // Signed up & Paid via Post 1 (MRR 600)
+            await _createPaidConversion('post1', 'post2', 'm1_free_paid_elsewhere', 'sub1', 500); // Signed up Post 1, Paid via Post 2 (MRR 500)
+            await _createPaidConversion('post_other', 'post2', 'm4_paid_on_post2', 'sub3', 700); // Signed up Elsewhere, Paid via Post 2 (MRR 700)
 
             const result = await service.getTopPosts({order: 'mrr desc'});
 
