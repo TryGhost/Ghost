@@ -1131,7 +1131,7 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
 
             updateActivityInCollection(queryClient, QUERY_KEYS.thread(variables.inReplyTo), 'posts', context?.id ?? '', () => preparedActivity);
         },
-          onError(error: {message: string, statusCode: number}, variables, context) {
+        onError(error: {message: string, statusCode: number}, variables, context) {
             // eslint-disable-next-line no-console
             console.error(error);
 
