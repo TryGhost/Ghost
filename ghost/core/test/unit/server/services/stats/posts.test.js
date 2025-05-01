@@ -188,30 +188,15 @@ describe('PostsStatsService', function () {
             const result = await service.getTopPosts({order: 'free_members desc'});
 
             assert.ok(result.data, 'Result should have a data property');
-            // Only posts with free_members > 0 according to the new definition
+            // Only posts with free_members > 0
             assert.equal(result.data.length, 2, 'Should return 2 posts with free_members > 0');
 
-            // Check the order is correct now
-            assert.equal(result.data[0].post_id, 'post1', 'Post 1 should be ranked first');
-            assert.equal(result.data[1].post_id, 'post2', 'Post 2 should be ranked second');
+            const expectedResults = [
+                { post_id: 'post1', title: 'Post 1', free_members: 2, paid_members: 1, mrr: 500 },
+                { post_id: 'post2', title: 'Post 2', free_members: 1, paid_members: 1, mrr: 500 }
+            ];
 
-            // Post 1 assertions
-            const post1Result = result.data[0];
-            assert.equal(post1Result.title, 'Post 1');
-            assert.equal(post1Result.free_members, 2, 'Post 1 should have 2 free members');
-            // Post 1 had one paid conversion attributed to it (m2)
-            assert.equal(post1Result.paid_members, 1, 'Post 1 should have 1 paid member');
-            // MRR is associated with the paid conversion attributed to post1
-            assert.equal(post1Result.mrr, 500, 'Post 1 should have 500 mrr');
-
-            // Post 2 assertions
-            const post2Result = result.data[1];
-            assert.equal(post2Result.title, 'Post 2');
-            assert.equal(post2Result.free_members, 1, 'Post 2 should have 1 free member');
-            // Post 2 had one paid conversion attributed to it (m1)
-            assert.equal(post2Result.paid_members, 1, 'Post 2 should have 1 paid member');
-            // Post 2 had a paid conversion attributed to it, but the *signup* was elsewhere
-            assert.equal(post2Result.mrr, 500, 'Post 2 should have 500 mrr');
+            assert.deepStrictEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
         });
 
         it('correctly ranks posts by paid_members', async function () {
@@ -246,30 +231,15 @@ describe('PostsStatsService', function () {
             const result = await service.getTopPosts({order: 'paid_members desc'});
 
             assert.ok(result.data, 'Result should have a data property');
-            // Posts with paid_members > 0 according to the conversion attribution definition
+            // Posts with paid_members > 0
             assert.equal(result.data.length, 2, 'Should return 2 posts with paid_members > 0');
 
-            // Check order
-            assert.equal(result.data[0].post_id, 'post2', 'Post 2 should be ranked first');
-            assert.equal(result.data[1].post_id, 'post1', 'Post 1 should be ranked second');
+            const expectedResults = [
+                { post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200 },
+                { post_id: 'post1', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600 }
+            ];
 
-            // Post 2 assertions
-            const post2Result = result.data[0];
-            assert.equal(post2Result.title, 'Post 2');
-            assert.equal(post2Result.paid_members, 2, 'Post 2 should have 2 paid members (m1, m4 conversions)');
-            // Post 2 had no free-only signups attributed to it
-            assert.equal(post2Result.free_members, 0, 'Post 2 should have 0 free members');
-            // MRR should be sum of all paid conversions attributed to Post 2
-            assert.equal(post2Result.mrr, 1200, 'Post 2 should have 1200 mrr (500 + 700)');
-
-            // Post 1 assertions
-            const post1Result = result.data[1];
-            assert.equal(post1Result.title, 'Post 1');
-            assert.equal(post1Result.paid_members, 1, 'Post 1 should have 1 paid member (m2 conversion)');
-            // Post 1 also had a free signup (m1) who converted elsewhere
-            assert.equal(post1Result.free_members, 1, 'Post 1 should have 1 free member');
-            // MRR should be sum of all paid conversions attributed to Post 1 (just m2)
-            assert.equal(post1Result.mrr, 600, 'Post 1 should have 600 mrr');
+            assert.deepStrictEqual(result.data, expectedResults, 'Results should match expected order and counts for paid_members desc');
         });
 
         it('correctly ranks posts by mrr', async function () {
@@ -306,22 +276,12 @@ describe('PostsStatsService', function () {
             // Only posts with mrr > 0
             assert.equal(result.data.length, 2, 'Should return 2 posts with mrr > 0');
 
-            // Check order and counts (MRR definition hasn't changed, but paid/free defs have)
-            assert.equal(result.data[0].post_id, 'post2', 'Post 2 should be ranked first by MRR');
-            assert.equal(result.data[0].title, 'Post 2');
-            assert.equal(result.data[0].mrr, 1200, 'Post 2 should have 1200 mrr (500 + 700)');
-            // Post 2 had two paid conversions attributed to it (m1, m4)
-            assert.equal(result.data[0].paid_members, 2, 'Post 2 should have 2 paid members');
-            // Post 2 had no free-only signups attributed to it (m1 signed up on post1)
-            assert.equal(result.data[0].free_members, 0, 'Post 2 should have 0 free members (by new def)');
+            const expectedResults = [
+                { post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200 },
+                { post_id: 'post1', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600 }
+            ];
 
-            assert.equal(result.data[1].post_id, 'post1', 'Post 1 should be ranked second by MRR');
-            assert.equal(result.data[1].title, 'Post 1');
-            assert.equal(result.data[1].mrr, 600, 'Post 1 should have 600 mrr');
-            // Post 1 had one signup (m2) that converted immediately on Post 1
-            assert.equal(result.data[1].paid_members, 1, 'Post 1 should have 1 paid member (by new def)');
-            // Post 1 had one signup (m1) that converted elsewhere
-            assert.equal(result.data[1].free_members, 1, 'Post 1 should have 1 free member (by new def)');
+            assert.deepStrictEqual(result.data, expectedResults, 'Results should match expected order and counts for mrr desc');
         });
     });
 });
