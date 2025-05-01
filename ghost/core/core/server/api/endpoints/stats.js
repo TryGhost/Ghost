@@ -23,7 +23,7 @@ const controller = {
         },
         async query(frame) {
             return await statsService.api.getMemberCountHistory({
-                dateFrom: frame.options.date_from
+                dateFrom: frame?.options?.date_from
             });
         }
     },
