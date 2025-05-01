@@ -15,7 +15,7 @@ const RouterController = require('./controllers/RouterController');
 const MemberController = require('./controllers/MemberController');
 const WellKnownController = require('./controllers/WellKnownController');
 
-const {EmailSuppressedEvent} = require('@tryghost/email-suppression-list');
+const {EmailSuppressedEvent} = require('../../email-suppression-list/EmailSuppressionList');
 const DomainEvents = require('@tryghost/domain-events');
 
 module.exports = function MembersAPI({

@@ -1,4 +1,4 @@
-const {AbstractEmailSuppressionList, EmailSuppressionData, EmailSuppressedEvent} = require('@tryghost/email-suppression-list');
+const {AbstractEmailSuppressionList, EmailSuppressionData, EmailSuppressedEvent} = require('./EmailSuppressionList');
 const {SpamComplaintEvent, EmailBouncedEvent} = require('@tryghost/email-service');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
