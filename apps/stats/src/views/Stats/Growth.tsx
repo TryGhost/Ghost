@@ -1,6 +1,6 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import DateRangeSelect from './components/DateRangeSelect';
-import React, {useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber} from '@tryghost/shade';
@@ -12,13 +12,49 @@ import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
 
 const GrowthKPIs: React.FC = () => {
-    const [currentTab, setCurrentTab] = useState('free-members');
+    const [currentTab, setCurrentTab] = useState('total-members');
     const {settings, range} = useGlobalData();
     const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
 
     // Get growth stats from custom hook
-    const {chartData, totals} = useGrowthStats(range);
+    const {chartData: allChartData, totals} = useGrowthStats(range);
     const {totalMembers, freeMembers, paidMembers, percentChanges, directions} = totals;
+
+    // Create chart data based on selected tab
+    const chartData = useMemo(() => {
+        if (!allChartData || allChartData.length === 0) {
+            return [];
+        }
+        
+        switch (currentTab) {
+        case 'free-members':
+            return allChartData.map(item => ({
+                ...item,
+                value: item.free,
+                formattedValue: formatNumber(item.free),
+                label: 'Free members'
+            }));
+        case 'paid-members':
+            return allChartData.map(item => ({
+                ...item,
+                value: item.paid,
+                formattedValue: formatNumber(item.paid),
+                label: 'Paid members'
+            }));
+        case 'mrr':
+            // For MRR we'd need actual MRR data, but we can simulate it based on paid members
+            const avgMrrPerMember = 958 / paidMembers; // Estimate based on total MRR / total paid members
+            return allChartData.map(item => ({
+                ...item,
+                value: item.paid * avgMrrPerMember,
+                formattedValue: `$${(item.paid * avgMrrPerMember).toFixed(0)}`,
+                label: 'MRR'
+            }));
+        case 'total-members':
+        default:
+            return allChartData;
+        }
+    }, [currentTab, allChartData, paidMembers]);
 
     if (!labs.trafficAnalyticsAlpha) {
         return <Navigate to='/' />;
@@ -26,7 +62,7 @@ const GrowthKPIs: React.FC = () => {
 
     const chartConfig = {
         value: {
-            label: 'Total members'
+            label: currentTab === 'mrr' ? 'MRR' : 'Members'
         }
     } satisfies ChartConfig;
 
@@ -89,7 +125,7 @@ const GrowthKPIs: React.FC = () => {
                             tickFormatter={formatDisplayDate}
                             tickLine={false}
                             tickMargin={8}
-                            ticks={chartData && chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}
+                            ticks={chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}
                         />
                         <Recharts.YAxis
                             axisLine={false}
@@ -100,14 +136,14 @@ const GrowthKPIs: React.FC = () => {
                                 case 'paid-members':
                                     return formatNumber(value);
                                 case 'mrr':
-                                    return value;
+                                    return `$${value}`;
                                 default:
                                     return value.toLocaleString();
                                 }
                             }}
                             tickLine={false}
-                            ticks={getYTicks(chartData || [])}
-                            width={calculateYAxisWidth(getYTicks(chartData || []), formatNumber)}
+                            ticks={getYTicks(chartData)}
+                            width={calculateYAxisWidth(getYTicks(chartData), formatNumber)}
                         />
                         <ChartTooltip
                             content={<CustomTooltipContent />}

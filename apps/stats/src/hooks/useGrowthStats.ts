@@ -102,6 +102,9 @@ const formatChartData = (memberData: MemberStatusItem[]) => {
     return memberData.map(item => ({
         date: item.date,
         value: item.free + item.paid + item.comped,
+        free: item.free,
+        paid: item.paid,
+        comped: item.comped,
         formattedValue: formatNumber(item.free + item.paid + item.comped),
         label: 'Total members'
     }));
