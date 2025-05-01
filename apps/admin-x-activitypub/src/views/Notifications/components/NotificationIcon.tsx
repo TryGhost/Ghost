@@ -23,7 +23,7 @@ const NotificationIcon: React.FC<NotificationIconProps> = ({notificationType, si
         badgeColor = 'bg-blue-600';
         break;
     case 'like':
-        icon = <LucideIcon.Heart className={`${size === 'sm' ? 'size-[11px]' : 'mt-px size-6'}`} color={iconColor} />;
+        icon = <LucideIcon.Heart className={`${size === 'sm' ? 'size-[11px]' : 'mt-px size-5'}`} color={iconColor} strokeWidth={strokeWidth} />;
         badgeColor = 'bg-pink-600';
         break;
     case 'reply':
