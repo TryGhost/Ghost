@@ -8,7 +8,8 @@ export type DiffDirection = 'up' | 'down' | 'same';
 
 // Helper function to convert range to date parameters
 export const getRangeDates = (rangeInDays: number) => {
-    const endDate = moment().format('YYYY-MM-DD');
+    // Always use UTC to stay aligned with the backend’s date arithmetic
+    const endDate = moment.utc().format('YYYY-MM-DD');
     let dateFrom;
     
     if (rangeInDays === 1) {
@@ -19,7 +20,9 @@ export const getRangeDates = (rangeInDays: number) => {
         dateFrom = '2010-01-01';
     } else {
         // Specific range
-        dateFrom = moment().subtract(rangeInDays - 1, 'days').format('YYYY-MM-DD');
+        // Guard against invalid ranges
+        const safeRange = Math.max(1, rangeInDays);
+        dateFrom = moment.utc().subtract(safeRange - 1, 'days').format('YYYY-MM-DD');
     }
     
     return {dateFrom, endDate};

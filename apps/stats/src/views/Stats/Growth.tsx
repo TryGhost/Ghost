@@ -68,15 +68,16 @@ const GrowthKPIs: React.FC<{
                 formattedValue: formatNumber(item.paid),
                 label: 'Paid members'
             }));
-        case 'mrr':
-            // For MRR we'd need actual MRR data, but we can simulate it based on paid members
-            const avgMrrPerMember = 958 / paidMembers; // Estimate based on total MRR / total paid members
+        case 'mrr': {
+            // TODO: replace the hard-coded 958 once real MRR is available
+            const avgMrrPerMember = paidMembers > 0 ? 958 / paidMembers : 0;
             return allChartData.map(item => ({
                 ...item,
                 value: item.paid * avgMrrPerMember,
                 formattedValue: `$${(item.paid * avgMrrPerMember).toFixed(0)}`,
                 label: 'MRR'
             }));
+        }
         case 'total-members':
         default:
             return allChartData;
