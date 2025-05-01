@@ -1,2 +1,0 @@
-# Posts Service
-
