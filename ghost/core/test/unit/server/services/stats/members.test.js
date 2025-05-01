@@ -14,7 +14,8 @@ describe('MembersStatsService', function () {
          */
         const currentCounts = {paid: 0, free: 0, comped: 0};
         /**
-         * @type {MembersStatsService.MemberStatusDelta[]}
+         * @typedef {{date: Date, paid_subscribed: number, paid_canceled: number, free_delta: number, comped_delta: number}} MemberEvent
+         * @type {MemberEvent[]}
          */
         let events = [];
 

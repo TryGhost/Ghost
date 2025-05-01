@@ -142,7 +142,7 @@ module.exports = MembersStatsService;
 /**
  * @typedef MemberStatusDelta
  * @type {Object}
- * @property {string} date Date in SQL format
+ * @property {string|Date} date Date in SQL format or Date object
  * @property {number} paid_subscribed Paid members that subscribed on this day
  * @property {number} paid_canceled Paid members that canceled on this day
  * @property {number} comped_delta Total net comped members on this day
