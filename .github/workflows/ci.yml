@@ -1144,7 +1144,7 @@ jobs:
           rsync -av --remove-source-files admin/* ghost/admin
 
       - name: Upload Admin test coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           flags: admin-tests
           move_coverage_to_trash: true
@@ -1162,7 +1162,7 @@ jobs:
 
       - name: Upload E2E test coverage
         if: contains(needs.job_database-tests.result, 'success')
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           flags: e2e-tests
           move_coverage_to_trash: true

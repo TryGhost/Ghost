@@ -94,12 +94,13 @@ describe('MembersStatsService', function () {
             /**
              * @param {string} status
              * @param {number} number
-             * @param {Date} date
+             * @param {Date|string} date
              * @returns {StatusEvent[]}
              **/
             function generateEvents(status, number, date) {
+                const dateObj = date instanceof Date ? date : new Date(date);
                 return Array.from({length: Math.abs(number)}).map(() => ({
-                    created_at: date.toISOString(),
+                    created_at: dateObj.toISOString(),
                     from_status: number > 0 ? null : status,
                     to_status: number < 0 ? null : status
                 }));
@@ -366,6 +367,74 @@ describe('MembersStatsService', function () {
                     paid: 1,
                     free: 2,
                     comped: 3,
+                    paid_subscribed: 4,
+                    paid_canceled: 3
+                }
+            ]);
+            assert.deepEqual(meta.totals, currentCounts);
+        });
+
+        it('Accepts custom start date', async function () {
+            // Update faked status events
+            events = [
+                {
+                    date: dayBeforeYesterdayDate,
+                    paid_subscribed: 2,
+                    paid_canceled: 1,
+                    free_delta: 2,
+                    comped_delta: 1
+                },
+                {
+                    date: yesterdayDate,
+                    paid_subscribed: 1,
+                    paid_canceled: 0,
+                    free_delta: 1,
+                    comped_delta: 0
+                },
+                {
+                    date: todayDate,
+                    paid_subscribed: 4,
+                    paid_canceled: 3,
+                    free_delta: 2,
+                    comped_delta: 3
+                }
+            ];
+
+            // Update current faked counts
+            currentCounts.paid = 3;
+            currentCounts.free = 5;
+            currentCounts.comped = 4;
+
+            await setupDB();
+
+            // Test with yesterday as start date - should include day-before-yesterday as baseline, yesterday, and today
+            const {data: results, meta} = await membersStatsService.getCountHistory({
+                startDate: yesterdayDate
+            });
+            
+            assert.equal(results.length, 3);
+            assert.deepEqual(results, [
+                {
+                    date: dayBeforeYesterday,
+                    paid: 1,
+                    free: 2,
+                    comped: 1,
+                    paid_subscribed: 0,
+                    paid_canceled: 0
+                },
+                {
+                    date: yesterday,
+                    paid: 2,
+                    free: 3,
+                    comped: 1,
+                    paid_subscribed: 1,
+                    paid_canceled: 0
+                },
+                {
+                    date: today,
+                    paid: 3,
+                    free: 5,
+                    comped: 4,
                     paid_subscribed: 4,
                     paid_canceled: 3
                 }

@@ -1,3 +1,5 @@
+/* eslint-disable ghost/filenames/match-regex */
+
 const assert = require('assert/strict');
 
 /**
