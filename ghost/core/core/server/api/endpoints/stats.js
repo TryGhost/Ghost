@@ -135,6 +135,38 @@ const controller = {
         async query(frame) {
             return await statsService.api.getTopContent(frame.options);
         }
+    },
+    topPosts: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'order',
+            'limit',
+            'date_from',
+            'date_to',
+            'timezone'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'topPosts',
+                options: {
+                    order: frame.options.order,
+                    limit: frame.options.limit,
+                    date_from: frame.options.date_from,
+                    date_to: frame.options.date_to,
+                    timezone: frame.options.timezone
+                }
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getTopPosts(frame.options);
+        }
     }
 };
 

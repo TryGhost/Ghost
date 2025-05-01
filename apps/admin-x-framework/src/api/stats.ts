@@ -35,10 +35,24 @@ export type MemberCountHistoryResponseType = {
     };
 }
 
+export type TopPostStatItem = {
+    post_id: string;
+    title: string;
+    free_members: number;
+    paid_members: number;
+    mrr: number;
+};
+
+export type TopPostsStatsResponseType = {
+    stats: TopPostStatItem[];
+    meta: Meta;
+};
+
 // Requests
 
 const dataType = 'TopContentResponseType';
 const memberCountHistoryDataType = 'MemberCountHistoryResponseType';
+const topPostsStatsDataType = 'TopPostsStatsResponseType';
 
 export const useTopContent = createQuery<TopContentResponseType>({
     dataType,
@@ -48,4 +62,9 @@ export const useTopContent = createQuery<TopContentResponseType>({
 export const useMemberCountHistory = createQuery<MemberCountHistoryResponseType>({
     dataType: memberCountHistoryDataType,
     path: '/stats/member_count/'
+});
+
+export const useTopPostsStats = createQuery<TopPostsStatsResponseType>({
+    dataType: topPostsStatsDataType,
+    path: '/stats/top-posts/'
 });
