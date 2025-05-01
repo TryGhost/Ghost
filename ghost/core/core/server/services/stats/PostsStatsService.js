@@ -74,14 +74,7 @@ class PostsStatsService {
                 .leftJoin('paid', 'p.id', 'paid.post_id')
                 .leftJoin('mrr', 'p.id', 'mrr.post_id');
 
-            // Include only posts that have some attributed activity
-            query = query.whereRaw(`(
-                COALESCE(free.free_members, 0) > 0 OR
-                COALESCE(paid.paid_members, 0) > 0 OR
-                COALESCE(mrr.mrr, 0) > 0
-            )`);
-
-            // Apply final ordering and limiting
+            // Apply final ordering and limiting (Removed the WHERE clause filtering for activity)
             const results = await query
                 .orderBy(orderField, orderDirection)
                 .limit(limit);

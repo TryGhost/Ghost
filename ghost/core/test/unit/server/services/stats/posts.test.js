@@ -169,9 +169,21 @@ describe('PostsStatsService', function () {
     });
 
     describe('getTopPosts', function () {
-        it('returns empty array when no data exists', async function () {
+        it('returns all posts with zero stats when no events exist', async function () {
             const result = await service.getTopPosts({});
-            assert.deepEqual(result, {data: []}, 'Should return empty data array');
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 4, 'Should return all 4 posts');
+
+            const expectedResults = [
+                {post_id: 'post1', title: 'Post 1', free_members: 0, paid_members: 0, mrr: 0},
+                {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 0, mrr: 0},
+                {post_id: 'post3', title: 'Post 3', free_members: 0, paid_members: 0, mrr: 0},
+                {post_id: 'post4', title: 'Post 4', free_members: 0, paid_members: 0, mrr: 0}
+            ];
+
+            const sortedResults = result.data.sort((a, b) => a.post_id.localeCompare(b.post_id));
+
+            assert.deepEqual(sortedResults, expectedResults, 'Should return all posts with zero stats');
         });
 
         it('correctly ranks posts by free_members', async function () {
@@ -184,15 +196,23 @@ describe('PostsStatsService', function () {
             const result = await service.getTopPosts({order: 'free_members desc'});
 
             assert.ok(result.data, 'Result should have a data property');
-            assert.equal(result.data.length, 3, 'Should return 3 posts with some activity');
+            assert.equal(result.data.length, 4, 'Should return all 4 posts');
 
             const expectedResults = [
                 {post_id: 'post1', title: 'Post 1', free_members: 2, paid_members: 1, mrr: 500},
                 {post_id: 'post2', title: 'Post 2', free_members: 1, paid_members: 1, mrr: 500},
-                {post_id: 'post3', title: 'Post 3', free_members: 0, paid_members: 1, mrr: 1000}
+                {post_id: 'post3', title: 'Post 3', free_members: 0, paid_members: 1, mrr: 1000},
+                {post_id: 'post4', title: 'Post 4', free_members: 0, paid_members: 0, mrr: 0}
             ];
 
-            assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
+            const sortedResults = result.data.sort((a, b) => {
+                if (a.free_members === 0 && b.free_members === 0) {
+                    return a.post_id.localeCompare(b.post_id);
+                }
+                return 0;
+            });
+
+            assert.deepEqual(sortedResults, expectedResults, 'Results should match expected order and counts for free_members desc');
         });
 
         it('correctly ranks posts by paid_members', async function () {
@@ -204,7 +224,7 @@ describe('PostsStatsService', function () {
             const result = await service.getTopPosts({order: 'paid_members desc'});
 
             assert.ok(result.data, 'Result should have a data property');
-            assert.equal(result.data.length, 4, 'Should return 4 posts with some activity');
+            assert.equal(result.data.length, 4, 'Should return all 4 posts');
 
             const expectedResults = [
                 {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200},
@@ -232,7 +252,7 @@ describe('PostsStatsService', function () {
             const result = await service.getTopPosts({order: 'mrr desc'});
 
             assert.ok(result.data, 'Result should have a data property');
-            assert.equal(result.data.length, 4, 'Should return 4 posts with some activity');
+            assert.equal(result.data.length, 4, 'Should return all 4 posts');
 
             const expectedResults = [
                 {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200},
