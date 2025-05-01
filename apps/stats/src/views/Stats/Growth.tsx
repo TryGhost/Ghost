@@ -129,6 +129,7 @@ const GrowthKPIs: React.FC = () => {
                         />
                         <Recharts.YAxis
                             axisLine={false}
+                            domain={['dataMin', 'auto']}
                             tickFormatter={(value) => {
                                 switch (currentTab) {
                                 case 'total-members':
