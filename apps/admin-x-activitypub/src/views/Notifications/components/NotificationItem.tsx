@@ -50,7 +50,7 @@ const Avatars = ({children}: {children: React.ReactNode}) => {
 
 const Content = ({children}: {children: React.ReactNode}) => {
     return (
-        <div className='col-start-2 row-start-2 -mt-0.5'>
+        <div className='col-start-2 row-start-2 -mt-0.5 overflow-hidden'>
             {children}
         </div>
     );
