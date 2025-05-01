@@ -199,8 +199,8 @@ describe('PostsStatsService', function () {
             const post1Result = result.data[0];
             assert.equal(post1Result.title, 'Post 1');
             assert.equal(post1Result.free_members, 2, 'Post 1 should have 2 free members');
-            // Post 1 had one immediate paid conversion
-            assert.equal(post1Result.paid_members, 1, 'Post 1 should have 1 paid member (by new def)');
+            // Post 1 had one paid conversion attributed to it (m2)
+            assert.equal(post1Result.paid_members, 1, 'Post 1 should have 1 paid member');
             // MRR is associated with the paid conversion attributed to post1
             assert.equal(post1Result.mrr, 500, 'Post 1 should have 500 mrr');
 
@@ -208,18 +208,19 @@ describe('PostsStatsService', function () {
             const post2Result = result.data[1];
             assert.equal(post2Result.title, 'Post 2');
             assert.equal(post2Result.free_members, 1, 'Post 2 should have 1 free member');
-            assert.equal(post2Result.paid_members, 0, 'Post 2 should have 0 paid members (by new def)');
+            // Post 2 had one paid conversion attributed to it (m1)
+            assert.equal(post2Result.paid_members, 1, 'Post 2 should have 1 paid member');
             // Post 2 had a paid conversion attributed to it, but the *signup* was elsewhere
             assert.equal(post2Result.mrr, 500, 'Post 2 should have 500 mrr');
         });
 
         it('correctly ranks posts by paid_members', async function () {
-            // Test Scenario:
-            // Post 1: 1 free signup (paid elsewhere), 1 immediate paid signup (same post)
-            // Post 2: 1 paid conversion only (signup elsewhere)
-            // Post 3: 1 free signup only
-            // Expected paid_members: Post 1 = 1, Post 2 = 0, Post 3 = 0
-            // Expected order: Post 1 first, Post 2/3 excluded
+            // Test Scenario: (Assuming paid_members = count of paid conversions attributed to the post)
+            // Post 1: 1 paid conversion (m2), 1 free signup (m1) who paid elsewhere.
+            // Post 2: 2 paid conversions (m1, m4), signups happened elsewhere.
+            // Post 3: 1 free signup only (m3).
+            // Expected paid_members: Post 1 = 1, Post 2 = 2, Post 3 = 0
+            // Expected order: Post 2, Post 1, Post 3 excluded
             await setupDbData({
                 posts: [
                     {id: 'post1', title: 'Post 1'},
@@ -227,17 +228,17 @@ describe('PostsStatsService', function () {
                     {id: 'post3', title: 'Post 3'}
                 ],
                 freeSignups: [
-                    {postId: 'post1', memberId: 'm1_free_paid_elsewhere'},
-                    {postId: 'post1', memberId: 'm2_free_paid_same'},
-                    {postId: 'post3', memberId: 'm3_free_only'},
-                    {postId: 'post_other', memberId: 'm4_paid_on_post2'}
+                    {postId: 'post1', memberId: 'm1_free_paid_elsewhere'}, // Signed up post1
+                    {postId: 'post1', memberId: 'm2_free_paid_same'},     // Signed up post1
+                    {postId: 'post3', memberId: 'm3_free_only'},          // Signed up post3
+                    {postId: 'post_other', memberId: 'm4_paid_on_post2'} // Signed up elsewhere
                 ],
                 paidSignups: [
-                    // Paid conversion for m1, but attributed to Post 2 (NOT Post 1)
+                    // Paid conversion for m1, attributed to Post 2 (signup was post1) -> Counts for Post 2 paid_members
                     {postId: 'post2', memberId: 'm1_free_paid_elsewhere', subscriptionId: 'sub1', mrr: 500},
-                    // Paid conversion for m2, attributed to Post 1 (SAME as signup)
+                    // Paid conversion for m2, attributed to Post 1 (signup was post1) -> Counts for Post 1 paid_members
                     {postId: 'post1', memberId: 'm2_free_paid_same', subscriptionId: 'sub2', mrr: 600},
-                    // Paid conversion for m4, attributed to Post 2 (signup elsewhere)
+                    // Paid conversion for m4, attributed to Post 2 (signup was elsewhere) -> Counts for Post 2 paid_members
                     {postId: 'post2', memberId: 'm4_paid_on_post2', subscriptionId: 'sub3', mrr: 700}
                 ]
             });
@@ -245,16 +246,30 @@ describe('PostsStatsService', function () {
             const result = await service.getTopPosts({order: 'paid_members desc'});
 
             assert.ok(result.data, 'Result should have a data property');
-            // Only posts with paid_members > 0 according to the new definition
-            assert.equal(result.data.length, 1, 'Should return 1 post with paid_members > 0');
+            // Posts with paid_members > 0 according to the conversion attribution definition
+            assert.equal(result.data.length, 2, 'Should return 2 posts with paid_members > 0');
 
-            assert.equal(result.data[0].post_id, 'post1', 'Post 1 should be ranked first');
-            assert.equal(result.data[0].title, 'Post 1');
-            assert.equal(result.data[0].paid_members, 1, 'Post 1 should have 1 paid member');
+            // Check order
+            assert.equal(result.data[0].post_id, 'post2', 'Post 2 should be ranked first');
+            assert.equal(result.data[1].post_id, 'post1', 'Post 1 should be ranked second');
+
+            // Post 2 assertions
+            const post2Result = result.data[0];
+            assert.equal(post2Result.title, 'Post 2');
+            assert.equal(post2Result.paid_members, 2, 'Post 2 should have 2 paid members (m1, m4 conversions)');
+            // Post 2 had no free-only signups attributed to it
+            assert.equal(post2Result.free_members, 0, 'Post 2 should have 0 free members');
+            // MRR should be sum of all paid conversions attributed to Post 2
+            assert.equal(post2Result.mrr, 1200, 'Post 2 should have 1200 mrr (500 + 700)');
+
+            // Post 1 assertions
+            const post1Result = result.data[1];
+            assert.equal(post1Result.title, 'Post 1');
+            assert.equal(post1Result.paid_members, 1, 'Post 1 should have 1 paid member (m2 conversion)');
             // Post 1 also had a free signup (m1) who converted elsewhere
-            assert.equal(result.data[0].free_members, 1, 'Post 1 should have 1 free member');
+            assert.equal(post1Result.free_members, 1, 'Post 1 should have 1 free member');
             // MRR should be sum of all paid conversions attributed to Post 1 (just m2)
-            assert.equal(result.data[0].mrr, 600, 'Post 1 should have 600 mrr');
+            assert.equal(post1Result.mrr, 600, 'Post 1 should have 600 mrr');
         });
 
         it('correctly ranks posts by mrr', async function () {
@@ -295,8 +310,8 @@ describe('PostsStatsService', function () {
             assert.equal(result.data[0].post_id, 'post2', 'Post 2 should be ranked first by MRR');
             assert.equal(result.data[0].title, 'Post 2');
             assert.equal(result.data[0].mrr, 1200, 'Post 2 should have 1200 mrr (500 + 700)');
-            // Post 2 had no signups *and* paid conversions attributed to it
-            assert.equal(result.data[0].paid_members, 0, 'Post 2 should have 0 paid members (by new def)');
+            // Post 2 had two paid conversions attributed to it (m1, m4)
+            assert.equal(result.data[0].paid_members, 2, 'Post 2 should have 2 paid members');
             // Post 2 had no free-only signups attributed to it (m1 signed up on post1)
             assert.equal(result.data[0].free_members, 0, 'Post 2 should have 0 free members (by new def)');
 

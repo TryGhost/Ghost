@@ -15,7 +15,7 @@ const errors = require('@tryghost/errors');
  * @property {string} post_id - The ID of the post
  * @property {string} title - The title of the post
  * @property {number} free_members - Count of members who signed up on this post but paid elsewhere/never
- * @property {number} paid_members - Count of members who signed up AND paid on this same post
+ * @property {number} paid_members - Count of members whose paid conversion event was attributed to this post
  * @property {number} mrr - Total MRR from paid conversions attributed to this post
  */
 
@@ -129,27 +129,23 @@ class PostsStatsService {
 
     /**
      * Build a subquery/CTE for paid_members count
-     * (Signed up AND Paid on Same Post)
+     * (Paid conversion attributed to this post)
      * @private
      * @param {TopPostsOptions} options
      * @returns {import('knex').Knex.QueryBuilder}
      */
     _buildPaidMembersSubquery(options) {
         const knex = this.knex;
-        // Find members where signup and paid conversion are attributed to the same post
-        let subquery = knex('members_created_events as mce')
-            .select('mce.attribution_id as post_id')
-            .countDistinct('mce.member_id as paid_members')
-            .join('members_subscription_created_events as msce', function () {
-                this.on('mce.member_id', '=', 'msce.member_id')
-                    .andOn('mce.attribution_id', '=', 'msce.attribution_id'); // Join based on same post attribution
-            })
-            .where('mce.attribution_type', 'post')
+        // Count distinct members for whom a paid conversion event (subscription creation)
+        // was attributed to this post_id.
+        let subquery = knex('members_subscription_created_events as msce')
+            .select('msce.attribution_id as post_id')
+            .countDistinct('msce.member_id as paid_members')
             .where('msce.attribution_type', 'post')
-            .groupBy('mce.attribution_id');
+            .groupBy('msce.attribution_id');
 
-        // Apply date filter - Apply to signup event? Or paid event? Let's apply to signup for now.
-        this._applyDateFilter(subquery, options, 'mce.created_at');
+        // Apply date filter to the paid conversion event timestamp
+        this._applyDateFilter(subquery, options, 'msce.created_at');
 
         return subquery;
     }
