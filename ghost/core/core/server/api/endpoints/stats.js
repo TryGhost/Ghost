@@ -135,6 +135,38 @@ const controller = {
         async query(frame) {
             return await statsService.api.getTopContent(frame.options);
         }
+    },
+    topPosts: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'order',      // e.g., 'free_members desc', 'paid_members desc', 'mrr desc'
+            'limit',      // e.g., 10
+            'date_from',  // e.g., 'YYYY-MM-DD'
+            'date_to',    // e.g., 'YYYY-MM-DD'
+            'timezone'    // e.g., 'UTC'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'topPosts',
+                options: {
+                    order: frame.options.order,
+                    limit: frame.options.limit,
+                    date_from: frame.options.date_from,
+                    date_to: frame.options.date_to,
+                    timezone: frame.options.timezone
+                }
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getTopPosts(frame.options);
+        }
     }
 };
 

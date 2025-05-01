@@ -3,6 +3,7 @@ const MembersService = require('./MembersStatsService');
 const SubscriptionStatsService = require('./SubscriptionStatsService');
 const ReferrersStatsService = require('./ReferrersStatsService');
 const TopContentStatsService = require('./TopContentStatsService');
+const TopPostsStatsService = require('./TopPostsStatsService');
 const tinybird = require('./utils/tinybird');
 
 class StatsService {
@@ -13,6 +14,7 @@ class StatsService {
      * @param {SubscriptionStatsService} deps.subscriptions
      * @param {ReferrersStatsService} deps.referrers
      * @param {TopContentStatsService} deps.topContent
+     * @param {TopPostsStatsService} deps.topPosts
      **/
     constructor(deps) {
         this.mrr = deps.mrr;
@@ -20,6 +22,7 @@ class StatsService {
         this.subscriptions = deps.subscriptions;
         this.referrers = deps.referrers;
         this.topContent = deps.topContent;
+        this.topPosts = deps.topPosts;
     }
 
     async getMRRHistory() {
@@ -59,12 +62,23 @@ class StatsService {
             meta: {}
         };
     }
-    
+
     /**
      * @param {Object} options
      */
     async getTopContent(options = {}) {
         return await this.topContent.getTopContent(options);
+    }
+
+    /**
+     * Get top posts by attribution metrics
+     * @param {import('./TopPostsStatsService').TopPostsOptions} options
+     * @returns {Promise<{data: import('./TopPostsStatsService').TopPostResult[]}>}
+     */
+    async getTopPosts(options = {}) {
+        // Return the original { data: results } structure
+        const result = await this.topPosts.getTopPosts(options);
+        return result;
     }
 
     /**
@@ -77,15 +91,15 @@ class StatsService {
         let tinybirdClient = null;
         const config = deps.config || require('../../../shared/config');
         const request = deps.request || require('../../lib/request-external');
-        
+
         // Only create the client if Tinybird is configured
         if (config.get('tinybird') && config.get('tinybird:stats')) {
             tinybirdClient = tinybird.create({
-                config, 
+                config,
                 request
             });
         }
-        
+
         // Add the Tinybird client to the dependencies
         const depsWithTinybird = {
             ...deps,
@@ -97,7 +111,8 @@ class StatsService {
             members: new MembersService(deps),
             subscriptions: new SubscriptionStatsService(deps),
             referrers: new ReferrersStatsService(deps),
-            topContent: new TopContentStatsService(depsWithTinybird)
+            topContent: new TopContentStatsService(depsWithTinybird),
+            topPosts: new TopPostsStatsService(deps)
         });
     }
 }

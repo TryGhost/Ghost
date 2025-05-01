@@ -82,7 +82,6 @@ describe('Stats API', function () {
         });
 
         it('Can fetch history for free trials', async function () {
-            // Get stats before tests
             const {body: before} = await agent
                 .get(`/stats/subscriptions`)
                 .expectStatus(200);
@@ -94,7 +93,6 @@ describe('Stats API', function () {
                 price
             });
 
-            // Check the stats have not changed
             await agent
                 .get(`/stats/subscriptions`)
                 .expectStatus(200)
@@ -107,14 +105,12 @@ describe('Stats API', function () {
                     assert.deepEqual(body, before, 'A free trial should not be counted as a paid subscriber');
                 });
 
-            // Activate the subscription
             await stripeMocker.updateSubscription({
                 id: subscription.id,
                 status: 'active',
                 trial_end_at: null
             });
 
-            // Check the stats have changed
             await agent
                 .get(`/stats/subscriptions`)
                 .expectStatus(200)
@@ -129,7 +125,6 @@ describe('Stats API', function () {
         });
 
         it('Can fetch history for 3D secure payments', async function () {
-            // Get stats before tests
             const {body: before} = await agent
                 .get(`/stats/subscriptions`)
                 .expectStatus(200);
@@ -141,7 +136,6 @@ describe('Stats API', function () {
                 price
             });
 
-            // Check the stats have not changed
             await agent
                 .get(`/stats/subscriptions`)
                 .expectStatus(200)
@@ -154,13 +148,11 @@ describe('Stats API', function () {
                     assert.deepEqual(body, before, 'An incomplete subscription should not be counted as a paid subscriber');
                 });
 
-            // Activate the subscription
             await stripeMocker.updateSubscription({
                 id: subscription.id,
                 status: 'active'
             });
 
-            // Check the stats have changed
             await agent
                 .get(`/stats/subscriptions`)
                 .expectStatus(200)
@@ -225,6 +217,22 @@ describe('Stats API', function () {
                         }
                     ],
                     meta: {}
+                });
+        });
+    });
+
+    describe('Top Posts by Attribution', function () {
+        it('Can fetch top posts ordered by free members', async function () {
+            await agent
+                .get(`/stats/top-posts/?order=free_members%20desc&limit=5`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .expect(({body}) => {
+                    assert.ok(body.stats, 'Response should contain a stats property');
+                    assert.ok(Array.isArray(body.stats), 'body.stats should be an array');
                 });
         });
     });
