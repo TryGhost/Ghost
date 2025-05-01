@@ -28,11 +28,18 @@ class StatsService {
 
     /**
      * @param {Object} [options]
-     * @param {string} [options.startDate] - Start date in YYYY-MM-DD format
+     * @param {string} [options.dateFrom] - Start date in YYYY-MM-DD format
      * @param {string} [options.endDate] - End date in YYYY-MM-DD format
      */
     async getMemberCountHistory(options = {}) {
-        return this.members.getCountHistory(options);
+        // Map dateFrom to startDate for backwards compatibility
+        const mappedOptions = {
+            ...options,
+            startDate: options.dateFrom
+        };
+        delete mappedOptions.dateFrom;
+        
+        return this.members.getCountHistory(mappedOptions);
     }
 
     async getSubscriptionCountHistory() {

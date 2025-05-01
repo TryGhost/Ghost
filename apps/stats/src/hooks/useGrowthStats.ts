@@ -9,20 +9,20 @@ export type DiffDirection = 'up' | 'down' | 'same';
 // Helper function to convert range to date parameters
 export const getRangeDates = (rangeInDays: number) => {
     const endDate = moment().format('YYYY-MM-DD');
-    let startDate;
+    let dateFrom;
     
     if (rangeInDays === 1) {
         // Today
-        startDate = endDate;
+        dateFrom = endDate;
     } else if (rangeInDays === 1000) {
         // All time - use a far past date
-        startDate = '2010-01-01';
+        dateFrom = '2010-01-01';
     } else {
         // Specific range
-        startDate = moment().subtract(rangeInDays - 1, 'days').format('YYYY-MM-DD');
+        dateFrom = moment().subtract(rangeInDays - 1, 'days').format('YYYY-MM-DD');
     }
     
-    return {startDate, endDate};
+    return {dateFrom, endDate};
 };
 
 // Calculate totals from member data
@@ -112,13 +112,12 @@ const formatChartData = (memberData: MemberStatusItem[]) => {
 
 export const useGrowthStats = (range: number) => {
     // Calculate date range
-    const {startDate, endDate} = useMemo(() => getRangeDates(range), [range]);
+    const {dateFrom, endDate} = useMemo(() => getRangeDates(range), [range]);
     
     // Fetch member count history from API
     const {data: memberCountResponse, isLoading} = useMemberCountHistory({
         searchParams: {
-            date_from: startDate,
-            date_to: endDate
+            date_from: dateFrom
         }
     });
     
@@ -143,7 +142,7 @@ export const useGrowthStats = (range: number) => {
     return {
         isLoading,
         memberData,
-        startDate,
+        dateFrom,
         endDate,
         totals: totalsData,
         chartData

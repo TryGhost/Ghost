@@ -12,8 +12,7 @@ const controller = {
             method: 'browse'
         },
         options: [
-            'date_from',
-            'date_to'
+            'date_from'
         ],
         cache: statsService.cache,
         generateCacheKeyData(frame) {
@@ -24,7 +23,7 @@ const controller = {
         },
         async query(frame) {
             return await statsService.api.getMemberCountHistory({
-                startDate: frame.options.start_date
+                dateFrom: frame.options.date_from
             });
         }
     },

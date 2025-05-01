@@ -4,20 +4,47 @@ import React, {useMemo, useState} from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
 import {Navigate} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useGrowthStats} from '@src/hooks/useGrowthStats';
 
-const GrowthKPIs: React.FC = () => {
+type ChartDataItem = {
+    date: string;
+    value: number;
+    free: number;
+    paid: number;
+    comped: number;
+    formattedValue: string;
+    label?: string;
+};
+
+type Totals = {
+    totalMembers: number;
+    freeMembers: number;
+    paidMembers: number;
+    percentChanges: {
+        total: string;
+        free: string;
+        paid: string;
+    };
+    directions: {
+        total: DiffDirection;
+        free: DiffDirection;
+        paid: DiffDirection;
+    };
+};
+
+const GrowthKPIs: React.FC<{
+    chartData: ChartDataItem[];
+    totals: Totals;
+}> = ({chartData: allChartData, totals}) => {
     const [currentTab, setCurrentTab] = useState('total-members');
-    const {settings, range} = useGlobalData();
+    const {settings} = useGlobalData();
     const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
 
-    // Get growth stats from custom hook
-    const {chartData: allChartData, totals} = useGrowthStats(range);
     const {totalMembers, freeMembers, paidMembers, percentChanges, directions} = totals;
 
     // Create chart data based on selected tab
@@ -168,8 +195,8 @@ const GrowthKPIs: React.FC = () => {
 const Growth: React.FC = () => {
     const {range} = useGlobalData();
     
-    // Get stats from custom hook
-    const {isLoading} = useGrowthStats(range);
+    // Get stats from custom hook once
+    const {isLoading, chartData, totals} = useGrowthStats(range);
     
     // TODO: Replace this with real top posts data from API
     const mockTopPosts = [
@@ -201,7 +228,7 @@ const Growth: React.FC = () => {
             <StatsView data={['a']} isLoading={isLoading}>
                 <Card variant='plain'>
                     <CardContent>
-                        <GrowthKPIs />
+                        <GrowthKPIs chartData={chartData} totals={totals} />
                     </CardContent>
                 </Card>
                 <Card variant='plain'>

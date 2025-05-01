@@ -14,8 +14,7 @@ describe('MembersStatsService', function () {
          */
         const currentCounts = {paid: 0, free: 0, comped: 0};
         /**
-         * @typedef {{date: Date, paid_subscribed: number, paid_canceled: number, free_delta: number, comped_delta: number}} MemberEvent
-         * @type {MemberEvent[]}
+         * @type {MembersStatsService.MemberStatusDelta[]}
          */
         let events = [];
 
@@ -95,12 +94,13 @@ describe('MembersStatsService', function () {
             /**
              * @param {string} status
              * @param {number} number
-             * @param {Date} date
+             * @param {Date|string} date
              * @returns {StatusEvent[]}
              **/
             function generateEvents(status, number, date) {
+                const dateObj = date instanceof Date ? date : new Date(date);
                 return Array.from({length: Math.abs(number)}).map(() => ({
-                    created_at: date.toISOString(),
+                    created_at: dateObj.toISOString(),
                     from_status: number > 0 ? null : status,
                     to_status: number < 0 ? null : status
                 }));
