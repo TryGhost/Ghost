@@ -1,19 +1,36 @@
 name: ghost
-
-# Base configuration for the Ghost Monorepo container
-# Ref: https://docs.docker.com/reference/compose-file/fragments/
-x-service-template: &service-template
-  image: ghost-monorepo:latest
-  pull_policy: never
-  entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
-  volumes:
-      # Main bind mount to sync source code
+services:
+  ghost:
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+    command: [ "yarn", "dev" ]
+    ports:
+      - "2368:2368" # Ghost
+      - "4200:4200" # Admin
+      - "4201:4201" # Admin tests
+      - "4175:4175" # Portal
+      - "4176:4176" # Portal HTTPS
+      - "4177:4177" # Announcement bar
+      - "4178:4178" # Search
+      - "6174:6174" # Signup form
+      - "7173:7173" # Comments
+      - "7174:7174" # Comments HTTPS
+    profiles: [ ghost ]
+    volumes:
+      # Mount the source code
       - .:/home/ghost
-      # Use the host's git config
-      - ${HOME}/.gitconfig:/root/.gitconfig:ro
-      # Use the host's SSH agent
+
+      ## SSH Agent forwarding
       - ${SSH_AUTH_SOCK}:/ssh-agent
-      # Mask node_modules with named volumes to prevent collisions between host and container
+
+      ## Git config
+      - ${HOME}/.gitconfig:/root/.gitconfig:ro
+
+      # Volume exclusions:
+      ## Prevent collisions between host and container node_modules
       - node_modules_ghost_root:/home/ghost/node_modules:delegated
       - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
       - node_modules_ghost_api-framework:/home/ghost/ghost/api-framework/node_modules:delegated
@@ -55,159 +72,22 @@ x-service-template: &service-template
       - node_modules_apps_signup-form:/home/ghost/apps/signup-form/node_modules:delegated
       - node_modules_apps_sodo-search:/home/ghost/apps/sodo-search/node_modules:delegated
       - node_modules_apps_stats:/home/ghost/apps/stats/node_modules:delegated
-
-
-services:
-  server:
-    <<: *service-template
-    build:
-      context: .
-      dockerfile: ./.docker/Dockerfile
-      target: development
-    working_dir: /home/ghost/ghost/core
-    command: [ "yarn", "dev" ]
-    ports:
-      - "2368:2368"
-    profiles: [ split, all ]
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    environment:
-      - NX_DAEMON=false
-      - DEBUG=${DEBUG:-}
-      - SSH_AUTH_SOCK=/ssh-agent
-      - GHOST_DEV_IS_DOCKER=true
-      - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
-      - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
-      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
-      - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
-
-  admin:
-    <<: *service-template
-    working_dir: /home/ghost/ghost/admin
-    command: [ "yarn", "dev" ]
-    ports:
-      - "4200:4200"
-      - "4201:4201"
-    profiles: [ split, all ]
-    depends_on:
-      server:
-        condition: service_started
-    environment:
-      - NX_DAEMON=false
-
-
-  daemon:
-    <<: *service-template
-    profiles: [ split, daemon, all ]
-    entrypoint: [ "/home/ghost/.docker/daemon.entrypoint.sh" ]
-    environment:
-      - NX_DAEMON=true
-
-
-  portal:
-    <<: *service-template
-    working_dir: /home/ghost/apps/portal
-    command: [ "yarn", "dev" ]
-    ports:
-      - "4175:4175"
-      - "4176:4176"
-    profiles: [ portal, all ]
-    environment:
-      - NX_DAEMON=false
-
-
-  signup-form:
-    <<: *service-template
-    working_dir: /home/ghost/apps/signup-form
-    command: [ "yarn", "dev" ]
-    ports:
-      - "6174:6174"
-    profiles: [ signup-form, all ]
-    environment:
-      - NX_DAEMON=false
-
-  announcement-bar:
-    <<: *service-template
-    working_dir: /home/ghost/apps/announcement-bar
-    command: [ "yarn", "dev" ]
-    ports:
-      - "4177:4177"
-    profiles: [ announcement-bar, all ]
-    environment:
-      - NX_DAEMON=false
-
-
-  sodo-search:
-    <<: *service-template
-    working_dir: /home/ghost/apps/sodo-search
-    command: [ "yarn", "dev" ]
-    ports:
-      - "4178:4178"
-    profiles: [ sodo-search, all ]
-    environment:
-      - NX_DAEMON=false
-
-  comments-ui:
-    <<: *service-template
-    working_dir: /home/ghost/apps/comments-ui
-    command: [ "yarn", "dev" ]
-    ports:
-      - "7173:7173"
-    profiles: [ comments-ui, all ]
-    environment:
-      - NX_DAEMON=false
-
-  ghost:
-    <<: *service-template # Merge the base configuration
-    build:
-      context: .
-      dockerfile: ./.docker/Dockerfile
-      target: development
-    command: [ "yarn", "dev" ]
-    ports:
-      - "2368:2368" # Ghost
-      - "4200:4200" # Admin
-      - "4201:4201" # Admin tests
-      - "4175:4175" # Portal
-      - "4176:4176" # Portal HTTPS
-      - "4177:4177" # Announcement bar
-      - "4178:4178" # Search
-      - "6174:6174" # Signup form
-      - "7173:7173" # Comments
-      - "7174:7174" # Comments HTTPS
-    profiles: [ ghost ]
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    environment:
-      - DEBUG=${DEBUG:-}
-      - SSH_AUTH_SOCK=/ssh-agent
-      - NX_DAEMON=true
-      - GHOST_DEV_IS_DOCKER=true
-      - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
-      - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
-      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
-      - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
     tty: true
-
-  storybook:
-    <<: *service-template
-    command: [ "yarn", "storybook", "dev", "-p", "6006", "-h", "0.0.0.0", "--no-open"]
-    working_dir: /home/ghost/apps/shade
-    profiles: [ storybook ]
-    ports:
-      - "6006:6006" # Storybook
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
-      - NX_DAEMON=false
-
-
+      - DEBUG=${DEBUG:-}
+      - SSH_AUTH_SOCK=/ssh-agent
+      - NX_DAEMON=${NX_DAEMON:-true}
+      - GHOST_DEV_IS_DOCKER=true
+      - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
+      - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+      - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
   mysql:
     image: mysql:8.4.5
     container_name: ghost-mysql
