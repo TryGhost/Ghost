@@ -1,4 +1,4 @@
-import NotificationIcon, {NotificationType} from './NotificationIcon';
+import NotificationIcon, {NotificationIconSize, NotificationType} from './NotificationIcon';
 import React from 'react';
 
 // Context to share common props between compound components
@@ -11,16 +11,17 @@ const NotificationContext = React.createContext<NotificationContextType | undefi
 
 // Root component
 interface NotificationItemProps {
+    isGrouped?: boolean;
     children: React.ReactNode;
     onClick?: () => void;
     url?: string;
     className?: string;
 }
 
-const NotificationItem = ({children, onClick, url, className}: NotificationItemProps) => {
+const NotificationItem = ({isGrouped, children, onClick, url, className}: NotificationItemProps) => {
     return (
         <NotificationContext.Provider value={{onClick, url}}>
-            <div className={`relative -mx-4 -my-px grid cursor-pointer grid-cols-[auto_1fr] gap-x-3 gap-y-2 rounded-lg p-4 text-left break-anywhere hover:bg-gray-75 ${className}`}
+            <div className={`group relative -mx-4 -my-px ${isGrouped ? 'grid' : 'flex'} cursor-pointer grid-cols-[auto_1fr] items-start gap-x-4 gap-y-2 rounded-lg px-4 py-5 text-left break-anywhere hover:bg-gray-75 ${className}`}
                 role='button'
                 onClick={onClick}
             >
@@ -31,10 +32,10 @@ const NotificationItem = ({children, onClick, url, className}: NotificationItemP
 };
 
 // Sub-components
-const Icon = ({type}: {type: NotificationType}) => {
+const Icon = ({size = 'lg', type}: {size?: NotificationIconSize; type: NotificationType}) => {
     return (
         <div className='col-start-1 row-start-1'>
-            <NotificationIcon notificationType={type} />
+            <NotificationIcon notificationType={type} size={size} />
         </div>
     );
 };
@@ -49,7 +50,7 @@ const Avatars = ({children}: {children: React.ReactNode}) => {
 
 const Content = ({children}: {children: React.ReactNode}) => {
     return (
-        <div className='col-start-2 row-start-2'>
+        <div className='col-start-2 row-start-2 -mt-0.5'>
             {children}
         </div>
     );

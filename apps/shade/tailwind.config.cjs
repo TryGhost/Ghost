@@ -78,6 +78,7 @@ module.exports = {
                 400: '#42C6FF',
                 500: '#14B8FF',
                 600: '#00A4EB',
+                700: '#3778F1',
                 DEFAULT: '#14B8FF'
             },
             purple: {

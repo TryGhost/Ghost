@@ -1,5 +1,12 @@
 export function stripHtml(html: string): string {
-    return html.replace(/<[^>]*>/g, '');
+    // Replace <br> tags with spaces
+    const withLineBreaks = html.replace(/<br\s*\/?>/gi, ' ');
+
+    // Replace tags that should have a space after them
+    const withSpaces = withLineBreaks.replace(/<\/p>\s*<p>|<\/div>\s*<div>|<\/h[1-6]>\s*<|<\/li>\s*<li>|<\/a>/gi, ' ');
+
+    // Remove all remaining HTML tags
+    return withSpaces.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
 }
 
 export const formatArticle = (content: string, postUrl?: string) => {

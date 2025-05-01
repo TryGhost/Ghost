@@ -13,7 +13,7 @@ export function formatTimestamp(date: Date): string {
 }
 
 export function renderTimestamp(object: ObjectProperties, asLink = true) {
-    const date = new Date(object?.published ?? new Date());
+    const date = new Date(object?.published ?? object?.createdAt ?? new Date());
     const timestamp = formatTimestamp(date);
     const formattedTimestamp = getFormattedTimestamp(date);
 
