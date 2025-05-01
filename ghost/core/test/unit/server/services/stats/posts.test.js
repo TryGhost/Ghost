@@ -1,6 +1,6 @@
 const knex = require('knex').default;
 const assert = require('assert/strict');
-const TopPostsStatsService = require('../../../../../core/server/services/stats/TopPostsStatsService');
+const PostsStatsService = require('../../../../../core/server/services/stats/PostsStatsService');
 
 /**
  * @typedef {object} TestPost
@@ -31,7 +31,7 @@ const TopPostsStatsService = require('../../../../../core/server/services/stats/
  * @property {TestPaidSignup[]} [paidSignups]
  */
 
-describe('TopPostsStatsService', function () {
+describe('PostsStatsService', function () {
     /** @type {import('knex').Knex} */
     let db;
     let service;
@@ -131,7 +131,7 @@ describe('TopPostsStatsService', function () {
             table.dateTime('created_at');
         });
 
-        service = new TopPostsStatsService({knex: db});
+        service = new PostsStatsService({knex: db});
     });
 
     afterEach(async function () {

@@ -19,7 +19,7 @@ const errors = require('@tryghost/errors');
  * @property {number} mrr - Total MRR from paid conversions attributed to this post
  */
 
-class TopPostsStatsService {
+class PostsStatsService {
     /**
      * @param {object} deps
      * @param {import('knex').Knex} deps.knex - Database client
@@ -198,4 +198,4 @@ class TopPostsStatsService {
     }
 }
 
-module.exports = TopPostsStatsService;
+module.exports = PostsStatsService;

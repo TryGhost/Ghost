@@ -3,7 +3,7 @@ const MembersService = require('./MembersStatsService');
 const SubscriptionStatsService = require('./SubscriptionStatsService');
 const ReferrersStatsService = require('./ReferrersStatsService');
 const TopContentStatsService = require('./TopContentStatsService');
-const TopPostsStatsService = require('./TopPostsStatsService');
+const PostsStatsService = require('./PostsStatsService');
 const tinybird = require('./utils/tinybird');
 
 class StatsService {
@@ -14,7 +14,7 @@ class StatsService {
      * @param {SubscriptionStatsService} deps.subscriptions
      * @param {ReferrersStatsService} deps.referrers
      * @param {TopContentStatsService} deps.topContent
-     * @param {TopPostsStatsService} deps.topPosts
+     * @param {PostsStatsService} deps.posts
      **/
     constructor(deps) {
         this.mrr = deps.mrr;
@@ -22,7 +22,7 @@ class StatsService {
         this.subscriptions = deps.subscriptions;
         this.referrers = deps.referrers;
         this.topContent = deps.topContent;
-        this.topPosts = deps.topPosts;
+        this.topPosts = deps.posts;
     }
 
     async getMRRHistory() {
@@ -72,8 +72,8 @@ class StatsService {
 
     /**
      * Get top posts by attribution metrics
-     * @param {import('./TopPostsStatsService').TopPostsOptions} options
-     * @returns {Promise<{data: import('./TopPostsStatsService').TopPostResult[]}>}
+     * @param {import('./PostsStatsService').TopPostsOptions} options
+     * @returns {Promise<{data: import('./PostsStatsService').TopPostResult[]}>}
      */
     async getTopPosts(options = {}) {
         // Return the original { data: results } structure
@@ -112,7 +112,7 @@ class StatsService {
             subscriptions: new SubscriptionStatsService(deps),
             referrers: new ReferrersStatsService(deps),
             topContent: new TopContentStatsService(depsWithTinybird),
-            topPosts: new TopPostsStatsService(deps)
+            posts: new PostsStatsService(deps)
         });
     }
 }
