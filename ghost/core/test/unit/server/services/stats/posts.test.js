@@ -300,5 +300,24 @@ describe('PostsStatsService', function () {
             assert.equal(lastThirtyDaysResult.data.find(p => p.post_id === 'post1').free_members, 1);
             assert.equal(lastThirtyDaysResult.data.find(p => p.post_id === 'post2').free_members, 1);
         });
+
+        it('respects the limit parameter', async function () {
+            await _createFreeSignup('post1');
+            await _createFreeSignup('post1');
+            await _createFreeSignup('post2');
+            await _createFreeSignup('post3');
+
+            const result = await service.getTopPosts({
+                order: 'free_members desc',
+                limit: 2
+            });
+
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 2, 'Should return only 2 posts');
+
+            // Verify that only the top 2 posts by free_members are returned
+            assert.equal(result.data[0].post_id, 'post1');
+            assert.equal(result.data[1].post_id, 'post2');
+        });
     });
 });
