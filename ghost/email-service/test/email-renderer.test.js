@@ -2701,23 +2701,7 @@ describe('Email renderer', function () {
         beforeEach(function () {
             renderedPost = '<p>Lexical Test</p><img class="is-light-background" src="test-dark" /><img class="is-dark-background" src="test-light" />';
             labsEnabled = true; // TODO: odd default because it means we're testing the unused email-customization template
-            basePost = {
-                lexical: '{}',
-                visibility: 'public',
-                title: 'Test Post',
-                plaintext: 'Test plaintext for post',
-                custom_excerpt: null,
-                authors: [
-                    createModel({
-                        name: 'Test Author'
-                    })
-                ],
-                posts_meta: createModel({
-                    feature_image_alt: null,
-                    feature_image_caption: null
-                }),
-                loaded: ['posts_meta']
-            };
+            
             postUrl = 'http://example.com';
             customSettings = {
                 locale: 'fr',
