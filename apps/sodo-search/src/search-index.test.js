@@ -468,8 +468,6 @@ describe('search index', function () {
             .reply(200, {tags: []});
 
         await searchIndex.init();
-
-
         
         let searchResults = searchIndex.search('running');
         expect(searchResults.posts.length).toEqual(2);
@@ -484,8 +482,6 @@ describe('search index', function () {
         searchResults = searchIndex.search('dem mann');
         expect(searchResults.posts.length).toEqual(1);
         expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/dem-mann/');
-
-        
     });
     test('stemming is language-specific - german', async () => {
         const adminUrl = 'http://localhost:3000';
@@ -537,7 +533,6 @@ describe('search index', function () {
 
         searchResults = searchIndex.search('dem mann');
         expect(searchResults.posts.length).toEqual(2);
-
     });
     test('no language-specific stemming with an unsupported locale', async () => {
         const adminUrl = 'http://localhost:3000';
@@ -589,6 +584,5 @@ describe('search index', function () {
 
         searchResults = searchIndex.search('dem mann');
         expect(searchResults.posts.length).toEqual(1);
-
     });
 });
