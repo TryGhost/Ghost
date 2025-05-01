@@ -78,7 +78,6 @@ const GrowthKPIs: React.FC<{
                 label: 'MRR'
             }));
         }
-        case 'total-members':
         default:
             return allChartData;
         }
