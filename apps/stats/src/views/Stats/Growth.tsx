@@ -10,7 +10,7 @@ import {Navigate} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useTopPostsStats} from '@tryghost/admin-x-framework/api/stats';
+import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 
 type ChartDataItem = {
     date: string;
@@ -199,7 +199,7 @@ const Growth: React.FC = () => {
     // Get stats from custom hook once
     const {isLoading, chartData, totals} = useGrowthStats(range);
 
-    const {data: topPostsData} = useTopPostsStats();
+    const {data: topPostsData} = useTopPostsStatsWithRange(range);
 
     const topPosts = topPostsData?.stats || [];
 
