@@ -261,7 +261,8 @@ export function useLikeMutationForUser(handle: string) {
 
             if (error.statusCode === 403) {
                 showToast({
-                    message: 'You cannot interact with this account.',
+                    title: 'Action failed',
+                    message: 'This user has restricted who can interact with their account.',
                     type: 'error'
                 });
             }
@@ -405,7 +406,8 @@ export function useRepostMutationForUser(handle: string) {
             updateRepostCache(queryClient, QUERY_KEYS.inbox, id, false);
             if (error.statusCode === 403) {
                 showToast({
-                    message: 'You cannot interact with this account.',
+                    title: 'Action failed',
+                    message: 'This user has restricted who can interact with their account.',
                     type: 'error'
                 });
             }
@@ -671,7 +673,8 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
 
             if (error.statusCode === 403) {
                 showToast({
-                    message: 'You cannot interact with this account.',
+                    title: 'Action failed',
+                    message: 'This user has restricted who can interact with their account.',
                     type: 'error'
                 });
             }
@@ -1143,7 +1146,8 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
 
             if (error.statusCode === 403) {
                 return showToast({
-                    message: 'You cannot interact with this account.',
+                    title: 'Action failed',
+                    message: 'This user has restricted who can interact with their account.',
                     type: 'error'
                 });
             }
