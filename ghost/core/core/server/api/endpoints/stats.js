@@ -11,14 +11,22 @@ const controller = {
             docName: 'members',
             method: 'browse'
         },
+        options: [
+            'date_from',
+            'date_to'
+        ],
         cache: statsService.cache,
-        generateCacheKeyData() {
+        generateCacheKeyData(frame) {
             return {
-                method: 'memberCountHistory'
+                method: 'memberCountHistory',
+                options: frame.options
             };
         },
-        async query() {
-            return await statsService.api.getMemberCountHistory();
+        async query(frame) {
+            return await statsService.api.getMemberCountHistory({
+                startDate: frame.options.date_from,
+                endDate: frame.options.date_to
+            });
         }
     },
     mrr: {

@@ -26,8 +26,13 @@ class StatsService {
         return this.mrr.getHistory();
     }
 
-    async getMemberCountHistory() {
-        return this.members.getCountHistory();
+    /**
+     * @param {Object} [options]
+     * @param {string} [options.startDate] - Start date in YYYY-MM-DD format
+     * @param {string} [options.endDate] - End date in YYYY-MM-DD format
+     */
+    async getMemberCountHistory(options = {}) {
+        return this.members.getCountHistory(options);
     }
 
     async getSubscriptionCountHistory() {

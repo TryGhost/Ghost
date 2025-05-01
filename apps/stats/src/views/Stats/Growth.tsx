@@ -1,19 +1,154 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import DateRangeSelect from './components/DateRangeSelect';
-import React, {useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
+import moment from 'moment';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
+import {MemberStatusItem, useMemberCountHistory} from '@tryghost/admin-x-framework/api/stats';
 import {Navigate} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
+// Type for direction values
+type DiffDirection = 'up' | 'down' | 'same';
+
+// Helper function to convert range to date parameters
+const getRangeDates = (rangeInDays: number) => {
+    const endDate = moment().format('YYYY-MM-DD');
+    let startDate;
+    
+    if (rangeInDays === 1) {
+        // Today
+        startDate = endDate;
+    } else if (rangeInDays === 1000) {
+        // All time - use a far past date
+        startDate = '2010-01-01';
+    } else {
+        // Specific range
+        startDate = moment().subtract(rangeInDays - 1, 'days').format('YYYY-MM-DD');
+    }
+    
+    return {startDate, endDate};
+};
+
+// Extract the calculation to a separate function to avoid conditional hook calls
+const calculateTotals = (memberData: MemberStatusItem[]) => {
+    if (!memberData.length) {
+        return {
+            totalMembers: 0,
+            freeMembers: 0,
+            paidMembers: 0,
+            percentChanges: {
+                total: '0%',
+                free: '0%',
+                paid: '0%'
+            },
+            directions: {
+                total: 'same' as DiffDirection,
+                free: 'same' as DiffDirection,
+                paid: 'same' as DiffDirection
+            }
+        };
+    }
+    
+    // Get latest values
+    const latest = memberData[memberData.length - 1];
+    
+    // Calculate total members
+    const totalMembers = latest.free + latest.paid + latest.comped;
+    
+    // Calculate percentage changes if we have enough data
+    const percentChanges = {
+        total: '0%',
+        free: '0%',
+        paid: '0%'
+    };
+    
+    const directions = {
+        total: 'same' as DiffDirection,
+        free: 'same' as DiffDirection,
+        paid: 'same' as DiffDirection
+    };
+    
+    if (memberData.length > 1) {
+        // Get first day in range
+        const first = memberData[0];
+        const firstTotal = first.free + first.paid + first.comped;
+        
+        if (firstTotal > 0) {
+            const totalChange = ((totalMembers - firstTotal) / firstTotal) * 100;
+            percentChanges.total = `${Math.abs(totalChange).toFixed(1)}%`;
+            directions.total = totalChange > 0 ? 'up' : totalChange < 0 ? 'down' : 'same';
+        }
+        
+        if (first.free > 0) {
+            const freeChange = ((latest.free - first.free) / first.free) * 100;
+            percentChanges.free = `${Math.abs(freeChange).toFixed(1)}%`;
+            directions.free = freeChange > 0 ? 'up' : freeChange < 0 ? 'down' : 'same';
+        }
+        
+        if (first.paid > 0) {
+            const paidChange = ((latest.paid - first.paid) / first.paid) * 100;
+            percentChanges.paid = `${Math.abs(paidChange).toFixed(1)}%`;
+            directions.paid = paidChange > 0 ? 'up' : paidChange < 0 ? 'down' : 'same';
+        }
+    }
+    
+    return {
+        totalMembers,
+        freeMembers: latest.free,
+        paidMembers: latest.paid,
+        percentChanges,
+        directions
+    };
+};
+
+// Format chart data outside component
+const formatChartData = (memberData: MemberStatusItem[]) => {
+    return memberData.map(item => ({
+        date: item.date,
+        value: item.free + item.paid + item.comped,
+        formattedValue: formatNumber(item.free + item.paid + item.comped),
+        label: 'Total members'
+    }));
+};
+
 const GrowthKPIs:React.FC = () => {
     const [currentTab, setCurrentTab] = useState('free-members');
-    const {settings} = useGlobalData();
+    const {settings, range} = useGlobalData();
     const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
+
+    // Get date range using useMemo to prevent unnecessary recalculations
+    const {startDate, endDate} = useMemo(() => getRangeDates(range), [range]);
+
+    // Fetch member count history from API
+    const {data: memberCountResponse} = useMemberCountHistory({
+        searchParams: {
+            date_from: startDate,
+            date_to: endDate
+        }
+    });
+    
+    // Wrap memberData in useMemo to maintain stable reference
+    const memberData = useMemo(() => memberCountResponse?.data || [], [memberCountResponse?.data]);
+    
+    // Use useMemo to calculate totals
+    const totalsData = useMemo(() => calculateTotals(memberData), [memberData]);
+    
+    // Destructure the totals
+    const {
+        totalMembers,
+        freeMembers,
+        paidMembers,
+        percentChanges,
+        directions
+    } = totalsData;
+
+    // Chart data
+    const chartData = useMemo(() => formatChartData(memberData), [memberData]);
 
     if (!labs.trafficAnalyticsAlpha) {
         return <Navigate to='/' />;
@@ -25,212 +160,38 @@ const GrowthKPIs:React.FC = () => {
         }
     } satisfies ChartConfig;
 
-    const chartData = [
-        {
-            date: '2025-03-30',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-03-31',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-01',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-02',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-03',
-            value: 15,
-            formattedValue: '15',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-04',
-            value: 5,
-            formattedValue: '5',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-05',
-            value: 8,
-            formattedValue: '8',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-06',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-07',
-            value: 7,
-            formattedValue: '7',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-08',
-            value: 4,
-            formattedValue: '4',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-09',
-            value: 4,
-            formattedValue: '4',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-10',
-            value: 1,
-            formattedValue: '1',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-11',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-12',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-13',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-14',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-15',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-16',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-17',
-            value: 8,
-            formattedValue: '8',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-18',
-            value: 2,
-            formattedValue: '2',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-19',
-            value: 3,
-            formattedValue: '3',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-20',
-            value: 2,
-            formattedValue: '2',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-21',
-            value: 5,
-            formattedValue: '5',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-22',
-            value: 5,
-            formattedValue: '5',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-23',
-            value: 4,
-            formattedValue: '4',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-24',
-            value: 6,
-            formattedValue: '6',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-25',
-            value: 1,
-            formattedValue: '1',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-26',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-27',
-            value: 3,
-            formattedValue: '3',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-28',
-            value: 14,
-            formattedValue: '14',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-29',
-            value: 10,
-            formattedValue: '10',
-            label: 'Total members'
-        }
-    ];
-
     return (
         <Tabs defaultValue="total-members" variant='underline'>
             <TabsList className="grid grid-cols-4 gap-5">
                 <KpiTabTrigger value="total-members" onClick={() => {
                     setCurrentTab('total-members');
                 }}>
-                    <KpiTabValue diffDirection='up' diffValue={'+3%'} label="Total members" value={formatNumber(1504)} />
+                    <KpiTabValue 
+                        diffDirection={directions.total} 
+                        diffValue={percentChanges.total} 
+                        label="Total members" 
+                        value={formatNumber(totalMembers)} 
+                    />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="free-members" onClick={() => {
                     setCurrentTab('free-members');
                 }}>
-                    <KpiTabValue diffDirection='down' diffValue={'-1.2%'} label="Free members" value={formatNumber(1246)} />
+                    <KpiTabValue 
+                        diffDirection={directions.free} 
+                        diffValue={percentChanges.free} 
+                        label="Free members" 
+                        value={formatNumber(freeMembers)} 
+                    />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="paid-members" onClick={() => {
                     setCurrentTab('paid-members');
                 }}>
-                    <KpiTabValue diffDirection='up' diffValue={'-1.3%'} label="Paid members" value={formatNumber(258)} />
+                    <KpiTabValue 
+                        diffDirection={directions.paid} 
+                        diffValue={percentChanges.paid} 
+                        label="Paid members" 
+                        value={formatNumber(paidMembers)} 
+                    />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="mrr" onClick={() => {
                     setCurrentTab('mrr');
@@ -298,11 +259,11 @@ const GrowthKPIs:React.FC = () => {
 };
 
 const Growth:React.FC = () => {
-    // const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    // const {startDate, endDate, timezone} = getRangeDates(range);
-
-    // const isLoading = isConfigLoading || loading;
-
+    const {range} = useGlobalData();
+    // Use useMemo to prevent unnecessary recalculations
+    const {startDate, endDate} = useMemo(() => getRangeDates(range), [range]);
+    
+    // TODO: Replace this with real top posts data from API
     const mockTopPosts = [
         {id: 'post-001', title: 'Minimal & Functional White Desk Setup in Italy', freeMembers: 17, paidMembers: 7, mrr: 8},
         {id: 'post-002', title: 'The Ultimate Guide to Productivity Hacks', freeMembers: 12, paidMembers: 5, mrr: 6},
@@ -321,6 +282,14 @@ const Growth:React.FC = () => {
         {id: 'post-015', title: 'Simple Ways to Reduce Your Carbon Footprint', freeMembers: 1, paidMembers: 0, mrr: 0}
     ];
 
+    // Get member count data to determine if we're loading
+    const {isLoading} = useMemberCountHistory({
+        searchParams: {
+            date_from: startDate,
+            date_to: endDate
+        }
+    });
+
     return (
         <StatsLayout>
             <ViewHeader>
@@ -329,7 +298,7 @@ const Growth:React.FC = () => {
                     <DateRangeSelect />
                 </ViewHeaderActions>
             </ViewHeader>
-            <StatsView data={['a']} isLoading={false}>
+            <StatsView data={['a']} isLoading={isLoading}>
                 <Card variant='plain'>
                     <CardContent>
                         <GrowthKPIs />

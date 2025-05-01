@@ -32,11 +32,21 @@ class MembersStatsService {
 
     /**
      * Get the member deltas by status for all days, sorted ascending
+     * @param {Object} options 
+     * @param {string} [options.startDate] - Start date in YYYY-MM-DD format
+     * @param {string} [options.endDate] - End date in YYYY-MM-DD format
      * @returns {Promise<MemberStatusDelta[]>} The deltas of paid, free and comped users per day, sorted ascending
      */
-    async fetchAllStatusDeltas() {
+    async fetchAllStatusDeltas(options = {}) {
         const knex = this.knex;
-        const ninetyDaysAgo = moment.utc().subtract(91, 'days').startOf('day').utc().format('YYYY-MM-DD HH:mm:ss');
+        const startDate = options.startDate ? 
+            moment.utc(options.startDate).startOf('day').format('YYYY-MM-DD HH:mm:ss') :
+            moment.utc().subtract(91, 'days').startOf('day').format('YYYY-MM-DD HH:mm:ss');
+        
+        const endDate = options.endDate ?
+            moment.utc(options.endDate).endOf('day').format('YYYY-MM-DD HH:mm:ss') :
+            moment.utc().endOf('day').format('YYYY-MM-DD HH:mm:ss');
+
         const rows = await knex('members_status_events')
             .select(knex.raw('DATE(created_at) as date'))
             .select(knex.raw(`SUM(
@@ -57,17 +67,22 @@ class MembersStatsService {
                 WHEN from_status='free' THEN -1
                 ELSE 0 END
             ) as free_delta`))
-            .where('created_at', '>=', ninetyDaysAgo)
+            .where('created_at', '>=', startDate)
+            .where('created_at', '<=', endDate)
             .groupByRaw('DATE(created_at)');
+
         return rows;
     }
 
     /**
      * Returns a list of the total members by status for each day, including the paid deltas paid_subscribed and paid_canceled
+     * @param {Object} options
+     * @param {string} [options.startDate] - Start date in YYYY-MM-DD format
+     * @param {string} [options.endDate] - End date in YYYY-MM-DD format
      * @returns {Promise<CountHistory>}
      */
-    async getCountHistory() {
-        const rows = await this.fetchAllStatusDeltas();
+    async getCountHistory(options = {}) {
+        const rows = await this.fetchAllStatusDeltas(options);
 
         // Fetch current total amounts and start counting from there
         const totals = await this.getCount();
@@ -78,7 +93,7 @@ class MembersStatsService {
 
         const cumulativeResults = [];
 
-        rows.sort((a, b) => new Date(a.date) - new Date(b.date));
+        rows.sort((a, b) => moment(a.date).valueOf() - moment(b.date).valueOf());
         // Loop in reverse order (needed to have correct sorted result)
         for (let i = rows.length - 1; i >= 0; i -= 1) {
             const row = rows[i];
