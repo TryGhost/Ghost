@@ -429,4 +429,166 @@ describe('search index', function () {
         searchResults = searchIndex.search('Baklava');
         expect(searchResults.posts.length).toEqual(0); // because search isn't magic
     });
+
+    // These tests illustrate differences in stemming between languages en and de.
+
+    test('stemming is language-specific - english', async () => {
+        const adminUrl = 'http://localhost:3000';
+        const apiKey = '69010382388f9de5869ad6e558';
+        const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage, locale: 'en'});
+
+        nock('http://localhost:3000/ghost/api/content')
+            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+            .reply(200, {
+                posts: [{
+                    id: 'post',
+                    title: 'des Mannes',
+                    url: 'http://localhost/ghost/des-mannes/'
+                }, {
+                    id: 'post2',
+                    title: 'dem Mann',
+                    url: 'http://localhost/ghost/dem-mann/'
+                }, {
+                    id: 'post4',
+                    title: 'Running',
+                    url: 'http://localhost/ghost/running/'
+                }, {
+                    id: 'post5',
+                    title: 'Run',
+                    url: 'http://localhost/ghost/run/'
+                }]
+            });
+
+        nock('http://localhost:3000/ghost/api/content')
+            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Cname%2Curl%2Cprofile_image&order=updated_at%20DESC')
+            .reply(200, {authors: []});
+
+        nock('http://localhost:3000/ghost/api/content')
+            .get('/tags/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Cname%2Curl&order=updated_at%20DESC&filter=visibility%3Apublic')
+            .reply(200, {tags: []});
+
+        await searchIndex.init();
+
+
+        
+        let searchResults = searchIndex.search('running');
+        expect(searchResults.posts.length).toEqual(2);
+
+        searchResults = searchIndex.search('run');
+        expect(searchResults.posts.length).toEqual(2);
+
+        searchResults = searchIndex.search('des mannes');
+        expect(searchResults.posts.length).toEqual(1);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/des-mannes/');
+
+        searchResults = searchIndex.search('dem mann');
+        expect(searchResults.posts.length).toEqual(1);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/dem-mann/');
+
+        
+    });
+    test('stemming is language-specific - german', async () => {
+        const adminUrl = 'http://localhost:3000';
+        const apiKey = '69010382388f9de5869ad6e558';
+        const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage, locale: 'de'});
+
+        nock('http://localhost:3000/ghost/api/content')
+            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+            .reply(200, {
+                posts: [{
+                    id: 'post',
+                    title: 'des Mannes',
+                    url: 'http://localhost/ghost/des-mannes/'
+                }, {
+                    id: 'post2',
+                    title: 'dem Mann',
+                    url: 'http://localhost/ghost/dem-mann/'
+                },   
+                {
+                    id: 'post4',
+                    title: 'Running',
+                    url: 'http://localhost/ghost/running/'
+                }, {
+                    id: 'post5',
+                    title: 'Run',
+                    url: 'http://localhost/ghost/run/'
+                }]
+            });
+
+        nock('http://localhost:3000/ghost/api/content')
+            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Cname%2Curl%2Cprofile_image&order=updated_at%20DESC')
+            .reply(200, {authors: []});
+
+        nock('http://localhost:3000/ghost/api/content')
+            .get('/tags/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Cname%2Curl&order=updated_at%20DESC&filter=visibility%3Apublic')
+            .reply(200, {tags: []});
+
+        await searchIndex.init();
+
+        let searchResults = searchIndex.search('running');
+        expect(searchResults.posts.length).toEqual(1);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/running/');
+
+        searchResults = searchIndex.search('run');
+        expect(searchResults.posts.length).toEqual(2);
+
+        searchResults = searchIndex.search('des mannes');
+        expect(searchResults.posts.length).toEqual(2);
+
+        searchResults = searchIndex.search('dem mann');
+        expect(searchResults.posts.length).toEqual(2);
+
+    });
+    test('no language-specific stemming with an unsupported locale', async () => {
+        const adminUrl = 'http://localhost:3000';
+        const apiKey = '69010382388f9de5869ad6e558';
+        const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage, locale: 'vt'});
+
+        nock('http://localhost:3000/ghost/api/content')
+            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+            .reply(200, {
+                posts: [{
+                    id: 'post',
+                    title: 'des Mannes',
+                    url: 'http://localhost/ghost/des-mannes/'
+                }, {
+                    id: 'post2',
+                    title: 'dem Mann',
+                    url: 'http://localhost/ghost/dem-mann/'
+                },   
+                {
+                    id: 'post4',
+                    title: 'Running',
+                    url: 'http://localhost/ghost/running/'
+                }, {
+                    id: 'post5',
+                    title: 'Run',
+                    url: 'http://localhost/ghost/run/'
+                }]
+            });
+
+        nock('http://localhost:3000/ghost/api/content')
+            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Cname%2Curl%2Cprofile_image&order=updated_at%20DESC')
+            .reply(200, {authors: []});
+
+        nock('http://localhost:3000/ghost/api/content')
+            .get('/tags/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Cname%2Curl&order=updated_at%20DESC&filter=visibility%3Apublic')
+            .reply(200, {tags: []});
+
+        await searchIndex.init();
+
+        let searchResults = searchIndex.search('running');
+        expect(searchResults.posts.length).toEqual(1);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/running/');
+
+        searchResults = searchIndex.search('run');
+        expect(searchResults.posts.length).toEqual(2);
+
+        searchResults = searchIndex.search('des mannes');
+        expect(searchResults.posts.length).toEqual(1);
+
+        searchResults = searchIndex.search('dem mann');
+        expect(searchResults.posts.length).toEqual(1);
+
+    });
 });
