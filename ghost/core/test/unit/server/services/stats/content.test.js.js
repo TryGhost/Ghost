@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const should = require('should');
-const TopContentStatsService = require('../../../../../core/server/services/stats/ContentStatsService');
+const ContentStatsService = require('../../../../../core/server/services/stats/ContentStatsService');
 const tinybird = require('../../../../../core/server/services/stats/utils/tinybird');
 
 describe('TopContentStatsService', function () {
@@ -35,7 +35,7 @@ describe('TopContentStatsService', function () {
         sinon.stub(tinybird, 'create').returns(mockTinybirdClient);
 
         // Create service instance with mocked dependencies
-        service = new TopContentStatsService({
+        service = new ContentStatsService({
             knex: mockKnex,
             urlService: mockUrlService,
             tinybirdClient: mockTinybirdClient
@@ -159,7 +159,7 @@ describe('TopContentStatsService', function () {
     describe('getResourceTitle', function () {
         it('returns null if urlService is not available', function () {
             // Create service without urlService
-            const serviceNoUrl = new TopContentStatsService({
+            const serviceNoUrl = new ContentStatsService({
                 knex: mockKnex,
                 urlService: null
             });
@@ -419,7 +419,7 @@ describe('TopContentStatsService', function () {
 
         it('returns empty data array when tinybirdClient is not available', async function () {
             // Create a service without tinybirdClient
-            const serviceNoTinybird = new TopContentStatsService({
+            const serviceNoTinybird = new ContentStatsService({
                 knex: mockKnex,
                 urlService: mockUrlService
             });
