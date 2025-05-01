@@ -90,7 +90,6 @@ COPY ghost/mw-vhost/package.json ghost/mw-vhost/package.json
 COPY ghost/offers/package.json ghost/offers/package.json
 COPY ghost/post-events/package.json ghost/post-events/package.json
 COPY ghost/post-revisions/package.json ghost/post-revisions/package.json
-COPY ghost/posts-service/package.json ghost/posts-service/package.json
 COPY ghost/prometheus-metrics/package.json ghost/prometheus-metrics/package.json
 COPY ghost/security/package.json ghost/security/package.json
 COPY ghost/tiers/package.json ghost/tiers/package.json
