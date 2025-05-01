@@ -120,7 +120,16 @@ export const useGrowthStats = (range: number) => {
     });
     
     // Process member data with stable reference
-    const memberData = useMemo(() => memberCountResponse?.data || [], [memberCountResponse?.data]);
+    const memberData = useMemo(() => {
+        // Check the structure of the response and extract data
+        if (memberCountResponse?.stats) {
+            return memberCountResponse.stats;
+        } else if (Array.isArray(memberCountResponse)) {
+            // If response is directly an array
+            return memberCountResponse;
+        }
+        return [];
+    }, [memberCountResponse]);
     
     // Calculate totals
     const totalsData = useMemo(() => calculateTotals(memberData), [memberData]);

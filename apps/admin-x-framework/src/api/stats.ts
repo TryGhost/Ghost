@@ -25,7 +25,7 @@ export type MemberStatusItem = {
 }
 
 export type MemberCountHistoryResponseType = {
-    data: MemberStatusItem[];
+    stats: MemberStatusItem[];
     meta: {
         totals: {
             paid: number;
