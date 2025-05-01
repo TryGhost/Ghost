@@ -221,7 +221,7 @@ const Notifications: React.FC = () => {
                                                 <Skeleton className='rounded-full' containerClassName='flex h-10 w-10' /> :
                                                 (group.actors.length > 1 ?
                                                     <NotificationItem.Icon type={group.type} /> :
-                                                    <div className='relative'>
+                                                    <div className='relative mt-0.5'>
                                                         <APAvatar
                                                             key={group.actors[0].id}
                                                             author={{
@@ -231,9 +231,9 @@ const Notifications: React.FC = () => {
                                                                 name: group.actors[0].name,
                                                                 handle: group.actors[0].handle
                                                             }}
-                                                            size='sm'
+                                                            size='notification'
                                                         />
-                                                        <NotificationIcon className='absolute -bottom-1 -right-0.5 z-10 border-2 border-white dark:border-black' notificationType={group.type} size='sm' />
+                                                        <NotificationIcon className='absolute -bottom-1 -right-1 z-10 border-2 border-white dark:border-black' notificationType={group.type} size='sm' />
                                                     </div>
                                                 )
                                             }
@@ -250,8 +250,8 @@ const Notifications: React.FC = () => {
                                                                     name: actor.name,
                                                                     handle: actor.handle
                                                                 }}
-                                                                className='dark:group-hover:outline-gray-950 -ml-2 bg-[#F3F3F3] outline outline-2 outline-white group-hover:bg-[#EDEEF0] group-hover:outline-gray-75 dark:outline-black'
-                                                                size='sm'
+                                                                className='-ml-2 !bg-[#F3F3F3] outline outline-2 outline-white group-hover:!bg-[#EDEEF0] group-hover:outline-gray-75 dark:outline-black group-hover:dark:outline-gray-950'
+                                                                size='notification'
                                                             />
                                                         ))}
                                                         {group.actors.length > maxAvatars && (!openStates[group.id || `${group.type}_${index}`]) && (
@@ -264,7 +264,7 @@ const Notifications: React.FC = () => {
 
                                                         {group.actors.length > 1 && (
                                                             <div className='flex items-center gap-0.5 text-gray-700 dark:text-gray-600'>
-                                                                <LucideIcon.ChevronDown className={`ml-1 text-gray-500 dark:text-gray-400 ${openStates[group.id || `${group.type}_${index}`] ? 'ml-[-10px] rotate-180' : ''}`} size={18} strokeWidth={1.5} />
+                                                                <LucideIcon.ChevronDown className={`ml-1.5 text-gray-500 dark:text-gray-400 ${openStates[group.id || `${group.type}_${index}`] ? 'ml-[-10px] rotate-180' : ''}`} size={18} strokeWidth={1.5} />
                                                                 {openStates[group.id || `${group.type}_${index}`] ? 'Hide' : <span className='sr-only'>Show all</span>}
                                                             </div>
                                                         )}
@@ -306,7 +306,7 @@ const Notifications: React.FC = () => {
                                                         </> :
                                                         <div className='flex items-center gap-1'>
                                                             <span><NotificationGroupDescription group={group} /></span>
-                                                            <span className='mt-px text-[8px]'>•</span>
+                                                            <span className='mt-px text-[8px]'>&bull;</span>
                                                             <span className='mt-0.5 text-sm'>{renderTimestamp(group, false)}</span>
                                                         </div>
                                                     }
@@ -319,7 +319,7 @@ const Notifications: React.FC = () => {
                                                     (group.post?.type === 'note' ?
                                                         <div
                                                             dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '')}}
-                                                            className='ap-note-content mt-1 line-clamp-2 text-pretty text-black dark:text-white'
+                                                            className='ap-note-content mt-0.5 line-clamp-2 text-pretty text-black dark:text-white'
                                                         /> :
                                                         <div className='mt-4 flex flex-col gap-1 rounded-md border border-gray-150 p-4 text-black dark:border-gray-950 dark:text-white'>
                                                             <span className='-mt-0.5 font-semibold'>{group.post?.title}</span>

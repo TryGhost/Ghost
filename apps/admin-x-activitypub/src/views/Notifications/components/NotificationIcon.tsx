@@ -14,16 +14,16 @@ const NotificationIcon: React.FC<NotificationIconProps> = ({notificationType, si
     let icon;
     let badgeColor = '';
     const iconColor = 'white';
-    const iconSize = size === 'sm' ? 15 : 24;
-    const strokeWidth = size === 'sm' ? 2.5 : 2;
+    const iconSize = size === 'sm' ? 13 : 20;
+    const strokeWidth = size === 'sm' ? 2 : 1.5;
 
     switch (notificationType) {
     case 'follow':
         icon = <LucideIcon.UserRoundCheck className='-mr-0.5 -mt-0.5' color={iconColor} size={iconSize} strokeWidth={strokeWidth} />;
-        badgeColor = 'bg-blue-700';
+        badgeColor = 'bg-blue-600';
         break;
     case 'like':
-        icon = <LucideIcon.Heart className={`${size === 'sm' ? 'size-[11px]' : 'mt-px size-6'} fill-white`} color={iconColor} />;
+        icon = <LucideIcon.Heart className={`${size === 'sm' ? 'size-[11px]' : 'mt-px size-6'}`} color={iconColor} />;
         badgeColor = 'bg-pink-600';
         break;
     case 'reply':
@@ -32,12 +32,12 @@ const NotificationIcon: React.FC<NotificationIconProps> = ({notificationType, si
         break;
     case 'repost':
         icon = <LucideIcon.Repeat2 color={iconColor} size={iconSize} strokeWidth={strokeWidth} />;
-        badgeColor = 'bg-green-600';
+        badgeColor = 'bg-green-500';
         break;
     }
 
     return (
-        <div className={`flex ${size === 'sm' ? 'size-6' : 'size-10'} items-center justify-center rounded-full ${badgeColor} ${className && className}`}>
+        <div className={`flex ${size === 'sm' ? 'size-5' : 'size-9'} items-center justify-center rounded-full ${badgeColor} ${className && className}`}>
             {icon}
         </div>
     );
