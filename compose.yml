@@ -41,7 +41,6 @@ services:
       - node_modules_ghost_donations:/home/ghost/ghost/donations/node_modules:delegated
       - node_modules_ghost_email-addresses:/home/ghost/ghost/email-addresses/node_modules:delegated
       - node_modules_ghost_email-service:/home/ghost/ghost/email-service/node_modules:delegated
-      - node_modules_ghost_email-suppression-list:/home/ghost/ghost/email-suppression-list/node_modules:delegated
       - node_modules_ghost_html-to-plaintext:/home/ghost/ghost/html-to-plaintext/node_modules:delegated
       - node_modules_ghost_i18n:/home/ghost/ghost/i18n/node_modules:delegated
       - node_modules_ghost_job-manager:/home/ghost/ghost/job-manager/node_modules:delegated
@@ -172,7 +171,6 @@ volumes:
   node_modules_ghost_donations: {}
   node_modules_ghost_email-addresses: {}
   node_modules_ghost_email-service: {}
-  node_modules_ghost_email-suppression-list: {}
   node_modules_ghost_html-to-plaintext: {}
   node_modules_ghost_i18n: {}
   node_modules_ghost_job-manager: {}
