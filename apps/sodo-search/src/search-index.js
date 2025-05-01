@@ -29,7 +29,7 @@ function isCJK(codePoint) {
         (codePoint >= 0x2F800 && codePoint <= 0x2FA1F) // Supplementary ideographs
     );
 }
-  
+ 
 export function tokenizeCjkByCodePoint(text) {
     const result = [];
     let buffer = '';
