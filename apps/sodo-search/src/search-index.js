@@ -1,6 +1,8 @@
-import Flexsearch, {Charset} from 'flexsearch';
+import Flexsearch, {Charset, Encoder} from 'flexsearch';
 import GhostContentAPI from '@tryghost/content-api';
-
+const EnglishPreset = require('flexsearch/lang/en');
+const FrenchPreset = require('flexsearch/lang/fr');
+const GermanPreset = require('flexsearch/lang/de');
 const cjkEncoderPresetCodepoint = {
     finalize: (terms) => {
         let results = [];
@@ -56,9 +58,35 @@ const encoderSet = new Flexsearch.Encoder(
     Charset.Default,
     cjkEncoderPresetCodepoint
 );
-
+const chooseEncoder = (locale) => {
+    switch (locale) {
+    case 'en':
+        return new Flexsearch.Encoder(
+            Charset.Default,
+            EnglishPreset,
+            cjkEncoderPresetCodepoint
+        );
+    case 'fr':
+        return new Flexsearch.Encoder(
+            Charset.Default,
+            FrenchPreset,
+            cjkEncoderPresetCodepoint
+        );
+    case 'de':
+        return new Flexsearch.Encoder(
+            Charset.Default,
+            GermanPreset,
+            cjkEncoderPresetCodepoint
+        );
+    default:
+        return new Flexsearch.Encoder(
+            Charset.Default,
+            cjkEncoderPresetCodepoint
+        );
+    }
+};
 export default class SearchIndex {
-    constructor({adminUrl, apiKey, dir}) {
+    constructor({adminUrl, apiKey, dir, locale}) {
         this.api = new GhostContentAPI({
             url: adminUrl,
             key: apiKey,
@@ -74,7 +102,7 @@ export default class SearchIndex {
                 index: ['title', 'excerpt'],
                 store: true
             },
-            encoder: encoderSet
+            encoder: chooseEncoder(locale)
         });
         this.authorsIndex = new Flexsearch.Document({
             tokenize: tokenize,
@@ -84,7 +112,7 @@ export default class SearchIndex {
                 index: ['name'],
                 store: true
             },
-            encoder: encoderSet
+            encoder: chooseEncoder(locale)
         });
         this.tagsIndex = new Flexsearch.Document({
             tokenize: tokenize,
@@ -94,7 +122,7 @@ export default class SearchIndex {
                 index: ['name'],
                 store: true
             },
-            encoder: encoderSet
+            encoder: chooseEncoder(locale)
         });
 
         this.init = this.init.bind(this);
