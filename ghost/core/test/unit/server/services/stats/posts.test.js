@@ -102,7 +102,7 @@ describe('PostsStatsService', function () {
         await _createPaidConversionEvent(conversionPostId, finalMemberId, finalSubscriptionId, mrr);
     }
 
-    beforeEach(async function () {
+    before(async function () {
         db = knex({
             client: 'sqlite3',
             useNullAsDefault: true,
@@ -110,10 +110,6 @@ describe('PostsStatsService', function () {
                 filename: ':memory:'
             }
         });
-
-        eventIdCounter = 0;
-        memberIdCounter = 0;
-        subscriptionIdCounter = 0;
 
         await db.schema.createTable('posts', function (table) {
             table.string('id').primary();
@@ -144,6 +140,12 @@ describe('PostsStatsService', function () {
             table.integer('mrr_delta');
             table.dateTime('created_at');
         });
+    });
+
+    beforeEach(async function () {
+        eventIdCounter = 0;
+        memberIdCounter = 0;
+        subscriptionIdCounter = 0;
 
         service = new PostsStatsService({knex: db});
 
@@ -154,6 +156,13 @@ describe('PostsStatsService', function () {
     });
 
     afterEach(async function () {
+        await db('posts').truncate();
+        await db('members_created_events').truncate();
+        await db('members_subscription_created_events').truncate();
+        await db('members_paid_subscription_events').truncate();
+    });
+
+    after(async function () {
         await db.destroy();
     });
 
