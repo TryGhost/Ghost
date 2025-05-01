@@ -52,12 +52,12 @@ class StatsService {
 
     /**
      * @param {string} postId
+     * @param {Object} [options]
+     * @param {string} [options.date_from] - The start date in format YYYY-MM-DD
+     * @param {string} [options.date_to] - The end date in format YYYY-MM-DD
      */
-    async getPostReferrers(postId) {
-        return {
-            data: await this.referrers.getForPost(postId),
-            meta: {}
-        };
+    async getPostReferrers(postId, options = {}) {
+        return await this.referrers.getForPost(postId, options);
     }
     
     /**

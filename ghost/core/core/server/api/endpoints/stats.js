@@ -71,6 +71,10 @@ const controller = {
         data: [
             'id'
         ],
+        options: [
+            'date_from',
+            'date_to'
+        ],
         permissions: {
             docName: 'posts',
             method: 'browse'
@@ -81,12 +85,18 @@ const controller = {
                 method: 'postReferrers',
                 data: {
                     id: frame.data.id
+                },
+                options: {
+                    date_from: frame.options.date_from,
+                    date_to: frame.options.date_to
                 }
-
             };
         },
         async query(frame) {
-            return await statsService.api.getPostReferrers(frame.data.id);
+            return await statsService.api.getPostReferrers(frame.data.id, {
+                date_from: frame.options.date_from,
+                date_to: frame.options.date_to
+            });
         }
     },
     referrersHistory: {

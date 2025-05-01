@@ -12,26 +12,50 @@ class ReferrersStatsService {
     /**
      * Return a list of all the attribution sources for a given post, with their signup and conversion counts
      * @param {string} postId
+     * @param {Object} [options]
+     * @param {string} [options.date_from] - Start date in YYYY-MM-DD format
+     * @param {string} [options.date_to] - End date in YYYY-MM-DD format
      * @returns {Promise<AttributionCountStat[]>}
      */
-    async getForPost(postId) {
+    async getForPost(postId, options = {}) {
+        console.log('getForPost', postId, options);
         const knex = this.knex;
-        const signupRows = await knex('members_created_events')
+        const query = knex('members_created_events')
             .select('referrer_source')
             .select(knex.raw('COUNT(id) AS total'))
             .where('attribution_id', postId)
-            .where('attribution_type', 'post')
-            .groupBy('referrer_source');
+            .where('attribution_type', 'post');
+        
+        if (options.date_from) {
+            query.where('created_at', '>=', `${options.date_from} 00:00:00`);
+        }
+        
+        if (options.date_to) {
+            query.where('created_at', '<=', `${options.date_to} 23:59:59`);
+        }
+        
+        const signupRows = await query.groupBy('referrer_source');
+        console.log('signupRows', signupRows);
 
-        const conversionRows = await knex('members_subscription_created_events')
+        const conversionQuery = knex('members_subscription_created_events')
             .select('referrer_source')
             .select(knex.raw('COUNT(id) AS total'))
             .where('attribution_id', postId)
-            .where('attribution_type', 'post')
-            .groupBy('referrer_source');
+            .where('attribution_type', 'post');
+            
+        if (options.date_from) {
+            conversionQuery.where('created_at', '>=', `${options.date_from} 00:00:00`);
+        }
+            
+        if (options.date_to) {
+            conversionQuery.where('created_at', '<=', `${options.date_to} 23:59:59`);
+        }
+            
+        const conversionRows = await conversionQuery.groupBy('referrer_source');
+        // console.log('conversionQuery', conversionQuery.toSQL());
+        console.log('conversionRows', conversionRows);
 
-        // Stitch them toghether, grouping them by source
-
+        // Stitch them together, grouping them by source
         const map = new Map();
         for (const row of signupRows) {
             map.set(row.referrer_source, {
@@ -51,7 +75,12 @@ class ReferrersStatsService {
             map.set(row.referrer_source, existing);
         }
 
-        return [...map.values()].sort((a, b) => b.paid_conversions - a.paid_conversions);
+        const result = [...map.values()].sort((a, b) => b.paid_conversions - a.paid_conversions);
+        
+        // Log the result to debug the structure
+        console.log('Post referrers result:', JSON.stringify(result));
+        
+        return result;
     }
 
     /**

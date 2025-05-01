@@ -4,25 +4,77 @@ import PostAnalyticsContent from './components/PostAnalyticsContent';
 import PostAnalyticsHeader from './components/PostAnalyticsHeader';
 import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber} from '@tryghost/shade';
+import {PostReferrerItem, usePostReferrers} from '@tryghost/admin-x-framework/api/stats';
+import {getRangeDates} from '@src/utils/chart-helpers';
+import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useMemo} from 'react';
+import {useParams} from '@tryghost/admin-x-framework';
 
 const STATS_DEFAULT_SOURCE_ICON_URL = 'https://static.ghost.org/v5.0.0/images/globe-icon.svg';
 
-interface postAnalyticsProps {}
+interface PostAnalyticsProps {}
 
-const Growth: React.FC<postAnalyticsProps> = () => {
-    // const {isLoading: isConfigLoading} = useGlobalData();
-    // const {range} = useGlobalData();
+interface SourceData {
+    id: string;
+    title: string | null;
+    freeMembers: number;
+    paidMembers: number;
+    mrr: number;
+}
 
-    const isLoading = false;
+const Growth: React.FC<PostAnalyticsProps> = () => {
+    const {isLoading: isConfigLoading} = useGlobalData();
+    const {range} = useGlobalData();
+    const {postId} = useParams();
+    const {startDate, endDate} = getRangeDates(range);
+    
+    const dateFrom = startDate.format('YYYY-MM-DD');
+    const dateTo = endDate.format('YYYY-MM-DD');
+    
+    const {data, isLoading: isStatsLoading} = usePostReferrers(postId || '', {
+        searchParams: {
+            date_from: dateFrom,
+            date_to: dateTo
+        },
+        enabled: !!postId
+    });
 
-    const mockTopSources = [
-        {id: 'source-001', title: 'google.com', freeMembers: 17, paidMembers: 7, mrr: 8},
-        {id: 'source-002', title: 'twitter.com', freeMembers: 12, paidMembers: 5, mrr: 6},
-        {id: 'source-003', title: 'facebook.com', freeMembers: 9, paidMembers: 4, mrr: 5},
-        {id: 'source-004', title: 'linkedin.com', freeMembers: 8, paidMembers: 3, mrr: 4},
-        {id: 'source-005', title: 'reddit.com', freeMembers: 7, paidMembers: 2, mrr: 3},
-        {id: 'source-006', title: 'medium.com', freeMembers: 6, paidMembers: 2, mrr: 3}
-    ];
+    console.log('data', data);
+    console.log('data.stats', data?.stats);
+    console.log('data.stats[0]', data?.stats[0]);
+    
+    const {topSources, totals} = useMemo(() => {
+        if (!data) {
+            return {topSources: [], totals: {freeMembers: 0, paidMembers: 0, mrr: 0}};
+        }
+        
+        // Convert API response to the format needed by our component
+        const sources = data.stats[0].map((stat: PostReferrerItem) => (
+            console.log('stat', stat),
+            {
+                id: `source-${stat.source || 'direct'}`,
+                title: stat.source || 'Direct',
+                freeMembers: (stat.signups || 0) - (stat.paid_conversions || 0),
+                paidMembers: stat.paid_conversions || 0,
+                mrr: (stat.paid_conversions || 0) * 10 // Assuming $10 MRR per conversion
+            }));
+        
+        // Calculate totals
+        const freeTotal = sources.reduce((sum: number, source: SourceData) => sum + source.freeMembers, 0);
+        const paidTotal = sources.reduce((sum: number, source: SourceData) => sum + source.paidMembers, 0);
+        const mrrTotal = sources.reduce((sum: number, source: SourceData) => sum + source.mrr, 0);
+        
+        return {
+            topSources: sources,
+            totals: {
+                freeMembers: freeTotal,
+                paidMembers: paidTotal,
+                mrr: mrrTotal
+            }
+        };
+    }, [data]);
+
+    const isLoading = isConfigLoading || isStatsLoading;
 
     return (
         <PostAnalyticsLayout>
@@ -41,21 +93,21 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                     <LucideIcon.User strokeWidth={1.5} />
                                 </KpiCardIcon>
                                 <KpiCardLabel>Free members</KpiCardLabel>
-                                <KpiCardValue>{formatNumber(22)}</KpiCardValue>
+                                <KpiCardValue>{formatNumber(totals.freeMembers)}</KpiCardValue>
                             </KpiCard>
                             <KpiCard>
                                 <KpiCardIcon>
                                     <LucideIcon.Wallet strokeWidth={1.5} />
                                 </KpiCardIcon>
                                 <KpiCardLabel>Paid members</KpiCardLabel>
-                                <KpiCardValue>{formatNumber(8)}</KpiCardValue>
+                                <KpiCardValue>{formatNumber(totals.paidMembers)}</KpiCardValue>
                             </KpiCard>
                             <KpiCard>
                                 <KpiCardIcon>
                                     <LucideIcon.CircleDollarSign strokeWidth={1.5} />
                                 </KpiCardIcon>
                                 <KpiCardLabel>MRR</KpiCardLabel>
-                                <KpiCardValue>+$180</KpiCardValue>
+                                <KpiCardValue>+${totals.mrr}</KpiCardValue>
                             </KpiCard>
                         </div>
                         <Card>
@@ -75,10 +127,10 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {mockTopSources.map(source => (
+                                        {topSources.length > 0 ? topSources.map(source => (
                                             <TableRow key={source.id}>
                                                 <TableCell>
-                                                    <a className='inline-flex items-center gap-2 font-medium' href={`https://${source.title}`} rel="noreferrer" target='_blank'>
+                                                    <a className='inline-flex items-center gap-2 font-medium' href={source.title ? `https://${source.title}` : undefined} rel="noreferrer" target='_blank'>
                                                         <img
                                                             className="size-4"
                                                             src={`https://www.faviconextractor.com/favicon/${source.title || 'direct'}?larger=true`}
@@ -92,7 +144,11 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                                 <TableCell className='text-right font-mono text-sm'>+{formatNumber(source.paidMembers)}</TableCell>
                                                 <TableCell className='text-right font-mono text-sm'>+${source.mrr}</TableCell>
                                             </TableRow>
-                                        ))}
+                                        )) : (
+                                            <TableRow>
+                                                <TableCell className="py-4 text-center" colSpan={4}>No data available for this period</TableCell>
+                                            </TableRow>
+                                        )}
                                     </TableBody>
                                 </Table>
                             </CardContent>
