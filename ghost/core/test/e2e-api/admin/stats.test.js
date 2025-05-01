@@ -82,6 +82,7 @@ describe('Stats API', function () {
         });
 
         it('Can fetch history for free trials', async function () {
+            // Get stats before tests
             const {body: before} = await agent
                 .get(`/stats/subscriptions`)
                 .expectStatus(200);
@@ -93,6 +94,7 @@ describe('Stats API', function () {
                 price
             });
 
+            // Check the stats have not changed
             await agent
                 .get(`/stats/subscriptions`)
                 .expectStatus(200)
@@ -105,12 +107,14 @@ describe('Stats API', function () {
                     assert.deepEqual(body, before, 'A free trial should not be counted as a paid subscriber');
                 });
 
+            // Activate the subscription
             await stripeMocker.updateSubscription({
                 id: subscription.id,
                 status: 'active',
                 trial_end_at: null
             });
 
+            // Check the stats have changed
             await agent
                 .get(`/stats/subscriptions`)
                 .expectStatus(200)
@@ -125,6 +129,7 @@ describe('Stats API', function () {
         });
 
         it('Can fetch history for 3D secure payments', async function () {
+            // Get stats before tests
             const {body: before} = await agent
                 .get(`/stats/subscriptions`)
                 .expectStatus(200);
@@ -136,6 +141,7 @@ describe('Stats API', function () {
                 price
             });
 
+            // Check the stats have not changed
             await agent
                 .get(`/stats/subscriptions`)
                 .expectStatus(200)
@@ -148,11 +154,13 @@ describe('Stats API', function () {
                     assert.deepEqual(body, before, 'An incomplete subscription should not be counted as a paid subscriber');
                 });
 
+            // Activate the subscription
             await stripeMocker.updateSubscription({
                 id: subscription.id,
                 status: 'active'
             });
 
+            // Check the stats have changed
             await agent
                 .get(`/stats/subscriptions`)
                 .expectStatus(200)
