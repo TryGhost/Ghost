@@ -1,4 +1,4 @@
-import Flexsearch, {Charset, Encoder} from 'flexsearch';
+import Flexsearch, {Charset} from 'flexsearch';
 import GhostContentAPI from '@tryghost/content-api';
 const EnglishPreset = require('flexsearch/lang/en');
 const FrenchPreset = require('flexsearch/lang/fr');
@@ -54,10 +54,6 @@ export function tokenizeCjkByCodePoint(text) {
     return result;
 }
 
-const encoderSet = new Flexsearch.Encoder(
-    Charset.Default,
-    cjkEncoderPresetCodepoint
-);
 const chooseEncoder = (locale) => {
     switch (locale) {
     case 'en':
