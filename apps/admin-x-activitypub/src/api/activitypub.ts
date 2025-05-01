@@ -190,6 +190,15 @@ export class ActivityPubAPI {
         }
 
         const json = await response.json();
+
+        if (!response.ok) {
+            const error = {
+                message: json?.message || json?.error || 'Unexpected Error',
+                statusCode: response.status
+            };
+            throw error;
+        }
+
         return json;
     }
 

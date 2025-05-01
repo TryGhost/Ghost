@@ -59,7 +59,11 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
     const handleLikeClick = async (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
         if (!isLiked) {
-            likeMutation.mutate(object.id);
+            likeMutation.mutate(object.id, {
+                onError() {
+                    setIsLiked(false);
+                }
+            });
         } else {
             unlikeMutation.mutate(object.id);
         }
@@ -119,7 +123,12 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
                 e?.stopPropagation();
 
                 if (!isReposted) {
-                    repostMutation.mutate(object.id);
+                    repostMutation.mutate(object.id, {
+                        onError() {
+                            setIsReposted(false);
+                            decrementReposts();
+                        }
+                    });
                     incrementReposts();
                 } else {
                     derepostMutation.mutate(object.id);
