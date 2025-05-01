@@ -199,7 +199,7 @@ const Growth: React.FC = () => {
     // Get stats from custom hook once
     const {isLoading, chartData, totals} = useGrowthStats(range);
 
-    const {data: topPostsData} = useTopPostsStatsWithRange(range);
+    const {data: topPostsData} = useTopPostsStatsWithRange(range, 'free_members desc');
 
     const topPosts = topPostsData?.stats || [];
 
