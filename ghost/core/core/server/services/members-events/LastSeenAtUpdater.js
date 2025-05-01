@@ -1,4 +1,4 @@
-const {MemberPageViewEvent, MemberCommentEvent, MemberLinkClickEvent} = require('@tryghost/member-events');
+const {MemberPageViewEvent, MemberCommentEvent, MemberLinkClickEvent} = require('../../../shared/events');
 const moment = require('moment-timezone');
 const {IncorrectUsageError} = require('@tryghost/errors');
 const {EmailOpenedEvent} = require('@tryghost/email-service');
