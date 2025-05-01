@@ -37,6 +37,7 @@ describe('PostsStatsService', function () {
     let service;
     let eventIdCounter = 0; // Simple counter for unique event IDs
     let memberIdCounter = 0; // Counter for auto-generated member IDs
+    let subscriptionIdCounter = 0; // Counter for auto-generated subscription IDs
 
     // Helper Functions for Setup
     async function _createPost(id, title) {
@@ -87,19 +88,23 @@ describe('PostsStatsService', function () {
     }
 
     /** Creates a free signup AND a paid conversion event, both attributed to the SAME post */
-    async function _createPaidSignup(postId, subscriptionId, mrr, memberId = null) {
+    async function _createPaidSignup(postId, mrr, memberId = null, subscriptionId = null) {
         memberIdCounter += 1;
         const finalMemberId = memberId || `member_${memberIdCounter}`;
+        subscriptionIdCounter += 1;
+        const finalSubscriptionId = subscriptionId || `sub_${subscriptionIdCounter}`;
         await _createFreeSignupEvent(postId, finalMemberId);
-        await _createPaidConversionEvent(postId, finalMemberId, subscriptionId, mrr);
+        await _createPaidConversionEvent(postId, finalMemberId, finalSubscriptionId, mrr);
     }
 
     /** Creates a free signup attributed to signupPostId, and a paid conversion attributed to conversionPostId */
-    async function _createPaidConversion(signupPostId, conversionPostId, subscriptionId, mrr, memberId = null) {
+    async function _createPaidConversion(signupPostId, conversionPostId, mrr, memberId = null, subscriptionId = null) {
         memberIdCounter += 1;
         const finalMemberId = memberId || `member_${memberIdCounter}`;
+        subscriptionIdCounter += 1;
+        const finalSubscriptionId = subscriptionId || `sub_${subscriptionIdCounter}`;
         await _createFreeSignupEvent(signupPostId, finalMemberId);
-        await _createPaidConversionEvent(conversionPostId, finalMemberId, subscriptionId, mrr);
+        await _createPaidConversionEvent(conversionPostId, finalMemberId, finalSubscriptionId, mrr);
     }
 
     beforeEach(async function () {
@@ -114,6 +119,7 @@ describe('PostsStatsService', function () {
         // Reset counters for each test
         eventIdCounter = 0;
         memberIdCounter = 0;
+        subscriptionIdCounter = 0; // Reset subscription counter
 
         await db.schema.createTable('posts', function (table) {
             table.string('id').primary();
@@ -181,12 +187,12 @@ describe('PostsStatsService', function () {
             await _createPost('post2', 'Post 2');
             await _createPost('post3', 'Post 3');
 
-            // Create member scenarios (Member IDs are auto-generated)
+            // Create member scenarios (Member IDs & Sub IDs are auto-generated)
             await _createFreeSignup('post1');
             await _createFreeSignup('post2');
-            await _createPaidSignup('post1', 'sub_paid_post1', 500);
-            await _createPaidSignup('post3', 'sub_paid_post3', 1000);
-            await _createPaidConversion('post1', 'post2', 'sub_paid_post2', 500);
+            await _createPaidSignup('post1', 500);
+            await _createPaidSignup('post3', 1000);
+            await _createPaidConversion('post1', 'post2', 500);
 
             const result = await service.getTopPosts({order: 'free_members desc'});
 
@@ -213,13 +219,13 @@ describe('PostsStatsService', function () {
             await _createPost('post1', 'Post 1');
             await _createPost('post2', 'Post 2');
             await _createPost('post3', 'Post 3');
-            await _createPost('post_other', 'Other Post');
+            await _createPost('post4', 'Post 4');
 
-            // Create member scenarios (Member IDs are auto-generated)
+            // Create member scenarios (Member IDs & Sub IDs are auto-generated)
             await _createFreeSignup('post3');
-            await _createPaidSignup('post1', 'sub_paid_post1', 600);
-            await _createPaidConversion('post1', 'post2', 'sub_paid_elsewhere', 500);
-            await _createPaidConversion('post_other', 'post2', 'sub_paid_on_post2', 700);
+            await _createPaidSignup('post1', 600);
+            await _createPaidConversion('post1', 'post2', 500);
+            await _createPaidConversion('post4', 'post2', 700);
 
             const result = await service.getTopPosts({order: 'paid_members desc'});
 
@@ -246,13 +252,13 @@ describe('PostsStatsService', function () {
             await _createPost('post1', 'Post 1');
             await _createPost('post2', 'Post 2');
             await _createPost('post3', 'Post 3');
-            await _createPost('post_other', 'Other Post');
+            await _createPost('post4', 'Post 4');
 
-            // Create member scenarios (Member IDs are auto-generated)
+            // Create member scenarios (Member IDs & Sub IDs are auto-generated)
             await _createFreeSignup('post3');
-            await _createPaidSignup('post1', 'sub_paid_post1', 600);
-            await _createPaidConversion('post1', 'post2', 'sub_paid_elsewhere', 500);
-            await _createPaidConversion('post_other', 'post2', 'sub_paid_on_post2', 700);
+            await _createPaidSignup('post1', 600);
+            await _createPaidConversion('post1', 'post2', 500);
+            await _createPaidConversion('post4', 'post2', 700);
 
             const result = await service.getTopPosts({order: 'mrr desc'});
 
