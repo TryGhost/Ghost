@@ -275,6 +275,62 @@ export function useUnlikeMutationForUser(handle: string) {
     });
 }
 
+export function useBlockMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(account: Account) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.block(new URL(account.apId));
+        },
+        onMutate: (account: Account) => {
+            queryClient.setQueryData(
+                QUERY_KEYS.account(account.handle),
+                (currentAccount?: Account) => {
+                    if (!currentAccount) {
+                        return currentAccount;
+                    }
+                    return {
+                        ...currentAccount,
+                        blockedByMe: true,
+                        followedByMe: false,
+                        followsMe: false
+                    };
+                }
+            );
+        }
+    });
+}
+
+export function useUnblockMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(account: Account) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.unblock(new URL(account.apId));
+        },
+        onMutate: (account: Account) => {
+            queryClient.setQueryData(
+                QUERY_KEYS.account(account.handle),
+                (currentAccount?: Account) => {
+                    if (!currentAccount) {
+                        return currentAccount;
+                    }
+                    return {
+                        ...currentAccount,
+                        blockedByMe: false
+                    };
+                }
+            );
+        }
+    });
+}
+
 function updateRepostCache(queryClient: QueryClient, queryKey: string[], id: string, reposted: boolean) {
     queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
         if (current === undefined) {
@@ -993,13 +1049,13 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
     const queryClient = useQueryClient();
 
     return useMutation({
-        async mutationFn({inReplyTo, content}: {inReplyTo: string, content: string}) {
+        async mutationFn({inReplyTo, content, imageUrl}: {inReplyTo: string, content: string, imageUrl?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.reply(inReplyTo, content);
+            return api.reply(inReplyTo, content, imageUrl);
         },
-        onMutate: ({inReplyTo, content}) => {
+        onMutate: ({inReplyTo, content, imageUrl}) => {
             if (!actorProps) {
                 throw new Error('Cannot create reply without actor props');
             }
@@ -1007,7 +1063,7 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
             const formattedContent = formatPendingActivityContent(content);
 
             const id = generatePendingActivityId();
-            const activity = generatePendingActivity(actorProps, id, formattedContent);
+            const activity = generatePendingActivity(actorProps, id, formattedContent, imageUrl);
 
             // Add pending activity to the thread after the inReplyTo post
             addActivityToCollection(queryClient, QUERY_KEYS.thread(inReplyTo), 'posts', activity, inReplyTo);
@@ -1057,13 +1113,13 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
     const queryKeyPostsByAccount = QUERY_KEYS.profilePosts('index');
 
     return useMutation({
-        async mutationFn(content: string) {
+        async mutationFn({content, imageUrl}: {content: string, imageUrl?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.note(content);
+            return api.note(content, imageUrl);
         },
-        onMutate: (content: string) => {
+        onMutate: ({content, imageUrl}) => {
             if (!actorProps) {
                 throw new Error('Cannot create note without actor props');
             }
@@ -1071,7 +1127,7 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
             const formattedContent = formatPendingActivityContent(content);
 
             const id = generatePendingActivityId();
-            const activity = generatePendingActivity(actorProps, id, formattedContent);
+            const activity = generatePendingActivity(actorProps, id, formattedContent, imageUrl);
 
             prependActivityToPaginatedCollection(queryClient, queryKeyFeed, 'posts', activity);
             prependActivityToPaginatedCollection(queryClient, queryKeyOutbox, 'data', activity);
@@ -1220,6 +1276,11 @@ export function usePostsByAccount(profileHandle: string, options: {enabled: bool
                 return {
                     posts: response.posts.map(mapPostToActivity),
                     next: response.next
+                };
+            }).catch(() => {
+                return {
+                    posts: [],
+                    next: null
                 };
             });
         },
@@ -1627,4 +1688,34 @@ export function usePostForUser(handle: string, id: string | null) {
             });
         }
     });
+}
+
+export function useUpdateAccountMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(data: {
+            name: string;
+            username: string;
+            bio: string;
+            avatarUrl: string;
+            bannerImageUrl: string;
+        }) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.updateAccount(data);
+        },
+        onSuccess() {
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEYS.account('index')
+            });
+        }
+    });
+}
+
+export async function uploadFile(file: File) {
+    const siteUrl = await getSiteUrl();
+    const api = createActivityPubAPI('index', siteUrl);
+    return api.upload(file);
 }

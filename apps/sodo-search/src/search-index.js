@@ -30,7 +30,7 @@ function isCJK(codePoint) {
     );
 }
   
-function tokenizeCjkByCodePoint(text) {
+export function tokenizeCjkByCodePoint(text) {
     const result = [];
     let buffer = '';
 
@@ -39,7 +39,7 @@ function tokenizeCjkByCodePoint(text) {
 
         if (isCJK(codePoint)) {
             if (buffer) {
-                result.push(buffer); // Push any non-CJK word we’ve been building
+                result.push(buffer); // Push any non-CJK word we've been building
                 buffer = '';
             }
             result.push(char); // Push the CJK char as its own token

@@ -58,7 +58,7 @@ const TableRow = React.forwardRef<
     <tr
         ref={ref}
         className={cn(
-            'relative border-t data-[state=selected]:bg-muted before:absolute before:content-[""] before:-inset-y-px before:-inset-x-2 before:rounded-md hover:border-transparent hover:before:bg-muted/50 [:hover_+_&]:border-transparent',
+            'group relative border-t data-[state=selected]:bg-muted',
             className
         )}
         {...props}
@@ -73,7 +73,7 @@ const TableHead = React.forwardRef<
     <th
         ref={ref}
         className={cn(
-            'relative h-10 px-2 first-of-type:pl-0 last-of-type:pr-0 text-left align-middle font-medium text-black [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+            'relative h-10 px-2 text-left text-sm align-middle font-medium text-gray-700 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
             className
         )}
         {...props}
@@ -88,7 +88,7 @@ const TableCell = React.forwardRef<
     <td
         ref={ref}
         className={cn(
-            'relative p-2 first-of-type:pl-0 last-of-type:pr-0 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+            'relative p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] group-hover:bg-muted/50',
             className
         )}
         {...props}

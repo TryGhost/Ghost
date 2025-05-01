@@ -2,7 +2,7 @@
 // const testUtils = require('./utils');
 const sinon = require('sinon');
 const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionActivatedEvent} = require('@tryghost/member-events');
-const {MilestoneCreatedEvent} = require('@tryghost/milestones');
+const MilestoneCreatedEvent = require('../../../../../core/server/services/milestones/MilestoneCreatedEvent');
 
 // Stuff we are testing
 const DomainEvents = require('@tryghost/domain-events');

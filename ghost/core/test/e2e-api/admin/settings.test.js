@@ -191,6 +191,7 @@ describe('Settings API', function () {
                     settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
                 })
                 .matchHeaderSnapshot({
+                    'content-length': anyContentLength,
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
@@ -702,4 +703,3 @@ describe('Settings API', function () {
         });
     });
 });
-

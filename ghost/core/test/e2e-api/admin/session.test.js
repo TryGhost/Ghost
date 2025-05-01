@@ -1,5 +1,5 @@
-const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {mockLabsEnabled, mockLabsDisabled, mockMail, assert, restore} = require('../../utils/e2e-framework-mock-manager');
+const {agentProvider, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
+const {mockMail, assert, restore} = require('../../utils/e2e-framework-mock-manager');
 const {anyContentVersion, anyEtag, anyErrorId, stringMatching, anyISODateTime, anyUuid} = matchers;
 
 describe('Sessions API', function () {
@@ -79,7 +79,7 @@ describe('Sessions API', function () {
         let mail;
 
         beforeEach(async function () {
-            mockLabsEnabled('staff2fa');
+            configUtils.set('security:staffDeviceVerification', true);
             mail = mockMail();
 
             // Setup the agent & fixtures again, to ensure no cookies are set
@@ -88,12 +88,13 @@ describe('Sessions API', function () {
         });
 
         afterEach(async function () {
-            mockLabsDisabled('staff2fa');
+            configUtils.set('security:staffDeviceVerification', false);
             restore();
         });
 
-        it('sends verification email if labs flag enabled', async function () {
+        it('sends verification email if staffDeviceVerification is enabled', async function () {
             const owner = await fixtureManager.get('users', 0);
+
             await agent
                 .post('session/')
                 .body({
@@ -104,7 +105,7 @@ describe('Sessions API', function () {
                 .expectStatus(403)
                 .matchBodySnapshot({
                     errors: [{
-                        code: '2FA_TOKEN_REQUIRED',
+                        code: '2FA_NEW_DEVICE_DETECTED',
                         id: anyUuid,
                         message: 'User must verify session to login.',
                         type: 'Needs2FAError'
@@ -133,7 +134,7 @@ describe('Sessions API', function () {
                 .expectStatus(403)
                 .matchBodySnapshot({
                     errors: [{
-                        code: '2FA_TOKEN_REQUIRED',
+                        code: '2FA_NEW_DEVICE_DETECTED',
                         id: anyUuid,
                         message: 'User must verify session to login.',
                         type: 'Needs2FAError'

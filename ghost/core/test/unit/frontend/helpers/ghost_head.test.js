@@ -399,15 +399,11 @@ describe('{{ghost_head}} helper', function () {
 
         beforeEach(function () {
             configUtils.set({url: 'http://localhost:65530/'});
-        });
-
-        afterEach(function () {
-            sinon.restore();
+            loggingErrorStub = sinon.stub(logging, 'error');
         });
 
         it('returns meta tag string on paginated index page without structured data and schema', async function () {
             // @TODO: later we can extend this fn with an `meta` object e.g. locals.meta
-            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/page/2/',
@@ -781,7 +777,6 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('disallows indexing for preview pages', async function () {
-            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['preview', 'post']
@@ -793,7 +788,6 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('implicit indexing settings for non-preview pages', async function () {
-            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['featured', 'paged', 'index', 'post', 'amp', 'home', 'unicorn']
@@ -1449,6 +1443,7 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('includes tinybird tracker script when config is set', function () {
+        let labsStub;
         beforeEach(function () {
             configUtils.set({
                 tinybird: {
@@ -1466,6 +1461,9 @@ describe('{{ghost_head}} helper', function () {
                     }
                 }
             });
+            labsStub = sinon.stub(labs, 'isSet');
+            labsStub.withArgs('trafficAnalytics').returns(true);
+            labsStub.withArgs('i18n').returns(true);
         });
 
         it('includes tracker script', async function () {
@@ -1477,7 +1475,21 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.match(/script defer src="\/public\/ghost-stats\.js/);
+            rendered.should.match(/script defer src="\/public\/ghost-stats\.min\.js/);
+        });
+
+        it('does not include tracker script when trafficAnalytics is not set', async function () {
+            labsStub.withArgs('trafficAnalytics').returns(false);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js/);
         });
 
         it('includes tracker script with subdir', async function () {
@@ -1491,7 +1503,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.match(/script defer src="\/blog\/public\/ghost-stats\.js/);
+            rendered.should.match(/script defer src="\/blog\/public\/ghost-stats\.min\.js/);
         });
 
         it('with all tb_variables set to undefined on logged out home page', async function () {
@@ -1566,7 +1578,7 @@ describe('{{ghost_head}} helper', function () {
             }));
 
             rendered.should.match(/data-datasource="analytics_events"/);
-        }); 
+        });
 
         it('does not include tracker script when preview is set', async function () {
             const rendered = await testGhostHead(testUtils.createHbsResponse({
@@ -1575,7 +1587,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.not.match(/script defer src="\/public\/ghost-stats\.js"/);
+            rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js"/);
         });
 
         it('uses the provided host/endpoint from config', async function () {
