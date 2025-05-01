@@ -39,6 +39,7 @@ export type PostReferrerItem = {
     source: string | null;
     signups: number;
     paid_conversions: number;
+    mrr: number;
 }
 
 export type PostReferrersResponseType = {

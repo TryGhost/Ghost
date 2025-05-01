@@ -1,14 +1,17 @@
+import {useMemo} from 'react';
+
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber} from '@tryghost/shade';
+import {PostReferrerItem, usePostReferrers} from '@tryghost/admin-x-framework/api/stats';
+import {useParams} from '@tryghost/admin-x-framework';
+
+import {getRangeDates} from '@src/utils/chart-helpers';
+import {useGlobalData} from '@src/providers/GlobalDataProvider';
+
 import DateRangeSelect from './components/DateRangeSelect';
 import KpiCard, {KpiCardIcon, KpiCardLabel, KpiCardValue} from './components/KpiCard';
 import PostAnalyticsContent from './components/PostAnalyticsContent';
 import PostAnalyticsHeader from './components/PostAnalyticsHeader';
 import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber} from '@tryghost/shade';
-import {PostReferrerItem, usePostReferrers} from '@tryghost/admin-x-framework/api/stats';
-import {getRangeDates} from '@src/utils/chart-helpers';
-import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useParams} from '@tryghost/admin-x-framework';
-import {useMemo} from 'react';
 
 const STATS_DEFAULT_SOURCE_ICON_URL = 'https://static.ghost.org/v5.0.0/images/globe-icon.svg';
 
@@ -44,13 +47,12 @@ const Growth: React.FC<PostAnalyticsProps> = () => {
             return {topSources: [], totals: {freeMembers: 0, paidMembers: 0, mrr: 0}};
         }
         
-        // Convert API response to the format needed by our component
         const sources = data.stats[0].map((stat: PostReferrerItem) => ({
             id: `source-${stat.source || 'direct'}`,
             title: stat.source || 'Direct',
             freeMembers: (stat.signups || 0),
             paidMembers: (stat.paid_conversions || 0),
-            mrr: (stat.paid_conversions || 0) * 10 // Assuming $10 MRR per conversion
+            mrr: (stat.mrr || 0)
         }));
         
         // Calculate totals

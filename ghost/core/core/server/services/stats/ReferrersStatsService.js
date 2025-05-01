@@ -60,22 +60,24 @@ class ReferrersStatsService {
         
         const freeSignupRows = await freeSignupsQuery.groupBy('referrer_source');
 
-        // Get all paid conversions
-        const paidConversionsQuery = knex('members_subscription_created_events')
-            .select('referrer_source')
-            .select(knex.raw('COUNT(id) AS total'))
-            .where('attribution_id', postId)
-            .where('attribution_type', 'post');
+        // Get paid conversions with MRR values by joining with members_paid_subscription_events
+        const paidConversionsQuery = knex('members_subscription_created_events AS msce')
+            .select('msce.referrer_source')
+            .select(knex.raw('COUNT(msce.id) AS total'))
+            .select(knex.raw('SUM(COALESCE(mpse.mrr_delta, 0)) AS mrr'))
+            .leftJoin('members_paid_subscription_events AS mpse', 'msce.subscription_id', 'mpse.subscription_id')
+            .where('msce.attribution_id', postId)
+            .where('msce.attribution_type', 'post');
             
         if (options.date_from) {
-            paidConversionsQuery.where('created_at', '>=', `${options.date_from} 00:00:00`);
+            paidConversionsQuery.where('msce.created_at', '>=', `${options.date_from} 00:00:00`);
         }
             
         if (options.date_to) {
-            paidConversionsQuery.where('created_at', '<=', `${options.date_to} 23:59:59`);
+            paidConversionsQuery.where('msce.created_at', '<=', `${options.date_to} 23:59:59`);
         }
             
-        const paidConversionRows = await paidConversionsQuery.groupBy('referrer_source');
+        const paidConversionRows = await paidConversionsQuery.groupBy('msce.referrer_source');
 
         // Combine free signups and paid conversions by referrer source
         const map = new Map();
@@ -83,7 +85,8 @@ class ReferrersStatsService {
             map.set(row.referrer_source, {
                 source: row.referrer_source,
                 signups: row.total,
-                paid_conversions: 0
+                paid_conversions: 0,
+                mrr: 0
             });
         }
 
@@ -91,9 +94,11 @@ class ReferrersStatsService {
             const existing = map.get(row.referrer_source) ?? {
                 source: row.referrer_source,
                 signups: 0,
-                paid_conversions: 0
+                paid_conversions: 0,
+                mrr: 0
             };
             existing.paid_conversions = row.total;
+            existing.mrr = parseInt(row.mrr) || 0;
             map.set(row.referrer_source, existing);
         }
 
@@ -113,6 +118,7 @@ class ReferrersStatsService {
             return {
                 ...entry,
                 paid_conversions: 0,
+                mrr: 0,
                 date: moment(entry.date).format('YYYY-MM-DD')
             };
         });
@@ -123,10 +129,12 @@ class ReferrersStatsService {
 
             if (existingEntry) {
                 existingEntry.paid_conversions = entry.paid_conversions;
+                existingEntry.mrr = entry.mrr || 0;
             } else {
                 allEntries.push({
                     ...entry,
                     signups: 0,
+                    mrr: entry.mrr || 0,
                     date: entryDate
                 });
             }
@@ -149,15 +157,28 @@ class ReferrersStatsService {
     async fetchAllPaidConversionSources() {
         const knex = this.knex;
         const ninetyDaysAgo = moment.utc().subtract(90, 'days').startOf('day').utc().format('YYYY-MM-DD HH:mm:ss');
-        const rows = await knex('members_subscription_created_events')
-            .select(knex.raw(`DATE(created_at) as date`))
-            .select(knex.raw(`COUNT(*) as paid_conversions`))
-            .select(knex.raw(`referrer_source as source`))
-            .where('created_at', '>=', ninetyDaysAgo)
-            .groupBy('date', 'referrer_source')
+        
+        // Join with members_paid_subscription_events to get actual MRR values
+        const queryResult = await knex('members_subscription_created_events AS msce')
+            .select(knex.raw(`DATE(msce.created_at) as date`))
+            .select(knex.raw(`COUNT(msce.id) as paid_conversions`))
+            .select(knex.raw(`msce.referrer_source as source`))
+            .select(knex.raw(`SUM(COALESCE(mpse.mrr_delta, 0)) as mrr`))
+            .leftJoin('members_paid_subscription_events AS mpse', 'msce.subscription_id', 'mpse.subscription_id')
+            .where('msce.created_at', '>=', ninetyDaysAgo)
+            .groupBy('date', 'msce.referrer_source')
             .orderBy('date');
 
-        return rows;
+        // Convert Knex results to plain objects to avoid type issues
+        const plainResults = JSON.parse(JSON.stringify(queryResult));
+        
+        // Return with proper type structure
+        return plainResults.map(row => ({
+            source: row.source || null,
+            paid_conversions: parseInt(row.paid_conversions) || 0,
+            date: row.date,
+            mrr: parseInt(row.mrr) || 0
+        }));
     }
 
     /**
@@ -166,7 +187,8 @@ class ReferrersStatsService {
     async fetchAllSignupSources() {
         const knex = this.knex;
         const ninetyDaysAgo = moment.utc().subtract(90, 'days').startOf('day').utc().format('YYYY-MM-DD HH:mm:ss');
-        const rows = await knex('members_created_events')
+        
+        const queryResult = await knex('members_created_events')
             .select(knex.raw(`DATE(created_at) as date`))
             .select(knex.raw(`COUNT(*) as signups`))
             .select(knex.raw(`referrer_source as source`))
@@ -174,7 +196,16 @@ class ReferrersStatsService {
             .groupBy('date', 'referrer_source')
             .orderBy('date');
 
-        return rows;
+        // Convert Knex results to plain objects to avoid type issues
+        const plainResults = JSON.parse(JSON.stringify(queryResult));
+
+        // Return with proper type structure
+        return plainResults.map(row => ({
+            source: row.source || null,
+            signups: parseInt(row.signups) || 0,
+            date: row.date,
+            mrr: 0
+        }));
     }
 }
 
@@ -186,6 +217,7 @@ module.exports = ReferrersStatsService;
  * @property {string} source Attribution Source
  * @property {number} signups Total free members signed up for this source
  * @property {number} paid_conversions Total paid conversions for this source
+ * @property {number} mrr Monthly Recurring Revenue in the site's currency
  */
 
 /**
@@ -200,6 +232,7 @@ module.exports = ReferrersStatsService;
  * @property {string} source Attribution Source
  * @property {number} signups Total free members signed up for this source
  * @property {string} date The date (YYYY-MM-DD) on which these counts were recorded
+ * @property {number} mrr Monthly Recurring Revenue in the site's currency
  **/
 
 /**
@@ -208,4 +241,5 @@ module.exports = ReferrersStatsService;
  * @property {string} source Attribution Source
  * @property {number} paid_conversions Total paid conversions for this source
  * @property {string} date The date (YYYY-MM-DD) on which these counts were recorded
+ * @property {number} mrr Monthly Recurring Revenue in the site's currency
  **/
