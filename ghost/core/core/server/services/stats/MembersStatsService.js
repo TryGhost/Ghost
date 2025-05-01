@@ -33,7 +33,7 @@ class MembersStatsService {
     /**
      * Get the member deltas by status for all days, sorted ascending
      * @param {Object} options
-     * @param {string|Date} [options.startDate=91 days ago] - Start date for fetching deltas (ISO format or Date object)
+     * @param {string|Date} [options.startDate] - Start date for fetching deltas (ISO format or Date object, defaults to 91 days ago)
      * @returns {Promise<MemberStatusDelta[]>} The deltas of paid, free and comped users per day, sorted ascending
      */
     async fetchAllStatusDeltas(options = {}) {
@@ -71,7 +71,7 @@ class MembersStatsService {
     /**
      * Returns a list of the total members by status for each day, including the paid deltas paid_subscribed and paid_canceled
      * @param {Object} options
-     * @param {string|Date} [options.startDate=91] - Start date for fetching history (ISO format or Date object)
+     * @param {string|Date} [options.startDate] - Start date for fetching history (ISO format or Date object, defaults to 91 days ago). Note: result always includes one day before the startDate as a baseline.
      * @returns {Promise<CountHistory>}
      */
     async getCountHistory(options = {}) {
