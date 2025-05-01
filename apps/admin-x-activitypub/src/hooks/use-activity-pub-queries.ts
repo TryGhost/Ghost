@@ -242,7 +242,7 @@ export function useLikeMutationForUser(handle: string) {
                 };
             });
         },
-        onError(error, id) {
+        onError(error: {message: string, statusCode: number}, id) {
             updateLikedCache(queryClient, QUERY_KEYS.feed, id, false);
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
             updateLikedCache(queryClient, QUERY_KEYS.profilePosts('index'), id, false);
@@ -401,7 +401,7 @@ export function useRepostMutationForUser(handle: string) {
             updateRepostCache(queryClient, QUERY_KEYS.feed, id, true);
             updateRepostCache(queryClient, QUERY_KEYS.inbox, id, true);
         },
-        onError(error, id) {
+        onError(error: {message: string, statusCode: number}, id) {
             updateRepostCache(queryClient, QUERY_KEYS.feed, id, false);
             updateRepostCache(queryClient, QUERY_KEYS.inbox, id, false);
             if (error.statusCode === 403) {
@@ -668,8 +668,8 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
 
             onSuccess();
         },
-        onError(error) {
-            onError(error);
+        onError(error: {message: string, statusCode: number}) {
+            onError();
 
             if (error.statusCode === 403) {
                 showToast({
@@ -1131,7 +1131,7 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
 
             updateActivityInCollection(queryClient, QUERY_KEYS.thread(variables.inReplyTo), 'posts', context?.id ?? '', () => preparedActivity);
         },
-        onError: (error, variables, context) => {
+          onError(error: {message: string, statusCode: number}, variables, context) {
             // eslint-disable-next-line no-console
             console.error(error);
 
