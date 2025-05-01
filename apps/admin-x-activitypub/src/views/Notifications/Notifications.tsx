@@ -261,7 +261,7 @@ const Notifications: React.FC = () => {
                                                         )}
 
                                                         {group.actors.length > 1 && (
-                                                            <Button className={`group flex items-center gap-0.5 text-gray-700 hover:bg-transparent hover:text-black dark:text-gray-600 dark:hover:text-white ${openStates[group.id || `${group.type}_${index}`] ? 'ml-[-20px]' : 'ml-0 w-[28px]'}`} variant='ghost' onClick={(event) => {
+                                                            <Button className={`group flex items-center gap-0.5 text-gray-700 hover:bg-transparent hover:text-black dark:text-gray-600 dark:hover:text-white ${openStates[group.id || `${group.type}_${index}`] ? 'ml-[-20px]' : 'ml-0 w-[28px]'}`} variant='ghost'onClick={(event?: React.MouseEvent<HTMLElement>) => {
                                                                 event?.stopPropagation();
                                                                 toggleOpen(group.id || `${group.type}_${index}`);
                                                             }}>

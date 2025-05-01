@@ -780,7 +780,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                                         title='Typeface'
                                                         value={fontFamily}
                                                         onFocus={() => {}}
-                                                        onSelect={option => setFontFamily(option || {
+                                                        onSelect={(option: SelectOption | null) => setFontFamily(option || {
                                                             value: FONT_SANS,
                                                             label: 'Clean sans-serif',
                                                             className: 'font-sans'
