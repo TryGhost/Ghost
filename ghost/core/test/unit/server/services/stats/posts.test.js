@@ -39,7 +39,7 @@ describe('PostsStatsService', function () {
 
     // Helper Functions for Setup
     async function _createPost(id, title) {
-        await db('posts').insert({ id, title });
+        await db('posts').insert({id, title});
     }
 
     async function _createFreeSignupEvent(postId, memberId, createdAt = new Date()) {
@@ -175,11 +175,11 @@ describe('PostsStatsService', function () {
             await _createPost('post3', 'Post 3');
 
             // Create member scenarios
-            await _createFreeSignup('post1', 'm5_free_only');          // Free signup via Post 1
-            await _createFreeSignup('post2', 'm3_free_only');          // Free signup via Post 2
-            await _createPaidSignup('post1', 'm2_free_paid_same', 'sub2', 500); // Signed up & Paid via Post 1
-            await _createPaidSignup('post3', 'm4_paid_only', 'sub3', 1000); // Signed up & Paid via Post 3
-            await _createPaidConversion('post1', 'post2', 'm1_free_paid_elsewhere', 'sub1', 500); // Signed up Post 1, Paid via Post 2
+            await _createFreeSignup('post1', 'm5_free_only');
+            await _createFreeSignup('post2', 'm3_free_only');
+            await _createPaidSignup('post1', 'm2_free_paid_same', 'sub2', 500);
+            await _createPaidSignup('post3', 'm4_paid_only', 'sub3', 1000);
+            await _createPaidConversion('post1', 'post2', 'm1_free_paid_elsewhere', 'sub1', 500);
 
             const result = await service.getTopPosts({order: 'free_members desc'});
 
@@ -188,11 +188,11 @@ describe('PostsStatsService', function () {
             assert.equal(result.data.length, 2, 'Should return 2 posts with free_members > 0');
 
             const expectedResults = [
-                { post_id: 'post1', title: 'Post 1', free_members: 2, paid_members: 1, mrr: 500 },
-                { post_id: 'post2', title: 'Post 2', free_members: 1, paid_members: 1, mrr: 500 }
+                {post_id: 'post1', title: 'Post 1', free_members: 2, paid_members: 1, mrr: 500},
+                {post_id: 'post2', title: 'Post 2', free_members: 1, paid_members: 1, mrr: 500}
             ];
 
-            assert.deepStrictEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
+            assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
         });
 
         it('correctly ranks posts by paid_members', async function () {
@@ -206,13 +206,13 @@ describe('PostsStatsService', function () {
             await _createPost('post1', 'Post 1');
             await _createPost('post2', 'Post 2');
             await _createPost('post3', 'Post 3');
-            await _createPost('post_other', 'Other Post'); // Post for m4's signup
+            await _createPost('post_other', 'Other Post');
 
             // Create member scenarios
-            await _createFreeSignup('post3', 'm3_free_only');          // Free signup via Post 3
-            await _createPaidSignup('post1', 'm2_free_paid_same', 'sub2', 600); // Signed up & Paid via Post 1
-            await _createPaidConversion('post1', 'post2', 'm1_free_paid_elsewhere', 'sub1', 500); // Signed up Post 1, Paid via Post 2
-            await _createPaidConversion('post_other', 'post2', 'm4_paid_on_post2', 'sub3', 700); // Signed up Elsewhere, Paid via Post 2
+            await _createFreeSignup('post3', 'm3_free_only');
+            await _createPaidSignup('post1', 'm2_free_paid_same', 'sub2', 600);
+            await _createPaidConversion('post1', 'post2', 'm1_free_paid_elsewhere', 'sub1', 500);
+            await _createPaidConversion('post_other', 'post2', 'm4_paid_on_post2', 'sub3', 700);
 
             const result = await service.getTopPosts({order: 'paid_members desc'});
 
@@ -221,11 +221,11 @@ describe('PostsStatsService', function () {
             assert.equal(result.data.length, 2, 'Should return 2 posts with paid_members > 0');
 
             const expectedResults = [
-                { post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200 },
-                { post_id: 'post1', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600 }
+                {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200},
+                {post_id: 'post1', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600}
             ];
 
-            assert.deepStrictEqual(result.data, expectedResults, 'Results should match expected order and counts for paid_members desc');
+            assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for paid_members desc');
         });
 
         it('correctly ranks posts by mrr', async function () {
@@ -239,13 +239,13 @@ describe('PostsStatsService', function () {
             await _createPost('post1', 'Post 1');
             await _createPost('post2', 'Post 2');
             await _createPost('post3', 'Post 3');
-            await _createPost('post_other', 'Other Post'); // Post for m4's signup
+            await _createPost('post_other', 'Other Post');
 
             // Create member scenarios
-            await _createFreeSignup('post3', 'm3_free_only');          // Free signup via Post 3
-            await _createPaidSignup('post1', 'm2_free_paid_same', 'sub2', 600); // Signed up & Paid via Post 1 (MRR 600)
-            await _createPaidConversion('post1', 'post2', 'm1_free_paid_elsewhere', 'sub1', 500); // Signed up Post 1, Paid via Post 2 (MRR 500)
-            await _createPaidConversion('post_other', 'post2', 'm4_paid_on_post2', 'sub3', 700); // Signed up Elsewhere, Paid via Post 2 (MRR 700)
+            await _createFreeSignup('post3', 'm3_free_only');
+            await _createPaidSignup('post1', 'm2_free_paid_same', 'sub2', 600);
+            await _createPaidConversion('post1', 'post2', 'm1_free_paid_elsewhere', 'sub1', 500);
+            await _createPaidConversion('post_other', 'post2', 'm4_paid_on_post2', 'sub3', 700);
 
             const result = await service.getTopPosts({order: 'mrr desc'});
 
@@ -254,11 +254,11 @@ describe('PostsStatsService', function () {
             assert.equal(result.data.length, 2, 'Should return 2 posts with mrr > 0');
 
             const expectedResults = [
-                { post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200 },
-                { post_id: 'post1', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600 }
+                {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200},
+                {post_id: 'post1', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600}
             ];
 
-            assert.deepStrictEqual(result.data, expectedResults, 'Results should match expected order and counts for mrr desc');
+            assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for mrr desc');
         });
     });
 });
