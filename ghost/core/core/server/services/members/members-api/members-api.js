@@ -1,6 +1,5 @@
 const {Router} = require('express');
 const body = require('body-parser');
-const MagicLink = require('@tryghost/magic-link');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
@@ -16,6 +15,7 @@ const MemberController = require('./controllers/MemberController');
 const WellKnownController = require('./controllers/WellKnownController');
 
 const {EmailSuppressedEvent} = require('../../email-suppression-list/EmailSuppressionList');
+const MagicLink = require('../../lib/magic-link/MagicLink');
 const DomainEvents = require('@tryghost/domain-events');
 
 module.exports = function MembersAPI({
