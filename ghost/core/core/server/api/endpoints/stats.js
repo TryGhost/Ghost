@@ -24,8 +24,7 @@ const controller = {
         },
         async query(frame) {
             return await statsService.api.getMemberCountHistory({
-                startDate: frame.options.date_from,
-                endDate: frame.options.date_to
+                startDate: frame.options.start_date
             });
         }
     },
