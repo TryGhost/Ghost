@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../../utils/assertions');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
@@ -75,5 +76,19 @@ describe('Unit: endpoints/utils/serializers/output/members', function () {
         memberSerializer.read(ctrlResponse, apiConfig, frame);
 
         assertExists(frame.response.members[0].tiers);
+    });
+
+    it('read: includes comment notification enabled flag', function () {
+        const apiConfig = {docName: 'members'};
+        const frame = {
+            options: {
+                context: {}
+            }
+        };
+
+        const ctrlResponse = memberModel(testUtils.DataGenerator.forKnex.createMemberWithCommentNotificationsEnabled());
+        memberSerializer.read(ctrlResponse, apiConfig, frame);
+        assertExists(frame.response.members[0].enable_comment_notifications);
+        assert.equal(frame.response.members[0].enable_comment_notifications, true);
     });
 });

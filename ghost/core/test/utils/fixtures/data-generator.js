@@ -1991,6 +1991,16 @@ DataGenerator.forKnex = (function () {
         });
     }
 
+    function createMemberWithCommentNotificationsEnabled(overrides) {
+        const newObj = _.cloneDeep(overrides);
+
+        return _.defaults(newObj, {
+            id: ObjectId().toHexString(),
+            email: 'member@ghost.org',
+            enable_comment_notifications: true
+        });
+    }
+
     function createLabel(overrides) {
         const newObj = _.cloneDeep(overrides);
 
@@ -2776,6 +2786,7 @@ DataGenerator.forKnex = (function () {
         createMember,
         createMemberWithNewsletter,
         createMemberWithProducts,
+        createMemberWithCommentNotificationsEnabled,
         createLabel,
         createMembersLabels,
         createMembersStripeCustomer: createBasic,
