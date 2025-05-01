@@ -45,16 +45,13 @@ services:
       - node_modules_ghost_i18n:/home/ghost/ghost/i18n/node_modules:delegated
       - node_modules_ghost_job-manager:/home/ghost/ghost/job-manager/node_modules:delegated
       - node_modules_ghost_link-replacer:/home/ghost/ghost/link-replacer/node_modules:delegated
-      - node_modules_ghost_magic-link:/home/ghost/ghost/magic-link/node_modules:delegated
       - node_modules_ghost_member-attribution:/home/ghost/ghost/member-attribution/node_modules:delegated
-      - node_modules_ghost_member-events:/home/ghost/ghost/member-events/node_modules:delegated
       - node_modules_ghost_members-csv:/home/ghost/ghost/members-csv/node_modules:delegated
       - node_modules_ghost_mw-error-handler:/home/ghost/ghost/mw-error-handler/node_modules:delegated
       - node_modules_ghost_mw-vhost:/home/ghost/ghost/mw-vhost/node_modules:delegated
       - node_modules_ghost_offers:/home/ghost/ghost/offers/node_modules:delegated
       - node_modules_ghost_post-events:/home/ghost/ghost/post-events/node_modules:delegated
       - node_modules_ghost_post-revisions:/home/ghost/ghost/post-revisions/node_modules:delegated
-      - node_modules_ghost_posts-service:/home/ghost/ghost/posts-service/node_modules:delegated
       - node_modules_ghost_prometheus-metrics:/home/ghost/ghost/prometheus-metrics/node_modules:delegated
       - node_modules_ghost_security:/home/ghost/ghost/security/node_modules:delegated
       - node_modules_ghost_tiers:/home/ghost/ghost/tiers/node_modules:delegated
@@ -175,16 +172,13 @@ volumes:
   node_modules_ghost_i18n: {}
   node_modules_ghost_job-manager: {}
   node_modules_ghost_link-replacer: {}
-  node_modules_ghost_magic-link: {}
   node_modules_ghost_member-attribution: {}
-  node_modules_ghost_member-events: {}
   node_modules_ghost_members-csv: {}
   node_modules_ghost_mw-error-handler: {}
   node_modules_ghost_mw-vhost: {}
   node_modules_ghost_offers: {}
   node_modules_ghost_post-events: {}
   node_modules_ghost_post-revisions: {}
-  node_modules_ghost_posts-service: {}
   node_modules_ghost_prometheus-metrics: {}
   node_modules_ghost_security: {}
   node_modules_ghost_tiers: {}
