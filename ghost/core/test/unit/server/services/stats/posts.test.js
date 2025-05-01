@@ -154,13 +154,6 @@ describe('PostsStatsService', function () {
     });
 
     afterEach(async function () {
-        await db('members_created_events').truncate();
-        await db('members_subscription_created_events').truncate();
-        await db('members_paid_subscription_events').truncate();
-        await db('posts').truncate();
-    });
-
-    after(async function () {
         await db.destroy();
     });
 
