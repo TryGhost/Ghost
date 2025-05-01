@@ -141,6 +141,10 @@ describe('PostsStatsService', function () {
         await db('posts').truncate();
     });
 
+    after(async function () {
+        await db.destroy();
+    });
+
     it('exists', function () {
         assert.ok(service, 'Service instance should exist');
     });
@@ -153,11 +157,11 @@ describe('PostsStatsService', function () {
 
         it('correctly ranks posts by free_members', async function () {
             // Test Scenario:
-            // Post 1: 1 free signup (paid elsewhere), 1 immediate paid signup (same post)
+            // Post 1: 2 free signups (one paid elsewhere, one never paid), 1 immediate paid signup (same post)
             // Post 2: 1 free signup (never paid)
             // Post 3: 1 immediate paid signup (same post)
-            // Expected free_members: Post 1 = 1, Post 2 = 1, Post 3 = 0
-            // Expected order: Post 1/Post 2 (tie), Post 3 excluded
+            // Expected free_members: Post 1 = 2, Post 2 = 1, Post 3 = 0
+            // Expected order: Post 1, Post 2, Post 3 excluded
             await setupDbData({
                 posts: [
                     {id: 'post1', title: 'Post 1'},
@@ -167,6 +171,7 @@ describe('PostsStatsService', function () {
                 freeSignups: [
                     {postId: 'post1', memberId: 'm1_free_paid_elsewhere'},
                     {postId: 'post1', memberId: 'm2_free_paid_same'},
+                    {postId: 'post1', memberId: 'm5_free_only'},
                     {postId: 'post2', memberId: 'm3_free_only'},
                     {postId: 'post3', memberId: 'm4_paid_only'}
                 ],
@@ -186,19 +191,21 @@ describe('PostsStatsService', function () {
             // Only posts with free_members > 0 according to the new definition
             assert.equal(result.data.length, 2, 'Should return 2 posts with free_members > 0');
 
-            // Post 1 and Post 2 both have 1 free member, order might not be guaranteed
-            const post1Result = result.data.find(p => p.post_id === 'post1');
-            const post2Result = result.data.find(p => p.post_id === 'post2');
+            // Check the order is correct now
+            assert.equal(result.data[0].post_id, 'post1', 'Post 1 should be ranked first');
+            assert.equal(result.data[1].post_id, 'post2', 'Post 2 should be ranked second');
 
-            assert.ok(post1Result, 'Post 1 should be in the results');
+            // Post 1 assertions
+            const post1Result = result.data[0];
             assert.equal(post1Result.title, 'Post 1');
-            assert.equal(post1Result.free_members, 1, 'Post 1 should have 1 free member');
+            assert.equal(post1Result.free_members, 2, 'Post 1 should have 2 free members');
             // Post 1 had one immediate paid conversion
             assert.equal(post1Result.paid_members, 1, 'Post 1 should have 1 paid member (by new def)');
             // MRR is associated with the paid conversion attributed to post1
             assert.equal(post1Result.mrr, 500, 'Post 1 should have 500 mrr');
 
-            assert.ok(post2Result, 'Post 2 should be in the results');
+            // Post 2 assertions
+            const post2Result = result.data[1];
             assert.equal(post2Result.title, 'Post 2');
             assert.equal(post2Result.free_members, 1, 'Post 2 should have 1 free member');
             assert.equal(post2Result.paid_members, 0, 'Post 2 should have 0 paid members (by new def)');
