@@ -172,7 +172,6 @@ volumes:
   node_modules_ghost_i18n: {}
   node_modules_ghost_job-manager: {}
   node_modules_ghost_link-replacer: {}
-  node_modules_ghost_magic-link: {}
   node_modules_ghost_member-attribution: {}
   node_modules_ghost_members-csv: {}
   node_modules_ghost_mw-error-handler: {}
