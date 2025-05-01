@@ -69,6 +69,13 @@ describe('Can send cards via email', function () {
     beforeEach(function () {
         mockManager.mockMail();
         mockManager.mockMailgun();
+
+        sinon.stub(labs, 'isSet').callsFake((key) => {
+            if (labs.GA_KEYS.includes(key)) {
+                return true;
+            }
+            return false;
+        });
     });
 
     afterEach(async function () {
@@ -151,8 +158,6 @@ describe('Can send cards via email', function () {
     // means we can have snapshots for both free and non-free members
     ['status:free', 'status:-free'].forEach(function (status) {
         it(`renders the golden post correctly (no labs flags) (${status})`, async function () {
-            sinon.stub(labs, 'isSet').returns(false);
-
             const data = await sendEmail(agent, {
                 lexical: JSON.stringify(goldenPost)
             }, status);
@@ -163,13 +168,6 @@ describe('Can send cards via email', function () {
         });
 
         it(`renders the golden post correctly (labs flag: contentVisibility) (${status})`, async function () {
-            sinon.stub(labs, 'isSet').callsFake((key) => {
-                if (key === 'contentVisibility') {
-                    return true;
-                }
-                return false;
-            });
-
             const data = await sendEmail(agent, {
                 lexical: JSON.stringify(goldenPost)
             }, status);
