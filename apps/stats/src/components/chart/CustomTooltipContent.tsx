@@ -12,7 +12,7 @@ interface TooltipPayload {
 interface TooltipProps {
     active?: boolean;
     payload?: TooltipPayload[];
-    range: number;
+    range?: number;
 }
 
 const CustomTooltipContent = ({active, payload, range}: TooltipProps) => {
@@ -25,7 +25,7 @@ const CustomTooltipContent = ({active, payload, range}: TooltipProps) => {
 
     return (
         <div className="min-w-[120px] rounded-lg border bg-background px-3 py-2 shadow-lg">
-            {date && <div className="text-sm text-foreground">{formatDisplayDateWithRange(date, range)}</div>}
+            {date && <div className="text-sm text-foreground">{formatDisplayDateWithRange(date, range || 0)}</div>}
             <div className='flex items-center gap-1'>
                 <span className='inline-block size-[10px] rounded-[2px]' style={{backgroundColor: 'hsl(var(--chart-1))'}}></span>
                 <div className='flex grow items-center justify-between gap-3'>
