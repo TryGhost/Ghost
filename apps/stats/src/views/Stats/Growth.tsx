@@ -2,6 +2,7 @@ import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import DateRangeSelect from './components/DateRangeSelect';
 import PostMenu from './components/PostMenu';
 import React, {useMemo, useState} from 'react';
+import SortButton from './components/SortButton';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber} from '@tryghost/shade';
@@ -12,6 +13,8 @@ import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
+
+type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
 
 type ChartDataItem = {
     date: string;
@@ -196,11 +199,12 @@ const GrowthKPIs: React.FC<{
 
 const Growth: React.FC = () => {
     const {range} = useGlobalData();
+    const [sortBy, setSortBy] = useState<TopPostsOrder>('free_members desc');
 
     // Get stats from custom hook once
     const {isLoading, chartData, totals} = useGrowthStats(range);
 
-    const {data: topPostsData} = useTopPostsStatsWithRange(range, 'free_members desc');
+    const {data: topPostsData} = useTopPostsStatsWithRange(range, sortBy);
 
     const topPosts = topPostsData?.stats || [];
 
@@ -231,14 +235,20 @@ const Growth: React.FC = () => {
                                     <TableHead>
                                         Title
                                     </TableHead>
-                                    <TableHead className='w-[110px] text-right'>
-                                        Free members
+                                    <TableHead className='text-right'>
+                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='free_members desc'>
+                                            Free members
+                                        </SortButton>
                                     </TableHead>
-                                    <TableHead className='w-[110px] text-right'>
-                                        Paid members
+                                    <TableHead className='text-right'>
+                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='paid_members desc'>
+                                            Paid members
+                                        </SortButton>
                                     </TableHead>
-                                    <TableHead className='w-[100px] text-right'>
-                                        MRR
+                                    <TableHead className='text-right'>
+                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
+                                            MRR
+                                        </SortButton>
                                     </TableHead>
                                     <TableHead className='w-[32px] text-right'></TableHead>
                                 </TableRow>
