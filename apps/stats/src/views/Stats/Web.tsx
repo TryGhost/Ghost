@@ -1,17 +1,17 @@
 import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import DateRangeSelect from './components/DateRangeSelect';
+import PostMenu from './components/PostMenu';
 import React, {useState} from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, H1, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
 import {TB_VERSION} from '@src/config/stats-config';
 import {calculateYAxisWidth, getPeriodText, getRangeDates, getYTicks} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useNavigate} from '@tryghost/admin-x-framework';
 import {useQuery} from '@tinybirdco/charts';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
@@ -197,7 +197,6 @@ const Web:React.FC = () => {
     const {isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
-    const navigate = useNavigate();
 
     // Include essential query parameters that change frequently
     // Server will use defaults for other values
@@ -250,7 +249,7 @@ const Web:React.FC = () => {
                                 <TableRow>
                                     <TableHead className='w-[75%]'>Content</TableHead>
                                     <TableHead className='w-[20%] text-right'>Visitors</TableHead>
-                                    <TableHead className='w-[5%]'></TableHead>
+                                    <TableHead className='w-[32px]'></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -264,39 +263,8 @@ const Web:React.FC = () => {
                                                 </a>
                                             </TableCell>
                                             <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
-                                            <TableCell className='text-center'>
-                                                {/* {row.post_id && (
-                                                    <a
-                                                        className="text-gray-500 hover:text-gray-900"
-                                                        href={`/ghost/#/posts/analytics/${row.post_id}/web`}
-                                                        title="View post analytics"
-                                                    >
-                                                        <LucideIcon.BarChart2 className="size-4" />
-                                                    </a>
-                                                )} */}
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger>
-                                                        <Button className='h-6 px-2 hover:bg-gray-200' variant='ghost'>
-                                                            <LucideIcon.Ellipsis />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align='end'>
-                                                        {row.post_id && (
-                                                            <DropdownMenuItem onClick={() => {
-                                                                navigate(`/posts/analytics/${row.post_id}`, {crossApp: true});
-                                                            }}>
-                                                                <LucideIcon.BarChart2 />
-                                                            Post analytics
-                                                            </DropdownMenuItem>
-                                                        )}
-                                                        <DropdownMenuItem asChild>
-                                                            <a href={`${row.pathname}`} rel="noreferrer" target='_blank'>
-                                                                <LucideIcon.SquareArrowOutUpRight />
-                                                                Open in browser
-                                                            </a>
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
+                                            <TableCell className='text-center text-gray-700 hover:text-black'>
+                                                <PostMenu pathName={row.pathname} postId={row.post_id} />
                                             </TableCell>
                                         </TableRow>
                                     );

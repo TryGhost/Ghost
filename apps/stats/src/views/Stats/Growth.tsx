@@ -1,5 +1,6 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import DateRangeSelect from './components/DateRangeSelect';
+import PostMenu from './components/PostMenu';
 import React, {useMemo, useState} from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
@@ -227,19 +228,38 @@ const Growth: React.FC = () => {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Title</TableHead>
-                                    <TableHead className='w-[110px] text-right'>Free members</TableHead>
-                                    <TableHead className='w-[110px] text-right'>Paid members</TableHead>
-                                    <TableHead className='text-right'>MRR</TableHead>
+                                    <TableHead>
+                                        Title
+                                    </TableHead>
+                                    <TableHead className='w-[110px] text-right'>
+                                        Free members
+                                    </TableHead>
+                                    <TableHead className='w-[110px] text-right'>
+                                        Paid members
+                                    </TableHead>
+                                    <TableHead className='w-[100px] text-right'>
+                                        MRR
+                                    </TableHead>
+                                    <TableHead className='w-[32px] text-right'></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {topPosts.map(post => (
                                     <TableRow key={post.post_id}>
                                         <TableCell className="font-medium">{post.title}</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>+{formatNumber(post.free_members)}</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>+{formatNumber(post.paid_members)}</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>+${post.mrr}</TableCell>
+                                        <TableCell className={`text-right font-mono text-sm ${post.free_members === 0 && 'text-gray-700'}`}>
+                                            {(post.free_members > 0 && '+')}{formatNumber(post.free_members)}
+                                        </TableCell>
+                                        <TableCell className={`text-right font-mono text-sm ${post.paid_members === 0 && 'text-gray-700'}`}>
+                                            {(post.paid_members > 0 && '+')}{formatNumber(post.paid_members)}
+                                        </TableCell>
+                                        <TableCell className={`text-right font-mono text-sm ${post.mrr === 0 && 'text-gray-700'}`}>
+                                            {/* TODO: Update to use actual currency */}
+                                            {(post.mrr > 0 && '+')}${post.mrr}
+                                        </TableCell>
+                                        <TableCell className='text-right text-gray-700 hover:text-black'>
+                                            <PostMenu pathName='' postId={post.post_id} />
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
