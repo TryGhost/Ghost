@@ -85,9 +85,15 @@ describe('MilestonesService', function () {
                 repository,
                 milestonesConfig,
                 queries: {
-                    async getARR() { return [{currency: 'jpy', arr: 750}]; },
-                    async hasImportedMembersInPeriod() { return false; },
-                    async getDefaultCurrency() { return 'jpy'; }
+                    async getARR() {
+                        return [{currency: 'jpy', arr: 750}];
+                    },
+                    async hasImportedMembersInPeriod() {
+                        return false;
+                    },
+                    async getDefaultCurrency() {
+                        return 'jpy';
+                    }
                 }
             });
             const result = await service.checkMilestones('arr');
