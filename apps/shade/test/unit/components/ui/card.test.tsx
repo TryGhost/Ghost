@@ -2,11 +2,11 @@ import assert from 'assert/strict';
 import {describe, it} from 'vitest';
 import {screen} from '@testing-library/react';
 import {
-    Card, 
-    CardHeader, 
-    CardFooter, 
-    CardTitle, 
-    CardDescription, 
+    Card,
+    CardHeader,
+    CardFooter,
+    CardTitle,
+    CardDescription,
     CardContent
 } from '../../../../src/components/ui/card';
 import {render} from '../../utils/test-utils';
@@ -15,7 +15,7 @@ describe('Card Components', () => {
     it('renders Card with default outline variant', () => {
         render(<Card data-testid="card">Card Content</Card>);
         const card = screen.getByTestId('card');
-        
+
         assert.ok(card, 'Card should be rendered');
         assert.equal(card.textContent, 'Card Content', 'Card should render its content');
         assert.ok(card.className.includes('rounded-xl border'), 'Should have outline variant styling');
@@ -24,7 +24,7 @@ describe('Card Components', () => {
     it('renders Card with plain variant', () => {
         render(<Card variant="plain" data-testid="card">Card Content</Card>);
         const card = screen.getByTestId('card');
-        
+
         assert.ok(card, 'Card should be rendered');
         assert.ok(!card.className.includes('rounded-xl border'), 'Should not have outline variant styling');
     });
@@ -32,7 +32,7 @@ describe('Card Components', () => {
     it('applies custom className to Card correctly', () => {
         render(<Card className="custom-card-class" data-testid="card">Card Content</Card>);
         const card = screen.getByTestId('card');
-        
+
         assert.ok(card.className.includes('custom-card-class'), 'Should have custom class');
     });
 
@@ -42,11 +42,11 @@ describe('Card Components', () => {
                 <CardHeader data-testid="card-header">Header Content</CardHeader>
             </Card>
         );
-        
+
         const header = screen.getByTestId('card-header');
         assert.ok(header, 'CardHeader should be rendered');
         assert.equal(header.textContent, 'Header Content', 'CardHeader should render its content');
-        assert.ok(header.className.includes('px-6 py-5'), 'Should have outline variant styling');
+        assert.ok(header.className.includes('p-6'), 'Header should have appropriate padding');
     });
 
     it('renders CardHeader with plain variant styling', () => {
@@ -55,14 +55,14 @@ describe('Card Components', () => {
                 <CardHeader data-testid="card-header">Header Content</CardHeader>
             </Card>
         );
-        
+
         const header = screen.getByTestId('card-header');
         assert.ok(header.className.includes('border-b py-5'), 'Should have plain variant styling');
     });
 
     it('renders CardTitle with correct styling', () => {
         render(<CardTitle data-testid="card-title">Card Title</CardTitle>);
-        
+
         const title = screen.getByTestId('card-title');
         assert.ok(title, 'CardTitle should be rendered');
         assert.equal(title.textContent, 'Card Title', 'CardTitle should render its content');
@@ -71,7 +71,7 @@ describe('Card Components', () => {
 
     it('renders CardDescription with correct styling', () => {
         render(<CardDescription data-testid="card-description">Card Description</CardDescription>);
-        
+
         const description = screen.getByTestId('card-description');
         assert.ok(description, 'CardDescription should be rendered');
         assert.equal(description.textContent, 'Card Description', 'CardDescription should render its content');
@@ -84,7 +84,7 @@ describe('Card Components', () => {
                 <CardContent data-testid="card-content">Content</CardContent>
             </Card>
         );
-        
+
         const content = screen.getByTestId('card-content');
         assert.ok(content, 'CardContent should be rendered');
         assert.equal(content.textContent, 'Content', 'CardContent should render its content');
@@ -97,7 +97,7 @@ describe('Card Components', () => {
                 <CardContent data-testid="card-content">Content</CardContent>
             </Card>
         );
-        
+
         const content = screen.getByTestId('card-content');
         assert.ok(content.className.includes('border-b'), 'Should have plain variant styling');
     });
@@ -108,7 +108,7 @@ describe('Card Components', () => {
                 <CardFooter data-testid="card-footer">Footer Content</CardFooter>
             </Card>
         );
-        
+
         const footer = screen.getByTestId('card-footer');
         assert.ok(footer, 'CardFooter should be rendered');
         assert.equal(footer.textContent, 'Footer Content', 'CardFooter should render its content');
@@ -121,7 +121,7 @@ describe('Card Components', () => {
                 <CardFooter data-testid="card-footer">Footer Content</CardFooter>
             </Card>
         );
-        
+
         const footer = screen.getByTestId('card-footer');
         assert.ok(footer.className.includes('py-5'), 'Should have plain variant styling');
     });
@@ -137,7 +137,7 @@ describe('Card Components', () => {
                 <CardFooter data-testid="card-footer">Card Footer</CardFooter>
             </Card>
         );
-        
+
         assert.ok(screen.getByTestId('card'), 'Card should be rendered');
         assert.ok(screen.getByTestId('card-header'), 'CardHeader should be rendered');
         assert.ok(screen.getByTestId('card-title'), 'CardTitle should be rendered');
@@ -145,4 +145,4 @@ describe('Card Components', () => {
         assert.ok(screen.getByTestId('card-content'), 'CardContent should be rendered');
         assert.ok(screen.getByTestId('card-footer'), 'CardFooter should be rendered');
     });
-}); 
+});
