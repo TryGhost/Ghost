@@ -79,6 +79,23 @@ describe('MilestonesService', function () {
             assert(domainEventSpyResult.data.meta.reason === 'initial');
         });
 
+        it('Adds initial JPY ARR milestone without sending email', async function () {
+            repository = new InMemoryMilestoneRepository({DomainEvents});
+            const service = new MilestonesService({
+                repository,
+                milestonesConfig,
+                queries: {
+                    async getARR() { return [{currency: 'jpy', arr: 750}]; },
+                    async hasImportedMembersInPeriod() { return false; },
+                    async getDefaultCurrency() { return 'jpy'; }
+                }
+            });
+            const result = await service.checkMilestones('arr');
+            assert(result.currency === 'jpy');
+            assert(result.value === 0);
+            assert(result.name === 'arr-0-jpy');
+        });
+
         it('Adds first ARR milestones but does not send email if no previous milestones', async function () {
             repository = new InMemoryMilestoneRepository({DomainEvents});
 
