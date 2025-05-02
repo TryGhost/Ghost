@@ -84,6 +84,16 @@ services:
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
       - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
       - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
+
+  tinybird:
+    extends:
+      service: ghost
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: tinybird
+    working_dir: /home/ghost/ghost/web-analytics
+    entrypoint: ["/home/ghost/ghost/web-analytics/entrypoint.sh"]
   mysql:
     image: mysql:8.4.5
     container_name: ghost-mysql
