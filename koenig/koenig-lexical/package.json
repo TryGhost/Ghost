@@ -86,7 +86,7 @@
     "@tryghost/kg-simplemde": "3.0.6",
     "@tryghost/kg-unsplash-selector": "0.3.1",
     "@types/react": "18.3.20",
-    "@types/react-dom": "18.3.6",
+    "@types/react-dom": "18.3.7",
     "@uiw/react-codemirror": "^4.23.0",
     "@vitejs/plugin-react": "4.4.1",
     "@vitest/coverage-c8": "0.33.0",

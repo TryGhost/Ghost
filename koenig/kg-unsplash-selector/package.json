@@ -35,7 +35,7 @@
   "devDependencies": {
     "@playwright/test": "^1.48.2",
     "@types/react": "18.3.20",
-    "@types/react-dom": "18.3.6",
+    "@types/react-dom": "18.3.7",
     "@typescript-eslint/eslint-plugin": "7.18.0",
     "@typescript-eslint/parser": "7.18.0",
     "@vitejs/plugin-react": "4.4.1",
