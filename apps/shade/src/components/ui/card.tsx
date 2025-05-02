@@ -43,7 +43,7 @@ const cardHeaderVariants = cva(
     {
         variants: {
             variant: {
-                outline: 'px-6 py-5',
+                outline: 'p-6',
                 plain: 'border-b py-5'
             }
         },

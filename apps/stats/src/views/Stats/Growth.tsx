@@ -3,7 +3,7 @@ import DateRangeSelect from './components/DateRangeSelect';
 import React, {useMemo, useState} from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
 import {Navigate} from '@tryghost/admin-x-framework';
@@ -205,24 +205,25 @@ const Growth: React.FC = () => {
 
     return (
         <StatsLayout>
-            <ViewHeader>
+            <ViewHeader className='before:hidden'>
                 <H1>Growth</H1>
                 <ViewHeaderActions>
                     <DateRangeSelect />
                 </ViewHeaderActions>
             </ViewHeader>
             <StatsView data={chartData} isLoading={isLoading}>
-                <Card variant='plain'>
+                <Card>
                     <CardContent>
                         <GrowthKPIs chartData={chartData} totals={totals} />
                     </CardContent>
                 </Card>
-                <Card variant='plain'>
+                <Card>
                     <CardHeader>
                         <CardTitle>Top performing posts</CardTitle>
                         <CardDescription>Which posts drove the most growth</CardDescription>
                     </CardHeader>
                     <CardContent>
+                        <Separator/>
                         <Table>
                             <TableHeader>
                                 <TableRow>

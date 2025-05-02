@@ -4,7 +4,7 @@ import DateRangeSelect from './components/DateRangeSelect';
 import React, {useState} from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, LucideIcon, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
 import {TB_VERSION} from '@src/config/stats-config';
@@ -217,13 +217,13 @@ const Web:React.FC = () => {
     });
 
     const isLoading = isConfigLoading || isDataLoading;
-    
+
     // The data structure from the hook is {stats: TopContentData[]}
     const topContent = data?.stats || [];
 
     return (
         <StatsLayout>
-            <ViewHeader>
+            <ViewHeader className='before:hidden'>
                 <H1>Web</H1>
                 <ViewHeaderActions>
                     <AudienceSelect />
@@ -231,17 +231,18 @@ const Web:React.FC = () => {
                 </ViewHeaderActions>
             </ViewHeader>
             <StatsView data={topContent} isLoading={isLoading}>
-                <Card variant='plain'>
+                <Card>
                     <CardContent>
                         <WebKPIs />
                     </CardContent>
                 </Card>
-                <Card variant='plain'>
+                <Card>
                     <CardHeader>
                         <CardTitle>Top content</CardTitle>
                         <CardDescription>Your highest viewed posts or pages {getPeriodText(range)}</CardDescription>
                     </CardHeader>
                     <CardContent>
+                        <Separator />
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -258,12 +259,12 @@ const Web:React.FC = () => {
                                             <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
                                             <TableCell className='text-center'>
                                                 {row.post_id && (
-                                                    <a 
+                                                    <a
                                                         className="text-gray-500 hover:text-gray-900"
                                                         href={`/ghost/#/posts/analytics/${row.post_id}/web`}
-                                                        title="View post analytics" 
+                                                        title="View post analytics"
                                                     >
-                                                        <LucideIcon.BarChart2 className="h-4 w-4" />
+                                                        <LucideIcon.BarChart2 className="size-4" />
                                                     </a>
                                                 )}
                                             </TableCell>
