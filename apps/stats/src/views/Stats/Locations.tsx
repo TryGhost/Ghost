@@ -6,7 +6,7 @@ import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, H1, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, cn, formatNumber, formatQueryDate} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, H1, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, cn, formatNumber, formatQueryDate} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {getCountryFlag, getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
@@ -167,7 +167,7 @@ const Locations:React.FC = () => {
             </ViewHeader>
             <StatsView data={data} isLoading={isLoading}>
                 <Card variant='plain'>
-                    <CardContent className='-mb-5 border-none pt-8'>
+                    <CardContent className='border-none pt-8'>
                         <div className='svg-map-container relative mx-auto max-w-[680px] [&_.svg-map]:stroke-background'>
                             <SVGMap
                                 locationClassName={getLocationClassName}
@@ -197,34 +197,37 @@ const Locations:React.FC = () => {
                         </div>
                     </CardContent>
                 </Card>
-                <Card variant='plain'>
+                <Card>
                     <CardHeader>
                         <CardTitle>Top Locations</CardTitle>
                         <CardDescription>A geographic breakdown of your readers {getPeriodText(range)}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {isLoading ? 'Loading' :
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className='w-[80%]'>Country</TableHead>
-                                        <TableHead className='w-[20%] text-right'>Visitors</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {data?.map((row) => {
-                                        const countryName = getCountryName(`${row.location}`) || 'Unknown';
-                                        return (
-                                            <TableRow key={row.location || 'unknown'}>
-                                                <TableCell className="font-medium">
-                                                    <span title={countryName || 'Unknown'}>{getCountryFlag(`${row.location}`)} {countryName}</span>
-                                                </TableCell>
-                                                <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
-                                </TableBody>
-                            </Table>
+                            <>
+                                <Separator />
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className='w-[80%]'>Country</TableHead>
+                                            <TableHead className='w-[20%] text-right'>Visitors</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {data?.map((row) => {
+                                            const countryName = getCountryName(`${row.location}`) || 'Unknown';
+                                            return (
+                                                <TableRow key={row.location || 'unknown'}>
+                                                    <TableCell className="font-medium">
+                                                        <span title={countryName || 'Unknown'}>{getCountryFlag(`${row.location}`)} {countryName}</span>
+                                                    </TableCell>
+                                                    <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </>
                         }
                     </CardContent>
                 </Card>

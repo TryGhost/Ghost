@@ -1,14 +1,15 @@
 import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import DateRangeSelect from './components/DateRangeSelect';
+import PostMenu from './components/PostMenu';
 import React, {useState} from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, LucideIcon, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
 import {TB_VERSION} from '@src/config/stats-config';
-import {calculateYAxisWidth, getPeriodText, getRangeDates, getYTicks} from '@src/utils/chart-helpers';
+import {calculateYAxisWidth, getPeriodText, getRangeDates, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
@@ -21,6 +22,11 @@ interface TopContentData {
     title?: string;
     post_uuid?: string;
     post_id?: string;
+}
+
+interface KpiDataItem {
+    date: string;
+    [key: string]: string | number;
 }
 
 const KPI_METRICS: Record<string, KpiMetric> = {
@@ -71,10 +77,10 @@ const WebKPIs:React.FC = ({}) => {
 
     const currentMetric = KPI_METRICS[currentTab];
 
-    const chartData = data?.map((item) => {
+    const chartData = sanitizeChartData<KpiDataItem>(data as KpiDataItem[] || [], range, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item) => {
         const value = Number(item[currentMetric.dataKey]);
         return {
-            date: item.date,
+            date: String(item.date),
             value,
             formattedValue: currentMetric.formatter(value),
             label: currentMetric.label
@@ -148,6 +154,28 @@ const WebKPIs:React.FC = ({}) => {
                                 axisLine={false}
                                 dataKey="date"
                                 interval={0}
+                                // tick={({x, y, payload, index, ticks}) => {
+                                //     if (!ticks) {
+                                //         return <g />;
+                                //     }
+                                //     const isFirst = index === 0;
+                                //     const isLast = index === ticks.length - 1;
+                                //     return (
+                                //         <g transform={`translate(${x},${y})`}>
+                                //             <text
+                                //                 className="fill-gray-500"
+                                //                 dy={16}
+                                //                 fill="hsl(var(--foreground))"
+                                //                 fontSize={12}
+                                //                 textAnchor={isFirst ? 'start' : isLast ? 'end' : 'middle'}
+                                //                 x={0}
+                                //                 y={0}
+                                //             >
+                                //                 {formatDisplayDateWithRange(payload.value, range)}
+                                //             </text>
+                                //         </g>
+                                //     );
+                                // }}
                                 tickFormatter={formatDisplayDate}
                                 tickLine={false}
                                 tickMargin={8}
@@ -173,7 +201,7 @@ const WebKPIs:React.FC = ({}) => {
                                 width={calculateYAxisWidth(getYTicks(chartData || []), currentMetric.formatter)}
                             />
                             <ChartTooltip
-                                content={<CustomTooltipContent />}
+                                content={<CustomTooltipContent range={range} />}
                                 cursor={true}
                             />
                             <Recharts.Line
@@ -217,13 +245,13 @@ const Web:React.FC = () => {
     });
 
     const isLoading = isConfigLoading || isDataLoading;
-    
+
     // The data structure from the hook is {stats: TopContentData[]}
     const topContent = data?.stats || [];
 
     return (
         <StatsLayout>
-            <ViewHeader>
+            <ViewHeader className='before:hidden'>
                 <H1>Web</H1>
                 <ViewHeaderActions>
                     <AudienceSelect />
@@ -231,41 +259,39 @@ const Web:React.FC = () => {
                 </ViewHeaderActions>
             </ViewHeader>
             <StatsView data={topContent} isLoading={isLoading}>
-                <Card variant='plain'>
+                <Card>
                     <CardContent>
                         <WebKPIs />
                     </CardContent>
                 </Card>
-                <Card variant='plain'>
+                <Card>
                     <CardHeader>
                         <CardTitle>Top content</CardTitle>
                         <CardDescription>Your highest viewed posts or pages {getPeriodText(range)}</CardDescription>
                     </CardHeader>
                     <CardContent>
+                        <Separator />
                         <Table>
                             <TableHeader>
                                 <TableRow>
                                     <TableHead className='w-[75%]'>Content</TableHead>
                                     <TableHead className='w-[20%] text-right'>Visitors</TableHead>
-                                    <TableHead className='w-[5%]'></TableHead>
+                                    <TableHead className='w-[32px]'></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {topContent?.map((row: TopContentData) => {
                                     return (
                                         <TableRow key={row.pathname}>
-                                            <TableCell className="font-medium"><a className='-mx-2 inline-block px-2 hover:underline' href={`${row.pathname}`} rel="noreferrer" target='_blank'>{row.title || row.pathname}</a></TableCell>
+                                            <TableCell className="font-medium">
+                                                <a className='group/link -mx-2 inline-flex min-h-6 items-center gap-1 px-2 hover:underline' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
+                                                    {row.title || row.pathname}
+                                                    <LucideIcon.SquareArrowOutUpRight className='opacity-0 group-hover/link:opacity-100' size={12} strokeWidth={2.5} />
+                                                </a>
+                                            </TableCell>
                                             <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
-                                            <TableCell className='text-center'>
-                                                {row.post_id && (
-                                                    <a 
-                                                        className="text-gray-500 hover:text-gray-900"
-                                                        href={`/ghost/#/posts/analytics/${row.post_id}/web`}
-                                                        title="View post analytics" 
-                                                    >
-                                                        <LucideIcon.BarChart2 className="h-4 w-4" />
-                                                    </a>
-                                                )}
+                                            <TableCell className='text-center text-gray-700 hover:text-black'>
+                                                <PostMenu pathName={row.pathname} postId={row.post_id} />
                                             </TableCell>
                                         </TableRow>
                                     );

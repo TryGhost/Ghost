@@ -3,7 +3,7 @@ import DateRangeSelect from './components/DateRangeSelect';
 import React from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber, formatQueryDate} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, H1, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber, formatQueryDate} from '@tryghost/shade';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
 import {getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
@@ -91,7 +91,7 @@ const Sources:React.FC = () => {
 
     return (
         <StatsLayout>
-            <ViewHeader>
+            <ViewHeader className='before:hidden'>
                 <H1>Sources</H1>
                 <ViewHeaderActions>
                     <AudienceSelect />
@@ -99,14 +99,14 @@ const Sources:React.FC = () => {
                 </ViewHeaderActions>
             </ViewHeader>
             <StatsView data={data} isLoading={isLoading}>
-                <Card className='-mb-5' variant='plain'>
+                <Card className='-mb-5'>
                     <CardHeader className='border-none'>
                         <CardTitle>Top Sources</CardTitle>
                         <CardDescription>How readers found your site {getPeriodText(range)}</CardDescription>
                     </CardHeader>
-                    <CardContent className='border-none text-gray-500 [&_.recharts-pie-label-line]:stroke-gray-300'>
+                    <CardContent className='border-none [&_.recharts-pie-label-line]:stroke-gray-300'>
                         <ChartContainer
-                            className="mx-auto h-[16vw] max-h-[320px] w-full"
+                            className="mx-auto h-[16vw] max-h-[320px] w-full text-gray-500"
                             config={chartConfig}
                         >
                             <Recharts.PieChart>
@@ -139,41 +139,40 @@ const Sources:React.FC = () => {
                                     strokeWidth={1} />
                             </Recharts.PieChart>
                         </ChartContainer>
-                    </CardContent>
-                </Card>
-                <Card variant='plain'>
-                    <CardContent>
                         {isLoading ? 'Loading' :
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className='w-[80%]'>Source</TableHead>
-                                        <TableHead className='text-right'>Visitors</TableHead>
-                                        <TableHead className='w-5 text-right'></TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {data?.map((row, key) => {
-                                        return (
-                                            <TableRow key={row.source || 'direct'}>
-                                                <TableCell className="font-medium">
-                                                    {row.source ?
-                                                        <a className='group flex items-center gap-1' href={`https://${row.source}`} rel="noreferrer" target="_blank">
-                                                            <SourceRow className='group-hover:underline' source={row.source} />
-                                                        </a>
-                                                        :
-                                                        <span className='flex items-center gap-1'>
-                                                            <SourceRow source={row.source} />
-                                                        </span>
-                                                    }
-                                                </TableCell>
-                                                <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
-                                                <TableCell className='text-right'>{key < 5 && <span className='inline-block size-[10px] rounded-[2px]' style={{backgroundColor: colors[key]}}></span>}</TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
-                                </TableBody>
-                            </Table>
+                            <>
+                                <Separator className='mt-10' />
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className='w-[80%]'>Source</TableHead>
+                                            <TableHead className='text-right'>Visitors</TableHead>
+                                            <TableHead className='w-5 text-right'></TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {data?.map((row, key) => {
+                                            return (
+                                                <TableRow key={row.source || 'direct'}>
+                                                    <TableCell className="font-medium">
+                                                        {row.source ?
+                                                            <a className='group flex items-center gap-1' href={`https://${row.source}`} rel="noreferrer" target="_blank">
+                                                                <SourceRow className='group-hover:underline' source={row.source} />
+                                                            </a>
+                                                            :
+                                                            <span className='flex items-center gap-1'>
+                                                                <SourceRow source={row.source} />
+                                                            </span>
+                                                        }
+                                                    </TableCell>
+                                                    <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
+                                                    <TableCell className='text-right'>{key < 5 && <span className='inline-block size-[10px] rounded-[2px]' style={{backgroundColor: colors[key]}}></span>}</TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </>
                         }
                     </CardContent>
                 </Card>

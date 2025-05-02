@@ -322,7 +322,8 @@ module.exports = {
                 max: 'max-content',
                 fit: 'fit-content',
                 prose: '65ch',
-                page: '148rem'
+                page: '148rem',
+                pageminsidebar: '116rem'
             },
             borderRadius: {
                 sm: 'calc(var(--radius) - 4px)',
