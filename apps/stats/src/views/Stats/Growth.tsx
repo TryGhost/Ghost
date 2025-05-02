@@ -325,7 +325,7 @@ const Growth: React.FC = () => {
                                         </TableCell>
                                         <TableCell className={`text-right font-mono text-sm ${post.mrr === 0 && 'text-gray-700'}`}>
                                             {/* TODO: Update to use actual currency */}
-                                            {(post.mrr > 0 && '+')}${post.mrr}
+                                            {(post.mrr > 0 && '+')}${(post.mrr / 100).toFixed(0)}
                                         </TableCell>
                                         <TableCell className='text-right text-gray-700 hover:text-black'>
                                             <PostMenu pathName='' postId={post.post_id} />
