@@ -93,7 +93,8 @@ services:
       dockerfile: ./.docker/Dockerfile
       target: tinybird
     working_dir: /home/ghost/ghost/web-analytics
-    entrypoint: ["/home/ghost/ghost/web-analytics/entrypoint.sh"]
+    profiles: [ tinybird]
+    tty: true
   mysql:
     image: mysql:8.4.5
     container_name: ghost-mysql
