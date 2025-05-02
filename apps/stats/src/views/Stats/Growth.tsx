@@ -9,7 +9,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, 
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
 import {Navigate} from '@tryghost/admin-x-framework';
-import {calculateYAxisWidth, getYRange, getYTicks} from '@src/utils/chart-helpers';
+import {calculateYAxisWidth, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
@@ -47,7 +47,7 @@ const GrowthKPIs: React.FC<{
     totals: Totals;
 }> = ({chartData: allChartData, totals}) => {
     const [currentTab, setCurrentTab] = useState('total-members');
-    const {settings} = useGlobalData();
+    const {settings, range} = useGlobalData();
     const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
 
     const {totalMembers, freeMembers, paidMembers, percentChanges, directions} = totals;
@@ -58,35 +58,73 @@ const GrowthKPIs: React.FC<{
             return [];
         }
 
+        // First sanitize the data based on the selected field
+        let sanitizedData: ChartDataItem[] = [];
+        let fieldName: keyof ChartDataItem = 'value';
+
         switch (currentTab) {
         case 'free-members':
-            return allChartData.map(item => ({
+            fieldName = 'free';
+            break;
+        case 'paid-members':
+            fieldName = 'paid';
+            break;
+        case 'mrr': {
+            // TODO: replace the hard-coded 958 once real MRR is available
+            const avgMrrPerMember = paidMembers > 0 ? 958 / paidMembers : 0;
+            const mrrData = allChartData.map(item => ({
+                ...item,
+                value: item.paid * avgMrrPerMember
+            }));
+            sanitizedData = sanitizeChartData(mrrData, range, 'value', 'exact');
+            break;
+        }
+        default:
+            fieldName = 'value';
+        }
+
+        if (currentTab !== 'mrr') {
+            sanitizedData = sanitizeChartData(allChartData, range, fieldName, 'exact');
+        }
+
+        // Then map the sanitized data to the final format
+        let processedData: ChartDataItem[] = [];
+
+        switch (currentTab) {
+        case 'free-members':
+            processedData = sanitizedData.map(item => ({
                 ...item,
                 value: item.free,
                 formattedValue: formatNumber(item.free),
                 label: 'Free members'
             }));
+            break;
         case 'paid-members':
-            return allChartData.map(item => ({
+            processedData = sanitizedData.map(item => ({
                 ...item,
                 value: item.paid,
                 formattedValue: formatNumber(item.paid),
                 label: 'Paid members'
             }));
-        case 'mrr': {
-            // TODO: replace the hard-coded 958 once real MRR is available
-            const avgMrrPerMember = paidMembers > 0 ? 958 / paidMembers : 0;
-            return allChartData.map(item => ({
+            break;
+        case 'mrr':
+            processedData = sanitizedData.map(item => ({
                 ...item,
-                value: item.paid * avgMrrPerMember,
-                formattedValue: `$${(item.paid * avgMrrPerMember).toFixed(0)}`,
+                formattedValue: `$${item.value.toFixed(0)}`,
                 label: 'MRR'
             }));
-        }
+            break;
         default:
-            return allChartData;
+            processedData = sanitizedData.map(item => ({
+                ...item,
+                value: item.free + item.paid + item.comped,
+                formattedValue: formatNumber(item.free + item.paid + item.comped),
+                label: 'Total members'
+            }));
         }
-    }, [currentTab, allChartData, paidMembers]);
+
+        return processedData;
+    }, [currentTab, allChartData, paidMembers, range]);
 
     if (!labs.trafficAnalyticsAlpha) {
         return <Navigate to='/' />;

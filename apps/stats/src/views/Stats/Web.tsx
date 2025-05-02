@@ -9,7 +9,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, 
 import {KpiMetric} from '@src/types/kpi';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
 import {TB_VERSION} from '@src/config/stats-config';
-import {calculateYAxisWidth, getPeriodText, getRangeDates, getYTicks} from '@src/utils/chart-helpers';
+import {calculateYAxisWidth, getPeriodText, getRangeDates, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
@@ -22,6 +22,11 @@ interface TopContentData {
     title?: string;
     post_uuid?: string;
     post_id?: string;
+}
+
+interface KpiDataItem {
+    date: string;
+    [key: string]: string | number;
 }
 
 const KPI_METRICS: Record<string, KpiMetric> = {
@@ -72,10 +77,10 @@ const WebKPIs:React.FC = ({}) => {
 
     const currentMetric = KPI_METRICS[currentTab];
 
-    const chartData = data?.map((item) => {
+    const chartData = sanitizeChartData<KpiDataItem>(data as KpiDataItem[] || [], range, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item) => {
         const value = Number(item[currentMetric.dataKey]);
         return {
-            date: item.date,
+            date: String(item.date),
             value,
             formattedValue: currentMetric.formatter(value),
             label: currentMetric.label
