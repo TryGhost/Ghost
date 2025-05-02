@@ -9,7 +9,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, 
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
 import {Navigate} from '@tryghost/admin-x-framework';
-import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
+import {calculateYAxisWidth, getYRange, getYTicks} from '@src/utils/chart-helpers';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
@@ -161,7 +161,7 @@ const GrowthKPIs: React.FC<{
                         />
                         <Recharts.YAxis
                             axisLine={false}
-                            domain={['dataMin', 'auto']}
+                            domain={[getYRange(chartData).min, getYRange(chartData).max]}
                             tickFormatter={(value) => {
                                 switch (currentTab) {
                                 case 'total-members':

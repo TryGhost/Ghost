@@ -19,7 +19,7 @@ const PostMenu:React.FC<PostMenuProps> = ({
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild>
                 <Button className='h-6 px-2 hover:bg-gray-200' variant='ghost'>
                     <LucideIcon.Ellipsis />
                 </Button>
