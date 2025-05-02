@@ -168,7 +168,7 @@ const Locations:React.FC = () => {
             <StatsView data={data} isLoading={isLoading}>
                 <Card variant='plain'>
                     <CardContent className='border-none pt-8'>
-                        <div className='svg-map-container [&_.svg-map]:stroke-background relative mx-auto max-w-[680px]'>
+                        <div className='svg-map-container relative mx-auto max-w-[680px] [&_.svg-map]:stroke-background'>
                             <SVGMap
                                 locationClassName={getLocationClassName}
                                 map={World}
@@ -177,7 +177,7 @@ const Locations:React.FC = () => {
                             />
                             {tooltipData && (
                                 <div
-                                    className="bg-background text-foreground pointer-events-none fixed z-50 min-w-[120px] rounded-lg border px-3 py-2 text-sm shadow-lg transition-all duration-150 ease-in-out"
+                                    className="pointer-events-none fixed z-50 min-w-[120px] rounded-lg border bg-background px-3 py-2 text-sm text-foreground shadow-lg transition-all duration-150 ease-in-out"
                                     style={{
                                         left: tooltipData.x + 10,
                                         top: tooltipData.y + 10,
@@ -189,7 +189,7 @@ const Locations:React.FC = () => {
                                         <span className="font-medium">{tooltipData.countryName}</span>
                                     </div>
                                     <div className='flex grow items-center justify-between gap-3'>
-                                        <div className="text-muted-foreground text-sm">Visitors</div>
+                                        <div className="text-sm text-muted-foreground">Visitors</div>
                                         <div className="font-mono font-medium">{formatNumber(tooltipData.visits)}</div>
                                     </div>
                                 </div>

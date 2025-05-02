@@ -5,7 +5,7 @@ const MainLayout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, .
     return (
         <div className='h-screen w-full overflow-y-scroll'>
             <div className='relative grid h-screen grid-cols-[auto_288px] xl:grid-cols-[auto_320px]' {...props}>
-                <div className='max-w-pageminsidebar mx-auto w-full'>
+                <div className='mx-auto w-full max-w-pageminsidebar'>
                     {children}
                 </div>
                 <Sidebar />
