@@ -40,9 +40,6 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value, diffDirection, d
                             {diffDirection === 'down' &&
                                 <LucideIcon.TrendingDown className='!size-[14px]' size={14} strokeWidth={2} />
                             }
-                            {diffDirection === 'same' &&
-                                <LucideIcon.MoveRight className='!size-[14px]' size={14} strokeWidth={2} />
-                            }
                             <span className='font-medium'>{diffValue}</span>
                         </div>
                     </>

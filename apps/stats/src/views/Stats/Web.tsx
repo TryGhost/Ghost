@@ -4,13 +4,14 @@ import DateRangeSelect from './components/DateRangeSelect';
 import React, {useState} from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, H1, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
 import {TB_VERSION} from '@src/config/stats-config';
 import {calculateYAxisWidth, getPeriodText, getRangeDates, getYTicks} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useQuery} from '@tinybirdco/charts';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
@@ -196,6 +197,7 @@ const Web:React.FC = () => {
     const {isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
+    const navigate = useNavigate();
 
     // Include essential query parameters that change frequently
     // Server will use defaults for other values
@@ -255,10 +257,15 @@ const Web:React.FC = () => {
                                 {topContent?.map((row: TopContentData) => {
                                     return (
                                         <TableRow key={row.pathname}>
-                                            <TableCell className="font-medium"><a className='-mx-2 inline-block px-2 hover:underline' href={`${row.pathname}`} rel="noreferrer" target='_blank'>{row.title || row.pathname}</a></TableCell>
+                                            <TableCell className="font-medium">
+                                                <a className='group/link -mx-2 inline-flex min-h-6 items-center gap-1 px-2 hover:underline' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
+                                                    {row.title || row.pathname}
+                                                    <LucideIcon.SquareArrowOutUpRight className='opacity-0 group-hover/link:opacity-100' size={12} strokeWidth={2.5} />
+                                                </a>
+                                            </TableCell>
                                             <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
                                             <TableCell className='text-center'>
-                                                {row.post_id && (
+                                                {/* {row.post_id && (
                                                     <a
                                                         className="text-gray-500 hover:text-gray-900"
                                                         href={`/ghost/#/posts/analytics/${row.post_id}/web`}
@@ -266,7 +273,30 @@ const Web:React.FC = () => {
                                                     >
                                                         <LucideIcon.BarChart2 className="size-4" />
                                                     </a>
-                                                )}
+                                                )} */}
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger>
+                                                        <Button className='h-6 px-2 hover:bg-gray-200' variant='ghost'>
+                                                            <LucideIcon.Ellipsis />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align='end'>
+                                                        {row.post_id && (
+                                                            <DropdownMenuItem onClick={() => {
+                                                                navigate(`/posts/analytics/${row.post_id}`, {crossApp: true});
+                                                            }}>
+                                                                <LucideIcon.BarChart2 />
+                                                            Post analytics
+                                                            </DropdownMenuItem>
+                                                        )}
+                                                        <DropdownMenuItem asChild>
+                                                            <a href={`${row.pathname}`} rel="noreferrer" target='_blank'>
+                                                                <LucideIcon.SquareArrowOutUpRight />
+                                                                Open in browser
+                                                            </a>
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </TableCell>
                                         </TableRow>
                                     );
