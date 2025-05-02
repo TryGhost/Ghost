@@ -1,4 +1,4 @@
-import {Meta, createQuery} from '../utils/api/hooks';
+import {Meta, createQuery, createQueryWithId} from '../utils/api/hooks';
 
 // Types
 
@@ -48,12 +48,24 @@ export type TopPostsStatsResponseType = {
     meta: Meta;
 };
 
+export type PostReferrerStatItem = {
+    source: string;
+    free_members: number;
+    paid_members: number;
+    mrr: number;
+};
+
+export type PostReferrersResponseType = {
+    stats: PostReferrerStatItem[];
+    meta: Meta;
+};
+
 // Requests
 
 const dataType = 'TopContentResponseType';
 const memberCountHistoryDataType = 'MemberCountHistoryResponseType';
 const topPostsStatsDataType = 'TopPostsStatsResponseType';
-
+const postReferrersDataType = 'PostReferrersResponseType';
 export const useTopContent = createQuery<TopContentResponseType>({
     dataType,
     path: '/stats/top-content/'
@@ -67,4 +79,9 @@ export const useMemberCountHistory = createQuery<MemberCountHistoryResponseType>
 export const useTopPostsStats = createQuery<TopPostsStatsResponseType>({
     dataType: topPostsStatsDataType,
     path: '/stats/top-posts/'
+});
+
+export const usePostReferrers = createQueryWithId<PostReferrersResponseType>({
+    dataType: postReferrersDataType,
+    path: id => `/stats/referrers/posts/${id}/alpha`
 });
