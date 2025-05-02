@@ -5,11 +5,11 @@ import PostMenu from './components/PostMenu';
 import React, {useState} from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
 import {TB_VERSION} from '@src/config/stats-config';
-import {calculateYAxisWidth, getPeriodText, getRangeDates, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
+import {calculateYAxisWidth, formatDisplayDateWithRange, getPeriodText, getRangeDates, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
@@ -154,7 +154,29 @@ const WebKPIs:React.FC = ({}) => {
                                 axisLine={false}
                                 dataKey="date"
                                 interval={0}
-                                tickFormatter={formatDisplayDate}
+                                // tick={({x, y, payload, index, ticks}) => {
+                                //     if (!ticks) {
+                                //         return <g />;
+                                //     }
+                                //     const isFirst = index === 0;
+                                //     const isLast = index === ticks.length - 1;
+                                //     return (
+                                //         <g transform={`translate(${x},${y})`}>
+                                //             <text
+                                //                 className="fill-gray-500"
+                                //                 dy={16}
+                                //                 fill="hsl(var(--foreground))"
+                                //                 fontSize={12}
+                                //                 textAnchor={isFirst ? 'start' : isLast ? 'end' : 'middle'}
+                                //                 x={0}
+                                //                 y={0}
+                                //             >
+                                //                 {formatDisplayDateWithRange(payload.value, range)}
+                                //             </text>
+                                //         </g>
+                                //     );
+                                // }}
+                                tickFormatter={date => formatDisplayDateWithRange(date, range)}
                                 tickLine={false}
                                 tickMargin={8}
                                 ticks={chartData && chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}
@@ -179,7 +201,7 @@ const WebKPIs:React.FC = ({}) => {
                                 width={calculateYAxisWidth(getYTicks(chartData || []), currentMetric.formatter)}
                             />
                             <ChartTooltip
-                                content={<CustomTooltipContent />}
+                                content={<CustomTooltipContent range={range} />}
                                 cursor={true}
                             />
                             <Recharts.Line

@@ -5,11 +5,11 @@ import React, {useMemo, useState} from 'react';
 import SortButton from './components/SortButton';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatNumber} from '@tryghost/shade';
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
 import {Navigate} from '@tryghost/admin-x-framework';
-import {calculateYAxisWidth, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
+import {calculateYAxisWidth, formatDisplayDateWithRange, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
@@ -192,7 +192,29 @@ const GrowthKPIs: React.FC<{
                             axisLine={false}
                             dataKey="date"
                             interval={0}
-                            tickFormatter={formatDisplayDate}
+                            // tick={({x, y, payload, index, ticks}) => {
+                            //     if (!ticks) {
+                            //         return <g />;
+                            //     }
+                            //     const isFirst = index === 0;
+                            //     const isLast = index === ticks.length - 1;
+                            //     return (
+                            //         <g transform={`translate(${x},${y})`}>
+                            //             <text
+                            //                 className="fill-gray-500"
+                            //                 dy={16}
+                            //                 fill="hsl(var(--foreground))"
+                            //                 fontSize={12}
+                            //                 textAnchor={isFirst ? 'start' : isLast ? 'end' : 'middle'}
+                            //                 x={0}
+                            //                 y={0}
+                            //             >
+                            //                 {formatDisplayDateWithRange(payload.value, range)}
+                            //             </text>
+                            //         </g>
+                            //     );
+                            // }}
+                            tickFormatter={date => formatDisplayDateWithRange(date, range)}
                             tickLine={false}
                             tickMargin={8}
                             ticks={chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}
@@ -217,7 +239,7 @@ const GrowthKPIs: React.FC<{
                             width={calculateYAxisWidth(getYTicks(chartData), formatNumber)}
                         />
                         <ChartTooltip
-                            content={<CustomTooltipContent />}
+                            content={<CustomTooltipContent range={range} />}
                             cursor={true}
                         />
                         <Recharts.Line
