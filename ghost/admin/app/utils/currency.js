@@ -53,6 +53,7 @@ export const currencies = [
     {isoCode: 'INR', name: 'Indian rupee'},
     {isoCode: 'ISK', name: 'Icelandic króna'},
     {isoCode: 'JMD', name: 'Jamaican dollar'},
+    {isoCode: 'JPY', name: 'Japanese yen'},
     {isoCode: 'KES', name: 'Kenyan shilling'},
     {isoCode: 'KGS', name: 'Kyrgyzstani som'},
     {isoCode: 'KHR', name: 'Cambodian riel'},
@@ -127,8 +128,17 @@ export function getSymbol(currency) {
     return Intl.NumberFormat('en', {currency, style: 'currency'}).format(0).replace(/[\d\s.]/g, '');
 }
 
-// We currently only support decimal currencies
-export function getNonDecimal(amount/*, currency*/) {
+// Zero-decimal currencies don't use minor units
+const zeroDecimalCurrencies = ['BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF'];
+
+export function isZeroDecimalCurrency(currency) {
+    return zeroDecimalCurrencies.includes(currency?.toUpperCase());
+}
+
+export function getNonDecimal(amount, currency) {
+    if (currency && isZeroDecimalCurrency(currency)) {
+        return amount;
+    }
     return amount / 100;
 }
 

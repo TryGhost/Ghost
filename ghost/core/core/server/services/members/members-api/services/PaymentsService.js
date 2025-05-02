@@ -4,6 +4,18 @@ const {TierCreatedEvent, TierPriceChangeEvent, TierNameChangeEvent} = require('@
 const OfferCreatedEvent = require('@tryghost/members-offers').events.OfferCreatedEvent;
 const {BadRequestError} = require('@tryghost/errors');
 
+// Zero-decimal currencies don't use minor units
+const zeroDecimalCurrencies = ['BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF'];
+
+/**
+ * Check if a currency is a zero-decimal currency
+ * @param {string} currency - Currency code
+ * @returns {boolean}
+ */
+function isZeroDecimalCurrency(currency) {
+    return zeroDecimalCurrencies.includes(currency?.toUpperCase());
+}
+
 class PaymentsService {
     /**
      * @param {object} deps
@@ -403,7 +415,14 @@ class PaymentsService {
     async getPriceForTierCadence(tier, cadence) {
         const product = await this.getProductForTier(tier);
         const currency = tier.currency.toLowerCase();
-        const amount = tier.getPrice(cadence);
+        
+        // Get the price amount from the tier
+        const tierAmount = tier.getPrice(cadence);
+        
+        // For database query, we need to use the amount as stored in the database
+        // This should match what we store in createPriceForTierCadence
+        const amount = tierAmount;
+        
         const rows = await this.StripePriceModel.where({
             stripe_product_id: product.id,
             currency,
@@ -416,7 +435,18 @@ class PaymentsService {
         for (const row of rows) {
             try {
                 const price = await this.stripeAPIService.getPrice(row.stripe_price_id);
-                if (price.active && price.currency.toLowerCase() === currency && price.unit_amount === amount && price.recurring?.interval === cadence) {
+                
+                // For comparison with Stripe's unit_amount, we need to handle zero-decimal currencies
+                // For zero-decimal currencies, Stripe's unit_amount will be the same as our tierAmount
+                // For other currencies, Stripe's unit_amount will be 100x our tierAmount
+                const expectedUnitAmount = isZeroDecimalCurrency(tier.currency)
+                    ? tierAmount / 100
+                    : tierAmount;
+                
+                if (price.active &&
+                    price.currency.toLowerCase() === currency &&
+                    price.unit_amount === expectedUnitAmount &&
+                    price.recurring?.interval === cadence) {
                     return {
                         id: price.id
                     };
@@ -446,11 +476,20 @@ class PaymentsService {
      */
     async createPriceForTierCadence(tier, cadence) {
         const product = await this.getProductForTier(tier);
+        // Get the price amount
+        const priceAmount = tier.getPrice(cadence);
+        
+        // For zero-decimal currencies like JPY, we don't need to multiply by 100
+        // For other currencies, Stripe expects the amount in cents (smallest currency unit)
+        const amount = isZeroDecimalCurrency(tier.currency)
+            ? priceAmount / 100
+            : priceAmount;
+            
         const price = await this.stripeAPIService.createPrice({
             product: product.id,
             interval: cadence,
             currency: tier.currency,
-            amount: tier.getPrice(cadence),
+            amount: amount,
             nickname: cadence === 'month' ? 'Monthly' : 'Yearly',
             type: 'recurring',
             active: true
