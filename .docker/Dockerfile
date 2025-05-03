@@ -7,7 +7,7 @@ FROM node:$NODE_VERSION-alpine AS base
 RUN apk add --no-cache python3 make g++ linux-headers git
 
 # --------------------
-# Development
+# Development Base
 # --------------------
 FROM base AS development-base
 WORKDIR /home/ghost
