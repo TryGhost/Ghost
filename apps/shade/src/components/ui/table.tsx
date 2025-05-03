@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import {cn} from '@/lib/utils';
+import {Button} from './button';
 
 const Table = React.forwardRef<
     HTMLTableElement,
@@ -81,6 +82,21 @@ const TableHead = React.forwardRef<
 ));
 TableHead.displayName = 'TableHead';
 
+type TableHeadButtonProps = React.ComponentProps<typeof Button>;
+
+const TableHeadButton: React.FC<TableHeadButtonProps> = ({className, children, ...props}) => {
+    const buttonClassName = cn(
+        'text-sm text-gray-700 hover:bg-transparent px-0 [&_svg]:size-4 gap-1',
+        className
+    );
+    return (
+        <Button className={buttonClassName} size='sm' variant='ghost' {...props}>
+            {children}
+        </Button>
+    );
+};
+TableHeadButton.displayName = 'TableHeadButton';
+
 const TableCell = React.forwardRef<
     HTMLTableCellElement,
     React.TdHTMLAttributes<HTMLTableCellElement>
@@ -114,6 +130,7 @@ export {
     TableBody,
     TableFooter,
     TableHead,
+    TableHeadButton,
     TableRow,
     TableCell,
     TableCaption

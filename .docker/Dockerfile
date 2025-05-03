@@ -26,8 +26,6 @@ RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/publ
     apt install -y \
     git \
     stripe \
-    parallel \
-    python3-pip \
     procps && \
     rm -rf /var/lib/apt/lists/* && \
     apt clean
@@ -74,26 +72,21 @@ COPY ghost/api-framework/package.json ghost/api-framework/package.json
 COPY ghost/constants/package.json ghost/constants/package.json
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/custom-fonts/package.json ghost/custom-fonts/package.json
-COPY ghost/custom-theme-settings-service/package.json ghost/custom-theme-settings-service/package.json
 COPY ghost/domain-events/package.json ghost/domain-events/package.json
 COPY ghost/donations/package.json ghost/donations/package.json
 COPY ghost/email-addresses/package.json ghost/email-addresses/package.json
 COPY ghost/email-service/package.json ghost/email-service/package.json
-COPY ghost/email-suppression-list/package.json ghost/email-suppression-list/package.json
 COPY ghost/html-to-plaintext/package.json ghost/html-to-plaintext/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
 COPY ghost/job-manager/package.json ghost/job-manager/package.json
 COPY ghost/link-replacer/package.json ghost/link-replacer/package.json
-COPY ghost/magic-link/package.json ghost/magic-link/package.json
 COPY ghost/member-attribution/package.json ghost/member-attribution/package.json
-COPY ghost/member-events/package.json ghost/member-events/package.json
 COPY ghost/members-csv/package.json ghost/members-csv/package.json
 COPY ghost/mw-error-handler/package.json ghost/mw-error-handler/package.json
 COPY ghost/mw-vhost/package.json ghost/mw-vhost/package.json
 COPY ghost/offers/package.json ghost/offers/package.json
 COPY ghost/post-events/package.json ghost/post-events/package.json
 COPY ghost/post-revisions/package.json ghost/post-revisions/package.json
-COPY ghost/posts-service/package.json ghost/posts-service/package.json
 COPY ghost/prometheus-metrics/package.json ghost/prometheus-metrics/package.json
 COPY ghost/security/package.json ghost/security/package.json
 COPY ghost/tiers/package.json ghost/tiers/package.json
@@ -102,18 +95,11 @@ COPY ghost/webmentions/package.json ghost/webmentions/package.json
 ## Install dependencies
 RUN yarn install --frozen-lockfile --prefer-offline
 
-## Install playwright w/ dependencies
-RUN npx -y playwright install --with-deps
-
 ## Copy the rest of the code
 COPY . .
 
 ## Build typescript packages
 RUN yarn nx run-many -t build:ts
-
-# Install the tinybird CLI
-WORKDIR /home/ghost/ghost/web-analytics
-RUN pip install -r requirements.txt
 
 WORKDIR $WORKDIR
 
@@ -131,3 +117,21 @@ EXPOSE 7174
 
 ## Start the dev server
 CMD ["yarn", "dev"]
+
+FROM development AS tinybird
+
+RUN apt update && apt install -y \
+    parallel \
+    python3-pip
+
+# Install the tinybird CLI
+WORKDIR /home/ghost/ghost/web-analytics
+RUN pip install -r requirements.txt
+
+FROM development AS browser-tests
+
+## Install playwright w/ dependencies
+RUN npx -y playwright install --with-deps
+
+## Run the browser tests
+CMD ["yarn", "test:browser"]

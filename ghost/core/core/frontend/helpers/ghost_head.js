@@ -169,15 +169,12 @@ function getTinybirdTrackerScript(dataRoot) {
     const tbParams = _.map({
         site_uuid: config.get('tinybird:tracker:id'),
         post_uuid: dataRoot.post?.uuid,
+        post_type: dataRoot.context.includes('post') ? 'post' : dataRoot.context.includes('page') ? 'page' : null,
         member_uuid: dataRoot.member?.uuid,
         member_status: dataRoot.member?.status
     }, (value, key) => `tb_${key}="${value}"`).join(' ');
 
     return `<script defer src="${src}" data-stringify-payload="false" ${datasource ? `data-datasource="${datasource}"` : ''} data-storage="localStorage" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
-}
-
-function getHCaptchaScript() {
-    return `<script defer async src="https://js.hcaptcha.com/1/api.js"></script>`;
 }
 
 /**
@@ -366,10 +363,6 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
 
             if (labs.isSet('trafficAnalytics') && config.get('tinybird') && config.get('tinybird:tracker')) {
                 head.push(getTinybirdTrackerScript(dataRoot));
-            }
-
-            if (labs.isSet('captcha') && config.get('captcha:enabled')) {
-                head.push(getHCaptchaScript());
             }
 
             // Check if if the request is for a site preview, in which case we **always** use the custom font values

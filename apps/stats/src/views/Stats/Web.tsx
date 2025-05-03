@@ -1,16 +1,33 @@
 import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import DateRangeSelect from './components/DateRangeSelect';
+import PostMenu from './components/PostMenu';
 import React, {useState} from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
-import {calculateYAxisWidth, getPeriodText, getRangeDates, getYTicks} from '@src/utils/chart-helpers';
+import {TB_VERSION} from '@src/config/stats-config';
+import {calculateYAxisWidth, getPeriodText, getRangeDates, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
+import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
+
+// Define types for our page data
+interface TopContentData {
+    pathname: string;
+    visits: number;
+    title?: string;
+    post_uuid?: string;
+    post_id?: string;
+}
+
+interface KpiDataItem {
+    date: string;
+    [key: string]: string | number;
+}
 
 const KPI_METRICS: Record<string, KpiMetric> = {
     visits: {
@@ -46,7 +63,8 @@ const WebKPIs:React.FC = ({}) => {
         date_from: formatQueryDate(startDate),
         date_to: formatQueryDate(endDate),
         timezone: timezone,
-        member_status: getAudienceQueryParam(audience)
+        member_status: getAudienceQueryParam(audience),
+        tb_version: TB_VERSION
     };
 
     const {data, loading} = useQuery({
@@ -59,10 +77,10 @@ const WebKPIs:React.FC = ({}) => {
 
     const currentMetric = KPI_METRICS[currentTab];
 
-    const chartData = data?.map((item) => {
+    const chartData = sanitizeChartData<KpiDataItem>(data as KpiDataItem[] || [], range, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item) => {
         const value = Number(item[currentMetric.dataKey]);
         return {
-            date: item.date,
+            date: String(item.date),
             value,
             formattedValue: currentMetric.formatter(value),
             label: currentMetric.label
@@ -136,6 +154,28 @@ const WebKPIs:React.FC = ({}) => {
                                 axisLine={false}
                                 dataKey="date"
                                 interval={0}
+                                // tick={({x, y, payload, index, ticks}) => {
+                                //     if (!ticks) {
+                                //         return <g />;
+                                //     }
+                                //     const isFirst = index === 0;
+                                //     const isLast = index === ticks.length - 1;
+                                //     return (
+                                //         <g transform={`translate(${x},${y})`}>
+                                //             <text
+                                //                 className="fill-gray-500"
+                                //                 dy={16}
+                                //                 fill="hsl(var(--foreground))"
+                                //                 fontSize={12}
+                                //                 textAnchor={isFirst ? 'start' : isLast ? 'end' : 'middle'}
+                                //                 x={0}
+                                //                 y={0}
+                                //             >
+                                //                 {formatDisplayDateWithRange(payload.value, range)}
+                                //             </text>
+                                //         </g>
+                                //     );
+                                // }}
                                 tickFormatter={formatDisplayDate}
                                 tickLine={false}
                                 tickMargin={8}
@@ -161,7 +201,7 @@ const WebKPIs:React.FC = ({}) => {
                                 width={calculateYAxisWidth(getYTicks(chartData || []), currentMetric.formatter)}
                             />
                             <ChartTooltip
-                                content={<CustomTooltipContent />}
+                                content={<CustomTooltipContent range={range} />}
                                 cursor={true}
                             />
                             <Recharts.Line
@@ -181,60 +221,78 @@ const WebKPIs:React.FC = ({}) => {
 };
 
 const Web:React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
+    const {isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
-    const params = {
-        site_uuid: statsConfig?.id || '',
+    // Include essential query parameters that change frequently
+    // Server will use defaults for other values
+    const queryParams: Record<string, string> = {
         date_from: formatQueryDate(startDate),
         date_to: formatQueryDate(endDate),
-        timezone: timezone,
-        member_status: getAudienceQueryParam(audience)
+        member_status: getAudienceQueryParam(audience),
+        tb_version: TB_VERSION?.toString()
     };
 
-    const {data, loading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_top_pages'),
-        token: getToken(statsConfig),
-        params
+    // Add timezone only if it differs from default
+    if (timezone) {
+        queryParams.timezone = timezone;
+    }
+
+    // Use the admin-x-framework hook
+    const {data, isLoading: isDataLoading} = useTopContent({
+        searchParams: queryParams
     });
 
-    const isLoading = isConfigLoading || loading;
+    const isLoading = isConfigLoading || isDataLoading;
+
+    // The data structure from the hook is {stats: TopContentData[]}
+    const topContent = data?.stats || [];
 
     return (
         <StatsLayout>
-            <ViewHeader>
+            <ViewHeader className='before:hidden'>
                 <H1>Web</H1>
                 <ViewHeaderActions>
                     <AudienceSelect />
                     <DateRangeSelect />
                 </ViewHeaderActions>
             </ViewHeader>
-            <StatsView data={data} isLoading={isLoading}>
-                <Card variant='plain'>
+            <StatsView data={topContent} isLoading={isLoading}>
+                <Card>
                     <CardContent>
                         <WebKPIs />
                     </CardContent>
                 </Card>
-                <Card variant='plain'>
+                <Card>
                     <CardHeader>
                         <CardTitle>Top content</CardTitle>
                         <CardDescription>Your highest viewed posts or pages {getPeriodText(range)}</CardDescription>
                     </CardHeader>
                     <CardContent>
+                        <Separator />
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className='w-[80%]'>Content</TableHead>
+                                    <TableHead className='w-[75%]'>Content</TableHead>
                                     <TableHead className='w-[20%] text-right'>Visitors</TableHead>
+                                    <TableHead className='w-[32px]'></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {data?.map((row) => {
+                                {topContent?.map((row: TopContentData) => {
                                     return (
                                         <TableRow key={row.pathname}>
-                                            <TableCell className="font-medium"><a className='-mx-2 inline-block px-2 hover:underline' href={`${row.pathname}`} rel="noreferrer" target='_blank'>{row.pathname}</a></TableCell>
+                                            <TableCell className="font-medium">
+                                                <a className='group/link -mx-2 inline-flex min-h-6 items-center gap-1 px-2 hover:underline' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
+                                                    {row.title || row.pathname}
+                                                    <LucideIcon.SquareArrowOutUpRight className='opacity-0 group-hover/link:opacity-100' size={12} strokeWidth={2.5} />
+                                                </a>
+                                            </TableCell>
                                             <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
+                                            <TableCell className='text-center text-gray-700 hover:text-black'>
+                                                <PostMenu pathName={row.pathname} postId={row.post_id} />
+                                            </TableCell>
                                         </TableRow>
                                     );
                                 })}

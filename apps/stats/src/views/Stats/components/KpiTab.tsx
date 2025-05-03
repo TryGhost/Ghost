@@ -21,7 +21,7 @@ interface KpiTabValueProps {
 
 const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value, diffDirection, diffValue}) => {
     const diffContainerClassName = cn(
-        'flex items-center gap-1 rounded-full px-1.5 text-xs',
+        'hidden xl:!flex xl:!visible items-center gap-1 rounded-full px-1.5 text-xs -mb-0.5',
         diffDirection === 'up' && 'bg-green/15 text-green-600',
         diffDirection === 'down' && 'bg-red/10 text-red-600',
         diffDirection === 'same' && 'bg-gray-200 text-gray-700'
@@ -29,8 +29,8 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value, diffDirection, d
     return (
         <div className='flex w-full flex-col items-start'>
             <span className='font-semibold tracking-tight'>{label}</span>
-            <div className='-mt-0.5 flex items-baseline gap-3'>
-                <span className='text-[2.3rem] tracking-[-0.04em]'>{value}</span>
+            <div className='-mt-0.5 flex items-center gap-3'>
+                <span className='text-[2.0rem] tracking-tight xl:text-[2.3rem] xl:tracking-[-0.04em]'>{value}</span>
                 {diffValue &&
                     <>
                         <div className={diffContainerClassName}>
@@ -39,9 +39,6 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value, diffDirection, d
                             }
                             {diffDirection === 'down' &&
                                 <LucideIcon.TrendingDown className='!size-[14px]' size={14} strokeWidth={2} />
-                            }
-                            {diffDirection === 'same' &&
-                                <LucideIcon.MoveRight className='!size-[14px]' size={14} strokeWidth={2} />
                             }
                             <span className='font-medium'>{diffValue}</span>
                         </div>

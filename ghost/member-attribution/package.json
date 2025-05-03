@@ -21,8 +21,7 @@
   },
   "dependencies": {
     "@tryghost/domain-events": "0.0.0",
-    "@tryghost/member-events": "0.0.0",
-    "@tryghost/referrer-parser": "0.1.0",
+    "@tryghost/referrer-parser": "0.1.1",
     "@tryghost/string": "0.2.13"
   }
 }

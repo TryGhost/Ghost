@@ -271,8 +271,11 @@
                 <div class="gh-post-analytics-sidebar-item active">
                     {{svg-jar "stats-overview" title="Overview"}} Overview
                 </div>
-                <LinkTo class="gh-post-analytics-sidebar-item" @route="posts.analytics.posts-x" @model={{this.post.id}}>
+                <LinkTo class="gh-post-analytics-sidebar-item" @route="posts.analytics.web-stats" @model={{this.post.id}}>
                     {{svg-jar "stats-web" title="Web stats"}} Web
+                </LinkTo>
+                <LinkTo class="gh-post-analytics-sidebar-item" @route="posts.analytics.growth-stats" @model={{this.post.id}}>
+                    {{svg-jar "stats-growth" title="Growth stats"}} Growth
                 </LinkTo>
             </div>
         {{/if}}
