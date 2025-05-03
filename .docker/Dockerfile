@@ -1,5 +1,8 @@
 ARG NODE_VERSION=20.15.1
 
+# --------------------
+# Base Image
+# --------------------
 FROM node:$NODE_VERSION-bullseye-slim AS base
 RUN apt-get update && \
     apt-get install -y \
@@ -8,38 +11,16 @@ RUN apt-get update && \
     jq \
     libjemalloc2 \
     python3 \
-    tar && \
+    tar  \
+    git && \
     rm -rf /var/lib/apt/lists/* && \
     apt clean
 
+# --------------------
+# Development
+# --------------------
 FROM base AS development-base
 WORKDIR /home/ghost
-RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | tee /usr/share/keyrings/stripe.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | tee -a /etc/apt/sources.list.d/stripe.list && \
-    apt update && \
-    apt install -y \
-    git \
-    stripe \
-    procps && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt clean
-
-
-FROM development-base AS development
-WORKDIR /home/ghost
-
-## Add github to known hosts
-### Without this, git submodule updates fail inside the container
-RUN mkdir -p /root/.ssh && \
-    ssh-keyscan github.com >> /root/.ssh/known_hosts
-
-# Enable the NX Daemon
-ENV NX_DAEMON=true
-
-# Disable NX rejection of unknown local cache
-ENV NX_REJECT_UNKNOWN_LOCAL_CACHE=false
-
-# Copy the package.json and yarn.lock files
 COPY package.json yarn.lock ./
 
 # Copy all package.json files
@@ -74,13 +55,21 @@ COPY ghost/mw-vhost/package.json ghost/mw-vhost/package.json
 COPY ghost/prometheus-metrics/package.json ghost/prometheus-metrics/package.json
 COPY ghost/security/package.json ghost/security/package.json
 
-## Install dependencies
-RUN yarn install --frozen-lockfile --prefer-offline
+RUN --mount=type=cache,target=/home/ghost/.yarn-cache \
+    yarn config set cache-folder /home/ghost/.yarn-cache && \
+    yarn install --frozen-lockfile --prefer-offline
+
+# --------------------
+# Development
+# --------------------
+FROM development-base AS development
 COPY . .
 RUN yarn nx run-many -t build:ts
 CMD ["yarn", "dev"]
 
-
+# --------------------
+# Tinybird CLI
+# --------------------
 FROM development AS tinybird
 RUN apt update && apt install -y \
     parallel \
@@ -88,7 +77,16 @@ RUN apt update && apt install -y \
 WORKDIR /home/ghost/ghost/web-analytics
 RUN pip install -r requirements.txt
 
-
+# --------------------
+# Browser Tests
+# --------------------
 FROM development AS browser-tests
+RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | tee /usr/share/keyrings/stripe.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | tee -a /etc/apt/sources.list.d/stripe.list && \
+    apt update && \
+    apt install -y \
+    stripe && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt clean
 RUN npx -y playwright install --with-deps
 CMD ["yarn", "test:browser"]
