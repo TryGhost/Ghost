@@ -3,8 +3,18 @@ ARG NODE_VERSION=20.15.1
 # --------------------
 # Base Image
 # --------------------
-FROM node:$NODE_VERSION-alpine AS base
-RUN apk add --no-cache python3 make g++ linux-headers git
+FROM node:$NODE_VERSION-bullseye-slim AS base
+RUN apt-get update && \
+    apt-get install -y \
+    build-essential \
+    curl \
+    jq \
+    libjemalloc2 \
+    python3 \
+    tar  \
+    git && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt clean
 
 # --------------------
 # Development Base
