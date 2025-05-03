@@ -4,3 +4,10 @@ node_modules
 .nx/workspace-data
 
 **/*.log
+
+build
+dist
+coverage
+.eslintcache
+test-results
+tsconfig.tsbuildinfo
