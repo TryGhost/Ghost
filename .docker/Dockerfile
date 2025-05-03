@@ -95,9 +95,6 @@ COPY ghost/webmentions/package.json ghost/webmentions/package.json
 ## Install dependencies
 RUN yarn install --frozen-lockfile --prefer-offline
 
-## Install playwright w/ dependencies
-RUN npx -y playwright install --with-deps
-
 ## Copy the rest of the code
 COPY . .
 
@@ -130,3 +127,11 @@ RUN apt update && apt install -y \
 # Install the tinybird CLI
 WORKDIR /home/ghost/ghost/web-analytics
 RUN pip install -r requirements.txt
+
+FROM development AS browser-tests
+
+## Install playwright w/ dependencies
+RUN npx -y playwright install --with-deps
+
+## Run the browser tests
+CMD ["yarn", "test:browser"]
