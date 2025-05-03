@@ -94,18 +94,6 @@ RUN yarn nx run-many -t build:ts
 
 WORKDIR $WORKDIR
 
-# Expose the ports
-EXPOSE 2368
-EXPOSE 4200
-EXPOSE 4201
-EXPOSE 4175
-EXPOSE 4176
-EXPOSE 4177
-EXPOSE 4178
-EXPOSE 6174
-EXPOSE 7173
-EXPOSE 7174
-
 ## Start the dev server
 CMD ["yarn", "dev"]
 
