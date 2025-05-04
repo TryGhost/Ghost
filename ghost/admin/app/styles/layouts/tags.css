@@ -4,10 +4,6 @@ a.gh-tag-list-posts-count:hover {
     color: color-mod(var(--green) l(-25%) s(+15%));
 }
 
-textarea.gh-tag-details-textarea {
-    max-width: 100%;
-}
-
 .gh-tags-placeholder {
     width: 60px;
     fill: var(--lightgrey);
@@ -136,10 +132,11 @@ textarea.gh-tag-details-textarea {
 }
 
 .gh-tag-image-uploader .gh-image-uploader {
-    margin: 4px 0 0;
-    background: transparent;
-    border: 1px solid var(--whitegrey-d2);
     min-height: 147px;
+    margin: 4px 0 0;
+    background: var(--grey-75);
+    border: 1px solid var(--grey-100);
+    border-radius: var(--border-radius);
 }
 
 .gh-tag-setting-codeinjection .CodeMirror {
@@ -147,14 +144,14 @@ textarea.gh-tag-details-textarea {
     min-height: 240px;
     background: var(--white);
     color: var(--darkgrey);
-    border: 1px solid var(--whitegrey);
+    border: 1px solid var(--grey-500);
     border-radius: 4px;
     margin-bottom: 24px;
 }
 
 .gh-tag-setting-codeinjection .CodeMirror-gutters {
     background-color: var(--whitegrey-l2);
-    border-right: 1px solid var(--lightgrey);
+    border-right: 1px solid var(--grey-500);
 }
 
 .gh-tag-setting-codeinjection .CodeMirror-scroll {
@@ -187,7 +184,7 @@ label.gh-tag-setting-codeheader {
     position: absolute;
     top: 9px;
     left: 43px;
-    color: var(--midlightgrey);
+    color: var(--black);
     font-family: "Consolas", monaco, monospace;
     font-size: 13px;
 }
@@ -239,22 +236,6 @@ label.gh-tag-setting-codeheader {
     left: 44px;
 }
 
-.gh-tag-settings-colorcontainer .color-picker-horizontal-divider {
-    position: absolute;
-    display: block;
-    content: "";
-    width: 1px;
-    top: 0;
-    left: 37px;
-    bottom: 0;
-    background: var(--input-border-color);
-}
-
-.gh-tag-settings-colorcontainer .input-color input:focus + .color-picker-horizontal-divider {
-    top: 2px;
-    bottom: 2px;
-}
-
 .gh-tag-settings-colorcontainer .color-box-container {
     height: 32px;
     width: 32px;
@@ -263,8 +244,8 @@ label.gh-tag-setting-codeheader {
     top: 2px;
     left: 2px;
     margin: 1px;
-    border-top-left-radius: 2px;
-    border-bottom-left-radius: 2px;
+    border: 1px solid var(--grey-150);
+    border-radius: 6px;
 }
 
 .gh-tag-settings-colorcontainer .color-box-container .color-picker {
@@ -333,7 +314,6 @@ label.gh-tag-setting-codeheader {
 
 .gh-setting-content-extended .gh-image-uploader {
     margin: 0;
-    border: 1px solid var(--whitegrey-d2);
 }
 
 .gh-setting-content-extended .gh-btn span {

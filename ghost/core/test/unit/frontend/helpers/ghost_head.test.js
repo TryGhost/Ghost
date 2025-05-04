@@ -399,15 +399,11 @@ describe('{{ghost_head}} helper', function () {
 
         beforeEach(function () {
             configUtils.set({url: 'http://localhost:65530/'});
-        });
-
-        afterEach(function () {
-            sinon.restore();
+            loggingErrorStub = sinon.stub(logging, 'error');
         });
 
         it('returns meta tag string on paginated index page without structured data and schema', async function () {
             // @TODO: later we can extend this fn with an `meta` object e.g. locals.meta
-            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/page/2/',
@@ -781,7 +777,6 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('disallows indexing for preview pages', async function () {
-            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['preview', 'post']
@@ -793,7 +788,6 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('implicit indexing settings for non-preview pages', async function () {
-            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['featured', 'paged', 'index', 'post', 'amp', 'home', 'unicorn']
@@ -1128,8 +1122,6 @@ describe('{{ghost_head}} helper', function () {
 
     describe('custom fonts', function () {
         it('includes custom font when set in options data object and preview is set', async function () {
-            sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
-
             const renderObject = {
                 post: posts[1]
             };
@@ -1154,7 +1146,6 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('includes custom font when set in settings cache and no preview', async function () {
-            sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
             settingsCache.get.withArgs('heading_font').returns('Playfair Display');
             settingsCache.get.withArgs('body_font').returns('Lora');
 
@@ -1174,8 +1165,6 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not include custom font when not set', async function () {
-            sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
-
             settingsCache.get.withArgs('heading_font').returns(null);
             settingsCache.get.withArgs('body_font').returns('');
 
@@ -1195,8 +1184,6 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not include custom font when invalid', async function () {
-            sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
-
             settingsCache.get.withArgs('heading_font').returns(null);
             settingsCache.get.withArgs('body_font').returns('Wendy Sans');
 
@@ -1223,7 +1210,6 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not inject custom fonts when preview is set and default font was selected (empty string)', async function () {
-            sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
             // The site has fonts set up, but we override them with Theme default fonts (empty string)
             settingsCache.get.withArgs('heading_font').returns('Playfair Display');
             settingsCache.get.withArgs('body_font').returns('Lora');
@@ -1248,8 +1234,6 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('can handle preview being set and custom font keys missing', async function () {
-            sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
-
             // The site has fonts set up, but we override them with Theme default fonts (empty string)
             settingsCache.get.withArgs('heading_font').returns('Playfair Display');
             settingsCache.get.withArgs('body_font').returns('Lora');
@@ -1421,18 +1405,69 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('includes tinybird tracker script when config is set', function () {
+        let labsStub;
         beforeEach(function () {
             configUtils.set({
                 tinybird: {
                     tracker: {
-                        scriptUrl: 'https://unpkg.com/@tinybirdco/flock.js',
-                        endpoint: 'https://api.tinybird.co',
+                        endpoint: 'https://e.ghost.org/tb/web_analytics',
                         token: 'tinybird_token',
-                        id: 'tb_test_site_uuid'
+                        id: 'tb_test_site_uuid',
+                        datasource: 'analytics_events',
+                        local: {
+                            enabled: false,
+                            endpoint: 'http://localhost:7181/v0/events',
+                            token: 'tinybird_local_token',
+                            datasource: 'analytics_events'
+                        }
                     }
                 }
             });
+            labsStub = sinon.stub(labs, 'isSet');
+            labsStub.withArgs('trafficAnalytics').returns(true);
+            labsStub.withArgs('i18n').returns(true);
         });
+
+        it('includes tracker script', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/script defer src="\/public\/ghost-stats\.min\.js/);
+        });
+
+        it('does not include tracker script when trafficAnalytics is not set', async function () {
+            labsStub.withArgs('trafficAnalytics').returns(false);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js/);
+        });
+
+        it('includes tracker script with subdir', async function () {
+            configUtils.set('url', 'http://localhost:2388/blog/');
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/script defer src="\/blog\/public\/ghost-stats\.min\.js/);
+        });
+
         it('with all tb_variables set to undefined on logged out home page', async function () {
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1493,6 +1528,54 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '4.3'
                 }
             }));
+        });
+
+        it('includes datasource when set', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/data-datasource="analytics_events"/);
+        });
+
+        it('does not include tracker script when preview is set', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    context: ['preview', 'post']
+                }
+            }));
+
+            rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js"/);
+        });
+
+        it('uses the provided host/endpoint from config', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/data-host="https:\/\/e.ghost.org\/tb\/web_analytics"/);
+        });
+
+        it('includes local tracker script when local is set', async function () {
+            configUtils.set('tinybird:tracker:local:enabled', true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/data-host="http:\/\/localhost:7181\/v0\/events"/);
         });
     });
     describe('respects values from excludes: ', function () {

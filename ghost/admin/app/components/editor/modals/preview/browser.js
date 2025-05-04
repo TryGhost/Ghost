@@ -1,11 +1,32 @@
 import Component from '@glimmer/component';
-import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
-import {task, timeout} from 'ember-concurrency';
+import {action} from '@ember/object';
 
 export default class ModalPostPreviewBrowserComponent extends Component {
-    @task
-    *copyPreviewUrl() {
-        copyTextToClipboard(this.args.post.previewUrl);
-        yield timeout(this.isTesting ? 50 : 3000);
+    @action
+    setupIframe(event) {
+        const iframe = event.target;
+
+        // Add keydown event listener to the iframe's contentWindow
+        iframe.contentWindow.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                // Prevent the default behavior in the iframe
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Create and dispatch a new ESC key event to the parent window
+                const escEvent = new KeyboardEvent('keydown', {
+                    key: 'Escape',
+                    code: 'Escape',
+                    keyCode: 27,
+                    which: 27,
+                    bubbles: true,
+                    cancelable: true,
+                    composed: true
+                });
+
+                // Dispatch the event on the document instead of window
+                document.dispatchEvent(escEvent);
+            }
+        });
     }
 }

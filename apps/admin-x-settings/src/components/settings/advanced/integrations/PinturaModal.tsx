@@ -108,11 +108,11 @@ const PinturaModal = NiceModal.create(() => {
         >
             <IntegrationHeader
                 detail='Advanced image editing'
-                icon={<Icon className='h-12 w-12' />}
+                icon={<Icon className='size-12' />}
                 title='Pintura'
             />
             <div className='mt-7'>
-                {!config.pintura && <div className='mb-7 flex flex-col items-stretch justify-between gap-4 rounded-sm bg-grey-75 p-4 dark:bg-grey-950 md:flex-row md:p-7'>
+                {!config.pintura && <div className='mb-7 flex flex-col items-stretch justify-between gap-4 rounded-sm bg-grey-75 p-4 md:flex-row md:p-7 dark:bg-grey-950'>
                     <div className='md:basis-1/2'>
                         <p className='mb-4 font-bold'>Add advanced image editing to Ghost, with Pintura</p>
                         <p className='mb-4 text-sm'>Pintura is a powerful JavaScript image editor that allows you to crop, rotate, annotate and modify images directly inside Ghost.</p>
@@ -120,7 +120,7 @@ const PinturaModal = NiceModal.create(() => {
                     </div>
                     <div className='flex grow flex-col items-end justify-between gap-2 md:basis-1/2 md:gap-0'>
                         <img alt='Pintura screenshot' src={pinturaScreenshot} />
-                        <a className='-mb-1 text-sm font-bold text-green' href="https://pqina.nl/pintura/?ref=ghost.org" rel="noopener noreferrer" target="_blank">Find out more &rarr;</a>
+                        <a className='-mb-1 text-sm font-bold text-green' href="https://pqina.nl/pintura/ghost/?ref=ghost.org" rel="noopener noreferrer" target="_blank">Find out more &rarr;</a>
                     </div>
                 </div>}
 
@@ -128,7 +128,7 @@ const PinturaModal = NiceModal.create(() => {
                     <Toggle
                         checked={enabled}
                         direction='rtl'
-                        hint={<>Enable <a className='text-green' href="https://pqina.nl/pintura/?ref=ghost.org" rel="noopener noreferrer" target="_blank">Pintura</a> for editing your images in Ghost</>}
+                        hint={<>Enable <a className='text-green' href="https://pqina.nl/pintura/ghost/?ref=ghost.org" rel="noopener noreferrer" target="_blank">Pintura</a> for editing your images in Ghost</>}
                         label='Enable Pintura'
                         onChange={(e) => {
                             setEnabled(e.target.checked);

@@ -9,7 +9,7 @@ import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 export const searchKeywords = {
     enableNewsletters: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off'],
-    newsletters: ['newsletters', 'emails'],
+    newsletters: ['newsletters', 'emails', 'design', 'customization'],
     defaultRecipients: ['newsletters', 'default recipients', 'emails'],
     mailgun: ['mailgun', 'emails', 'newsletters']
 };

@@ -50,7 +50,7 @@ module.exports = {
     },
     posts: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
+        uuid: {type: 'string', maxlength: 36, nullable: false, index: true, validations: {isUUID: true}},
         title: {type: 'string', maxlength: 2000, nullable: false, validations: {isLength: {max: 255}}},
         slug: {type: 'string', maxlength: 191, nullable: false},
         mobiledoc: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
@@ -131,6 +131,13 @@ module.exports = {
         location: {type: 'text', maxlength: 65535, nullable: true, validations: {isLength: {max: 150}}},
         facebook: {type: 'string', maxlength: 2000, nullable: true},
         twitter: {type: 'string', maxlength: 2000, nullable: true},
+        threads: {type: 'string', maxlength: 191, nullable: true},
+        bluesky: {type: 'string', maxlength: 191, nullable: true},
+        mastodon: {type: 'string', maxlength: 191, nullable: true},
+        tiktok: {type: 'string', maxlength: 191, nullable: true},
+        youtube: {type: 'string', maxlength: 191, nullable: true},
+        instagram: {type: 'string', maxlength: 191, nullable: true},
+        linkedin: {type: 'string', maxlength: 191, nullable: true},
         accessibility: {type: 'text', maxlength: 65535, nullable: true},
         status: {
             type: 'string',
@@ -161,6 +168,7 @@ module.exports = {
         meta_title: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}},
         meta_description: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 500}}},
         tour: {type: 'text', maxlength: 65535, nullable: true},
+        // NOTE: Used to determine whether a user has logged in previously
         last_seen: {type: 'dateTime', nullable: true},
         comment_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         free_member_signup_notification: {type: 'boolean', nullable: false, defaultTo: true},
@@ -992,7 +1000,7 @@ module.exports = {
     },
     redirects: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        from: {type: 'string', maxlength: 2000, nullable: false},
+        from: {type: 'string', maxlength: 191, nullable: false, index: true},
         to: {type: 'string', maxlength: 2000, nullable: false},
         post_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'posts.id', setNullDelete: true},
         created_at: {type: 'dateTime', nullable: false},

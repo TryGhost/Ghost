@@ -13,6 +13,9 @@
         "forceUpdate": false
     },
     "privacy": false,
+    "security": {
+        "staffDeviceVerification": true
+    },
     "useMinFiles": true,
     "paths": {
         "contentPath": "content/",
@@ -126,16 +129,17 @@
             "maxWait": 360000,
             "lifetime": 3600,
             "freeRetries": 10
-        }
+        },
+        "blocked_email_domains": []
     },
     "caching": {
+        "301": {
+            "maxAge": 31536000
+        },
         "frontend": {
             "maxAge": 0
         },
         "publicAssets": {
-            "maxAge": 31536000
-        },
-        "301": {
             "maxAge": 31536000
         },
         "customRedirects": {
@@ -192,12 +196,14 @@
     "stripeDirect": false,
     "enableStripePromoCodes": false,
     "emailAnalytics": true,
+    "linkClickTrackingCacheMemberUuid": false,
     "backgroundJobs": {
-        "emailAnalytics": true
+        "emailAnalytics": true,
+        "clickTrackingLastSeenAtUpdater": true
     },
     "portal": {
         "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
-        "version": "2.46"
+        "version": "2.50"
     },
     "sodoSearch": {
         "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
@@ -210,7 +216,7 @@
     },
     "comments": {
         "url": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/comments-ui.min.js",
-        "version": "0.21"
+        "version": "1.1"
     },
     "signupForm": {
         "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",
@@ -229,20 +235,41 @@
     "gravatar": {
         "url": "https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}"
     },
-    "milestones":
-        {
-            "arr": [
-                {
-                    "currency": "usd",
-                    "values": [0, 100, 1000, 10000, 50000, 100000, 250000, 500000, 1000000]
-                }
-            ],
-            "members": [0, 100, 1000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000],
-            "minDaysSinceImported": 7,
-            "minDaysSinceLastEmail": 14
-        },
+    "milestones": {
+        "arr": [
+            {
+                "currency": "usd",
+                "values": [
+                    0,
+                    100,
+                    1000,
+                    10000,
+                    50000,
+                    100000,
+                    250000,
+                    500000,
+                    1000000
+                ]
+            }
+        ],
+        "members": [
+            0,
+            100,
+            1000,
+            10000,
+            25000,
+            50000,
+            100000,
+            250000,
+            500000,
+            1000000
+        ],
+        "minDaysSinceImported": 7,
+        "minDaysSinceLastEmail": 14
+    },
     "bulkEmail": {
-        "batchSize": 1000
+        "batchSize": 1000,
+        "captureLinkClickBadMemberUuid": false
     },
     "disableJSBackups": false
 }

@@ -20,6 +20,7 @@ const SUPPORTED_LOCALES = [
     'fi', // Finnish
     'fr', // French
     'gd', // Gaelic (Scottish)
+    'he', // Hebrew
     'hi', // Hindi
     'hr', // Croatian
     'hu', // Hungarian
@@ -30,12 +31,14 @@ const SUPPORTED_LOCALES = [
     'ko', // Korean
     'kz', // Kazach
     'lt', // Lithuanian
+    'lv', // Latvian
     'mk', // Macedonian
     'mn', // Mongolian
     'ms', // Malay
+    'nb', // Norwegian Bokmål
+    'ne', // Nepali
     'nl', // Dutch
     'nn', // Norwegian Nynorsk
-    'no', // Norwegian
     'pl', // Polish
     'pt', // Portuguese
     'pt-BR', // Portuguese (Brazil)
@@ -60,6 +63,26 @@ const SUPPORTED_LOCALES = [
     'ta' // Tamil
 ];
 
+function generateResources(locales, ns) {
+    return locales.reduce((acc, locale) => {
+        let res;
+        // add an extra fallback - this handles the case where we have a partial set of translations for some reason
+        // by falling back to the english translations
+        try {
+            res = require(`../locales/${locale}/${ns}.json`);
+        } catch (err) {
+            res = require(`../locales/en/${ns}.json`);
+        }
+
+        // Note: due some random thing in TypeScript, 'requiring' a JSON file with a space in a key name, only adds it to the default export
+        // If changing this behaviour, please also check the comments and signup-form apps in another language (mainly sentences with a space in them)
+        acc[locale] = {
+            [ns]: {...res, ...(res.default && typeof res.default === 'object' ? res.default : {})}
+        };
+        return acc;
+    }, {});
+}
+
 /**
  * @param {string} [lng]
  * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'|'newsletter'|'theme'} ns
@@ -74,18 +97,10 @@ module.exports = (lng = 'en', ns = 'portal') => {
             suffix: '}'
         };
     }
+
     let resources;
     if (ns !== 'theme') {
-        resources = SUPPORTED_LOCALES.reduce((acc, locale) => {
-            const res = require(`../locales/${locale}/${ns}.json`);
-
-            // Note: due some random thing in TypeScript, 'requiring' a JSON file with a space in a key name, only adds it to the default export
-            // If changing this behaviour, please also check the comments and signup-form apps in another language (mainly sentences with a space in them)
-            acc[locale] = {
-                [ns]: {...res, ...(res.default && typeof res.default === 'object' ? res.default : {})}
-            };
-            return acc;
-        }, {});
+        resources = generateResources(SUPPORTED_LOCALES, ns);
     } else {
         resources = {
             en: {
@@ -108,7 +123,10 @@ module.exports = (lng = 'en', ns = 'portal') => {
         returnEmptyString: false,
 
         // do not load a fallback
-        fallbackLng: false,
+        fallbackLng: {
+            no: ['nb', 'en'],
+            default: ['en']
+        },
 
         ns: ns,
         defaultNS: ns,
@@ -123,3 +141,4 @@ module.exports = (lng = 'en', ns = 'portal') => {
 };
 
 module.exports.SUPPORTED_LOCALES = SUPPORTED_LOCALES;
+module.exports.generateResources = generateResources;

@@ -4,28 +4,6 @@ const test = require('../fixtures/ghost-test');
 
 // NOTE: The tests do not use the shared page, as it needs to clear cookies
 test.describe('2FA', () => {
-    test.beforeAll(async ({sharedPage}) => {
-        await sharedPage.goto('/ghost');
-        await sharedPage.locator('.gh-nav a[href="#/settings/"]').click();
-
-        const section = sharedPage.getByTestId('labs');
-        await section.getByRole('button', {name: 'Open'}).click();
-
-        await section.getByRole('tab', {name: 'Alpha features'}).click();
-        await section.getByLabel('Staff 2FA').click();
-    });
-
-    test.afterAll(async ({sharedPage}) => {
-        await sharedPage.goto('/ghost');
-        await sharedPage.locator('.gh-nav a[href="#/settings/"]').click();
-
-        const section = sharedPage.getByTestId('labs');
-        await section.getByRole('button', {name: 'Open'}).click();
-
-        await section.getByRole('tab', {name: 'Alpha features'}).click();
-        await section.getByLabel('Staff 2FA').click();
-    });
-
     test('Logging in with 2FA works', async ({page, verificationToken}) => {
         // Logout
         const context = await page.context();

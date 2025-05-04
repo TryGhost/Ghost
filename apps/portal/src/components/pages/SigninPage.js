@@ -5,7 +5,7 @@ import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {isSigninAllowed} from '../../utils/helpers';
+import {hasAvailablePrices, isSigninAllowed, isSignupAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 
 export default class SigninPage extends React.Component {
@@ -14,7 +14,8 @@ export default class SigninPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            email: ''
+            email: '',
+            token: undefined
         };
     }
 
@@ -29,16 +30,20 @@ export default class SigninPage extends React.Component {
 
     handleSignin(e) {
         e.preventDefault();
+        this.doSignin();
+    }
+
+    doSignin() {
         this.setState((state) => {
             return {
                 errors: ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t})
             };
         }, async () => {
-            const {email, phonenumber, errors} = this.state;
+            const {email, phonenumber, errors, token} = this.state;
             const {redirect} = this.context.pageData ?? {};
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
-                this.context.onAction('signin', {email, phonenumber, redirect});
+                this.context.onAction('signin', {email, phonenumber, redirect, token});
             }
         });
     }
@@ -131,6 +136,7 @@ export default class SigninPage extends React.Component {
 
     renderForm() {
         const {site, t} = this.context;
+        const isSignupAvailable = isSignupAllowed({site}) && hasAvailablePrices({site});
 
         if (!isSigninAllowed({site})) {
             return (
@@ -158,7 +164,7 @@ export default class SigninPage extends React.Component {
                 </div>
                 <footer className='gh-portal-signin-footer'>
                     {this.renderSubmitButton()}
-                    {this.renderSignupMessage()}
+                    {isSignupAvailable && this.renderSignupMessage()}
                 </footer>
             </section>
         );

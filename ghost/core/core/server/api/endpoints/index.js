@@ -12,10 +12,6 @@ module.exports = {
         return apiFramework.pipeline(require('./authentication'), localUtils);
     },
 
-    get collections() {
-        return apiFramework.pipeline(require('./collections'), localUtils);
-    },
-
     get db() {
         return apiFramework.pipeline(require('./db'), localUtils);
     },
@@ -197,6 +193,10 @@ module.exports = {
         return apiFramework.pipeline(require('./comments'), localUtils);
     },
 
+    get commentReplies() {
+        return apiFramework.pipeline(require('./comment-replies'), localUtils);
+    },
+
     get links() {
         return apiFramework.pipeline(require('./links'), localUtils);
     },
@@ -223,10 +223,6 @@ module.exports = {
      */
     get pagesPublic() {
         return apiFramework.pipeline(require('./pages-public'), localUtils, 'content');
-    },
-
-    get collectionsPublic() {
-        return apiFramework.pipeline(require('./collections-public'), localUtils);
     },
 
     get tagsPublic() {

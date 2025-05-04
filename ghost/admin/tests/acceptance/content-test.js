@@ -766,7 +766,6 @@ describe('Acceptance: Posts / Pages', function () {
                     });
                 });
             });
-
             it('can add and edit custom views', async function () {
                 // actions are not visible when there's no filter
                 await visit('/posts');
@@ -848,6 +847,27 @@ describe('Acceptance: Posts / Pages', function () {
                 expect(currentURL()).to.equal('/posts?type=scheduled');
                 expect(find('[data-test-nav-custom="posts-Scheduled"]')).to.have.class('active');
                 expect(find('[data-test-screen-title]').innerText).to.match(/Scheduled/);
+            });
+
+            it('Shows edit view if order is null, which indicates a bad state', async function () {
+                this.server.schema.settings.findBy({key: 'shared_views'}).update({
+                    group: 'site',
+                    key: 'shared_views',
+                    value: JSON.stringify([{
+                        route: 'posts',
+                        name: 'My posts',
+                        filter: {
+                            author: admin.slug,
+                            order: null
+                        }
+                    }])
+                });
+
+                await visit('/posts');
+                expect(find('[data-test-nav-custom="posts-My posts"]'), 'my posts nav').to.exist;
+                // click on the custom view
+                await click('[data-test-nav-custom="posts-My posts"]');
+                expect(find('[data-test-button="edit-view"]'), 'edit-view button (on existing view)').to.exist;
             });
         });
     });

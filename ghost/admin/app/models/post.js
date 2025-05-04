@@ -196,8 +196,6 @@ export default Model.extend(Comparable, ValidationEngine, {
         return this.hasBeenEmailed
             && !this.session.user.isContributor
             && this.settings.membersSignupAccess !== 'none'
-            && this.settings.editorDefaultEmailRecipients !== 'disabled'
-            && this.hasBeenEmailed
             && this.email.trackOpens
             && this.settings.emailTrackOpens;
     }),
@@ -206,7 +204,6 @@ export default Model.extend(Comparable, ValidationEngine, {
         return this.hasBeenEmailed
             && !this.session.user.isContributor
             && this.settings.membersSignupAccess !== 'none'
-            && this.settings.editorDefaultEmailRecipients !== 'disabled'
             && (this.isSent || this.isPublished)
             && this.email.trackClicks
             && this.settings.emailTrackClicks;

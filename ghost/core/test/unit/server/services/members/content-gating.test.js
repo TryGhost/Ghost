@@ -1,5 +1,5 @@
 const should = require('should');
-const {checkPostAccess} = require('../../../../../core/server/services/members/content-gating');
+const {checkPostAccess, checkGatedBlockAccess} = require('../../../../../core/server/services/members/content-gating');
 
 describe('Members Service - Content gating', function () {
     describe('checkPostAccess', function () {
@@ -88,6 +88,41 @@ describe('Members Service - Content gating', function () {
             }]};
             access = checkPostAccess(post, member);
             should(access).be.false();
+        });
+    });
+
+    describe('checkGatedBlockAccess', function () {
+        function testCheckGatedBlockAccess({params, member, expectedAccess}) {
+            const access = checkGatedBlockAccess(params, member);
+            should(access).be.exactly(expectedAccess);
+        }
+
+        it('nonMember:true permits access when not logged in', function () {
+            testCheckGatedBlockAccess({params: {nonMember: true}, member: null, expectedAccess: true});
+        });
+
+        it('nonMember:false blocks access when not logged in', function () {
+            testCheckGatedBlockAccess({params: {nonMember: false}, member: null, expectedAccess: false});
+        });
+
+        it('memberSegment:"" blocks access when logged in', function () {
+            testCheckGatedBlockAccess({params: {memberSegment: ''}, member: {}, expectedAccess: false});
+        });
+
+        it('memberSegment:undefined blocks access when logged in', function () {
+            testCheckGatedBlockAccess({params: {memberSegment: undefined}, member: {}, expectedAccess: false});
+        });
+
+        it('memberSegment:"status:free" permits access when logged in as free member', function () {
+            testCheckGatedBlockAccess({params: {memberSegment: 'status:free'}, member: {status: 'free'}, expectedAccess: true});
+        });
+
+        it('memberSegment:"status:free" blocks access when logged in as paid member', function () {
+            testCheckGatedBlockAccess({params: {memberSegment: 'status:free'}, member: {status: 'paid'}, expectedAccess: false});
+        });
+
+        it('handles unknown segment keys', function () {
+            testCheckGatedBlockAccess({params: {memberSegment: 'unknown:free'}, member: {status: 'free'}, expectedAccess: false});
         });
     });
 });

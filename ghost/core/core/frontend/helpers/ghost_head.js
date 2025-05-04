@@ -151,18 +151,30 @@ function getWebmentionDiscoveryLink() {
 }
 
 function getTinybirdTrackerScript(dataRoot) {
-    const scriptUrl = config.get('tinybird:tracker:scriptUrl');
-    const endpoint = config.get('tinybird:tracker:endpoint');
-    const token = config.get('tinybird:tracker:token');
+    const preview = dataRoot?.context?.includes('preview');
+    if (preview) {
+        return '';
+    }
+
+    const src = getAssetUrl('public/ghost-stats.min.js', false);
+
+    const statsConfig = config.get('tinybird:tracker');
+    const localConfig = config.get('tinybird:tracker:local');
+    const localEnabled = localConfig?.enabled ?? false;
+
+    const endpoint = localEnabled ? localConfig.endpoint : statsConfig.endpoint;
+    const token = localEnabled ? localConfig.token : statsConfig.token;
+    const datasource = localEnabled ? localConfig.datasource : statsConfig.datasource;
 
     const tbParams = _.map({
         site_uuid: config.get('tinybird:tracker:id'),
         post_uuid: dataRoot.post?.uuid,
+        post_type: dataRoot.context.includes('post') ? 'post' : dataRoot.context.includes('page') ? 'page' : null,
         member_uuid: dataRoot.member?.uuid,
         member_status: dataRoot.member?.status
     }, (value, key) => `tb_${key}="${value}"`).join(' ');
 
-    return `<script defer src="${scriptUrl}" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
+    return `<script defer src="${src}" data-stringify-payload="false" ${datasource ? `data-datasource="${datasource}"` : ''} data-storage="localStorage" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
 }
 
 /**
@@ -349,33 +361,31 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 head.push(tagCodeInjection);
             }
 
-            if (config.get('tinybird') && config.get('tinybird:tracker') && config.get('tinybird:tracker:scriptUrl')) {
+            if (labs.isSet('trafficAnalytics') && config.get('tinybird') && config.get('tinybird:tracker')) {
                 head.push(getTinybirdTrackerScript(dataRoot));
             }
 
-            if (labs.isSet('customFonts')) {
-                // Check if if the request is for a site preview, in which case we **always** use the custom font values
-                // from the passed in data, even when they're empty strings or settings cache has values.
-                const isSitePreview = options.data.site._preview;
-                // Taking the fonts straight from the passed in data, as they can't be used from the
-                // settings cache for the theme preview until the settings are saved. Once saved,
-                // we need to use the settings cache to provide the correct CSS injection.
-                const headingFont = isSitePreview ? options.data.site.heading_font : settingsCache.get('heading_font');
-                const bodyFont = isSitePreview ? options.data.site.body_font : settingsCache.get('body_font');
-                if ((typeof headingFont === 'string' && isValidCustomHeadingFont(headingFont)) ||
-                    (typeof bodyFont === 'string' && isValidCustomFont(bodyFont))) {
-                    /** @type FontSelection */
-                    const fontSelection = {};
+            // Check if if the request is for a site preview, in which case we **always** use the custom font values
+            // from the passed in data, even when they're empty strings or settings cache has values.
+            const isSitePreview = options.data?.site?._preview ?? false;
+            // Taking the fonts straight from the passed in data, as they can't be used from the
+            // settings cache for the theme preview until the settings are saved. Once saved,
+            // we need to use the settings cache to provide the correct CSS injection.
+            const headingFont = isSitePreview ? options.data?.site?.heading_font : settingsCache.get('heading_font');
+            const bodyFont = isSitePreview ? options.data?.site?.body_font : settingsCache.get('body_font');
+            if ((typeof headingFont === 'string' && isValidCustomHeadingFont(headingFont)) ||
+                (typeof bodyFont === 'string' && isValidCustomFont(bodyFont))) {
+                /** @type FontSelection */
+                const fontSelection = {};
 
-                    if (headingFont) {
-                        fontSelection.heading = headingFont;
-                    }
-                    if (bodyFont) {
-                        fontSelection.body = bodyFont;
-                    }
-                    const customCSS = generateCustomFontCss(fontSelection);
-                    head.push(new SafeString(customCSS));
+                if (headingFont) {
+                    fontSelection.heading = headingFont;
                 }
+                if (bodyFont) {
+                    fontSelection.body = bodyFont;
+                }
+                const customCSS = generateCustomFontCss(fontSelection);
+                head.push(new SafeString(customCSS));
             }
         }
 

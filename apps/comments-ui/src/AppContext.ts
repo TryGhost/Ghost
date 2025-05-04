@@ -1,6 +1,7 @@
 // Ref: https://reactjs.org/docs/context.html
 import React, {useContext} from 'react';
 import {ActionType, Actions, SyncActionType, SyncActions} from './actions';
+import {AdminApi} from './utils/adminApi';
 import {Page} from './pages';
 
 export type Member = {
@@ -14,6 +15,8 @@ export type Member = {
 export type Comment = {
     id: string,
     post_id: string,
+    in_reply_to_id: string,
+    in_reply_to_snippet: string,
     replies: Comment[],
     status: string,
     liked: boolean,
@@ -25,6 +28,15 @@ export type Comment = {
     edited_at: string,
     created_at: string,
     html: string
+}
+
+export type OpenCommentForm = {
+    id: string,
+    parent_id?: string,
+    in_reply_to_id?: string,
+    in_reply_to_snippet?: string,
+    type: 'reply' | 'edit',
+    hasUnsavedChanges: boolean
 }
 
 export type AddComment = {
@@ -65,10 +77,13 @@ export type EditableAppContext = {
         total: number
     } | null,
     commentCount: number,
-    secundaryFormCount: number,
+    openCommentForms: OpenCommentForm[],
     popup: Page | null,
     labs: LabsContextType,
-    order: string
+    order: string,
+    adminApi: AdminApi | null,
+    commentsIsLoading?: boolean,
+    commentIdToHighlight: string | null
 }
 
 export type TranslationFunction = (key: string, replacements?: Record<string, string | number>) => string;
@@ -77,7 +92,8 @@ export type AppContextType = EditableAppContext & CommentsOptions & {
     // This part makes sure we can add automatic data and return types to the actions when using context.dispatchAction('actionName', data)
     // eslint-disable-next-line @typescript-eslint/ban-types
     t: TranslationFunction,
-    dispatchAction: <T extends ActionType | SyncActionType>(action: T, data: Parameters<(typeof Actions & typeof SyncActions)[T]>[0] extends { data: any } ? Parameters<(typeof Actions & typeof SyncActions)[T]>[0]['data'] : any) => T extends ActionType ? Promise<void> : void
+    dispatchAction: <T extends ActionType | SyncActionType>(action: T, data: Parameters<(typeof Actions & typeof SyncActions)[T]>[0] extends { data: any } ? Parameters<(typeof Actions & typeof SyncActions)[T]>[0]['data'] : any) => T extends ActionType ? Promise<void> : void,
+    openFormCount: number
 }
 
 // Copy time from AppContextType
@@ -104,3 +120,4 @@ export const useLabs = () => {
         return {};
     }
 };
+

@@ -1,17 +1,18 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {ReactComponent as ChevronIcon} from '../../../images/icons/chevron-down.svg';
-import {useOrderChange} from '../../../AppContext';
+import {useAppContext, useOrderChange} from '../../../AppContext';
 
 export const SortingForm: React.FC = () => {
+    const {t} = useAppContext();
     const changeOrder = useOrderChange();
     const [isOpen, setIsOpen] = useState(false);
     const [selectedOption, setSelectedOption] = useState('count__likes desc, created_at desc');
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const options = [
-        {value: 'count__likes desc, created_at desc', label: 'Best'},
-        {value: 'created_at desc', label: 'Newest'},
-        {value: 'created_at asc', label: 'Oldest'}
+        {value: 'count__likes desc, created_at desc', label: t('Best')},
+        {value: 'created_at desc', label: t('Newest')},
+        {value: 'created_at asc', label: t('Oldest')}
     ];
 
     const handleOptionClick = (value: string) => {
@@ -47,7 +48,7 @@ export const SortingForm: React.FC = () => {
     };
 
     return (
-        <div ref={dropdownRef} className="relative" data-testid="comments-sorting-form" onClick={stopPropagation}>
+        <div ref={dropdownRef} className="relative z-20" data-testid="comments-sorting-form" onClick={stopPropagation}>
             <button
                 className="flex w-full items-center justify-between gap-2 text-sm font-medium text-neutral-900 focus-visible:outline-none dark:text-neutral-100"
                 type="button"

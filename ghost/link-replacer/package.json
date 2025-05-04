@@ -18,9 +18,9 @@
     "lib"
   ],
   "devDependencies": {
-    "@probe.gl/bench": "4.0.9",
+    "@probe.gl/bench": "4.1.0",
     "c8": "8.0.1",
-    "mocha": "10.2.0",
+    "mocha": "10.8.2",
     "should": "13.2.3",
     "sinon": "15.2.0"
   },

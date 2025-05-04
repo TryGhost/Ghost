@@ -1,6 +1,6 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '@tryghost/admin-x-framework/api/actions';
-import {Avatar, Button, Icon, InfiniteScrollListener, List, ListItem, LoadSelectOptions, Modal, NoValueLabel, Popover, Select, SelectOption, Toggle, ToggleGroup, debounce} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, Icon, InfiniteScrollListener, List, ListItem, LoadSelectOptions, LoadingIndicator, Modal, NoValueLabel, Popover, Select, SelectOption, Toggle, ToggleGroup, debounce} from '@tryghost/admin-x-design-system';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {User} from '@tryghost/admin-x-framework/api/users';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
@@ -32,7 +32,7 @@ const HistoryAvatar: React.FC<{action: Action}> = ({action}) => {
                 labelColor='white'
                 size='md'
             />
-            <div className='absolute -bottom-1 -right-1 z-10 flex items-center justify-center rounded-full border border-grey-100 bg-white p-1 shadow-sm dark:border-grey-900 dark:bg-black'>
+            <div className='absolute -bottom-1 -right-1 z-30 flex items-center justify-center rounded-full border border-grey-100 bg-white p-1 shadow-sm dark:border-grey-900 dark:bg-black'>
                 <HistoryIcon action={action} />
             </div>
         </div>
@@ -77,7 +77,7 @@ const HistoryFilter: React.FC<{
 
     return (
         <div className='flex items-center gap-4'>
-            <Popover position='end' trigger={<Button color='outline' label='Filter' size='sm' />}>
+            <Popover position='end' trigger={<Button color='outline' label='Filter' />}>
                 <div className='flex w-[220px] flex-col gap-8 p-5'>
                     <ToggleGroup>
                         <HistoryFilterToggle excludedItems={excludedEvents} item='added' label='Added' toggleItem={toggleEventType} />
@@ -167,7 +167,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
     const [excludedEvents, setExcludedEvents] = useState<string[]>([]);
     const [excludedResources, setExcludedResources] = useState<string[]>(['label']);
 
-    const {data, fetchNextPage} = useBrowseActions({
+    const {data, fetchNextPage, isFetchingNextPage} = useBrowseActions({
         searchParams: {
             include: 'actor,resource',
             limit: PAGE_SIZE.toString(),
@@ -194,6 +194,8 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
         setter(values => (included ? values.concat(value) : values.filter(current => current !== value)));
     };
 
+    const hasActiveFilters = excludedEvents.length > 0 || excludedResources.length > 0 || params?.user;
+
     return (
         <Modal
             afterClose={() => {
@@ -219,32 +221,49 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                 updateRoute('history');
             }}
         >
-            <div className='relative -mb-8 mt-6'>
-                <List hint={data?.isEnd ? 'End of history log' : undefined}>
-                    {data?.actions ? <>
-                        <InfiniteScrollListener offset={250} onTrigger={fetchNext} />
-                        {data?.actions.map(action => !action.skip && <ListItem
-                            avatar={<HistoryAvatar action={action} />}
-                            detail={[
-                                new Date(action.created_at).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}),
-                                new Date(action.created_at).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit', second: '2-digit'})
-                            ].join(' | ')}
-                            title={
-                                <div className='text-sm'>
-                                    {getActionTitle(action)}{isBulkAction(action) ? '' : ': '}
-                                    {!isBulkAction(action) && <HistoryActionDescription action={action} />}
-                                    {action.count ? <> {action.count} times</> : null}
-                                    <span> &mdash; by {action.actor?.name || action.actor?.slug}</span>
-                                </div>
-                            }
-                            separator
-                        />)}
-                    </>
-                        :
-                        <NoValueLabel>
-                        No entries found.
-                        </NoValueLabel>
-                    }
+            <div className='relative mt-6'>
+                <List hint={(data?.isEnd && data.actions.length > 0) ? 'End of history log' : undefined}>
+                    {data?.actions ? (
+                        data.actions.length > 0 ? (
+                            <>
+                                <InfiniteScrollListener offset={250} onTrigger={fetchNext} />
+                                {data.actions.map(action => !action.skip && <ListItem
+                                    avatar={<HistoryAvatar action={action} />}
+                                    detail={[
+                                        new Date(action.created_at).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}),
+                                        new Date(action.created_at).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit', second: '2-digit'})
+                                    ].join(' | ')}
+                                    title={
+                                        <div className='text-sm'>
+                                            {getActionTitle(action)}{isBulkAction(action) ? '' : ': '}
+                                            {!isBulkAction(action) && <HistoryActionDescription action={action} />}
+                                            {action.count ? <> {action.count} times</> : null}
+                                            <span> &mdash; by {action.actor?.name || action.actor?.slug}</span>
+                                        </div>
+                                    }
+                                    separator
+                                />)}
+                                {isFetchingNextPage && (
+                                    <div className="flex items-center justify-center p-5">
+                                        <LoadingIndicator size='md' />
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <NoValueLabel icon='time-back'>
+                                {hasActiveFilters ?
+                                    'No entries match your current filters.' :
+                                    'No history entries found.'
+                                }
+                            </NoValueLabel>
+                        )
+                    ) : data === undefined ? (
+                        <div className="flex items-center justify-center px-5 pb-10 pt-12">
+                            <LoadingIndicator />
+                        </div>
+                    ) : (
+                        <NoValueLabel>No entries found.</NoValueLabel>
+                    )}
                 </List>
             </div>
         </Modal>

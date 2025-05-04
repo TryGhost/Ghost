@@ -1,4 +1,6 @@
 {
+    "{date}": "{date}",
+    "Become a paid member of {site} to get access to all premium content.": "Станете плащащ абонат на {site} за да получите достъп до специалното съдържание за абонати.",
     "By {authors}": "от {authors}",
     "Comment": "Коментар",
     "complimentary": "подарен",
@@ -14,6 +16,8 @@
     "Subscription details": "Детайли за абонамента",
     "trialing": "пробен",
     "Unsubscribe": "Отписване",
+    "Upgrade": "Надградете",
+    "Upgrade to continue reading.": "Надградете за да продължите да четете",
     "View in browser": "Отваряне в браузър",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Получавате това, защото имате <strong>%%{status}%% абонамент</strong> за {site}.",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "Безплатният пробен период приключва на {date}, след което ще бъдете таксувани по редовната цена. Винаги можете да се откажете преди това.",

@@ -413,6 +413,8 @@ describe('Unit: utils/serializers/output/mappers', function () {
                 data: {
                     // same except the remove foo keys
                     id: 'id1',
+                    in_reply_to_id: null,
+                    in_reply_to_snippet: null,
                     status: 'status1',
                     html: 'html1',
                     created_at: 'created_at1',
@@ -640,7 +642,13 @@ describe('Unit: utils/serializers/output/mappers', function () {
                 id: 'comment3',
                 html: '<p>comment 3</p>',
                 member: {id: 'member1'},
-                parent: {id: 'comment1', html: '<p>comment 1</p>', member: {id: 'member1'}},
+                parent: {
+                    id: 'comment1',
+                    html: '<p>comment 1</p>',
+                    member: {id: 'member1'},
+                    in_reply_to_id: null,
+                    in_reply_to_snippet: null
+                },
                 in_reply_to_id: 'comment2',
                 in_reply_to_snippet: 'comment 2'
             });
@@ -668,7 +676,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             });
         });
 
-        it('does not include in_reply_to_snippet for top-level comments', function () {
+        it('includes null in_reply_to attributes for top-level comments', function () {
             const frame = {};
 
             const model = {
@@ -682,7 +690,9 @@ describe('Unit: utils/serializers/output/mappers', function () {
             mapped.should.eql({
                 id: 'comment1',
                 html: '<p>comment 1</p>',
-                member: null
+                member: null,
+                in_reply_to_id: null,
+                in_reply_to_snippet: null
             });
         });
     });

@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import React, {forwardRef} from 'react';
 
-export const tableRowHoverBgClasses = 'before:absolute before:inset-x-[-16px] before:top-[-1px] before:bottom-0 before:bg-grey-50 before:opacity-0 hover:before:opacity-100 before:rounded-md before:transition-opacity dark:before:bg-grey-950 hover:z-10';
+export const tableRowHoverBgClasses = 'before:absolute before:inset-x-[-16px] before:top-[-1px] before:bottom-0 before:bg-grey-50 before:opacity-0 hover:before:opacity-100 before:rounded-md before:transition-opacity before:dark:bg-grey-950 hover:z-10';
 
 export interface TableRowProps {
     id?: string;
@@ -28,7 +28,7 @@ const TableRow = forwardRef<HTMLTableRowElement, TableRowProps>(function TableRo
 
     separator = (separator === undefined) ? true : separator;
     const tableRowClasses = clsx(
-        'group/table-row relative',
+        'group/table-row relative transform-gpu [clip-path:inset(0_-16px)]',
         bgOnHover && tableRowHoverBgClasses,
         onClick && 'cursor-pointer',
         separator ? 'border-b border-grey-100 last-of-type:border-b-transparent dark:border-grey-950' : 'border-y border-none first-of-type:hover:border-t-transparent',

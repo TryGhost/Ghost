@@ -2,7 +2,7 @@ import Controller from '@ember/controller';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {isArray as isEmberArray} from '@ember/array';
-import {isVersionMismatchError} from 'ghost-admin/services/ajax';
+import {isTwoFactorTokenRequiredError, isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -13,6 +13,7 @@ export default class SignupController extends Controller {
     @service notifications;
     @service session;
     @service settings;
+    @service router;
 
     @inject config;
 
@@ -59,6 +60,10 @@ export default class SignupController extends Controller {
             try {
                 yield this._authenticateWithPassword();
             } catch (error) {
+                if (isTwoFactorTokenRequiredError(error)) {
+                    yield this.router.transitionTo('signin-verify');
+                    return true;
+                }
                 this.notifications.showAPIError(error, {key: 'signup.complete'});
             }
 

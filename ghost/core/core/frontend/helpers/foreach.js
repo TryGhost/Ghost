@@ -31,7 +31,7 @@ module.exports = function foreach(items, options) {
         if (Object.values(items).length > 0 && checks.isPost(Object.values(items)[0])) {
             visibility = visibility || 'all';
         }
-    } 
+    }
 
     if (_.isArray(items) && items.length > 0 && checks.isNewsletter(items[0])) {
         visibility = visibility || 'all';

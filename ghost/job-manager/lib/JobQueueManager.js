@@ -3,26 +3,39 @@ const path = require('path');
 const JobsRepository = require('./JobsRepository');
 const debug = require('@tryghost/debug')('job-manager:JobQueueManager');
 const logging = require('@tryghost/logging');
+const metrics = require('@tryghost/metrics');
 
 class JobQueueManager {
-    constructor({JobModel, config, logger = logging, WorkerPool = workerpool}) {
+    constructor({JobModel, config, logger = logging, metricLogger = metrics, WorkerPool = workerpool, eventEmitter}) {
         this.jobsRepository = new JobsRepository({JobModel});
         this.config = this.initializeConfig(config?.get('services:jobs:queue') || {});
         this.logger = this.createLogger(logger, this.config.logLevel);
+        this.metricLogger = metricLogger;
         this.WorkerPool = WorkerPool;
         this.pool = this.createWorkerPool();
         this.state = this.initializeState();
+        this.eventEmitter = eventEmitter;
+        this.metricCache = {
+            jobCompletionCount: 0,
+            queueDepth: 0,
+            emailAnalyticsAggregateMemberStatsCount: 0
+        };
     }
 
     createLogger(logger, logLevel) {
         return {
+            debug: (message) => {
+                if (logLevel === 'debug') {
+                    logger.debug(`[JobQueueManager] ${message}`);
+                }
+            },
             info: (message) => {
-                if (logLevel === 'info') {
+                if (logLevel === 'info' || logLevel === 'debug') {
                     logger.info(`[JobQueueManager] ${message}`);
                 }
             },
             error: (message, error) => {
-                if (logLevel === 'info' || logLevel === 'error') {
+                if (logLevel === 'info' || logLevel === 'error' || logLevel === 'debug') {
                     logger.error(`[JobQueueManager] ${message}`, error);
                 }
             }
@@ -74,11 +87,12 @@ class JobQueueManager {
     async startQueueProcessor() {
         const poll = async () => {
             if (this.state.isPolling) {
+                this.logger.debug('Already polling, skipping this cycle');
                 return;
             }
 
             this.state.isPolling = true;
-            this.logger.info(`Polling for jobs; current interval: ${Math.floor(this.state.currentPollInterval / 1000)}s`);
+            this.logger.debug(`Polling for jobs; current interval: ${Math.floor(this.state.currentPollInterval / 1000)}s`);
 
             try {
                 await this.processPendingJobs();
@@ -96,10 +110,11 @@ class JobQueueManager {
     async processPendingJobs() {
         const stats = await this.getStats();
         if (stats.pendingTasks <= this.config.QUEUE_CAPACITY) {
+            this.logger.debug('Processing pending jobs');
             const entriesToAdd = Math.min(this.config.FETCH_COUNT, this.config.FETCH_COUNT - stats.pendingTasks);
-            this.logger.info(`Adding up to ${entriesToAdd} queue entries. Current pending tasks: ${stats.pendingTasks}. Current worker count: ${stats.totalWorkers}`);
-            
-            const jobs = await this.jobsRepository.getQueuedJobs(entriesToAdd);
+            const {data: jobs, total} = await this.jobsRepository.getQueuedJobs(entriesToAdd);
+            this.metricCache.queueDepth = total || 0;
+            this.logger.debug(`Adding up to ${entriesToAdd} queue entries. Current pending tasks: ${stats.pendingTasks}. Current worker count: ${stats.totalWorkers}. Current depth: ${total}.`);
             this.updatePollInterval(jobs);
             await this.processJobs(jobs);
         }
@@ -117,6 +132,16 @@ class JobQueueManager {
         }
     }
 
+    /**
+     * Emits events to the Node event emitter
+     * @param {Array<{name: string, data: any}>} events - The events to emit, e.g. member.edited
+     */
+    emitEvents(events) {
+        events.forEach((e) => {
+            this.eventEmitter.emit(e.name, e.data);
+        });
+    }
+
     async processJobs(jobs) {
         for (const job of jobs) {
             const jobMetadata = JSON.parse(job.get('metadata'));
@@ -131,8 +156,20 @@ class JobQueueManager {
     async executeJob(job, jobName, jobMetadata) {
         this.state.queuedJobs.add(jobName);
         try {
-            await this.pool.exec('executeJob', [jobMetadata.job, jobMetadata.data]);
+            /**
+             * @param {'executeJob'} jobName - This is the generic job execution fn
+             * @param {Array<{name: string, data: any}>} args - The arguments to pass to the job execution fn
+             * @returns {Promise<{success?: boolean, eventData?: {events: Array<{name: string, data: any}>}}>}
+             */
+            const result = await this.pool.exec('executeJob', [jobMetadata.job, jobMetadata.data]);
             await this.jobsRepository.delete(job.id);
+            this.metricCache.jobCompletionCount += 1;
+            if (jobName === 'update-member-email-analytics') {
+                this.metricCache.emailAnalyticsAggregateMemberStatsCount += 1;
+            }
+            if (result && result.eventData) {
+                this.emitEvents(result.eventData.events); // this is nested within eventData because we may want to support DomainEvents emission as well
+            }
         } catch (error) {
             await this.handleJobError(job, jobMetadata, error);
         } finally {
@@ -151,13 +188,13 @@ class JobQueueManager {
         }
     
         const updateData = {
-            status: 'error',
+            status: 'failed',
             finished_at: new Date(),
-            metadata: {
+            metadata: JSON.stringify({
                 ...jobMetadata,
                 error: errorMessage,
                 retries: (jobMetadata.retries || 0) + 1
-            }
+            })
         };
     
         await this.jobsRepository.update(job.id, updateData);
@@ -174,9 +211,19 @@ class JobQueueManager {
 
     reportStats() {
         setInterval(() => {
-            this.logger.info('-- job queue stats --');
-            this.logger.info(JSON.stringify(this.pool.stats(), null, 2));
+            this._doReportStats();
         }, this.config.reportInterval);
+    }
+
+    _doReportStats() {
+        const poolStats = this.pool.stats();
+        const stats = {
+            ...poolStats,
+            ...this.metricCache
+        };
+        const statsString = JSON.stringify(stats, null, 2);
+        this.logger.info(`Job Queue Stats: ${statsString}`);
+        this.metricLogger.metric('job_manager_queue', stats);
     }
 
     async shutdown() {

@@ -3,6 +3,7 @@
         tokenComponent=(component "gh-token-input/label-token")
     }}
     @class="gh-member-label-input"
+    @triggerClass={{@triggerClass}}
     @onChange={{this.updateLabels}}
     @onCreate={{this.createLabel}}
     @options={{this.availableLabels}}

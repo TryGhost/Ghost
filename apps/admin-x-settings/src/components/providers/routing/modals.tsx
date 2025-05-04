@@ -1,3 +1,5 @@
+import React from 'react';
+import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import type {NiceModalHocProps} from '@ebay/nice-modal-react';
 import type {RoutingModalProps} from '@tryghost/admin-x-framework/routing';
 
@@ -6,7 +8,6 @@ import AddIntegrationModal from '../../settings/advanced/integrations/AddIntegra
 import AddNewsletterModal from '../../settings/email/newsletters/AddNewsletterModal';
 // import AddOfferModal from '../../settings/growth/offers/AddOfferModal';
 import AddRecommendationModal from '../../settings/growth/recommendations/AddRecommendationModal';
-import AmpModal from '../../settings/advanced/integrations/AmpModal';
 import AnnouncementBarModal from '../../settings/site/AnnouncementBarModal';
 import CustomIntegrationModal from '../../settings/advanced/integrations/CustomIntegrationModal';
 import DesignAndThemeModal from '../../settings/site/DesignAndThemeModal';
@@ -18,6 +19,7 @@ import HistoryModal from '../../settings/advanced/HistoryModal';
 import InviteUserModal from '../../settings/general/InviteUserModal';
 import NavigationModal from '../../settings/site/NavigationModal';
 import NewsletterDetailModal from '../../settings/email/newsletters/NewsletterDetailModal';
+import NewsletterDetailModalLabs from '../../settings/email/newsletters/NewsletterDetailModalLabs';
 import OfferSuccess from '../../settings/growth/offers/OfferSuccess';
 // import OffersModal from '../../settings/growth/offers/OffersIndex';
 import OffersContainerModal from '../../settings/growth/offers/OffersContainerModal';
@@ -30,11 +32,21 @@ import UnsplashModal from '../../settings/advanced/integrations/UnsplashModal';
 import UserDetailModal from '../../settings/general/UserDetailModal';
 import ZapierModal from '../../settings/advanced/integrations/ZapierModal';
 
+// Wrapper component to conditionally render based on feature flag
+const ConditionalNewsletterDetailModal: ModalComponent = (props) => {
+    const hasEmailCustomization = useFeatureFlag('emailCustomization');
+
+    if (hasEmailCustomization) {
+        return <NewsletterDetailModalLabs {...props} />;
+    } else {
+        return <NewsletterDetailModal {...props} />;
+    }
+};
+
 const modals = {
     AddIntegrationModal,
     AddNewsletterModal,
     AddRecommendationModal,
-    AmpModal,
     CustomIntegrationModal,
     DesignAndThemeModal,
     EditRecommendationModal,
@@ -42,7 +54,7 @@ const modals = {
     HistoryModal,
     InviteUserModal,
     NavigationModal,
-    NewsletterDetailModal,
+    NewsletterDetailModal: ConditionalNewsletterDetailModal,
     PinturaModal,
     PortalModal,
     SlackModal,

@@ -1,4 +1,3 @@
-import BehindFeatureFlag from '../../../BehindFeatureFlag';
 import React, {useState} from 'react';
 import UnsplashSelector from '../../../selectors/UnsplashSelector';
 import clsx from 'clsx';
@@ -57,7 +56,7 @@ const SingleValue: React.FC<SingleValueProps<FontSelectOption, false>> = ({child
     <components.SingleValue {...optionProps}>
         <div className='group' data-testid="select-current-option" data-value={optionProps.data.value}>
             <div className='flex items-center gap-3'>
-                <div className='flex h-12 w-12 items-center justify-center rounded-md bg-white text-2xl font-bold dark:bg-black'>Aa</div>
+                <div className='flex size-12 items-center justify-center rounded-md bg-white text-2xl font-bold dark:bg-black'>Aa</div>
                 <div className='flex flex-col'>
                     <span className='text-md'>{children}</span>
                     <span className='font-sans text-xs font-normal text-grey-700 dark:text-grey-600'>{optionProps.data.creator}</span>
@@ -71,7 +70,7 @@ const Option: React.FC<OptionProps<FontSelectOption, false>> = ({children, ...op
     <components.Option {...optionProps}>
         <div className={optionProps.isSelected ? 'relative flex w-full items-center justify-between gap-2' : 'group'} data-testid="select-option" data-value={optionProps.data.value}>
             <div className='flex items-center gap-3'>
-                <div className='flex h-12 w-12 items-center justify-center rounded-md bg-grey-150 text-2xl font-bold group-hover:bg-grey-250 dark:bg-grey-900 dark:group-hover:bg-grey-800'>Aa</div>
+                <div className='dark:group-hover:bg-grey-800 flex size-12 items-center justify-center rounded-md bg-grey-150 text-2xl font-bold group-hover:bg-grey-250 dark:bg-grey-900'>Aa</div>
                 <div className='flex flex-col'>
                     <span className='text-md'>{children}</span>
                     <span className='font-sans text-xs font-normal text-grey-700 dark:text-grey-600'>{optionProps.data.creator}</span>
@@ -184,7 +183,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
 
     return (
         <>
-            <Form className='mt-4' gap='sm' margins='lg' title=''>
+            <Form className='mt-6' gap='sm' margins='lg' title=''>
                 <ColorPickerField
                     debounceMs={200}
                     direction='rtl'
@@ -319,52 +318,50 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                     }
                 </div>
             </Form>
-            <BehindFeatureFlag flag="customFonts">
-                <Form className='-mt-4' gap='sm' margins='lg' title='Typography'>
-                    <Select
-                        className={selectFont(selectedHeadingFont.label, true)}
-                        components={{Option, SingleValue}}
-                        controlClasses={{control: '!min-h-16 !pl-2', option: '!pl-2'}}
-                        hint={''}
-                        menuShouldScrollIntoView={true}
-                        options={customHeadingFonts}
-                        selectedOption={selectedHeadingFont}
-                        testId='heading-font-select'
-                        title={'Heading font'}
-                        onSelect={(option) => {
-                            if (option?.value === DEFAULT_FONT) {
-                                setHeadingFont({name: DEFAULT_FONT, creator: themeNameVersion});
-                                updateSetting('heading_font', '');
-                            } else {
-                                setHeadingFont({name: option?.value || '', creator: CUSTOM_FONTS.heading.find(f => f.name === option?.value)?.creator || ''});
-                                updateSetting('heading_font', option?.value || '');
-                            }
-                        }}
-                    />
-                    <Select
-                        className={selectFont(selectedBodyFont.label, false)}
-                        components={{Option, SingleValue}}
-                        controlClasses={{control: '!min-h-16 !pl-2', option: '!pl-2'}}
-                        hint={''}
-                        maxMenuHeight={200}
-                        menuPosition='fixed'
-                        menuShouldScrollIntoView={true}
-                        options={customBodyFonts}
-                        selectedOption={selectedBodyFont}
-                        testId='body-font-select'
-                        title={'Body font'}
-                        onSelect={(option) => {
-                            if (option?.value === DEFAULT_FONT) {
-                                setBodyFont({name: DEFAULT_FONT, creator: themeNameVersion});
-                                updateSetting('body_font', '');
-                            } else {
-                                setBodyFont({name: option?.value || '', creator: CUSTOM_FONTS.body.find(f => f.name === option?.value)?.creator || ''});
-                                updateSetting('body_font', option?.value || '');
-                            }
-                        }}
-                    />
-                </Form>
-            </BehindFeatureFlag>
+            <Form className='-mt-4' gap='sm' margins='lg' title='Typography'>
+                <Select
+                    className={selectFont(selectedHeadingFont.label, true)}
+                    components={{Option, SingleValue}}
+                    controlClasses={{control: '!min-h-16 !pl-2', option: '!pl-2'}}
+                    hint={''}
+                    menuShouldScrollIntoView={true}
+                    options={customHeadingFonts}
+                    selectedOption={selectedHeadingFont}
+                    testId='heading-font-select'
+                    title={'Heading font'}
+                    onSelect={(option) => {
+                        if (option?.value === DEFAULT_FONT) {
+                            setHeadingFont({name: DEFAULT_FONT, creator: themeNameVersion});
+                            updateSetting('heading_font', '');
+                        } else {
+                            setHeadingFont({name: option?.value || '', creator: CUSTOM_FONTS.heading.find(f => f.name === option?.value)?.creator || ''});
+                            updateSetting('heading_font', option?.value || '');
+                        }
+                    }}
+                />
+                <Select
+                    className={selectFont(selectedBodyFont.label, false)}
+                    components={{Option, SingleValue}}
+                    controlClasses={{control: '!min-h-16 !pl-2', option: '!pl-2'}}
+                    hint={''}
+                    maxMenuHeight={200}
+                    menuPosition='fixed'
+                    menuShouldScrollIntoView={true}
+                    options={customBodyFonts}
+                    selectedOption={selectedBodyFont}
+                    testId='body-font-select'
+                    title={'Body font'}
+                    onSelect={(option) => {
+                        if (option?.value === DEFAULT_FONT) {
+                            setBodyFont({name: DEFAULT_FONT, creator: themeNameVersion});
+                            updateSetting('body_font', '');
+                        } else {
+                            setBodyFont({name: option?.value || '', creator: CUSTOM_FONTS.body.find(f => f.name === option?.value)?.creator || ''});
+                            updateSetting('body_font', option?.value || '');
+                        }
+                    }}
+                />
+            </Form>
         </>
     );
 };

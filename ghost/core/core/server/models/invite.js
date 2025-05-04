@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const constants = require('@tryghost/constants');
@@ -6,7 +5,7 @@ const security = require('@tryghost/security');
 const settingsCache = require('../../shared/settings-cache');
 const limitService = require('../services/limits');
 const ghostBookshelf = require('./base');
-
+const {setIsRoles} = require('./role-utils');
 const messages = {
     notEnoughPermission: 'You do not have permission to perform this action',
     roleNotFound: 'Role not found',
@@ -21,8 +20,7 @@ Invite = ghostBookshelf.Model.extend({
     tableName: 'invites',
 
     toJSON: function (unfilteredOptions) {
-        const options = Invite.filterOptions(unfilteredOptions, 'toJSON');
-        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, unfilteredOptions);
 
         delete attrs.token;
         return attrs;
@@ -87,14 +85,14 @@ Invite = ghostBookshelf.Model.extend({
 
                 let allowed = [];
                 if (loadedPermissions.user) {
-                    if (_.some(loadedPermissions.user.roles, {name: 'Owner'}) ||
-                        _.some(loadedPermissions.user.roles, {name: 'Administrator'})) {
-                        allowed = ['Administrator', 'Editor', 'Author', 'Contributor'];
-                    } else if (_.some(loadedPermissions.user.roles, {name: 'Editor'})) {
+                    const {isOwner, isAdmin, isEitherEditor} = setIsRoles(loadedPermissions);
+                    if (isOwner || isAdmin) {
+                        allowed = ['Administrator', 'Editor', 'Author', 'Contributor', 'Super Editor'];
+                    } else if (isEitherEditor) {
                         allowed = ['Author', 'Contributor'];
                     }
                 } else if (loadedPermissions.apiKey) {
-                    allowed = ['Editor', 'Author', 'Contributor'];
+                    allowed = ['Editor', 'Author', 'Contributor', 'Super Editor'];
                 }
 
                 if (allowed.indexOf(roleToInvite.get('name')) === -1) {
