@@ -1,5 +1,4 @@
 const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
 const i18nLib = require('@tryghost/i18n');
 const path = require('path');
 
@@ -11,7 +10,7 @@ class ThemeI18n {
      */
     constructor(options) {
         if (!options || !options.basePath) {
-            throw new Error('basePath is required');
+            throw new errors.IncorrectUsageError({message: 'basePath is required'});
         }
         this._basePath = options.basePath;
         this._locale = options.locale || 'en';
@@ -40,14 +39,14 @@ class ThemeI18n {
      */
     init(options) {
         if (!options || !options.activeTheme) {
-            throw new Error('activeTheme is required');
+            throw new errors.IncorrectUsageError({message: 'activeTheme is required'});
         }
 
         this._locale = options.locale || this._locale;
         this._activeTheme = options.activeTheme;
 
         const themeLocalesPath = path.join(this._basePath, this._activeTheme, 'locales');
-        this._i18n = i18nLib(this._locale, 'theme', { themePath: themeLocalesPath });
+        this._i18n = i18nLib(this._locale, 'theme', {themePath: themeLocalesPath});
     }
 
     /**

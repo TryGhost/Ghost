@@ -1,8 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const logging = require('@tryghost/logging');
 const ThemeI18n = require('../../../../../core/frontend/services/theme-engine/i18n/ThemeI18n');
-const fs = require('fs-extra');
 const path = require('path');
 
 describe('ThemeI18n Class behavior', function () {
@@ -51,12 +49,12 @@ describe('ThemeI18n Class behavior', function () {
         }).throw('Theme translation was used before it was initialised with key some key');
     });
 
-        it('correctly uses fulltext with bracket notation', function () {
-            i18n.t('Full text').should.eql('I am correct');
-        });
-
-        it('uses key fallback correctly', function () {
-            i18n.t('unknown string').should.eql('unknown string');
-        });
+    it('correctly uses fulltext with bracket notation', function () {
+        i18n.t('Full text').should.eql('I am correct');
     });
+
+    it('uses key fallback correctly', function () {
+        i18n.t('unknown string').should.eql('unknown string');
+    });
+});
 
