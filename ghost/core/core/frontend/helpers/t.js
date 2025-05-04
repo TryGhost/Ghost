@@ -26,9 +26,7 @@ module.exports = function t(text, options = {}) {
         }
     }
 
-    let result = themeI18n.t(text, bindings);
-
     // The helper should always return a string, not a SafeString
     // HTML escaping is handled by the template engine based on whether {{ or {{{ was used
-    return result;
+    return themeI18n.t(text, bindings);
 };
