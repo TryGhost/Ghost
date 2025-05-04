@@ -11,6 +11,8 @@
 // {{tags prefix=(t " on ")}}
 
 const {themeI18n} = require('../services/handlebars');
+const {themeI18next} = require('../services/handlebars');
+const labs = require('../../shared/labs');
 
 module.exports = function t(text, options = {}) {
     if (!text || text.length === 0) {
@@ -26,5 +28,13 @@ module.exports = function t(text, options = {}) {
         }
     }
 
-    return themeI18n.t(text, bindings);
+    if (labs.isSet('themeTranslation')) {
+        // Use the new translation package when feature flag is enabled
+        console.log('====================themeI18next=======================');
+        return themeI18next.t(text, bindings);
+    } else {
+        // Use the existing translation package when feature flag is disabled
+        console.log('====================themeI18n=======================');
+        return themeI18n.t(text, bindings);
+    }
 };
