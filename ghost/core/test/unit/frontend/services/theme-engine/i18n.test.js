@@ -2,7 +2,6 @@ const should = require('should');
 const sinon = require('sinon');
 const ThemeI18n = require('../../../../../core/frontend/services/theme-engine/i18n/ThemeI18n');
 const path = require('path');
-const fs = require('fs-extra');
 
 describe('ThemeI18n Class behavior', function () {
     let i18n;
@@ -10,8 +9,6 @@ describe('ThemeI18n Class behavior', function () {
 
     beforeEach(async function () {
         i18n = new ThemeI18n({basePath: testBasePath});
-        // Log the test fixtures directory structure
-        const themePath = path.join(testBasePath, 'locale-theme', 'locales');
     });
 
     afterEach(function () {
