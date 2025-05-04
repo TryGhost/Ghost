@@ -1,86 +1,55 @@
 const should = require('should');
 const sinon = require('sinon');
-
-const I18n = require('../../../../../core/frontend/services/theme-engine/i18n/I18n');
-
 const logging = require('@tryghost/logging');
+const ThemeI18n = require('../../../../../core/frontend/services/theme-engine/i18n/ThemeI18n');
+const fs = require('fs-extra');
+const path = require('path');
 
-describe('I18n Class behavior', function () {
+describe('ThemeI18n Class behavior', function () {
+    let i18n;
+    const testBasePath = path.join(__dirname, '../../../utils/fixtures/themes/');
+
+    beforeEach(function () {
+        i18n = new ThemeI18n({basePath: testBasePath});
+    });
+
+    afterEach(function () {
+        sinon.restore();
+    });
+
     it('defaults to en', function () {
-        const i18n = new I18n();
-        i18n.locale().should.eql('en');
+        i18n._locale.should.eql('en');
     });
 
-    it('can have a different locale set', function () {
-        const i18n = new I18n({locale: 'fr'});
-        i18n.locale().should.eql('fr');
+    it('initializes with theme path', function () {
+        i18n.init({activeTheme: 'locale-theme', locale: 'de'});
+        const result = i18n.t('Top left Button');
+        result.should.eql('Oben Links.');
     });
 
-    describe('file loading behavior', function () {
-        it('will fallback to en file correctly without changing locale', function () {
-            const i18n = new I18n({locale: 'fr'});
-
-            let fileSpy = sinon.spy(i18n, '_readTranslationsFile');
-
-            i18n.locale().should.eql('fr');
-            i18n.init();
-
-            i18n.locale().should.eql('fr');
-            fileSpy.calledTwice.should.be.true();
-            fileSpy.secondCall.args[0].should.eql('en');
-        });
+    it('falls back to en when translation not found', function () {
+        i18n.init({activeTheme: 'locale-theme', locale: 'fr'});
+        const result = i18n.t('Top left Button');
+        result.should.eql('Left Button on Top');
     });
 
-    describe('translation key dot notation (default behavior)', function () {
-        const fakeStrings = {
-            test: {string: {path: 'I am correct'}}
-        };
-        let i18n;
-
-        beforeEach(function initBasicI18n() {
-            i18n = new I18n();
-            sinon.stub(i18n, '_loadStrings').returns(fakeStrings);
-            i18n.init();
-        });
-
-        it('correctly loads strings', function () {
-            i18n._strings.should.eql(fakeStrings);
-        });
-
-        it('correctly uses dot notation', function () {
-            i18n.t('test.string.path').should.eql('I am correct');
-        });
-
-        it('uses key fallback correctly', function () {
-            const loggingStub = sinon.stub(logging, 'error');
-            i18n.t('unknown.string').should.eql('An error occurred');
-            sinon.assert.calledOnce(loggingStub);
-        });
-
-        it('errors for invalid strings', function () {
-            should(function () {
-                i18n.t('unknown string');
-            }).throw('i18n.t() called with an invalid key: unknown string');
-        });
+    it('uses key as fallback when no translation files exist', function () {
+        i18n.init({activeTheme: 'locale-theme-1.4', locale: 'de'});
+        const result = i18n.t('Top left Button');
+        result.should.eql('Top left Button');
     });
 
-    describe('translation key fulltext notation (theme behavior)', function () {
-        const fakeStrings = {'Full text': 'I am correct'};
-        let i18n;
+    it('returns empty string for empty key', function () {
+        i18n.init({activeTheme: 'locale-theme', locale: 'en'});
+        const result = i18n.t('');
+        result.should.eql('');
+    });
 
-        beforeEach(function initFulltextI18n() {
-            i18n = new I18n({stringMode: 'fulltext'});
-            sinon.stub(i18n, '_loadStrings').returns(fakeStrings);
-            i18n.init();
-        });
-
-        afterEach(function () {
-            sinon.restore();
-        });
-
-        it('correctly loads strings', function () {
-            i18n._strings.should.eql(fakeStrings);
-        });
+    it('throws error if used before initialization', function () {
+        should(function () {
+            i18n.t('some key');
+        }).throw('Theme translation was used before it was initialised with key some key');
+    });
 
         it('correctly uses fulltext with bracket notation', function () {
             i18n.t('Full text').should.eql('I am correct');
@@ -90,4 +59,4 @@ describe('I18n Class behavior', function () {
             i18n.t('unknown string').should.eql('unknown string');
         });
     });
-});
+

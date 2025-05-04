@@ -17,7 +17,7 @@ module.exports = function t(text, options = {}) {
         // no-op: translation key is missing, return an empty string
         return '';
     }
-    console.log('t got', text, options);
+    console.log('t got', text);
     const bindings = {};
     let prop;
     for (prop in options.hash) {
@@ -25,6 +25,7 @@ module.exports = function t(text, options = {}) {
             bindings[prop] = options.hash[prop];
         }
     }
-
-    return themeI18n.t(text, bindings);
+    let result = themeI18n.t(text, bindings);
+    console.log('t result', result);
+    return result;
 };

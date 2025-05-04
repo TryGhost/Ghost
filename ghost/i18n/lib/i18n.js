@@ -1,4 +1,6 @@
 const i18next = require('i18next');
+const fs = require('fs-extra');
+const path = require('path');
 
 const SUPPORTED_LOCALES = [
     'af', // Afrikaans
@@ -86,12 +88,18 @@ function generateResources(locales, ns) {
 /**
  * @param {string} [lng]
  * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'|'newsletter'|'theme'} ns
-
+ * @param {object} [options]
+ * @param {string} [options.themePath] - Path to theme's locales directory for theme namespace
  */
-module.exports = (lng = 'en', ns = 'portal') => {
+module.exports = (lng = 'en', ns = 'portal', options = {}) => {
     const i18nextInstance = i18next.createInstance();
-    let interpolation = {};
-    if (ns === 'newsletter') {
+    let interpolation = {
+        prefix: '{{',
+        suffix: '}}'
+    };
+
+    // Set single curly braces for theme and newsletter namespaces
+    if (ns === 'theme' || ns === 'newsletter') {
         interpolation = {
             prefix: '{',
             suffix: '}'
@@ -102,14 +110,39 @@ module.exports = (lng = 'en', ns = 'portal') => {
     if (ns !== 'theme') {
         resources = generateResources(SUPPORTED_LOCALES, ns);
     } else {
-        resources = {
-            en: {
-                theme: require(`../locales/en/theme.json`)
-            },
-            fr: {
-                theme: require(`../locales/fr/theme.json`)
+        // For theme namespace, we need to load translations from the theme's locales directory
+        resources = {};
+        const themeLocalesPath = options.themePath;
+        
+        if (themeLocalesPath) {
+            // Try to load the requested locale first
+            try {
+                const localePath = path.join(themeLocalesPath, `${lng}.json`);
+                const content = fs.readFileSync(localePath, 'utf8');
+                resources[lng] = {
+                    theme: JSON.parse(content)
+                };
+            } catch (err) {
+                // If the requested locale fails, try English as fallback
+                try {
+                    const enPath = path.join(themeLocalesPath, 'en.json');
+                    const content = fs.readFileSync(enPath, 'utf8');
+                    resources[lng] = {
+                        theme: JSON.parse(content)
+                    };
+                } catch (enErr) {
+                    // If both fail, use an empty object
+                    resources[lng] = {
+                        theme: {}
+                    };
+                }
             }
-        };
+        } else {
+            // If no theme path provided, use empty translations
+            resources[lng] = {
+                theme: {}
+            };
+        }
     }
 
     i18nextInstance.init({
