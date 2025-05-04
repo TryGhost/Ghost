@@ -107,11 +107,9 @@ module.exports = (lng = 'en', ns = 'portal', options = {}) => {
     }
 
     // Only disable HTML escaping for theme namespace
- /* Disabled for now - need work through security implications
- 
- if (ns === 'theme') {
+    if (ns === 'theme') {
         interpolation.escapeValue = false;
-    } */ 
+    }
 
     let resources;
     if (ns !== 'theme') {
