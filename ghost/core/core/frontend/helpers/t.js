@@ -17,7 +17,7 @@ module.exports = function t(text, options = {}) {
         // no-op: translation key is missing, return an empty string
         return '';
     }
-    console.log('t got', text);
+
     const bindings = {};
     let prop;
     for (prop in options.hash) {
@@ -25,7 +25,10 @@ module.exports = function t(text, options = {}) {
             bindings[prop] = options.hash[prop];
         }
     }
+
     let result = themeI18n.t(text, bindings);
-    console.log('t result', result);
+
+    // The helper should always return a string, not a SafeString
+    // HTML escaping is handled by the template engine based on whether {{ or {{{ was used
     return result;
 };
