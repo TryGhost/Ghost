@@ -1,6 +1,7 @@
 const errors = require('@tryghost/errors');
 const i18nLib = require('@tryghost/i18n');
 const path = require('path');
+const fs = require('fs-extra');
 
 class ThemeI18n {
     /**
@@ -37,7 +38,7 @@ class ThemeI18n {
      * @param {string} options.activeTheme - name of the currently loaded theme
      * @param {string} options.locale - name of the currently loaded locale
      */
-    init(options) {
+    async init(options) {
         if (!options || !options.activeTheme) {
             throw new errors.IncorrectUsageError({message: 'activeTheme is required'});
         }
@@ -46,7 +47,41 @@ class ThemeI18n {
         this._activeTheme = options.activeTheme;
 
         const themeLocalesPath = path.join(this._basePath, this._activeTheme, 'locales');
-        this._i18n = i18nLib(this._locale, 'theme', {themePath: themeLocalesPath});
+        
+        // Check if the theme path exists
+        const themePathExists = await fs.pathExists(themeLocalesPath);
+
+        if (!themePathExists) {
+            // If the theme path doesn't exist, use the key as the translation
+            this._i18n = {
+                t: key => key
+            };
+            return;
+        }
+
+        // Initialize i18n with the theme path
+        // Note: @tryghost/i18n uses synchronous file operations internally
+        // This is fine in production but in tests we need to ensure the files exist first
+        try {
+            // Verify the locale file exists
+            const localePath = path.join(themeLocalesPath, `${this._locale}.json`);
+            await fs.access(localePath);
+            
+            // Initialize i18n
+            this._i18n = i18nLib(this._locale, 'theme', {themePath: themeLocalesPath});
+        } catch (err) {
+            // If the requested locale fails, try English as fallback
+            try {
+                const enPath = path.join(themeLocalesPath, 'en.json');
+                await fs.access(enPath);
+                this._i18n = i18nLib(this._locale, 'theme', {themePath: themeLocalesPath});
+            } catch (enErr) {
+                // If both fail, use the key as the translation
+                this._i18n = {
+                    t: key => key
+                };
+            }
+        }
     }
 
     /**
