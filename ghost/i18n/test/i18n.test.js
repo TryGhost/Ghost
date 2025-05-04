@@ -181,11 +181,11 @@ describe('i18n', function () {
             // Create test translation files
             const enContent = {
                 'Read more': 'Read more',
-                'Subscribe': 'Subscribe'
+                Subscribe: 'Subscribe'
             };
             const frContent = {
                 'Read more': 'Lire plus',
-                'Subscribe': 'S\'abonner'
+                Subscribe: 'S\'abonner'
             };
 
             await fsExtra.writeJson(path.join(themeLocalesPath, 'en.json'), enContent);
@@ -200,7 +200,7 @@ describe('i18n', function () {
             // Create only English translation file
             const enContent = {
                 'Read more': 'Read more',
-                'Subscribe': 'Subscribe'
+                Subscribe: 'Subscribe'
             };
             await fsExtra.writeJson(path.join(themeLocalesPath, 'en.json'), enContent);
 
