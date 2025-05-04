@@ -27,9 +27,9 @@ describe('getCanonicalUrl', function () {
         const post = testUtils.DataGenerator.forKnex.createPost();
 
         getUrlStub.withArgs(post, false).returns('/post-url/');
-        urlUtils.urlJoin.withArgs('http://localhost:9999', '/post-url/').returns('canonical url');
+        urlUtils.urlJoin.withArgs('http://localhost:9999', '/post-url/').returns('http://localhost:9999/post-url/');
 
-        getCanonicalUrl(post).should.eql('canonical url');
+        getCanonicalUrl(post).should.eql('http://localhost:9999/post-url/');
 
         urlUtils.urlJoin.calledOnce.should.be.true();
         urlUtils.urlFor.calledOnce.should.be.true();
@@ -51,9 +51,9 @@ describe('getCanonicalUrl', function () {
         const post = testUtils.DataGenerator.forKnex.createPost();
 
         getUrlStub.withArgs(post, false).returns('/post-url/amp/');
-        urlUtils.urlJoin.withArgs('http://localhost:9999', '/post-url/amp/').returns('*/amp/');
+        urlUtils.urlJoin.withArgs('http://localhost:9999', '/post-url/amp/').returns('http://localhost:9999/post-url/amp/');
 
-        getCanonicalUrl(post).should.eql('*/');
+        getCanonicalUrl(post).should.eql('http://localhost:9999/post-url/');
 
         urlUtils.urlJoin.calledOnce.should.be.true();
         urlUtils.urlFor.calledOnce.should.be.true();
@@ -62,9 +62,21 @@ describe('getCanonicalUrl', function () {
 
     it('should return home if empty secure data', function () {
         getUrlStub.withArgs({secure: true}, false).returns('/');
-        urlUtils.urlJoin.withArgs('http://localhost:9999', '/').returns('canonical url');
+        urlUtils.urlJoin.withArgs('http://localhost:9999', '/').returns('http://localhost:9999/post-url/');
 
-        getCanonicalUrl({secure: true}).should.eql('canonical url');
+        getCanonicalUrl({secure: true}).should.eql('http://localhost:9999/post-url/');
+
+        urlUtils.urlJoin.calledOnce.should.be.true();
+        urlUtils.urlFor.calledOnce.should.be.true();
+        getUrlStub.calledOnce.should.be.true();
+    });
+
+    it('should remove any strange characters from the url', function () {
+        const post = testUtils.DataGenerator.forKnex.createPost();
+
+        getUrlStub.withArgs(post, false).returns('/post-url/strange-à-characters/');
+        urlUtils.urlJoin.withArgs('http://localhost:9999', '/post-url/strange-à-characters/').returns('http://localhost:9999/strange-à-characters');
+        getCanonicalUrl(post).should.eql('http://localhost:9999/strange-a-characters');
 
         urlUtils.urlJoin.calledOnce.should.be.true();
         urlUtils.urlFor.calledOnce.should.be.true();
