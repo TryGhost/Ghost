@@ -158,4 +158,14 @@ describe('i18n', function () {
             assert.deepEqual(resources.xx, englishResources.en);
         });
     });
+    describe('it can translate a theme resource', function () {
+        it('should fall back to en for a key that is missing in the locale', async function () {
+            const t = i18n('fr', 'theme').t;
+            assert.equal(t('Back'), 'Back');
+        });
+        it('should translate a key that is present in the locale file', async function () {
+            const t = i18n('fr', 'theme').t;
+            assert.equal(t('Read more'), 'Lirer plus');
+        });
+    });
 });

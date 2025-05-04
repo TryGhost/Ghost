@@ -120,9 +120,11 @@ module.exports = (lng = 'en', ns = 'portal') => {
         keySeparator: false,
 
         // if the value is an empty string, return the key
+        // this allows empty strings for the en files, and causes all other languages to fallback to en.
         returnEmptyString: false,
 
-        // do not load a fallback
+        // load en as the fallback for any missing language.
+        // load nb as the fallback for no for backwards compatibility
         fallbackLng: {
             no: ['nb', 'en'],
             default: ['en']
