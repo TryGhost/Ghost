@@ -24,11 +24,7 @@ const initPromises = new Map();
 const initState = new Map();
 
 // Get the site's configured locale
-const defaultLocale = settingsCache.get('locale');
-if (!defaultLocale) {
-    console.error('No default locale configured in Ghost!');
-    throw new Error('No default locale configured in Ghost');
-}
+const defaultLocale = settingsCache.get('locale') || 'en';
 console.log('Pre-initializing default locale:', defaultLocale);
 
 // Initialize the default instance
@@ -37,26 +33,21 @@ i18nInstances.set(defaultLocale, defaultInstance);
 initState.set(defaultLocale, 'initializing');
 
 // Initialize the default instance immediately
-console.log('Starting initialization of default locale:', defaultLocale);
 defaultInstance.init({
     activeTheme: settingsCache.get('active_theme'),
     locale: defaultLocale
 }).then(() => {
-    console.log('Default locale initialization completed:', defaultLocale);
     initState.set(defaultLocale, 'initialized');
 }).catch(err => {
-    console.error('Failed to initialize default locale:', defaultLocale, err);
     initState.set(defaultLocale, 'error');
     throw err;
 });
 
 // Helper to ensure an instance is initialized
 function ensureInitialized(locale) {
-    console.log('ensureInitialized called for locale:', locale);
     
     // If no locale specified, use default
     if (!locale) {
-        console.log('No locale specified, using default:', defaultLocale);
         locale = defaultLocale;
     }
     
@@ -110,7 +101,6 @@ module.exports = function t(text, options = {}) {
     if (labs.isSet('themeTranslation')) {
         // Use the new translation package when feature flag is enabled
         const locale = options.data?.root?.locale || defaultLocale;
-        console.log('Translation requested for locale:', locale, 'text:', text);
         
         // Get the instance, ensuring it's initialized
         let instance = i18nInstances.get(locale);
@@ -132,13 +122,10 @@ module.exports = function t(text, options = {}) {
         
         try {
             const result = instance.t(text, bindings);
-            console.log('Translation result for locale:', usingDefault ? defaultLocale : locale, ':', result);
             return result;
         } catch (err) {
-            console.error('Translation error for locale:', usingDefault ? defaultLocale : locale, err);
             // If translation fails, try the default locale as a last resort
             if (!usingDefault) {
-                console.log('Falling back to default locale after error');
                 return i18nInstances.get(defaultLocale).t(text, bindings);
             }
             // If we're already using the default locale, return the original text

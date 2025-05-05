@@ -6,12 +6,10 @@ module.exports = function localeFromUrl(req, res, next) {
     const match = req.path.match(/^\/([a-z]{2})(\/|$)/);
     if (match) {
         res.locals.locale = match[1];
-        console.log('===== set locale to ', res.locals.locale);
         // Remove the locale prefix for downstream routing
         req.url = req.url.replace(/^\/[a-z]{2}/, '') || '/';
     } else {
-        res.locals.locale = 'en'; // fallback/default
-        console.log('===== set locale to ', res.locals.locale);
+        // no locale detected, not setting a default here so that we can use the site's configured locale
     }
     next();
 };

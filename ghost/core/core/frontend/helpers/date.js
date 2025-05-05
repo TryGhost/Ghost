@@ -29,7 +29,7 @@ module.exports = function (...attrs) {
         format = 'll',
         timeago,
         timezone = options.data.site.timezone,
-        locale = options.data.site.locale
+        locale = options.data?.root?.locale || options.data.site.locale
     } = options.hash;
 
     const timeNow = moment().tz(timezone);
