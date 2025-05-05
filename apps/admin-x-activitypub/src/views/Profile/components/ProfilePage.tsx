@@ -11,7 +11,6 @@ import {ProfileTab} from '../Profile';
 import {SettingAction} from '@src/views/Preferences/components/Settings';
 import {useAccountForUser, useBlockMutationForUser, useUnblockMutationForUser} from '@src/hooks/use-activity-pub-queries';
 import {useEffect, useRef, useState} from 'react';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 
 const noop = () => {};
@@ -38,8 +37,6 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
     followingTab,
     followersTab
 }) => {
-    const {isEnabled} = useFeatureFlags();
-
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
     const params = useParams();
     const {canGoBack} = useNavigationStack();
@@ -166,7 +163,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                 </div>
                                 {!isCurrentUser && !isLoadingAccount &&
                                     <div className='flex gap-2'>
-                                        {!isEnabled('block') || !isBlocked ?
+                                        {!isBlocked ?
                                             <FollowButton
                                                 following={account?.followedByMe}
                                                 handle={account?.handle}
@@ -176,15 +173,13 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                             /> :
                                             <UnblockButton account={account} onUnblock={handleBlock} />
                                         }
-                                        {isEnabled('block') &&
-                                            <ProfileMenu
-                                                account={account}
-                                                isBlocked={isBlocked}
-                                                trigger={<Button aria-label='Open profile menu' variant='outline'><LucideIcon.Ellipsis /></Button>}
-                                                onBlockAccount={handleBlock}
-                                                onCopyHandle={handleCopy}
-                                            />
-                                        }
+                                        <ProfileMenu
+                                            account={account}
+                                            isBlocked={isBlocked}
+                                            trigger={<Button aria-label='Open profile menu' variant='outline'><LucideIcon.Ellipsis /></Button>}
+                                            onBlockAccount={handleBlock}
+                                            onCopyHandle={handleCopy}
+                                        />
                                     </div>
                                 }
                                 {isCurrentUser && !isLoadingAccount &&
