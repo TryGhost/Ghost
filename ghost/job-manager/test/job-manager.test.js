@@ -18,14 +18,6 @@ const jobModelInstance = {
     }
 };
 
-const queuedJob = {
-    name: 'test-job',
-    metadata: {
-        job: path.resolve(__dirname, './jobs/simple.js'),
-        data: 'test data'
-    }
-};
-
 describe('Job Manager', function () {
     let stubConfig, jobManager;
 
@@ -36,10 +28,7 @@ describe('Job Manager', function () {
 
         stubConfig = {
             get: sinon.stub().returns({
-                enabled: true,
-                queue: {
-                    enabled: true
-                }
+                enabled: true
             })
         };
 
@@ -61,7 +50,6 @@ describe('Job Manager', function () {
         should.exist(jobManager.removeJob);
         should.exist(jobManager.shutdown);
         should.exist(jobManager.inlineJobHandler);
-        should.exist(jobManager.addQueuedJob);
     });
 
     describe('Add a job', function () {
