@@ -238,7 +238,8 @@ function createApiInstance(config) {
         emailSuppressionList,
         settingsCache,
         sentry,
-        settingsHelpers
+        settingsHelpers,
+        urlUtils
     });
 
     return membersApiInstance;
