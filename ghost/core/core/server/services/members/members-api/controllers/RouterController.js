@@ -322,12 +322,6 @@ module.exports = class RouterController {
      * @returns
      */
     async _createSubscriptionCheckoutSession(options) {
-        if (!this._allowSelfSignup()) {
-            throw new NoPermissionError({
-                message: tpl(messages.inviteOnly)
-            });
-        }
-
         if (options.tier && options.tier.id === 'free') {
             throw new BadRequestError({
                 message: tpl(messages.badRequest)
@@ -348,32 +342,44 @@ module.exports = class RouterController {
             });
         }
 
+        if (options.offer) {
+            // Attach offer information to stripe metadata for free trial offers
+            // free trial offers don't have associated stripe coupons
+            options.metadata.offer = options.offer.id;
+        }
+
         const member = options.member;
+
+        if (!member && options.email) {
+            // Create a signup link if there is no member with this email address
+            options.successUrl = await this._magicLinkService.getMagicLink({
+                tokenData: {
+                    email: options.email,
+                    attribution: {
+                        id: options.metadata.attribution_id ?? null,
+                        type: options.metadata.attribution_type ?? null,
+                        url: options.metadata.attribution_url ?? null
+                    }
+                },
+                type: 'signup',
+                // Redirect to the original success url after sign up
+                referrer: options.successUrl
+            });
+        }
 
         if (member) {
             options.successUrl = this._generateSuccessUrl(options.successUrl, tier.welcomePageURL);
             
-            try {
-                const subscription = await member.related('stripeSubscriptions').query((qb) => {
-                    qb.whereIn('status', ['active', 'trialing', 'past_due', 'unpaid']);
-                }).fetch();
-
-                if (subscription && subscription.length > 0) {
-                    throw new NoPermissionError({
-                        message: messages.existingSubscription,
-                        code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION'
-                    });
-                }
-            } catch (error) {
-                if (error.message !== messages.existingSubscription) {
-                    throw error;
-                }
-
+            const restrictCheckout = member.get('status') === 'paid';
+            
+            if (restrictCheckout) {
+                // This member is already subscribed to a paid tier
+                // We don't want to create a duplicate subscription
                 if (!options.isAuthenticated && options.email) {
                     try {
                         await this._sendEmailWithMagicLink({email: options.email, requestedType: 'signin'});
-                    } catch (emailError) {
-                        logging.warn(emailError);
+                    } catch (err) {
+                        logging.warn(err);
                     }
                 }
                 throw new NoPermissionError({
