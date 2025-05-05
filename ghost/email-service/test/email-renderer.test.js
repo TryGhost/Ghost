@@ -2,7 +2,7 @@ const {EmailRenderer} = require('../');
 const assert = require('assert/strict');
 const cheerio = require('cheerio');
 const {createModel, createModelClass} = require('./utils');
-const linkReplacer = require('@tryghost/link-replacer');
+const linkReplacer = require('../../core/core/server/services/lib/link-replacer');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const {HtmlValidate} = require('html-validate');
@@ -2701,7 +2701,7 @@ describe('Email renderer', function () {
         beforeEach(function () {
             renderedPost = '<p>Lexical Test</p><img class="is-light-background" src="test-dark" /><img class="is-dark-background" src="test-light" />';
             labsEnabled = true; // TODO: odd default because it means we're testing the unused email-customization template
-            
+
             postUrl = 'http://example.com';
             customSettings = {
                 locale: 'fr',

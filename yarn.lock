@@ -4270,25 +4270,6 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.8.tgz#6b79032e760a0899cd4204710beede972a3a185f"
   integrity sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==
 
-"@probe.gl/bench@4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@probe.gl/bench/-/bench-4.1.0.tgz#2a0d1aa58f21874fdfb9cf49b3268cc0c169c773"
-  integrity sha512-4Jb1B1NHXDayWGzz4oHs3IgymdBq2AVzMUlcE428lELFqGP7nnRMqeGR/PmwElCqvYLJE39Av4QK8E64lUw/cA==
-  dependencies:
-    "@probe.gl/log" "4.1.0"
-
-"@probe.gl/env@4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@probe.gl/env/-/env-4.1.0.tgz#c2af9030a8711f2d98590850aa47a5f58feef211"
-  integrity sha512-5ac2Jm2K72VCs4eSMsM7ykVRrV47w32xOGMvcgqn8vQdEMF9PRXyBGYEV9YbqRKWNKpNKmQJVi4AHM/fkCxs9w==
-
-"@probe.gl/log@4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@probe.gl/log/-/log-4.1.0.tgz#b5501f96e3aa7f04c75a9800431314d46911cb98"
-  integrity sha512-r4gRReNY6f+OZEMgfWEXrAE2qJEt8rX0HsDJQXUBMoc+5H47bdB7f/5HBHAmapK8UydwPKL9wCDoS22rJ0yq7Q==
-  dependencies:
-    "@probe.gl/env" "4.1.0"
-
 "@radix-ui/number@1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@radix-ui/number/-/number-1.0.1.tgz#644161a3557f46ed38a042acf4a770e826021674"

@@ -1,15 +1,11 @@
 const assert = require('assert/strict');
-const linkReplacer = require('../lib/link-replacer');
+const linkReplacer = require('../../../../../core/server/services/lib/link-replacer');
 const html5parser = require('html5parser');
 const sinon = require('sinon');
 
 describe('LinkReplacementService', function () {
     afterEach(function () {
         sinon.restore();
-    });
-
-    it('exported', function () {
-        assert.equal(require('../index'), linkReplacer);
     });
 
     describe('replace', function () {

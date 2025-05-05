@@ -34,7 +34,7 @@ class EmailServiceWrapper {
         const lexicalLib = require('../../lib/lexical');
         const urlUtils = require('../../../shared/url-utils');
         const memberAttribution = require('../member-attribution');
-        const linkReplacer = require('@tryghost/link-replacer');
+        const linkReplacer = require('../lib/link-replacer');
         const linkTracking = require('../link-tracking');
         const audienceFeedback = require('../audience-feedback');
         const storageUtils = require('../../adapters/storage/utils');
