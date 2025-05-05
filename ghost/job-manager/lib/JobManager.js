@@ -23,7 +23,8 @@ const worker = async (task, callback) => {
 const ALL_STATUSES = {
     started: 'started',
     finished: 'finished',
-    failed: 'failed'
+    failed: 'failed',
+    queued: 'queued'
 };
 
 /**
