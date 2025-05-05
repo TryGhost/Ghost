@@ -92,7 +92,7 @@ describe('PostsStatsService', function () {
         subscriptionIdCounter += 1;
         const finalSubscriptionId = subscriptionId || `sub_${subscriptionIdCounter}`;
         await _createFreeSignupEvent(postId, finalMemberId, referrerSource);
-        await _createPaidConversionEvent(postId, finalMemberId, finalSubscriptionId, mrr);
+        await _createPaidConversionEvent(postId, finalMemberId, finalSubscriptionId, mrr, referrerSource);
     }
 
     async function _createPaidConversion(signupPostId, conversionPostId, mrr, referrerSource, memberId = null, subscriptionId = null) {
@@ -101,7 +101,7 @@ describe('PostsStatsService', function () {
         subscriptionIdCounter += 1;
         const finalSubscriptionId = subscriptionId || `sub_${subscriptionIdCounter}`;
         await _createFreeSignupEvent(signupPostId, finalMemberId, referrerSource);
-        await _createPaidConversionEvent(conversionPostId, finalMemberId, finalSubscriptionId, mrr);
+        await _createPaidConversionEvent(conversionPostId, finalMemberId, finalSubscriptionId, mrr, referrerSource);
     }
 
     before(async function () {
@@ -325,9 +325,9 @@ describe('PostsStatsService', function () {
         });
     });
 
-    describe('getForPostAlpha', function () {
+    describe('getReferrersForPost', function () {
         it('returns empty array when no events exist', async function () {
-            const result = await service.getForPostAlpha('post1');
+            const result = await service.getReferrersForPost('post1');
             assert.ok(result.data, 'Result should have a data property');
             assert.equal(result.data.length, 0, 'Should return empty array when no events exist');
         });
@@ -337,17 +337,106 @@ describe('PostsStatsService', function () {
             await _createFreeSignupEvent('post1', 'member_2', 'referrer_2', new Date());
             await _createFreeSignupEvent('post1', 'member_3', 'referrer_3', new Date());
 
-            const result = await service.getForPostAlpha('post1');
+            const result = await service.getReferrersForPost('post1');
             assert.ok(result.data, 'Result should have a data property');
             assert.equal(result.data.length, 3, 'Should return 3 referrers');
         });
 
-        it.skip('correctly ranks posts by paid_members', async function () {});
+        it('correctly ranks referrers by free_members', async function () {
+            await _createFreeSignupEvent('post1', 'member_1_1', 'referrer_1');
+            await _createFreeSignupEvent('post1', 'member_1_2', 'referrer_1');
+            await _createPaidSignup('post1', 500, 'referrer_1', 'member_1_3');
+            await _createFreeSignupEvent('post1', 'member_2_1', 'referrer_2');
+            await _createPaidSignup('post1', 1000, 'referrer_3', 'member_3_1');
+            await _createPaidConversion('post1', 'post2', 500, 'referrer_4', 'member_4_1');
 
-        it.skip('correctly ranks posts by mrr', async function () {});
+            const result = await service.getReferrersForPost('post1', {order: 'free_members desc'});
 
-        it.skip('properly filters by date range', async function () {});
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 4, 'Should return all 4 referrers for post1');
 
-        it.skip('respects the limit parameter', async function () {});
+            const expectedResults = [
+                {source: 'referrer_1', free_members: 2, paid_members: 1, mrr: 500},
+                {source: 'referrer_2', free_members: 1, paid_members: 0, mrr: 0},
+                {source: 'referrer_4', free_members: 1, paid_members: 0, mrr: 0},
+                {source: 'referrer_3', free_members: 0, paid_members: 1, mrr: 1000}
+            ];
+
+            const sortFn = (a, b) => {
+                if (b.free_members !== a.free_members) {
+                    return b.free_members - a.free_members;
+                }
+                return (a.source || '').localeCompare(b.source || '');
+            };
+
+            const sortedActual = result.data.sort(sortFn);
+            const sortedExpected = expectedResults.sort(sortFn);
+
+            assert.deepEqual(sortedActual, sortedExpected, 'Results should match expected order and counts for free_members desc');
+        });
+
+        it('correctly ranks referrers by paid_members', async function () {
+            await _createPaidSignup('post1', 500, 'referrer_1', 'member_1_1');
+            await _createPaidSignup('post1', 600, 'referrer_1', 'member_1_2');
+            await _createPaidConversion('post2', 'post1', 700, 'referrer_2', 'member_2_1');
+            await _createFreeSignupEvent('post1', 'member_3_1', 'referrer_3');
+            await _createPaidConversion('post1', 'post2', 800, 'referrer_4', 'member_4_1');
+
+            const result = await service.getReferrersForPost('post1', {order: 'paid_members desc'});
+
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 4, 'Should return all 4 referrers for post1');
+
+            const expectedResults = [
+                {source: 'referrer_1', free_members: 0, paid_members: 2, mrr: 1100},
+                {source: 'referrer_2', free_members: 0, paid_members: 1, mrr: 700},
+                {source: 'referrer_3', free_members: 1, paid_members: 0, mrr: 0},
+                {source: 'referrer_4', free_members: 1, paid_members: 0, mrr: 0}
+            ];
+
+            const sortFn = (a, b) => {
+                if (b.paid_members !== a.paid_members) {
+                    return b.paid_members - a.paid_members;
+                }
+                return (a.source || '').localeCompare(b.source || '');
+            };
+
+            const sortedActual = result.data.sort(sortFn);
+            const sortedExpected = expectedResults.sort(sortFn);
+
+            assert.deepEqual(sortedActual, sortedExpected, 'Results should match expected order and counts for paid_members desc');
+        });
+
+        it('correctly ranks referrers by mrr', async function () {
+            await _createPaidSignup('post1', 500, 'referrer_1', 'member_1_1');
+            await _createPaidSignup('post1', 600, 'referrer_1', 'member_1_2');
+            await _createPaidConversion('post2', 'post1', 1200, 'referrer_2', 'member_2_1');
+            await _createFreeSignupEvent('post1', 'member_3_1', 'referrer_3');
+            await _createPaidConversion('post1', 'post2', 800, 'referrer_4', 'member_4_1');
+
+            const result = await service.getReferrersForPost('post1', {order: 'mrr desc'});
+
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 4, 'Should return all 4 referrers for post1');
+
+            const expectedResults = [
+                {source: 'referrer_2', free_members: 0, paid_members: 1, mrr: 1200},
+                {source: 'referrer_1', free_members: 0, paid_members: 2, mrr: 1100},
+                {source: 'referrer_3', free_members: 1, paid_members: 0, mrr: 0},
+                {source: 'referrer_4', free_members: 1, paid_members: 0, mrr: 0}
+            ];
+
+            const sortFn = (a, b) => {
+                if (b.mrr !== a.mrr) {
+                    return b.mrr - a.mrr;
+                }
+                return (a.source || '').localeCompare(b.source || '');
+            };
+
+            const sortedActual = result.data.sort(sortFn);
+            const sortedExpected = expectedResults.sort(sortFn);
+
+            assert.deepEqual(sortedActual, sortedExpected, 'Results should match expected order and counts for mrr desc');
+        });
     });
 });
