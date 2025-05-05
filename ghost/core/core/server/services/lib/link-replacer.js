@@ -2,7 +2,7 @@ class LinkReplacer {
     /**
      * Replaces the links in the provided HTML
      * @param {string} html
-     * @param {(url: URL, originalPath: string): Promise<URL|string|false>} replaceLink
+     * @param {(url: URL, originalPath: string) => Promise<URL|string|false>} replaceLink
      * @param {object} options
      * @param {string} [options.base] If you want to replace relative links, this will replace them to an absolute link and call the replaceLink method too
      * @returns {Promise<string>}
