@@ -438,5 +438,32 @@ describe('PostsStatsService', function () {
 
             assert.deepEqual(sortedActual, sortedExpected, 'Results should match expected order and counts for mrr desc');
         });
+
+        it('properly filters by date range', async function () {
+            const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
+            const fifteenDaysAgo = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+            const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+            const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+
+            // Create events at different dates
+            await _createFreeSignupEvent('post1', 'member_past', 'referrer_past', tenDaysAgo);
+            await _createFreeSignupEvent('post1', 'member_future', 'referrer_future', thirtyDaysAgo);
+
+            const lastFifteenDaysResult = await service.getReferrersForPost('post1', {
+                date_from: fifteenDaysAgo,
+                date_to: new Date()
+            });
+
+            assert.equal(lastFifteenDaysResult.data.find(r => r.source === 'referrer_past').free_members, 1);
+
+            // Test filtering to include both dates
+            const lastThirtyDaysResult = await service.getReferrersForPost('post1', {
+                date_from: sixtyDaysAgo,
+                date_to: new Date()
+            });
+
+            assert.equal(lastThirtyDaysResult.data.find(r => r.source === 'referrer_past').free_members, 1);
+            assert.equal(lastThirtyDaysResult.data.find(r => r.source === 'referrer_future').free_members, 1);
+        });
     });
 });
