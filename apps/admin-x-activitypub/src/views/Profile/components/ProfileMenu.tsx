@@ -26,7 +26,6 @@ interface ProfileMenuProps {
     onBlockAccount: () => void;
     disabled?: boolean;
     isBlocked?: boolean;
-    isDomainBlocked?: boolean;
 }
 
 const ProfileMenu: React.FC<ProfileMenuProps> = ({
@@ -35,8 +34,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
     onCopyHandle,
     onBlockAccount,
     disabled = false,
-    isBlocked = false,
-    isDomainBlocked = false
+    isBlocked = false
 }) => {
     const {isEnabled} = useFeatureFlags();
     const [dialogType, setDialogType] = useState<'user' | 'domain' | null>(null);
@@ -93,7 +91,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
                                             setDialogType('domain');
                                         }}
                                     >
-                                        {isDomainBlocked ? 'Unblock domain' : 'Block domain'}
+                                        {isBlocked ? 'Unblock domain' : 'Block domain'}
                                     </Button>
                                 </PopoverClose>
                             </AlertDialogTrigger>
@@ -106,7 +104,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
                     <AlertDialogTitle className='mb-1 flex flex-col gap-1'>
                         {dialogType === 'user'
                             ? (isBlocked ? 'Unblock this user?' : 'Block this user?')
-                            : (isDomainBlocked ? 'Unblock this domain?' : 'Block this domain?')}
+                            : (isBlocked ? 'Unblock this domain?' : 'Block this domain?')}
                         <span className='text-base font-normal tracking-normal'>
                             {dialogType === 'user'
                                 ? account.handle
@@ -118,7 +116,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
                             ? (isBlocked
                                 ? 'They will be able to follow you and engage with your public posts.'
                                 : 'They will be able to see your public posts, but will no longer be able follow you or interact with your content on the social web.')
-                            : (isDomainBlocked
+                            : (isBlocked
                                 ? 'Users from this domain will be able to follow you and engage with your public posts.'
                                 : 'All users from this domain will be able to see your public posts, but won\'t be able to follow you or interact with your content.')}
                     </AlertDialogDescription>
