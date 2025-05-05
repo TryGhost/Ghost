@@ -3,14 +3,14 @@ const DomainEvents = require('@tryghost/domain-events');
 const TierCreatedEvent = require('../../../../../../core/server/services/tiers/TierCreatedEvent');
 const TierPriceChangeEvent = require('../../../../../../core/server/services/tiers/TierPriceChangeEvent');
 const TierNameChangeEvent = require('../../../../../../core/server/services/tiers/TierNameChangeEvent');
-const OfferCreatedEvent = require('@tryghost/members-offers').events.OfferCreatedEvent;
+const OfferCreatedEvent = require('../../../../../../core/server/services/offers/domain/events/OfferCreatedEvent');
 const {BadRequestError} = require('@tryghost/errors');
 
 class PaymentsService {
     /**
      * @param {object} deps
      * @param {import('bookshelf').Model} deps.Offer
-     * @param {import('@tryghost/members-offers/lib/application/OffersAPI')} deps.offersAPI
+     * @param {import('../../../offers/application/OffersAPI')} deps.offersAPI
      * @param {import('../../../stripe/StripeAPI')} deps.stripeAPIService
      * @param {{get(key: string): any}} deps.settingsCache
      */

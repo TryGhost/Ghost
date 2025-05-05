@@ -1,4 +1,6 @@
-const OfferCurrency = require('../../../../lib/domain/models/OfferCurrency');
+const should = require('should');
+
+const OfferCurrency = require('../../../../../../../core/server/services/offers/domain/models/OfferCurrency');
 
 describe('OfferCurrency', function () {
     describe('OfferCurrency.create factory', function () {

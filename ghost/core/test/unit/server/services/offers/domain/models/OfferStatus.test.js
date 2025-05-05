@@ -1,4 +1,6 @@
-const OfferStatus = require('../../../../lib/domain/models/OfferStatus');
+const should = require('should');
+
+const OfferStatus = require('../../../../../../../core/server/services/offers/domain/models/OfferStatus');
 
 describe('OfferStatus', function () {
     describe('OfferStatus.create factory', function () {
