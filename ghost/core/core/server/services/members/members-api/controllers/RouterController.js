@@ -413,7 +413,12 @@ module.exports = class RouterController {
         try {
             // Create URL objects
             const siteUrl = this._urlUtils.getSiteUrl();
-            const welcomeUrl = new URL(welcomePageURL.startsWith('http') ? welcomePageURL : welcomePageURL, siteUrl);
+            
+            // This will throw if welcomePageURL is invalid
+            const welcomeUrl = new URL(
+                welcomePageURL.startsWith('http') ? welcomePageURL : welcomePageURL, 
+                siteUrl
+            );
             
             // Add success parameters
             welcomeUrl.searchParams.set('success', 'true');
@@ -421,7 +426,7 @@ module.exports = class RouterController {
             
             return welcomeUrl.href;
         } catch (err) {
-            logging.warn('Invalid welcome page URL, using original success URL', err);
+            logging.warn(`Invalid welcome page URL "${welcomePageURL}", using original success URL`, err);
             return originalSuccessUrl;
         }
     }
