@@ -12,7 +12,7 @@ module.exports = class AdminAuthAssets extends AssetsMinificationBase {
     constructor(options = {}) {
         super(options);
 
-        this.src = options.src || path.join(config.get('paths').publicFilePath, 'admin-auth');
+        this.src = options.src || path.join(config.get('paths').assetSrc, 'admin-auth');
         /** @private */
         this.dest = options.dest || path.join(config.getContentPath('public'), 'admin-auth');
 
