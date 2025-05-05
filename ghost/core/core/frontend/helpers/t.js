@@ -32,8 +32,6 @@ module.exports = function t(text, options = {}) {
 
     if (labs.isSet('themeTranslation')) {
         // Use the new translation package when feature flag is enabled
-        console.log('====================themeI18next=======================');
-        
         // Initialize only if needed
         if (!themeI18next._i18n) {
             themeI18next.init({
@@ -45,8 +43,6 @@ module.exports = function t(text, options = {}) {
         return themeI18next.t(text, bindings);
     } else {
         // Use the existing translation package when feature flag is disabled
-        console.log('====================themeI18n=======================');
-        
         // Initialize only if needed
         if (!themeI18n._strings) {
             themeI18n.init({
