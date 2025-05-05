@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const should = require('should');
-const UniqueChecker = require('../../../lib/application/UniqueChecker');
+const UniqueChecker = require('../../../../../../core/server/services/offers/application/UniqueChecker');
 
 describe('UniqueChecker', function () {
     describe('#isUniqueCode', function () {
