@@ -1,26 +1,30 @@
 const should = require('should');
 const path = require('path');
+const sinon = require('sinon');
 const t = require('../../../../core/frontend/helpers/t');
-const themeI18n = require('../../../../core/frontend/services/theme-engine/i18next');
+const themeI18next = require('../../../../core/frontend/services/theme-engine/i18next');
+const labs = require('../../../../core/shared/labs');
 
 describe('NEW{{t}} helper', function () {
-    let ogBasePath = themeI18n.basePath;
+    let ogBasePath = themeI18next.basePath;
 
     before(function () {
-        themeI18n.basePath = path.join(__dirname, '../../../utils/fixtures/themes/');
+        sinon.stub(labs, 'isSet').withArgs('themeTranslation').returns(true);
+        themeI18next.basePath = path.join(__dirname, '../../../utils/fixtures/themes/');
     });
 
     after(function () {
-        themeI18n.basePath = ogBasePath;
+        sinon.restore();
+        themeI18next.basePath = ogBasePath;
     });
 
     beforeEach(async function () {
         // Reset the i18n instance before each test
-        themeI18n._i18n = null;
+        themeI18next._i18n = null;
     });
 
     it('theme translation is DE', async function () {
-        await themeI18n.init({activeTheme: 'locale-theme', locale: 'de'});
+        await themeI18next.init({activeTheme: 'locale-theme', locale: 'de'});
 
         let rendered = t.call({}, 'Top left Button', {
             hash: {}
@@ -30,7 +34,7 @@ describe('NEW{{t}} helper', function () {
     });
 
     it('theme translation is EN', async function () {
-        await themeI18n.init({activeTheme: 'locale-theme', locale: 'en'});
+        await themeI18next.init({activeTheme: 'locale-theme', locale: 'en'});
 
         let rendered = t.call({}, 'Top left Button', {
             hash: {}
@@ -40,7 +44,7 @@ describe('NEW{{t}} helper', function () {
     });
 
     it('[fallback] no theme translation file found for FR', async function () {
-        await themeI18n.init({activeTheme: 'locale-theme', locale: 'fr'});
+        await themeI18next.init({activeTheme: 'locale-theme', locale: 'fr'});
 
         let rendered = t.call({}, 'Top left Button', {
             hash: {}
@@ -50,7 +54,7 @@ describe('NEW{{t}} helper', function () {
     });
 
     it('[fallback] no theme files at all, use key as translation', async function () {
-        await themeI18n.init({activeTheme: 'locale-theme-1.4', locale: 'de'});
+        await themeI18next.init({activeTheme: 'locale-theme-1.4', locale: 'de'});
 
         let rendered = t.call({}, 'Top left Button', {
             hash: {}
@@ -76,7 +80,7 @@ describe('NEW{{t}} helper', function () {
     });
 
     it('returns a translated string even if no options are passed', async function () {
-        await themeI18n.init({activeTheme: 'locale-theme', locale: 'en'});
+        await themeI18next.init({activeTheme: 'locale-theme', locale: 'en'});
 
         let rendered = t.call({}, 'Top left Button');
 

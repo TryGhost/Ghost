@@ -74,7 +74,7 @@ class ThemeI18n {
             try {
                 const enPath = path.join(themeLocalesPath, 'en.json');
                 await fs.access(enPath);
-                this._i18n = i18nLib(this._locale, 'theme', {themePath: themeLocalesPath});
+                this._i18n = i18nLib('en', 'theme', {themePath: themeLocalesPath});
             } catch (enErr) {
                 // If both fail, use the key as the translation
                 this._i18n = {
