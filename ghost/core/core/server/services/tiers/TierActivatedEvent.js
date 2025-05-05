@@ -1,6 +1,6 @@
 /**
  * @typedef {object} TierActivatedEventData
- * @prop {Tier} tier
+ * @prop {import('./Tier')} tier
  */
 
 class TierActivatedEvent {
