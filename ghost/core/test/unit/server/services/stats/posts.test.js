@@ -465,5 +465,23 @@ describe('PostsStatsService', function () {
             assert.equal(lastThirtyDaysResult.data.find(r => r.source === 'referrer_past').free_members, 1);
             assert.equal(lastThirtyDaysResult.data.find(r => r.source === 'referrer_future').free_members, 1);
         });
+
+        it('respects the limit parameter', async function () {
+            await _createFreeSignupEvent('post1', 'member_1', 'referrer_1', new Date());
+            await _createFreeSignupEvent('post1', 'member_2', 'referrer_2', new Date());
+            await _createFreeSignupEvent('post1', 'member_3', 'referrer_3', new Date());
+
+            const result = await service.getReferrersForPost('post1', {
+                order: 'free_members desc',
+                limit: 2
+            });
+
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 2, 'Should return only 2 referrers');
+
+            // Verify that only the top 2 referrers by free_members are returned
+            assert.equal(result.data[0].source, 'referrer_1');
+            assert.equal(result.data[1].source, 'referrer_2');
+        });
     });
 });
