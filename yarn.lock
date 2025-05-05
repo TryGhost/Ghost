@@ -8186,10 +8186,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/node@*", "@types/node@22.15.7", "@types/node@>=10.0.0", "@types/node@>=18.0.0", "@types/node@>=8.1.0":
-  version "22.15.7"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.15.7.tgz#f5b5ec1c2ff271f453a36b3f155cfbc25256da8a"
-  integrity sha512-3hieEH05p8cnASknk8cYV71K2Vqmn4Nv8gjvRc5N3XbMlBS4wPwsmsw5bcHw6ISL36vVFuAhElcQCf7Ir4bR0w==
+"@types/node@*", "@types/node@22.15.8", "@types/node@>=10.0.0", "@types/node@>=18.0.0", "@types/node@>=8.1.0":
+  version "22.15.8"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.15.8.tgz#d84fc99205d1d550d138abce87c7bcd5a9618f4f"
+  integrity sha512-VINDWfc4C3DGAa1J+riYRHjzt+IFj5eRaEl768ze7ZqXcjyN/4WHxPLAWMLTwmODpPvFyzuMTAT6A4RMOHlg5g==
   dependencies:
     undici-types "~6.21.0"
 
