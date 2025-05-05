@@ -1,4 +1,3 @@
-const ObjectID = require('bson-objectid').default;
 const logging = require('@tryghost/logging');
 
 /**

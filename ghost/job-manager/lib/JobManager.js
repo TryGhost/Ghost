@@ -7,7 +7,6 @@ const Bree = require('bree');
 const pWaitFor = require('p-wait-for');
 const {UnhandledJobError, IncorrectUsageError} = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const metrics = require('@tryghost/metrics');
 const isCronExpression = require('./is-cron-expression');
 const assembleBreeJob = require('./assemble-bree-job');
 const JobsRepository = require('./JobsRepository');
@@ -24,8 +23,7 @@ const worker = async (task, callback) => {
 const ALL_STATUSES = {
     started: 'started',
     finished: 'finished',
-    failed: 'failed',
-    queued: 'queued'
+    failed: 'failed'
 };
 
 /**
