@@ -1,6 +1,7 @@
 name: ghost
 
-x-common-volumes: &common-volumes
+# Template to share volumes and environment variable between all services running the same base image
+x-service-template: &service-template
   volumes:
     - .:/home/ghost
     - ${SSH_AUTH_SOCK}:/ssh-agent
@@ -42,10 +43,20 @@ x-common-volumes: &common-volumes
     - node_modules_apps_signup-form:/home/ghost/apps/signup-form/node_modules:delegated
     - node_modules_apps_sodo-search:/home/ghost/apps/sodo-search/node_modules:delegated
     - node_modules_apps_stats:/home/ghost/apps/stats/node_modules:delegated
+  environment:
+    - DEBUG=${DEBUG:-}
+    - SSH_AUTH_SOCK=/ssh-agent
+    - NX_DAEMON=${NX_DAEMON:-true}
+    - GHOST_DEV_IS_DOCKER=true
+    - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
+    - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
+    - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+    - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+    - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
 
 services:
   ghost:
-    <<: *common-volumes
+    <<: *service-template
     build:
       context: .
       dockerfile: ./.docker/Dockerfile
@@ -70,19 +81,9 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    environment:
-      - DEBUG=${DEBUG:-}
-      - SSH_AUTH_SOCK=/ssh-agent
-      - NX_DAEMON=${NX_DAEMON:-true}
-      - GHOST_DEV_IS_DOCKER=true
-      - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
-      - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
-      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
-      - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
 
   tinybird:
-    <<: *common-volumes
+    <<: *service-template
     build:
       context: .
       dockerfile: ./.docker/Dockerfile
@@ -92,13 +93,14 @@ services:
     tty: true
 
   browser-tests:
-    <<: *common-volumes
+    <<: *service-template
     build:
       context: .
       dockerfile: ./.docker/Dockerfile
       target: browser-tests
     command: [ "yarn", "test:browser" ]
     profiles: [ browser-tests ]
+    tty: true
 
   mysql:
     image: mysql:8.4.5
