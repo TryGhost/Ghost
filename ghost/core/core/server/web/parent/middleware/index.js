@@ -3,5 +3,6 @@ module.exports = {
     ghostLocals: require('./ghost-locals'),
     logRequest: require('./log-request'),
     queueRequest: require('./queue-request'),
-    requestId: require('./request-id')
+    requestId: require('./request-id'),
+    localeFromUrl: require('./locale-from-url')
 };
