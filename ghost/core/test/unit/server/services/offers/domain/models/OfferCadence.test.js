@@ -1,4 +1,6 @@
-const OfferCadence = require('../../../../lib/domain/models/OfferCadence');
+const should = require('should');
+
+const OfferCadence = require('../../../../../../../core/server/services/offers/domain/models/OfferCadence');
 
 describe('OfferCadence', function () {
     describe('OfferCadence.create factory', function () {
