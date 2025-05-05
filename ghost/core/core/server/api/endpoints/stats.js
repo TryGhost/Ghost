@@ -172,6 +172,13 @@ const controller = {
         headers: {
             cacheInvalidate: false
         },
+        options: [
+            'order',
+            'limit',
+            'date_from',
+            'date_to',
+            'timezone'
+        ],
         data: [
             'id'
         ],
@@ -182,14 +189,14 @@ const controller = {
         cache: statsService.cache,
         generateCacheKeyData(frame) {
             return {
-                method: 'postReferrersAlpha',
+                method: 'getReferrersForPost',
                 data: {
                     id: frame.data.id
                 }
             };
         },
         async query(frame) {
-            return await statsService.api.getPostReferrersAlpha(frame.data.id, frame.options);
+            return await statsService.api.getReferrersForPost(frame.data.id, frame.options);
         }
     },
 };

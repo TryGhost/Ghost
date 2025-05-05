@@ -43,7 +43,7 @@ describe('PostsStatsService', function () {
         await db('posts').insert({id, title});
     }
 
-    async function _createFreeSignupEvent(postId, memberId, createdAt = new Date()) {
+    async function _createFreeSignupEvent(postId, memberId, referrerSource, createdAt = new Date()) {
         eventIdCounter += 1;
         const eventId = `free_event_${eventIdCounter}`;
         await db('members_created_events').insert({
@@ -51,11 +51,12 @@ describe('PostsStatsService', function () {
             member_id: memberId,
             attribution_id: postId,
             attribution_type: 'post',
+            referrer_source: referrerSource,
             created_at: createdAt
         });
     }
 
-    async function _createPaidConversionEvent(postId, memberId, subscriptionId, mrr, createdAt = new Date()) {
+    async function _createPaidConversionEvent(postId, memberId, subscriptionId, mrr, referrerSource, createdAt = new Date()) {
         eventIdCounter += 1;
         const subCreatedEventId = `sub_created_${eventIdCounter}`;
         const paidEventId = `paid_event_${eventIdCounter}`;
@@ -66,6 +67,7 @@ describe('PostsStatsService', function () {
             subscription_id: subscriptionId,
             attribution_id: postId,
             attribution_type: 'post',
+            referrer_source: referrerSource,
             created_at: createdAt
         });
 
@@ -78,27 +80,27 @@ describe('PostsStatsService', function () {
         });
     }
 
-    async function _createFreeSignup(postId, memberId = null) {
+    async function _createFreeSignup(postId, referrerSource,memberId = null) {
         memberIdCounter += 1;
         const finalMemberId = memberId || `member_${memberIdCounter}`;
         await _createFreeSignupEvent(postId, finalMemberId);
     }
 
-    async function _createPaidSignup(postId, mrr, memberId = null, subscriptionId = null) {
+    async function _createPaidSignup(postId, mrr, referrerSource, memberId = null, subscriptionId = null) {
         memberIdCounter += 1;
         const finalMemberId = memberId || `member_${memberIdCounter}`;
         subscriptionIdCounter += 1;
         const finalSubscriptionId = subscriptionId || `sub_${subscriptionIdCounter}`;
-        await _createFreeSignupEvent(postId, finalMemberId);
+        await _createFreeSignupEvent(postId, finalMemberId, referrerSource);
         await _createPaidConversionEvent(postId, finalMemberId, finalSubscriptionId, mrr);
     }
 
-    async function _createPaidConversion(signupPostId, conversionPostId, mrr, memberId = null, subscriptionId = null) {
+    async function _createPaidConversion(signupPostId, conversionPostId, mrr, referrerSource, memberId = null, subscriptionId = null) {
         memberIdCounter += 1;
         const finalMemberId = memberId || `member_${memberIdCounter}`;
         subscriptionIdCounter += 1;
         const finalSubscriptionId = subscriptionId || `sub_${subscriptionIdCounter}`;
-        await _createFreeSignupEvent(signupPostId, finalMemberId);
+        await _createFreeSignupEvent(signupPostId, finalMemberId, referrerSource);
         await _createPaidConversionEvent(conversionPostId, finalMemberId, finalSubscriptionId, mrr);
     }
 
@@ -191,11 +193,11 @@ describe('PostsStatsService', function () {
         });
 
         it('correctly ranks posts by free_members', async function () {
-            await _createFreeSignup('post1');
-            await _createFreeSignup('post2');
-            await _createPaidSignup('post1', 500);
-            await _createPaidSignup('post3', 1000);
-            await _createPaidConversion('post1', 'post2', 500);
+            await _createFreeSignup('post1', 'referrer_1');
+            await _createFreeSignup('post2', 'referrer_2');
+            await _createPaidSignup('post1', 500, 'referrer_1');
+            await _createPaidSignup('post3', 1000, 'referrer_3');
+            await _createPaidConversion('post1', 'post2', 500, 'referrer_1');
 
             const result = await service.getTopPosts({order: 'free_members desc'});
 
@@ -220,10 +222,10 @@ describe('PostsStatsService', function () {
         });
 
         it('correctly ranks posts by paid_members', async function () {
-            await _createFreeSignup('post3');
-            await _createPaidSignup('post1', 600);
-            await _createPaidConversion('post1', 'post2', 500);
-            await _createPaidConversion('post4', 'post2', 700);
+            await _createFreeSignup('post3', 'referrer_3');
+            await _createPaidSignup('post1', 600, 'referrer_1');
+            await _createPaidConversion('post1', 'post2', 500, 'referrer_1');
+            await _createPaidConversion('post4', 'post2', 700, 'referrer_4');
 
             const result = await service.getTopPosts({order: 'paid_members desc'});
 
@@ -248,10 +250,10 @@ describe('PostsStatsService', function () {
         });
 
         it('correctly ranks posts by mrr', async function () {
-            await _createFreeSignup('post3');
-            await _createPaidSignup('post1', 600);
-            await _createPaidConversion('post1', 'post2', 500);
-            await _createPaidConversion('post4', 'post2', 700);
+            await _createFreeSignup('post3', 'referrer_3');
+            await _createPaidSignup('post1', 600, 'referrer_1');
+            await _createPaidConversion('post1', 'post2', 500, 'referrer_1');
+            await _createPaidConversion('post4', 'post2', 700, 'referrer_4');
 
             const result = await service.getTopPosts({order: 'mrr desc'});
 
@@ -282,8 +284,8 @@ describe('PostsStatsService', function () {
             const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
 
             // Create events at different dates
-            await _createFreeSignupEvent('post1', 'member_past', tenDaysAgo);
-            await _createFreeSignupEvent('post2', 'member_future', thirtyDaysAgo);
+            await _createFreeSignupEvent('post1', 'member_past', 'referrer_past', tenDaysAgo);
+            await _createFreeSignupEvent('post2', 'member_future', 'referrer_future', thirtyDaysAgo);
 
             const lastFifteenDaysResult = await service.getTopPosts({
                 date_from: fifteenDaysAgo,
@@ -304,10 +306,10 @@ describe('PostsStatsService', function () {
         });
 
         it('respects the limit parameter', async function () {
-            await _createFreeSignup('post1');
-            await _createFreeSignup('post1');
-            await _createFreeSignup('post2');
-            await _createFreeSignup('post3');
+            await _createFreeSignup('post1', 'referrer_1');
+            await _createFreeSignup('post1', 'referrer_2');
+            await _createFreeSignup('post2', 'referrer_3');
+            await _createFreeSignup('post3', 'referrer_4');
 
             const result = await service.getTopPosts({
                 order: 'free_members desc',
@@ -329,5 +331,23 @@ describe('PostsStatsService', function () {
             assert.ok(result.data, 'Result should have a data property');
             assert.equal(result.data.length, 0, 'Should return empty array when no events exist');
         });
+
+        it('returns referrers for a post', async function () {
+            await _createFreeSignupEvent('post1', 'member_1', 'referrer_1', new Date());
+            await _createFreeSignupEvent('post1', 'member_2', 'referrer_2', new Date());
+            await _createFreeSignupEvent('post1', 'member_3', 'referrer_3', new Date());
+
+            const result = await service.getForPostAlpha('post1');
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 3, 'Should return 3 referrers');
+        });
+
+        it.skip('correctly ranks posts by paid_members', async function () {});
+
+        it.skip('correctly ranks posts by mrr', async function () {});
+
+        it.skip('properly filters by date range', async function () {});
+
+        it.skip('respects the limit parameter', async function () {});
     });
 });

@@ -92,7 +92,7 @@ class PostsStatsService {
      * @param {TopPostsOptions} options
      * @returns {Promise<{data: TopPostResult[]}>} The referrers for the post
      */
-    async getForPostAlpha(postId, options) {
+    async getReferrersForPost(postId, options) {
         const knex = this.knex;
         const freeMembers = await knex('members_created_events as mce')
             .select('mce.referrer_source as source')
