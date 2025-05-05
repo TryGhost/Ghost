@@ -1,7 +1,7 @@
-require('should');
+const should = require('should');
 
-const UrlHistory = require('../lib/UrlHistory');
-const AttributionBuilder = require('../lib/AttributionBuilder');
+const UrlHistory = require('../../../../../core/server/services/member-attribution/UrlHistory');
+const AttributionBuilder = require('../../../../../core/server/services/member-attribution/AttributionBuilder');
 
 describe('AttributionBuilder', function () {
     let attributionBuilder;

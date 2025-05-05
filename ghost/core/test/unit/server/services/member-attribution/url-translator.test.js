@@ -1,6 +1,6 @@
-require('should');
+const should = require('should');
 
-const UrlTranslator = require('../lib/UrlTranslator');
+const UrlTranslator = require('../../../../../core/server/services/member-attribution/UrlTranslator');
 
 const models = {
     Post: {
