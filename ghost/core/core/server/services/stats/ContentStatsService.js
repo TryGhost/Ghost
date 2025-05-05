@@ -9,7 +9,7 @@ const logging = require('@tryghost/logging');
  * @property {string} [title] - Page title
  */
 
-class TopContentStatsService {
+class ContentStatsService {
     /**
      * @param {object} deps
      * @param {import('knex').Knex} deps.knex - Database client
@@ -38,17 +38,17 @@ class TopContentStatsService {
             if (!this.tinybirdClient) {
                 return {data: []};
             }
-            
+
             // Step 1: Get raw data from Tinybird
             const rawData = await this.fetchRawTopContentData(options);
-            
+
             if (!rawData || !rawData.length) {
                 return {data: []};
             }
-            
+
             // Step 2: Enrich the data with titles
             const enrichedData = await this.enrichTopContentData(rawData);
-            
+
             return {data: enrichedData};
         } catch (error) {
             logging.error('Error fetching top content:');
@@ -56,7 +56,7 @@ class TopContentStatsService {
             return {data: []};
         }
     }
-    
+
     /**
      * Fetch raw top pages data from Tinybird
      * @param {Object} options - Query options with snake_case keys
@@ -71,10 +71,10 @@ class TopContentStatsService {
             memberStatus: options.member_status,
             tbVersion: options.tb_version
         };
-        
+
         return await this.tinybirdClient.fetch('api_top_pages', tinybirdOptions);
     }
-    
+
     /**
      * Extract post UUIDs from page data (internal method)
      * @param {Array<TopContentDataItem>} data - Raw page data
@@ -88,7 +88,7 @@ class TopContentStatsService {
             })
             .filter(Boolean);
     }
-    
+
     /**
      * Lookup post titles in the database
      * @param {Array<string>} uuids - Post UUIDs to look up
@@ -98,11 +98,11 @@ class TopContentStatsService {
         if (!uuids.length) {
             return {};
         }
-        
+
         const posts = await this.knex.select('uuid', 'title', 'id')
             .from('posts')
             .whereIn('uuid', uuids);
-            
+
         return posts.reduce((map, post) => {
             map[post.uuid] = {
                 title: post.title,
@@ -111,7 +111,7 @@ class TopContentStatsService {
             return map;
         }, {});
     }
-    
+
     /**
      * Get resource title using UrlService
      * @param {string} pathname - Path to look up
@@ -121,10 +121,10 @@ class TopContentStatsService {
         if (!this.urlService) {
             return null;
         }
-        
+
         try {
             const resource = this.urlService.getResource(pathname);
-            
+
             if (resource && resource.data) {
                 if (resource.data.title) {
                     return {
@@ -144,10 +144,10 @@ class TopContentStatsService {
                 logging.warn(`Error looking up resource for ${pathname}: ${err.message}`);
             }
         }
-        
+
         return null;
     }
-    
+
     /**
      * Enrich top pages data with titles
      * @param {Array<TopContentDataItem>} data - Raw page data
@@ -157,11 +157,11 @@ class TopContentStatsService {
         if (!data || !data.length) {
             return [];
         }
-        
+
         // Extract post UUIDs and lookup titles
         const postUuids = this.extractPostUuids(data);
         const titleMap = await this.lookupPostTitles(postUuids);
-        
+
         // Enrich the data with post titles or UrlService lookups
         return Promise.all(data.map(async (item) => {
             // Check if post_uuid is available directly
@@ -172,7 +172,7 @@ class TopContentStatsService {
                     post_id: titleMap[item.post_uuid].id
                 };
             }
-            
+
             // Use UrlService for pages without post_uuid
             const resourceInfo = this.getResourceTitle(item.pathname);
             if (resourceInfo) {
@@ -182,7 +182,7 @@ class TopContentStatsService {
                     resourceType: resourceInfo.resourceType
                 };
             }
-            
+
             // Otherwise fallback to pathname (removing leading/trailing slashes)
             const formattedPath = item.pathname.replace(/^\/|\/$/g, '') || 'Home';
             return {
@@ -193,4 +193,4 @@ class TopContentStatsService {
     }
 }
 
-module.exports = TopContentStatsService; 
+module.exports = ContentStatsService;
