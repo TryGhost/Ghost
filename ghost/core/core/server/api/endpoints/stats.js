@@ -198,7 +198,7 @@ const controller = {
         async query(frame) {
             return await statsService.api.getReferrersForPost(frame.data.id, frame.options);
         }
-    },
+    }
 };
 
 module.exports = controller;
