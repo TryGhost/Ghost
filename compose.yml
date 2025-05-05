@@ -20,7 +20,6 @@ x-service-template: &service-template
     - node_modules_ghost_i18n:/home/ghost/ghost/i18n/node_modules:delegated
     - node_modules_ghost_job-manager:/home/ghost/ghost/job-manager/node_modules:delegated
     - node_modules_ghost_link-replacer:/home/ghost/ghost/link-replacer/node_modules:delegated
-    - node_modules_ghost_member-attribution:/home/ghost/ghost/member-attribution/node_modules:delegated
     - node_modules_ghost_members-csv:/home/ghost/ghost/members-csv/node_modules:delegated
     - node_modules_ghost_mw-error-handler:/home/ghost/ghost/mw-error-handler/node_modules:delegated
     - node_modules_ghost_mw-vhost:/home/ghost/ghost/mw-vhost/node_modules:delegated
@@ -190,7 +189,6 @@ volumes:
   node_modules_ghost_i18n: {}
   node_modules_ghost_job-manager: {}
   node_modules_ghost_link-replacer: {}
-  node_modules_ghost_member-attribution: {}
   node_modules_ghost_members-csv: {}
   node_modules_ghost_mw-error-handler: {}
   node_modules_ghost_mw-vhost: {}

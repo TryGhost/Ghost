@@ -80,7 +80,6 @@ COPY ghost/html-to-plaintext/package.json ghost/html-to-plaintext/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
 COPY ghost/job-manager/package.json ghost/job-manager/package.json
 COPY ghost/link-replacer/package.json ghost/link-replacer/package.json
-COPY ghost/member-attribution/package.json ghost/member-attribution/package.json
 COPY ghost/members-csv/package.json ghost/members-csv/package.json
 COPY ghost/mw-error-handler/package.json ghost/mw-error-handler/package.json
 COPY ghost/mw-vhost/package.json ghost/mw-vhost/package.json
