@@ -5,7 +5,7 @@ class TiersServiceWrapper {
             return;
         }
 
-        const {TiersAPI} = require('@tryghost/tiers');
+        const TiersAPI = require('./TiersAPI');
         const DomainEvents = require('@tryghost/domain-events');
 
         const models = require('../../models');

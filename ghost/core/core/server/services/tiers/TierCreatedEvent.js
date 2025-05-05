@@ -1,16 +1,16 @@
 /**
- * @typedef {object} TierArchivedEventData
- * @prop {Tier} tier
+ * @typedef {object} TierCreatedEventData
+ * @prop {import('./Tier')} tier
  */
 
-class TierArchivedEvent {
-    /** @type {TierArchivedEventData} */
+class TierCreatedEvent {
+    /** @type {TierCreatedEventData} */
     data;
     /** @type {Date} */
     timestamp;
 
     /**
-     * @param {TierArchivedEvent} data
+     * @param {TierCreatedEvent} data
      * @param {Date} timestamp
      */
     constructor(data, timestamp) {
@@ -19,12 +19,12 @@ class TierArchivedEvent {
     }
 
     /**
-     * @param {TierArchivedEvent} data
+     * @param {TierCreatedEvent} data
      * @param {Date} [timestamp]
      */
     static create(data, timestamp = new Date()) {
-        return new TierArchivedEvent(data, timestamp);
+        return new TierCreatedEvent(data, timestamp);
     }
 }
 
-module.exports = TierArchivedEvent;
+module.exports = TierCreatedEvent;

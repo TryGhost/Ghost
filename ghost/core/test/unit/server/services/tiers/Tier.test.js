@@ -1,10 +1,10 @@
 const assert = require('assert/strict');
-const ObjectID = require('bson-objectid');
-const Tier = require('../lib/Tier');
-const TierActivatedEvent = require('../lib/TierActivatedEvent');
-const TierArchivedEvent = require('../lib/TierArchivedEvent');
-const TierNameChangeEvent = require('../lib/TierNameChangeEvent');
-const TierPriceChangeEvent = require('../lib/TierPriceChangeEvent');
+const ObjectID = require('bson-objectid').default;
+const Tier = require('../../../../../core/server/services/tiers/Tier');
+const TierActivatedEvent = require('../../../../../core/server/services/tiers/TierActivatedEvent');
+const TierArchivedEvent = require('../../../../../core/server/services/tiers/TierArchivedEvent');
+const TierNameChangeEvent = require('../../../../../core/server/services/tiers/TierNameChangeEvent');
+const TierPriceChangeEvent = require('../../../../../core/server/services/tiers/TierPriceChangeEvent');
 
 async function assertError(fn, checkError) {
     let error;
