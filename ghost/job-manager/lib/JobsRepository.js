@@ -1,4 +1,3 @@
-const ObjectID = require('bson-objectid').default;
 const logging = require('@tryghost/logging');
 
 /**
@@ -51,71 +50,6 @@ class JobsRepository {
      */
     async update(id, data) {
         await this._JobModel.edit(data, {id});
-    }
-
-    /**
-     * @method getNextQueuedJob
-     * @async
-     * @description Retrieves the next queued job from the database.
-     * @returns {Promise<Object|null>} The next queued job object if found, null otherwise.
-     */
-    async getNextQueuedJob() {
-        const job = await this._JobModel.findOne({
-            queue_entry: 1
-        });
-        return job;
-    }
-
-    /**
-     * @method getQueuedJobs
-     * @async
-     * @description Retrieves a list of queued jobs from the database.
-     * @param {number} [limit=50] - The maximum number of jobs to retrieve.
-     * @returns {Promise<Object>} An object containing the queued job data and total count.
-     */
-    async getQueuedJobs(limit = 50) {
-        const jobs = await this._JobModel.findPage({
-            filter: 'queue_entry:1',
-            limit
-        });
-        return {data: jobs.data, total: jobs.meta.pagination.total};
-    }
-
-    /**
-     * @typedef {Object} QueuedJob
-     * @property {string} name - The name or identifier of the job.
-     * @property {Object} metadata - Metadata associated with the job.
-     * @property {string} metadata.job - The absolute path to the job to execute.
-     * @property {Object} metadata.data - The data associated with the job.
-     */
-
-    /**
-     * @method addQueuedJob
-     * @async
-     * @description Adds a new queued job to the database.
-     * @param {QueuedJob} job - The job to be added to the queue.
-     * @returns {Promise<Object>} The added job object.
-     */
-    async addQueuedJob({name, metadata}) {
-        let job;
-        await this._JobModel.transaction(async (transacting) => {
-            // Check if a job with this name already exist
-            const existingJob = await this._JobModel.findOne({name}, {transacting});
-            if (!existingJob) {
-                // If no existing job, create a new one
-                job = await this._JobModel.add({
-                    id: new ObjectID().toHexString(),
-                    name: name,
-                    status: 'queued',
-                    created_at: new Date(),
-                    metadata: JSON.stringify(metadata),
-                    queue_entry: 1
-                }, {transacting});
-            }
-            // If existingJob is found, do nothing (equivalent to IGNORE)
-        });
-        
-        return job; // Will be undefined if the job already existed
     }
 
     /**

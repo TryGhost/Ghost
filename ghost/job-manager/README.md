@@ -1,12 +1,11 @@
 # Job Manager
 
-A manager for background jobs in Ghost, supporting one-off tasks, recurring jobs, and persistent job queues.
+A manager for background jobs in Ghost, supporting one-off tasks and recurring jobs.
 
 ## Table of Contents
 - [Quick Start](#quick-start)
 - [Job Types](#job-types)
 - [Background Job Requirements](#background-job-requirements)
-- [Configuration](#configuration)
 - [Advanced Usage](#advanced-usage)
 - [Technical Details](#technical-details)
 
@@ -29,20 +28,11 @@ jobManager.addJob({
     at: 'every 5 minutes',
     job: './jobs/check-emails.js'
 });
-
-// Persisted background job
-jobManager.addQueuedJob({
-    name: 'update-member-analytics-123',
-    metadata: {
-        job: './jobs/update-analytics.js',
-        data: { memberId: '123' }
-    }
-});
 ```
 
 ## Job Types
 
-Ghost supports three types of jobs:
+Ghost supports two types of jobs:
 
 1. **Inline Jobs**
    - Run in the main Ghost process
@@ -54,38 +44,15 @@ Ghost supports three types of jobs:
    - Good for CPU-intensive tasks
    - Can be scheduled or recurring
 
-3. **Persisted Queue Jobs**
-   - Stored in database
-   - Survive server restarts
-   - Best for background tasks
-   - Can be monitored and retried
-
 ## Background Job Requirements
 
-Both offloaded and queued jobs must:
+Offloaded jobs must:
 
 - Have a unique name
 - Be idempotent (safe to run multiple times)
 - Use minimal parameters (prefer using IDs rather than full objects)
 - Import their own dependencies
 - Primarily use DB or API calls
-
-## Configuration
-
-The job queue can be configured through Ghost's config:
-
-```js
-jobs: {
-    queue: {
-        enabled: true,
-        maxWorkers: 1,
-        pollMinInterval: 1000,  // 1 sec
-        pollMaxInterval: 60000, // 1 min
-        queueCapacity: 500,    // Max queued jobs
-        fetchCount: 500        // Max jobs per poll
-    }
-}
-```
 
 ## Advanced Usage
 
@@ -182,66 +149,3 @@ Offloaded jobs are running on dedicated worker threads which makes their lifecyc
 4. When **exceptions** happen and expected outcome is to terminate current job, leave the exception unhandled allowing it to bubble up to the job manager. Unhandled exceptions [terminate current thread](https://nodejs.org/dist/latest-v14.x/docs/api/worker_threads.html#worker_threads_event_error) and allow for next scheduled job execution to happen.
 
 For more nuances on job structure best practices check [bree documentation](https://github.com/breejs/bree#writing-jobs-with-promises-and-async-await).
-
-### Implementation Notes
-For any persisted tasks, the Job Manager has a queue based on the `jobs` table. This table is polled regularly and processed with a single worker, and is ideal for background tasks, e.g. updating member analytics. (see notes below about job types)
-
-```js
-// the job manager is typically injected into the consumer service via the service wrapper
-//  from there 
-const JobManager = require('../../services/jobs');
-...
-
-// ** job submission should be handled by the wrapper service **
-// this could be via subscription to events, emitted by the wrapped service(s)
-domainEvents.subscribe(MemberEmailAnalyticsUpdateEvent, async (event) => {
-    const memberId = event.data.memberId;
-    await JobManager.addQueuedJob({
-        name: `update-member-email-analytics-${memberId}`,
-        metadata: {
-            job: path.resolve(__dirname, 'jobs/update-member-email-analytics'),
-            name: 'update-member-email-analytics',
-            data: {
-                memberId
-            }
-        }
-    });
-});
-
-// or it could be passed through as a hook
-const handleAnalyticsJobSubmission = async (memberId) => {
-    await JobManager.addQueuedJob({
-        name: `update-member-email-analytics-${memberId}`,
-        metadata: {
-            job: path.resolve(__dirname, 'jobs/update-member-email-analytics'),
-            name: 'update-member-email-analytics',
-            data: {
-                memberId
-            }
-        }
-    });
-}
-```
-In most cases, jobs should not be submitted by services directly. Because they must import what is needed, it would require too many injected dependencies.
-
-### Adjusting the Job Queue
-The queue manager will poll the `jobs` table every minute unless jobs are being actively or were recently processed, where it will instead poll every second. 
-
-The job queue has a few other config flags for the number of workers, polling rate, max jobs to process, etc.
-
-```
-services: {
-    jobs: {
-        queue: {
-            enabled: true,
-            reportStats: true,
-            maxWorkers: 1,
-            logLevel: 'info' | 'error',
-            pollMinInterval: 1000, // 1 sec
-            pollMaxInterval: 60000, // 1 min
-            queueCapacity: 500, // # of jobs in the process queue at any time
-            fetchCount: 500 // max # of jobs fetched in each poll
-        }
-    }
-}
-```

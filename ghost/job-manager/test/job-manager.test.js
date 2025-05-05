@@ -18,16 +18,8 @@ const jobModelInstance = {
     }
 };
 
-const queuedJob = {
-    name: 'test-job',
-    metadata: {
-        job: path.resolve(__dirname, './jobs/simple.js'),
-        data: 'test data'
-    }
-};
-
 describe('Job Manager', function () {
-    let stubConfig, stubJobQueueManager, jobManager;
+    let stubConfig, jobManager;
 
     beforeEach(function () {
         sandbox.stub(logging, 'info');
@@ -36,20 +28,12 @@ describe('Job Manager', function () {
 
         stubConfig = {
             get: sinon.stub().returns({
-                enabled: true,
-                queue: {
-                    enabled: true
-                }
+                enabled: true
             })
         };
 
-        stubJobQueueManager = {
-            addJob: sinon.stub().resolves({id: 'job1'})
-        };
-
         jobManager = new JobManager({
-            config: stubConfig,
-            jobQueueManager: stubJobQueueManager
+            config: stubConfig
         });
     });
 
@@ -66,7 +50,6 @@ describe('Job Manager', function () {
         should.exist(jobManager.removeJob);
         should.exist(jobManager.shutdown);
         should.exist(jobManager.inlineJobHandler);
-        should.exist(jobManager.addQueuedJob);
     });
 
     describe('Add a job', function () {
@@ -675,23 +658,6 @@ describe('Job Manager', function () {
             await jobManager.removeJob('job-in-ten');
 
             should(jobManager.bree.config.jobs[0]).be.undefined;
-        });
-    });
-
-    describe('Add a queued job', function () {
-        it('submits a job to the job queue if enabled', async function () {
-            stubConfig.get.returns(true);
-            const result = await jobManager.addQueuedJob(queuedJob);
-            should(stubJobQueueManager.addJob.calledOnce).be.true();
-            should(stubJobQueueManager.addJob.firstCall.args[0]).deepEqual(queuedJob);
-            should(result).have.property('id', 'job1');
-        });
-
-        it('does not submit a job to the job queue if disabled', async function () {
-            stubConfig.get.returns(false);
-            const result = await jobManager.addQueuedJob(queuedJob);
-            should(stubJobQueueManager.addJob.called).be.false();
-            should(result).be.undefined();
         });
     });
 
