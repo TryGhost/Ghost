@@ -3,6 +3,8 @@ name: ghost
 x-common-volumes: &common-volumes
   volumes:
     - .:/home/ghost
+    - ${SSH_AUTH_SOCK}:/ssh-agent
+    - ${HOME}/.gitconfig:/root/.gitconfig:ro
     - node_modules_ghost_root:/home/ghost/node_modules:delegated
     - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
     - node_modules_ghost_api-framework:/home/ghost/ghost/api-framework/node_modules:delegated
@@ -62,9 +64,6 @@ services:
       - "7173:7173" # Comments
       - "7174:7174" # Comments HTTPS
     profiles: [ ghost ]
-    volumes:
-      - ${SSH_AUTH_SOCK}:/ssh-agent
-      - ${HOME}/.gitconfig:/root/.gitconfig:ro
     tty: true
     depends_on:
       mysql:
