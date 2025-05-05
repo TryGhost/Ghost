@@ -1,7 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const sanitizeHtml = require('sanitize-html');
-const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureError} = require('@tryghost/errors');
+const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureError, NotFoundError} = require('@tryghost/errors');
 const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 
@@ -46,6 +46,7 @@ module.exports = class RouterController {
      * @param {any} deps.newslettersService
      * @param {any} deps.sentry
      * @param {any} deps.settingsCache
+     * @param {any} deps.urlUtils
      */
     constructor({
         offersAPI,
@@ -62,7 +63,8 @@ module.exports = class RouterController {
         labsService,
         newslettersService,
         sentry,
-        settingsCache
+        settingsCache,
+        urlUtils
     }) {
         this._offersAPI = offersAPI;
         this._paymentsService = paymentsService;
@@ -79,6 +81,7 @@ module.exports = class RouterController {
         this._newslettersService = newslettersService;
         this._sentry = sentry || undefined;
         this._settingsCache = settingsCache;
+        this._urlUtils = urlUtils;
     }
 
     async ensureStripe(_req, res, next) {
@@ -319,45 +322,65 @@ module.exports = class RouterController {
      * @returns
      */
     async _createSubscriptionCheckoutSession(options) {
-        if (options.offer) {
-            // Attach offer information to stripe metadata for free trial offers
-            // free trial offers don't have associated stripe coupons
-            options.metadata.offer = options.offer.id;
-        }
-
-        if (!options.member && options.email) {
-            // Create a signup link if there is no member with this email address
-            options.successUrl = await this._magicLinkService.getMagicLink({
-                tokenData: {
-                    email: options.email,
-                    attribution: {
-                        id: options.metadata.attribution_id ?? null,
-                        type: options.metadata.attribution_type ?? null,
-                        url: options.metadata.attribution_url ?? null
-                    }
-                },
-                type: 'signup',
-                // Redirect to the original success url after sign up
-                referrer: options.successUrl
-            });
-        }
-
-        const restrictCheckout = options.member?.get('status') === 'paid';
-
-        if (restrictCheckout) {
-            // This member is already subscribed to a paid tier
-            // We don't want to create a duplicate subscription
-            if (!options.isAuthenticated && options.email) {
-                try {
-                    await this._sendEmailWithMagicLink({email: options.email, requestedType: 'signin'});
-                } catch (err) {
-                    logging.warn(err);
-                }
-            }
+        if (!this._allowSelfSignup()) {
             throw new NoPermissionError({
-                message: messages.existingSubscription,
-                code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION'
+                message: tpl(messages.inviteOnly)
             });
+        }
+
+        if (options.tier && options.tier.id === 'free') {
+            throw new BadRequestError({
+                message: tpl(messages.badRequest)
+            });
+        }
+
+        const tier = options.tier;
+
+        if (!tier) {
+            throw new NotFoundError({
+                message: tpl(messages.tierNotFound)
+            });
+        }
+
+        if (tier.status === 'archived') {
+            throw new NoPermissionError({
+                message: tpl(messages.tierArchived)
+            });
+        }
+
+        const member = options.member;
+
+        if (member) {
+            options.successUrl = this._generateSuccessUrl(options.successUrl, tier.welcomePageURL);
+            
+            try {
+                const subscription = await member.related('stripeSubscriptions').query((qb) => {
+                    qb.whereIn('status', ['active', 'trialing', 'past_due', 'unpaid']);
+                }).fetch();
+
+                if (subscription && subscription.length > 0) {
+                    throw new NoPermissionError({
+                        message: messages.existingSubscription,
+                        code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION'
+                    });
+                }
+            } catch (error) {
+                if (error.message !== messages.existingSubscription) {
+                    throw error;
+                }
+
+                if (!options.isAuthenticated && options.email) {
+                    try {
+                        await this._sendEmailWithMagicLink({email: options.email, requestedType: 'signin'});
+                    } catch (emailError) {
+                        logging.warn(emailError);
+                    }
+                }
+                throw new NoPermissionError({
+                    message: messages.existingSubscription,
+                    code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION'
+                });
+            }
         }
 
         try {
@@ -371,6 +394,29 @@ module.exports = class RouterController {
                 err,
                 message: tpl(messages.unableToCheckout)
             });
+        }
+    }
+
+    // Helper method to generate success URL with tier welcome page if available
+    _generateSuccessUrl(originalSuccessUrl, welcomePageURL) {
+        // If there's no welcome page URL, use the original success URL
+        if (!welcomePageURL) {
+            return originalSuccessUrl;
+        }
+
+        try {
+            // Create URL objects
+            const siteUrl = this._urlUtils.getSiteUrl();
+            const welcomeUrl = new URL(welcomePageURL.startsWith('http') ? welcomePageURL : welcomePageURL, siteUrl);
+            
+            // Add success parameters
+            welcomeUrl.searchParams.set('success', 'true');
+            welcomeUrl.searchParams.set('action', 'signup');
+            
+            return welcomeUrl.href;
+        } catch (err) {
+            logging.warn('Invalid welcome page URL, using original success URL', err);
+            return originalSuccessUrl;
         }
     }
 
@@ -478,6 +524,11 @@ module.exports = class RouterController {
                 ...options,
                 ...data
             });
+
+            // Add welcome_page_url to the response if available and member is authenticated
+            if (isAuthenticated && data.tier && data.tier.welcomePageURL) {
+                response.welcomePageUrl = data.tier.welcomePageURL;
+            }
         } else if (type === 'donation') {
             options.personalNote = parsePersonalNote(req.body.personalNote);
             response = await this._createDonationCheckoutSession(options);
