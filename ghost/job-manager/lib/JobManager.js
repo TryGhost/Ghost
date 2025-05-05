@@ -48,10 +48,9 @@ class JobManager {
      * @param {Object} [options.JobModel] - a model which can persist job data in the storage
      * @param {Object} [options.domainEvents] - domain events emitter
      * @param {Object} [options.config] - config
-     * @param {boolean} [options.isDuplicate] - if true, the job manager will not initialize the job queue
      * @param {Object} [options.events] - events instance (for testing)
      */
-    constructor({errorHandler, workerMessageHandler, JobModel, domainEvents, config, isDuplicate = false, events = null}) {
+    constructor({errorHandler, workerMessageHandler, JobModel, domainEvents, config, events = null}) {
         this.inlineQueue = fastq(this, worker, 3);
         this._jobMessageHandler = this._jobMessageHandler.bind(this);
         this._jobErrorHandler = this._jobErrorHandler.bind(this);
