@@ -1,6 +1,6 @@
-require('should');
+const should = require('should');
 
-const MemberAttributionService = require('../lib/MemberAttributionService');
+const MemberAttributionService = require('../../../../../core/server/services/member-attribution/MemberAttributionService');
 
 describe('MemberAttributionService', function () {
     describe('Constructor', function () {
