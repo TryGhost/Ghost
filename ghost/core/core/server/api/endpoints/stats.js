@@ -89,30 +89,6 @@ const controller = {
             return await statsService.api.getPostReferrers(frame.data.id);
         }
     },
-    postReferrersAlpha: {
-        headers: {
-            cacheInvalidate: false
-        },
-        data: [
-            'id'
-        ],
-        permissions: {
-            docName: 'posts',
-            method: 'browse'
-        },
-        cache: statsService.cache,
-        generateCacheKeyData(frame) {
-            return {
-                method: 'postReferrersAlpha',
-                data: {
-                    id: frame.data.id
-                }
-            };
-        },
-        async query(frame) {
-            return await statsService.api.getPostReferrersAlpha(frame.data.id);
-        }
-    },
     referrersHistory: {
         headers: {
             cacheInvalidate: false
@@ -191,7 +167,31 @@ const controller = {
         async query(frame) {
             return await statsService.api.getTopPosts(frame.options);
         }
-    }
+    },
+    postReferrersAlpha: {
+        headers: {
+            cacheInvalidate: false
+        },
+        data: [
+            'id'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'postReferrersAlpha',
+                data: {
+                    id: frame.data.id
+                }
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getPostReferrersAlpha(frame.data.id, frame.options);
+        }
+    },
 };
 
 module.exports = controller;

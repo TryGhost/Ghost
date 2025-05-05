@@ -3,6 +3,7 @@ const api = require('../../../../api').endpoints;
 const {http} = require('@tryghost/api-framework');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
+const labs = require('../../../../../shared/labs');
 
 const shared = require('../../../shared');
 
@@ -153,10 +154,12 @@ module.exports = function apiRoutes() {
     router.get('/stats/mrr', mw.authAdminApi, http(api.stats.mrr));
     router.get('/stats/subscriptions', mw.authAdminApi, http(api.stats.subscriptions));
     router.get('/stats/referrers/posts/:id', mw.authAdminApi, http(api.stats.postReferrers));
-    router.get('/stats/referrers/posts/:id/alpha', mw.authAdminApi, http(api.stats.postReferrersAlpha));
     router.get('/stats/referrers', mw.authAdminApi, http(api.stats.referrersHistory));
-    router.get('/stats/top-content', mw.authAdminApi, http(api.stats.topContent));
-    router.get('/stats/top-posts', mw.authAdminApi, http(api.stats.topPosts));
+    if (labs.isSet('trafficAnalytics')) {
+        router.get('/stats/top-posts', mw.authAdminApi, http(api.stats.topPosts));
+        router.get('/stats/top-content', mw.authAdminApi, http(api.stats.topContent));
+        router.get('/stats/referrers/posts/:id/alpha', mw.authAdminApi, http(api.stats.postReferrersAlpha));
+    }
 
     // ## Labels
     router.get('/labels', mw.authAdminApi, http(api.labels.browse));

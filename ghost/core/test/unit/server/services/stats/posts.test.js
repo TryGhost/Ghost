@@ -122,6 +122,7 @@ describe('PostsStatsService', function () {
             table.string('attribution_id').index();
             table.string('attribution_type');
             table.dateTime('created_at');
+            table.string('referrer_source');
         });
 
         await db.schema.createTable('members_subscription_created_events', function (table) {
@@ -131,6 +132,7 @@ describe('PostsStatsService', function () {
             table.string('attribution_id').index();
             table.string('attribution_type');
             table.dateTime('created_at');
+            table.string('referrer_source');
         });
 
         await db.schema.createTable('members_paid_subscription_events', function (table) {
@@ -318,6 +320,14 @@ describe('PostsStatsService', function () {
             // Verify that only the top 2 posts by free_members are returned
             assert.equal(result.data[0].post_id, 'post1');
             assert.equal(result.data[1].post_id, 'post2');
+        });
+    });
+
+    describe('getForPostAlpha', function () {
+        it('returns empty array when no events exist', async function () {
+            const result = await service.getForPostAlpha('post1');
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 0, 'Should return empty array when no events exist');
         });
     });
 });

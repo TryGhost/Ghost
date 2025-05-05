@@ -87,6 +87,82 @@ class PostsStatsService {
     }
 
     /**
+     * Get referrers for a post
+     * @param {string} postId
+     * @param {TopPostsOptions} options
+     * @returns {Promise<{data: TopPostResult[]}>} The referrers for the post
+     */
+    async getForPostAlpha(postId, options) {
+        const knex = this.knex;
+        const freeMembers = await knex('members_created_events as mce')
+            .select('mce.referrer_source as source')
+            .countDistinct('mce.member_id as free_members')
+            .leftJoin('members_subscription_created_events as msce', function () {
+                this.on('mce.member_id', '=', 'msce.member_id')
+                    .andOn('mce.attribution_id', '=', 'msce.attribution_id')
+                    .andOnVal('msce.attribution_type', '=', 'post');
+            })
+            .where('mce.attribution_id', postId)
+            .where('mce.attribution_type', 'post')
+            .whereNull('msce.id')
+            .groupBy('mce.referrer_source');
+
+        const paidMembers = await knex('members_subscription_created_events as msce')
+            .select('msce.referrer_source as source')
+            .countDistinct('msce.member_id as paid_members')
+            .where('msce.attribution_id', postId)
+            .where('msce.attribution_type', 'post')
+            .groupBy('msce.referrer_source');
+
+        const mrr = await knex('members_subscription_created_events as msce')
+            .select('msce.referrer_source as source')
+            .sum('mpse.mrr_delta as mrr')
+            .join('members_paid_subscription_events as mpse', function () {
+                this.on('mpse.subscription_id', '=', 'msce.subscription_id')
+                    .andOn('mpse.member_id', '=', 'msce.member_id');
+            })
+            .where('msce.attribution_id', postId)
+            .where('msce.attribution_type', 'post')
+            .groupBy('msce.referrer_source');
+
+        const map = new Map();
+        for (const row of freeMembers) {
+            map.set(row.source, {
+                source: row.source,
+                free_members: row.free_members,
+                paid_members: 0,
+                mrr: 0
+            });
+        }
+
+        for (const row of paidMembers) {
+            const existing = map.get(row.source) ?? {
+                source: row.source,
+                free_members: 0,
+                paid_members: 0,
+                mrr: 0
+            };
+            existing.paid_members = row.paid_members;
+            map.set(row.source, existing);
+        }
+
+        for (const row of mrr) {
+            const existing = map.get(row.source) ?? {
+                source: row.source,
+                free_members: 0,
+                paid_members: 0,
+                mrr: 0
+            };
+            existing.mrr = row.mrr;
+            map.set(row.source, existing);
+        }
+
+        const results = [...map.values()].sort((a, b) => b.mrr - a.mrr);
+
+        return {data: results};
+    }
+
+    /**
      * Build a subquery/CTE for free_members count
      * (Signed up on Post, Paid Elsewhere/Never)
      * @private
