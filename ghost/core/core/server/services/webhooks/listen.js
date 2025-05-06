@@ -63,7 +63,6 @@ const listen = async () => {
                 return;
             }
 
-            logging.info(`Webhook event triggered: ${event}`);
             webhookTrigger.trigger(event, model);
         });
     });
