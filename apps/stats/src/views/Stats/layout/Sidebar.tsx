@@ -33,14 +33,12 @@ const Sidebar:React.FC = () => {
                 Locations
                 </RightSidebarMenuLink>
 
-                {labs.trafficAnalyticsAlpha &&
-                    <RightSidebarMenuLink active={location.pathname === '/growth/'} onClick={() => {
-                        navigate('/growth/');
-                    }}>
-                        <LucideIcon.Sprout size={16} strokeWidth={1.25} />
-                    Growth
-                    </RightSidebarMenuLink>
-                }
+                <RightSidebarMenuLink active={location.pathname === '/growth/'} onClick={() => {
+                    navigate('/growth/');
+                }}>
+                    <LucideIcon.Sprout size={16} strokeWidth={1.25} />
+                Growth
+                </RightSidebarMenuLink>
             </RightSidebarMenu>
         </div>
     );

@@ -128,10 +128,6 @@ const GrowthKPIs: React.FC<{
         return processedData;
     }, [currentTab, allChartData, range]);
 
-    if (!labs.trafficAnalyticsAlpha) {
-        return <Navigate to='/' />;
-    }
-
     const chartConfig = {
         value: {
             label: currentTab === 'mrr' ? 'MRR' : 'Members'
