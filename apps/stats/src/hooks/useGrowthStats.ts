@@ -127,7 +127,7 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
     const mrrDates = mrrData.map(item => item.date);
 
     const allDates = [...dates, ...mrrDates];
-    const uniqueDates = [...new Set(allDates)];
+    const uniqueDates = [...new Set(allDates)].sort();
 
     return uniqueDates.map((date) => {
         const memberItem = memberData.find(item => item.date === date);

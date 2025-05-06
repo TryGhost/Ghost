@@ -126,7 +126,7 @@ const GrowthKPIs: React.FC<{
         }
 
         return processedData;
-    }, [currentTab, allChartData, paidMembers, range]);
+    }, [currentTab, allChartData, mrr, range]);
 
     if (!labs.trafficAnalyticsAlpha) {
         return <Navigate to='/' />;
