@@ -83,5 +83,5 @@ export const useTopPostsStats = createQuery<TopPostsStatsResponseType>({
 
 export const usePostReferrers = createQueryWithId<PostReferrersResponseType>({
     dataType: postReferrersDataType,
-    path: id => `/stats/referrers/posts/${id}/alpha`
+    path: id => `/stats/posts/${id}/top-referrers`
 });
