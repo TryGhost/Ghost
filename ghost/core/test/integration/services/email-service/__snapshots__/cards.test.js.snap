@@ -388,7 +388,7 @@ table.body h2 span {
     padding: 10px 0;
   }
 
-  table.body table.kg-cta-content-wrapper {
+  table.body table.kg-cta-content-wrapper:not(.kg-cta-bg-none.kg-cta-no-dividers table.kg-cta-content-wrapper) {
     padding: 20px 0;
   }
 
@@ -1119,7 +1119,7 @@ table.body h2 span {
     padding: 10px 0;
   }
 
-  table.body table.kg-cta-content-wrapper {
+  table.body table.kg-cta-content-wrapper:not(.kg-cta-bg-none.kg-cta-no-dividers table.kg-cta-content-wrapper) {
     padding: 20px 0;
   }
 
@@ -1850,7 +1850,7 @@ table.body h2 span {
     padding: 10px 0;
   }
 
-  table.body table.kg-cta-content-wrapper {
+  table.body table.kg-cta-content-wrapper:not(.kg-cta-bg-none.kg-cta-no-dividers table.kg-cta-content-wrapper) {
     padding: 20px 0;
   }
 
@@ -3116,7 +3116,7 @@ table.body h2 span {
     padding: 10px 0;
   }
 
-  table.body table.kg-cta-content-wrapper {
+  table.body table.kg-cta-content-wrapper:not(.kg-cta-bg-none.kg-cta-no-dividers table.kg-cta-content-wrapper) {
     padding: 20px 0;
   }
 
@@ -4400,7 +4400,7 @@ table.body h2 span {
     padding: 10px 0;
   }
 
-  table.body table.kg-cta-content-wrapper {
+  table.body table.kg-cta-content-wrapper:not(.kg-cta-bg-none.kg-cta-no-dividers table.kg-cta-content-wrapper) {
     padding: 20px 0;
   }
 
@@ -5666,7 +5666,7 @@ table.body h2 span {
     padding: 10px 0;
   }
 
-  table.body table.kg-cta-content-wrapper {
+  table.body table.kg-cta-content-wrapper:not(.kg-cta-bg-none.kg-cta-no-dividers table.kg-cta-content-wrapper) {
     padding: 20px 0;
   }
 
