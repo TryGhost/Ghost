@@ -484,4 +484,20 @@ describe('PostsStatsService', function () {
             assert.equal(result.data[1].source, 'referrer_2');
         });
     });
+
+    describe('getGrowthStatsForPost', function () {
+        it('returns growth stats for a post', async function () {
+            await _createFreeSignup('post1', 'referrer_1');
+            await _createPaidSignup('post1', 500, 'referrer_1');
+            await _createPaidConversion('post1', 'post2', 500, 'referrer_1');
+
+            const result = await service.getGrowthStatsForPost('post1');
+
+            const expectedResults = [
+                {post_id: 'post1', free_members: 2, paid_members: 1, mrr: 500}
+            ];
+
+            assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
+        });
+    });
 });

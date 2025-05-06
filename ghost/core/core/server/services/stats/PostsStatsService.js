@@ -159,6 +159,48 @@ class PostsStatsService {
         }
     }
 
+    async getGrowthStatsForPost(postId) {
+        try {
+            const freeMembers = await this.knex('members_created_events as mce')
+                .countDistinct('mce.member_id as free_members')
+                .leftJoin('members_subscription_created_events as msce', function () {
+                    this.on('mce.member_id', '=', 'msce.member_id')
+                        .andOn('mce.attribution_id', '=', 'msce.attribution_id');
+                })
+                .where('mce.attribution_id', postId)
+                .where('mce.attribution_type', 'post')
+                .where('msce.id', null);
+
+            const paidMembers = await this.knex('members_subscription_created_events as msce')
+                .countDistinct('msce.member_id as paid_members')
+                .where('msce.attribution_id', postId)
+                .where('msce.attribution_type', 'post');
+
+            const mrr = await this.knex('members_subscription_created_events as msce')
+                .sum('mpse.mrr_delta as mrr')
+                .join('members_paid_subscription_events as mpse', function () {
+                    this.on('mpse.subscription_id', '=', 'msce.subscription_id');
+                    this.andOn('mpse.member_id', '=', 'msce.member_id');
+                })
+                .where('msce.attribution_id', postId)
+                .where('msce.attribution_type', 'post');
+
+            return {
+                data: [
+                    {
+                        post_id: postId,
+                        free_members: freeMembers[0].free_members || 0,
+                        paid_members: paidMembers[0].paid_members || 0,
+                        mrr: mrr[0].mrr || 0
+                    }
+                ]
+            };
+        } catch (error) {
+            logging.error(`Error fetching growth stats for post ${postId}:`, error);
+            return {data: []};
+        }
+    }
+
     /**
      * Build a subquery/CTE for free_members count (Post-level)
      * (Signed up on Post, Paid Elsewhere/Never)

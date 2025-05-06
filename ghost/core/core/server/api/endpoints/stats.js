@@ -206,6 +206,38 @@ const controller = {
         async query(frame) {
             return await statsService.api.getReferrersForPost(frame.data.id, frame.options);
         }
+    },
+    postGrowthStats: {
+        headers: {
+            cacheInvalidate: false
+        },
+        data: [
+            'id'
+        ],
+        validation: {
+            data: {
+                id: {
+                    type: 'string',
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'postGrowthStats',
+                data: {
+                    id: frame.data.id
+                }
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getGrowthStatsForPost(frame.data.id);
+        }
     }
 };
 
