@@ -1,5 +1,5 @@
 import {useMemo} from 'react';
-import {usePostReferrers as usePostReferrersAPI, usePostGrowthStats as usePostGrowthStatsAPI} from '@tryghost/admin-x-framework/api/stats';
+import {usePostGrowthStats as usePostGrowthStatsAPI, usePostReferrers as usePostReferrersAPI} from '@tryghost/admin-x-framework/api/stats';
 
 export const usePostReferrers = (postId: string) => {
     const {data: postReferrerResponse, isLoading: isPostReferrersLoading} = usePostReferrersAPI(postId);
