@@ -93,7 +93,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                     </Table>
                                     :
                                     <div className='py-20 text-center text-sm text-gray-700'>
-                                    No source data available for this post.
+                                    Once someone signs up on this post, sources will show here.
                                     </div>
                                 }
                             </CardContent>
