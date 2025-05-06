@@ -558,3 +558,8 @@ add|ember-template-lint|no-redundant-role|136|24|136|24|ce988c0098c6e4845fc3307e
 add|ember-template-lint|no-redundant-role|91|40|91|40|9d2eded16257516b455504637aab4057b3c0c9ef|1745798400000|1756166400000|1761350400000|app/templates/mentions.hbs
 add|ember-template-lint|no-redundant-role|113|20|113|20|0418319e2dce98b674dbb6657d185f465d21f87d|1745798400000|1756166400000|1761350400000|app/templates/mentions.hbs
 add|ember-template-lint|no-redundant-role|11|20|11|20|bc4fbabe3d468440d8a2c70e92cec991caca41e2|1745798400000|1756166400000|1761350400000|app/components/dashboard/onboarding/share-modal.hbs
+remove|ember-template-lint|no-action|73|82|73|82|f30d469e4ae668f05aca2f92a124a6b4748847a3|1730678400000|1741046400000|1746230400000|app/components/gh-post-settings-menu.hbs
+remove|ember-template-lint|no-action|80|92|80|92|f30d469e4ae668f05aca2f92a124a6b4748847a3|1730678400000|1741046400000|1746230400000|app/components/gh-post-settings-menu.hbs
+remove|ember-template-lint|no-action|5|14|5|14|a90edd9a99596008f60bfcdbc6befe7fe8d26321|1730678400000|1741046400000|1746230400000|app/components/gh-psm-tags-input.hbs
+remove|ember-template-lint|no-action|6|14|6|14|3924d7cfb394cbcfd6b1bf9cf13a5040ac8f94b5|1743984000000|1754352000000|1759536000000|app/components/gh-psm-tags-input.hbs
+remove|ember-template-lint|no-action|10|20|10|20|8b7921c0514cfd3fec8c3a474187048bc26faf7f|1743984000000|1754352000000|1759536000000|app/components/gh-psm-tags-input.hbs

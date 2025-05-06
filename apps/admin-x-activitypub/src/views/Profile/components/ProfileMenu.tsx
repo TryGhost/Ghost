@@ -1,3 +1,4 @@
+import React, {useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {
     AlertDialog,
@@ -16,6 +17,7 @@ import {
     PopoverTrigger,
     buttonVariants
 } from '@tryghost/shade';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 
 interface ProfileMenuProps {
     account: Account,
@@ -34,6 +36,9 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
     disabled = false,
     isBlocked = false
 }) => {
+    const {isEnabled} = useFeatureFlags();
+    const [dialogType, setDialogType] = useState<'user' | 'domain' | null>(null);
+
     const handleCopyHandleClick = (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
         onCopyHandle();
@@ -42,6 +47,10 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
     const handleBlockAccountClick = (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
         onBlockAccount();
+    };
+
+    const handleBlockDomainClick = (e: React.MouseEvent<HTMLElement>) => {
+        e.stopPropagation();
     };
 
     return (
@@ -62,25 +71,54 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
                                 <Button
                                     className='justify-start text-red hover:bg-red/5 hover:text-red'
                                     variant='ghost'
-                                    onClick={e => e.stopPropagation()}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDialogType('user');
+                                    }}
                                 >
                                     {isBlocked ? 'Unblock user' : 'Block user'}
                                 </Button>
                             </PopoverClose>
                         </AlertDialogTrigger>
+                        {isEnabled('block-domain') &&
+                            <AlertDialogTrigger asChild>
+                                <PopoverClose asChild>
+                                    <Button
+                                        className='justify-start text-red hover:bg-red/5 hover:text-red'
+                                        variant='ghost'
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setDialogType('domain');
+                                        }}
+                                    >
+                                        {isBlocked ? 'Unblock domain' : 'Block domain'}
+                                    </Button>
+                                </PopoverClose>
+                            </AlertDialogTrigger>
+                        }
                     </div>
                 </PopoverContent>
             </Popover>
             <AlertDialogContent onClick={e => e.stopPropagation()}>
                 <AlertDialogHeader>
                     <AlertDialogTitle className='mb-1 flex flex-col gap-1'>
-                        {isBlocked ? 'Unblock this user?' : 'Block this user?'}
-                        <span className='text-base font-normal tracking-normal'>{account.handle}</span>
+                        {dialogType === 'user'
+                            ? (isBlocked ? 'Unblock this user?' : 'Block this user?')
+                            : (isBlocked ? 'Unblock this domain?' : 'Block this domain?')}
+                        <span className='text-base font-normal tracking-normal'>
+                            {dialogType === 'user'
+                                ? account.handle
+                                : account.handle.split('@').filter(Boolean)[1]}
+                        </span>
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                        {isBlocked
-                            ? 'They will be able to follow you and engage with your public posts.'
-                            : 'They will be able to see your public posts, but will no longer be able follow you or interact with your content on the social web.'}
+                        {dialogType === 'user'
+                            ? (isBlocked
+                                ? 'They will be able to follow you and engage with your public posts.'
+                                : 'They will be able to see your public posts, but will no longer be able follow you or interact with your content on the social web.')
+                            : (isBlocked
+                                ? 'Users from this domain will be able to follow you and engage with your public posts.'
+                                : 'All users from this domain will be able to see your public posts, but won\'t be able to follow you or interact with your content.')}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -89,7 +127,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
                     </AlertDialogCancel>
                     <AlertDialogAction
                         className={isBlocked ? undefined : buttonVariants({variant: 'destructive'})}
-                        onClick={handleBlockAccountClick}
+                        onClick={dialogType === 'user' ? handleBlockAccountClick : handleBlockDomainClick}
                     >
                         {isBlocked ? 'Unblock' : 'Block'}
                     </AlertDialogAction>

@@ -21,7 +21,8 @@ export default (function viteConfig() {
         },
         preview: {
             host: '0.0.0.0',
-            port: 7173
+            port: 7173,
+            cors: true
         },
         server: {
             port: 5368

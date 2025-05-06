@@ -2,6 +2,7 @@ const sinon = require('sinon');
 const assert = require('assert').strict;
 const errors = require('@tryghost/errors');
 
+// @ts-ignore - Intentionally ignoring TypeScript errors for tests
 const RouterController = require('../../../../../../../core/server/services/members/members-api/controllers/RouterController');
 
 describe('RouterController', function () {
@@ -486,6 +487,122 @@ describe('RouterController', function () {
             });
         });
 
+        it('adds welcomePageUrl to response for authenticated members when tier has welcomePageURL', async function () {
+            const routerController = new RouterController({
+                tiersService: {
+                    api: {
+                        read: sinon.stub().resolves({
+                            id: 'tier_123',
+                            welcomePageURL: '/welcome-page/'
+                        })
+                    }
+                },
+                paymentsService: {
+                    getPaymentLink: sinon.stub().resolves('https://example.com/checkout/')
+                },
+                tokenService: {
+                    decodeToken: sinon.stub().resolves({sub: 'test@example.com'})
+                },
+                memberRepository: {
+                    get: sinon.stub().resolves({
+                        email: 'test@example.com',
+                        get: sinon.stub().returns('free'),
+                        related: sinon.stub().returns({
+                            query: sinon.stub().returns({
+                                fetch: sinon.stub().resolves([])
+                            })
+                        })
+                    })
+                },
+                urlUtils: {
+                    getSiteUrl: sinon.stub().returns('https://example.com/')
+                },
+                memberAttributionService: {
+                    getAttribution: sinon.stub().resolves({})
+                }
+            });
+
+            const req = {
+                body: {
+                    tierId: 'tier_123',
+                    cadence: 'month',
+                    successUrl: 'https://example.com/success',
+                    cancelUrl: 'https://example.com/cancel',
+                    identity: 'identity-token',
+                    metadata: {}
+                }
+            };
+
+            const res = {
+                writeHead: sinon.stub(),
+                end: sinon.stub()
+            };
+
+            await routerController.createCheckoutSession(req, res);
+
+            res.end.calledOnce.should.be.true();
+            const responseBody = JSON.parse(res.end.firstCall.args[0]);
+            assert.equal(responseBody.welcomePageUrl, '/welcome-page/');
+        });
+
+        it('does not add welcomePageUrl to response when tier has no welcomePageURL', async function () {
+            const routerController = new RouterController({
+                tiersService: {
+                    api: {
+                        read: sinon.stub().resolves({
+                            id: 'tier_123'
+                            // No welcomePageURL
+                        })
+                    }
+                },
+                paymentsService: {
+                    getPaymentLink: sinon.stub().resolves('https://example.com/checkout/')
+                },
+                tokenService: {
+                    decodeToken: sinon.stub().resolves({sub: 'test@example.com'})
+                },
+                memberRepository: {
+                    get: sinon.stub().resolves({
+                        email: 'test@example.com',
+                        get: sinon.stub().returns('free'),
+                        related: sinon.stub().returns({
+                            query: sinon.stub().returns({
+                                fetch: sinon.stub().resolves([])
+                            })
+                        })
+                    })
+                },
+                urlUtils: {
+                    getSiteUrl: sinon.stub().returns('https://example.com/')
+                },
+                memberAttributionService: {
+                    getAttribution: sinon.stub().resolves({})
+                }
+            });
+
+            const req = {
+                body: {
+                    tierId: 'tier_123',
+                    cadence: 'month',
+                    successUrl: 'https://example.com/success',
+                    cancelUrl: 'https://example.com/cancel',
+                    identity: 'identity-token',
+                    metadata: {}
+                }
+            };
+
+            const res = {
+                writeHead: sinon.stub(),
+                end: sinon.stub()
+            };
+
+            await routerController.createCheckoutSession(req, res);
+
+            res.end.calledOnce.should.be.true();
+            const responseBody = JSON.parse(res.end.firstCall.args[0]);
+            assert.equal(responseBody.welcomePageUrl, undefined);
+        });
+
         afterEach(function () {
             sinon.restore();
         });
@@ -685,6 +802,64 @@ describe('RouterController', function () {
                 await controller.sendMagicLink(req, res).should.be.fulfilled();
                 sendEmailWithMagicLinkStub.notCalled.should.be.true();
             });
+        });
+    });
+
+    describe('_generateSuccessUrl', function () {
+        let urlUtilsStub;
+
+        beforeEach(function () {
+            urlUtilsStub = {
+                getSiteUrl: sinon.stub().returns('https://example.com/')
+            };
+        });
+
+        it('returns original success URL when welcomePageURL is not set', function () {
+            const routerController = new RouterController({
+                urlUtils: urlUtilsStub
+            });
+
+            const originalUrl = 'https://example.com/success';
+            const result = routerController._generateSuccessUrl(originalUrl, null);
+            
+            assert.equal(result, originalUrl);
+        });
+
+        it('returns welcome page URL with success parameters when welcomePageURL is set', function () {
+            const routerController = new RouterController({
+                urlUtils: urlUtilsStub
+            });
+
+            const originalUrl = 'https://example.com/success';
+            const welcomePageURL = '/welcome-paid-members/';
+            const result = routerController._generateSuccessUrl(originalUrl, welcomePageURL);
+            
+            assert.equal(result, 'https://example.com/welcome-paid-members/?success=true&action=signup');
+        });
+
+        it('handles absolute URLs in welcomePageURL', function () {
+            const routerController = new RouterController({
+                urlUtils: urlUtilsStub
+            });
+
+            const originalUrl = 'https://example.com/success';
+            const welcomePageURL = 'https://external-site.com/welcome';
+            const result = routerController._generateSuccessUrl(originalUrl, welcomePageURL);
+            
+            assert.equal(result, 'https://external-site.com/welcome?success=true&action=signup');
+        });
+
+        it('returns original URL if welcomePageURL is invalid', function () {
+            const routerController = new RouterController({
+                urlUtils: urlUtilsStub
+            });
+
+            const originalUrl = 'https://example.com/success';
+            // Using a URL that would throw an error when trying to create a URL object
+            const welcomePageURL = 'http://invalid-url:-with-bad-port';
+            const result = routerController._generateSuccessUrl(originalUrl, welcomePageURL);
+            
+            assert.equal(result, originalUrl);
         });
     });
 });
