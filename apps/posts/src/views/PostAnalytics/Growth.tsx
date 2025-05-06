@@ -6,6 +6,8 @@ import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber} from '@tryghost/shade';
 import {useParams} from '@tryghost/admin-x-framework';
 import {usePostReferrers} from '../../hooks/usePostReferrers';
+import {useGlobalData} from '@src/providers/GlobalDataProvider';
+
 const STATS_DEFAULT_SOURCE_ICON_URL = 'https://static.ghost.org/v5.0.0/images/globe-icon.svg';
 
 interface postAnalyticsProps {}
@@ -13,9 +15,9 @@ interface postAnalyticsProps {}
 const Growth: React.FC<postAnalyticsProps> = () => {
     // const {isLoading: isConfigLoading} = useGlobalData();
     const {postId} = useParams();
-    const {stats: postReferrers, totals, isLoading} = usePostReferrers(postId || '');
+    const {range} = useGlobalData();
+    const {stats: postReferrers, totals, isLoading} = usePostReferrers(postId || '', range);
 
-    // const {range} = useGlobalData();
 
     return (
         <PostAnalyticsLayout>
