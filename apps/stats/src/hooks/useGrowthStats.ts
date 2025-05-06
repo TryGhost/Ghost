@@ -8,7 +8,7 @@ export type DiffDirection = 'up' | 'down' | 'same';
 
 // Helper function to convert range to date parameters
 export const getRangeDates = (rangeInDays: number) => {
-    // Always use UTC to stay aligned with the backend’s date arithmetic
+    // Always use UTC to stay aligned with the backend's date arithmetic
     const endDate = moment.utc().format('YYYY-MM-DD');
     let dateFrom;
 
@@ -123,19 +123,37 @@ const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
 
 // Format chart data
 const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem[]) => {
-    const dates = memberData.map(item => item.date);
-    const mrrDates = mrrData.map(item => item.date);
+    // Ensure data is sorted by date
+    const sortedMemberData = [...memberData].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const sortedMrrData = [...mrrData].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-    const allDates = [...dates, ...mrrDates];
-    const uniqueDates = [...new Set(allDates)].sort();
+    const memberDates = sortedMemberData.map(item => item.date);
+    const mrrDates = sortedMrrData.map(item => item.date);
 
-    return uniqueDates.map((date) => {
-        const memberItem = memberData.find(item => item.date === date);
-        const mrrItem = mrrData.find(item => item.date === date);
-        const free = memberItem?.free || 0;
-        const paid = memberItem?.paid || 0;
-        const comped = memberItem?.comped || 0;
+    const allDates = [...new Set([...memberDates, ...mrrDates])].sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+
+    let lastMemberItem: MemberStatusItem | null = null;
+    let lastMrrItem: MrrHistoryItem | null = null;
+
+    const memberMap = new Map(sortedMemberData.map(item => [item.date, item]));
+    const mrrMap = new Map(sortedMrrData.map(item => [item.date, item]));
+
+    return allDates.map((date) => {
+        const currentMemberItem = memberMap.get(date);
+        if (currentMemberItem) {
+            lastMemberItem = currentMemberItem;
+        }
+
+        const currentMrrItem = mrrMap.get(date);
+        if (currentMrrItem) {
+            lastMrrItem = currentMrrItem;
+        }
+
+        const free = lastMemberItem?.free ?? 0;
+        const paid = lastMemberItem?.paid ?? 0;
+        const comped = lastMemberItem?.comped ?? 0;
         const value = free + paid + comped;
+        const mrr = lastMrrItem?.mrr ?? 0;
 
         return {
             date,
@@ -143,9 +161,9 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
             free,
             paid,
             comped,
-            mrr: mrrItem?.mrr || 0,
+            mrr,
             formattedValue: formatNumber(value),
-            label: 'Total members'
+            label: 'Total members' // Consider if label needs update based on data type?
         };
     });
 };
