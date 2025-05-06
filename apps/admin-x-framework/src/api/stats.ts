@@ -1,4 +1,4 @@
-import {Meta, createQuery} from '../utils/api/hooks';
+import {Meta, createQuery, createQueryWithId} from '../utils/api/hooks';
 
 // Types
 
@@ -48,11 +48,49 @@ export type TopPostsStatsResponseType = {
     meta: Meta;
 };
 
+export type PostReferrerStatItem = {
+    source: string;
+    free_members: number;
+    paid_members: number;
+    mrr: number;
+};
+
+export type PostReferrersResponseType = {
+    stats: PostReferrerStatItem[];
+    meta: Meta;
+};
+
+export type PostGrowthStatItem = {
+    post_id: string;
+    free_members: number;
+    paid_members: number;
+    mrr: number;
+};
+
+export type PostGrowthStatsResponseType = {
+    stats: PostGrowthStatItem[];
+    meta: Meta;
+};
+
+export type MrrHistoryItem = {
+    date: string;
+    mrr: number;
+    currency: string;
+};
+export type MrrHistoryResponseType = {
+    stats: MrrHistoryItem[];
+    meta: Meta;
+};
+
 // Requests
 
 const dataType = 'TopContentResponseType';
 const memberCountHistoryDataType = 'MemberCountHistoryResponseType';
 const topPostsStatsDataType = 'TopPostsStatsResponseType';
+const postReferrersDataType = 'PostReferrersResponseType';
+
+const postGrowthStatsDataType = 'PostGrowthStatsResponseType';
+const mrrHistoryDataType = 'MrrHistoryResponseType';
 
 export const useTopContent = createQuery<TopContentResponseType>({
     dataType,
@@ -67,4 +105,18 @@ export const useMemberCountHistory = createQuery<MemberCountHistoryResponseType>
 export const useTopPostsStats = createQuery<TopPostsStatsResponseType>({
     dataType: topPostsStatsDataType,
     path: '/stats/top-posts/'
+});
+
+export const usePostReferrers = createQueryWithId<PostReferrersResponseType>({
+    dataType: postReferrersDataType,
+    path: id => `/stats/posts/${id}/top-referrers`
+});
+
+export const usePostGrowthStats = createQueryWithId<PostGrowthStatsResponseType>({
+    dataType: postGrowthStatsDataType,
+    path: id => `/stats/posts/${id}/growth`
+});
+export const useMrrHistory = createQuery<MrrHistoryResponseType>({
+    dataType: mrrHistoryDataType,
+    path: '/stats/mrr/'
 });

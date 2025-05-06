@@ -7,11 +7,9 @@ const Bree = require('bree');
 const pWaitFor = require('p-wait-for');
 const {UnhandledJobError, IncorrectUsageError} = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const metrics = require('@tryghost/metrics');
 const isCronExpression = require('./is-cron-expression');
 const assembleBreeJob = require('./assemble-bree-job');
 const JobsRepository = require('./JobsRepository');
-const JobQueueManager = require('./JobQueueManager');
 
 const worker = async (task, callback) => {
     try {
@@ -40,7 +38,6 @@ const ALL_STATUSES = {
 class JobManager {
     #domainEvents;
     #completionPromises = new Map();
-    #jobQueueManager = null;
     #config;
     #JobModel;
     #events;
@@ -52,11 +49,9 @@ class JobManager {
      * @param {Object} [options.JobModel] - a model which can persist job data in the storage
      * @param {Object} [options.domainEvents] - domain events emitter
      * @param {Object} [options.config] - config
-     * @param {boolean} [options.isDuplicate] - if true, the job manager will not initialize the job queue
-     * @param {JobQueueManager} [options.jobQueueManager] - job queue manager instance (for testing)
      * @param {Object} [options.events] - events instance (for testing)
      */
-    constructor({errorHandler, workerMessageHandler, JobModel, domainEvents, config, isDuplicate = false, jobQueueManager = null, events = null}) {
+    constructor({errorHandler, workerMessageHandler, JobModel, domainEvents, config, events = null}) {
         this.inlineQueue = fastq(this, worker, 3);
         this._jobMessageHandler = this._jobMessageHandler.bind(this);
         this._jobErrorHandler = this._jobErrorHandler.bind(this);
@@ -95,19 +90,6 @@ class JobManager {
         if (JobModel) {
             this._jobsRepository = new JobsRepository({JobModel});
         }
-
-        if (jobQueueManager) {
-            this.#jobQueueManager = jobQueueManager;
-        } else if (!isDuplicate) {
-            this.#initializeJobQueueManager();
-        }
-    }
-
-    #initializeJobQueueManager() {
-        if (this.#config?.get('services:jobs:queue:enabled') === true && !this.#jobQueueManager) {
-            this.#jobQueueManager = new JobQueueManager({JobModel: this.#JobModel, config: this.#config, eventEmitter: this.#events, metricLogger: metrics});
-            this.#jobQueueManager.init();
-        }
     }
 
     inlineJobHandler(jobName) {
@@ -126,35 +108,6 @@ class JobManager {
             // Can potentially standardize the result here
             return result;
         };
-    }
-
-    /**
-     * @typedef {Object} QueuedJob
-     * @property {string} name - The name or identifier of the job.
-     * @property {Object} metadata - Metadata associated with the job.
-     * @property {string} metadata.job - The absolute path to the job to execute.
-     * @property {string} metadata.name - The name of the job. Used for metrics.
-     * @property {Object} metadata.data - The data associated with the job.
-     */
-
-    /**
-     * @method addQueuedJob
-     * @async
-     * @description Adds a new job to the job repository, which will be polled and executed by the job queue manager.
-     * @param {QueuedJob} job - The job to be added to the queue.
-     * @returns {Promise<Object>} The added job model.
-     */
-    async addQueuedJob({name, metadata}) {
-        // Try to initialize JobQueueManager if it's missing
-        if (!this.#jobQueueManager) {
-            this.#initializeJobQueueManager();
-        }
-
-        if (this.#config?.get('services:jobs:queue:enabled') === true && this.#jobQueueManager) {
-            const model = await this.#jobQueueManager.addJob({name, metadata});
-            return model;
-        }
-        return undefined;
     }
 
     async _jobMessageHandler({name, message}) {
@@ -458,10 +411,6 @@ class JobManager {
      */
     async shutdown(options) {
         await this.bree.stop();
-
-        if (this.#jobQueueManager) {
-            await this.#jobQueueManager.shutdown();
-        }
 
         if (this.inlineQueue.idle()) {
             return;
