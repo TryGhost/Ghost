@@ -188,31 +188,10 @@ const GrowthKPIs: React.FC<{
                     >
                         <Recharts.CartesianGrid horizontal={false} vertical={false} />
                         <Recharts.XAxis
-                            axisLine={false}
+                            axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
                             dataKey="date"
                             interval={0}
-                            // tick={({x, y, payload, index, ticks}) => {
-                            //     if (!ticks) {
-                            //         return <g />;
-                            //     }
-                            //     const isFirst = index === 0;
-                            //     const isLast = index === ticks.length - 1;
-                            //     return (
-                            //         <g transform={`translate(${x},${y})`}>
-                            //             <text
-                            //                 className="fill-gray-500"
-                            //                 dy={16}
-                            //                 fill="hsl(var(--foreground))"
-                            //                 fontSize={12}
-                            //                 textAnchor={isFirst ? 'start' : isLast ? 'end' : 'middle'}
-                            //                 x={0}
-                            //                 y={0}
-                            //             >
-                            //                 {formatDisplayDateWithRange(payload.value, range)}
-                            //             </text>
-                            //         </g>
-                            //     );
-                            // }}
+                            stroke="hsl(var(--gray-300))"
                             tickFormatter={formatDisplayDate}
                             tickLine={false}
                             tickMargin={8}
@@ -330,7 +309,7 @@ const Growth: React.FC = () => {
                                         <TableCell className="font-medium">
                                             <div className='group/link inline-flex items-center gap-2'>
                                                 {post.post_id ?
-                                                    <Button className='h-auto p-0 hover:!underline' title="View post analytics" variant='link' onClick={() => {
+                                                    <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
                                                         navigate(`/posts/analytics/${post.post_id}`, {crossApp: true});
                                                     }}>
                                                         {post.title}
