@@ -1,8 +1,7 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import EmptyStatView from '../EmptyStatView';
 import React, {useState} from 'react';
-import {Card, CardContent, ChartConfig, ChartContainer, ChartTooltip, Recharts, Tabs, TabsList, formatDisplayDate, formatDuration, formatNumber, formatPercentage} from '@tryghost/shade';
-import {KpiTabTrigger, KpiTabValue} from '../KpiTab';
+import {Card, CardContent, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsList, formatDisplayDate, formatDuration, formatNumber, formatPercentage} from '@tryghost/shade';
 import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
