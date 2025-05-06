@@ -262,4 +262,16 @@ describe('Stats API', function () {
                 });
         });
     });
+
+    describe('Post Growth Stats', function () {
+        it('Can fetch post growth stats', async function () {
+            await agent
+                .get(`/stats/posts/${fixtureManager.get('posts', 1).id}/growth`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.ok(body.stats, 'Response should contain a stats property');
+                    assert.ok(Array.isArray(body.stats), 'body.stats should be an array');
+                });
+        });
+    });
 });
