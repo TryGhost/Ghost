@@ -3,6 +3,7 @@ const limitService = require('../../services/limits');
 const WebhookTrigger = require('./WebhookTrigger');
 const models = require('../../models');
 const payload = require('./payload');
+const logging = require('@tryghost/logging');
 
 // The webhook system is fundamentally built on top of our model event system
 const events = require('../../lib/common/events');
@@ -62,6 +63,7 @@ const listen = async () => {
                 return;
             }
 
+            logging.info(`Webhook event triggered: ${event}`);
             webhookTrigger.trigger(event, model);
         });
     });
