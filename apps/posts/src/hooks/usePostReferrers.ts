@@ -1,4 +1,4 @@
-import {PostReferrerStatItem, usePostReferrers as usePostReferrersAPI} from '@tryghost/admin-x-framework/api/stats';
+import {usePostReferrers as usePostReferrersAPI} from '@tryghost/admin-x-framework/api/stats';
 import {useMemo} from 'react';
 
 export const usePostReferrers = (postId: string) => {
