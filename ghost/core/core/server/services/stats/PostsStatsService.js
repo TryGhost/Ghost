@@ -79,7 +79,8 @@ class PostsStatsService {
                 .from('posts as p')
                 .leftJoin('free', 'p.id', 'free.post_id')
                 .leftJoin('paid', 'p.id', 'paid.post_id')
-                .leftJoin('mrr', 'p.id', 'mrr.post_id');
+                .leftJoin('mrr', 'p.id', 'mrr.post_id')
+                .where('p.status', 'published');
 
             const results = await query
                 .orderBy(orderField, orderDirection)

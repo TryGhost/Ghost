@@ -39,8 +39,8 @@ describe('PostsStatsService', function () {
     let memberIdCounter = 0;
     let subscriptionIdCounter = 0;
 
-    async function _createPost(id, title) {
-        await db('posts').insert({id, title});
+    async function _createPost(id, title, status = 'published') {
+        await db('posts').insert({id, title, status});
     }
 
     async function _createFreeSignupEvent(postId, memberId, referrerSource, createdAt = new Date()) {
@@ -116,6 +116,7 @@ describe('PostsStatsService', function () {
         await db.schema.createTable('posts', function (table) {
             table.string('id').primary();
             table.string('title');
+            table.string('status');
         });
 
         await db.schema.createTable('members_created_events', function (table) {
@@ -157,6 +158,7 @@ describe('PostsStatsService', function () {
         await _createPost('post2', 'Post 2');
         await _createPost('post3', 'Post 3');
         await _createPost('post4', 'Post 4');
+        await _createPost('post5', 'Post 5', 'draft');
     });
 
     afterEach(async function () {
