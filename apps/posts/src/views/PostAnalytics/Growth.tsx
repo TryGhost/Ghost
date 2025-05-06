@@ -4,8 +4,8 @@ import PostAnalyticsContent from './components/PostAnalyticsContent';
 import PostAnalyticsHeader from './components/PostAnalyticsHeader';
 import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber} from '@tryghost/shade';
-import {usePostReferrers} from '../../hooks/usePostReferrers';
 import {useParams} from '@tryghost/admin-x-framework';
+import {usePostReferrers} from '../../hooks/usePostReferrers';
 const STATS_DEFAULT_SOURCE_ICON_URL = 'https://static.ghost.org/v5.0.0/images/globe-icon.svg';
 
 interface postAnalyticsProps {}
