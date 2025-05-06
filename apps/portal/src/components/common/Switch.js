@@ -96,6 +96,7 @@ function Switch({id, label = '', onToggle, checked = false, dataTestId = 'switch
         <div className="gh-portal-for-switch" data-test-switch={dataTestId}>
             <label className="switch" htmlFor={id}>
                 <input
+                    ref={inputRef}
                     type="checkbox"
                     checked={isChecked}
                     id={id}
