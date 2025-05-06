@@ -16,7 +16,7 @@ describe('i18n', function () {
         }
     });
 
-    it('is uses default export if available', async function () {
+    it('uses default export if available', async function () {
         const translationFile = require(path.join(`../locales/`, 'nl', 'portal.json'));
         translationFile.Name = undefined;
         translationFile.default = {
@@ -253,16 +253,6 @@ describe('i18n', function () {
             assert.equal(resources.fr.theme['Read more'], 'Read more');
         });
 
-        it('handles interpolation correctly', async function () {
-            const enContent = {
-                'Welcome {name}': 'Welcome {name}'
-            };
-            await fsExtra.writeJson(path.join(themeLocalesPath, 'en.json'), enContent);
-
-            const t = i18n('en', 'theme', {themePath: themeLocalesPath}).t;
-            assert.equal(t('Welcome {name}', {name: 'John'}), 'Welcome John');
-        });
-
         it('interpolates variables in theme translations', async function () {
             const enContent = {
                 'Welcome, {name}': 'Welcome, {name}',
@@ -300,6 +290,15 @@ describe('i18n', function () {
         it('uses single curly braces for newsletter namespace interpolation', async function () {
             const t = i18n('en', 'newsletter').t;
             assert.equal(t('Welcome, {name}', {name: 'John'}), 'Welcome, John');
+        });
+
+        it('does not html encode interpolated values in the theme namespace', async function () {
+            const enContent = {
+                'Welcome, {name}': 'Welcome, {name}'
+            };
+            await fsExtra.writeJson(path.join(themeLocalesPath, 'en.json'), enContent);
+            const t = i18n('en', 'theme', {themePath: themeLocalesPath}).t;
+            assert.equal(t('Welcome, {name}', {name: '<b>John O\'Nolan</b>'}), 'Welcome, <b>John O\'Nolan</b>');
         });
     });
 
