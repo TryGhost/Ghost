@@ -180,7 +180,7 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
                             </CardContent>
                         </Card>
                         :
-                        <div className='mt-10'>
+                        <div className='mt-10 grow'>
                             <EmptyStatView />
                         </div>
                     }
