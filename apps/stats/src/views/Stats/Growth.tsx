@@ -236,7 +236,18 @@ const GrowthKPIs: React.FC<{
                             }}
                             tickLine={false}
                             ticks={getYTicks(chartData)}
-                            width={calculateYAxisWidth(getYTicks(chartData), formatNumber)}
+                            width={calculateYAxisWidth(getYTicks(chartData), (value) => {
+                                switch (currentTab) {
+                                case 'total-members':
+                                case 'free-members':
+                                case 'paid-members':
+                                    return formatNumber(value);
+                                case 'mrr':
+                                    return `$${value}`;
+                                default:
+                                    return value.toLocaleString();
+                                }
+                            })}
                         />
                         <ChartTooltip
                             content={<CustomTooltipContent range={range} />}
