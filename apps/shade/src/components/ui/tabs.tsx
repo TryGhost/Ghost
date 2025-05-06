@@ -5,7 +5,7 @@ import {cn} from '@/lib/utils';
 import {cva} from 'class-variance-authority';
 import {TrendingDown, TrendingUp} from 'lucide-react';
 
-type TabsVariant = 'segmented' | 'button' | 'underline';
+type TabsVariant = 'segmented' | 'button' | 'underline' | 'kpis';
 
 const TabsVariantContext = React.createContext<TabsVariant>('segmented');
 
@@ -20,7 +20,8 @@ const tabsVariants = cva(
             variant: {
                 segmented: '',
                 button: '',
-                underline: ''
+                underline: '',
+                kpis: ''
             }
         },
         defaultVariants: {
@@ -46,7 +47,8 @@ const tabsListVariants = cva(
             variant: {
                 segmented: 'h-[34px] rounded-lg bg-muted px-[3px]',
                 button: 'gap-2',
-                underline: 'gap-7 border-b pb-1'
+                underline: 'gap-3 border-b pb-1',
+                kpis: 'gap-1 overflow-hidden rounded-t-[var(--radius)] bg-muted px-3 pt-1'
             }
         },
         defaultVariants: {
@@ -77,7 +79,8 @@ const tabsTriggerVariants = cva(
             variant: {
                 segmented: 'h-7 rounded-md text-sm font-medium data-[state=active]:shadow-md',
                 button: 'h-[34px] gap-1.5 rounded-md border border-input py-2 text-sm font-medium hover:bg-muted/50 data-[state=active]:bg-muted/70 data-[state=active]:font-semibold',
-                underline: 'relative h-[34px] px-0 text-md font-semibold text-foreground/70 after:absolute after:inset-x-0 after:bottom-[-5px] after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:!opacity-100'
+                underline: 'relative h-[34px] px-0 text-md font-semibold text-foreground/70 after:absolute after:inset-x-0 after:bottom-[-5px] after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:!opacity-100',
+                kpis: 'rounded-t-md pt-2 text-foreground hover:bg-background/50 data-[state=active]:bg-background data-[state=active]:shadow-md'
             }
         },
         defaultVariants: {
@@ -108,7 +111,8 @@ const tabsContentVariants = cva(
             variant: {
                 segmented: '',
                 button: '',
-                underline: ''
+                underline: '',
+                kpis: ''
             }
         },
         defaultVariants: {
@@ -138,7 +142,7 @@ interface KpiTabTriggerProps extends React.ComponentProps<typeof TabsTrigger> {
 
 const KpiTabTrigger: React.FC<KpiTabTriggerProps> = ({children, ...props}) => {
     return (
-        <TabsTrigger className='mt-4 h-auto' {...props}>
+        <TabsTrigger className='h-auto' {...props}>
             {children}
         </TabsTrigger>
     );
@@ -153,30 +157,30 @@ interface KpiTabValueProps {
 
 const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value, diffDirection, diffValue}) => {
     const diffContainerClassName = cn(
-        'hidden xl:!flex xl:!visible items-center gap-1 rounded-full px-1.5 text-xs -mb-0.5',
+        'hidden xl:!flex xl:!visible items-center gap-1 rounded-full px-1.5 text-[1.1rem] -mb-1 h-[18px]',
         diffDirection === 'up' && 'bg-green/15 text-green-600',
         diffDirection === 'down' && 'bg-red/10 text-red-600',
         diffDirection === 'same' && 'bg-gray-200 text-gray-700'
     );
     return (
         <div className='flex w-full flex-col items-start'>
-            <span className='font-semibold tracking-tight'>{label}</span>
-            <div className='-mt-0.5 flex items-center gap-3'>
-                <span className='text-[2.0rem] tracking-tight xl:text-[2.3rem] xl:tracking-[-0.04em]'>{value}</span>
+            <div className='items-top flex gap-2 font-semibold tracking-tight'>
+                <span className='text-sm font-medium text-gray-800'>{label}</span>
                 {diffValue &&
                     <>
                         <div className={diffContainerClassName}>
                             {diffDirection === 'up' &&
-                                <TrendingUp className='!size-[14px]' size={14} strokeWidth={2} />
+                                <TrendingUp className='!size-[12px]' size={14} strokeWidth={2} />
                             }
                             {diffDirection === 'down' &&
-                                <TrendingDown className='!size-[14px]' size={14} strokeWidth={2} />
+                                <TrendingDown className='!size-[12px]' size={14} strokeWidth={2} />
                             }
-                            <span className='font-medium'>{diffValue}</span>
+                            <span className='font-medium leading-none'>{diffValue}</span>
                         </div>
                     </>
                 }
             </div>
+            <div className='text-[2.0rem] font-semibold tracking-tight xl:text-[2.3rem] xl:tracking-[-0.04em]'>{value}</div>
         </div>
     );
 };
