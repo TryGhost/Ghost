@@ -14,6 +14,11 @@ import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 
+// TODO: Move to @tryghost/shade
+const centsToDollars = (value: number) => {
+    return Math.round(value / 100);
+}
+
 type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
 
 type ChartDataItem = {
@@ -22,6 +27,7 @@ type ChartDataItem = {
     free: number;
     paid: number;
     comped: number;
+    mrr: number;
     formattedValue: string;
     label?: string;
 };
@@ -30,15 +36,18 @@ type Totals = {
     totalMembers: number;
     freeMembers: number;
     paidMembers: number;
+    mrr: number;
     percentChanges: {
         total: string;
         free: string;
         paid: string;
+        mrr: string;
     };
     directions: {
         total: DiffDirection;
         free: DiffDirection;
         paid: DiffDirection;
+        mrr: DiffDirection;
     };
 };
 
@@ -50,7 +59,7 @@ const GrowthKPIs: React.FC<{
     const {settings, range} = useGlobalData();
     const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
 
-    const {totalMembers, freeMembers, paidMembers, percentChanges, directions} = totals;
+    const {totalMembers, freeMembers, paidMembers, mrr, percentChanges, directions} = totals;
 
     // Create chart data based on selected tab
     const chartData = useMemo(() => {
@@ -70,26 +79,19 @@ const GrowthKPIs: React.FC<{
             fieldName = 'paid';
             break;
         case 'mrr': {
-            // TODO: replace the hard-coded 958 once real MRR is available
-            const avgMrrPerMember = paidMembers > 0 ? 958 / paidMembers : 0;
-            const mrrData = allChartData.map(item => ({
-                ...item,
-                value: item.paid * avgMrrPerMember
-            }));
-            sanitizedData = sanitizeChartData(mrrData, range, 'value', 'exact');
+            fieldName = 'mrr';
             break;
         }
         default:
             fieldName = 'value';
         }
 
-        if (currentTab !== 'mrr') {
-            sanitizedData = sanitizeChartData(allChartData, range, fieldName, 'exact');
-        }
+        sanitizedData = sanitizeChartData(allChartData, range, fieldName, 'exact');
 
         // Then map the sanitized data to the final format
         let processedData: ChartDataItem[] = [];
 
+        console.log(currentTab);
         switch (currentTab) {
         case 'free-members':
             processedData = sanitizedData.map(item => ({
@@ -110,7 +112,8 @@ const GrowthKPIs: React.FC<{
         case 'mrr':
             processedData = sanitizedData.map(item => ({
                 ...item,
-                formattedValue: `$${item.value.toFixed(0)}`,
+                value: centsToDollars(item.mrr),
+                formattedValue: `$${centsToDollars(item.mrr)}`,
                 label: 'MRR'
             }));
             break;
@@ -135,6 +138,8 @@ const GrowthKPIs: React.FC<{
             label: currentTab === 'mrr' ? 'MRR' : 'Members'
         }
     } satisfies ChartConfig;
+
+    console.log('chartData', chartData);
 
     return (
         <Tabs defaultValue="total-members" variant='underline'>
@@ -172,8 +177,12 @@ const GrowthKPIs: React.FC<{
                 <KpiTabTrigger value="mrr" onClick={() => {
                     setCurrentTab('mrr');
                 }}>
-                    {/* TODO: Add formatCurrency helper */}
-                    <KpiTabValue diffDirection='same' diffValue={'$0'} label="MRR" value={'$958'} />
+                    <KpiTabValue
+                        diffDirection={directions.mrr}
+                        diffValue={percentChanges.mrr}
+                        label="MRR"
+                        value={`$${centsToDollars(mrr)}`}
+                    />
                 </KpiTabTrigger>
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
