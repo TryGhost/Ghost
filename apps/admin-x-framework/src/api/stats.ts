@@ -119,5 +119,5 @@ export const usePostGrowthStats = createQueryWithId<PostGrowthStatsResponseType>
 });
 export const useMrrHistory = createQuery<MrrHistoryResponseType>({
     dataType: mrrHistoryDataType,
-    path: '/stats/mrr-history/'
+    path: '/stats/mrr/'
 });
