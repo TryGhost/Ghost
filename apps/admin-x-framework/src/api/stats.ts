@@ -60,12 +60,26 @@ export type PostReferrersResponseType = {
     meta: Meta;
 };
 
+export type PostGrowthStatItem = {
+    post_id: string;
+    free_members: number;
+    paid_members: number;
+    mrr: number;
+};
+
+export type PostGrowthStatsResponseType = {
+    stats: PostGrowthStatItem[];
+    meta: Meta;
+};
+
 // Requests
 
 const dataType = 'TopContentResponseType';
 const memberCountHistoryDataType = 'MemberCountHistoryResponseType';
 const topPostsStatsDataType = 'TopPostsStatsResponseType';
 const postReferrersDataType = 'PostReferrersResponseType';
+const postGrowthStatsDataType = 'PostGrowthStatsResponseType';
+
 export const useTopContent = createQuery<TopContentResponseType>({
     dataType,
     path: '/stats/top-content/'
@@ -84,4 +98,9 @@ export const useTopPostsStats = createQuery<TopPostsStatsResponseType>({
 export const usePostReferrers = createQueryWithId<PostReferrersResponseType>({
     dataType: postReferrersDataType,
     path: id => `/stats/posts/${id}/top-referrers`
+});
+
+export const usePostGrowthStats = createQueryWithId<PostGrowthStatsResponseType>({
+    dataType: postGrowthStatsDataType,
+    path: id => `/stats/posts/${id}/growth`
 });

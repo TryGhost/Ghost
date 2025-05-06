@@ -13,7 +13,8 @@ interface postAnalyticsProps {}
 const Growth: React.FC<postAnalyticsProps> = () => {
     // const {isLoading: isConfigLoading} = useGlobalData();
     const {postId} = useParams();
-    const {stats: postReferrers, isLoading} = usePostReferrers(postId || '');
+    const {stats: postReferrers, totals, isLoading} = usePostReferrers(postId || '');
+
     // const {range} = useGlobalData();
 
     return (
@@ -33,21 +34,21 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                     <LucideIcon.User strokeWidth={1.5} />
                                 </KpiCardIcon>
                                 <KpiCardLabel>Free members</KpiCardLabel>
-                                <KpiCardValue>{formatNumber(22)}</KpiCardValue>
+                                <KpiCardValue>{formatNumber(totals?.free_members || 0)}</KpiCardValue>
                             </KpiCard>
                             <KpiCard>
                                 <KpiCardIcon>
                                     <LucideIcon.Wallet strokeWidth={1.5} />
                                 </KpiCardIcon>
                                 <KpiCardLabel>Paid members</KpiCardLabel>
-                                <KpiCardValue>{formatNumber(8)}</KpiCardValue>
+                                <KpiCardValue>{formatNumber(totals?.paid_members || 0)}</KpiCardValue>
                             </KpiCard>
                             <KpiCard>
                                 <KpiCardIcon>
                                     <LucideIcon.CircleDollarSign strokeWidth={1.5} />
                                 </KpiCardIcon>
                                 <KpiCardLabel>MRR</KpiCardLabel>
-                                <KpiCardValue>+${formatNumber(180)}</KpiCardValue>
+                                <KpiCardValue>+${formatNumber(totals?.mrr || 0)}</KpiCardValue>
                             </KpiCard>
                         </div>
                         <Card>
