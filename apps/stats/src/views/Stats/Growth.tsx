@@ -8,10 +8,9 @@ import StatsView from './layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
-import {Navigate, useNavigate} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
-import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 
 // TODO: Move to @tryghost/shade
@@ -56,8 +55,7 @@ const GrowthKPIs: React.FC<{
     totals: Totals;
 }> = ({chartData: allChartData, totals}) => {
     const [currentTab, setCurrentTab] = useState('total-members');
-    const {settings, range} = useGlobalData();
-    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
+    const {range} = useGlobalData();
 
     const {totalMembers, freeMembers, paidMembers, mrr, percentChanges, directions} = totals;
 

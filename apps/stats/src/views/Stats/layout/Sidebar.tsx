@@ -1,14 +1,10 @@
 import React from 'react';
 import {LucideIcon, RightSidebarMenu, RightSidebarMenuLink} from '@tryghost/shade';
-import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
-import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
 
 const Sidebar:React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const {settings} = useGlobalData();
-    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
 
     return (
         <div className='grow border-l px-6 py-8'>
