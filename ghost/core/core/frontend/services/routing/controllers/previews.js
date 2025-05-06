@@ -3,6 +3,7 @@ const config = require('../../../../shared/config');
 const {routerManager} = require('../');
 const urlUtils = require('../../../../shared/url-utils');
 const renderer = require('../../rendering');
+const {checkPostAccess} = require('../../../../server/services/members/content-gating');
 
 /**
  * @description Preview Controller.
@@ -60,7 +61,11 @@ module.exports = function previewController(req, res, next) {
                 return urlUtils.redirect301(res, urlUtils.urlJoin('/email', post.uuid, '/'));
             }
 
-            post.access = !!post.html;
+            // Set access based on member status and post visibility
+            const member = req.query?.member_status && req.query.member_status !== 'anonymous' 
+                ? {status: req.query.member_status} 
+                : null;
+            post.access = checkPostAccess(post, member);
 
             return renderer.renderEntry(req, res)(post);
         })
