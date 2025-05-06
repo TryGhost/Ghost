@@ -316,7 +316,7 @@ const Growth: React.FC = () => {
                             <TableBody>
                                 {topPosts.map(post => (
                                     <TableRow key={post.post_id}>
-                                        <TableCell className="font-medium"><a href={`/ghost/#/posts/analytics/${post.post_id}`}>{post.title}</a></TableCell>
+                                        <TableCell className="font-medium"><a href={`/ghost/#/posts/analytics/${post.post_id}/growth`}>{post.title}</a></TableCell>
                                         <TableCell className={`text-right font-mono text-sm ${post.free_members === 0 && 'text-gray-700'}`}>
                                             {(post.free_members > 0 && '+')}{formatNumber(post.free_members)}
                                         </TableCell>
