@@ -58,36 +58,43 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                             </CardHeader>
                             <CardContent>
                                 <Separator />
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Source</TableHead>
-                                            <TableHead className='w-[110px] text-right'>Free members</TableHead>
-                                            <TableHead className='w-[110px] text-right'>Paid members</TableHead>
-                                            <TableHead className='w-[110px] text-right'>MRR</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {postReferrers?.map(row => (
-                                            <TableRow key={row.source}>
-                                                <TableCell>
-                                                    <a className='inline-flex items-center gap-2 font-medium' href={`https://${row.source}`} rel="noreferrer" target='_blank'>
-                                                        <img
-                                                            className="size-4"
-                                                            src={`https://www.faviconextractor.com/favicon/${row.source || 'direct'}?larger=true`}
-                                                            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                                e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
-                                                            }} />
-                                                        <span>{row.source || 'Direct'}</span>
-                                                    </a>
-                                                </TableCell>
-                                                <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.free_members)}</TableCell>
-                                                <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.paid_members)}</TableCell>
-                                                <TableCell className='text-right font-mono text-sm'>+${formatNumber(row.mrr)}</TableCell>
+                                {postReferrers.length > 1
+                                    ?
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Source</TableHead>
+                                                <TableHead className='w-[110px] text-right'>Free members</TableHead>
+                                                <TableHead className='w-[110px] text-right'>Paid members</TableHead>
+                                                <TableHead className='w-[110px] text-right'>MRR</TableHead>
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {postReferrers?.map(row => (
+                                                <TableRow key={row.source}>
+                                                    <TableCell>
+                                                        <a className='inline-flex items-center gap-2 font-medium' href={`https://${row.source}`} rel="noreferrer" target='_blank'>
+                                                            <img
+                                                                className="size-4"
+                                                                src={`https://www.faviconextractor.com/favicon/${row.source || 'direct'}?larger=true`}
+                                                                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                                                                    e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
+                                                                }} />
+                                                            <span>{row.source || 'Direct'}</span>
+                                                        </a>
+                                                    </TableCell>
+                                                    <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.free_members)}</TableCell>
+                                                    <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.paid_members)}</TableCell>
+                                                    <TableCell className='text-right font-mono text-sm'>+${formatNumber(row.mrr)}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                    :
+                                    <div className='py-20 text-center text-sm text-gray-700'>
+                                    No source data available for this post.
+                                    </div>
+                                }
                             </CardContent>
                         </Card>
                     </div>
