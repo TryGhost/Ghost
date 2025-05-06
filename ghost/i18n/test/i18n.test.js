@@ -292,7 +292,7 @@ describe('i18n', function () {
             };
             await fsExtra.writeJson(path.join(themeLocalesPath, 'en.json'), enContent);
             const t = i18n('en', 'theme', {themePath: themeLocalesPath}).t;
-            assert.equal(t('Welcome, {name}', {name: "<b>John O'Nolan</b>"}), 'Welcome, <b>John O\'Nolan</b>');
+            assert.equal(t('Welcome, {name}', {name: '<b>John O\'Nolan</b>'}), 'Welcome, <b>John O\'Nolan</b>');
         });
     });
 
