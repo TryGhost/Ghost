@@ -83,7 +83,7 @@
     "eslint-plugin-react": "7.37.5",
     "husky": "8.0.3",
     "inquirer": "8.2.6",
-    "lint-staged": "15.5.1",
+    "lint-staged": "15.5.2",
     "nx": "20.8.1",
     "rimraf": "5.0.10",
     "ts-node": "10.9.2",
