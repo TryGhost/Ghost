@@ -92,7 +92,6 @@ const postReferrersDataType = 'PostReferrersResponseType';
 const postGrowthStatsDataType = 'PostGrowthStatsResponseType';
 const mrrHistoryDataType = 'MrrHistoryResponseType';
 
-
 export const useTopContent = createQuery<TopContentResponseType>({
     dataType,
     path: '/stats/top-content/'
