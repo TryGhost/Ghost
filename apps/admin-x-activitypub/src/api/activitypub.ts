@@ -23,6 +23,7 @@ export interface Account {
     followsMe: boolean;
     followedByMe: boolean;
     blockedByMe: boolean;
+    domainBlockedByMe: boolean;
     attachment: { name: string; value: string }[];
 }
 
