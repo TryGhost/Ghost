@@ -23,6 +23,7 @@ export interface Account {
     followsMe: boolean;
     followedByMe: boolean;
     blockedByMe: boolean;
+    domainBlockedByMe: boolean;
     attachment: { name: string; value: string }[];
 }
 
@@ -200,6 +201,24 @@ export class ActivityPubAPI {
         }
 
         return json;
+    }
+
+    async blockDomain(domain: URL): Promise<boolean> {
+        const url = new URL(
+            `.ghost/activitypub/actions/block/domain/${encodeURIComponent(domain.href)}`,
+            this.apiUrl
+        );
+        await this.fetchJSON(url, 'POST');
+        return true;
+    }
+
+    async unblockDomain(domain: URL): Promise<boolean> {
+        const url = new URL(
+            `.ghost/activitypub/actions/unblock/domain/${encodeURIComponent(domain.href)}`,
+            this.apiUrl
+        );
+        await this.fetchJSON(url, 'POST');
+        return true;
     }
 
     async block(id: URL): Promise<boolean> {
