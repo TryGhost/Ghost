@@ -5,13 +5,14 @@ import PostMenu from './components/PostMenu';
 import React, {useState} from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
 import {TB_VERSION} from '@src/config/stats-config';
 import {calculateYAxisWidth, getPeriodText, getRangeDates, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useQuery} from '@tinybirdco/charts';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
@@ -224,6 +225,7 @@ const Web:React.FC = () => {
     const {isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
+    const navigate = useNavigate();
 
     // Include essential query parameters that change frequently
     // Server will use defaults for other values
@@ -284,10 +286,22 @@ const Web:React.FC = () => {
                                     return (
                                         <TableRow key={row.pathname}>
                                             <TableCell className="font-medium">
-                                                <a className='group/link -mx-2 inline-flex min-h-6 items-center gap-1 px-2 hover:underline' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
-                                                    {row.title || row.pathname}
-                                                    <LucideIcon.SquareArrowOutUpRight className='opacity-0 group-hover/link:opacity-100' size={12} strokeWidth={2.5} />
-                                                </a>
+                                                <div className='group/link inline-flex items-center gap-2'>
+                                                    {row.post_id ?
+                                                        <Button className='h-auto p-0 hover:!underline' title="View post analytics" variant='link' onClick={() => {
+                                                            navigate(`/posts/analytics/${row.post_id}`, {crossApp: true});
+                                                        }}>
+                                                            {row.title || row.pathname}
+                                                        </Button>
+                                                        :
+                                                        <>
+                                                            {row.title || row.pathname}
+                                                        </>
+                                                    }
+                                                    <a className='-mx-2 inline-flex min-h-6 items-center gap-1 rounded-sm px-2 opacity-0 hover:underline group-hover/link:opacity-75' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
+                                                        <LucideIcon.SquareArrowOutUpRight size={12} strokeWidth={2.5} />
+                                                    </a>
+                                                </div>
                                             </TableCell>
                                             <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
                                             <TableCell className='text-center text-gray-700 hover:text-black'>

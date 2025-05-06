@@ -5,10 +5,10 @@ import React, {useMemo, useState} from 'react';
 import SortButton from './components/SortButton';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
-import {Navigate} from '@tryghost/admin-x-framework';
+import {Navigate, useNavigate} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -112,7 +112,7 @@ const GrowthKPIs: React.FC<{
             processedData = sanitizedData.map(item => ({
                 ...item,
                 value: centsToDollars(item.mrr),
-                formattedValue: `$${centsToDollars(item.mrr)}`,
+                formattedValue: `$${formatNumber(centsToDollars(item.mrr))}`,
                 label: 'MRR'
             }));
             break;
@@ -126,7 +126,7 @@ const GrowthKPIs: React.FC<{
         }
 
         return processedData;
-    }, [currentTab, allChartData, mrr, range]);
+    }, [currentTab, allChartData, range]);
 
     if (!labs.trafficAnalyticsAlpha) {
         return <Navigate to='/' />;
@@ -178,7 +178,7 @@ const GrowthKPIs: React.FC<{
                         diffDirection={directions.mrr}
                         diffValue={percentChanges.mrr}
                         label="MRR"
-                        value={`$${centsToDollars(mrr)}`}
+                        value={`$${formatNumber(centsToDollars(mrr))}`}
                     />
                 </KpiTabTrigger>
             </TabsList>
@@ -266,6 +266,7 @@ const GrowthKPIs: React.FC<{
 const Growth: React.FC = () => {
     const {range} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopPostsOrder>('free_members desc');
+    const navigate = useNavigate();
 
     // Get stats from custom hook once
     const {isLoading, chartData, totals} = useGrowthStats(range);
@@ -322,7 +323,24 @@ const Growth: React.FC = () => {
                             <TableBody>
                                 {topPosts.map(post => (
                                     <TableRow key={post.post_id}>
-                                        <TableCell className="font-medium"><a href={`/ghost/#/posts/analytics/${post.post_id}/growth`}>{post.title}</a></TableCell>
+                                        <TableCell className="font-medium">
+                                            <div className='group/link inline-flex items-center gap-2'>
+                                                {post.post_id ?
+                                                    <Button className='h-auto p-0 hover:!underline' title="View post analytics" variant='link' onClick={() => {
+                                                        navigate(`/posts/analytics/${post.post_id}`, {crossApp: true});
+                                                    }}>
+                                                        {post.title}
+                                                    </Button>
+                                                    :
+                                                    <>
+                                                        {post.title}
+                                                    </>
+                                                }
+                                                {/* <a className='-mx-2 inline-flex min-h-6 items-center gap-1 rounded-sm px-2 opacity-0 hover:underline group-hover/link:opacity-75' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
+                                                    <LucideIcon.SquareArrowOutUpRight size={12} strokeWidth={2.5} />
+                                                </a> */}
+                                            </div>
+                                        </TableCell>
                                         <TableCell className={`text-right font-mono text-sm ${post.free_members === 0 && 'text-gray-700'}`}>
                                             {(post.free_members > 0 && '+')}{formatNumber(post.free_members)}
                                         </TableCell>
