@@ -182,6 +182,14 @@ const controller = {
         data: [
             'id'
         ],
+        validation: {
+            data: {
+                id: {
+                    type: 'string',
+                    required: true
+                }
+            }
+        },
         permissions: {
             docName: 'posts',
             method: 'browse'
