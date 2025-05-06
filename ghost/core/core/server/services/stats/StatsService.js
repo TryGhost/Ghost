@@ -2,7 +2,8 @@ const MRRService = require('./MrrStatsService');
 const MembersService = require('./MembersStatsService');
 const SubscriptionStatsService = require('./SubscriptionStatsService');
 const ReferrersStatsService = require('./ReferrersStatsService');
-const TopContentStatsService = require('./TopContentStatsService');
+const PostsStatsService = require('./PostsStatsService');
+const ContentStatsService = require('./ContentStatsService');
 const tinybird = require('./utils/tinybird');
 
 class StatsService {
@@ -12,22 +13,36 @@ class StatsService {
      * @param {MembersService} deps.members
      * @param {SubscriptionStatsService} deps.subscriptions
      * @param {ReferrersStatsService} deps.referrers
-     * @param {TopContentStatsService} deps.topContent
+     * @param {PostsStatsService} deps.posts
+     * @param {ContentStatsService} deps.content
      **/
     constructor(deps) {
         this.mrr = deps.mrr;
         this.members = deps.members;
         this.subscriptions = deps.subscriptions;
         this.referrers = deps.referrers;
-        this.topContent = deps.topContent;
+        this.posts = deps.posts;
+        this.content = deps.content;
     }
 
     async getMRRHistory() {
         return this.mrr.getHistory();
     }
 
-    async getMemberCountHistory() {
-        return this.members.getCountHistory();
+    /**
+     * @param {Object} [options]
+     * @param {string} [options.dateFrom] - Start date in YYYY-MM-DD format
+     * @param {string} [options.endDate] - End date in YYYY-MM-DD format
+     */
+    async getMemberCountHistory(options = {}) {
+        // Map dateFrom to startDate for backwards compatibility
+        const mappedOptions = {
+            ...options,
+            startDate: options.dateFrom
+        };
+        delete mappedOptions.dateFrom;
+
+        return this.members.getCountHistory(mappedOptions);
     }
 
     async getSubscriptionCountHistory() {
@@ -47,12 +62,23 @@ class StatsService {
             meta: {}
         };
     }
-    
+
     /**
      * @param {Object} options
      */
     async getTopContent(options = {}) {
-        return await this.topContent.getTopContent(options);
+        return await this.content.getTopContent(options);
+    }
+
+    /**
+     * Get top posts by attribution metrics
+     * @param {import('./PostsStatsService').TopPostsOptions} options
+     * @returns {Promise<{data: import('./PostsStatsService').TopPostResult[]}>}
+     */
+    async getTopPosts(options = {}) {
+        // Return the original { data: results } structure
+        const result = await this.posts.getTopPosts(options);
+        return result;
     }
 
     /**
@@ -65,15 +91,15 @@ class StatsService {
         let tinybirdClient = null;
         const config = deps.config || require('../../../shared/config');
         const request = deps.request || require('../../lib/request-external');
-        
+
         // Only create the client if Tinybird is configured
         if (config.get('tinybird') && config.get('tinybird:stats')) {
             tinybirdClient = tinybird.create({
-                config, 
+                config,
                 request
             });
         }
-        
+
         // Add the Tinybird client to the dependencies
         const depsWithTinybird = {
             ...deps,
@@ -85,7 +111,8 @@ class StatsService {
             members: new MembersService(deps),
             subscriptions: new SubscriptionStatsService(deps),
             referrers: new ReferrersStatsService(deps),
-            topContent: new TopContentStatsService(depsWithTinybird)
+            posts: new PostsStatsService(deps),
+            content: new ContentStatsService(depsWithTinybird)
         });
     }
 }

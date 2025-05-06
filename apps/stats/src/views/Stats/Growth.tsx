@@ -1,19 +1,130 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import DateRangeSelect from './components/DateRangeSelect';
-import React, {useState} from 'react';
+import PostMenu from './components/PostMenu';
+import React, {useMemo, useState} from 'react';
+import SortButton from './components/SortButton';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
 import {Navigate} from '@tryghost/admin-x-framework';
-import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
+import {calculateYAxisWidth, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 
-const GrowthKPIs:React.FC = () => {
-    const [currentTab, setCurrentTab] = useState('free-members');
-    const {settings} = useGlobalData();
+type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
+
+type ChartDataItem = {
+    date: string;
+    value: number;
+    free: number;
+    paid: number;
+    comped: number;
+    formattedValue: string;
+    label?: string;
+};
+
+type Totals = {
+    totalMembers: number;
+    freeMembers: number;
+    paidMembers: number;
+    percentChanges: {
+        total: string;
+        free: string;
+        paid: string;
+    };
+    directions: {
+        total: DiffDirection;
+        free: DiffDirection;
+        paid: DiffDirection;
+    };
+};
+
+const GrowthKPIs: React.FC<{
+    chartData: ChartDataItem[];
+    totals: Totals;
+}> = ({chartData: allChartData, totals}) => {
+    const [currentTab, setCurrentTab] = useState('total-members');
+    const {settings, range} = useGlobalData();
     const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
+
+    const {totalMembers, freeMembers, paidMembers, percentChanges, directions} = totals;
+
+    // Create chart data based on selected tab
+    const chartData = useMemo(() => {
+        if (!allChartData || allChartData.length === 0) {
+            return [];
+        }
+
+        // First sanitize the data based on the selected field
+        let sanitizedData: ChartDataItem[] = [];
+        let fieldName: keyof ChartDataItem = 'value';
+
+        switch (currentTab) {
+        case 'free-members':
+            fieldName = 'free';
+            break;
+        case 'paid-members':
+            fieldName = 'paid';
+            break;
+        case 'mrr': {
+            // TODO: replace the hard-coded 958 once real MRR is available
+            const avgMrrPerMember = paidMembers > 0 ? 958 / paidMembers : 0;
+            const mrrData = allChartData.map(item => ({
+                ...item,
+                value: item.paid * avgMrrPerMember
+            }));
+            sanitizedData = sanitizeChartData(mrrData, range, 'value', 'exact');
+            break;
+        }
+        default:
+            fieldName = 'value';
+        }
+
+        if (currentTab !== 'mrr') {
+            sanitizedData = sanitizeChartData(allChartData, range, fieldName, 'exact');
+        }
+
+        // Then map the sanitized data to the final format
+        let processedData: ChartDataItem[] = [];
+
+        switch (currentTab) {
+        case 'free-members':
+            processedData = sanitizedData.map(item => ({
+                ...item,
+                value: item.free,
+                formattedValue: formatNumber(item.free),
+                label: 'Free members'
+            }));
+            break;
+        case 'paid-members':
+            processedData = sanitizedData.map(item => ({
+                ...item,
+                value: item.paid,
+                formattedValue: formatNumber(item.paid),
+                label: 'Paid members'
+            }));
+            break;
+        case 'mrr':
+            processedData = sanitizedData.map(item => ({
+                ...item,
+                formattedValue: `$${item.value.toFixed(0)}`,
+                label: 'MRR'
+            }));
+            break;
+        default:
+            processedData = sanitizedData.map(item => ({
+                ...item,
+                value: item.free + item.paid + item.comped,
+                formattedValue: formatNumber(item.free + item.paid + item.comped),
+                label: 'Total members'
+            }));
+        }
+
+        return processedData;
+    }, [currentTab, allChartData, paidMembers, range]);
 
     if (!labs.trafficAnalyticsAlpha) {
         return <Navigate to='/' />;
@@ -21,198 +132,9 @@ const GrowthKPIs:React.FC = () => {
 
     const chartConfig = {
         value: {
-            label: 'Total members'
+            label: currentTab === 'mrr' ? 'MRR' : 'Members'
         }
     } satisfies ChartConfig;
-
-    const chartData = [
-        {
-            date: '2025-03-30',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-03-31',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-01',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-02',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-03',
-            value: 15,
-            formattedValue: '15',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-04',
-            value: 5,
-            formattedValue: '5',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-05',
-            value: 8,
-            formattedValue: '8',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-06',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-07',
-            value: 7,
-            formattedValue: '7',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-08',
-            value: 4,
-            formattedValue: '4',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-09',
-            value: 4,
-            formattedValue: '4',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-10',
-            value: 1,
-            formattedValue: '1',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-11',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-12',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-13',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-14',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-15',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-16',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-17',
-            value: 8,
-            formattedValue: '8',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-18',
-            value: 2,
-            formattedValue: '2',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-19',
-            value: 3,
-            formattedValue: '3',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-20',
-            value: 2,
-            formattedValue: '2',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-21',
-            value: 5,
-            formattedValue: '5',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-22',
-            value: 5,
-            formattedValue: '5',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-23',
-            value: 4,
-            formattedValue: '4',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-24',
-            value: 6,
-            formattedValue: '6',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-25',
-            value: 1,
-            formattedValue: '1',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-26',
-            value: 0,
-            formattedValue: '0',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-27',
-            value: 3,
-            formattedValue: '3',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-28',
-            value: 14,
-            formattedValue: '14',
-            label: 'Total members'
-        },
-        {
-            date: '2025-04-29',
-            value: 10,
-            formattedValue: '10',
-            label: 'Total members'
-        }
-    ];
 
     return (
         <Tabs defaultValue="total-members" variant='underline'>
@@ -220,17 +142,32 @@ const GrowthKPIs:React.FC = () => {
                 <KpiTabTrigger value="total-members" onClick={() => {
                     setCurrentTab('total-members');
                 }}>
-                    <KpiTabValue diffDirection='up' diffValue={'+3%'} label="Total members" value={formatNumber(1504)} />
+                    <KpiTabValue
+                        diffDirection={directions.total}
+                        diffValue={percentChanges.total}
+                        label="Total members"
+                        value={formatNumber(totalMembers)}
+                    />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="free-members" onClick={() => {
                     setCurrentTab('free-members');
                 }}>
-                    <KpiTabValue diffDirection='down' diffValue={'-1.2%'} label="Free members" value={formatNumber(1246)} />
+                    <KpiTabValue
+                        diffDirection={directions.free}
+                        diffValue={percentChanges.free}
+                        label="Free members"
+                        value={formatNumber(freeMembers)}
+                    />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="paid-members" onClick={() => {
                     setCurrentTab('paid-members');
                 }}>
-                    <KpiTabValue diffDirection='up' diffValue={'-1.3%'} label="Paid members" value={formatNumber(258)} />
+                    <KpiTabValue
+                        diffDirection={directions.paid}
+                        diffValue={percentChanges.paid}
+                        label="Paid members"
+                        value={formatNumber(paidMembers)}
+                    />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="mrr" onClick={() => {
                     setCurrentTab('mrr');
@@ -255,13 +192,36 @@ const GrowthKPIs:React.FC = () => {
                             axisLine={false}
                             dataKey="date"
                             interval={0}
+                            // tick={({x, y, payload, index, ticks}) => {
+                            //     if (!ticks) {
+                            //         return <g />;
+                            //     }
+                            //     const isFirst = index === 0;
+                            //     const isLast = index === ticks.length - 1;
+                            //     return (
+                            //         <g transform={`translate(${x},${y})`}>
+                            //             <text
+                            //                 className="fill-gray-500"
+                            //                 dy={16}
+                            //                 fill="hsl(var(--foreground))"
+                            //                 fontSize={12}
+                            //                 textAnchor={isFirst ? 'start' : isLast ? 'end' : 'middle'}
+                            //                 x={0}
+                            //                 y={0}
+                            //             >
+                            //                 {formatDisplayDateWithRange(payload.value, range)}
+                            //             </text>
+                            //         </g>
+                            //     );
+                            // }}
                             tickFormatter={formatDisplayDate}
                             tickLine={false}
                             tickMargin={8}
-                            ticks={chartData && chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}
+                            ticks={chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}
                         />
                         <Recharts.YAxis
                             axisLine={false}
+                            domain={[getYRange(chartData).min, getYRange(chartData).max]}
                             tickFormatter={(value) => {
                                 switch (currentTab) {
                                 case 'total-members':
@@ -269,17 +229,17 @@ const GrowthKPIs:React.FC = () => {
                                 case 'paid-members':
                                     return formatNumber(value);
                                 case 'mrr':
-                                    return value;
+                                    return `$${value}`;
                                 default:
                                     return value.toLocaleString();
                                 }
                             }}
                             tickLine={false}
-                            ticks={getYTicks(chartData || [])}
-                            width={calculateYAxisWidth(getYTicks(chartData || []), formatNumber)}
+                            ticks={getYTicks(chartData)}
+                            width={calculateYAxisWidth(getYTicks(chartData), formatNumber)}
                         />
                         <ChartTooltip
-                            content={<CustomTooltipContent />}
+                            content={<CustomTooltipContent range={range} />}
                             cursor={true}
                         />
                         <Recharts.Line
@@ -288,7 +248,7 @@ const GrowthKPIs:React.FC = () => {
                             isAnimationActive={false}
                             stroke="hsl(var(--chart-1))"
                             strokeWidth={2}
-                            type='bump'
+                            type='monotone'
                         />
                     </Recharts.LineChart>
                 </ChartContainer>
@@ -297,66 +257,79 @@ const GrowthKPIs:React.FC = () => {
     );
 };
 
-const Growth:React.FC = () => {
-    // const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    // const {startDate, endDate, timezone} = getRangeDates(range);
+const Growth: React.FC = () => {
+    const {range} = useGlobalData();
+    const [sortBy, setSortBy] = useState<TopPostsOrder>('free_members desc');
 
-    // const isLoading = isConfigLoading || loading;
+    // Get stats from custom hook once
+    const {isLoading, chartData, totals} = useGrowthStats(range);
 
-    const mockTopPosts = [
-        {id: 'post-001', title: 'Minimal & Functional White Desk Setup in Italy', freeMembers: 17, paidMembers: 7, mrr: 8},
-        {id: 'post-002', title: 'The Ultimate Guide to Productivity Hacks', freeMembers: 12, paidMembers: 5, mrr: 6},
-        {id: 'post-003', title: 'Building a Sustainable Morning Routine', freeMembers: 9, paidMembers: 4, mrr: 5},
-        {id: 'post-004', title: 'Digital Nomad Lifestyle: Tips and Tricks', freeMembers: 8, paidMembers: 3, mrr: 4},
-        {id: 'post-005', title: 'Minimalist Wardrobe: A Complete Guide', freeMembers: 7, paidMembers: 2, mrr: 3},
-        {id: 'post-006', title: 'The Science of Habit Formation', freeMembers: 6, paidMembers: 2, mrr: 3},
-        {id: 'post-007', title: 'Remote Work: Setting Up Your Home Office', freeMembers: 5, paidMembers: 2, mrr: 2},
-        {id: 'post-008', title: 'Mindfulness Meditation for Beginners', freeMembers: 4, paidMembers: 1, mrr: 2},
-        {id: 'post-009', title: 'Sustainable Living: Small Changes, Big Impact', freeMembers: 3, paidMembers: 1, mrr: 1},
-        {id: 'post-010', title: 'The Art of Decluttering Your Digital Life', freeMembers: 3, paidMembers: 1, mrr: 1},
-        {id: 'post-011', title: 'Healthy Meal Prep: Time-Saving Tips', freeMembers: 2, paidMembers: 1, mrr: 1},
-        {id: 'post-012', title: 'Financial Freedom: A Step-by-Step Guide', freeMembers: 2, paidMembers: 1, mrr: 1},
-        {id: 'post-013', title: 'The Power of Journaling for Personal Growth', freeMembers: 2, paidMembers: 0, mrr: 0},
-        {id: 'post-014', title: 'Creating a Productive Workspace on a Budget', freeMembers: 1, paidMembers: 0, mrr: 0},
-        {id: 'post-015', title: 'Simple Ways to Reduce Your Carbon Footprint', freeMembers: 1, paidMembers: 0, mrr: 0}
-    ];
+    const {data: topPostsData} = useTopPostsStatsWithRange(range, sortBy);
+
+    const topPosts = topPostsData?.stats || [];
 
     return (
         <StatsLayout>
-            <ViewHeader>
+            <ViewHeader className='before:hidden'>
                 <H1>Growth</H1>
                 <ViewHeaderActions>
                     <DateRangeSelect />
                 </ViewHeaderActions>
             </ViewHeader>
-            <StatsView data={['a']} isLoading={false}>
-                <Card variant='plain'>
+            <StatsView data={chartData} isLoading={isLoading}>
+                <Card>
                     <CardContent>
-                        <GrowthKPIs />
+                        <GrowthKPIs chartData={chartData} totals={totals} />
                     </CardContent>
                 </Card>
-                <Card variant='plain'>
+                <Card>
                     <CardHeader>
                         <CardTitle>Top performing posts</CardTitle>
                         <CardDescription>Which posts drove the most growth</CardDescription>
                     </CardHeader>
                     <CardContent>
+                        <Separator/>
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Title</TableHead>
-                                    <TableHead className='w-[110px] text-right'>Free members</TableHead>
-                                    <TableHead className='w-[110px] text-right'>Paid members</TableHead>
-                                    <TableHead className='text-right'>MRR</TableHead>
+                                    <TableHead>
+                                        Title
+                                    </TableHead>
+                                    <TableHead className='text-right'>
+                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='free_members desc'>
+                                            Free members
+                                        </SortButton>
+                                    </TableHead>
+                                    <TableHead className='text-right'>
+                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='paid_members desc'>
+                                            Paid members
+                                        </SortButton>
+                                    </TableHead>
+                                    <TableHead className='text-right'>
+                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
+                                            MRR
+                                        </SortButton>
+                                    </TableHead>
+                                    <TableHead className='w-[32px] text-right'></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {mockTopPosts.map(post => (
-                                    <TableRow key={post.id}>
+                                {topPosts.map(post => (
+                                    <TableRow key={post.post_id}>
                                         <TableCell className="font-medium">{post.title}</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>+{formatNumber(post.freeMembers)}</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>+{formatNumber(post.paidMembers)}</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>+${post.mrr}</TableCell>
+                                        <TableCell className={`text-right font-mono text-sm ${post.free_members === 0 && 'text-gray-700'}`}>
+                                            {(post.free_members > 0 && '+')}{formatNumber(post.free_members)}
+                                        </TableCell>
+                                        <TableCell className={`text-right font-mono text-sm ${post.paid_members === 0 && 'text-gray-700'}`}>
+                                            {(post.paid_members > 0 && '+')}{formatNumber(post.paid_members)}
+                                        </TableCell>
+                                        <TableCell className={`text-right font-mono text-sm ${post.mrr === 0 && 'text-gray-700'}`}>
+                                            {/* TODO: Update to use actual currency */}
+                                            {(post.mrr > 0 && '+')}${(post.mrr / 100).toFixed(0)}
+                                        </TableCell>
+                                        <TableCell className='text-right text-gray-700 hover:text-black'>
+                                            <PostMenu pathName='' postId={post.post_id} />
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
