@@ -40,6 +40,7 @@ export type Newsletter = {
     divider_color: string | null;
     button_corners: string | null;
     button_style: string | null;
+    image_corners: string | null;
     link_style: string | null;
     divider_style: string | null;
     created_at: string;

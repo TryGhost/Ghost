@@ -606,6 +606,31 @@ const Sidebar: React.FC<{
                         ]} clearBg={false} />
                     </div>
                     <div className='flex w-full justify-between'>
+                        <div>Image corners</div>
+                        <ButtonGroup activeKey={newsletter.image_corners || 'square'} buttons={[
+                            {
+                                key: 'square',
+                                icon: 'square',
+                                label: 'Square',
+                                tooltip: 'Squared',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({image_corners: 'square'})
+                            },
+                            {
+                                key: 'squircle',
+                                icon: 'squircle',
+                                label: 'Squircle',
+                                tooltip: 'Rounded',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({image_corners: 'squircle'})
+                            }
+                        ]} clearBg={false} />
+                    </div>
+                    <div className='flex w-full justify-between'>
                         <div>Link style</div>
                         <ButtonGroup activeKey={newsletter.link_style || 'underline'} buttons={[
                             {

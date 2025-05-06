@@ -46,6 +46,7 @@ const NewsletterPreviewContent: React.FC<{
     linkColor?: string;
     buttonStyle?: string;
     buttonCorners?: string;
+    imageCorners?: string;
     linkStyle?: string;
     dividerStyle?: string;
 }> = ({
@@ -84,6 +85,7 @@ const NewsletterPreviewContent: React.FC<{
     linkColor,
     buttonCorners,
     buttonStyle,
+    imageCorners,
     linkStyle,
     dividerStyle
 }) => {
@@ -212,7 +214,11 @@ const NewsletterPreviewContent: React.FC<{
                                         'h-[300px] w-full max-w-[600px] bg-cover bg-no-repeat',
                                         showPostTitleSection ? '' : 'pt-6'
                                     )}>
-                                        <img alt="Feature" className='min-h-full min-w-full shrink-0' src={CoverImage} />
+                                        <img alt="Feature" className={clsx(
+                                            'min-h-full min-w-full shrink-0',
+                                            imageCorners === 'square' && 'rounded-none',
+                                            imageCorners === 'squircle' && 'rounded-lg'
+                                        )} src={CoverImage} />
                                     </div>
                                     <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem] text-grey-700" style={{color: secondaryTextColor}}>Feature image caption</div>
                                 </>
@@ -344,8 +350,11 @@ const NewsletterPreviewContent: React.FC<{
                                                 style={{color: titleColor}}>The three latest posts published on your site</h4>
                                             <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Posts sent as an email only will never be shown here.</p>
                                         </div>
-                                        <div className="aspect-square h-auto w-full max-w-[100px] bg-grey-200 bg-cover bg-no-repeat">
-                                            <img alt="Latest post" src={LatestPosts1} />
+                                        <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
+                                            <img alt="Latest post" className={clsx(
+                                                imageCorners === 'square' && 'rounded-none',
+                                                imageCorners === 'squircle' && 'rounded-lg'
+                                            )} src={LatestPosts1} />
                                         </div>
                                     </div>
                                     <div className="flex justify-between gap-4 py-2">
@@ -361,8 +370,11 @@ const NewsletterPreviewContent: React.FC<{
                                                 )} style={{color: titleColor}}>Displayed at the bottom of each newsletter</h4>
                                             <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Giving your readers one more place to discover your stories.</p>
                                         </div>
-                                        <div className="aspect-square h-auto w-full max-w-[100px] bg-grey-200 bg-cover bg-no-repeat">
-                                            <img alt="Latest post" src={LatestPosts2} />
+                                        <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
+                                            <img alt="Latest post" className={clsx(
+                                                imageCorners === 'square' && 'rounded-none',
+                                                imageCorners === 'squircle' && 'rounded-lg'
+                                            )} src={LatestPosts2} />
                                         </div>
                                     </div>
                                     <div className="flex justify-between gap-4 py-2">
@@ -378,8 +390,11 @@ const NewsletterPreviewContent: React.FC<{
                                                 )} style={{color: titleColor}}>To keep your work front and center</h4>
                                             <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Making sure that your audience stays engaged.</p>
                                         </div>
-                                        <div className="aspect-square h-auto w-full max-w-[100px] bg-grey-200 bg-cover bg-no-repeat">
-                                            <img alt="Latest post" src={LatestPosts3} />
+                                        <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
+                                            <img alt="Latest post" className={clsx(
+                                                imageCorners === 'square' && 'rounded-none',
+                                                imageCorners === 'squircle' && 'rounded-lg'
+                                            )} src={LatestPosts3} />
                                         </div>
                                     </div>
                                 </div>
