@@ -1,4 +1,4 @@
-import {useContext, useEffect, useState} from 'react';
+import {useContext, useEffect, useRef, useState} from 'react';
 import AppContext from '../../AppContext';
 
 export const SwitchStyles = `
@@ -80,12 +80,20 @@ export const SwitchStyles = `
 `;
 
 function Switch({id, label = '', onToggle, checked = false, dataTestId = 'switch-input'}) {
-    const {action} = useContext(AppContext);
+    console.log(`switch`, checked);
     const [isChecked, setIsChecked] = useState(checked);
-    const isActionChanged = ['updateNewsletter:failed', 'updateNewsletter:success'].includes(action);
+
     useEffect(() => {
         setIsChecked(checked);
-    }, [checked, isActionChanged]);
+    }, [checked]);
+    
+    useEffect(() => {
+        const input = document.getElementById(id);
+        if (input && input.checked !== isChecked) {
+            input.checked = isChecked;
+        }
+    });
+
     return (
         <div className="gh-portal-for-switch" data-test-switch={dataTestId}>
             <label className="switch" htmlFor={id}>
