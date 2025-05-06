@@ -7,9 +7,9 @@ const Sidebar:React.FC = () => {
     const location = useLocation();
 
     return (
-        <div className='grow border-l px-6 py-8'>
-            <RightSidebarMenu className='sticky top-[33px]'>
-                {/* <RightSidebarMenu className='sticky top-[134px]'> */}
+        <div className='sticky top-[102px] flex h-[calc(100vh-102px)] grow flex-col justify-between'>
+            {/* <RightSidebarMenu className='sticky top-[33px]'> */}
+            <RightSidebarMenu>
                 <RightSidebarMenuLink active={location.pathname === '/' || location.pathname === '/web/'} onClick={() => {
                     navigate('/');
                 }}>
@@ -36,6 +36,17 @@ const Sidebar:React.FC = () => {
                 Growth
                 </RightSidebarMenuLink>
             </RightSidebarMenu>
+            <footer className='flex items-center gap-1 p-8 px-3'>
+                <a className='flex items-center gap-1 text-[1.2rem] text-gray-800 hover:text-black' href="https://ghost.org/docs">
+                    {/* <LucideIcon.MessageCircle className='text-blue' size={16} /> */}
+                    <span>Learn about Analytics</span>
+                </a>
+                <LucideIcon.Dot className='text-gray-500' size={16} />
+                <a className='flex items-center gap-1 text-[1.2rem] text-gray-800 hover:text-black' href="https://ghost.org/docs">
+                    {/* <LucideIcon.MessageCircle className='text-blue' size={16} /> */}
+                    <span>Feedback</span>
+                </a>
+            </footer>
         </div>
     );
 };
