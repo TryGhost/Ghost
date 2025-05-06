@@ -52,9 +52,9 @@ const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
     }
 
     // Get latest values
-    const latest = memberData[memberData.length - 1];
+    const latest = memberData.length > 0 ? memberData[memberData.length - 1] : {free: 0, paid: 0, comped: 0};
 
-    const latestMrr = mrrData[mrrData.length - 1];
+    const latestMrr = mrrData.length > 0 ? mrrData[mrrData.length - 1] : {mrr: 0};
 
     // Calculate total members
     const totalMembers = latest.free + latest.paid + latest.comped;
