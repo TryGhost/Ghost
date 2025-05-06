@@ -139,7 +139,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                     clearBg
                     hideTitle
                     unstyled
-                    onChange={e => setQuery(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
                 />
             </div>
             <div className='min-h-[320px]'>
