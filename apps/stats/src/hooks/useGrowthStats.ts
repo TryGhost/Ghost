@@ -1,5 +1,5 @@
 import moment from 'moment';
-import {MemberStatusItem, useMemberCountHistory, useMrrHistory, MrrHistoryItem} from '@tryghost/admin-x-framework/api/stats';
+import {MemberStatusItem, MrrHistoryItem, useMemberCountHistory, useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
 import {formatNumber} from '@tryghost/shade';
 import {useMemo} from 'react';
 
@@ -129,7 +129,7 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
     const allDates = [...dates, ...mrrDates];
     const uniqueDates = [...new Set(allDates)];
 
-    return uniqueDates.map(date => {
+    return uniqueDates.map((date) => {
         const memberItem = memberData.find(item => item.date === date);
         const mrrItem = mrrData.find(item => item.date === date);
         const free = memberItem?.free || 0;
@@ -146,8 +146,8 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
             mrr: mrrItem?.mrr || 0,
             formattedValue: formatNumber(value),
             label: 'Total members'
-        }
-    })
+        };
+    });
 };
 
 export const useGrowthStats = (range: number) => {
@@ -179,7 +179,7 @@ export const useGrowthStats = (range: number) => {
         // HACK: We should do this filtering on the backend, but the API doesn't support it yet
         const dateFromMoment = moment(dateFrom).subtract(1, 'day');
         if (mrrHistoryResponse?.stats) {
-            return mrrHistoryResponse.stats.filter(item => {
+            return mrrHistoryResponse.stats.filter((item) => {
                 return moment(item.date).isSameOrAfter(dateFromMoment);
             });
         }

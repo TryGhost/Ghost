@@ -17,7 +17,7 @@ import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 // TODO: Move to @tryghost/shade
 const centsToDollars = (value: number) => {
     return Math.round(value / 100);
-}
+};
 
 type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
 
@@ -91,7 +91,6 @@ const GrowthKPIs: React.FC<{
         // Then map the sanitized data to the final format
         let processedData: ChartDataItem[] = [];
 
-        console.log(currentTab);
         switch (currentTab) {
         case 'free-members':
             processedData = sanitizedData.map(item => ({
@@ -138,8 +137,6 @@ const GrowthKPIs: React.FC<{
             label: currentTab === 'mrr' ? 'MRR' : 'Members'
         }
     } satisfies ChartConfig;
-
-    console.log('chartData', chartData);
 
     return (
         <Tabs defaultValue="total-members" variant='underline'>
