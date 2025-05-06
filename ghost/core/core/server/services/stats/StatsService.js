@@ -90,6 +90,13 @@ class StatsService {
     }
 
     /**
+     * @param {string} postId
+     */
+    async getGrowthStatsForPost(postId) {
+        return await this.posts.getGrowthStatsForPost(postId);
+    }
+
+    /**
      * @param {object} deps
      *
      * @returns {StatsService}
