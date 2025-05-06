@@ -62,26 +62,27 @@ class ThemeI18n {
         // Initialize i18n with the theme path
         // Note: @tryghost/i18n uses synchronous file operations internally
         // This is fine in production but in tests we need to ensure the files exist first
-        try {
-            // Verify the locale file exists
-            const localePath = path.join(themeLocalesPath, `${this._locale}.json`);
-            await fs.access(localePath);
-
-            // Initialize i18n
+        const localePath = path.join(themeLocalesPath, `${this._locale}.json`);
+        const localeExists = await fs.pathExists(localePath);
+        
+        if (localeExists) {
             this._i18n = i18nLib(this._locale, 'theme', {themePath: themeLocalesPath});
-        } catch (err) {
-            // If the requested locale fails, try English as fallback
-            try {
-                const enPath = path.join(themeLocalesPath, 'en.json');
-                await fs.access(enPath);
-                this._i18n = i18nLib('en', 'theme', {themePath: themeLocalesPath});
-            } catch (enErr) {
-                // If both fail, use the key as the translation
-                this._i18n = {
-                    t: key => key
-                };
-            }
+            return;
         }
+        
+        // If the requested locale doesn't exist, try English as fallback
+        const enPath = path.join(themeLocalesPath, 'en.json');
+        const enExists = await fs.pathExists(enPath);
+        
+        if (enExists) {
+            this._i18n = i18nLib('en', 'theme', {themePath: themeLocalesPath});
+            return;
+        }
+        
+        // If both fail, use the key as the translation
+        this._i18n = {
+            t: key => key
+        };
     }
 
     /**
