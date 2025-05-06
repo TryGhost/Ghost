@@ -2294,6 +2294,10 @@ span.dropdown .gh-post-list-cta > span {
     border-bottom: 1px solid var(--whitegrey);
 }
 
+.feature-trafficAnalytics .gh-tabs-analytics.no-tabs .tab-panel-selected {
+    margin: 0 24px;
+}
+
 .feature-trafficAnalytics .gh-tabs-analytics.no-tabs {
     padding: 20px 0;
 }
