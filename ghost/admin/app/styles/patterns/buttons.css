@@ -731,8 +731,8 @@ Usage: CTA buttons grouped together horizontally.
     top: 0;
     bottom: 0;
     margin: auto;
-    border: 2px solid var(--lightgrey);
-    border-top-color: var(--blue);
+    border: 2px solid var(--midlightgrey);
+    border-top-color: var(--black);
     border-radius: 100%;
     animation: spinner 1s linear infinite;
 }

@@ -200,7 +200,7 @@
                                                     <li>
                                                     {{#if (not-eq sub.status "canceled")}}
                                                         {{#if sub.cancel_at_period_end}}
-                                                            <button type="button" class="{{if (eq this.loadingSubscriptionId sub.id) 'is-loading' ''}}" {{on "click" (fn this.continueSubscription sub.id)}}>
+                                                            <button type="button" class="is-loading {{if (eq this.loadingSubscriptionId sub.id) 'is-loading' ''}}" {{on "click" (fn this.continueSubscription sub.id)}}>
                                                                 <span>Continue subscription</span>
                                                             </button>
                                                         {{else}}
