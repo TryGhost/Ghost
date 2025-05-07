@@ -20,6 +20,18 @@ const errors = require('@tryghost/errors');
  */
 
 /**
+ * @typedef {Object} NewsletterStatResult
+ * @property {string} post_id - The ID of the post
+ * @property {string} post_title - The title of the post
+ * @property {string} send_date - The date the newsletter was sent
+ * @property {number} sent_to - Number of recipients
+ * @property {number} total_opens - Number of opens
+ * @property {number} open_rate - Open rate (decimal percentage)
+ * @property {number} total_clicks - Number of clicks
+ * @property {number} click_rate - Click rate (decimal percentage)
+ */
+
+/**
  * @typedef {Object} ReferrerStatsResult
  * @property {string} source - The referrer source (e.g., domain)
  * @property {number} free_members - Count of members who signed up via this post/referrer but did not have a paid conversion attributed to the same post/referrer
@@ -384,6 +396,89 @@ class PostsStatsService {
             } catch (e) {
                 logging.warn(`Error parsing date_to: ${options.date_to}. Skipping filter.`);
             }
+        }
+    }
+
+    /**
+     * Get newsletter stats for sent or published posts with a newsletter_id
+     *
+     * @param {Object} options - Query options
+     * @param {string} [options.order='date desc'] - Field to order by ('date', 'open_rate', or 'click_rate') and direction
+     * @param {number|string} [options.limit=20] - Maximum number of results to return
+     * @param {string} [options.date_from] - Optional start date filter (YYYY-MM-DD)
+     * @param {string} [options.date_to] - Optional end date filter (YYYY-MM-DD)
+     * @returns {Promise<{data: NewsletterStatResult[]}>} The newsletter stats for sent/published posts with a newsletter_id
+     */
+    async getNewsletterStats(options = {}) {
+        try {
+            const order = options.order || 'date desc';
+            const limitRaw = Number.parseInt(String(options.limit ?? 20), 10);
+            const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 20;
+            
+            // Parse order field and direction
+            let [orderField, orderDirection = 'desc'] = order.split(' ');
+            
+            // Map frontend order fields to database fields
+            const orderFieldMap = {
+                date: 'p.published_at',
+                open_rate: 'e.opened_count / e.email_count',
+                click_rate: 'e.delivered_count / e.email_count * 0.5'
+            };
+            
+            // Validate order field
+            if (!Object.keys(orderFieldMap).includes(orderField)) {
+                throw new errors.BadRequestError({
+                    message: `Invalid order field: ${orderField}. Must be one of: date, open_rate, click_rate`
+                });
+            }
+            
+            // Validate order direction
+            if (!['asc', 'desc'].includes(orderDirection.toLowerCase())) {
+                throw new errors.BadRequestError({
+                    message: `Invalid order direction: ${orderDirection}`
+                });
+            }
+            
+            // Build date filters if provided
+            let dateFilter = this.knex.raw('1=1');
+            if (options.date_from) {
+                dateFilter = this.knex.raw(`p.published_at >= ?`, [options.date_from]);
+            }
+            if (options.date_to) {
+                dateFilter = options.date_from
+                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, options.date_to])
+                    : this.knex.raw(`p.published_at <= ?`, [options.date_to]);
+            }
+            
+            // Build the query to get newsletter stats
+            const query = this.knex
+                .select(
+                    'p.id as post_id',
+                    'p.title as post_title',
+                    'p.published_at as send_date',
+                    this.knex.raw('COALESCE(e.email_count, 0) as sent_to'),
+                    this.knex.raw('COALESCE(e.opened_count, 0) as total_opens'),
+                    this.knex.raw('CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate'),
+                    // For now we'll use delivered as a placeholder for total clicks since we don't track clicks directly in this table
+                    this.knex.raw('COALESCE(e.delivered_count, 0) as total_clicks'),
+                    // For click rate, let's estimate using a fraction of the open rate
+                    this.knex.raw('CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.delivered_count, 0) / COALESCE(e.email_count, 0) * 0.5 ELSE 0 END as click_rate')
+                )
+                .from('posts as p')
+                .leftJoin('emails as e', 'p.id', 'e.post_id')
+                .where('p.newsletter_id', 'IS NOT', null)
+                .whereIn('p.status', ['sent', 'published'])
+                .whereNotNull('e.id') // Ensure there is an associated email record
+                .whereRaw(dateFilter)
+                .orderByRaw(`${orderFieldMap[orderField]} ${orderDirection}`)
+                .limit(limit);
+            
+            const results = await query;
+            
+            return {data: results};
+        } catch (error) {
+            logging.error('Error fetching newsletter stats:', error);
+            return {data: []};
         }
     }
 }

@@ -82,12 +82,29 @@ export type MrrHistoryResponseType = {
     meta: Meta;
 };
 
+export type NewsletterStatItem = {
+    post_id: string;
+    post_title: string;
+    send_date: string;
+    sent_to: number;
+    total_opens: number;
+    open_rate: number;
+    total_clicks: number;
+    click_rate: number;
+};
+
+export type NewsletterStatsResponseType = {
+    stats: NewsletterStatItem[];
+    meta: Meta;
+};
+
 // Requests
 
 const dataType = 'TopContentResponseType';
 const memberCountHistoryDataType = 'MemberCountHistoryResponseType';
 const topPostsStatsDataType = 'TopPostsStatsResponseType';
 const postReferrersDataType = 'PostReferrersResponseType';
+const newsletterStatsDataType = 'NewsletterStatsResponseType';
 
 const postGrowthStatsDataType = 'PostGrowthStatsResponseType';
 const mrrHistoryDataType = 'MrrHistoryResponseType';
@@ -119,4 +136,9 @@ export const usePostGrowthStats = createQueryWithId<PostGrowthStatsResponseType>
 export const useMrrHistory = createQuery<MrrHistoryResponseType>({
     dataType: mrrHistoryDataType,
     path: '/stats/mrr/'
+});
+
+export const useNewsletterStats = createQuery<NewsletterStatsResponseType>({
+    dataType: newsletterStatsDataType,
+    path: '/stats/newsletter-stats/'
 });
