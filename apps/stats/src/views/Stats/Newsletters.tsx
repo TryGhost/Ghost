@@ -272,7 +272,7 @@ const NewsletterKPIs: React.FC<{
 
 const Newsletters: React.FC = () => {
     // const {range} = useGlobalData();
-    const [sortBy, setSortBy] = useState<TopNewslettersOrder|string>('date desc');
+    const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
     const navigate = useNavigate();
     const {settings} = useGlobalData();
     const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
