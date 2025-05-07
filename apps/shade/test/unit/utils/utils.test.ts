@@ -123,7 +123,7 @@ describe('utils', function () {
             // Using a predefined date for testing, bypassing the current date check
             // Test different year formatting without mocking Date
             const differentYearFormatted = formatDisplayDate('2020-12-31');
-            assert.equal(differentYearFormatted, '30 Dec 2020');
+            assert.equal(differentYearFormatted, '31 Dec 2020');
         });
     });
 
