@@ -1,12 +1,10 @@
 import React from 'react';
 import {LucideIcon, TableHeadButton} from '@tryghost/shade';
 
-type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
-
 interface SortButtonProps {
-    sortBy: TopPostsOrder;
-    setSortBy: (sort: TopPostsOrder) => void;
-    activeSortBy: TopPostsOrder;
+    sortBy: string;
+    setSortBy: (sort: string) => void;
+    activeSortBy: string;
     children: React.ReactNode;
 }
 

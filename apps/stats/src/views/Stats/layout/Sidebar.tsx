@@ -16,6 +16,12 @@ const Sidebar:React.FC = () => {
                     <LucideIcon.MousePointer size={16} strokeWidth={1.25} />
                 Web
                 </RightSidebarMenuLink>
+                <RightSidebarMenuLink active={location.pathname === '/newsletters/'} onClick={() => {
+                    navigate('/newsletters/');
+                }}>
+                    <LucideIcon.Mail size={16} strokeWidth={1.25} />
+                Newsletters
+                </RightSidebarMenuLink>
                 <RightSidebarMenuLink active={location.pathname === '/sources/'} onClick={() => {
                     navigate('/sources/');
                 }}>
