@@ -111,7 +111,7 @@
             "test:unit": {
                 "dependsOn": [
                     "test:unit",
-                    "^build",
+                    "^build:ts",
                     "@tryghost/admin-x-design-system:test:unit"
                 ]
             }
