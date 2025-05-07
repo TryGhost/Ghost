@@ -191,3 +191,8 @@ export const formatDuration = (seconds: number): string => {
 export const formatPercentage = (value: number) => {
     return `${Math.round(value * 100)}%`;
 };
+
+// Check if string is a domain
+export const isValidDomain = (value: string) => {
+    return /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:\/[\w-./?%&=]*)?$/i.test(value);
+};
