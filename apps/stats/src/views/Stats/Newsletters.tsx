@@ -249,9 +249,11 @@ const NewsletterKPIs: React.FC<{
                                 cursor={false}
                             />
                             <Recharts.Bar
+                                activeBar={{fill: 'hsl(var(--chart-1) / 0.8)'}}
                                 dataKey={currentTab === 'avg-open-rate' ? 'open_rate' : 'click_rate'}
                                 fill="hsl(var(--chart-1))"
                                 isAnimationActive={false}
+                                maxBarSize={32}
                                 radius={0}>
                                 {avgsData.map(entry => (
                                     <Recharts.Cell
