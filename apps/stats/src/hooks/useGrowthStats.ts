@@ -202,7 +202,7 @@ export const useGrowthStats = (range: number) => {
             });
         }
         return [];
-    }, [mrrHistoryResponse]);
+    }, [mrrHistoryResponse, dateFrom]);
 
     // Calculate totals
     const totalsData = useMemo(() => calculateTotals(memberData, mrrData), [memberData, mrrData]);
