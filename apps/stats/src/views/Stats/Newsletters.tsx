@@ -113,7 +113,7 @@ const NewsletterKPIs: React.FC<{
 
     const {totalSubscribers, avgOpenRate, avgClickRate} = totals;
 
-    // Sanitize subscribers data
+    // Sanitize subscribers data and convert deltas to cumulative values
     const subscribersData = useMemo(() => {
         if (!allSubscribersData || allSubscribersData.length === 0) {
             return [];
@@ -121,18 +121,34 @@ const NewsletterKPIs: React.FC<{
 
         let sanitizedData: SubscribersDataItem[] = [];
 
-        // Then map the sanitized data to the final format
+        // First sanitize the data based on range
         sanitizedData = sanitizeChartData(allSubscribersData, range, 'value', 'exact');
 
-        const processedData = sanitizedData.map(item => ({
+        // Convert deltas to cumulative counts
+        let runningTotal = totalSubscribers;
+        
+        // Go backwards through the array to calculate cumulative values
+        // Starting from the current total and subtracting deltas
+        const cumulativeData = [...sanitizedData]
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .map(item => {
+                runningTotal -= item.value;
+                return {
+                    date: item.date,
+                    value: runningTotal + item.value // Value for this specific day
+                };
+            })
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+        // Map the data for display
+        const processedData = cumulativeData.map(item => ({
             ...item,
-            value: item.value,
             formattedValue: formatNumber(item.value),
             label: 'Subscribers'
         }));
 
         return processedData;
-    }, [allSubscribersData, range]);
+    }, [allSubscribersData, totalSubscribers, range]);
 
     const subscribersChartConfig = {
         value: {
