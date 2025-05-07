@@ -6,10 +6,9 @@ import SortButton from './components/SortButton';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
-import {Navigate, useNavigate} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
-import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useNewsletterStatsWithRange, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
 import type {TopNewslettersOrder} from '@src/hooks/useNewsletterStatsWithRange';
 
@@ -294,9 +293,7 @@ const Newsletters: React.FC = () => {
     const {range} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
     const navigate = useNavigate();
-    const {settings} = useGlobalData();
-    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
-
+    
     // Get stats from real data using the new hooks
     const {data: newsletterStatsData, isLoading: isStatsLoading} = useNewsletterStatsWithRange(range);
     const {data: subscriberStatsData, isLoading: isSubscriberStatsLoading} = useSubscriberCountWithRange(range);
@@ -370,10 +367,6 @@ const Newsletters: React.FC = () => {
     }, [subscriberStatsData]);
 
     const isLoading = isStatsLoading || isSubscriberStatsLoading;
-
-    if (!labs.trafficAnalyticsAlpha) {
-        return <Navigate to='/web/' />;
-    }
 
     // Convert string dates to Date objects for AvgsDataItem compatibility
     const avgsData: AvgsDataItem[] = newsletterStats.map(stat => ({
@@ -466,4 +459,5 @@ const Newsletters: React.FC = () => {
     );
 };
 
+// Export the component directly now that we handle the feature flag in routes.tsx
 export default Newsletters;
