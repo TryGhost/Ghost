@@ -5,7 +5,6 @@ const ObjectId = require('bson-objectid').default;
 /**
  * @TODO: pass these in as dependencies
  */
-const {PostRevisions} = require('@tryghost/post-revisions');
 const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
 const {PostsBulkAddTagsEvent} = require('@tryghost/post-events');
 
@@ -167,6 +166,8 @@ class Users {
 
         return this.models.Base.transaction(async (t) => {
             frameOptions.transacting = t;
+
+            const {PostRevisions} = require('../lib/PostRevisions');
 
             // null author field for users' post revisions
             const postRevisions = new PostRevisions({
