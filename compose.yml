@@ -88,7 +88,7 @@ services:
     build:
       context: .
       dockerfile: ./.docker/Dockerfile
-      target: browser-tests
+      target: development
     command: [ "yarn", "test:browser" ]
     profiles: [ browser-tests ]
     tty: true

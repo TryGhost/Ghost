@@ -48,6 +48,8 @@ RUN npx playwright@$(cat /tmp/playwright-version.txt) install --with-deps
 FROM playwright AS development-base
 WORKDIR /home/ghost
 
+ENV NX_REJECT_UNKNOWN_LOCAL_CACHE=0
+
 COPY package.json yarn.lock ./
 
 # Copy all package.json files

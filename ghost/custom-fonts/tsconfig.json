@@ -6,7 +6,7 @@
     "module": "CommonJS",
     "outDir": "./build",
     "declaration": true,
-    "declarationDir": "./build",
+    "declarationDir": "./build/types",
     "sourceMap": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
