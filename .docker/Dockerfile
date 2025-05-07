@@ -17,10 +17,37 @@ RUN apt-get update && \
     apt clean
 
 # --------------------
+# Playwright Version
+# --------------------
+# Cache Optimization: Extract the playwright version from package.json
+FROM base AS playwright-version
+WORKDIR /tmp
+COPY ghost/core/package.json ./
+RUN jq -r '.devDependencies."@playwright/test"' ./package.json > playwright-version.txt
+
+# --------------------
+# Playwright
+# --------------------
+# Cache Optimization: Playwright install is slow. Copy the version from the previous stage.
+# This way we only bust build cache when the playwright version changes.
+FROM base AS playwright
+RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | tee /usr/share/keyrings/stripe.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | tee -a /etc/apt/sources.list.d/stripe.list && \
+    apt update && \
+    apt install -y \
+    stripe && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt clean
+WORKDIR /home/ghost
+COPY --from=playwright-version tmp/playwright-version.txt /tmp/playwright-version.txt
+RUN npx playwright@$(cat /tmp/playwright-version.txt) install --with-deps
+
+# --------------------
 # Development Base
 # --------------------
-FROM base AS development-base
+FROM playwright AS development-base
 WORKDIR /home/ghost
+
 COPY package.json yarn.lock ./
 
 # Copy all package.json files
@@ -76,17 +103,3 @@ RUN apt update && apt install -y \
     python3-pip
 WORKDIR /home/ghost/ghost/web-analytics
 RUN pip install -r requirements.txt
-
-# --------------------
-# Browser Tests
-# --------------------
-FROM development AS browser-tests
-RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | tee /usr/share/keyrings/stripe.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | tee -a /etc/apt/sources.list.d/stripe.list && \
-    apt update && \
-    apt install -y \
-    stripe && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt clean
-RUN npx -y playwright install --with-deps
-CMD ["yarn", "test:browser"]
