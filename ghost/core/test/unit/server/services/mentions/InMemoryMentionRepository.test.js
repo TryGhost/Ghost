@@ -1,7 +1,7 @@
 const assert = require('assert/strict');
-const ObjectID = require('bson-objectid');
-const InMemoryMentionRepository = require('../lib/InMemoryMentionRepository');
-const Mention = require('../lib/Mention');
+const ObjectID = require('bson-objectid').default;
+const InMemoryMentionRepository = require('../../../../../core/server/services/mentions/InMemoryMentionRepository');
+const Mention = require('../../../../../core/server/services/mentions/Mention');
 
 describe('InMemoryMentionRepository', function () {
     it('Can handle filtering on resourceId', async function () {

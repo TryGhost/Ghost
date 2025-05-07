@@ -1,18 +1,18 @@
 const logging = require('@tryghost/logging');
 
 /**
- * @typedef {import('@tryghost/webmentions/lib/webmentions').MentionsAPI} MentionsAPI
- * @typedef {import('@tryghost/webmentions/lib/webmentions').Mention} Mention
+ * @typedef {import('./MentionsAPI')} MentionsAPI
+ * @typedef {import('./Mention')} Mention
  */
 
 /**
  * @template Model
- * @typedef {import('@tryghost/webmentions/lib/MentionsAPI').Page} Page<Model>
+ * @typedef {import('./MentionsAPI').Page<Model>} Page<Model>
  */
 
 /**
  * @typedef {object} MentionResource
- * @prop {ObjectID} id
+ * @prop {import('bson-objectid').default} id
  * @prop {string} type
  * @prop {string} name
  */
@@ -29,11 +29,11 @@ const logging = require('@tryghost/logging');
 
 /**
  * @typedef {object} IMentionResourceService
- * @prop {(id: ObjectID)  => Promise<MentionResource>} getByID
+ * @prop {(id: import('bson-objectid').default)  => Promise<MentionResource>} getByID
  */
 
 module.exports = class MentionController {
-    /** @type {import('@tryghost/webmentions/lib/MentionsAPI')} */
+    /** @type {import('./MentionsAPI')} */
     #api;
 
     /** @type {IJobService} */
@@ -44,7 +44,7 @@ module.exports = class MentionController {
 
     /**
      * @param {object} deps
-     * @param {import('@tryghost/webmentions/lib/MentionsAPI')} deps.api
+     * @param {import('./MentionsAPI')} deps.api
      * @param {IJobService} deps.jobService
      * @param {IMentionResourceService} deps.mentionResourceService
      */

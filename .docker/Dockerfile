@@ -86,7 +86,6 @@ COPY ghost/post-events/package.json ghost/post-events/package.json
 COPY ghost/post-revisions/package.json ghost/post-revisions/package.json
 COPY ghost/prometheus-metrics/package.json ghost/prometheus-metrics/package.json
 COPY ghost/security/package.json ghost/security/package.json
-COPY ghost/webmentions/package.json ghost/webmentions/package.json
 
 ## Install dependencies
 RUN yarn install --frozen-lockfile --prefer-offline
