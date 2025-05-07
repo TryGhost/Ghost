@@ -3,7 +3,7 @@ const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 
 /**
- * @typedef {import('@tryghost/email-service').EmailEventProcessor} EmailEventProcessor
+ * @typedef {import('../email-service/EmailEventProcessor')} EmailEventProcessor
  */
 
 /**

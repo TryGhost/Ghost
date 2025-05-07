@@ -1,4 +1,4 @@
-const MailgunEmailProvider = require('../lib/MailgunEmailProvider');
+const MailgunEmailProvider = require('../../../../../core/server/services/email-service/MailgunEmailProvider');
 const sinon = require('sinon');
 const should = require('should');
 const assert = require('assert/strict');
@@ -27,7 +27,7 @@ describe('Mailgun Email Provider', function () {
                 mailgunClient,
                 errorHandler: () => {}
             });
-            
+
             const deliveryTime = new Date();
 
             const response = await mailgunEmailProvider.send({
@@ -238,7 +238,7 @@ describe('Mailgun Email Provider', function () {
             mailgunClient = {
                 getBatchSize: getBatchSizeStub
             };
-            
+
             const provider = new MailgunEmailProvider({
                 mailgunClient,
                 errorHandler: () => {}
@@ -257,7 +257,7 @@ describe('Mailgun Email Provider', function () {
             mailgunClient = {
                 getTargetDeliveryWindow: getTargetDeliveryWindowStub
             };
-            
+
             const provider = new MailgunEmailProvider({
                 mailgunClient,
                 errorHandler: () => {}

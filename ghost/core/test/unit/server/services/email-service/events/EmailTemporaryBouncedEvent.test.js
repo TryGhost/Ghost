@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 const ObjectID = require('bson-objectid').default;
-const EmailTemporaryBouncedEvent = require('../../lib/events/EmailTemporaryBouncedEvent');
+const EmailTemporaryBouncedEvent = require('../../../../../../core/server/services/email-service/events/EmailTemporaryBouncedEvent');
 
 describe('EmailTemporaryBouncedEvent', function () {
     it('exports a static create method to create instances', function () {
