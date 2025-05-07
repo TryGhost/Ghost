@@ -155,7 +155,7 @@ const Sources:React.FC = () => {
                                             return (
                                                 <TableRow key={row.source || 'direct'}>
                                                     <TableCell className="font-medium">
-                                                        {row.source ?
+                                                        {row.source && typeof row.source === 'string' && /^(?:[\w-]+\.)+[\w-]+(?:\/[\w-./?%&=]*)?$/.test(row.source) ?
                                                             <a className='group flex items-center gap-1' href={`https://${row.source}`} rel="noreferrer" target="_blank">
                                                                 <SourceRow className='group-hover:underline' source={row.source} />
                                                             </a>
