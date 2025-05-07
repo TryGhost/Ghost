@@ -100,10 +100,6 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         }
     ];
 
-    if (!labs.trafficAnalyticsAlpha) {
-        return <Navigate to='/web/' />;
-    }
-
     return (
         <PostAnalyticsLayout>
             <ViewHeader className='items-end pb-4'>
