@@ -36,17 +36,15 @@ const Sidebar:React.FC = () => {
                 Growth
                 </RightSidebarMenuLink>
             </RightSidebarMenu>
-            <footer className='flex items-center gap-1 p-8 px-3'>
+            {/* <footer className='flex items-center gap-1 p-8 px-3'>
                 <a className='flex items-center gap-1 text-[1.2rem] text-gray-800 hover:text-black' href="https://ghost.org/docs">
-                    {/* <LucideIcon.MessageCircle className='text-blue' size={16} /> */}
                     <span>Learn about Analytics</span>
                 </a>
                 <LucideIcon.Dot className='text-gray-500' size={16} />
                 <a className='flex items-center gap-1 text-[1.2rem] text-gray-800 hover:text-black' href="https://ghost.org/docs">
-                    {/* <LucideIcon.MessageCircle className='text-blue' size={16} /> */}
                     <span>Feedback</span>
                 </a>
-            </footer>
+            </footer> */}
         </div>
     );
 };
