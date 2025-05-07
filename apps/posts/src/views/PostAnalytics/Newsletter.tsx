@@ -4,8 +4,11 @@ import PostAnalyticsContent from './components/PostAnalyticsContent';
 import PostAnalyticsHeader from './components/PostAnalyticsHeader';
 import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Navigate} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth} from '@src/utils/chart-helpers';
+import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useRef, useState} from 'react';
+import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
 interface postAnalyticsProps {}
 
@@ -19,6 +22,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const [originalUrl, setOriginalUrl] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const {settings} = useGlobalData();
+    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
     // const {isLoading: isConfigLoading} = useGlobalData();
     // const {postId} = useParams();
     // const {stats: postReferrers, totals, isLoading} = usePostReferrers(postId || '');
@@ -94,6 +99,10 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
             clicks: 1
         }
     ];
+
+    if (!labs.trafficAnalyticsAlpha) {
+        return <Navigate to='/web/' />;
+    }
 
     return (
         <PostAnalyticsLayout>
