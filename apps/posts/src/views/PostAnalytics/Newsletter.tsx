@@ -1,8 +1,9 @@
+import AudienceSelect from './components/AudienceSelect';
 import KpiCard, {KpiCardContent, KpiCardIcon, KpiCardLabel, KpiCardValue} from './components/KpiCard';
 import PostAnalyticsContent from './components/PostAnalyticsContent';
 import PostAnalyticsHeader from './components/PostAnalyticsHeader';
 import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber, formatPercentage} from '@tryghost/shade';
 import {calculateYAxisWidth} from '@src/utils/chart-helpers';
 import {useEffect, useRef, useState} from 'react';
 
@@ -97,7 +98,10 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     return (
         <PostAnalyticsLayout>
             <ViewHeader className='items-end pb-4'>
-                <PostAnalyticsHeader currentTab='Growth' />
+                <PostAnalyticsHeader currentTab='Newsletter' />
+                <ViewHeaderActions className='mb-2'>
+                    <AudienceSelect />
+                </ViewHeaderActions>
             </ViewHeader>
             <PostAnalyticsContent>
                 {isLoading ? 'Loading' :
