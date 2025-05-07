@@ -98,6 +98,20 @@ export type NewsletterStatsResponseType = {
     meta: Meta;
 };
 
+export type NewsletterSubscriberDelta = {
+    date: string;
+    value: number;
+};
+
+export type NewsletterSubscriberStats = {
+    total: number;
+    deltas: NewsletterSubscriberDelta[];
+};
+
+export type NewsletterSubscriberStatsResponseType = {
+    stats: NewsletterSubscriberStats[];
+};
+
 // Requests
 
 const dataType = 'TopContentResponseType';
@@ -105,6 +119,7 @@ const memberCountHistoryDataType = 'MemberCountHistoryResponseType';
 const topPostsStatsDataType = 'TopPostsStatsResponseType';
 const postReferrersDataType = 'PostReferrersResponseType';
 const newsletterStatsDataType = 'NewsletterStatsResponseType';
+const newsletterSubscriberStatsDataType = 'NewsletterSubscriberStatsResponseType';
 
 const postGrowthStatsDataType = 'PostGrowthStatsResponseType';
 const mrrHistoryDataType = 'MrrHistoryResponseType';
@@ -141,4 +156,9 @@ export const useMrrHistory = createQuery<MrrHistoryResponseType>({
 export const useNewsletterStats = createQuery<NewsletterStatsResponseType>({
     dataType: newsletterStatsDataType,
     path: '/stats/newsletter-stats/'
+});
+
+export const useSubscriberCount = createQuery<NewsletterSubscriberStatsResponseType>({
+    dataType: newsletterSubscriberStatsDataType,
+    path: '/stats/subscriber-count/'
 });

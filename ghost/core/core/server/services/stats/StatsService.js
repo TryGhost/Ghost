@@ -112,6 +112,19 @@ class StatsService {
     }
 
     /**
+     * Get newsletter subscriber statistics including total count and daily deltas
+     * 
+     * @param {Object} options
+     * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
+     * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
+     * @returns {Promise<{data: Object}>}
+     */
+    async getNewsletterSubscriberStats(options = {}) {
+        const result = await this.posts.getNewsletterSubscriberStats(options);
+        return result;
+    }
+
+    /**
      * @param {object} deps
      *
      * @returns {StatsService}

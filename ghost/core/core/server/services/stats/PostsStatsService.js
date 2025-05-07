@@ -39,6 +39,12 @@ const errors = require('@tryghost/errors');
  * @property {number} mrr - Total MRR from paid conversions attributed to this post/referrer
  */
 
+/**
+ * @typedef {Object} NewsletterSubscriberStats
+ * @property {number} total - Total current subscriber count 
+ * @property {Array<{date: string, value: number}>} deltas - Daily subscription deltas
+ */
+
 class PostsStatsService {
     /**
      * @param {object} deps
@@ -488,6 +494,74 @@ class PostsStatsService {
         } catch (error) {
             logging.error('Error fetching newsletter stats:', error);
             return {data: []};
+        }
+    }
+
+    /**
+     * Get newsletter subscriber statistics including total count and daily deltas
+     * 
+     * @param {Object} options - Query options
+     * @param {string} [options.date_from] - Optional start date filter (YYYY-MM-DD)
+     * @param {string} [options.date_to] - Optional end date filter (YYYY-MM-DD)
+     * @returns {Promise<{data: Array<{total: number, deltas: Array<{date: string, value: number}>}>}>} The newsletter subscriber stats
+     */
+    async getNewsletterSubscriberStats(options = {}) {
+        try {
+            // Get total subscriber count from members_newsletters table
+            const totalResult = await this.knex('members_newsletters')
+                .countDistinct('member_id as total');
+
+            const totalValue = totalResult[0] ? totalResult[0].total : 0;
+            const total = parseInt(String(totalValue), 10);
+
+            // Get daily deltas within date range
+            let deltasQuery = this.knex('members_subscribe_events as mse')
+                .select(
+                    this.knex.raw(`DATE(mse.created_at) as date`),
+                    this.knex.raw(`SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as value`)
+                )
+                .groupByRaw('DATE(mse.created_at)')
+                .orderBy('date', 'asc');
+
+            // Apply date filters
+            if (options.date_from) {
+                deltasQuery.where('mse.created_at', '>=', options.date_from);
+            }
+            if (options.date_to) {
+                deltasQuery.where('mse.created_at', '<=', `${options.date_to} 23:59:59`);
+            }
+
+            const rawDeltas = await deltasQuery;
+            
+            // Transform raw database results to properly typed objects
+            const deltas = [];
+            for (const row of rawDeltas) {
+                if (row) {
+                    // @ts-ignore
+                    const dateValue = row.date || '';
+                    // @ts-ignore
+                    const deltaValue = row.value || 0;
+                    deltas.push({
+                        date: String(dateValue),
+                        value: parseInt(String(deltaValue), 10)
+                    });
+                }
+            }
+
+            return {
+                data: [{
+                    total,
+                    deltas
+                }]
+            };
+        } catch (error) {
+            logging.error('Error fetching newsletter subscriber stats:', error);
+            return {
+                data: [{
+                    total: 0,
+                    deltas: []
+                }]
+            };
         }
     }
 }

@@ -10,7 +10,7 @@ import {Navigate, useNavigate} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useNewsletterStatsWithRange} from '@src/hooks/useNewsletterStatsWithRange';
+import {useNewsletterStatsWithRange, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
 import type {TopNewslettersOrder} from '@src/hooks/useNewsletterStatsWithRange';
 
 type Totals = {
@@ -281,8 +281,9 @@ const Newsletters: React.FC = () => {
     const {settings} = useGlobalData();
     const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
 
-    // Get stats from real data using the new hook (without sort dependency)
-    const {data: newsletterStatsData, isLoading} = useNewsletterStatsWithRange(range);
+    // Get stats from real data using the new hooks
+    const {data: newsletterStatsData, isLoading: isStatsLoading} = useNewsletterStatsWithRange(range);
+    const {data: subscriberStatsData, isLoading: isSubscriberStatsLoading} = useSubscriberCountWithRange(range);
     
     // Prepare the data - wrap in useMemo to avoid dependency changes
     const newsletterStats = useMemo(() => {
@@ -322,7 +323,7 @@ const Newsletters: React.FC = () => {
     const totals = useMemo(() => {
         if (!newsletterStatsData?.stats || newsletterStatsData.stats.length === 0) {
             return {
-                totalSubscribers: 0,
+                totalSubscribers: subscriberStatsData?.stats?.[0]?.total || 0,
                 avgOpenRate: 0,
                 avgClickRate: 0
             };
@@ -335,35 +336,24 @@ const Newsletters: React.FC = () => {
         const totalOpenRate = allStats.reduce((sum, stat) => sum + (stat.open_rate || 0), 0);
         const totalClickRate = allStats.reduce((sum, stat) => sum + (stat.click_rate || 0), 0);
         
-        // Always sort by date (newest first) to get the most recent subscriber count,
-        // regardless of the current table sort order
-        const sortedByDate = [...allStats].sort((a, b) => new Date(b.send_date).getTime() - new Date(a.send_date).getTime());
-        
-        // Use the most recent newsletter for the subscriber count
-        const latestSubscribers = sortedByDate.length > 0 ? sortedByDate[0].sent_to : 0;
-        
         return {
-            totalSubscribers: latestSubscribers,
+            totalSubscribers: subscriberStatsData?.stats?.[0]?.total || 0,
             avgOpenRate: totalOpenRate / allStats.length,
             avgClickRate: totalClickRate / allStats.length
         };
-    }, [newsletterStatsData]);
+    }, [newsletterStatsData, subscriberStatsData]);
 
-    // Create subscribers data from newsletter stats
+    // Create subscribers data from newsletter subscriber stats
     const subscribersData = useMemo(() => {
-        if (!newsletterStats || newsletterStats.length === 0) {
+        if (!subscriberStatsData?.stats?.[0]?.deltas || subscriberStatsData.stats?.[0]?.deltas.length === 0) {
             return [];
         }
 
-        // Sort by date to ensure chronological order
-        const sortedData = [...newsletterStats].sort((a, b) => new Date(a.send_date).getTime() - new Date(b.send_date).getTime());
+        // Convert to the required format - already in the correct format
+        return subscriberStatsData.stats[0].deltas;
+    }, [subscriberStatsData]);
 
-        // Convert to the required format
-        return sortedData.map(stat => ({
-            date: stat.send_date,
-            value: stat.sent_to
-        }));
-    }, [newsletterStats]);
+    const isLoading = isStatsLoading || isSubscriberStatsLoading;
 
     if (!labs.trafficAnalyticsAlpha) {
         return <Navigate to='/web/' />;
