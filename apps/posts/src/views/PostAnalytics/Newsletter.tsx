@@ -2,15 +2,58 @@ import KpiCard, {KpiCardContent, KpiCardIcon, KpiCardLabel, KpiCardValue} from '
 import PostAnalyticsContent from './components/PostAnalyticsContent';
 import PostAnalyticsHeader from './components/PostAnalyticsHeader';
 import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, formatNumber, formatPercentage} from '@tryghost/shade';
 import {calculateYAxisWidth} from '@src/utils/chart-helpers';
+import {useEffect, useRef, useState} from 'react';
 
 interface postAnalyticsProps {}
 
+const sanitizeUrl = (url: string): string => {
+    return url.replace(/^https?:\/\//, '');
+};
+
 const Newsletter: React.FC<postAnalyticsProps> = () => {
+    const [editingUrl, setEditingUrl] = useState<string | null>(null);
+    const [editedUrl, setEditedUrl] = useState('');
+    const [originalUrl, setOriginalUrl] = useState('');
+    const inputRef = useRef<HTMLInputElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     // const {isLoading: isConfigLoading} = useGlobalData();
     // const {postId} = useParams();
     // const {stats: postReferrers, totals, isLoading} = usePostReferrers(postId || '');
+
+    const handleEdit = (url: string) => {
+        setEditingUrl(url);
+        setEditedUrl(url);
+        setOriginalUrl(url);
+    };
+
+    const handleUpdate = () => {
+        // Here you would typically make an API call to update the URL
+        setEditingUrl(null);
+        setEditedUrl('');
+        setOriginalUrl('');
+    };
+
+    const handleClickOutside = (event: MouseEvent) => {
+        if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+            if (editedUrl === originalUrl) {
+                setEditingUrl(null);
+                setEditedUrl('');
+                setOriginalUrl('');
+            }
+        }
+    };
+
+    useEffect(() => {
+        if (editingUrl && inputRef.current) {
+            inputRef.current.focus();
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [editingUrl, editedUrl, originalUrl]);
 
     const isLoading = false;
 
@@ -30,6 +73,25 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
             color: 'hsl(var(--chart-gray))'
         }
     } satisfies ChartConfig;
+
+    const mockLinks = [
+        {
+            url: 'https://google.com',
+            clicks: 199
+        },
+        {
+            url: 'https://ghost.org/docs/content-api/javascript/',
+            clicks: 74
+        },
+        {
+            url: 'https://bsky.app/',
+            clicks: 12
+        },
+        {
+            url: 'https://activitypub.ghost.org/you-think-youre-following-us-but-you-might-not-be/',
+            clicks: 1
+        }
+    ];
 
     return (
         <PostAnalyticsLayout>
@@ -114,19 +176,6 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             }
                                             cursor={false}
                                         />
-                                        {/* <Recharts.Bar
-                                            dataKey={currentTab === 'avg-open-rate' ? 'open_rate' : 'click_rate'}
-                                            fill="hsl(var(--chart-1))"
-                                            isAnimationActive={false}
-                                            maxBarSize={32}
-                                            radius={0}>
-                                            {avgsData.map(entry => (
-                                                <Recharts.Cell
-                                                    key={`cell-${entry.post_id}`}
-                                                    fill={getBarColor(entry[currentTab === 'avg-open-rate' ? 'open_rate' : 'click_rate'])}
-                                                />
-                                            ))}
-                                        </Recharts.Bar> */}
                                         <Recharts.Bar
                                             barSize={48}
                                             dataKey="current"
@@ -151,43 +200,67 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             </CardHeader>
                             <CardContent>
                                 <Separator />
-                                {/* {postReferrers.length > 0
+                                {mockLinks.length > 0
                                     ?
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>Source</TableHead>
-                                                <TableHead className='w-[110px] text-right'>Free members</TableHead>
-                                                <TableHead className='w-[110px] text-right'>Paid members</TableHead>
-                                                <TableHead className='w-[110px] text-right'>MRR</TableHead>
+                                                <TableHead>Link</TableHead>
+                                                <TableHead className='text-right'>No. of members</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {postReferrers?.map(row => (
-                                                <TableRow key={row.source}>
+                                            {mockLinks?.map(row => (
+                                                <TableRow key={row.url}>
                                                     <TableCell>
-                                                        <a className='inline-flex items-center gap-2 font-medium' href={`https://${row.source}`} rel="noreferrer" target='_blank'>
-                                                            <img
-                                                                className="size-4"
-                                                                src={`https://www.faviconextractor.com/favicon/${row.source || 'direct'}?larger=true`}
-                                                                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                                    e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
-                                                                }} />
-                                                            <span>{row.source || 'Direct'}</span>
-                                                        </a>
+                                                        <div className='flex items-center gap-2'>
+                                                            {editingUrl === row.url ? (
+                                                                <div ref={containerRef} className='flex w-full items-center gap-2'>
+                                                                    <Input
+                                                                        ref={inputRef}
+                                                                        className="h-7 w-full border-border bg-background text-sm"
+                                                                        value={editedUrl}
+                                                                        onChange={e => setEditedUrl(e.target.value)}
+                                                                    />
+                                                                    <Button
+                                                                        size='sm'
+                                                                        onClick={handleUpdate}
+                                                                    >
+                                                                        Update
+                                                                    </Button>
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    <Button
+                                                                        className='bg-background'
+                                                                        size='sm'
+                                                                        variant='outline'
+                                                                        onClick={() => handleEdit(row.url)}
+                                                                    >
+                                                                        <LucideIcon.Pen />
+                                                                    </Button>
+                                                                    <a
+                                                                        className='inline-flex items-center gap-2 font-medium hover:underline'
+                                                                        href={row.url}
+                                                                        rel="noreferrer"
+                                                                        target='_blank'
+                                                                    >
+                                                                        <span>{sanitizeUrl(row.url)}</span>
+                                                                    </a>
+                                                                </>
+                                                            )}
+                                                        </div>
                                                     </TableCell>
-                                                    <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.free_members)}</TableCell>
-                                                    <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.paid_members)}</TableCell>
-                                                    <TableCell className='text-right font-mono text-sm'>+${centsToDollars(row.mrr)}</TableCell>
+                                                    <TableCell className='text-right font-mono text-sm'>{formatNumber(row.clicks)}</TableCell>
                                                 </TableRow>
                                             ))}
                                         </TableBody>
                                     </Table>
                                     :
                                     <div className='py-20 text-center text-sm text-gray-700'>
-                                    Once someone signs up on this post, sources will show here.
+                                    You have no links in your post.
                                     </div>
-                                } */}
+                                }
                             </CardContent>
                         </Card>
                     </div>
