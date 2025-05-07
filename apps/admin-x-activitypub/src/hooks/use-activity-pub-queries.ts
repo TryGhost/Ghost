@@ -899,15 +899,23 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
+            // Get more handles than we need initially, since some might be filtered out as blocked
+            const fetchLimit = Math.min(limit * 2, suggestedHandles.length);
+
             return Promise.allSettled(
                 suggestedHandles
                     .sort(() => Math.random() - 0.5)
-                    .slice(0, limit)
+                    .slice(0, fetchLimit)
                     .map(suggestedHandle => api.getAccount(suggestedHandle))
             ).then((results) => {
-                return results
+                const accounts = results
                     .filter((result): result is PromiseFulfilledResult<Account> => result.status === 'fulfilled')
-                    .map(result => result.value);
+                    .map(result => result.value)
+                    // Filter out blocked accounts
+                    .filter(account => !account.blockedByMe && !account.domainBlockedByMe);
+
+                // Return only the requested limit of accounts after filtering
+                return accounts.slice(0, limit);
             });
         }
     });
