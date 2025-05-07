@@ -22,7 +22,7 @@ type Totals = {
 type SubscribersDataItem = {
     date: string;
     value: number;
-}
+};
 
 type AvgsDataItem = {
     post_id: string;
@@ -262,7 +262,7 @@ const NewsletterKPIs: React.FC<{
                             </Recharts.Bar>
                         </Recharts.BarChart>
                     </ChartContainer>
-                    <div className='text-muted-foreground -mt-6 text-center text-sm'>
+                    <div className="text-muted-foreground -mt-6 text-center text-sm">
                         Newsletters {currentTab === 'avg-open-rate' ? 'opens' : 'clicks'} in this period
                     </div>
                 </>
@@ -282,8 +282,10 @@ const Newsletters: React.FC = () => {
     // Get stats from real data using the new hook
     const {data: newsletterStatsData, isLoading} = useNewsletterStatsWithRange(range, sortBy);
     
-    // Prepare the data
-    const newsletterStats = newsletterStatsData?.stats || [];
+    // Prepare the data - wrap in useMemo to avoid dependency changes
+    const newsletterStats = useMemo(() => {
+        return newsletterStatsData?.stats || [];
+    }, [newsletterStatsData]);
     
     // Calculate totals
     const totals = useMemo(() => {
@@ -402,16 +404,16 @@ const Newsletters: React.FC = () => {
                                                 }
                                             </div>
                                         </TableCell>
-                                        <TableCell className='text-muted-foreground text-sm'>
+                                        <TableCell className="text-muted-foreground text-sm">
                                             {formatDisplayDate(new Date(post.send_date))}
                                         </TableCell>
                                         <TableCell className={`text-right font-mono text-sm ${post.total_opens === 0 && 'text-gray-700'}`}>
-                                            <span className='group-hover:hidden'>{formatPercentage(post.open_rate)}</span>
-                                            <span className='hidden group-hover:!visible group-hover:!block'>{formatNumber(post.total_opens)}</span>
+                                            <span className="group-hover:hidden">{formatPercentage(post.open_rate)}</span>
+                                            <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_opens)}</span>
                                         </TableCell>
                                         <TableCell className={`text-right font-mono text-sm ${post.total_clicks === 0 && 'text-gray-700'}`}>
-                                            <span className='group-hover:hidden'>{formatPercentage(post.click_rate)}</span>
-                                            <span className='hidden group-hover:!visible group-hover:!block'>{formatNumber(post.total_clicks)}</span>
+                                            <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
+                                            <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_clicks)}</span>
                                         </TableCell>
                                     </TableRow>
                                 ))}
