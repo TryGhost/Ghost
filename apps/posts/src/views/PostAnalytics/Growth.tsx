@@ -8,6 +8,10 @@ import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useParams} from '@tryghost/admin-x-framework';
 import {usePostReferrers} from '../../hooks/usePostReferrers';
 
+const centsToDollars = (value : number) => {
+    return Math.round(value / 100);
+};
+
 const STATS_DEFAULT_SOURCE_ICON_URL = 'https://static.ghost.org/v5.0.0/images/globe-icon.svg';
 
 interface postAnalyticsProps {}
@@ -49,7 +53,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                     <LucideIcon.CircleDollarSign strokeWidth={1.5} />
                                 </KpiCardIcon>
                                 <KpiCardLabel>MRR</KpiCardLabel>
-                                <KpiCardValue>+${formatNumber(totals?.mrr || 0)}</KpiCardValue>
+                                <KpiCardValue>+${centsToDollars(totals?.mrr || 0)}</KpiCardValue>
                             </KpiCard>
                         </div>
                         <Card>
@@ -86,7 +90,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                                     </TableCell>
                                                     <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.free_members)}</TableCell>
                                                     <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.paid_members)}</TableCell>
-                                                    <TableCell className='text-right font-mono text-sm'>+${formatNumber(row.mrr)}</TableCell>
+                                                    <TableCell className='text-right font-mono text-sm'>+${centsToDollars(row.mrr)}</TableCell>
                                                 </TableRow>
                                             ))}
                                         </TableBody>
