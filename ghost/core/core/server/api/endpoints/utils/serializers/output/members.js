@@ -468,6 +468,10 @@ function exportCSV(data) {
                 next(err);
             });
             
+            // Set appropriate headers once before streaming
+            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+            res.setHeader('Content-Disposition', 'attachment; filename="members.csv"');
+            
             // Pipe the data through the transform and to the response
             data.data.pipe(csvTransform).pipe(res);
         };

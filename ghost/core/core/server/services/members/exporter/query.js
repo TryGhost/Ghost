@@ -53,11 +53,16 @@ async function createExportStream(options) {
     let ids = null;
     if (hasFilter) {
         // do a very minimal query, only to fetch the ids of the filtered values
-        options.withRelated = [];
-        options.columns = ['id'];
+        const filterOptions = {...options};
+        filterOptions.withRelated = [];
+        filterOptions.columns = ['id'];
+        
+        // Important: We need to get ALL ids, not just the first page
+        filterOptions.limit = 'all';
 
-        const page = await models.Member.findPage(options);
+        const page = await models.Member.findPage(filterOptions);
         ids = page.data.map(d => d.id);
+        logging.info(`[MembersExporter] Found ${ids.length} members matching filter criteria`);
     }
 
     const startFetchingProducts = Date.now();
