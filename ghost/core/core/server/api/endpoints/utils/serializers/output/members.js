@@ -418,7 +418,8 @@ function createCSVTransform() {
                         data: [formattedMember]
                     }, {
                         header: true,
-                        escapeFormulae: true
+                        escapeFormulae: true,
+                        newline: '\r\n' // Explicitly set Windows-style line endings for compatibility
                     });
                     isFirstChunk = false;
                     callback(null, csv);
@@ -429,13 +430,13 @@ function createCSVTransform() {
                         data: [formattedMember]
                     }, {
                         header: false,
-                        escapeFormulae: true
+                        escapeFormulae: true,
+                        newline: '\r\n' // Explicitly set Windows-style line endings for compatibility
                     });
                     
                     // Make sure each row starts with a newline to ensure separation between rows
-                    // The CSV from papaparse may or may not already have a newline at the start,
-                    // so we remove any existing newlines first to avoid doubling them up
-                    callback(null, '\n' + csv.replace(/^\n+/, ''));
+                    // Ensure consistent line endings by using explicit CR+LF sequence
+                    callback(null, '\r\n' + csv.replace(/^\r?\n+/, ''));
                 }
             } catch (err) {
                 callback(err);
