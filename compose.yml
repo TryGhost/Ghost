@@ -83,16 +83,6 @@ services:
     profiles: [ tinybird ]
     tty: true
 
-  browser-tests:
-    <<: *service-template
-    build:
-      context: .
-      dockerfile: ./.docker/Dockerfile
-      target: browser-tests
-    command: [ "yarn", "test:browser" ]
-    profiles: [ browser-tests ]
-    tty: true
-
   mysql:
     image: mysql:8.4.5
     container_name: ghost-mysql
