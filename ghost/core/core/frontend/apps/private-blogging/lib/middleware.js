@@ -4,7 +4,6 @@ const crypto = require('crypto');
 const path = require('path');
 const config = require('../../../../shared/config');
 const urlUtils = require('../../../../shared/url-utils');
-const constants = require('@tryghost/constants');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const settingsCache = require('../../../../shared/settings-cache');
@@ -53,7 +52,7 @@ const privateBlogging = {
 
         return session({
             name: 'ghost-private',
-            maxAge: constants.ONE_MONTH_MS,
+            maxAge: (30 * 24 * 60 * 60 * 1000), // 30 days in ms
             signed: false,
             sameSite: 'none'
         })(req, res, next);

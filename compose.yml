@@ -9,7 +9,6 @@ x-service-template: &service-template
     - node_modules_ghost_root:/home/ghost/node_modules:delegated
     - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
     - node_modules_ghost_api-framework:/home/ghost/ghost/api-framework/node_modules:delegated
-    - node_modules_ghost_constants:/home/ghost/ghost/constants/node_modules:delegated
     - node_modules_ghost_core:/home/ghost/ghost/core/node_modules:delegated
     - node_modules_ghost_custom-fonts:/home/ghost/ghost/custom-fonts/node_modules:delegated
     - node_modules_ghost_domain-events:/home/ghost/ghost/domain-events/node_modules:delegated
@@ -171,7 +170,6 @@ volumes:
   node_modules_ghost_root: {}
   node_modules_ghost_admin: {}
   node_modules_ghost_api-framework: {}
-  node_modules_ghost_constants: {}
   node_modules_ghost_core: {}
   node_modules_ghost_custom-fonts: {}
   node_modules_ghost_domain-events: {}

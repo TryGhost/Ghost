@@ -69,7 +69,6 @@ COPY ghost/admin/lib/ember-power-calendar-moment/package.json ghost/admin/lib/em
 COPY ghost/admin/lib/ember-power-calendar-utils/package.json ghost/admin/lib/ember-power-calendar-utils/package.json
 COPY ghost/admin/package.json ghost/admin/package.json
 COPY ghost/api-framework/package.json ghost/api-framework/package.json
-COPY ghost/constants/package.json ghost/constants/package.json
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/custom-fonts/package.json ghost/custom-fonts/package.json
 COPY ghost/domain-events/package.json ghost/domain-events/package.json
