@@ -63,7 +63,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                             </CardHeader>
                             <CardContent>
                                 <Separator />
-                                {postReferrers.length > 1
+                                {postReferrers.length > 0
                                     ?
                                     <Table>
                                         <TableHeader>
