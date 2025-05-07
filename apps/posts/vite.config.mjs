@@ -1,16 +1,20 @@
 import adminXViteConfig from '@tryghost/admin-x-framework/vite';
 import pkg from './package.json';
 import {resolve} from 'path';
+import {defineConfig} from 'vitest/config';
 
-export default (function viteConfig() {
+export default defineConfig((function viteConfig() {
     return adminXViteConfig({
         packageName: pkg.name,
         entry: resolve(__dirname, 'src/index.tsx'),
         overrides: {
             test: {
+                globals: true,
+                environment: 'jsdom',
+                setupFiles: './test/setup-tests.js',
                 include: [
-                    './test/unit/**/*',
-                    './src/**/*.test.ts'
+                    './test/unit/**/*{.spec,.test}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+                    './src/**/?(*.){spec,test}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'
                 ]
             },
             resolve: {
@@ -25,4 +29,4 @@ export default (function viteConfig() {
             }
         }
     });
-});
+}));
