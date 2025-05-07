@@ -8,8 +8,8 @@ const Sidebar:React.FC = () => {
     const {postId} = useParams();
 
     return (
-        <div className='grow border-l py-8 pl-6 pr-0'>
-            <RightSidebarMenu className='sticky top-[134px]'>
+        <div className='grow py-8 pr-0'>
+            <RightSidebarMenu>
                 <RightSidebarMenuLink onClick={() => {
                     navigate(`/posts/analytics/${postId}`, {crossApp: true});
                 }}>
