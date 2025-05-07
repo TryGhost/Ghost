@@ -3,7 +3,7 @@ import DateRangeSelect from './components/DateRangeSelect';
 import React from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, H1, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber, formatQueryDate} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, H1, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber, formatQueryDate, isValidDomain} from '@tryghost/shade';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
 import {getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
@@ -155,7 +155,7 @@ const Sources:React.FC = () => {
                                             return (
                                                 <TableRow key={row.source || 'direct'}>
                                                     <TableCell className="font-medium">
-                                                        {row.source && typeof row.source === 'string' && /^(?:[\w-]+\.)+[\w-]+(?:\/[\w-./?%&=]*)?$/.test(row.source) ?
+                                                        {row.source && typeof row.source === 'string' && isValidDomain(row.source) ?
                                                             <a className='group flex items-center gap-1' href={`https://${row.source}`} rel="noreferrer" target="_blank">
                                                                 <SourceRow className='group-hover:underline' source={row.source} />
                                                             </a>
