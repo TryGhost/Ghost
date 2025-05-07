@@ -6,9 +6,10 @@ import SortButton from './components/SortButton';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Navigate, useNavigate} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
+import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useNavigate} from '@tryghost/admin-x-framework';
 
 type TopNewslettersOrder = 'date desc' | 'open_rate desc' | 'click_rate desc';
 
@@ -273,6 +274,8 @@ const Newsletters: React.FC = () => {
     // const {range} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopNewslettersOrder|string>('date desc');
     const navigate = useNavigate();
+    const {settings} = useGlobalData();
+    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
 
     // Get stats from custom hook once
     // const {isLoading, chartData, totals} = useGrowthStats(range);
@@ -343,6 +346,10 @@ const Newsletters: React.FC = () => {
         {post_id: '19', post_title: 'Platform News', send_date: new Date('2024-03-12'), sent_to: 17200, total_opens: 6880, total_clicks: 3440, open_rate: 0.37, click_rate: 0.20},
         {post_id: '20', post_title: 'Feature Updates', send_date: new Date('2024-03-11'), sent_to: 17000, total_opens: 7650, total_clicks: 3825, open_rate: 0.45, click_rate: 0.225}
     ];
+
+    if (!labs.trafficAnalyticsAlpha) {
+        return <Navigate to='/web/' />;
+    }
 
     return (
         <StatsLayout>
