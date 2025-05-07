@@ -15,7 +15,14 @@ class EmailServiceWrapper {
             return;
         }
 
-        const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter, MailgunEmailProvider} = require('@tryghost/email-service');
+        const EmailService = require('./EmailService');
+        const EmailController = require('./EmailController');
+        const EmailRenderer = require('./EmailRenderer');
+        const SendingService = require('./SendingService');
+        const BatchSendingService = require('./BatchSendingService');
+        const EmailSegmenter = require('./EmailSegmenter');
+        const MailgunEmailProvider = require('./MailgunEmailProvider');
+
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
         const MailgunClient = require('../lib/MailgunClient');
         const configService = require('../../../shared/config');

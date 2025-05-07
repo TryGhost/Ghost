@@ -3418,9 +3418,9 @@
     ember-raf-scheduler "^0.3.0"
 
 "@html-validate/stylish@^4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@html-validate/stylish/-/stylish-4.1.0.tgz#2683b64c3e845e413c86912c6239f7168e8fb941"
-  integrity sha512-f2MOKJ2HVdLxpOOg2jD6hjDTDJic3wpb8/UdDDIic5jTvgfMMPN3PoiNWlqDg/mCzLIj1b/p1hCRx4Kz5lbVjw==
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/@html-validate/stylish/-/stylish-4.2.0.tgz#75620160c073c907ab575433c0cc36ff10c70cab"
+  integrity sha512-Nl8HCv0hGRSLQ+n1OD4Hk3a+Urwk9HH0vQkAzzCarT4KlA7bRl+6xEiS5PZVwOmjtC7XiH/oNe3as9Fxcr2A1w==
   dependencies:
     kleur "^4.0.0"
 

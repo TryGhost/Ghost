@@ -70,7 +70,6 @@ COPY ghost/admin/package.json ghost/admin/package.json
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/custom-fonts/package.json ghost/custom-fonts/package.json
 COPY ghost/email-addresses/package.json ghost/email-addresses/package.json
-COPY ghost/email-service/package.json ghost/email-service/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
 
 RUN --mount=type=cache,target=/home/ghost/.yarn-cache \
