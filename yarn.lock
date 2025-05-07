@@ -7264,14 +7264,14 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/html-to-mobiledoc@3.2.1":
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-3.2.1.tgz#09f02e0401c06369ac0b84c4f34d6e9d3bad7a65"
-  integrity sha512-pp7mlDajjwqdndcIIS8kq0zqZaWd2lQzjbNhFwKeBL1D/LK4vGifgXil1ctTkfVlH+Mbktgpv/LZv/5zLLws/g==
+"@tryghost/html-to-mobiledoc@3.2.3":
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-3.2.3.tgz#bd6873e9c22cf2285e5f2f9d1ea2c932915a8639"
+  integrity sha512-M7K0Ka8VhqjUmWZaTapAZgWkR4+AvSro4MLipYdC8wqPCFfIWposOpc3Cuf9zOc+EAl1wiw5NxLHaASnbt7mww==
   dependencies:
-    "@tryghost/kg-parser-plugins" "4.2.0"
+    "@tryghost/kg-parser-plugins" "4.2.2"
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
-    jsdom "^24.1.0"
+    jsdom "^24.1.1"
 
 "@tryghost/http-cache-utils@0.1.19":
   version "0.1.19"
@@ -7445,12 +7445,12 @@
     mobiledoc-dom-renderer "^0.7.0"
     simple-dom "^1.4.0"
 
-"@tryghost/kg-parser-plugins@4.2.0":
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-4.2.0.tgz#b2a3cb2aeca8fa556ae3d4b8b9a67a326b54b5c5"
-  integrity sha512-phWb+CCfc2Rl7qgcQyGiuvUydTmVEaJ8I/3a8sgDjjhKQ+SkiqAnhsGIADMycIyd0UA3pN0h3Yj4dpaMK7nLNA==
+"@tryghost/kg-parser-plugins@4.2.2":
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-4.2.2.tgz#2ef59cd20141796861b516bd099394ba4c76ac3d"
+  integrity sha512-rVowYKyzMTACGspgUKwSdnUUfOD2mLuCyVqHlsYH8J9Vr9E7Y2H2H3DiGgklFhc1Kwzpz690p8E59KGmf3xfIQ==
   dependencies:
-    "@tryghost/kg-clean-basic-html" "4.2.0"
+    "@tryghost/kg-clean-basic-html" "4.2.2"
 
 "@tryghost/kg-unsplash-selector@0.3.0":
   version "0.3.0"
@@ -7601,10 +7601,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.3.8.tgz#3134a044e187f6d61393267c680c6cc75235aa96"
   integrity sha512-ppcnLBWczpbo4sQcGWtjEA82kdZMv4NFF2MvZRi1MBP4lSOSgh9A636eUxlB1/FpIG+D5ixq84xlY4QJMqW2kA==
 
-"@tryghost/referrer-parser@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/referrer-parser/-/referrer-parser-0.1.1.tgz#4bed14c75cec8c91ea08638cace9dcc3b21f6f6d"
-  integrity sha512-WDRvW92J9bM7ABmbdq212NaHHNrUBuCkdsGt68zquC8eKnCqJX0KBl/tUCgNCdaj1iXWNVbf4m0UUGmXnJxtaQ==
+"@tryghost/referrer-parser@0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/referrer-parser/-/referrer-parser-0.1.2.tgz#a90d98993f364b99272b3a9327942784bfbdb443"
+  integrity sha512-dEIN4S+76BRUllXmYnvI6z9KzbC9PX+0bDrSQL9FPmasHp9F98l+H0vCRR2BPjmfISpjjToH15oNtldR4tyJxA==
 
 "@tryghost/request@1.0.10", "@tryghost/request@^1.0.10":
   version "1.0.10"
@@ -21026,7 +21026,7 @@ jsdoc-type-pratt-parser@^4.0.0:
   resolved "https://registry.yarnpkg.com/jsdoc-type-pratt-parser/-/jsdoc-type-pratt-parser-4.1.0.tgz#ff6b4a3f339c34a6c188cbf50a16087858d22113"
   integrity sha512-Hicd6JK5Njt2QB6XYFS7ok9e37O8AYk3jTcppG4YVQnYjOemymvTcmc7OWsmq/Qqj5TdRFO5/x/tIPmBeRtGHg==
 
-jsdom@24.1.3, jsdom@^24.1.0, jsdom@^24.1.1, jsdom@~24.1.0:
+jsdom@24.1.3, jsdom@^24.1.1, jsdom@~24.1.0:
   version "24.1.3"
   resolved "https://registry.yarnpkg.com/jsdom/-/jsdom-24.1.3.tgz#88e4a07cb9dd21067514a619e9f17b090a394a9f"
   integrity sha512-MyL55p3Ut3cXbeBEG7Hcv0mVM8pp8PBNWxRqchZnSfAiES1v1mRnMeFfaHWIPULpwsYfvO+ZmMZz5tGCnjzDUQ==
