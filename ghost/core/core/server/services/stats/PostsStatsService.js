@@ -421,8 +421,8 @@ class PostsStatsService {
             // Map frontend order fields to database fields
             const orderFieldMap = {
                 date: 'p.published_at',
-                open_rate: 'e.opened_count / e.email_count',
-                click_rate: 'e.delivered_count / e.email_count * 0.5'
+                open_rate: 'CASE WHEN COALESCE(e.email_count,0) > 0 THEN e.opened_count / e.email_count ELSE 0 END',
+                click_rate: 'CASE WHEN COALESCE(e.email_count,0) > 0 THEN e.delivered_count / e.email_count * 0.5 ELSE 0 END'
             };
             
             // Validate order field
@@ -466,7 +466,7 @@ class PostsStatsService {
                 )
                 .from('posts as p')
                 .leftJoin('emails as e', 'p.id', 'e.post_id')
-                .where('p.newsletter_id', 'IS NOT', null)
+                .whereNotNull('p.newsletter_id')
                 .whereIn('p.status', ['sent', 'published'])
                 .whereNotNull('e.id') // Ensure there is an associated email record
                 .whereRaw(dateFilter)
