@@ -1,4 +1,4 @@
-import KpiCard, {KpiCardIcon, KpiCardLabel, KpiCardValue} from './components/KpiCard';
+import KpiCard, {KpiCardContent, KpiCardIcon, KpiCardLabel, KpiCardValue} from './components/KpiCard';
 import PostAnalyticsContent from './components/PostAnalyticsContent';
 import PostAnalyticsHeader from './components/PostAnalyticsHeader';
 import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
@@ -27,29 +27,43 @@ const Growth: React.FC<postAnalyticsProps> = () => {
             <PostAnalyticsContent>
                 {isLoading ? 'Loading' :
                     <div className='flex flex-col items-stretch gap-6'>
-                        <div className='grid grid-cols-3 gap-6'>
-                            <KpiCard>
-                                <KpiCardIcon>
-                                    <LucideIcon.User strokeWidth={1.5} />
-                                </KpiCardIcon>
-                                <KpiCardLabel>Free members</KpiCardLabel>
-                                <KpiCardValue>{formatNumber(totals?.free_members || 0)}</KpiCardValue>
-                            </KpiCard>
-                            <KpiCard>
-                                <KpiCardIcon>
-                                    <LucideIcon.Wallet strokeWidth={1.5} />
-                                </KpiCardIcon>
-                                <KpiCardLabel>Paid members</KpiCardLabel>
-                                <KpiCardValue>{formatNumber(totals?.paid_members || 0)}</KpiCardValue>
-                            </KpiCard>
-                            <KpiCard>
-                                <KpiCardIcon>
-                                    <LucideIcon.CircleDollarSign strokeWidth={1.5} />
-                                </KpiCardIcon>
-                                <KpiCardLabel>MRR</KpiCardLabel>
-                                <KpiCardValue>+${centsToDollars(totals?.mrr || 0)}</KpiCardValue>
-                            </KpiCard>
-                        </div>
+                        <Card>
+                            <CardHeader className='hidden'>
+                                <CardTitle>Newsletters</CardTitle>
+                                <CardDescription>How did this post perform</CardDescription>
+                            </CardHeader>
+                            <CardContent className='p-5'>
+                                <div className='grid grid-cols-3 gap-6'>
+                                    <KpiCard className='border-none p-0'>
+                                        <KpiCardIcon>
+                                            <LucideIcon.User strokeWidth={1.5} />
+                                        </KpiCardIcon>
+                                        <KpiCardContent>
+                                            <KpiCardLabel>Free members</KpiCardLabel>
+                                            <KpiCardValue>{formatNumber(totals?.free_members || 0)}</KpiCardValue>
+                                        </KpiCardContent>
+                                    </KpiCard>
+                                    <KpiCard className='border-none p-0'>
+                                        <KpiCardIcon>
+                                            <LucideIcon.WalletCards strokeWidth={1.5} />
+                                        </KpiCardIcon>
+                                        <KpiCardContent>
+                                            <KpiCardLabel>Paid members</KpiCardLabel>
+                                            <KpiCardValue>{formatNumber(totals?.paid_members || 0)}</KpiCardValue>
+                                        </KpiCardContent>
+                                    </KpiCard>
+                                    <KpiCard className='border-none p-0'>
+                                        <KpiCardIcon>
+                                            <LucideIcon.CircleDollarSign strokeWidth={1.5} />
+                                        </KpiCardIcon>
+                                        <KpiCardContent>
+                                            <KpiCardLabel>MRR</KpiCardLabel>
+                                            <KpiCardValue>+${centsToDollars(totals?.mrr || 0)}</KpiCardValue>
+                                        </KpiCardContent>
+                                    </KpiCard>
+                                </div>
+                            </CardContent>
+                        </Card>
                         <Card>
                             <CardHeader>
                                 <CardTitle>Sources</CardTitle>

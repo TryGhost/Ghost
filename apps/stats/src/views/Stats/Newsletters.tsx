@@ -247,9 +247,11 @@ const NewsletterKPIs: React.FC<{
                                 cursor={false}
                             />
                             <Recharts.Bar
+                                activeBar={{fill: 'hsl(var(--chart-1) / 0.8)'}}
                                 dataKey={currentTab === 'avg-open-rate' ? 'open_rate' : 'click_rate'}
                                 fill="hsl(var(--chart-1))"
                                 isAnimationActive={false}
+                                maxBarSize={32}
                                 radius={0}>
                                 {avgsData.map(entry => (
                                     <Recharts.Cell
@@ -325,26 +327,26 @@ const Newsletters: React.FC = () => {
     ];
 
     const mockAvgsData: AvgsDataItem[] = [
-        {post_id: '1', post_title: 'Weekly tech digest with an extra long title that should wrap in two lines', send_date: new Date('2024-03-30'), sent_to: 20800, total_opens: 17680, total_clicks: 8320, open_rate: 0.73, click_rate: 0.37},
-        {post_id: '2', post_title: 'Product Updates', send_date: new Date('2024-03-29'), sent_to: 20600, total_opens: 16480, total_clicks: 8240, open_rate: 0.78, click_rate: 0.43},
-        {post_id: '3', post_title: 'Community Spotlight', send_date: new Date('2024-03-28'), sent_to: 20400, total_opens: 14280, total_clicks: 8160, open_rate: 0.49, click_rate: 0.41},
-        {post_id: '4', post_title: 'Industry News', send_date: new Date('2024-03-27'), sent_to: 20200, total_opens: 12120, total_clicks: 8080, open_rate: 0.64, click_rate: 0.4},
-        {post_id: '5', post_title: 'Feature Announcement', send_date: new Date('2024-03-26'), sent_to: 20000, total_opens: 10000, total_clicks: 8000, open_rate: 0.5, click_rate: 0.32},
-        {post_id: '6', post_title: 'Monthly Roundup', send_date: new Date('2024-03-25'), sent_to: 19800, total_opens: 12870, total_clicks: 5940, open_rate: 0.76, click_rate: 0.16},
-        {post_id: '7', post_title: 'User Success Stories', send_date: new Date('2024-03-24'), sent_to: 19600, total_opens: 11760, total_clicks: 3920, open_rate: 0.39, click_rate: 0.21},
-        {post_id: '8', post_title: 'Tips & Tricks', send_date: new Date('2024-03-23'), sent_to: 19400, total_opens: 10670, total_clicks: 2910, open_rate: 0.52, click_rate: 0.15},
-        {post_id: '9', post_title: 'Platform Updates', send_date: new Date('2024-03-22'), sent_to: 19200, total_opens: 9600, total_clicks: 4800, open_rate: 0.48, click_rate: 0.25},
-        {post_id: '10', post_title: 'New Features Guide', send_date: new Date('2024-03-21'), sent_to: 19000, total_opens: 8550, total_clicks: 4275, open_rate: 0.43, click_rate: 0.225},
-        {post_id: '11', post_title: 'Community News', send_date: new Date('2024-03-20'), sent_to: 18800, total_opens: 7520, total_clicks: 3760, open_rate: 0.38, click_rate: 0.20},
-        {post_id: '12', post_title: 'Product Roadmap', send_date: new Date('2024-03-19'), sent_to: 18600, total_opens: 8370, total_clicks: 4185, open_rate: 0.45, click_rate: 0.225},
-        {post_id: '13', post_title: 'User Feedback', send_date: new Date('2024-03-18'), sent_to: 18400, total_opens: 7360, total_clicks: 3680, open_rate: 0.42, click_rate: 0.20},
-        {post_id: '14', post_title: 'Platform Tips', send_date: new Date('2024-03-17'), sent_to: 18200, total_opens: 8190, total_clicks: 4095, open_rate: 0.41, click_rate: 0.225},
-        {post_id: '15', post_title: 'Feature Deep Dive', send_date: new Date('2024-03-16'), sent_to: 18000, total_opens: 7200, total_clicks: 3600, open_rate: 0.40, click_rate: 0.20},
-        {post_id: '16', post_title: 'Community Updates', send_date: new Date('2024-03-15'), sent_to: 17800, total_opens: 8010, total_clicks: 4005, open_rate: 0.45, click_rate: 0.225},
-        {post_id: '17', post_title: 'Product News', send_date: new Date('2024-03-14'), sent_to: 17600, total_opens: 7040, total_clicks: 3520, open_rate: 0.44, click_rate: 0.20},
-        {post_id: '18', post_title: 'User Guide', send_date: new Date('2024-03-13'), sent_to: 17400, total_opens: 7830, total_clicks: 3915, open_rate: 0.41, click_rate: 0.225},
-        {post_id: '19', post_title: 'Platform News', send_date: new Date('2024-03-12'), sent_to: 17200, total_opens: 6880, total_clicks: 3440, open_rate: 0.37, click_rate: 0.20},
-        {post_id: '20', post_title: 'Feature Updates', send_date: new Date('2024-03-11'), sent_to: 17000, total_opens: 7650, total_clicks: 3825, open_rate: 0.45, click_rate: 0.225}
+        {post_id: '1', post_title: 'Weekly tech digest with an extra long title that should wrap in two lines', send_date: new Date('2025-04-11'), sent_to: 20800, total_opens: 17680, total_clicks: 8320, open_rate: 0.73, click_rate: 0.37},
+        {post_id: '2', post_title: 'Product Updates', send_date: new Date('2025-04-12'), sent_to: 20600, total_opens: 16480, total_clicks: 8240, open_rate: 0.78, click_rate: 0.43},
+        // {post_id: '3', post_title: 'Community Spotlight', send_date: new Date('2025-04-13'), sent_to: 20400, total_opens: 14280, total_clicks: 8160, open_rate: 0.49, click_rate: 0.41},
+        // {post_id: '4', post_title: 'Industry News', send_date: new Date('2025-04-14'), sent_to: 20200, total_opens: 12120, total_clicks: 8080, open_rate: 0.64, click_rate: 0.4},
+        {post_id: '5', post_title: 'Feature Announcement', send_date: new Date('2025-04-15'), sent_to: 20000, total_opens: 10000, total_clicks: 8000, open_rate: 0.5, click_rate: 0.32},
+        {post_id: '6', post_title: 'Monthly Roundup', send_date: new Date('2025-04-16'), sent_to: 19800, total_opens: 12870, total_clicks: 5940, open_rate: 0.76, click_rate: 0.16},
+        {post_id: '7', post_title: 'User Success Stories', send_date: new Date('2025-04-17'), sent_to: 19600, total_opens: 11760, total_clicks: 3920, open_rate: 0.39, click_rate: 0.21},
+        // {post_id: '8', post_title: 'Tips & Tricks', send_date: new Date('2025-04-18'), sent_to: 19400, total_opens: 10670, total_clicks: 2910, open_rate: 0.52, click_rate: 0.15},
+        {post_id: '9', post_title: 'Platform Updates', send_date: new Date('2025-04-19'), sent_to: 19200, total_opens: 9600, total_clicks: 4800, open_rate: 0.48, click_rate: 0.25},
+        {post_id: '10', post_title: 'New Features Guide', send_date: new Date('2025-04-20'), sent_to: 19000, total_opens: 8550, total_clicks: 4275, open_rate: 0.43, click_rate: 0.225},
+        // {post_id: '11', post_title: 'Community News', send_date: new Date('2025-04-21'), sent_to: 18800, total_opens: 7520, total_clicks: 3760, open_rate: 0.38, click_rate: 0.20},
+        {post_id: '12', post_title: 'Product Roadmap', send_date: new Date('2025-04-22'), sent_to: 18600, total_opens: 8370, total_clicks: 4185, open_rate: 0.45, click_rate: 0.225},
+        // {post_id: '13', post_title: 'User Feedback', send_date: new Date('2025-04-23'), sent_to: 18400, total_opens: 7360, total_clicks: 3680, open_rate: 0.42, click_rate: 0.20},
+        // {post_id: '14', post_title: 'Platform Tips', send_date: new Date('2025-04-24'), sent_to: 18200, total_opens: 8190, total_clicks: 4095, open_rate: 0.41, click_rate: 0.225},
+        {post_id: '15', post_title: 'Feature Deep Dive', send_date: new Date('2025-04-25'), sent_to: 18000, total_opens: 7200, total_clicks: 3600, open_rate: 0.40, click_rate: 0.20},
+        // {post_id: '16', post_title: 'Community Updates', send_date: new Date('2025-04-26'), sent_to: 17800, total_opens: 8010, total_clicks: 4005, open_rate: 0.45, click_rate: 0.225},
+        {post_id: '17', post_title: 'Product News', send_date: new Date('2025-04-27'), sent_to: 17600, total_opens: 7040, total_clicks: 3520, open_rate: 0.44, click_rate: 0.20},
+        {post_id: '18', post_title: 'User Guide', send_date: new Date('2025-04-28'), sent_to: 17400, total_opens: 7830, total_clicks: 3915, open_rate: 0.41, click_rate: 0.225}
+        // {post_id: '19', post_title: 'Platform News', send_date: new Date('2025-04-29'), sent_to: 17200, total_opens: 6880, total_clicks: 3440, open_rate: 0.37, click_rate: 0.20},
+        // {post_id: '20', post_title: 'Feature Updates', send_date: new Date('2025-04-30'), sent_to: 17000, total_opens: 7650, total_clicks: 3825, open_rate: 0.45, click_rate: 0.225}
     ];
 
     if (!labs.trafficAnalyticsAlpha) {
