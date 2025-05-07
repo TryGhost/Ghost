@@ -7,7 +7,7 @@ import {
     PostsBulkFeaturedEvent,
     PostsBulkUnfeaturedEvent,
     PostsBulkAddTagsEvent
-} from '../src/index';
+} from '../../../../core/shared/events-ts';
 
 describe('Post Events', function () {
     it('Can instantiate PostDeletedEvent', function () {
