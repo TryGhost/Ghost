@@ -279,17 +279,46 @@ const Newsletters: React.FC = () => {
     const {settings} = useGlobalData();
     const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
 
-    // Get stats from real data using the new hook
-    const {data: newsletterStatsData, isLoading} = useNewsletterStatsWithRange(range, sortBy);
+    // Get stats from real data using the new hook (without sort dependency)
+    const {data: newsletterStatsData, isLoading} = useNewsletterStatsWithRange(range);
     
     // Prepare the data - wrap in useMemo to avoid dependency changes
     const newsletterStats = useMemo(() => {
-        return newsletterStatsData?.stats || [];
-    }, [newsletterStatsData]);
+        if (!newsletterStatsData?.stats || newsletterStatsData?.stats.length === 0) {
+            return [];
+        }
+        
+        // Clone the data for sorting
+        const stats = [...newsletterStatsData.stats];
+        
+        // Apply client-side sorting
+        const [field, direction = 'desc'] = sortBy.split(' ');
+        
+        return stats.sort((a, b) => {
+            let valueA, valueB;
+            
+            // Handle different sort fields
+            if (field === 'date') {
+                valueA = new Date(a.send_date).getTime();
+                valueB = new Date(b.send_date).getTime();
+            } else if (field === 'open_rate') {
+                valueA = a.open_rate || 0;
+                valueB = b.open_rate || 0;
+            } else if (field === 'click_rate') {
+                valueA = a.click_rate || 0;
+                valueB = b.click_rate || 0;
+            } else {
+                return 0;
+            }
+            
+            // Apply sort direction
+            return direction === 'desc' ? valueB - valueA : valueA - valueB;
+        });
+    }, [newsletterStatsData, sortBy]);
     
     // Calculate totals
     const totals = useMemo(() => {
-        if (!newsletterStats || newsletterStats.length === 0) {
+        if (!newsletterStatsData?.stats || newsletterStatsData.stats.length === 0) {
             return {
                 totalSubscribers: 0,
                 avgOpenRate: 0,
@@ -297,23 +326,26 @@ const Newsletters: React.FC = () => {
             };
         }
 
-        // Calculate average open and click rates from the stats
-        const totalOpenRate = newsletterStats.reduce((sum, stat) => sum + (stat.open_rate || 0), 0);
-        const totalClickRate = newsletterStats.reduce((sum, stat) => sum + (stat.click_rate || 0), 0);
+        // Use all stats for calculating averages, not just the sorted/limited ones
+        const allStats = newsletterStatsData.stats;
+        
+        // Calculate average open and click rates from all stats
+        const totalOpenRate = allStats.reduce((sum, stat) => sum + (stat.open_rate || 0), 0);
+        const totalClickRate = allStats.reduce((sum, stat) => sum + (stat.click_rate || 0), 0);
         
         // Always sort by date (newest first) to get the most recent subscriber count,
         // regardless of the current table sort order
-        const sortedByDate = [...newsletterStats].sort((a, b) => new Date(b.send_date).getTime() - new Date(a.send_date).getTime());
+        const sortedByDate = [...allStats].sort((a, b) => new Date(b.send_date).getTime() - new Date(a.send_date).getTime());
         
         // Use the most recent newsletter for the subscriber count
         const latestSubscribers = sortedByDate.length > 0 ? sortedByDate[0].sent_to : 0;
         
         return {
             totalSubscribers: latestSubscribers,
-            avgOpenRate: totalOpenRate / newsletterStats.length,
-            avgClickRate: totalClickRate / newsletterStats.length
+            avgOpenRate: totalOpenRate / allStats.length,
+            avgClickRate: totalClickRate / allStats.length
         };
-    }, [newsletterStats]);
+    }, [newsletterStatsData]);
 
     // Create subscribers data from newsletter stats
     const subscribersData = useMemo(() => {
