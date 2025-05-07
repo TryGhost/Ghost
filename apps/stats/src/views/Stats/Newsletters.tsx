@@ -299,8 +299,12 @@ const Newsletters: React.FC = () => {
         const totalOpenRate = newsletterStats.reduce((sum, stat) => sum + (stat.open_rate || 0), 0);
         const totalClickRate = newsletterStats.reduce((sum, stat) => sum + (stat.click_rate || 0), 0);
         
-        // Assuming the most recent newsletter reflects the total subscriber count
-        const latestSubscribers = newsletterStats.length > 0 ? newsletterStats[0].sent_to : 0;
+        // Always sort by date (newest first) to get the most recent subscriber count,
+        // regardless of the current table sort order
+        const sortedByDate = [...newsletterStats].sort((a, b) => new Date(b.send_date).getTime() - new Date(a.send_date).getTime());
+        
+        // Use the most recent newsletter for the subscriber count
+        const latestSubscribers = sortedByDate.length > 0 ? sortedByDate[0].sent_to : 0;
         
         return {
             totalSubscribers: latestSubscribers,
