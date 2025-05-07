@@ -1,8 +1,8 @@
-const {EmailRenderer} = require('../');
+const EmailRenderer = require('../../../../../core/server/services/email-service/EmailRenderer');
 const assert = require('assert/strict');
 const cheerio = require('cheerio');
 const {createModel, createModelClass} = require('./utils');
-const linkReplacer = require('../../core/core/server/services/lib/link-replacer');
+const linkReplacer = require('../../../../../core/server/services/lib/link-replacer');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const {HtmlValidate} = require('html-validate');

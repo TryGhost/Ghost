@@ -1,16 +1,16 @@
-const EmailEventStorage = require('../lib/EmailEventStorage');
+const EmailEventStorage = require('../../../../../core/server/services/email-service/EmailEventStorage');
 
 const sinon = require('sinon');
 const assert = require('assert/strict');
 const logging = require('@tryghost/logging');
 const {createDb, createPrometheusClient} = require('./utils');
 
-const EmailDeliveredEvent = require('../lib/events/EmailDeliveredEvent');
-const EmailOpenedEvent = require('../lib/events/EmailOpenedEvent');
-const EmailBouncedEvent = require('../lib/events/EmailBouncedEvent');
-const EmailTemporaryBouncedEvent = require('../lib/events/EmailTemporaryBouncedEvent');
-const EmailUnsubscribedEvent = require('../lib/events/EmailUnsubscribedEvent');
-const SpamComplaintEvent = require('../lib/events/SpamComplaintEvent');
+const EmailDeliveredEvent = require('../../../../../core/server/services/email-service/events/EmailDeliveredEvent');
+const EmailOpenedEvent = require('../../../../../core/server/services/email-service/events/EmailOpenedEvent');
+const EmailBouncedEvent = require('../../../../../core/server/services/email-service/events/EmailBouncedEvent');
+const EmailTemporaryBouncedEvent = require('../../../../../core/server/services/email-service/events/EmailTemporaryBouncedEvent');
+const EmailUnsubscribedEvent = require('../../../../../core/server/services/email-service/events/EmailUnsubscribedEvent');
+const SpamComplaintEvent = require('../../../../../core/server/services/email-service/events/SpamComplaintEvent');
 
 describe('Email Event Storage', function () {
     let logError;
