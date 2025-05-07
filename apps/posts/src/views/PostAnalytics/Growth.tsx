@@ -19,16 +19,12 @@ interface postAnalyticsProps {}
 const Growth: React.FC<postAnalyticsProps> = () => {
     // const {isLoading: isConfigLoading} = useGlobalData();
     const {postId} = useParams();
-    const {range} = useGlobalData();
-    const {stats: postReferrers, totals, isLoading} = usePostReferrers(postId || '', range);
+    const {stats: postReferrers, totals, isLoading} = usePostReferrers(postId || '');
 
     return (
         <PostAnalyticsLayout>
             <ViewHeader className='items-end pb-4'>
                 <PostAnalyticsHeader currentTab='Growth' />
-                <ViewHeaderActions className='mb-2'>
-                    <DateRangeSelect />
-                </ViewHeaderActions>
             </ViewHeader>
             <PostAnalyticsContent>
                 {isLoading ? 'Loading' :

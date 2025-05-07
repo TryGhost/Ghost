@@ -24,13 +24,8 @@ export const getRangeDates = (rangeInDays: number) => {
     return {dateFrom, endDate};
 };
 
-export const usePostReferrers = (postId: string, range: number) => {
-    const {dateFrom} = useMemo(() => getRangeDates(range), [range]);
-    const {data: postReferrerResponse, isLoading: isPostReferrersLoading} = usePostReferrersAPI(postId, {
-        searchParams: {
-            date_from: dateFrom
-        }
-    });
+export const usePostReferrers = (postId: string) => {
+    const {data: postReferrerResponse, isLoading: isPostReferrersLoading} = usePostReferrersAPI(postId);
     // API doesn't support date_from yet, so we fetch all data and filter on the client for now
     const {data: postGrowthStatsResponse, isLoading: isPostGrowthStatsLoading} = usePostGrowthStatsAPI(postId);
 
