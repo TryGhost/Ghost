@@ -10,7 +10,6 @@
     "sideEffects": false,
     "scripts": {
         "build": "tsc -p tsconfig.declaration.json && vite build",
-        "build:ts": "yarn build",
         "prepare": "yarn build",
         "test": "yarn test:types && yarn nx build && vitest run --coverage",
         "test:unit": "yarn test:types && yarn nx build && vitest run",
