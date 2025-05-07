@@ -9,33 +9,29 @@ import {withFeatureFlag} from './hooks/withFeatureFlag';
 export const APP_ROUTE_PREFIX = '/stats';
 
 // Wrap all components with feature flag protection
-const ProtectedWeb = withFeatureFlag(Web, 'trafficAnalyticsAlpha', '/web/', 'Web');
-const ProtectedSources = withFeatureFlag(Sources, 'trafficAnalyticsAlpha', '/web/', 'Sources');
-const ProtectedLocations = withFeatureFlag(Locations, 'trafficAnalyticsAlpha', '/web/', 'Locations');
-const ProtectedGrowth = withFeatureFlag(Growth, 'trafficAnalyticsAlpha', '/web/', 'Growth');
 const ProtectedNewsletters = withFeatureFlag(Newsletters, 'trafficAnalyticsAlpha', '/web/', 'Newsletters');
 
 export const routes: RouteObject[] = [
     {
         path: '',
         index: true,
-        element: <ProtectedWeb />
+        element: <Web />
     },
     {
         path: '/web/',
-        element: <ProtectedWeb />
+        element: <Web />
     },
     {
         path: '/sources/',
-        element: <ProtectedSources />
+        element: <Sources />
     },
     {
         path: '/locations/',
-        element: <ProtectedLocations />
+        element: <Locations />
     },
     {
         path: '/growth/',
-        element: <ProtectedGrowth />
+        element: <Growth />
     }
     ,
     {
