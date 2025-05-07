@@ -424,11 +424,11 @@ class PostsStatsService {
             // Parse order field and direction
             let [orderField, orderDirection = 'desc'] = order.split(' ');
             
-            // Map frontend order fields to database fields
+            // Map frontend order fields to database fields (simplified for ORDER BY)
             const orderFieldMap = {
-                date: 'p.published_at',
-                open_rate: 'CASE WHEN COALESCE(e.email_count,0) > 0 THEN e.opened_count / e.email_count ELSE 0 END',
-                click_rate: 'CASE WHEN COALESCE(e.email_count,0) > 0 THEN COALESCE(click_count,0) / e.email_count ELSE 0 END'
+                date: 'send_date',
+                open_rate: 'open_rate',
+                click_rate: 'click_rate'
             };
             
             // Validate order field
@@ -485,7 +485,7 @@ class PostsStatsService {
                 .whereIn('p.status', ['sent', 'published'])
                 .whereNotNull('e.id') // Ensure there is an associated email record
                 .whereRaw(dateFilter)
-                .orderByRaw(`${orderFieldMap[orderField]} ${orderDirection}`)
+                .orderBy(orderFieldMap[orderField], orderDirection)
                 .limit(limit);
             
             const results = await query;
