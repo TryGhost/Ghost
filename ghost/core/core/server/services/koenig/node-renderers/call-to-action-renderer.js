@@ -25,7 +25,7 @@ function ctaCardTemplate(dataset) {
         : `style="background-color: ${dataset.buttonColor}; color: ${dataset.buttonTextColor};"`;
 
     return `
-        <div class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} kg-cta-${dataset.layout} ${dataset.imageUrl ? 'kg-cta-has-img' : ''} ${dataset.linkColor === 'accent' ? 'kg-cta-link-accent' : ''} ${dataset.alignment === 'center' ? 'kg-cta-centered' : ''}" data-layout="${dataset.layout}">
+        <div class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} kg-cta-${dataset.layout} ${dataset.showDividers ? '' : 'kg-cta-no-dividers'} ${dataset.imageUrl ? 'kg-cta-has-img' : ''} ${dataset.linkColor === 'accent' ? 'kg-cta-link-accent' : ''} ${dataset.alignment === 'center' ? 'kg-cta-centered' : ''}" data-layout="${dataset.layout}">
             ${dataset.hasSponsorLabel ? `
                 <div class="kg-cta-sponsor-label-wrapper">
                     <div class="kg-cta-sponsor-label">
@@ -179,7 +179,7 @@ function emailCTATemplate(dataset, options = {}) {
     };
 
     return `
-        <table class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} kg-cta-${dataset.layout} ${dataset.hasSponsorLabel ? '' : 'kg-cta-no-label'} ${dataset.textValue ? '' : 'kg-cta-no-text'} ${dataset.imageUrl ? 'kg-cta-has-img' : ''} ${dataset.linkColor === 'accent' ? 'kg-cta-link-accent' : ''} ${dataset.alignment === 'center' ? 'kg-cta-centered' : ''}" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <table class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} ${dataset.showDividers ? '' : 'kg-cta-no-dividers'} kg-cta-${dataset.layout} ${dataset.hasSponsorLabel ? '' : 'kg-cta-no-label'} ${dataset.textValue ? '' : 'kg-cta-no-text'} ${dataset.imageUrl ? 'kg-cta-has-img' : ''} ${dataset.linkColor === 'accent' ? 'kg-cta-link-accent' : ''} ${dataset.alignment === 'center' ? 'kg-cta-centered' : ''}" border="0" cellpadding="0" cellspacing="0" width="100%">
             ${dataset.hasSponsorLabel ? `
                 <tr>
                     <td>
@@ -206,6 +206,7 @@ export function renderCallToActionNode(node, options = {}) {
         alignment: node.alignment,
         textValue: node.textValue,
         showButton: node.showButton,
+        showDividers: node.showDividers,
         buttonText: node.buttonText,
         buttonUrl: node.buttonUrl,
         buttonColor: node.buttonColor,
