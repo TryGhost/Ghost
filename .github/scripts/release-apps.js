@@ -9,7 +9,8 @@ const semver = require('semver');
 const CONFIG_KEYS = {
     '@tryghost/portal': 'portal',
     '@tryghost/sodo-search': 'sodoSearch',
-    '@tryghost/comments-ui': 'comments'
+    '@tryghost/comments-ui': 'comments',
+    '@tryghost/announcement-bar': 'announcementBar'
 };
 
 const CURRENT_DIR = process.cwd();
@@ -112,7 +113,8 @@ async function getChangelog(newVersion) {
         changelogItems.push('Updated i18n translations');
     }
 
-    const lastFiftyCommits = await safeExec(`git log -n 50 --oneline .`);
+    // Restrict git log to only the current directory (the specific app)
+    const lastFiftyCommits = await safeExec(`git log -n 50 --oneline -- .`);
 
     if (lastFiftyCommits.stderr) {
         console.error(`There was an error getting the last 50 commits`);
@@ -132,7 +134,8 @@ async function getChangelog(newVersion) {
         const lastReleaseCommit = lastFiftyCommitsList[indexOfLastRelease];
         const lastReleaseCommitHash = lastReleaseCommit.slice(0, 10);
 
-        const commitsSinceLastRelease = await safeExec(`git log ${lastReleaseCommitHash}..HEAD --pretty=format:"%h%n%B__SPLIT__"`);
+        // Also restrict this git log to only the current directory (the specific app)
+        const commitsSinceLastRelease = await safeExec(`git log ${lastReleaseCommitHash}..HEAD --pretty=format:"%h%n%B__SPLIT__" -- .`);
         if (commitsSinceLastRelease.stderr) {
             console.error(`There was an error getting commits since the last release`);
             process.exit(1);
@@ -144,9 +147,14 @@ async function getChangelog(newVersion) {
         });
 
         const commitChangelogItems = commitsSinceLastReleaseWhichMentionLinear.map((commitBlock) => {
-            const [hash] = commitBlock.split('\n');
+            const lines = commitBlock.split('\n');
+            if (!lines.length || !lines[0].trim()) {
+                return null; // Skip entries with no hash
+            }
+            const hash = lines[0].trim();
             return `https://github.com/TryGhost/Ghost/commit/${hash}`;
-        });
+        }).filter(Boolean); // Filter out any null entries
+
         changelogItems.push(...commitChangelogItems);
     }
 
