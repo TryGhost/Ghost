@@ -1,5 +1,5 @@
 import React from 'react';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber, isValidDomain} from '@tryghost/shade';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
 import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -10,7 +10,7 @@ interface SourceRowProps {
     source?: string | number;
 }
 
-const SourceRow: React.FC<SourceRowProps> = ({className, source}) => {
+export const SourceRow: React.FC<SourceRowProps> = ({className, source}) => {
     return (
         <>
             <img
@@ -62,7 +62,7 @@ const Sources:React.FC<SourcesProps> = ({queryParams}) => {
                                             return (
                                                 <TableRow key={row.source || 'direct'}>
                                                     <TableCell className="font-medium">
-                                                        {row.source ?
+                                                        {row.source && row.source === 'string' && isValidDomain(row.source) ?
                                                             <a className='group flex items-center gap-1' href={`https://${row.source}`} rel="noreferrer" target="_blank">
                                                                 <SourceRow className='group-hover:underline' source={row.source} />
                                                             </a>

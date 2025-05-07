@@ -2,15 +2,14 @@ import KpiCard, {KpiCardContent, KpiCardIcon, KpiCardLabel, KpiCardValue} from '
 import PostAnalyticsContent from './components/PostAnalyticsContent';
 import PostAnalyticsHeader from './components/PostAnalyticsHeader';
 import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, formatNumber} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, formatNumber, isValidDomain} from '@tryghost/shade';
+import {SourceRow} from './components/Web/Sources';
 import {useParams} from '@tryghost/admin-x-framework';
 import {usePostReferrers} from '../../hooks/usePostReferrers';
 
 const centsToDollars = (value : number) => {
     return Math.round(value / 100);
 };
-
-const STATS_DEFAULT_SOURCE_ICON_URL = 'https://static.ghost.org/v5.0.0/images/globe-icon.svg';
 
 interface postAnalyticsProps {}
 
@@ -86,15 +85,15 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                             {postReferrers?.map(row => (
                                                 <TableRow key={row.source}>
                                                     <TableCell>
-                                                        <a className='inline-flex items-center gap-2 font-medium' href={`https://${row.source}`} rel="noreferrer" target='_blank'>
-                                                            <img
-                                                                className="size-4"
-                                                                src={`https://www.faviconextractor.com/favicon/${row.source || 'direct'}?larger=true`}
-                                                                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                                    e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
-                                                                }} />
-                                                            <span>{row.source || 'Direct'}</span>
-                                                        </a>
+                                                        {row.source && isValidDomain(row.source) ?
+                                                            <a className='group flex items-center gap-1' href={`https://${row.source}`} rel="noreferrer" target="_blank">
+                                                                <SourceRow className='group-hover:underline' source={row.source} />
+                                                            </a>
+                                                            :
+                                                            <span className='flex items-center gap-1'>
+                                                                <SourceRow source={row.source} />
+                                                            </span>
+                                                        }
                                                     </TableCell>
                                                     <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.free_members)}</TableCell>
                                                     <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.paid_members)}</TableCell>
