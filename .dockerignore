@@ -1,6 +1,28 @@
 node_modules
 
 .nxcache
-.nx/workspace-data
+.nx
 
 **/*.log
+
+build
+dist
+
+coverage
+
+.eslintcache
+
+test-results
+
+tsconfig.tsbuildinfo
+
+Dockerfile
+.dockerignore
+
+.git
+.vscode
+.editorconfig
+compose.yml
+
+.docker
+!.docker/development.entrypoint.sh
