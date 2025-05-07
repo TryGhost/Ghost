@@ -1,10 +1,8 @@
-import DateRangeSelect from './components/DateRangeSelect';
 import KpiCard, {KpiCardIcon, KpiCardLabel, KpiCardValue} from './components/KpiCard';
 import PostAnalyticsContent from './components/PostAnalyticsContent';
 import PostAnalyticsHeader from './components/PostAnalyticsHeader';
 import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber} from '@tryghost/shade';
-import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, formatNumber} from '@tryghost/shade';
 import {useParams} from '@tryghost/admin-x-framework';
 import {usePostReferrers} from '../../hooks/usePostReferrers';
 
@@ -19,16 +17,12 @@ interface postAnalyticsProps {}
 const Growth: React.FC<postAnalyticsProps> = () => {
     // const {isLoading: isConfigLoading} = useGlobalData();
     const {postId} = useParams();
-    const {range} = useGlobalData();
-    const {stats: postReferrers, totals, isLoading} = usePostReferrers(postId || '', range);
+    const {stats: postReferrers, totals, isLoading} = usePostReferrers(postId || '');
 
     return (
         <PostAnalyticsLayout>
             <ViewHeader className='items-end pb-4'>
                 <PostAnalyticsHeader currentTab='Growth' />
-                <ViewHeaderActions className='mb-2'>
-                    <DateRangeSelect />
-                </ViewHeaderActions>
             </ViewHeader>
             <PostAnalyticsContent>
                 {isLoading ? 'Loading' :
