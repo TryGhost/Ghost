@@ -55,6 +55,7 @@
     "sideEffects": false,
     "scripts": {
         "build": "tsc -p tsconfig.declaration.json && vite build",
+        "build:ts": "yarn build",
         "prepare": "yarn build",
         "test": "yarn test:types && yarn test:unit",
         "test:types": "tsc --noEmit",
@@ -100,21 +101,5 @@
     "peerDependencies": {
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
-    },
-    "nx": {
-        "targets": {
-            "dev": {
-                "dependsOn": [
-                    "^build"
-                ]
-            },
-            "test:unit": {
-                "dependsOn": [
-                    "test:unit",
-                    "^build:ts",
-                    "@tryghost/admin-x-design-system:test:unit"
-                ]
-            }
-        }
     }
 }
