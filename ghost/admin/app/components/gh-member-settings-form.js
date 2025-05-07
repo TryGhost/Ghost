@@ -157,14 +157,12 @@ export default class extends Component {
 
     @action
     continueSubscription(subscriptionId) {
-        console.log('continueSubscription', subscriptionId);
         this.loadingSubscriptionId = subscriptionId;
         this.continueSubscriptionTask.perform(subscriptionId);
     }
 
     @task({drop: true})
     *cancelSubscriptionTask(subscriptionId) {
-        console.log('cancelSubscriptionTask', subscriptionId);
         try {
             let url = this.ghostPaths.url.api('members', this.member.get('id'), 'subscriptions', subscriptionId);
 
