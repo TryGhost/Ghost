@@ -422,7 +422,7 @@ class PostsStatsService {
             const orderFieldMap = {
                 date: 'p.published_at',
                 open_rate: 'CASE WHEN COALESCE(e.email_count,0) > 0 THEN e.opened_count / e.email_count ELSE 0 END',
-                click_rate: 'CASE WHEN COALESCE(e.email_count,0) > 0 THEN e.delivered_count / e.email_count * 0.5 ELSE 0 END'
+                click_rate: 'CASE WHEN COALESCE(e.email_count,0) > 0 THEN COALESCE(click_count,0) / e.email_count ELSE 0 END'
             };
             
             // Validate order field
@@ -450,6 +450,16 @@ class PostsStatsService {
                     : this.knex.raw(`p.published_at <= ?`, [options.date_to]);
             }
             
+            // Subquery to count clicks from members_click_events
+            const clicksSubquery = this.knex
+                .select('r.post_id')
+                .countDistinct('mce.member_id as click_count')
+                .from('redirects as r')
+                .leftJoin('members_click_events as mce', 'r.id', 'mce.redirect_id')
+                .whereNotNull('r.post_id')
+                .groupBy('r.post_id')
+                .as('clicks');
+            
             // Build the query to get newsletter stats
             const query = this.knex
                 .select(
@@ -459,13 +469,12 @@ class PostsStatsService {
                     this.knex.raw('COALESCE(e.email_count, 0) as sent_to'),
                     this.knex.raw('COALESCE(e.opened_count, 0) as total_opens'),
                     this.knex.raw('CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate'),
-                    // For now we'll use delivered as a placeholder for total clicks since we don't track clicks directly in this table
-                    this.knex.raw('COALESCE(e.delivered_count, 0) as total_clicks'),
-                    // For click rate, let's estimate using a fraction of the open rate
-                    this.knex.raw('CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.delivered_count, 0) / COALESCE(e.email_count, 0) * 0.5 ELSE 0 END as click_rate')
+                    this.knex.raw('COALESCE(clicks.click_count, 0) as total_clicks'),
+                    this.knex.raw('CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(clicks.click_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as click_rate')
                 )
                 .from('posts as p')
                 .leftJoin('emails as e', 'p.id', 'e.post_id')
+                .leftJoin(clicksSubquery, 'p.id', 'clicks.post_id')
                 .whereNotNull('p.newsletter_id')
                 .whereIn('p.status', ['sent', 'published'])
                 .whereNotNull('e.id') // Ensure there is an associated email record
