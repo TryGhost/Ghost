@@ -158,6 +158,8 @@ module.exports = function apiRoutes() {
     if (labs.isSet('trafficAnalytics')) {
         router.get('/stats/top-posts', mw.authAdminApi, http(api.stats.topPosts));
         router.get('/stats/top-content', mw.authAdminApi, http(api.stats.topContent));
+        router.get('/stats/newsletter-stats', mw.authAdminApi, http(api.stats.newsletterStats));
+        router.get('/stats/subscriber-count', mw.authAdminApi, http(api.stats.subscriberCount));
         router.get('/stats/posts/:id/top-referrers', mw.authAdminApi, http(api.stats.postReferrersAlpha));
         router.get('/stats/posts/:id/growth', mw.authAdminApi, http(api.stats.postGrowthStats));
     }

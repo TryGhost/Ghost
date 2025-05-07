@@ -168,6 +168,64 @@ const controller = {
             return await statsService.api.getTopPosts(frame.options);
         }
     },
+    newsletterStats: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'order',
+            'limit',
+            'date_from',
+            'date_to',
+            'timezone'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'getNewsletterStats',
+                options: {
+                    order: frame.options.order,
+                    limit: frame.options.limit,
+                    date_from: frame.options.date_from,
+                    date_to: frame.options.date_to,
+                    timezone: frame.options.timezone
+                }
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getNewsletterStats(frame.options);
+        }
+    },
+    subscriberCount: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'date_from',
+            'date_to'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'getNewsletterSubscriberStats',
+                options: {
+                    date_from: frame.options.date_from,
+                    date_to: frame.options.date_to
+                }
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getNewsletterSubscriberStats(frame.options);
+        }
+    },
     postReferrersAlpha: {
         headers: {
             cacheInvalidate: false
