@@ -129,7 +129,31 @@ async function getChangelog(newVersion) {
     });
 
     if (indexOfLastRelease === -1) {
-        console.warn(`Could not find commit for previous release.`);
+        console.warn(`Could not find commit for previous release. Will include recent commits affecting this app.`);
+        
+        // Fallback: get recent commits for this app (last 20)
+        const recentCommits = await safeExec(`git log -n 20 --pretty=format:"%h%n%B__SPLIT__" -- .`);
+        if (recentCommits.stderr) {
+            console.error(`There was an error getting recent commits`);
+            process.exit(1);
+        }
+        
+        const recentCommitsList = recentCommits.stdout.split('__SPLIT__');
+        
+        const recentCommitsWhichMentionLinear = recentCommitsList.filter((commitBlock) => {
+            return commitBlock.includes('https://linear.app/ghost');
+        });
+        
+        const commitChangelogItems = recentCommitsWhichMentionLinear.map((commitBlock) => {
+            const lines = commitBlock.split('\n');
+            if (!lines.length || !lines[0].trim()) {
+                return null; // Skip entries with no hash
+            }
+            const hash = lines[0].trim();
+            return `https://github.com/TryGhost/Ghost/commit/${hash}`;
+        }).filter(Boolean); // Filter out any null entries
+        
+        changelogItems.push(...commitChangelogItems);
     } else {
         const lastReleaseCommit = lastFiftyCommitsList[indexOfLastRelease];
         const lastReleaseCommitHash = lastReleaseCommit.slice(0, 10);
