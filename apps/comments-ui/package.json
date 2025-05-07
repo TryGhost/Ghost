@@ -18,6 +18,7 @@
     "dev": "concurrently \"yarn preview --host -l silent\" \"yarn build:watch\"",
     "dev:test": "vite build && vite preview --port 7175",
     "build": "vite build",
+    "build:ts": "yarn build",
     "build:watch": "vite build --watch",
     "preview": "vite preview",
     "test": "yarn test:unit && yarn test:e2e",
