@@ -56,19 +56,19 @@ const BarTooltipContent = ({active, payload}: BarTooltipProps) => {
         new Date(currentItem.send_date) : currentItem.send_date;
 
     return (
-        <div className="bg-background min-w-[220px] max-w-[240px] rounded-lg border px-3 py-2 shadow-lg">
+        <div className="min-w-[220px] max-w-[240px] rounded-lg border bg-background px-3 py-2 shadow-lg">
             <div className="mb-2 flex w-full flex-col border-b pb-2">
                 <span className="text-sm font-semibold leading-tight">{currentItem.post_title}</span>
-                <span className="text-muted-foreground text-sm">Sent on {formatDisplayDate(sendDate)}</span>
+                <span className="text-sm text-muted-foreground">Sent on {formatDisplayDate(sendDate)}</span>
             </div>
 
             <div className="mb-1 flex w-full justify-between">
-                <span className="text-muted-foreground font-medium">Sent</span>
+                <span className="font-medium text-muted-foreground">Sent</span>
                 <div className="ml-2 w-full text-right font-mono">{formatNumber(currentItem.sent_to)}</div>
             </div>
 
             <div className="mb-1 flex w-full justify-between">
-                <span className="text-muted-foreground font-medium">Opens</span>
+                <span className="font-medium text-muted-foreground">Opens</span>
                 <div className="ml-2 w-full text-right font-mono">
                     <span className="text-muted-foreground">{formatNumber(currentItem.total_opens)} / </span>
                     {formatPercentage(currentItem.open_rate)}
@@ -76,7 +76,7 @@ const BarTooltipContent = ({active, payload}: BarTooltipProps) => {
             </div>
 
             <div className="mb-1 flex w-full justify-between">
-                <span className="text-muted-foreground font-medium">Clicks</span>
+                <span className="font-medium text-muted-foreground">Clicks</span>
                 <div className="ml-2 w-full text-right font-mono">
                     <span className="text-muted-foreground">{formatNumber(currentItem.total_clicks)} / </span>
                     {formatPercentage(currentItem.click_rate)}
@@ -280,7 +280,7 @@ const NewsletterKPIs: React.FC<{
                             </Recharts.Bar>
                         </Recharts.BarChart>
                     </ChartContainer>
-                    <div className="text-muted-foreground -mt-6 text-center text-sm">
+                    <div className="-mt-6 text-center text-sm text-muted-foreground">
                         Newsletters {currentTab === 'avg-open-rate' ? 'opens' : 'clicks'} in this period
                     </div>
                 </>
@@ -444,7 +444,7 @@ const Newsletters: React.FC = () => {
                                                 }
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-muted-foreground text-sm">
+                                        <TableCell className="text-sm text-muted-foreground">
                                             {formatDisplayDate(new Date(post.send_date))}
                                         </TableCell>
                                         <TableCell className={`text-right font-mono text-sm ${post.total_opens === 0 && 'text-gray-700'}`}>
