@@ -1,21 +1,19 @@
 import React from 'react';
 import {LucideIcon, TableHeadButton} from '@tryghost/shade';
 
-type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
-
-interface SortButtonProps {
-    sortBy: TopPostsOrder;
-    setSortBy: (sort: TopPostsOrder) => void;
-    activeSortBy: TopPostsOrder;
+interface SortButtonProps<T extends string> {
+    sortBy: T;
+    setSortBy: (sort: T) => void;
+    activeSortBy: T;
     children: React.ReactNode;
 }
 
-const SortButton:React.FC<SortButtonProps> = ({
+const SortButton = <T extends string>({
     sortBy,
     setSortBy,
     activeSortBy,
     children
-}) => {
+}: SortButtonProps<T>) => {
     return (
         <TableHeadButton
             className={`${sortBy === activeSortBy && 'text-black'}`}
