@@ -1,10 +1,14 @@
 import React from 'react';
 import {LucideIcon, RightSidebarMenu, RightSidebarMenuLink} from '@tryghost/shade';
+import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
+import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
 
 const Sidebar:React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const {settings} = useGlobalData();
+    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
 
     return (
         <div className='sticky top-[102px] flex h-[calc(100vh-102px)] grow flex-col justify-between'>
@@ -16,6 +20,14 @@ const Sidebar:React.FC = () => {
                     <LucideIcon.MousePointer size={16} strokeWidth={1.25} />
                 Web
                 </RightSidebarMenuLink>
+                {labs.trafficAnalyticsAlpha &&
+                    <RightSidebarMenuLink active={location.pathname === '/newsletters/'} onClick={() => {
+                        navigate('/newsletters/');
+                    }}>
+                        <LucideIcon.Mail size={16} strokeWidth={1.25} />
+                    Newsletters
+                    </RightSidebarMenuLink>
+                }
                 <RightSidebarMenuLink active={location.pathname === '/sources/'} onClick={() => {
                     navigate('/sources/');
                 }}>
