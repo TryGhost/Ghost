@@ -191,7 +191,7 @@ export const useGrowthStats = (range: number) => {
             return memberCountResponse;
         }
         return [];
-    }, [memberCountResponse, dateFrom]);
+    }, [memberCountResponse]);
 
     const mrrData = useMemo(() => {
         // HACK: We should do this filtering on the backend, but the API doesn't support it yet
