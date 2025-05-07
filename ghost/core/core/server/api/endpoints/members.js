@@ -391,19 +391,6 @@ const controller = {
         },
         validation: {},
         async query(frame) {
-            // For large exports (>10k members), use streaming
-            if (frame.options.limit === 'all') {
-                // Check total count first
-                const countResult = await models.Member.findPage({limit: 0});
-                const totalCount = countResult.meta.pagination.total;
-                
-                // Use streaming for large exports (>10k)
-                if (totalCount > 10000) {
-                    frame.options.stream = true;
-                    logging.info(`[MembersExporter] Using streaming export for ${totalCount} members`);
-                }
-            }
-            
             return {
                 data: await membersService.export(frame.options)
             };

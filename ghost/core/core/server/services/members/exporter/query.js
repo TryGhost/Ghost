@@ -188,41 +188,10 @@ async function createExportStream(options) {
 }
 
 /**
- * Legacy export function that returns all members in a single array
- * Used for smaller exports to maintain backwards compatibility
- * @param {Object} options - Export options
- * @returns {Promise<Array>} Array of members
- */
-async function exportToArray(options) {
-    const stream = await createExportStream(options);
-    
-    return new Promise((resolve, reject) => {
-        const members = [];
-        
-        stream.on('data', (member) => {
-            members.push(member);
-        });
-        
-        stream.on('end', () => {
-            resolve(members);
-        });
-        
-        stream.on('error', (err) => {
-            reject(err);
-        });
-    });
-}
-
-/**
  * Export members data
  * @param {Object} options - Export options
  * @returns {Promise<Array|Object>} Array of members or stream of members
  */
 module.exports = async function (options = {}) {
-    if (options.stream === true) {
-        return createExportStream(options);
-    }
-    
-    // For backwards compatibility, return array for smaller exports
-    return exportToArray(options);
+    return createExportStream(options);
 };
