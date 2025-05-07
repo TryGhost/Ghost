@@ -263,7 +263,7 @@ class StaffServiceEmails {
     /**
      *
      * @param {object} eventData
-     * @param {import('@tryghost/donations').DonationPaymentEvent} eventData.donationPaymentEvent
+     * @param {import('../donations/DonationPaymentEvent').DonationPaymentEvent} eventData.donationPaymentEvent
      *
      * @returns {Promise<void>}
      */

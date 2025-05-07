@@ -1,5 +1,8 @@
 import {DonationPaymentEvent} from './DonationPaymentEvent';
-import {DonationRepository} from './DonationRepository';
+
+type DonationRepository = {
+    save(event: DonationPaymentEvent): Promise<void>;
+}
 
 type BookshelfModelInstance = unknown;
 type BookshelfOptions = unknown;

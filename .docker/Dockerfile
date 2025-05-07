@@ -73,7 +73,6 @@ COPY ghost/constants/package.json ghost/constants/package.json
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/custom-fonts/package.json ghost/custom-fonts/package.json
 COPY ghost/domain-events/package.json ghost/domain-events/package.json
-COPY ghost/donations/package.json ghost/donations/package.json
 COPY ghost/email-addresses/package.json ghost/email-addresses/package.json
 COPY ghost/email-service/package.json ghost/email-service/package.json
 COPY ghost/html-to-plaintext/package.json ghost/html-to-plaintext/package.json
