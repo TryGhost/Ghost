@@ -60,7 +60,8 @@
     padding-top: 0;
 }
 
-.kg-cta-has-img .kg-cta-sponsor-label-wrapper:not(.kg-cta-bg-none .kg-cta-sponsor-label-wrapper):not(.kg-cta-minimal .kg-cta-sponsor-label-wrapper) {
+.kg-cta-has-img .kg-cta-sponsor-label-wrapper:not(.kg-cta-bg-none .kg-cta-sponsor-label-wrapper):not(.kg-cta-minimal .kg-cta-sponsor-label-wrapper),
+.kg-cta-bg-none.kg-cta-no-dividers .kg-cta-sponsor-label-wrapper {
     border-bottom: 0;
 }
 
@@ -114,7 +115,12 @@
     border-bottom: 1px solid rgba(124, 139, 154, 0.2);
 }
 
-.kg-cta-bg-none .kg-cta-content:not(.kg-cta-sponsor-label-wrapper + .kg-cta-content) {
+.kg-cta-bg-none.kg-cta-no-dividers .kg-cta-content {
+    padding: 0;
+    border-bottom: none;
+}
+
+.kg-cta-bg-none:not(.kg-cta-no-dividers) .kg-cta-content:not(.kg-cta-sponsor-label-wrapper + .kg-cta-content) {
     border-top: 1px solid rgba(124, 139, 154, 0.2);
 }
 
