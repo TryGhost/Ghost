@@ -19,6 +19,7 @@
         "dev": "vite build --watch",
         "dev:start": "vite",
         "test": "vitest run",
+        "test:unit": "vitest run test/unit",
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",
         "build": "tsc && vite build",
