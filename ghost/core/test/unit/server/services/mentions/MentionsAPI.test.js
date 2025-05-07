@@ -1,8 +1,8 @@
 const assert = require('assert/strict');
-const ObjectID = require('bson-objectid');
-const Mention = require('../lib/Mention');
-const MentionsAPI = require('../lib/MentionsAPI');
-const InMemoryMentionRepository = require('../lib/InMemoryMentionRepository');
+const ObjectID = require('bson-objectid').default;
+const Mention = require('../../../../../core/server/services/mentions/Mention');
+const MentionsAPI = require('../../../../../core/server/services/mentions/MentionsAPI');
+const InMemoryMentionRepository = require('../../../../../core/server/services/mentions/InMemoryMentionRepository');
 const sinon = require('sinon');
 const cheerio = require('cheerio');
 

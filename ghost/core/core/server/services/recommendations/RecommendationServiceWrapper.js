@@ -1,5 +1,5 @@
 const DomainEvents = require('@tryghost/domain-events');
-const {MentionCreatedEvent} = require('@tryghost/webmentions');
+const MentionCreatedEvent = require('../mentions/MentionCreatedEvent');
 const logging = require('@tryghost/logging');
 
 class RecommendationServiceWrapper {

@@ -1,8 +1,9 @@
 const assert = require('assert/strict');
-const ObjectID = require('bson-objectid');
-const Mention = require('../lib/Mention');
+const ObjectID = require('bson-objectid').default;
 const cheerio = require('cheerio');
 const sinon = require('sinon');
+
+const Mention = require('../../../../../core/server/services/mentions/Mention');
 
 const validInput = {
     source: 'https://source.com',

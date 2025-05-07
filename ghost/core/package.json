@@ -120,7 +120,6 @@
     "@tryghost/url-utils": "4.4.9",
     "@tryghost/validator": "0.2.16",
     "@tryghost/version": "0.1.32",
-    "@tryghost/webmentions": "0.0.0",
     "@tryghost/zip": "1.1.48",
     "amperize": "0.6.1",
     "body-parser": "1.20.3",
