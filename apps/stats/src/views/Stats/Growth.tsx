@@ -5,9 +5,8 @@ import React, {useMemo, useState} from 'react';
 import SortButton from './components/SortButton';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
-import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
 import {calculateYAxisWidth, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -133,8 +132,8 @@ const GrowthKPIs: React.FC<{
     } satisfies ChartConfig;
 
     return (
-        <Tabs defaultValue="total-members" variant='underline'>
-            <TabsList className="grid grid-cols-4 gap-5">
+        <Tabs defaultValue="total-members" variant='kpis'>
+            <TabsList className="-mx-6 grid grid-cols-4">
                 <KpiTabTrigger value="total-members" onClick={() => {
                     setCurrentTab('total-members');
                 }}>
@@ -189,31 +188,10 @@ const GrowthKPIs: React.FC<{
                     >
                         <Recharts.CartesianGrid horizontal={false} vertical={false} />
                         <Recharts.XAxis
-                            axisLine={false}
+                            axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
                             dataKey="date"
                             interval={0}
-                            // tick={({x, y, payload, index, ticks}) => {
-                            //     if (!ticks) {
-                            //         return <g />;
-                            //     }
-                            //     const isFirst = index === 0;
-                            //     const isLast = index === ticks.length - 1;
-                            //     return (
-                            //         <g transform={`translate(${x},${y})`}>
-                            //             <text
-                            //                 className="fill-gray-500"
-                            //                 dy={16}
-                            //                 fill="hsl(var(--foreground))"
-                            //                 fontSize={12}
-                            //                 textAnchor={isFirst ? 'start' : isLast ? 'end' : 'middle'}
-                            //                 x={0}
-                            //                 y={0}
-                            //             >
-                            //                 {formatDisplayDateWithRange(payload.value, range)}
-                            //             </text>
-                            //         </g>
-                            //     );
-                            // }}
+                            stroke="hsl(var(--gray-300))"
                             tickFormatter={formatDisplayDate}
                             tickLine={false}
                             tickMargin={8}
@@ -331,7 +309,7 @@ const Growth: React.FC = () => {
                                         <TableCell className="font-medium">
                                             <div className='group/link inline-flex items-center gap-2'>
                                                 {post.post_id ?
-                                                    <Button className='h-auto p-0 hover:!underline' title="View post analytics" variant='link' onClick={() => {
+                                                    <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
                                                         navigate(`/posts/analytics/${post.post_id}`, {crossApp: true});
                                                     }}>
                                                         {post.title}
