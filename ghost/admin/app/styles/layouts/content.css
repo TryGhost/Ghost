@@ -2232,7 +2232,7 @@ span.dropdown .gh-post-list-cta > span {
 
 .feature-trafficAnalytics .gh-post-analytics-content {
     display: grid;
-    grid-template-columns: auto 288px;
+    grid-template-columns: auto 260px;
     gap: 32px;
 }
 
@@ -2250,11 +2250,10 @@ span.dropdown .gh-post-list-cta > span {
 }
 
 .feature-trafficAnalytics .gh-post-analytics-sidebar {
-    border-left: 1px solid var(--whitegrey);
     display: flex;
     flex-direction: column;
     gap: 1px;
-    padding: 32px 0 32px 24px;
+    padding: 32px 0;
 }
 
 .feature-trafficAnalytics .gh-post-analytics-sidebar-item {

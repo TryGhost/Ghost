@@ -1,4 +1,5 @@
 import Growth from './views/PostAnalytics/Growth';
+import Newsletter from './views/PostAnalytics/Newsletter';
 import Web from './views/PostAnalytics/Web';
 import {ErrorPage} from '@tryghost/shade';
 import {Navigate, RouteObject} from '@tryghost/admin-x-framework';
@@ -25,6 +26,11 @@ export const routes: RouteObject[] = [
                 path: 'analytics/:postId/growth',
                 index: true,
                 element: <Growth />
+            },
+            {
+                path: 'analytics/:postId/newsletter',
+                index: true,
+                element: <Newsletter />
             },
             {
                 path: '*',

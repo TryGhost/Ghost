@@ -3,7 +3,15 @@ import {cn} from '@tryghost/shade';
 
 export const KpiCardIcon: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (
-        <div className={cn('flex size-11 rounded-full items-center justify-center bg-gray-200 text-blue-500 mb-2 [&_svg]:size-5', className)} {...props}>
+        <div className={cn('flex size-11 rounded-full items-center justify-center bg-muted text-black mt-0.5 [&_svg]:size-5', className)} {...props}>
+            {children}
+        </div>
+    );
+};
+
+export const KpiCardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
+    return (
+        <div className={cn('flex flex-col', className)} {...props}>
             {children}
         </div>
     );
@@ -11,7 +19,7 @@ export const KpiCardIcon: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({chi
 
 export const KpiCardLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (
-        <div className={cn('text-base text-gray-700 tracking-tight font-semibold', className)} {...props}>
+        <div className={cn('text-sm text-gray-800 font-medium', className)} {...props}>
             {children}
         </div>
     );
@@ -19,7 +27,7 @@ export const KpiCardLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ch
 
 export const KpiCardValue: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (
-        <div className={cn('text-[23px] mt-0.5 tracking-tight leading-none font-semibold', className)} {...props}>
+        <div className={cn('text-[23px] mt-0.5 tracking-tighter leading-none font-semibold', className)} {...props}>
             {children}
         </div>
     );
@@ -27,7 +35,7 @@ export const KpiCardValue: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ch
 
 const KpiCard: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (
-        <div className={cn('rounded-md bg-muted/50 px-6 py-4', className)} {...props}>
+        <div className={cn('flex items-start gap-3 rounded-md border p-4', className)} {...props}>
             {children}
         </div>
     );
