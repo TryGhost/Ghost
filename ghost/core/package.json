@@ -106,7 +106,7 @@
     "@tryghost/pretty-cli": "1.2.46",
     "@tryghost/prometheus-metrics": "0.0.0",
     "@tryghost/promise": "0.3.14",
-    "@tryghost/referrer-parser": "0.1.1",
+    "@tryghost/referrer-parser": "0.1.2",
     "@tryghost/request": "1.0.10",
     "@tryghost/root-utils": "0.3.32",
     "@tryghost/security": "0.0.0",
@@ -215,7 +215,7 @@
     "xml": "1.0.1"
   },
   "optionalDependencies": {
-    "@tryghost/html-to-mobiledoc": "3.2.1",
+    "@tryghost/html-to-mobiledoc": "3.2.3",
     "sqlite3": "5.1.7"
   },
   "devDependencies": {
