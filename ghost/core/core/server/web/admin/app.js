@@ -3,7 +3,6 @@ const path = require('path');
 const express = require('../../../shared/express');
 const serveStatic = express.static;
 const config = require('../../../shared/config');
-const constants = require('@tryghost/constants');
 const urlUtils = require('../../../shared/url-utils');
 const shared = require('../shared');
 const errorHandler = require('@tryghost/mw-error-handler');
@@ -29,7 +28,7 @@ module.exports = function setupAdminApp() {
     //        is specified in seconds. See https://github.com/expressjs/serve-static/issues/150 for more context
     adminApp.use('/assets', serveStatic(
         path.join(config.get('paths').adminAssets, 'assets'), {
-            maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : constants.ONE_YEAR_MS,
+            maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : (365 * 24 * 60 * 60 * 1000), // Default to 1 year in ms
             immutable: true,
             fallthrough: false
         }
