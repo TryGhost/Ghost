@@ -23,6 +23,7 @@ export const CallToActionNodeComponent = ({
     layout,
     linkColor,
     showButton,
+    showDividers,
     textValue,
     buttonColor,
     htmlEditor,
@@ -55,6 +56,13 @@ export const CallToActionNodeComponent = ({
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.showButton = !node.showButton;
+        });
+    };
+
+    const toggleShowDividers = (event) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.showDividers = !node.showDividers;
         });
     };
 
@@ -176,6 +184,7 @@ export const CallToActionNodeComponent = ({
                 setEditing={setEditing}
                 setFileInputRef={ref => fileInputRef.current = ref}
                 showButton={showButton}
+                showDividers={showDividers}
                 showVisibilitySettings={showVisibilitySettings}
                 sponsorLabelHtmlEditor={sponsorLabelHtmlEditor}
                 sponsorLabelHtmlEditorInitialState={sponsorLabelHtmlEditorInitialState}
@@ -187,6 +196,7 @@ export const CallToActionNodeComponent = ({
                 updateHasSponsorLabel={handleHasSponsorLabelChange}
                 updateLayout={handleUpdatingLayout}
                 updateShowButton={toggleShowButton}
+                updateShowDividers={toggleShowDividers}
                 visibilityOptions={visibilityOptions}
                 onFileChange={onFileChange}
                 onRemoveMedia={onRemoveMedia}

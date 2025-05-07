@@ -99,6 +99,7 @@ export function CallToActionCard({
     isEditing = false,
     layout = 'immersive',
     showButton = false,
+    showDividers = true,
     visibilityOptions = {},
     handleButtonColor = () => {},
     handleColorChange = () => {},
@@ -112,6 +113,7 @@ export function CallToActionCard({
     updateHasSponsorLabel = () => {},
     updateLayout = () => {},
     updateShowButton = () => {},
+    updateShowDividers = () => {},
     toggleVisibility = () => {},
     imageDragHandler = {},
     imageUploader = () => {},
@@ -223,7 +225,7 @@ export function CallToActionCard({
 
     const designSettings = (
         <>
-            {/* Layout settings */}
+            {/* Layout button group */}
             <ButtonGroupSetting
                 buttons={layoutOptions}
                 label='Layout'
@@ -240,7 +242,7 @@ export function CallToActionCard({
                     />
                 </>
             }
-            {/* Color picker */}
+            {/* Background color picker */}
             <ColorOptionSetting
                 buttons={callToActionColorPicker}
                 dataTestId='cta-background-color-picker'
@@ -248,7 +250,16 @@ export function CallToActionCard({
                 selectedName={color}
                 onClick={handleColorChange}
             />
-            {/* Link color setting */}
+            {/* Dividers setting */}
+            {color === 'none' &&
+                <ToggleSetting
+                    dataTestId="button-settings"
+                    isChecked={showDividers}
+                    label='Dividers'
+                    onChange={updateShowDividers}
+                />
+            }
+            {/* Link color picker */}
             <ColorOptionSetting
                 buttons={callToActionLinkColorPicker}
                 dataTestId='cta-link-color-picker'
@@ -296,7 +307,8 @@ export function CallToActionCard({
                     CALLTOACTION_COLORS[color],
                     {
                         'py-3': color === 'none' && !hasSponsorLabel,
-                        'pb-3': color === 'none' && hasSponsorLabel
+                        'pb-3': color === 'none' && hasSponsorLabel,
+                        'pt-1': color === 'none' && !hasSponsorLabel && !showDividers && !imageSrc
                     }
                 )} 
                 data-cta-layout={layout}
@@ -333,11 +345,11 @@ export function CallToActionCard({
 
                 <div className={clsx(
                     'flex gap-6',
-                    hasSponsorLabel && color !== 'none' && (imageSrc && layout === 'immersive') ? '' : 'pt-6',
-                    imageSrc && !showButton ? 'pb-8' : 'pb-7',
+                    hasSponsorLabel && color !== 'none' && (imageSrc && layout === 'immersive') ? '' : (color === 'none' && !showDividers) ? '' : 'pt-6',
+                    (color === 'none' && !showDividers) ? '' : imageSrc && !showButton ? 'pb-8' : 'pb-7',
                     layout === 'immersive' ? 'flex-col' : 'flex-row',
-                    color === 'none' || (hasSponsorLabel && !(imageSrc && layout === 'immersive')) ? 'border-t border-grey-900/15 dark:border-grey-100/20' : '',
-                    color === 'none' ? 'border-b border-grey-900/15 dark:border-grey-100/20' : 'mx-6'
+                    (hasSponsorLabel && !(imageSrc && layout === 'immersive') && !(color === 'none' && !showDividers)) && 'border-t border-grey-900/15 dark:border-grey-100/20',
+                    (color === 'none' && showDividers) ? 'border-y border-grey-900/15 dark:border-grey-100/20' : color !== 'none' ? 'mx-6' : ''
                 )}>
                     {imageSrc && (
                         <div className={clsx(
@@ -434,6 +446,7 @@ CallToActionCard.propTypes = {
     isEditing: PropTypes.bool,
     layout: PropTypes.oneOf(['minimal', 'immersive']),
     showButton: PropTypes.bool,
+    showDividers: PropTypes.bool,
     htmlEditor: PropTypes.object,
     htmlEditorInitialState: PropTypes.object,
     updateAlignment: PropTypes.func,
@@ -441,6 +454,7 @@ CallToActionCard.propTypes = {
     updateButtonUrl: PropTypes.func,
     updateHasSponsorLabel: PropTypes.func,
     updateShowButton: PropTypes.func,
+    updateShowDividers: PropTypes.func,
     updateLayout: PropTypes.func,
     handleColorChange: PropTypes.func,
     handleButtonColor: PropTypes.func,

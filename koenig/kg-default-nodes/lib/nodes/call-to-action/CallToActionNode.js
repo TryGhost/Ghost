@@ -11,6 +11,7 @@ export class CallToActionNode extends generateDecoratorNode({
         {name: 'alignment', default: 'left'},
         {name: 'textValue', default: '', wordCount: true},
         {name: 'showButton', default: true},
+        {name: 'showDividers', default: true},
         {name: 'buttonText', default: 'Learn more'},
         {name: 'buttonUrl', default: ''},
         {name: 'buttonColor', default: '#000000'}, // Where colour is customisable, we should use hex values

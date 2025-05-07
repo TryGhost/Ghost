@@ -31,6 +31,7 @@ test.describe('Call To Action Card', async () => {
             imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
             layout: 'minimal',
             showButton: true,
+            showDividers: true,
             textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
         };
     });

@@ -31,6 +31,7 @@ describe('CallToActionNode', function () {
             textValue: 'This is a cool advertisement',
             sponsorLabel: '<p><span style="white-space: pre-wrap;">SPONSORED</span></p>',
             showButton: true,
+            showDividers: true,
             buttonText: 'click me',
             buttonUrl: 'http://blog.com/post1',
             buttonColor: 'none',
@@ -60,6 +61,7 @@ describe('CallToActionNode', function () {
             callToActionNode.layout.should.equal(dataset.layout);
             callToActionNode.textValue.should.equal(dataset.textValue);
             callToActionNode.showButton.should.equal(dataset.showButton);
+            callToActionNode.showDividers.should.equal(dataset.showDividers);
             callToActionNode.buttonText.should.equal(dataset.buttonText);
             callToActionNode.buttonUrl.should.equal(dataset.buttonUrl);
             callToActionNode.buttonColor.should.equal(dataset.buttonColor);
@@ -87,6 +89,10 @@ describe('CallToActionNode', function () {
             callToActionNode.showButton.should.equal(true);
             callToActionNode.showButton = false;
             callToActionNode.showButton.should.equal(false);
+
+            callToActionNode.showDividers.should.equal(true);
+            callToActionNode.showDividers = false;
+            callToActionNode.showDividers.should.equal(false);
 
             callToActionNode.buttonText.should.equal('Learn more');
             callToActionNode.buttonText = 'click me';
@@ -214,6 +220,7 @@ describe('CallToActionNode', function () {
                 imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
                 layout: 'minimal',
                 showButton: true,
+                showDividers: true,
                 textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
             };
 
@@ -244,6 +251,7 @@ describe('CallToActionNode', function () {
                 imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
                 layout: 'immersive',
                 showButton: true,
+                showDividers: true,
                 textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card via email.</span></p>'
             };
 
@@ -277,6 +285,7 @@ describe('CallToActionNode', function () {
                 imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
                 layout: 'minimal',
                 showButton: true,
+                showDividers: true,
                 textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card via email.</span></p>'
             };
 
@@ -305,6 +314,7 @@ describe('CallToActionNode', function () {
                 imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
                 layout: 'minimal',
                 showButton: true,
+                showDividers: true,
                 textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card via email.</span></p>'
             };
 
@@ -326,6 +336,7 @@ describe('CallToActionNode', function () {
                 imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
                 layout: 'immersive',
                 showButton: true,
+                showDividers: true,
                 textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card via email.</span></p>',
                 imageWidth: 200,
                 imageHeight: 100
@@ -381,6 +392,7 @@ describe('CallToActionNode', function () {
 
         it('uses default buttonText when created with empty buttonText (web)', editorTest(function () {
             dataset.showButton = true;
+            dataset.showDividers = true;
             dataset.buttonText = '';
 
             testRender(({html}) => {
@@ -402,6 +414,7 @@ describe('CallToActionNode', function () {
             return editorTest(function () {
                 dataset.layout = layout;
                 dataset.showButton = true;
+                dataset.showDividers = true;
                 dataset.buttonUrl = 'http://blog.com/post1';
                 dataset.buttonText = 'Click me';
                 exportOptions.target = target;
@@ -434,6 +447,7 @@ describe('CallToActionNode', function () {
                 exportOptions.target = target;
                 dataset.layout = layout;
                 dataset.showButton = true;
+                dataset.showDividers = true;
                 dataset.buttonUrl = 'http://blog.com/post1';
 
                 testRender(({html}) => {
@@ -451,6 +465,7 @@ describe('CallToActionNode', function () {
                 exportOptions.target = target;
                 dataset.layout = layout;
                 dataset.showButton = false;
+                dataset.showDividers = true;
                 dataset.buttonUrl = 'http://blog.com/post1';
 
                 testRender(({html}) => {
@@ -479,6 +494,7 @@ describe('CallToActionNode', function () {
                 imageHeight: 100,
                 layout: 'minimal',
                 showButton: true,
+                showDividers: true,
                 textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
             };
             const callToActionNode = new CallToActionNode(dataset);
@@ -499,6 +515,7 @@ describe('CallToActionNode', function () {
                 imageHeight: 100,
                 layout: 'minimal',
                 showButton: true,
+                showDividers: true,
                 textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>',
                 linkColor: 'text',
                 alignment: 'left',
@@ -531,6 +548,7 @@ describe('CallToActionNode', function () {
                         imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
                         layout: 'minimal',
                         showButton: true,
+                        showDividers: true,
                         textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
                     }],
                     direction: null,

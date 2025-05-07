@@ -20,7 +20,7 @@ export function parseCallToActionNode(CallToActionNode) {
 
                         const bgMatch = div.className.match(/kg-cta-bg-(\w+)/);
                         const backgroundColor = bgMatch ? bgMatch[1] : 'grey';
-
+                        const showDividers = div.classList.contains('kg-cta-has-dividers');
                         const imageContainer = domNode.querySelector('.kg-cta-image-container');
                         const imageElement = imageContainer?.querySelector('img');
                         let imageData = {
@@ -48,6 +48,7 @@ export function parseCallToActionNode(CallToActionNode) {
                             alignment: alignment,
                             textValue: textValueElement.textContent.trim() || '',
                             showButton: buttonElement ? true : false,
+                            showDividers: showDividers,
                             buttonText: buttonElement?.textContent.trim() || '',
                             buttonUrl: buttonElement?.getAttribute('href'),
                             buttonColor: rgbToHex(buttonColor),
