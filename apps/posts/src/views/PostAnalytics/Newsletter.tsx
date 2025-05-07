@@ -28,32 +28,33 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         setOriginalUrl(url);
     };
 
+    // TODO: API calls to update URL
     const handleUpdate = () => {
-        // Here you would typically make an API call to update the URL
         setEditingUrl(null);
         setEditedUrl('');
         setOriginalUrl('');
     };
 
-    const handleClickOutside = (event: MouseEvent) => {
-        if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-            if (editedUrl === originalUrl) {
-                setEditingUrl(null);
-                setEditedUrl('');
-                setOriginalUrl('');
-            }
-        }
-    };
-
     useEffect(() => {
         if (editingUrl && inputRef.current) {
             inputRef.current.focus();
+
+            const handleClickOutside = (event: MouseEvent) => {
+                if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                    if (editedUrl === originalUrl) {
+                        setEditingUrl(null);
+                        setEditedUrl('');
+                        setOriginalUrl('');
+                    }
+                }
+            };
+
             document.addEventListener('mousedown', handleClickOutside);
+            return () => {
+                document.removeEventListener('mousedown', handleClickOutside);
+            };
         }
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [editingUrl, editedUrl, originalUrl]);
+    }, [editingUrl, originalUrl, editedUrl]);
 
     const isLoading = false;
 
