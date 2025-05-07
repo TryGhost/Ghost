@@ -1,4 +1,3 @@
-import React from 'react';
 import {Navigate} from '@tryghost/admin-x-framework';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
