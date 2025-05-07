@@ -104,7 +104,6 @@
     "@tryghost/mw-vhost": "0.0.0",
     "@tryghost/nodemailer": "0.3.47",
     "@tryghost/nql": "0.12.7",
-    "@tryghost/post-events": "0.0.0",
     "@tryghost/pretty-cli": "1.2.46",
     "@tryghost/prometheus-metrics": "0.0.0",
     "@tryghost/promise": "0.3.14",
