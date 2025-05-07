@@ -82,7 +82,6 @@ COPY ghost/members-csv/package.json ghost/members-csv/package.json
 COPY ghost/mw-error-handler/package.json ghost/mw-error-handler/package.json
 COPY ghost/mw-vhost/package.json ghost/mw-vhost/package.json
 COPY ghost/post-events/package.json ghost/post-events/package.json
-COPY ghost/post-revisions/package.json ghost/post-revisions/package.json
 COPY ghost/prometheus-metrics/package.json ghost/prometheus-metrics/package.json
 COPY ghost/security/package.json ghost/security/package.json
 
