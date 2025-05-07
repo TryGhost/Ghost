@@ -191,7 +191,7 @@ export const useGrowthStats = (range: number) => {
             return memberCountResponse;
         }
         return [];
-    }, [memberCountResponse]);
+    }, [memberCountResponse, dateFrom]);
 
     const mrrData = useMemo(() => {
         // HACK: We should do this filtering on the backend, but the API doesn't support it yet
@@ -202,7 +202,7 @@ export const useGrowthStats = (range: number) => {
             });
         }
         return [];
-    }, [mrrHistoryResponse]);
+    }, [mrrHistoryResponse, dateFrom]);
 
     // Calculate totals
     const totalsData = useMemo(() => calculateTotals(memberData, mrrData), [memberData, mrrData]);
