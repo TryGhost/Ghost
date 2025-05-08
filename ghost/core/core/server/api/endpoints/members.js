@@ -381,10 +381,12 @@ const controller = {
                     return `members.${datetime}.csv`;
                 }
             },
+            contentType: 'text/csv',
             cacheInvalidate: false
         },
         response: {
-            format: 'plain'
+            format: 'plain',
+            stream: true
         },
         permissions: {
             method: 'browse'
