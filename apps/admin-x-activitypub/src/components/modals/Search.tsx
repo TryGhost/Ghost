@@ -27,7 +27,7 @@ interface AccountSearchResultItemProps {
 
 const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
     onOpenChange?: (open: boolean) => void;
-}> = ({account, update}) => {
+}> = ({account, update, onOpenChange}) => {
     const onFollow = () => {
         update(account.id, {
             followedByMe: true,
@@ -48,6 +48,7 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
         <ActivityItem
             key={account.id}
             onClick={() => {
+                onOpenChange?.(false);
                 navigate(`/profile/${account.handle}`);
             }}
         >
