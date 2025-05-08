@@ -41,15 +41,6 @@ describe('usePostNewsletterStats', () => {
             }),
             http.get('/ghost/api/admin/stats/newsletter-stats/', () => {
                 return HttpResponse.json({stats: []});
-            }),
-            http.get('/ghost/api/admin/settings/', () => {
-                return HttpResponse.json({settings: []});
-            }),
-            http.get('/ghost/api/admin/site/', () => {
-                return HttpResponse.json({site: {}});
-            }),
-            http.get('/ghost/api/admin/config/', () => {
-                return HttpResponse.json({config: {}});
             })
         );
 
@@ -108,15 +99,6 @@ describe('usePostNewsletterStats', () => {
                     ],
                     meta: {}
                 });
-            }),
-            http.get('/ghost/api/admin/settings/', () => {
-                return HttpResponse.json({settings: []});
-            }),
-            http.get('/ghost/api/admin/site/', () => {
-                return HttpResponse.json({site: {}});
-            }),
-            http.get('/ghost/api/admin/config/', () => {
-                return HttpResponse.json({config: {}});
             })
         );
         const {result} = renderHook(() => usePostNewsletterStats('post-id'), {wrapper});
@@ -156,15 +138,6 @@ describe('usePostNewsletterStats', () => {
                     stats: [],
                     meta: {}
                 });
-            }),
-            http.get('/ghost/api/admin/settings/', () => {
-                return HttpResponse.json({settings: []});
-            }),
-            http.get('/ghost/api/admin/site/', () => {
-                return HttpResponse.json({site: {}});
-            }),
-            http.get('/ghost/api/admin/config/', () => {
-                return HttpResponse.json({config: {}});
             })
         );
 
@@ -201,15 +174,6 @@ describe('usePostNewsletterStats', () => {
                     stats: [],
                     meta: {}
                 });
-            }),
-            http.get('/ghost/api/admin/settings/', () => {
-                return HttpResponse.json({settings: []});
-            }),
-            http.get('/ghost/api/admin/site/', () => {
-                return HttpResponse.json({site: {}});
-            }),
-            http.get('/ghost/api/admin/config/', () => {
-                return HttpResponse.json({config: {}});
             })
         );
 
@@ -247,15 +211,6 @@ describe('usePostNewsletterStats', () => {
             }),
             http.get('/ghost/api/admin/stats/newsletter-stats/', () => {
                 return HttpResponse.json({stats: undefined});
-            }),
-            http.get('/ghost/api/admin/settings/', () => {
-                return HttpResponse.json({settings: []});
-            }),
-            http.get('/ghost/api/admin/site/', () => {
-                return HttpResponse.json({site: {}});
-            }),
-            http.get('/ghost/api/admin/config/', () => {
-                return HttpResponse.json({config: {}});
             })
         );
 
