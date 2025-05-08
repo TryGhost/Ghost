@@ -7,6 +7,7 @@ import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Chart
 import {Navigate, useParams} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth} from '@src/utils/chart-helpers';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
+import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useRef, useState} from 'react';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
@@ -25,10 +26,11 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const {settings} = useGlobalData();
-    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
     const {isLoading: isConfigLoading} = useGlobalData();
+    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
 
-    const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading} = usePostNewsletterStats(postId || '');
+    const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId || '');
+    const {editLinks} = useEditLinks();
 
     const handleEdit = (url: string) => {
         setEditingUrl(url);
@@ -36,11 +38,19 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         setOriginalUrl(url);
     };
 
-    // TODO: API calls to update URL
     const handleUpdate = () => {
-        setEditingUrl(null);
-        setEditedUrl('');
-        setOriginalUrl('');
+        editLinks({
+            originalUrl,
+            editedUrl,
+            postId: postId || ''
+        }, {
+            onSuccess: () => {
+                setEditingUrl(null);
+                setEditedUrl('');
+                setOriginalUrl('');
+                refetchTopLinks();
+            }
+        });
     };
 
     useEffect(() => {
@@ -244,6 +254,9 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                     >
                                                                         <span>{sanitizeUrl(row.url)}</span>
                                                                     </a>
+                                                                    {row.edited && (
+                                                                        <span className='text-xs text-gray-500'>(edited)</span>
+                                                                    )}
                                                                 </>
                                                             )}
                                                         </div>
