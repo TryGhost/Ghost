@@ -258,10 +258,16 @@ export class ActivityPubAPI {
         return response;
     }
 
-    async note(content: string, imageUrl?: string): Promise<Post> {
+    async noteNew(content: string, imageUrl?: string): Promise<Post> {
         const url = new URL('.ghost/activitypub/actions/note', this.apiUrl);
         const response = await this.fetchJSON(url, 'POST', {content, imageUrl});
         return (response as {post: Post}).post;
+    }
+
+    async note(content: string, imageUrl?: string): Promise<Activity> {
+        const url = new URL('.ghost/activitypub/actions/note', this.apiUrl);
+        const response = await this.fetchJSON(url, 'POST', {content, imageUrl});
+        return response;
     }
 
     async delete(id: string): Promise<void> {
