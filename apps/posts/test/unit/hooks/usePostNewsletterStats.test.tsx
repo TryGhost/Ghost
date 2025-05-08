@@ -41,6 +41,9 @@ describe('usePostNewsletterStats', () => {
             }),
             http.get('/ghost/api/admin/stats/newsletter-stats/', () => {
                 return HttpResponse.json({stats: []});
+            }),
+            http.get('/ghost/api/admin/links/', () => {
+                return HttpResponse.json({links: []});
             })
         );
 
@@ -66,6 +69,7 @@ describe('usePostNewsletterStats', () => {
             openedRate: 0,
             clickedRate: 0
         });
+        expect(result.current.topLinks).toEqual([]);
     });
 
     it('calculates stats correctly from post data', async () => {
@@ -99,6 +103,23 @@ describe('usePostNewsletterStats', () => {
                     ],
                     meta: {}
                 });
+            }),
+            http.get('/ghost/api/admin/links/', () => {
+                return HttpResponse.json({
+                    links: [{
+                        post_id: 'post-id',
+                        link: {
+                            link_id: 'link-1',
+                            from: 'https://example.com/from',
+                            to: 'https://example.com/to',
+                            edited: false
+                        },
+                        count: {
+                            clicks: 10
+                        }
+                    }],
+                    meta: {}
+                });
             })
         );
         const {result} = renderHook(() => usePostNewsletterStats('post-id'), {wrapper});
@@ -119,6 +140,11 @@ describe('usePostNewsletterStats', () => {
             openedRate: 0.55,
             clickedRate: 0.3
         });
+
+        expect(result.current.topLinks).toEqual([{
+            url: 'https://example.com/to',
+            clicks: 10
+        }]);
     });
 
     it('handles missing email data', async () => {
@@ -138,6 +164,9 @@ describe('usePostNewsletterStats', () => {
                     stats: [],
                     meta: {}
                 });
+            }),
+            http.get('/ghost/api/admin/links/', () => {
+                return HttpResponse.json({links: []});
             })
         );
 
@@ -154,6 +183,7 @@ describe('usePostNewsletterStats', () => {
             openedRate: 0,
             clickedRate: 0
         });
+        expect(result.current.topLinks).toEqual([]);
     });
 
     it('handles missing count data', async () => {
@@ -174,6 +204,9 @@ describe('usePostNewsletterStats', () => {
                     stats: [],
                     meta: {}
                 });
+            }),
+            http.get('/ghost/api/admin/links/', () => {
+                return HttpResponse.json({links: []});
             })
         );
 
@@ -190,6 +223,7 @@ describe('usePostNewsletterStats', () => {
             openedRate: 0.5,
             clickedRate: 0
         });
+        expect(result.current.topLinks).toEqual([]);
     });
 
     it('handles missing newsletter stats', async () => {
@@ -211,6 +245,9 @@ describe('usePostNewsletterStats', () => {
             }),
             http.get('/ghost/api/admin/stats/newsletter-stats/', () => {
                 return HttpResponse.json({stats: undefined});
+            }),
+            http.get('/ghost/api/admin/links/', () => {
+                return HttpResponse.json({links: []});
             })
         );
 
@@ -224,5 +261,6 @@ describe('usePostNewsletterStats', () => {
             openedRate: 0,
             clickedRate: 0
         });
+        expect(result.current.topLinks).toEqual([]);
     });
 }); 

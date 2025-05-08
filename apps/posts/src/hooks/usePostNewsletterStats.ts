@@ -1,12 +1,12 @@
 import {getPost} from '@tryghost/admin-x-framework/api/posts';
 import {useMemo} from 'react';
 import {useNewsletterStats} from '@tryghost/admin-x-framework/api/stats';
-
+import {useTopLinks} from '@tryghost/admin-x-framework/api/links';
 export const usePostNewsletterStats = (postId: string) => {
     const {data: postResponse, isLoading: isPostLoading} = getPost(postId);
 
+    // Fetch the post to get top level stats
     const post = useMemo(() => postResponse?.posts[0], [postResponse]);
-
     const stats = useMemo(() => {
         if (!post) {
             return {
@@ -26,7 +26,6 @@ export const usePostNewsletterStats = (postId: string) => {
             clickedRate: post.count?.clicks && post.email?.email_count ? (post.count.clicks / post.email.email_count) : 0
         };
     }, [post]);
-    // Fetch all the link clicks for the post
 
     // Fetch the last 20 newsletters and calculate the average open and click rates
     const {data: newsletterStatsResponse, isLoading: isNewsletterStatsLoading} = useNewsletterStats();
@@ -53,10 +52,29 @@ export const usePostNewsletterStats = (postId: string) => {
         };
     }, [newsletterStatsResponse]);
 
+    // Fetch the top clicked links for the post
+    const {data: topLinksResponse, isLoading: isTopLinksLoading} = useTopLinks({
+        searchParams: {
+            filter: `post_id:${postId}`
+        }
+    });
+
+    const topLinks = useMemo(() => {
+        if (!topLinksResponse || !topLinksResponse.links || topLinksResponse.links.length === 0) {
+            return [];
+        }
+
+        return topLinksResponse.links.sort((a, b) => b.count.clicks - a.count.clicks).map(link => ({
+            url: link.link.to,
+            clicks: link.count.clicks
+        }));
+    }, [topLinksResponse]);
+
     return {
-        isLoading: isPostLoading || isNewsletterStatsLoading,
+        isLoading: isPostLoading || isNewsletterStatsLoading || isTopLinksLoading,
         post,
         stats,
-        averageStats
+        averageStats,
+        topLinks
     };
 };
