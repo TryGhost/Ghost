@@ -2,7 +2,8 @@ import GlobalDataProvider from '../../../src/providers/GlobalDataProvider';
 import React from 'react';
 import {HttpResponse, http} from 'msw';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {act, renderHook, waitFor} from '@testing-library/react';
+import {renderHook, waitFor} from '@testing-library/react';
+import {act} from 'react';
 import {afterAll, afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 import {setupServer} from 'msw/node';
 import {useEditLinks} from '../../../src/hooks/useEditLinks';
@@ -84,11 +85,6 @@ describe('useEditLinks', () => {
                 editedUrl: 'https://edited.com'
             });
         });
-        
-        // isLoading should be true immediately after calling editLinks (before promise resolves)
-        // but due to act and async nature, checking after await for it to be false.
-        // If we need to check true state, it requires more granular control or callbacks.
-
         await waitFor(() => {
             expect(result.current.isEditLinksLoading).toBe(false);
         });
@@ -116,16 +112,10 @@ describe('useEditLinks', () => {
         } catch (e) {
             mutationError = e as Error;
         }
-        
-        // For TanStack Query v5, mutateAsync throws on error by default
-        // Depending on global/hook-level error handling, this might not be needed
-        // or the error should be caught and asserted.
-        // Here, we'll assume the hook itself doesn't suppress the error.
 
         await waitFor(() => {
             expect(result.current.isEditLinksLoading).toBe(false);
         });
-        // We expect an error to be thrown by mutateAsync
         expect(mutationError).toBeInstanceOf(Error);
     });
 
