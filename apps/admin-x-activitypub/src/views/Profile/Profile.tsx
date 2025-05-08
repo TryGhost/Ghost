@@ -73,7 +73,9 @@ const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
                         url: account.avatarUrl
                     }
                 },
-                isFollowing: account.isFollowing
+                isFollowing: account.isFollowing,
+                blockedByMe: account.blockedByMe,
+                domainBlockedByMe: account.domainBlockedByMe
             }));
         }
         return [];
