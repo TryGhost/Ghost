@@ -1,5 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyString, anyContentLength} = matchers;
+const {anyContentVersion, anyString} = matchers;
 
 const crypto = require('crypto');
 const should = require('should');
@@ -47,9 +47,7 @@ async function testOutput(member, asserts, filters = []) {
             .expectStatus(200)
             .expectEmptyBody()
             .matchHeaderSnapshot({
-                etag: anyEtag,
                 'content-version': anyContentVersion,
-                'content-length': anyContentLength,
                 'content-disposition': anyString
             });
 
