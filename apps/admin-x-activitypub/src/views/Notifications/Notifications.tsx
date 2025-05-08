@@ -213,6 +213,7 @@ const Notifications: React.FC = () => {
                                 {notificationGroups.map((group, index) => (
                                     <React.Fragment key={group.id || `${group.type}_${index}`}>
                                         <NotificationItem
+                                            centerAlign={group.actors.length < 2 && group.type === 'follow'}
                                             className='hover:bg-gray-75 dark:hover:bg-gray-950'
                                             isGrouped={group.actors.length > 1}
                                             onClick={() => handleNotificationClick(group, index)}
@@ -307,8 +308,12 @@ const Notifications: React.FC = () => {
                                                         </> :
                                                         <div className='flex items-center gap-1'>
                                                             <span className='truncate'><NotificationGroupDescription group={group} /></span>
-                                                            <span className='mt-px text-[8px] text-gray-700 dark:text-gray-600'>&bull;</span>
-                                                            <span className='mt-0.5 text-sm text-gray-700 dark:text-gray-600'>{renderTimestamp(group, false)}</span>
+                                                            {group.actors.length < 2 &&
+                                                                <>
+                                                                    <span className='mt-px text-[8px] text-gray-700 dark:text-gray-600'>&bull;</span>
+                                                                    <span className='mt-0.5 text-sm text-gray-700 dark:text-gray-600'>{renderTimestamp(group, false)}</span>
+                                                                </>
+                                                            }
                                                         </div>
                                                     }
                                                 </div>
@@ -334,7 +339,7 @@ const Notifications: React.FC = () => {
                                                 )}
                                             </NotificationItem.Content>
                                         </NotificationItem>
-                                        {index < notificationGroups.length - 1 && group.type !== 'reply' &&
+                                        {index < notificationGroups.length - 1 &&
                                             <div className='pl-[52px]'><Separator /></div>
                                         }
                                     </React.Fragment>

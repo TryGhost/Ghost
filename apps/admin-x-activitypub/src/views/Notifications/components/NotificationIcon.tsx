@@ -19,7 +19,7 @@ const NotificationIcon: React.FC<NotificationIconProps> = ({notificationType, si
 
     switch (notificationType) {
     case 'follow':
-        icon = <LucideIcon.UserRoundCheck className='-mr-0.5 -mt-0.5' color={iconColor} size={iconSize} strokeWidth={strokeWidth} />;
+        icon = <LucideIcon.UserRoundCheck className={`-mr-0.5 -mt-0.5 ${size === 'sm' && 'size-[11px]'}`} color={iconColor} size={iconSize} strokeWidth={strokeWidth} />;
         badgeColor = 'bg-blue-600';
         break;
     case 'like':
