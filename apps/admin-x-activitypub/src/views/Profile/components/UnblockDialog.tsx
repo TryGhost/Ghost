@@ -8,7 +8,9 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-    Button
+    Button,
+    H4,
+    LucideIcon
 } from '@tryghost/shade';
 import {showToast} from '@tryghost/admin-x-design-system';
 
@@ -38,10 +40,25 @@ const UnblockDialog: React.FC<UnblockDialogProps> = ({
     onOpenChange: externalOnOpenChange
 }) => {
     const [internalDialogOpen, setInternalDialogOpen] = useState(false);
-    const [dialogState, setDialogState] = useState({
-        mode: 'idle' as DialogMode,
-        userUnblocked: false,
-        domainUnblocked: false
+    const [dialogState, setDialogState] = useState(() => {
+        const bothBlocked = isUserBlocked && isDomainBlocked;
+        const userOnlyBlocked = isUserBlocked && !isDomainBlocked;
+        const domainOnlyBlocked = !isUserBlocked && isDomainBlocked;
+
+        let mode: DialogMode = 'idle';
+        if (bothBlocked) {
+            mode = 'dual';
+        } else if (userOnlyBlocked) {
+            mode = 'userOnly';
+        } else if (domainOnlyBlocked) {
+            mode = 'domainOnly';
+        }
+
+        return {
+            mode,
+            userUnblocked: false,
+            domainUnblocked: false
+        };
     });
 
     const isControlled = externalIsOpen !== undefined;
@@ -63,11 +80,12 @@ const UnblockDialog: React.FC<UnblockDialogProps> = ({
             mode = 'domainOnly';
         }
 
-        setDialogState({
+        setDialogState(prev => ({
+            ...prev,
             mode,
             userUnblocked: false,
             domainUnblocked: false
-        });
+        }));
     }, [isUserBlocked, isDomainBlocked]);
 
     useEffect(() => {
@@ -141,26 +159,36 @@ const UnblockDialog: React.FC<UnblockDialogProps> = ({
         <>
             <AlertDialogHeader>
                 <AlertDialogTitle className='mb-1 flex flex-col gap-1'>
-                    Unblock user or domain?
+                    Unblock
                 </AlertDialogTitle>
-                <AlertDialogDescription>
-                    <span className='font-semibold text-black'>{handle}</span> and everyone from <span className='font-semibold text-black'>{domain}</span> are currently blocked. Which would you like to unblock?
+                <AlertDialogDescription className='!mt-4' asChild>
+                    <div className='flex flex-col rounded-md border'>
+                        <div className='flex justify-between gap-6 p-5'>
+                            <div className='flex flex-col gap-1'>
+                                <H4>Unblock user</H4>
+                                <p><span className='font-semibold text-black'>{handle}</span> will be able to follow you and engage with your public posts.</p>
+                            </div>
+                            <Button className={`gap-1 ${dialogState.userUnblocked ? 'pointer-events-none border-green bg-green text-white hover:bg-green hover:text-white' : 'text-red hover:text-red-400'}`} variant='outline' onClick={handleUnblock}>
+                                <LucideIcon.User />
+                                {dialogState.userUnblocked ? 'User unblocked' : 'Unblock user'}
+                            </Button>
+                        </div>
+                        <div className='border-t' />
+                        <div className='flex justify-between gap-6 p-5'>
+                            <div className='flex flex-col gap-1'>
+                                <H4>Unblock domain</H4>
+                                <p>Users from <span className='font-semibold text-black'>{domain}</span> will be able to follow you and engage with your public posts.</p>
+                            </div>
+                            <Button className={`gap-1 ${dialogState.domainUnblocked ? 'pointer-events-none border-green bg-green text-white hover:bg-green hover:text-white' : 'text-red hover:text-red-400'}`} variant='outline' onClick={handleDomainUnblock}>
+                                <LucideIcon.Globe />
+                                {dialogState.domainUnblocked ? 'Domain unblocked' : 'Unblock domain'}
+                            </Button>
+                        </div>
+                    </div>
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-                <AlertDialogCancel className='mr-auto'>Cancel</AlertDialogCancel>
-                <Button
-                    className={`${dialogState.userUnblocked && 'pointer-events-none bg-green hover:bg-green'}`}
-                    onClick={handleUnblock}
-                >
-                    {dialogState.userUnblocked ? 'User unblocked' : 'Unblock user'}
-                </Button>
-                <Button
-                    className={`${dialogState.domainUnblocked && 'pointer-events-none bg-green hover:bg-green'}`}
-                    onClick={handleDomainUnblock}
-                >
-                    {dialogState.domainUnblocked ? 'Domain unblocked' : 'Unblock domain'}
-                </Button>
+                <Button onClick={() => handleDialogClose(false)}>OK</Button>
             </AlertDialogFooter>
         </>
     );
@@ -198,7 +226,7 @@ const UnblockDialog: React.FC<UnblockDialogProps> = ({
                     {trigger}
                 </AlertDialogTrigger>
             )}
-            <AlertDialogContent>
+            <AlertDialogContent className={`${dialogState.mode === 'dual' && 'max-w-[600px]'}`}>
                 {dialogState.mode === 'dual' ? renderDualView() : renderSingleView()}
             </AlertDialogContent>
         </AlertDialog>
