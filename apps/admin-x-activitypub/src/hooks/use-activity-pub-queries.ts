@@ -382,6 +382,8 @@ export function useBlockMutationForUser(handle: string) {
                     };
                 }
             );
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.feed});
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.inbox});
         }
     });
 }
