@@ -10,6 +10,7 @@ import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useRef, useState} from 'react';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
+import {useEditLinks} from '@src/hooks/useEditLinks';
 
 interface postAnalyticsProps {}
 
@@ -25,10 +26,12 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const {settings} = useGlobalData();
-    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
     const {isLoading: isConfigLoading} = useGlobalData();
+    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
 
-    const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading} = usePostNewsletterStats(postId || '');
+    const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId || '');
+    const {editLinks} = useEditLinks();
+
 
     const handleEdit = (url: string) => {
         setEditingUrl(url);
@@ -38,9 +41,21 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     // TODO: API calls to update URL
     const handleUpdate = () => {
-        setEditingUrl(null);
-        setEditedUrl('');
-        setOriginalUrl('');
+        editLinks({
+            originalUrl,
+            editedUrl,
+            postId: postId || ''
+        }, {
+            onSuccess: () => {
+                setEditingUrl(null);
+                setEditedUrl('');
+                setOriginalUrl('');
+                refetchTopLinks();
+            },
+            onError: (error) => {
+                console.error(error);
+            }
+        })
     };
 
     useEffect(() => {
@@ -244,6 +259,9 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                     >
                                                                         <span>{sanitizeUrl(row.url)}</span>
                                                                     </a>
+                                                                    {row.edited && (
+                                                                        <span className='text-xs text-gray-500'>(edited)</span>
+                                                                    )}
                                                                 </>
                                                             )}
                                                         </div>
