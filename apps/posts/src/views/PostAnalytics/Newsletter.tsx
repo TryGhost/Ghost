@@ -4,12 +4,10 @@ import PostAnalyticsContent from './components/PostAnalyticsContent';
 import PostAnalyticsHeader from './components/PostAnalyticsHeader';
 import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber, formatPercentage} from '@tryghost/shade';
-import {Navigate, useParams} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth} from '@src/utils/chart-helpers';
-import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useRef, useState} from 'react';
-import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useParams} from '@tryghost/admin-x-framework';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 
 interface postAnalyticsProps {}
@@ -25,9 +23,6 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const [originalUrl, setOriginalUrl] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const {settings} = useGlobalData();
-    const {isLoading: isConfigLoading} = useGlobalData();
-    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
 
     const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId || '');
     const {editLinks} = useEditLinks();
@@ -74,7 +69,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         }
     }, [editingUrl, originalUrl, editedUrl]);
 
-    const isLoading = isNewsletterStatsLoading || isConfigLoading;
+    const isLoading = isNewsletterStatsLoading;
 
     const barDomain = [0, 1];
     const barTicks = [0, 0.25, 0.5, 0.75, 1];
@@ -92,10 +87,6 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
             color: 'hsl(var(--chart-gray))'
         }
     } satisfies ChartConfig;
-
-    if (!labs.trafficAnalyticsAlpha) {
-        return <Navigate to='/web/' />;
-    }
 
     return (
         <PostAnalyticsLayout>
