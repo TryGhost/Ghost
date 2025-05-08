@@ -6,7 +6,6 @@ import React from 'react';
 import {Activity} from '@src/api/activitypub';
 import {useAccountFollowsForUser, useAccountForUser, usePostsByAccount, usePostsLikedByAccount} from '@hooks/use-activity-pub-queries';
 import {useParams} from '@tryghost/admin-x-framework';
-import { isValidDomain } from '@tryghost/shade';
 
 export type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
 
