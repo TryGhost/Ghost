@@ -28,7 +28,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
     const {isLoading: isConfigLoading} = useGlobalData();
 
-    const {stats, averageStats, isLoading: isPostLoading} = usePostNewsletterStats(postId || '');
+    const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading} = usePostNewsletterStats(postId || '');
 
     const handleEdit = (url: string) => {
         setEditingUrl(url);
@@ -64,7 +64,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         }
     }, [editingUrl, originalUrl, editedUrl]);
 
-    const isLoading = isPostLoading || isConfigLoading;
+    const isLoading = isNewsletterStatsLoading || isConfigLoading;
 
     const barDomain = [0, 1];
     const barTicks = [0, 0.25, 0.5, 0.75, 1];
@@ -82,25 +82,6 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
             color: 'hsl(var(--chart-gray))'
         }
     } satisfies ChartConfig;
-
-    const mockLinks = [
-        {
-            url: 'https://google.com',
-            clicks: 199
-        },
-        {
-            url: 'https://ghost.org/docs/content-api/javascript/',
-            clicks: 74
-        },
-        {
-            url: 'https://bsky.app/',
-            clicks: 12
-        },
-        {
-            url: 'https://activitypub.ghost.org/you-think-youre-following-us-but-you-might-not-be/',
-            clicks: 1
-        }
-    ];
 
     if (!labs.trafficAnalyticsAlpha) {
         return <Navigate to='/web/' />;
@@ -216,7 +197,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             </CardHeader>
                             <CardContent>
                                 <Separator />
-                                {mockLinks.length > 0
+                                {topLinks.length > 0
                                     ?
                                     <Table>
                                         <TableHeader>
@@ -226,7 +207,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {mockLinks?.map(row => (
+                                            {topLinks?.map(row => (
                                                 <TableRow key={row.url}>
                                                     <TableCell>
                                                         <div className='flex items-center gap-2'>
