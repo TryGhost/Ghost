@@ -28,9 +28,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
     const {isLoading: isConfigLoading} = useGlobalData();
 
-    const {post, stats, averageStats, isLoading: isPostLoading} = usePostNewsletterStats(postId || '');
-    console.log(post);
-    console.log(stats);
+    const {stats, averageStats, isLoading: isPostLoading} = usePostNewsletterStats(postId || '');
 
     const handleEdit = (url: string) => {
         setEditingUrl(url);
