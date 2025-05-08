@@ -16,6 +16,10 @@ const features = [{
     description: 'Adding more control over the newsletter template',
     flag: 'emailCustomization'
 }, {
+    title: 'Email customization (investigation)',
+    description: 'Enables hardcoded changes to the email template to test card compatibility',
+    flag: 'emailCustomizationInvestigation'
+}, {
     title: 'Import Member Tier',
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'

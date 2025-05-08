@@ -38,6 +38,7 @@ describe('Email Preview API', function () {
 
     beforeEach(function () {
         mockManager.mockMailgun();
+        mockManager.mockLabsDisabled('emailCustomizationInvestigation');
         sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test-validation-key');
     });
 
