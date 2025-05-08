@@ -165,7 +165,7 @@ const UnblockDialog: React.FC<UnblockDialogProps> = ({
                     <div className='flex flex-col rounded-md border'>
                         <div className='flex justify-between gap-6 p-5'>
                             <div className='flex flex-col gap-1'>
-                                <H4>Block user</H4>
+                                <H4>Unblock user</H4>
                                 <p><span className='font-semibold text-black'>{handle}</span> will be able to follow you and engage with your public posts.</p>
                             </div>
                             <Button className={`gap-1 ${dialogState.userUnblocked ? 'pointer-events-none border-green bg-green text-white hover:bg-green hover:text-white' : 'text-red hover:text-red-400'}`} variant='outline' onClick={handleUnblock}>
@@ -176,7 +176,7 @@ const UnblockDialog: React.FC<UnblockDialogProps> = ({
                         <div className='border-t' />
                         <div className='flex justify-between gap-6 p-5'>
                             <div className='flex flex-col gap-1'>
-                                <H4>Block domain</H4>
+                                <H4>Unblock domain</H4>
                                 <p>Users from <span className='font-semibold text-black'>{domain}</span> will be able to follow you and engage with your public posts.</p>
                             </div>
                             <Button className={`gap-1 ${dialogState.domainUnblocked ? 'pointer-events-none border-green bg-green text-white hover:bg-green hover:text-white' : 'text-red hover:text-red-400'}`} variant='outline' onClick={handleDomainUnblock}>
