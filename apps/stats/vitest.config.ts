@@ -12,10 +12,9 @@ export default defineConfig({
             './test/unit/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
             './src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'
         ],
-        // Use a basic reporter instead of completely silencing output
-        // This provides test results without the noisy warnings
+        // Use default reporter for cleaner output
         silent: false,
-        reporters: 'basic'
+        reporters: 'default'
     },
     resolve: {
         alias: {
