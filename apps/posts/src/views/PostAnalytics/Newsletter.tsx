@@ -38,7 +38,6 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         setOriginalUrl(url);
     };
 
-    // TODO: API calls to update URL
     const handleUpdate = () => {
         editLinks({
             originalUrl,
