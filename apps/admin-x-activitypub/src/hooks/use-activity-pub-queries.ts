@@ -23,7 +23,6 @@ import {formatPendingActivityContent, generatePendingActivity, generatePendingAc
 import {mapPostToActivity} from '../utils/posts';
 import {showToast} from '@tryghost/admin-x-design-system';
 import {useCallback} from 'react';
-import {useFeatureFlags} from '../lib/feature-flags';
 
 export type ActivityPubCollectionQueryResult<TData> = UseInfiniteQueryResult<ActivityPubCollectionResponse<TData>>;
 export type AccountFollowsQueryResult = UseInfiniteQueryResult<GetAccountFollowsResponse>;
@@ -1227,7 +1226,6 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
 
 export function useNoteMutationForUser(handle: string, actorProps?: ActorProperties) {
     const queryClient = useQueryClient();
-    const {isEnabled} = useFeatureFlags();
     const queryKeyFeed = QUERY_KEYS.feed;
     const queryKeyOutbox = QUERY_KEYS.outbox(handle);
     const queryKeyPostsByAccount = QUERY_KEYS.profilePosts('index');
@@ -1237,11 +1235,7 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            if (isEnabled('new-note-format')) {
-                return api.noteNew(content, imageUrl);
-            } else {
-                return api.note(content, imageUrl);
-            }
+            return api.note(content, imageUrl);
         },
         onMutate: ({content, imageUrl}) => {
             if (!actorProps) {
@@ -1266,7 +1260,7 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
                 throw new Error('Post returned from API has no id');
             }
 
-            if (isEnabled('new-note-format')) {
+            if (!('object' in postOrActivity)) {
                 const post = postOrActivity as Post;
                 const activity = mapPostToActivity(post);
 
