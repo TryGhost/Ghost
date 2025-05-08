@@ -1237,11 +1237,7 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            if (isEnabled('new-note-format')) {
-                return api.noteNew(content, imageUrl);
-            } else {
-                return api.note(content, imageUrl);
-            }
+            return api.note(content, imageUrl);
         },
         onMutate: ({content, imageUrl}) => {
             if (!actorProps) {
@@ -1266,7 +1262,9 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
                 throw new Error('Post returned from API has no id');
             }
 
-            if (isEnabled('new-note-format')) {
+            console.log('postOrActivity', postOrActivity);
+
+            if (!('object' in postOrActivity)) {
                 const post = postOrActivity as Post;
                 const activity = mapPostToActivity(post);
 
