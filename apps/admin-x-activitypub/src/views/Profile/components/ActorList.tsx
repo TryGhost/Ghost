@@ -73,7 +73,7 @@ const ActorList: React.FC<ActorListProps> = ({
                                     >
                                         <APAvatar author={actor} />
                                         <div>
-                                            <div className='break-anywhere text-gray-600'>
+                                            <div className='text-gray-600 break-anywhere'>
                                                 <span className='mr-1 line-clamp-1 font-bold text-black dark:text-white'>{getName(actor)}</span>
                                                 <div className='line-clamp-1 text-sm'>{actor.handle || getUsername(actor)}</div>
                                             </div>
