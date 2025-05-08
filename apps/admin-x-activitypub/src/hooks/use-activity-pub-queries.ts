@@ -1238,9 +1238,9 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
             const api = createActivityPubAPI(handle, siteUrl);
 
             if(isEnabled('new-note-format')) {
-                return api.note(content, imageUrl);
-            } else {
                 return api.noteNew(content, imageUrl);
+            } else {
+                return api.note(content, imageUrl);
             }
         },
         onMutate: ({content, imageUrl}) => {
