@@ -43,7 +43,7 @@
     "docker:sleep": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run -d --name ghost-devcontainer --rm -it ghost /bin/bash -c 'sleep infinity'",
     "docker:sleep:stop": "docker stop ghost-devcontainer",
     "docker:test:unit": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} NX_DAEMON=false docker compose run --rm --no-deps ghost yarn test:unit",
-    "docker:test:browser": "COMPOSE_PROFILES=browser-tests docker compose up browser-tests --no-log-prefix --force-recreate",
+    "docker:test:browser": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run --rm ghost yarn test:browser",
     "docker:test:all": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} NX_DAEMON=false docker compose run --rm ghost yarn nx run ghost:test:all",
     "docker:reset": "docker compose down -v && docker compose up -d --wait",
     "docker:restart": "docker compose down && docker compose up -d --wait",

@@ -6,12 +6,11 @@ import SortButton from './components/SortButton';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
-import {Navigate, useNavigate} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
-import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-
-type TopNewslettersOrder = 'date desc' | 'open_rate desc' | 'click_rate desc';
+import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNewsletterStatsWithRange, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
+import type {TopNewslettersOrder} from '@src/hooks/useNewsletterStatsWithRange';
 
 type Totals = {
     totalSubscribers: number;
@@ -22,12 +21,12 @@ type Totals = {
 type SubscribersDataItem = {
     date: string;
     value: number;
-}
+};
 
 type AvgsDataItem = {
     post_id: string;
     post_title: string;
-    send_date: Date;
+    send_date: Date | string;
     sent_to: number;
     total_opens: number;
     open_rate: number;
@@ -52,31 +51,33 @@ const BarTooltipContent = ({active, payload}: BarTooltipProps) => {
     }
 
     const currentItem = payload[0].payload;
+    const sendDate = typeof currentItem.send_date === 'string' ? 
+        new Date(currentItem.send_date) : currentItem.send_date;
 
     return (
         <div className="min-w-[220px] max-w-[240px] rounded-lg border bg-background px-3 py-2 shadow-lg">
-            <div className='mb-2 flex w-full flex-col border-b pb-2'>
-                <span className='text-sm font-semibold leading-tight'>{currentItem.post_title}</span>
-                <span className='text-sm text-muted-foreground'>Sent on {formatDisplayDate(currentItem.send_date)}</span>
+            <div className="mb-2 flex w-full flex-col border-b pb-2">
+                <span className="text-sm font-semibold leading-tight">{currentItem.post_title}</span>
+                <span className="text-sm text-muted-foreground">Sent on {formatDisplayDate(sendDate)}</span>
             </div>
 
-            <div className='mb-1 flex w-full justify-between'>
-                <span className='font-medium text-muted-foreground'>Sent</span>
-                <div className='ml-2 w-full text-right font-mono'>{formatNumber(currentItem.sent_to)}</div>
+            <div className="mb-1 flex w-full justify-between">
+                <span className="font-medium text-muted-foreground">Sent</span>
+                <div className="ml-2 w-full text-right font-mono">{formatNumber(currentItem.sent_to)}</div>
             </div>
 
-            <div className='mb-1 flex w-full justify-between'>
-                <span className='font-medium text-muted-foreground'>Opens</span>
-                <div className='ml-2 w-full text-right font-mono'>
-                    <span className='text-muted-foreground'>{formatNumber(currentItem.total_opens)} / </span>
+            <div className="mb-1 flex w-full justify-between">
+                <span className="font-medium text-muted-foreground">Opens</span>
+                <div className="ml-2 w-full text-right font-mono">
+                    <span className="text-muted-foreground">{formatNumber(currentItem.total_opens)} / </span>
                     {formatPercentage(currentItem.open_rate)}
                 </div>
             </div>
 
-            <div className='mb-1 flex w-full justify-between'>
-                <span className='font-medium text-muted-foreground'>Clicks</span>
-                <div className='ml-2 w-full text-right font-mono'>
-                    <span className='text-muted-foreground'>{formatNumber(currentItem.total_clicks)} / </span>
+            <div className="mb-1 flex w-full justify-between">
+                <span className="font-medium text-muted-foreground">Clicks</span>
+                <div className="ml-2 w-full text-right font-mono">
+                    <span className="text-muted-foreground">{formatNumber(currentItem.total_clicks)} / </span>
                     {formatPercentage(currentItem.click_rate)}
                 </div>
             </div>
@@ -111,7 +112,7 @@ const NewsletterKPIs: React.FC<{
 
     const {totalSubscribers, avgOpenRate, avgClickRate} = totals;
 
-    // Sanitize subscribers data
+    // Sanitize subscribers data and convert deltas to cumulative values
     const subscribersData = useMemo(() => {
         if (!allSubscribersData || allSubscribersData.length === 0) {
             return [];
@@ -119,18 +120,34 @@ const NewsletterKPIs: React.FC<{
 
         let sanitizedData: SubscribersDataItem[] = [];
 
-        // Then map the sanitized data to the final format
+        // First sanitize the data based on range
         sanitizedData = sanitizeChartData(allSubscribersData, range, 'value', 'exact');
 
-        const processedData = sanitizedData.map(item => ({
+        // Convert deltas to cumulative counts
+        let runningTotal = totalSubscribers;
+        
+        // Go backwards through the array to calculate cumulative values
+        // Starting from the current total and subtracting deltas
+        const cumulativeData = [...sanitizedData]
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .map((item) => {
+                runningTotal -= item.value;
+                return {
+                    date: item.date,
+                    value: runningTotal + item.value // Value for this specific day
+                };
+            })
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+        // Map the data for display
+        const processedData = cumulativeData.map(item => ({
             ...item,
-            value: item.value,
             formattedValue: formatNumber(item.value),
             label: 'Subscribers'
         }));
 
         return processedData;
-    }, [allSubscribersData, range]);
+    }, [allSubscribersData, totalSubscribers, range]);
 
     const subscribersChartConfig = {
         value: {
@@ -247,9 +264,11 @@ const NewsletterKPIs: React.FC<{
                                 cursor={false}
                             />
                             <Recharts.Bar
+                                activeBar={{fill: 'hsl(var(--chart-1) / 0.8)'}}
                                 dataKey={currentTab === 'avg-open-rate' ? 'open_rate' : 'click_rate'}
                                 fill="hsl(var(--chart-1))"
                                 isAnimationActive={false}
+                                maxBarSize={32}
                                 radius={0}>
                                 {avgsData.map(entry => (
                                     <Recharts.Cell
@@ -260,7 +279,7 @@ const NewsletterKPIs: React.FC<{
                             </Recharts.Bar>
                         </Recharts.BarChart>
                     </ChartContainer>
-                    <div className='-mt-6 text-center text-sm text-muted-foreground'>
+                    <div className="-mt-6 text-center text-sm text-muted-foreground">
                         Newsletters {currentTab === 'avg-open-rate' ? 'opens' : 'clicks'} in this period
                     </div>
                 </>
@@ -271,85 +290,89 @@ const NewsletterKPIs: React.FC<{
 };
 
 const Newsletters: React.FC = () => {
-    // const {range} = useGlobalData();
+    const {range} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
     const navigate = useNavigate();
-    const {settings} = useGlobalData();
-    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
+    
+    // Get stats from real data using the new hooks
+    const {data: newsletterStatsData, isLoading: isStatsLoading} = useNewsletterStatsWithRange(range);
+    const {data: subscriberStatsData, isLoading: isSubscriberStatsLoading} = useSubscriberCountWithRange(range);
+    
+    // Prepare the data - wrap in useMemo to avoid dependency changes
+    const newsletterStats = useMemo(() => {
+        if (!newsletterStatsData?.stats || newsletterStatsData?.stats.length === 0) {
+            return [];
+        }
+        
+        // Clone the data for sorting
+        const stats = [...newsletterStatsData.stats];
+        
+        // Apply client-side sorting
+        const [field, direction = 'desc'] = sortBy.split(' ');
+        
+        return stats.sort((a, b) => {
+            let valueA, valueB;
+            
+            // Handle different sort fields
+            if (field === 'date') {
+                valueA = new Date(a.send_date).getTime();
+                valueB = new Date(b.send_date).getTime();
+            } else if (field === 'open_rate') {
+                valueA = a.open_rate || 0;
+                valueB = b.open_rate || 0;
+            } else if (field === 'click_rate') {
+                valueA = a.click_rate || 0;
+                valueB = b.click_rate || 0;
+            } else {
+                return 0;
+            }
+            
+            // Apply sort direction
+            return direction === 'desc' ? valueB - valueA : valueA - valueB;
+        });
+    }, [newsletterStatsData, sortBy]);
+    
+    // Calculate totals
+    const totals = useMemo(() => {
+        if (!newsletterStatsData?.stats || newsletterStatsData.stats.length === 0) {
+            return {
+                totalSubscribers: subscriberStatsData?.stats?.[0]?.total || 0,
+                avgOpenRate: 0,
+                avgClickRate: 0
+            };
+        }
 
-    // Get stats from custom hook once
-    // const {isLoading, chartData, totals} = useGrowthStats(range);
-    // const {data: topPostsData} = useTopPostsStatsWithRange(range, sortBy);
-    // const topPosts = topPostsData?.stats || [];
+        // Use all stats for calculating averages, not just the sorted/limited ones
+        const allStats = newsletterStatsData.stats;
+        
+        // Calculate average open and click rates from all stats
+        const totalOpenRate = allStats.reduce((sum, stat) => sum + (stat.open_rate || 0), 0);
+        const totalClickRate = allStats.reduce((sum, stat) => sum + (stat.click_rate || 0), 0);
+        
+        return {
+            totalSubscribers: subscriberStatsData?.stats?.[0]?.total || 0,
+            avgOpenRate: totalOpenRate / allStats.length,
+            avgClickRate: totalClickRate / allStats.length
+        };
+    }, [newsletterStatsData, subscriberStatsData]);
 
-    const isLoading = false;
+    // Create subscribers data from newsletter subscriber stats
+    const subscribersData = useMemo(() => {
+        if (!subscriberStatsData?.stats?.[0]?.deltas || subscriberStatsData.stats?.[0]?.deltas.length === 0) {
+            return [];
+        }
 
-    // Mock data
-    const totals = {
-        totalSubscribers: 20800,
-        avgOpenRate: 0.74,
-        avgClickRate: 0.36
-    };
+        // Convert to the required format - already in the correct format
+        return subscriberStatsData.stats[0].deltas;
+    }, [subscriberStatsData]);
 
-    const mockSubscribers:SubscribersDataItem[] = [
-        {date: '2025-04-01', value: 15000},
-        {date: '2025-04-02', value: 15150},
-        {date: '2025-04-03', value: 15280},
-        {date: '2025-04-04', value: 15420},
-        {date: '2025-04-05', value: 15550},
-        {date: '2025-04-06', value: 15700},
-        {date: '2025-04-07', value: 15830},
-        {date: '2025-04-08', value: 15990},
-        {date: '2025-04-09', value: 16140},
-        {date: '2025-04-10', value: 16280},
-        {date: '2025-04-11', value: 16450},
-        {date: '2025-04-12', value: 16620},
-        {date: '2025-04-13', value: 16790},
-        {date: '2025-04-14', value: 16940},
-        {date: '2025-04-15', value: 17100},
-        {date: '2025-04-16', value: 17260},
-        {date: '2025-04-17', value: 17430},
-        {date: '2025-04-18', value: 17590},
-        {date: '2025-04-19', value: 17750},
-        {date: '2025-04-20', value: 17920},
-        {date: '2025-04-21', value: 18080},
-        {date: '2025-04-22', value: 18240},
-        {date: '2025-04-23', value: 18410},
-        {date: '2025-04-24', value: 18570},
-        {date: '2025-04-25', value: 18730},
-        {date: '2025-04-26', value: 18900},
-        {date: '2025-04-27', value: 19060},
-        {date: '2025-04-28', value: 19220},
-        {date: '2025-04-29', value: 19390},
-        {date: '2025-04-30', value: 19550}
-    ];
+    const isLoading = isStatsLoading || isSubscriberStatsLoading;
 
-    const mockAvgsData: AvgsDataItem[] = [
-        {post_id: '1', post_title: 'Weekly tech digest with an extra long title that should wrap in two lines', send_date: new Date('2024-03-30'), sent_to: 20800, total_opens: 17680, total_clicks: 8320, open_rate: 0.73, click_rate: 0.37},
-        {post_id: '2', post_title: 'Product Updates', send_date: new Date('2024-03-29'), sent_to: 20600, total_opens: 16480, total_clicks: 8240, open_rate: 0.78, click_rate: 0.43},
-        {post_id: '3', post_title: 'Community Spotlight', send_date: new Date('2024-03-28'), sent_to: 20400, total_opens: 14280, total_clicks: 8160, open_rate: 0.49, click_rate: 0.41},
-        {post_id: '4', post_title: 'Industry News', send_date: new Date('2024-03-27'), sent_to: 20200, total_opens: 12120, total_clicks: 8080, open_rate: 0.64, click_rate: 0.4},
-        {post_id: '5', post_title: 'Feature Announcement', send_date: new Date('2024-03-26'), sent_to: 20000, total_opens: 10000, total_clicks: 8000, open_rate: 0.5, click_rate: 0.32},
-        {post_id: '6', post_title: 'Monthly Roundup', send_date: new Date('2024-03-25'), sent_to: 19800, total_opens: 12870, total_clicks: 5940, open_rate: 0.76, click_rate: 0.16},
-        {post_id: '7', post_title: 'User Success Stories', send_date: new Date('2024-03-24'), sent_to: 19600, total_opens: 11760, total_clicks: 3920, open_rate: 0.39, click_rate: 0.21},
-        {post_id: '8', post_title: 'Tips & Tricks', send_date: new Date('2024-03-23'), sent_to: 19400, total_opens: 10670, total_clicks: 2910, open_rate: 0.52, click_rate: 0.15},
-        {post_id: '9', post_title: 'Platform Updates', send_date: new Date('2024-03-22'), sent_to: 19200, total_opens: 9600, total_clicks: 4800, open_rate: 0.48, click_rate: 0.25},
-        {post_id: '10', post_title: 'New Features Guide', send_date: new Date('2024-03-21'), sent_to: 19000, total_opens: 8550, total_clicks: 4275, open_rate: 0.43, click_rate: 0.225},
-        {post_id: '11', post_title: 'Community News', send_date: new Date('2024-03-20'), sent_to: 18800, total_opens: 7520, total_clicks: 3760, open_rate: 0.38, click_rate: 0.20},
-        {post_id: '12', post_title: 'Product Roadmap', send_date: new Date('2024-03-19'), sent_to: 18600, total_opens: 8370, total_clicks: 4185, open_rate: 0.45, click_rate: 0.225},
-        {post_id: '13', post_title: 'User Feedback', send_date: new Date('2024-03-18'), sent_to: 18400, total_opens: 7360, total_clicks: 3680, open_rate: 0.42, click_rate: 0.20},
-        {post_id: '14', post_title: 'Platform Tips', send_date: new Date('2024-03-17'), sent_to: 18200, total_opens: 8190, total_clicks: 4095, open_rate: 0.41, click_rate: 0.225},
-        {post_id: '15', post_title: 'Feature Deep Dive', send_date: new Date('2024-03-16'), sent_to: 18000, total_opens: 7200, total_clicks: 3600, open_rate: 0.40, click_rate: 0.20},
-        {post_id: '16', post_title: 'Community Updates', send_date: new Date('2024-03-15'), sent_to: 17800, total_opens: 8010, total_clicks: 4005, open_rate: 0.45, click_rate: 0.225},
-        {post_id: '17', post_title: 'Product News', send_date: new Date('2024-03-14'), sent_to: 17600, total_opens: 7040, total_clicks: 3520, open_rate: 0.44, click_rate: 0.20},
-        {post_id: '18', post_title: 'User Guide', send_date: new Date('2024-03-13'), sent_to: 17400, total_opens: 7830, total_clicks: 3915, open_rate: 0.41, click_rate: 0.225},
-        {post_id: '19', post_title: 'Platform News', send_date: new Date('2024-03-12'), sent_to: 17200, total_opens: 6880, total_clicks: 3440, open_rate: 0.37, click_rate: 0.20},
-        {post_id: '20', post_title: 'Feature Updates', send_date: new Date('2024-03-11'), sent_to: 17000, total_opens: 7650, total_clicks: 3825, open_rate: 0.45, click_rate: 0.225}
-    ];
-
-    if (!labs.trafficAnalyticsAlpha) {
-        return <Navigate to='/web/' />;
-    }
+    // Convert string dates to Date objects for AvgsDataItem compatibility
+    const avgsData: AvgsDataItem[] = newsletterStats.map(stat => ({
+        ...stat,
+        send_date: new Date(stat.send_date)
+    }));
 
     return (
         <StatsLayout>
@@ -360,10 +383,10 @@ const Newsletters: React.FC = () => {
                     <DateRangeSelect />
                 </ViewHeaderActions>
             </ViewHeader>
-            <StatsView data={mockSubscribers} isLoading={isLoading}>
+            <StatsView data={subscribersData} isLoading={isLoading}>
                 <Card>
                     <CardContent>
-                        <NewsletterKPIs avgsData={mockAvgsData} subscribersData={mockSubscribers} totals={totals} />
+                        <NewsletterKPIs avgsData={avgsData} subscribersData={subscribersData} totals={totals} />
                     </CardContent>
                 </Card>
                 <Card>
@@ -397,7 +420,7 @@ const Newsletters: React.FC = () => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {mockAvgsData.map(post => (
+                                {newsletterStats.map(post => (
                                     <TableRow key={post.post_id}>
                                         <TableCell className="font-medium">
                                             <div className='group/link inline-flex items-center gap-2'>
@@ -414,16 +437,16 @@ const Newsletters: React.FC = () => {
                                                 }
                                             </div>
                                         </TableCell>
-                                        <TableCell className='text-sm text-muted-foreground'>
-                                            {formatDisplayDate(post.send_date)}
+                                        <TableCell className="text-sm text-muted-foreground">
+                                            {formatDisplayDate(new Date(post.send_date))}
                                         </TableCell>
                                         <TableCell className={`text-right font-mono text-sm ${post.total_opens === 0 && 'text-gray-700'}`}>
-                                            <span className='group-hover:hidden'>{formatPercentage(post.open_rate)}</span>
-                                            <span className='hidden group-hover:!visible group-hover:!block'>{formatNumber(post.total_opens)}</span>
+                                            <span className="group-hover:hidden">{formatPercentage(post.open_rate)}</span>
+                                            <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_opens)}</span>
                                         </TableCell>
                                         <TableCell className={`text-right font-mono text-sm ${post.total_clicks === 0 && 'text-gray-700'}`}>
-                                            <span className='group-hover:hidden'>{formatPercentage(post.click_rate)}</span>
-                                            <span className='hidden group-hover:!visible group-hover:!block'>{formatNumber(post.total_clicks)}</span>
+                                            <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
+                                            <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_clicks)}</span>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -436,4 +459,5 @@ const Newsletters: React.FC = () => {
     );
 };
 
+// Export the component directly now that we handle the feature flag in routes.tsx
 export default Newsletters;

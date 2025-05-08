@@ -1,15 +1,19 @@
 import React from 'react';
 import {LucideIcon, RightSidebarMenu, RightSidebarMenuLink} from '@tryghost/shade';
+import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
+import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useLocation, useNavigate, useParams} from '@tryghost/admin-x-framework';
 
 const Sidebar:React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const {postId} = useParams();
+    const {settings} = useGlobalData();
+    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
 
     return (
-        <div className='grow border-l py-8 pl-6 pr-0'>
-            <RightSidebarMenu className='sticky top-[134px]'>
+        <div className='grow py-8 pr-0'>
+            <RightSidebarMenu>
                 <RightSidebarMenuLink onClick={() => {
                     navigate(`/posts/analytics/${postId}`, {crossApp: true});
                 }}>
@@ -22,6 +26,16 @@ const Sidebar:React.FC = () => {
                     <LucideIcon.MousePointer size={16} strokeWidth={1.25} />
                     Web
                 </RightSidebarMenuLink>
+
+                {labs.trafficAnalyticsAlpha &&
+                    <RightSidebarMenuLink active={location.pathname === `/analytics/${postId}/newsletter`} onClick={() => {
+                        navigate(`/analytics/${postId}/newsletter`);
+                    }}>
+                        <LucideIcon.Mail size={16} strokeWidth={1.25} />
+                        Newsletter
+                    </RightSidebarMenuLink>
+                }
+
                 <RightSidebarMenuLink active={location.pathname === `/analytics/${postId}/growth`} onClick={() => {
                     navigate(`/analytics/${postId}/growth`);
                 }}>

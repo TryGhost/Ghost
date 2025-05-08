@@ -274,6 +274,11 @@
                 <LinkTo class="gh-post-analytics-sidebar-item" @route="posts.analytics.web-stats" @model={{this.post.id}}>
                     {{svg-jar "stats-web" title="Web stats"}} Web
                 </LinkTo>
+                {{#if (feature "trafficAnalyticsAlpha")}}
+                <LinkTo class="gh-post-analytics-sidebar-item" @route="posts.analytics.newsletter-stats" @model={{this.post.id}}>
+                    {{svg-jar "stats-newsletter" title="Newsletter stats"}} Newsletter
+                </LinkTo>
+                {{/if}}
                 <LinkTo class="gh-post-analytics-sidebar-item" @route="posts.analytics.growth-stats" @model={{this.post.id}}>
                     {{svg-jar "stats-growth" title="Growth stats"}} Growth
                 </LinkTo>

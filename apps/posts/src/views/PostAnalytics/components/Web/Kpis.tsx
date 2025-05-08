@@ -108,7 +108,7 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
                         <Card>
                             <CardContent>
                                 <Tabs defaultValue="visits" variant='kpis'>
-                                    <TabsList className="-mx-6 grid grid-cols-4">
+                                    <TabsList className="-mx-6 grid grid-cols-2">
                                         <KpiTabTrigger value="visits" onClick={() => {
                                             setCurrentTab('visits');
                                         }}>

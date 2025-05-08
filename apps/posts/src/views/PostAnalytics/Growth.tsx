@@ -1,16 +1,15 @@
-import KpiCard, {KpiCardIcon, KpiCardLabel, KpiCardValue} from './components/KpiCard';
+import KpiCard, {KpiCardContent, KpiCardIcon, KpiCardLabel, KpiCardValue} from './components/KpiCard';
 import PostAnalyticsContent from './components/PostAnalyticsContent';
 import PostAnalyticsHeader from './components/PostAnalyticsHeader';
 import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, formatNumber} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, formatNumber, isValidDomain} from '@tryghost/shade';
+import {SourceRow} from './components/Web/Sources';
 import {useParams} from '@tryghost/admin-x-framework';
 import {usePostReferrers} from '../../hooks/usePostReferrers';
 
 const centsToDollars = (value : number) => {
     return Math.round(value / 100);
 };
-
-const STATS_DEFAULT_SOURCE_ICON_URL = 'https://static.ghost.org/v5.0.0/images/globe-icon.svg';
 
 interface postAnalyticsProps {}
 
@@ -27,29 +26,43 @@ const Growth: React.FC<postAnalyticsProps> = () => {
             <PostAnalyticsContent>
                 {isLoading ? 'Loading' :
                     <div className='flex flex-col items-stretch gap-6'>
-                        <div className='grid grid-cols-3 gap-6'>
-                            <KpiCard>
-                                <KpiCardIcon>
-                                    <LucideIcon.User strokeWidth={1.5} />
-                                </KpiCardIcon>
-                                <KpiCardLabel>Free members</KpiCardLabel>
-                                <KpiCardValue>{formatNumber(totals?.free_members || 0)}</KpiCardValue>
-                            </KpiCard>
-                            <KpiCard>
-                                <KpiCardIcon>
-                                    <LucideIcon.Wallet strokeWidth={1.5} />
-                                </KpiCardIcon>
-                                <KpiCardLabel>Paid members</KpiCardLabel>
-                                <KpiCardValue>{formatNumber(totals?.paid_members || 0)}</KpiCardValue>
-                            </KpiCard>
-                            <KpiCard>
-                                <KpiCardIcon>
-                                    <LucideIcon.CircleDollarSign strokeWidth={1.5} />
-                                </KpiCardIcon>
-                                <KpiCardLabel>MRR</KpiCardLabel>
-                                <KpiCardValue>+${centsToDollars(totals?.mrr || 0)}</KpiCardValue>
-                            </KpiCard>
-                        </div>
+                        <Card>
+                            <CardHeader className='hidden'>
+                                <CardTitle>Newsletters</CardTitle>
+                                <CardDescription>How did this post perform</CardDescription>
+                            </CardHeader>
+                            <CardContent className='p-5'>
+                                <div className='grid grid-cols-3 gap-6'>
+                                    <KpiCard className='border-none p-0'>
+                                        <KpiCardIcon>
+                                            <LucideIcon.User strokeWidth={1.5} />
+                                        </KpiCardIcon>
+                                        <KpiCardContent>
+                                            <KpiCardLabel>Free members</KpiCardLabel>
+                                            <KpiCardValue>{formatNumber(totals?.free_members || 0)}</KpiCardValue>
+                                        </KpiCardContent>
+                                    </KpiCard>
+                                    <KpiCard className='border-none p-0'>
+                                        <KpiCardIcon>
+                                            <LucideIcon.WalletCards strokeWidth={1.5} />
+                                        </KpiCardIcon>
+                                        <KpiCardContent>
+                                            <KpiCardLabel>Paid members</KpiCardLabel>
+                                            <KpiCardValue>{formatNumber(totals?.paid_members || 0)}</KpiCardValue>
+                                        </KpiCardContent>
+                                    </KpiCard>
+                                    <KpiCard className='border-none p-0'>
+                                        <KpiCardIcon>
+                                            <LucideIcon.CircleDollarSign strokeWidth={1.5} />
+                                        </KpiCardIcon>
+                                        <KpiCardContent>
+                                            <KpiCardLabel>MRR</KpiCardLabel>
+                                            <KpiCardValue>+${centsToDollars(totals?.mrr || 0)}</KpiCardValue>
+                                        </KpiCardContent>
+                                    </KpiCard>
+                                </div>
+                            </CardContent>
+                        </Card>
                         <Card>
                             <CardHeader>
                                 <CardTitle>Sources</CardTitle>
@@ -72,15 +85,15 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                             {postReferrers?.map(row => (
                                                 <TableRow key={row.source}>
                                                     <TableCell>
-                                                        <a className='inline-flex items-center gap-2 font-medium' href={`https://${row.source}`} rel="noreferrer" target='_blank'>
-                                                            <img
-                                                                className="size-4"
-                                                                src={`https://www.faviconextractor.com/favicon/${row.source || 'direct'}?larger=true`}
-                                                                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                                    e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
-                                                                }} />
-                                                            <span>{row.source || 'Direct'}</span>
-                                                        </a>
+                                                        {row.source && isValidDomain(row.source) ?
+                                                            <a className='group flex items-center gap-1' href={`https://${row.source}`} rel="noreferrer" target="_blank">
+                                                                <SourceRow className='group-hover:underline' source={row.source} />
+                                                            </a>
+                                                            :
+                                                            <span className='flex items-center gap-1'>
+                                                                <SourceRow source={row.source} />
+                                                            </span>
+                                                        }
                                                     </TableCell>
                                                     <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.free_members)}</TableCell>
                                                     <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.paid_members)}</TableCell>
