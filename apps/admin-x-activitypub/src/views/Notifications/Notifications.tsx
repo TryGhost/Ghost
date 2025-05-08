@@ -221,7 +221,7 @@ const Notifications: React.FC = () => {
                                                 <Skeleton className='rounded-full' containerClassName='flex h-10 w-10' /> :
                                                 (group.actors.length > 1 ?
                                                     <NotificationItem.Icon type={group.type} /> :
-                                                    <div className='relative mt-0.5'>
+                                                    <div className='relative'>
                                                         <APAvatar
                                                             key={group.actors[0].id}
                                                             author={{
@@ -299,7 +299,7 @@ const Notifications: React.FC = () => {
                                                 </div>
                                             </NotificationItem.Avatars>}
                                             <NotificationItem.Content>
-                                                <div className='text-gray-700 dark:text-gray-600'>
+                                                <div>
                                                     {isLoading ?
                                                         <>
                                                             <Skeleton />
@@ -307,8 +307,8 @@ const Notifications: React.FC = () => {
                                                         </> :
                                                         <div className='flex items-center gap-1'>
                                                             <span className='truncate'><NotificationGroupDescription group={group} /></span>
-                                                            <span className='mt-px text-[8px]'>&bull;</span>
-                                                            <span className='mt-0.5 text-sm'>{renderTimestamp(group, false)}</span>
+                                                            <span className='mt-px text-[8px] text-gray-700 dark:text-gray-600'>&bull;</span>
+                                                            <span className='mt-0.5 text-sm text-gray-700 dark:text-gray-600'>{renderTimestamp(group, false)}</span>
                                                         </div>
                                                     }
                                                 </div>
@@ -317,23 +317,22 @@ const Notifications: React.FC = () => {
                                                     (group.type === 'like' && !group.post?.name && group.post?.content) ||
                                                     (group.type === 'repost' && !group.post?.name && group.post?.content)
                                                 ) && (
-                                                    (group.post?.type === 'note' ?
+                                                    (group.type !== 'reply' ?
                                                         <div
                                                             dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '')}}
-                                                            className='ap-note-content mt-0.5 line-clamp-2 text-pretty text-black dark:text-white'
+                                                            className='ap-note-content mt-0.5 line-clamp-1 text-pretty text-sm text-gray-700 dark:text-gray-600'
                                                         /> :
-                                                        <div className='mt-3 flex flex-col gap-1 rounded-md border border-gray-150 p-4 text-black dark:border-gray-950 dark:text-white'>
-                                                            <span className='-mt-0.5 font-semibold'>{group.post?.title}</span>
+                                                        <div className='mt-2.5 rounded-md bg-gray-100 group-hover:bg-gray-200 px-5 py-[14px] dark:bg-gray-925/30 group-hover:dark:bg-black/40'>
                                                             <div
                                                                 dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '')}}
-                                                                className='ap-note-content line-clamp-2 text-pretty'
+                                                                className='ap-note-content text-pretty'
                                                             />
                                                         </div>
                                                     )
                                                 )}
                                             </NotificationItem.Content>
                                         </NotificationItem>
-                                        {index < notificationGroups.length - 1 && <div className='pl-14'><Separator /></div>}
+                                        {index < notificationGroups.length - 1 && <div className='pl-[52px]'><Separator /></div>}
                                     </React.Fragment>
                                 ))}
                             </div>
