@@ -6,7 +6,7 @@ import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, H1, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, cn, formatNumber, formatQueryDate} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, H1, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, cn, formatNumber, formatQueryDate} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {getCountryFlag, getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
@@ -158,7 +158,7 @@ const Locations:React.FC = () => {
 
     return (
         <StatsLayout>
-            <ViewHeader>
+            <ViewHeader className='before:hidden'>
                 <H1>Locations</H1>
                 <ViewHeaderActions>
                     <AudienceSelect />
@@ -166,8 +166,12 @@ const Locations:React.FC = () => {
                 </ViewHeaderActions>
             </ViewHeader>
             <StatsView data={data} isLoading={isLoading}>
-                <Card variant='plain'>
-                    <CardContent className='border-none pt-8'>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Top Locations</CardTitle>
+                        <CardDescription>A geographic breakdown of your readers {getPeriodText(range)}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
                         <div className='svg-map-container relative mx-auto max-w-[680px] [&_.svg-map]:stroke-background'>
                             <SVGMap
                                 locationClassName={getLocationClassName}
@@ -195,17 +199,8 @@ const Locations:React.FC = () => {
                                 </div>
                             )}
                         </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Top Locations</CardTitle>
-                        <CardDescription>A geographic breakdown of your readers {getPeriodText(range)}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
                         {isLoading ? 'Loading' :
-                            <>
-                                <Separator />
+                            <div className='mt-6'>
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
@@ -227,7 +222,7 @@ const Locations:React.FC = () => {
                                         })}
                                     </TableBody>
                                 </Table>
-                            </>
+                            </div>
                         }
                     </CardContent>
                 </Card>

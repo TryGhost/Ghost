@@ -94,6 +94,8 @@ const Sidebar: React.FC<{
 
     const fontWeightOptions: SelectOption[] = [
         {value: 'normal', label: 'Normal'},
+        {value: 'medium', label: 'Medium'},
+        {value: 'semibold', label: 'Semi-bold'},
         {value: 'bold', label: 'Bold'}
     ];
 
@@ -600,6 +602,31 @@ const Sidebar: React.FC<{
                                 link: false,
                                 size: 'sm',
                                 onClick: () => updateNewsletter({button_corners: 'rounded'})
+                            }
+                        ]} clearBg={false} />
+                    </div>
+                    <div className='flex w-full justify-between'>
+                        <div>Image corners</div>
+                        <ButtonGroup activeKey={newsletter.image_corners || 'square'} buttons={[
+                            {
+                                key: 'square',
+                                icon: 'square',
+                                label: 'Square',
+                                tooltip: 'Squared',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({image_corners: 'square'})
+                            },
+                            {
+                                key: 'squircle',
+                                icon: 'squircle',
+                                label: 'Squircle',
+                                tooltip: 'Rounded',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({image_corners: 'squircle'})
                             }
                         ]} clearBg={false} />
                     </div>

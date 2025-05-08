@@ -72,7 +72,8 @@ module.exports = function MembersAPI({
     emailSuppressionList,
     settingsCache,
     sentry,
-    settingsHelpers
+    settingsHelpers,
+    urlUtils
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -196,7 +197,8 @@ module.exports = function MembersAPI({
         labsService,
         newslettersService,
         settingsCache,
-        sentry
+        sentry,
+        urlUtils
     });
 
     const wellKnownController = new WellKnownController({

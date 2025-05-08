@@ -6,7 +6,6 @@ const fs = require('fs-extra');
 const path = require('path');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const constants = require('@tryghost/constants');
 const urlUtils = require('../../../shared/url-utils');
 const StorageBase = require('ghost-storage-base');
 
@@ -159,7 +158,7 @@ class LocalStorageBase extends StorageBase {
             return serveStatic(
                 storagePath,
                 {
-                    maxAge: constants.ONE_YEAR_MS,
+                    maxAge: (365 * 24 * 60 * 60 * 1000), // 1 year in ms
                     fallthrough: false
                 }
             )(req, res, (err) => {

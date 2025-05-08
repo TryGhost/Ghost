@@ -90,7 +90,7 @@ module.exports = class MentionEmailReportJob {
  */
 
 /**
- * @typedef {import('@tryghost/webmentions/lib/MentionsAPI').MentionReport} MentionReport
+ * @typedef {import('../mentions/MentionsAPI').MentionReport} MentionReport
  */
 
 /**

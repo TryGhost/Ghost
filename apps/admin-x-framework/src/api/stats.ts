@@ -1,4 +1,4 @@
-import {Meta, createQuery} from '../utils/api/hooks';
+import {Meta, createQuery, createQueryWithId} from '../utils/api/hooks';
 
 // Types
 
@@ -48,11 +48,81 @@ export type TopPostsStatsResponseType = {
     meta: Meta;
 };
 
+export type PostReferrerStatItem = {
+    source: string;
+    free_members: number;
+    paid_members: number;
+    mrr: number;
+};
+
+export type PostReferrersResponseType = {
+    stats: PostReferrerStatItem[];
+    meta: Meta;
+};
+
+export type PostGrowthStatItem = {
+    post_id: string;
+    free_members: number;
+    paid_members: number;
+    mrr: number;
+};
+
+export type PostGrowthStatsResponseType = {
+    stats: PostGrowthStatItem[];
+    meta: Meta;
+};
+
+export type MrrHistoryItem = {
+    date: string;
+    mrr: number;
+    currency: string;
+};
+export type MrrHistoryResponseType = {
+    stats: MrrHistoryItem[];
+    meta: Meta;
+};
+
+export type NewsletterStatItem = {
+    post_id: string;
+    post_title: string;
+    send_date: string;
+    sent_to: number;
+    total_opens: number;
+    open_rate: number;
+    total_clicks: number;
+    click_rate: number;
+};
+
+export type NewsletterStatsResponseType = {
+    stats: NewsletterStatItem[];
+    meta: Meta;
+};
+
+export type NewsletterSubscriberDelta = {
+    date: string;
+    value: number;
+};
+
+export type NewsletterSubscriberStats = {
+    total: number;
+    deltas: NewsletterSubscriberDelta[];
+};
+
+export type NewsletterSubscriberStatsResponseType = {
+    stats: NewsletterSubscriberStats[];
+};
+
 // Requests
 
 const dataType = 'TopContentResponseType';
 const memberCountHistoryDataType = 'MemberCountHistoryResponseType';
 const topPostsStatsDataType = 'TopPostsStatsResponseType';
+const postReferrersDataType = 'PostReferrersResponseType';
+const newsletterStatsDataType = 'NewsletterStatsResponseType';
+const newsletterSubscriberStatsDataType = 'NewsletterSubscriberStatsResponseType';
+
+const postGrowthStatsDataType = 'PostGrowthStatsResponseType';
+const mrrHistoryDataType = 'MrrHistoryResponseType';
 
 export const useTopContent = createQuery<TopContentResponseType>({
     dataType,
@@ -67,4 +137,28 @@ export const useMemberCountHistory = createQuery<MemberCountHistoryResponseType>
 export const useTopPostsStats = createQuery<TopPostsStatsResponseType>({
     dataType: topPostsStatsDataType,
     path: '/stats/top-posts/'
+});
+
+export const usePostReferrers = createQueryWithId<PostReferrersResponseType>({
+    dataType: postReferrersDataType,
+    path: id => `/stats/posts/${id}/top-referrers`
+});
+
+export const usePostGrowthStats = createQueryWithId<PostGrowthStatsResponseType>({
+    dataType: postGrowthStatsDataType,
+    path: id => `/stats/posts/${id}/growth`
+});
+export const useMrrHistory = createQuery<MrrHistoryResponseType>({
+    dataType: mrrHistoryDataType,
+    path: '/stats/mrr/'
+});
+
+export const useNewsletterStats = createQuery<NewsletterStatsResponseType>({
+    dataType: newsletterStatsDataType,
+    path: '/stats/newsletter-stats/'
+});
+
+export const useSubscriberCount = createQuery<NewsletterSubscriberStatsResponseType>({
+    dataType: newsletterSubscriberStatsDataType,
+    path: '/stats/subscriber-count/'
 });

@@ -2,8 +2,8 @@ const MRRService = require('./MrrStatsService');
 const MembersService = require('./MembersStatsService');
 const SubscriptionStatsService = require('./SubscriptionStatsService');
 const ReferrersStatsService = require('./ReferrersStatsService');
-const TopContentStatsService = require('./TopContentStatsService');
 const PostsStatsService = require('./PostsStatsService');
+const ContentStatsService = require('./ContentStatsService');
 const tinybird = require('./utils/tinybird');
 
 class StatsService {
@@ -13,16 +13,16 @@ class StatsService {
      * @param {MembersService} deps.members
      * @param {SubscriptionStatsService} deps.subscriptions
      * @param {ReferrersStatsService} deps.referrers
-     * @param {TopContentStatsService} deps.topContent
      * @param {PostsStatsService} deps.posts
+     * @param {ContentStatsService} deps.content
      **/
     constructor(deps) {
         this.mrr = deps.mrr;
         this.members = deps.members;
         this.subscriptions = deps.subscriptions;
         this.referrers = deps.referrers;
-        this.topContent = deps.topContent;
-        this.topPosts = deps.posts;
+        this.posts = deps.posts;
+        this.content = deps.content;
     }
 
     async getMRRHistory() {
@@ -41,7 +41,7 @@ class StatsService {
             startDate: options.dateFrom
         };
         delete mappedOptions.dateFrom;
-        
+
         return this.members.getCountHistory(mappedOptions);
     }
 
@@ -64,10 +64,18 @@ class StatsService {
     }
 
     /**
+     * @param {string} postId
+     */
+    async getReferrersForPost(postId, options) {
+        const result = await this.posts.getReferrersForPost(postId, options);
+        return result;
+    }
+
+    /**
      * @param {Object} options
      */
     async getTopContent(options = {}) {
-        return await this.topContent.getTopContent(options);
+        return await this.content.getTopContent(options);
     }
 
     /**
@@ -77,7 +85,42 @@ class StatsService {
      */
     async getTopPosts(options = {}) {
         // Return the original { data: results } structure
-        const result = await this.topPosts.getTopPosts(options);
+        const result = await this.posts.getTopPosts(options);
+        return result;
+    }
+
+    /**
+     * @param {string} postId
+     */
+    async getGrowthStatsForPost(postId) {
+        return await this.posts.getGrowthStatsForPost(postId);
+    }
+
+    /**
+     * Get newsletter stats for sent posts
+     * @param {Object} options
+     * @param {string} [options.order='published_at desc'] - Order field and direction
+     * @param {number} [options.limit=20] - Max number of results to return
+     * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
+     * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
+     * @returns {Promise<{data: Object[]}>}
+     */
+    async getNewsletterStats(options = {}) {
+        // Return newsletter stats from posts with newsletter_id not null
+        const result = await this.posts.getNewsletterStats(options);
+        return result;
+    }
+
+    /**
+     * Get newsletter subscriber statistics including total count and daily deltas
+     * 
+     * @param {Object} options
+     * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
+     * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
+     * @returns {Promise<{data: Object}>}
+     */
+    async getNewsletterSubscriberStats(options = {}) {
+        const result = await this.posts.getNewsletterSubscriberStats(options);
         return result;
     }
 
@@ -111,8 +154,8 @@ class StatsService {
             members: new MembersService(deps),
             subscriptions: new SubscriptionStatsService(deps),
             referrers: new ReferrersStatsService(deps),
-            topContent: new TopContentStatsService(depsWithTinybird),
-            posts: new PostsStatsService(deps)
+            posts: new PostsStatsService(deps),
+            content: new ContentStatsService(depsWithTinybird)
         });
     }
 }

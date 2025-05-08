@@ -1,8 +1,8 @@
 const logging = require('@tryghost/logging');
 
 /**
- * @typedef {import('@tryghost/webmentions/lib/MentionsAPI').IRoutingService} IRoutingService
- * @typedef {import('@tryghost/webmentions/lib/MentionsAPI').IResourceService} IResourceService
+ * @typedef {import('./MentionsAPI').IRoutingService} IRoutingService
+ * @typedef {import('./MentionsAPI').IResourceService} IResourceService
  */
 
 /**
