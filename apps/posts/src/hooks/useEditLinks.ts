@@ -7,4 +7,4 @@ export const useEditLinks = () => {
         editLinks,
         isEditLinksLoading
     };
-}
+};

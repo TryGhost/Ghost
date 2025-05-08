@@ -107,7 +107,7 @@ describe('useEditLinks', () => {
         let mutationError: Error | null = null;
         try {
             await act(async () => {
-               await result.current.editLinks({
+                await result.current.editLinks({
                     postId: 'test-post-id',
                     originalUrl: 'https://original.com',
                     editedUrl: 'https://edited.com'
@@ -125,7 +125,7 @@ describe('useEditLinks', () => {
         await waitFor(() => {
             expect(result.current.isEditLinksLoading).toBe(false);
         });
-         // We expect an error to be thrown by mutateAsync
+        // We expect an error to be thrown by mutateAsync
         expect(mutationError).toBeInstanceOf(Error);
     });
 

@@ -7,10 +7,10 @@ import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Chart
 import {Navigate, useParams} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth} from '@src/utils/chart-helpers';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
+import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useRef, useState} from 'react';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
-import {useEditLinks} from '@src/hooks/useEditLinks';
 
 interface postAnalyticsProps {}
 
@@ -32,7 +32,6 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId || '');
     const {editLinks} = useEditLinks();
 
-
     const handleEdit = (url: string) => {
         setEditingUrl(url);
         setEditedUrl(url);
@@ -51,11 +50,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                 setEditedUrl('');
                 setOriginalUrl('');
                 refetchTopLinks();
-            },
-            onError: (error) => {
-                console.error(error);
             }
-        })
+        });
     };
 
     useEffect(() => {
