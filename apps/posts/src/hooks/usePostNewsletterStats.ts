@@ -53,9 +53,9 @@ export const usePostNewsletterStats = (postId: string) => {
     }, [newsletterStatsResponse]);
 
     // Fetch the top clicked links for the post
-    const {data: topLinksResponse, isLoading: isTopLinksLoading} = useTopLinks({
+    const {data: topLinksResponse, isLoading: isTopLinksLoading, refetch: refetchTopLinks} = useTopLinks({
         searchParams: {
-            filter: `post_id:${postId}`
+            filter: `post_id:'${postId}'`
         }
     });
 
@@ -66,7 +66,8 @@ export const usePostNewsletterStats = (postId: string) => {
 
         return topLinksResponse.links.sort((a, b) => b.count.clicks - a.count.clicks).map(link => ({
             url: link.link.to,
-            clicks: link.count.clicks
+            clicks: link.count.clicks,
+            edited: link.link.edited
         }));
     }, [topLinksResponse]);
 
@@ -75,6 +76,7 @@ export const usePostNewsletterStats = (postId: string) => {
         post,
         stats,
         averageStats,
-        topLinks
+        topLinks,
+        refetchTopLinks
     };
 };

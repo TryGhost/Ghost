@@ -143,7 +143,8 @@ describe('usePostNewsletterStats', () => {
 
         expect(result.current.topLinks).toEqual([{
             url: 'https://example.com/to',
-            clicks: 10
+            clicks: 10,
+            edited: false
         }]);
     });
 

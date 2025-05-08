@@ -1,4 +1,4 @@
-import {Meta, createQuery} from '../utils/api/hooks';
+import {Meta, createQuery, createMutation} from '../utils/api/hooks';
 
 export type LinkResponseType = {
     links: LinkItem[];
@@ -18,7 +18,45 @@ export type LinkItem = {
     }
 }
 
+export type BulkEditLinksResponseType = {
+    bulk: {
+        action: string;
+        meta: {
+            stats: {
+                successful: number;
+                unsuccessful: number;
+            }
+            errors: []
+            unsuccessfulData: []
+        }
+    }
+}
+
+export type useBulkEditLinksParameters = {
+    postId: string;
+    originalUrl: string;
+    editedUrl: string;
+}
+
 export const useTopLinks = createQuery<LinkResponseType>({
     dataType: 'LinkResponseType',
     path: '/links/'
+});
+
+export const useBulkEditLinks = createMutation<BulkEditLinksResponseType, useBulkEditLinksParameters>({
+    method: 'PUT',
+    path: () => '/links/bulk/',
+    body: ({editedUrl}) => ({
+        bulk: {
+            action: 'updateLink',
+            meta: {
+                link: {
+                    to: editedUrl
+                }
+            }
+        }
+    }),
+    searchParams: ({originalUrl, postId}) => ({
+        filter: `post_id:'${postId}'+to:'${originalUrl}'`
+    })
 });
