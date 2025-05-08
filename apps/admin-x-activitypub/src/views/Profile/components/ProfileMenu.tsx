@@ -17,7 +17,6 @@ import {
     PopoverTrigger,
     buttonVariants
 } from '@tryghost/shade';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 
 interface ProfileMenuProps {
     account?: Account,
@@ -40,7 +39,6 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
     isBlocked = false,
     isDomainBlocked = false
 }) => {
-    const {isEnabled} = useFeatureFlags();
     const [dialogType, setDialogType] = useState<'user' | 'domain' | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -77,7 +75,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    {isEnabled('block-domain') && dialogType !== 'domain' &&
+                    {dialogType !== 'domain' &&
                         <Button className='-ml-3 mr-auto hover:bg-transparent hover:opacity-80' variant='ghost' onClick={(e) => {
                             e.stopPropagation();
                             setDialogType('domain');
