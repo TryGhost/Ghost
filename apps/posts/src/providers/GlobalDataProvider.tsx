@@ -33,7 +33,7 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     // Initialize with all audiences selected (binary 111 = 7)
     const [audience, setAudience] = useState(7);
 
-    const requests = [config];
+    const requests = [config, settings];
     const error = requests.map(request => request.error).find(Boolean);
     const isLoading = requests.some(request => request.isLoading);
 
