@@ -1,10 +1,9 @@
 import GlobalDataProvider from '../../../src/providers/GlobalDataProvider';
-import React from 'react';
+import React, {act} from 'react';
 import {HttpResponse, http} from 'msw';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {renderHook, waitFor} from '@testing-library/react';
-import {act} from 'react';
 import {afterAll, afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
+import {renderHook, waitFor} from '@testing-library/react';
 import {setupServer} from 'msw/node';
 import {useEditLinks} from '../../../src/hooks/useEditLinks';
 
