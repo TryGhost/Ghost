@@ -1,3 +1,9 @@
 dist
 playwright-report
 test-results
+
+# Playwright
+node_modules/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
