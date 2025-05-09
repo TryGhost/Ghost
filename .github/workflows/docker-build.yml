@@ -45,10 +45,6 @@ jobs:
       # Run the unit tests using the local image
       - name: Run unit tests
         run: |
-          # Create .env file with required variables
-          echo "SSH_AUTH_SOCK=/tmp/ssh-agent.sock" >> .env
-
-
           # Run the tests with the pre-built image
           COMPOSE_PROFILES=ghost NX_DAEMON=false \
           # Run the tests with the pre-built image
