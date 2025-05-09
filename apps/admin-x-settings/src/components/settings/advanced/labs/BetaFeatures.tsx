@@ -37,6 +37,10 @@ const BetaFeatures: React.FC = () => {
                 detail={<>Enable support for CashApp, iDEAL, Bancontact, and others. <a className='text-green' href="https://ghost.org/help/payment-methods" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a></>}
                 title='Additional payment methods' />
             <LabItem
+                action={<FeatureToggle flag="themeTranslation" />}
+                detail={<>Enable theme translation using i18next instead of the old translation package.</>}
+                title='Updated theme Translation (beta)' />
+            <LabItem
                 action={<div className='flex flex-col items-end gap-1'>
                     <FileUpload
                         id='upload-redirects'
