@@ -4,11 +4,11 @@ import PostAnalyticsContent from './components/PostAnalyticsContent';
 import PostAnalyticsHeader from './components/PostAnalyticsHeader';
 import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber, formatPercentage} from '@tryghost/shade';
-import {Navigate} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth} from '@src/utils/chart-helpers';
-import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
+import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useRef, useState} from 'react';
-import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useParams} from '@tryghost/admin-x-framework';
+import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 
 interface postAnalyticsProps {}
 
@@ -17,16 +17,15 @@ const sanitizeUrl = (url: string): string => {
 };
 
 const Newsletter: React.FC<postAnalyticsProps> = () => {
+    const {postId} = useParams();
     const [editingUrl, setEditingUrl] = useState<string | null>(null);
     const [editedUrl, setEditedUrl] = useState('');
     const [originalUrl, setOriginalUrl] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const {settings} = useGlobalData();
-    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
-    // const {isLoading: isConfigLoading} = useGlobalData();
-    // const {postId} = useParams();
-    // const {stats: postReferrers, totals, isLoading} = usePostReferrers(postId || '');
+
+    const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId || '');
+    const {editLinks} = useEditLinks();
 
     const handleEdit = (url: string) => {
         setEditingUrl(url);
@@ -34,11 +33,19 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         setOriginalUrl(url);
     };
 
-    // TODO: API calls to update URL
     const handleUpdate = () => {
-        setEditingUrl(null);
-        setEditedUrl('');
-        setOriginalUrl('');
+        editLinks({
+            originalUrl,
+            editedUrl,
+            postId: postId || ''
+        }, {
+            onSuccess: () => {
+                setEditingUrl(null);
+                setEditedUrl('');
+                setOriginalUrl('');
+                refetchTopLinks();
+            }
+        });
     };
 
     useEffect(() => {
@@ -62,13 +69,13 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         }
     }, [editingUrl, originalUrl, editedUrl]);
 
-    const isLoading = false;
+    const isLoading = isNewsletterStatsLoading;
 
     const barDomain = [0, 1];
     const barTicks = [0, 0.25, 0.5, 0.75, 1];
     const chartData = [
-        {metric: 'Opened', current: 0.73, average: 0.64},
-        {metric: 'Clicked', current: 0.26, average: 0.08}
+        {metric: 'Opened', current: stats.openedRate, average: averageStats.openedRate},
+        {metric: 'Clicked', current: stats.clickedRate, average: averageStats.clickedRate}
     ];
     const chartConfig = {
         current: {
@@ -80,29 +87,6 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
             color: 'hsl(var(--chart-gray))'
         }
     } satisfies ChartConfig;
-
-    const mockLinks = [
-        {
-            url: 'https://google.com',
-            clicks: 199
-        },
-        {
-            url: 'https://ghost.org/docs/content-api/javascript/',
-            clicks: 74
-        },
-        {
-            url: 'https://bsky.app/',
-            clicks: 12
-        },
-        {
-            url: 'https://activitypub.ghost.org/you-think-youre-following-us-but-you-might-not-be/',
-            clicks: 1
-        }
-    ];
-
-    if (!labs.trafficAnalyticsAlpha) {
-        return <Navigate to='/web/' />;
-    }
 
     return (
         <PostAnalyticsLayout>
@@ -128,7 +112,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         </KpiCardIcon>
                                         <KpiCardContent>
                                             <KpiCardLabel>Sent</KpiCardLabel>
-                                            <KpiCardValue>{formatNumber(47968)}</KpiCardValue>
+                                            <KpiCardValue>{formatNumber(stats.sent)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
                                     <KpiCard className='border-none p-0'>
@@ -137,7 +121,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         </KpiCardIcon>
                                         <KpiCardContent>
                                             <KpiCardLabel>Opened</KpiCardLabel>
-                                            <KpiCardValue>{formatNumber(24865)}</KpiCardValue>
+                                            <KpiCardValue>{formatNumber(stats.opened)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
                                     <KpiCard className='border-none p-0'>
@@ -146,7 +130,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         </KpiCardIcon>
                                         <KpiCardContent>
                                             <KpiCardLabel>Clicked</KpiCardLabel>
-                                            <KpiCardValue>{formatNumber(1094)}</KpiCardValue>
+                                            <KpiCardValue>{formatNumber(stats.clicked)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
                                 </div>
@@ -214,7 +198,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             </CardHeader>
                             <CardContent>
                                 <Separator />
-                                {mockLinks.length > 0
+                                {topLinks.length > 0
                                     ?
                                     <Table>
                                         <TableHeader>
@@ -224,7 +208,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {mockLinks?.map(row => (
+                                            {topLinks?.map(row => (
                                                 <TableRow key={row.url}>
                                                     <TableCell>
                                                         <div className='flex items-center gap-2'>
@@ -261,6 +245,9 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                     >
                                                                         <span>{sanitizeUrl(row.url)}</span>
                                                                     </a>
+                                                                    {row.edited && (
+                                                                        <span className='text-xs text-gray-500'>(edited)</span>
+                                                                    )}
                                                                 </>
                                                             )}
                                                         </div>
