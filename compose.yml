@@ -48,6 +48,8 @@ x-service-template: &service-template
 services:
   ghost:
     <<: *service-template
+    # Use either the pre-built image (if available) or build from source
+    image: ghost-development
     build:
       context: .
       dockerfile: ./.docker/Dockerfile

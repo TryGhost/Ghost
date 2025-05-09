@@ -31,9 +31,24 @@ jobs:
           context: .
           file: .docker/Dockerfile
           push: false
-          tags: ghost:latest
+          # Use fixed tag that matches compose.yml
+          tags: ghost-development
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          # Important: load the image into Docker's image store
+          load: true
+
+      # Check that the image is available locally
+      - name: Check image
+        run: docker image ls
+
+      # Run the unit tests using the local image
+      - name: Run unit tests
+        run: |
+
+          # Run the tests with the pre-built image
+          COMPOSE_PROFILES=ghost NX_DAEMON=false \
+          docker compose run --rm --no-deps ghost yarn test:unit
 
       # Optional: Add notification step
       - name: Notify on completion
