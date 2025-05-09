@@ -13,7 +13,7 @@ module.exports = function setupParentApp() {
 
     parentApp.use(mw.requestId);
     parentApp.use(mw.logRequest);
-
+    parentApp.use(mw.localeFromUrl);
     // Register event emitter on req/res to trigger cache invalidation webhook event
     parentApp.use(mw.emitEvents);
 

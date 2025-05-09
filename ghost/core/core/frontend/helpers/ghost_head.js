@@ -83,7 +83,7 @@ function getMembersHelper(data, frontendKey, excludeList) {
     return membersHelper;
 }
 
-function getSearchHelper(frontendKey) {
+function getSearchHelper(frontendKey, locale) {
     const adminUrl = urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
     const {scriptUrl, stylesUrl} = getFrontendAppConfig('sodoSearch');
 
@@ -95,7 +95,7 @@ function getSearchHelper(frontendKey) {
         key: frontendKey,
         styles: stylesUrl,
         'sodo-search': adminUrl,
-        locale: labs.isSet('i18n') ? (settingsCache.get('locale') || 'en') : undefined
+        locale: labs.isSet('i18n') ? (locale || settingsCache.get('locale') || 'en') : undefined
     };
     const dataAttrs = getDataAttributes(attrs);
     let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
@@ -213,6 +213,9 @@ function getTinybirdTrackerScript(dataRoot) {
  */
 // We use the name ghost_head to match the helper for consistency:
 module.exports = async function ghost_head(options) { // eslint-disable-line camelcase
+    // Get the locale from the template context
+    const locale = options?.data?.root?.locale || settingsCache.get('locale');
+    console.log('=======locale in ghost_head', locale);
     debug('begin');
     // if server error page do nothing
     if (options.data.root.statusCode >= 500) {
@@ -308,7 +311,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         if (!_.includes(context, 'amp')) {
             head.push(getMembersHelper(options.data, frontendKey, excludeList)); // controlling for excludes within the function
             if (!excludeList.has('search')) {
-                head.push(getSearchHelper(frontendKey));
+                head.push(getSearchHelper(frontendKey, locale));
             }
             if (!excludeList.has('announcement')) {
                 head.push(getAnnouncementBarHelper(options.data));
