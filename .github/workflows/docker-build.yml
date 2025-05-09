@@ -1,0 +1,43 @@
+name: Daily Scheduled Workflow
+
+on:
+  schedule:
+    # Run at midnight UTC (00:00)
+    # Syntax: minute hour day month day-of-week
+    - cron: '0 0 * * *'
+  # Allow manual triggering
+  workflow_dispatch:
+  # Add PR trigger with label requirement
+  pull_request:
+    types: [labeled, opened, synchronize, reopened]
+
+jobs:
+  daily-job:
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name != 'pull_request') ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-docker-build'))
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: .docker/Dockerfile
+          push: false
+          tags: ghost:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Optional: Add notification step
+      - name: Notify on completion
+        if: always()
+        run: echo "Daily job completed with status ${{ job.status }}"
+        # You could replace this with sending a Slack notification,
+        # creating a GitHub issue, or any other notification method
