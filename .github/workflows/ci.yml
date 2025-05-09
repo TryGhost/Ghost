@@ -143,7 +143,7 @@ jobs:
         run: echo "hash=lockfile-${{ hashFiles('yarn.lock') }}" >> "$GITHUB_ENV"
 
       - name: Compute dependency cache key
-        run: echo "cachekey_base=dep-cache-${{ hashFiles('yarn.lock') }}-${{ env.HEAD_COMMIT }}" >> "$GITHUB_ENV"
+        run: echo "cachekey_base=dep-cache-${{ env.hash }}-${{ env.HEAD_COMMIT }}" >> "$GITHUB_ENV"
 
       - name: Set dependency cache key using default Node version
         run: echo "cachekey=${cachekey_base}-node-${{ env.NODE_VERSION }}" >> "$GITHUB_ENV"
