@@ -4,8 +4,6 @@ name: ghost
 x-service-template: &service-template
   volumes:
     - .:/home/ghost
-    - ${SSH_AUTH_SOCK:-}:/ssh-agent
-    - ${HOME:-}/.gitconfig:/root/.gitconfig:ro
     - node_modules_ghost_root:/home/ghost/node_modules:delegated
     - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
     - node_modules_ghost_api-framework:/home/ghost/ghost/api-framework/node_modules:delegated
