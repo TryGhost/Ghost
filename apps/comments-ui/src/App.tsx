@@ -163,29 +163,35 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
     /** Initialize comments setup once in viewport, fetch data and setup state*/
     const initSetup = async () => {
         try {
-            // Fetch data from API, links, preview, dev sources
-            const {member, labs} = await api.init();
-            const {comments, pagination, count} = await fetchComments();
-            const state = {
+            setState(prevState => ({
+                ...prevState,
+                commentsIsLoading: true
+            }));
+
+            const [{member, labs}, {comments, pagination, count}] = await Promise.all([
+                api.init(),
+                fetchComments()
+            ]);
+
+            setState(prevState => ({
+                ...prevState,
                 member,
                 initStatus: 'success',
                 comments,
                 pagination,
                 commentCount: count,
                 order: 'count__likes desc, created_at desc',
-                labs: labs,
+                labs,
                 commentsIsLoading: false,
                 commentIdToHighlight: null
-            };
-
-            setState(state);
+            }));
         } catch (e) {
-            /* eslint-disable no-console */
             console.error(`[Comments] Failed to initialize:`, e);
-            /* eslint-enable no-console */
-            setState({
-                initStatus: 'failed'
-            });
+            setState(prevState => ({
+                ...prevState,
+                initStatus: 'failed',
+                commentsIsLoading: false
+            }));
         }
     };
 
@@ -224,7 +230,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             <CommentsFrame ref={iframeRef}>
                 <ContentBox done={done} />
             </CommentsFrame>
-            {state.comments.length > 0 ? <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/> : null}
+            {done && <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/>}
             <PopupBox />
         </AppContext.Provider>
     );
