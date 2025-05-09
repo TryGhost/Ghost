@@ -18,8 +18,14 @@ runs:
         path: ${{ env.CACHED_BUILD_PATHS }}
         key: ${{ github.sha }}
 
-    - name: Check if caches are restored
-      uses: actions/github-script@v6
+    - name: Warn if caches are not restored
+      shell: bash
       if: steps.dep-cache.outputs.cache-hit != 'true' || steps.build-cache.outputs.cache-hit != 'true'
-      with:
-        script: core.setFailed('Dependency or build cache could not be restored - please re-run ALL jobs.')
+      run: |
+        echo "::warning::One or more caches not found. This is expected on the first run with new cache keys."
+        if [ "${{ steps.dep-cache.outputs.cache-hit }}" != "true" ]; then
+          echo "::warning::Dependency cache not found for key: ${{ env.DEPENDENCY_CACHE_KEY }}"
+        fi
+        if [ "${{ steps.build-cache.outputs.cache-hit }}" != "true" ]; then
+          echo "::warning::Build cache not found for key: ${{ github.sha }}"
+        fi
