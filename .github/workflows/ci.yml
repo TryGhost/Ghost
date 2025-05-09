@@ -143,15 +143,18 @@ jobs:
         run: echo "hash=lockfile-${{ hashFiles('yarn.lock') }}" >> "$GITHUB_ENV"
 
       - name: Compute dependency cache key
-        run: echo "cachekey=dep-cache-${{ hashFiles('yarn.lock') }}-${{ env.HEAD_COMMIT }}" >> "$GITHUB_ENV"
+        run: echo "cachekey_base=dep-cache-${{ hashFiles('yarn.lock') }}-${{ env.HEAD_COMMIT }}" >> "$GITHUB_ENV"
+
+      - name: Set dependency cache key using default Node version
+        run: echo "cachekey=${cachekey_base}-node-${{ env.NODE_VERSION }}" >> "$GITHUB_ENV"
 
       - name: Compute dependency cache restore key
         run: |
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "DEPENDENCY_CACHE_RESTORE_KEYS<<$EOF" >> "$GITHUB_ENV"
-          echo "dep-cache-${{ env.hash }}-${{ github.sha }}" >> "$GITHUB_ENV"
-          echo "dep-cache-${{ env.hash }}" >> "$GITHUB_ENV"
-          echo "dep-cache" >> "$GITHUB_ENV"
+          echo "dep-cache-${{ env.hash }}-${{ github.sha }}-node-${{ env.NODE_VERSION }}" >> "$GITHUB_ENV"
+          echo "dep-cache-${{ env.hash }}-node-${{ env.NODE_VERSION }}" >> "$GITHUB_ENV"
+          echo "dep-cache-node-${{ env.NODE_VERSION }}" >> "$GITHUB_ENV"
           echo "$EOF" >> "$GITHUB_ENV"
 
       - name: Nx cache
@@ -186,7 +189,6 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: yarn
 
       - name: Install dependencies
         run: yarn install --prefer-offline --frozen-lockfile
@@ -213,6 +215,7 @@ jobs:
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
+      dependency_cache_key_base: ${{ env.cachekey_base }}
 
   job_lint:
     runs-on: ubuntu-latest
@@ -472,7 +475,7 @@ jobs:
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key_base }}-node-${{ matrix.node }}
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@v1.2
@@ -548,7 +551,7 @@ jobs:
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key_base }}-node-${{ matrix.node }}
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@v1.2
@@ -677,7 +680,7 @@ jobs:
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key_base }}-node-${{ matrix.node }}
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
@@ -1147,7 +1150,6 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           flags: admin-tests
-          move_coverage_to_trash: true
 
       - name: Restore E2E coverage
         if: contains(needs.job_database-tests.result, 'success')
@@ -1165,7 +1167,6 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           flags: e2e-tests
-          move_coverage_to_trash: true
 
   job_required_tests:
     name: All required tests passed or skipped
