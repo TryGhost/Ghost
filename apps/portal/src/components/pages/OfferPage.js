@@ -4,7 +4,7 @@ import AppContext from '../../AppContext';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import CloseButton from '../common/CloseButton';
 import InputForm from '../common/InputForm';
-import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, isSameCurrency, formatNumber, hasMultipleNewsletters} from '../../utils/helpers';
+import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, isSameCurrency, formatMonetaryAmount, hasMultipleNewsletters} from '../../utils/helpers';
 import {ValidateInputForm} from '../../utils/form';
 import {interceptAnchorClicks} from '../../utils/links';
 import NewsletterSelectionPage from './NewsletterSelectionPage';
@@ -586,7 +586,7 @@ export default class OfferPage extends React.Component {
                 <div className="gh-portal-product-card-pricecontainer offer-type-trial">
                     <div className="gh-portal-product-price">
                         <span className={'currency-sign ' + currencyClass}>{getCurrencySymbol(price.currency)}</span>
-                        <span className="amount">{formatNumber(this.renderRoundedPrice(updatedPrice))}</span>
+                        <span className="amount">{formatMonetaryAmount(this.updatedPrice)}</span>
                     </div>
                 </div>
             );
@@ -595,7 +595,7 @@ export default class OfferPage extends React.Component {
             <div className="gh-portal-product-card-pricecontainer">
                 <div className="gh-portal-product-price">
                     <span className={'currency-sign ' + currencyClass}>{getCurrencySymbol(price.currency)}</span>
-                    <span className="amount">{formatNumber(this.renderRoundedPrice(updatedPrice))}</span>
+                    <span className="amount">{formatMonetaryAmount(this.renderRoundedPrice(updatedPrice))}</span>
                 </div>
             </div>
         );
@@ -606,7 +606,7 @@ export default class OfferPage extends React.Component {
             return null;
         }
         return (
-            <div className="gh-portal-offer-oldprice">{getCurrencySymbol(price.currency)} {formatNumber(price.amount / 100)}</div>
+            <div className="gh-portal-offer-oldprice">{getCurrencySymbol(price.currency)} {formatMonetaryAmount(price.amount / 100)}</div>
         );
     }
 
