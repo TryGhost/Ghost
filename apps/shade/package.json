@@ -49,7 +49,7 @@
         "glob": "11.0.0",
         "@typescript-eslint/parser": "5.59.11",
         "@storybook/manager-api": "8.6.12",
-        "@storybook/theming": "8.6.12"  
+        "@storybook/theming": "8.6.12"
     },
     "dependencies": {
         "@ebay/nice-modal-react": "1.2.13",
