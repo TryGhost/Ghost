@@ -39,6 +39,7 @@ const SUPPORTED_LOCALES = [
     'ne', // Nepali
     'nl', // Dutch
     'nn', // Norwegian Nynorsk
+    'pa', // Punjabi (Gurmukhi, India)
     'pl', // Polish
     'pt', // Portuguese
     'pt-BR', // Portuguese (Brazil)
