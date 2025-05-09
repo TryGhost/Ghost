@@ -1332,7 +1332,13 @@ jobs:
         if: steps.version_check.outputs.version_changed == 'true'
         run: echo "${{ steps.cdn_paths.outputs.cdn_paths }}"
 
-      - name: Purge jsdelivr cache
+      - name: Wait before purging jsDelivr cache
+        if: steps.version_check.outputs.version_changed == 'true' && matrix.package_name == '@tryghost/admin-x-activitypub'
+        run: |
+          echo "Purging jsDelivr cache immediately after publishing a new version on NPM is unreliable. Waiting 1 minute before purging cache..."
+          sleep 60
+
+      - name: Purge jsDelivr cache
         if: steps.version_check.outputs.version_changed == 'true'
         uses: gacts/purge-jsdelivr-cache@v1
         with:
