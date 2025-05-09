@@ -1,4 +1,3 @@
-const should = require('should');
 const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
 const helpers = require('../../../../core/frontend/services/helpers');
 const social_url = require('../../../../core/frontend/helpers/social_url');
