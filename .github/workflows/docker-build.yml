@@ -1,4 +1,4 @@
-name: Daily Scheduled Workflow
+name: Docker Build
 
 on:
   schedule:
@@ -12,7 +12,7 @@ on:
     types: [labeled, opened, synchronize, reopened]
 
 jobs:
-  daily-job:
+  build:
     runs-on: ubuntu-latest
     if: |
       (github.event_name != 'pull_request') ||
