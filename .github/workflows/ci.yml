@@ -152,8 +152,8 @@ jobs:
         run: |
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "DEPENDENCY_CACHE_RESTORE_KEYS<<$EOF" >> "$GITHUB_ENV"
-          echo "dep-cache-${{ env.hash }}-${{ github.sha }}-node-${{ env.NODE_VERSION }}" >> "$GITHUB_ENV"
-          echo "dep-cache-${{ env.hash }}-node-${{ env.NODE_VERSION }}" >> "$GITHUB_ENV"
+          echo "${DEPENDENCY_CACHE_KEY}" >> "$GITHUB_ENV"
+          echo "${cachekey_base}-node-${{ env.NODE_VERSION }}" >> "$GITHUB_ENV"
           echo "dep-cache-node-${{ env.NODE_VERSION }}" >> "$GITHUB_ENV"
           echo "$EOF" >> "$GITHUB_ENV"
 
