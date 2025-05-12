@@ -139,12 +139,13 @@ class PostsStatsService {
             const paidReferrersCTE = this._buildPaidReferrersSubquery(postId, options);
             const mrrReferrersCTE = this._buildMrrReferrersSubquery(postId, options);
 
+            // Base query to get all referrer sources and URLs for the post
             const baseReferrersQuery = this.knex('members_created_events as mce')
-                .select('mce.referrer_source as source')
+                .select('mce.referrer_source as source', 'mce.referrer_url')
                 .where('mce.attribution_id', postId)
                 .where('mce.attribution_type', 'post')
                 .union((qb) => {
-                    qb.select('msce.referrer_source as source')
+                    qb.select('msce.referrer_source as source', 'msce.referrer_url')
                         .from('members_subscription_created_events as msce')
                         .where('msce.attribution_id', postId)
                         .where('msce.attribution_type', 'post');
@@ -157,6 +158,7 @@ class PostsStatsService {
                 .with('all_referrers', baseReferrersQuery)
                 .select(
                     'ar.source',
+                    'ar.referrer_url',
                     this.knex.raw('COALESCE(fr.free_members, 0) as free_members'),
                     this.knex.raw('COALESCE(pr.paid_members, 0) as paid_members'),
                     this.knex.raw('COALESCE(mr.mrr, 0) as mrr')
