@@ -3,7 +3,7 @@ import KpiCard, {KpiCardContent, KpiCardIcon, KpiCardLabel, KpiCardValue} from '
 import PostAnalyticsContent from './components/PostAnalyticsContent';
 import PostAnalyticsHeader from './components/PostAnalyticsHeader';
 import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, ViewHeader, formatNumber, formatPercentage} from '@tryghost/shade';
 import {calculateYAxisWidth} from '@src/utils/chart-helpers';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useRef, useState} from 'react';
@@ -259,6 +259,16 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                 </TableRow>
                                             ))}
                                         </TableBody>
+                                        <TableFooter className='bg-transparent'>
+                                            <TableRow>
+                                                <TableCell className='group-hover:bg-transparent' colSpan={2}>
+                                                    <div className='ml-2 mt-1 flex items-center gap-2 text-green'>
+                                                        <LucideIcon.ArrowUp size={20} strokeWidth={1.5} />
+                                                        Sent a broken link? You can update it!
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableFooter>
                                     </Table>
                                     :
                                     <div className='py-20 text-center text-sm text-gray-700'>
