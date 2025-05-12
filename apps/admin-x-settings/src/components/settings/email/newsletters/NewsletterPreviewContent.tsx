@@ -36,10 +36,13 @@ const NewsletterPreviewContent: React.FC<{
     showBadge?: boolean;
 
     backgroundColor?: string;
+    headerColor?: string;
     borderColor?: string;
     accentColor?: string;
     textColor?: string;
     secondaryTextColor?: string;
+    headerTextColor?: string;
+    secondaryHeaderTextColor?: string;
     titleColor?: string;
     dividerColor?: string;
     buttonColor?: string;
@@ -76,9 +79,12 @@ const NewsletterPreviewContent: React.FC<{
     showBadge,
 
     backgroundColor,
+    headerColor,
     accentColor,
     textColor,
     secondaryTextColor,
+    headerTextColor,
+    secondaryHeaderTextColor,
     titleColor,
     dividerColor,
     buttonColor,
@@ -148,10 +154,10 @@ const NewsletterPreviewContent: React.FC<{
 
                     {/* Email content */}
                     <div className="overflow-y-auto p-4 text-sm" style={{backgroundColor}}>
-                        <div className="border border-transparent px-[5.4rem]">
+                        <div className="px-[5.4rem]" style={{backgroundColor: headerColor}}>
                             {headerImage && (
                                 <div>
-                                    <img alt="" className="mb-4 mt-6 block" src={headerImage} />
+                                    <img alt="" className="mb-4 block" src={headerImage} />
                                 </div>
                             )}
                             {showHeader && (
@@ -176,7 +182,7 @@ const NewsletterPreviewContent: React.FC<{
                                                 showExcerpt ? 'mb-2' : 'mb-8'
                                             )} style={{color: titleColor}}>Delivery Apps Are Changing Your Neighbourhood</h2>
                                             {showExcerpt && (
-                                                <p className={excerptClasses} style={{color: textColor}}>Delivery apps are thriving—local restaurants and workers are paying the price.</p>
+                                                <p className={excerptClasses} style={{color: headerTextColor}}>Delivery apps are thriving—local restaurants and workers are paying the price.</p>
                                             )}
                                         </>
                                     ) : (
@@ -198,11 +204,11 @@ const NewsletterPreviewContent: React.FC<{
                                         'flex w-full justify-between text-center text-md leading-none text-grey-700',
                                         titleAlignment === 'center' ? 'flex-col gap-1' : 'flex-row'
                                     )}>
-                                        <p className="pb-1 text-[1.3rem]" style={{color: secondaryTextColor}}>
+                                        <p className="pb-1 text-[1.3rem]" style={{color: hasEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}>
                                             By {authorPlaceholder}
                                             <span className="before:pl-0.5 before:pr-1 before:content-['•']">{currentDate}</span>
                                         </p>
-                                        <p className="pb-1 text-[1.3rem] underline" style={{color: secondaryTextColor}}><span>View in browser</span></p>
+                                        <p className="pb-1 text-[1.3rem] underline" style={{color: hasEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}><span>View in browser</span></p>
                                     </div>
                                 </div>
                             )}
@@ -211,19 +217,22 @@ const NewsletterPreviewContent: React.FC<{
                             {showFeatureImage && (
                                 <>
                                     <div className={clsx(
-                                        'h-[300px] w-full max-w-[600px] bg-cover bg-no-repeat',
-                                        showPostTitleSection ? '' : 'pt-6'
+                                        'w-full max-w-[600px] bg-cover bg-no-repeat',
+                                        showPostTitleSection ? '' : 'pt-6',
+                                        hasEmailCustomization ? 'h-[unset]' : 'h-[300px]'
                                     )}>
                                         <img alt="Feature" className={clsx(
                                             'min-h-full min-w-full shrink-0',
                                             imageCorners === 'square' && 'rounded-none',
                                             imageCorners === 'squircle' && 'rounded-lg'
-                                        )} src={CoverImage} />
+                                        )} src={hasEmailCustomization ? 'https://images.unsplash.com/photo-1526367790999-0150786686a2?q=80&w=2942&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' : CoverImage} />
                                     </div>
-                                    <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem] text-grey-700" style={{color: secondaryTextColor}}>Feature image caption</div>
+                                    <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem] text-grey-700" style={{color: hasEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}>Feature image caption</div>
                                 </>
                             )}
+                        </div>
 
+                        <div className={clsx('px-[5.4rem]', headerColor !== 'transparent' && 'pt-10')}>
                             <div className={clsx(
                                 'max-w-[600px] border-b border-grey-200 pb-5 leading-[27.2px] text-black',
                                 dividerStyle === 'dashed' && 'border-dashed',
