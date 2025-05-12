@@ -917,13 +917,13 @@ module.exports = class MemberRepository {
             id: data.id
         }, {...options, forUpdate: true});
 
-        const customer = await memberModel.related('stripeCustomers').query({
+        const memberStripeCustomerModel = await memberModel.related('stripeCustomers').query({
             where: {
                 customer_id: data.subscription.customer
             }
         }).fetchOne(options);
 
-        if (!customer) {
+        if (!memberStripeCustomerModel) {
             // Maybe just link the customer?
             throw new errors.NotFoundError({message: tpl(messages.subscriptionNotFound)});
         }
