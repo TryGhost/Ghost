@@ -937,7 +937,7 @@ module.exports = class MemberRepository {
         } else {
             paymentMethodId = stripeSubscriptionData.default_payment_method.id;
         }
-        const paymentMethod = paymentMethodId ? await this._stripeAPIService.getCardPaymentMethod(paymentMethodId) : null;
+        const stripePaymentMethodData = paymentMethodId ? await this._stripeAPIService.getCardPaymentMethod(paymentMethodId) : null;
 
         const model = await this.getSubscriptionByStripeID(stripeSubscriptionData.id, {...options, forUpdate: true});
 
@@ -1006,7 +1006,7 @@ module.exports = class MemberRepository {
             cancellation_reason: this.getCancellationReason(stripeSubscriptionData),
             current_period_end: new Date(stripeSubscriptionData.current_period_end * 1000),
             start_date: new Date(stripeSubscriptionData.start_date * 1000),
-            default_payment_card_last4: paymentMethod && paymentMethod.card && paymentMethod.card.last4 || null,
+            default_payment_card_last4: stripePaymentMethodData && stripePaymentMethodData.card && stripePaymentMethodData.card.last4 || null,
             stripe_price_id: subscriptionPriceData.id,
             plan_id: subscriptionPriceData.id,
             // trial start and end are returned as Stripe timestamps and need coversion
