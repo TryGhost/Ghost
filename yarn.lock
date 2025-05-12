@@ -14875,10 +14875,10 @@ ember-ajax@5.1.2:
     ember-cli-babel "^7.5.0"
     najax "^1.0.7"
 
-ember-assign-helper@0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/ember-assign-helper/-/ember-assign-helper-0.5.0.tgz#73de4e2a96922162db78ab600038010d04773a89"
-  integrity sha512-swH7FqmqB5iSeoKlU6X41iqw5HQ+EdBDyFDXmwytTyUd5GRvfGfZUn2SMUUGdyvo5FxXJWqMJ0rBT//EcGC0+Q==
+ember-assign-helper@0.5.1:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/ember-assign-helper/-/ember-assign-helper-0.5.1.tgz#5c0dbffe30090df23ad7d6a7595b015beff439a4"
+  integrity sha512-dXHbwlBTJWVjG7k4dhVrT3Gh4nQt6rC2LjyltuPztIhQ+YcPYHMqAPJRJYLGZu16aPSJbaGF8K+u51i7CLzqlQ==
   dependencies:
     "@embroider/addon-shim" "^1.8.7"
 

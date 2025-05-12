@@ -71,7 +71,7 @@
     "cssnano": "4.1.10",
     "element-resize-detector": "1.2.4",
     "ember-ajax": "5.1.2",
-    "ember-assign-helper": "0.5.0",
+    "ember-assign-helper": "0.5.1",
     "ember-auto-import": "2.10.0",
     "ember-classic-decorator": "3.0.1",
     "ember-cli": "3.24.0",
