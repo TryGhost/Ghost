@@ -1207,7 +1207,7 @@ module.exports = class MemberRepository {
             }
 
             if (getStatus(subscriptionModel) === 'active') {
-                const activatedEvent = SubscriptionActivatedEvent.create({
+                const subscriptionActivatedEvent = SubscriptionActivatedEvent.create({
                     source,
                     tierId: ghostProduct?.get('id'),
                     memberId: memberModel.id,
@@ -1216,7 +1216,7 @@ module.exports = class MemberRepository {
                     attribution: attribution,
                     batchId: options.batch_id
                 });
-                this.dispatchEvent(activatedEvent, options);
+                this.dispatchEvent(subscriptionActivatedEvent, options);
             }
         }
 
