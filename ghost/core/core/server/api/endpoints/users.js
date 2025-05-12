@@ -134,17 +134,15 @@ const controller = {
             }
         },
         permissions: true,
-        query(frame) {
-            return models.User.findOne(frame.data, frame.options)
-                .then((model) => {
-                    if (!model) {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: tpl(messages.userNotFound)
-                        }));
-                    }
-
-                    return model;
+        async query(frame) {
+            const model = await models.User.findOne(frame.data, frame.options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.userNotFound)
                 });
+            }
+
+            return model;
         }
     },
 
@@ -169,21 +167,19 @@ const controller = {
         permissions: {
             unsafeAttrs: UNSAFE_ATTRS
         },
-        query(frame) {
-            return models.User.edit(frame.data.users[0], frame.options)
-                .then((model) => {
-                    if (!model) {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: tpl(messages.userNotFound)
-                        }));
-                    }
-
-                    if (shouldInvalidateCacheAfterChange(model)) {
-                        frame.setHeader('X-Cache-Invalidate', '/*');
-                    }
-
-                    return model;
+        async query(frame) {
+            const model = await models.User.edit(frame.data.users[0], frame.options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.userNotFound)
                 });
+            }
+
+            if (shouldInvalidateCacheAfterChange(model)) {
+                frame.setHeader('X-Cache-Invalidate', '/*');
+            }
+
+            return model;
         }
     },
 
@@ -203,11 +199,13 @@ const controller = {
         },
         permissions: true,
         async query(frame) {
-            return userService.destroyUser(frame.options).catch((err) => {
-                return Promise.reject(new errors.NoPermissionError({
+            try {
+                return userService.destroyUser(frame.options);
+            } catch (err) {
+                throw new errors.NoPermissionError({
                     err: err
-                }));
-            });
+                });
+            }
         }
     },
 
@@ -240,11 +238,9 @@ const controller = {
         headers: {
             cacheInvalidate: false
         },
-        permissions(frame) {
-            return models.Role.findOne({name: 'Owner'})
-                .then((ownerRole) => {
-                    return permissionsService.canThis(frame.options.context).assign.role(ownerRole);
-                });
+        async permissions(frame) {
+            const ownerRole = await models.Role.findOne({name: 'Owner'});
+            return permissionsService.canThis(frame.options.context).assign.role(ownerRole);
         },
         query(frame) {
             return models.User.transferOwnership(frame.data.owner[0], frame.options);
@@ -287,11 +283,10 @@ const controller = {
             }
         },
         permissions: permissionOnlySelf,
-        query(frame) {
+        async query(frame) {
             const targetId = getTargetId(frame);
-            return fetchOrCreatePersonalToken(targetId).then((model) => {
-                return models.ApiKey.refreshSecret(model.toJSON(), Object.assign({}, {id: model.id}));
-            });
+            const model = await fetchOrCreatePersonalToken(targetId);
+            return models.ApiKey.refreshSecret(model.toJSON(), Object.assign({}, {id: model.id}));
         }
     }
 };
