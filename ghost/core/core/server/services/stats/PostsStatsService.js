@@ -151,6 +151,7 @@ class PostsStatsService {
                         .where('msce.attribution_type', 'post');
                 });
 
+            // Use knex.raw for GROUP BY to accommodate SQLite in tests
             let query = this.knex
                 .with('free_referrers', freeReferrersCTE)
                 .with('paid_referrers', paidReferrersCTE)
@@ -167,7 +168,8 @@ class PostsStatsService {
                 .leftJoin('free_referrers as fr', 'ar.source', 'fr.source')
                 .leftJoin('paid_referrers as pr', 'ar.source', 'pr.source')
                 .leftJoin('mrr_referrers as mr', 'ar.source', 'mr.source')
-                .whereNotNull('ar.source');
+                .whereNotNull('ar.source')
+                .groupBy('ar.source');
 
             const results = await query
                 .orderBy(orderField, orderDirection)
