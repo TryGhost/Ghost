@@ -367,7 +367,7 @@ const Sidebar: React.FC<{
                             label={
                                 <div className='flex flex-col gap-0.5'>
                                     <span className='text-sm md:text-base'>Promote independent publishing</span>
-                                    <span className='text-[11px] leading-tight text-grey-700 md:text-xs md:leading-tight'>Show you&apos;re a part of the indie publishing movement with a small badge in the footer</span>
+                                    <span className='text-grey-700 text-[11px] leading-tight md:text-xs md:leading-tight'>Show you&apos;re a part of the indie publishing movement with a small badge in the footer</span>
                                 </div>
                             }
                             labelStyle='value'
@@ -418,6 +418,19 @@ const Sidebar: React.FC<{
                         title='Background color'
                         value={newsletter.background_color || 'light'}
                         onChange={color => updateNewsletter({background_color: color!})}
+                    />
+                    <ColorPickerField
+                        direction='rtl'
+                        swatches={[
+                            {
+                                value: 'transparent',
+                                title: 'Transparent',
+                                hex: '#00000000'
+                            }
+                        ]}
+                        title='Header background color'
+                        value={newsletter.header_color || 'transparent'}
+                        onChange={color => updateNewsletter({header_color: color!})}
                     />
                     <ColorPickerField
                         direction='rtl'
