@@ -178,12 +178,14 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             barSize={48}
                                             dataKey="current"
                                             fill="var(--color-current)"
+                                            minPointSize={2}
                                             radius={0}
                                         />
                                         <Recharts.Bar
                                             barSize={48}
                                             dataKey="average"
                                             fill="var(--color-average)"
+                                            minPointSize={2}
                                             radius={0}
                                         />
                                         <ChartLegend content={<ChartLegendContent />} />
