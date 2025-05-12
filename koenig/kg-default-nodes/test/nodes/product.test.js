@@ -435,6 +435,43 @@ describe('ProductNode', function () {
                 <table cellspacing="0" cellpadding="0" border="0" style="width:100%; padding:20px; border:1px solid #E9E9E9; border-radius: 5px; margin: 0 0 1.5em; width: 100%;"><tbody><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 700;">Product title!</h4></td></tr><tr><td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><div style="padding-top: 8px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">This product is ok</div></td></tr></tbody></table>
             `);
         }));
+
+        function renderButton(design) {
+            const payload = {
+                productButton: 'Click me',
+                productButtonEnabled: true,
+                productDescription: 'This product is ok',
+                productRatingEnabled: false,
+                productTitle: 'Product title!',
+                productUrl: 'https://example.com/product/ok'
+            };
+
+            const options = {
+                target: 'email',
+                design
+            };
+
+            const productNode = $createProductNode(payload);
+            const {element} = productNode.exportDOM({...exportOptions, ...options});
+
+            return element.outerHTML;
+        }
+
+        it('handles no design option', editorTest(function () {
+            renderButton().should.containEql('border-radius: 5px;');
+        }));
+
+        it('renders rounded button border radius', editorTest(function () {
+            renderButton({buttonCorners: 'rounded'}).should.containEql('border-radius: 6px;');
+        }));
+
+        it('renders square button border radius', editorTest(function () {
+            renderButton({buttonCorners: 'square'}).should.containEql('border-radius: 0px;');
+        }));
+
+        it('renders pill button border radius', editorTest(function () {
+            renderButton({buttonCorners: 'pill'}).should.containEql('border-radius: 9999px;');
+        }));
     });
 
     describe('importDOM', function () {
