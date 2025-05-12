@@ -147,7 +147,7 @@
     "semver": "7.7.2",
     "sentry-testkit": "5.0.10",
     "sinon-chai": "4.0.0",
-    "testem": "3.15.2",
+    "testem": "3.16.0",
     "tracked-built-ins": "3.4.0",
     "util": "0.12.5",
     "validator": "7.2.0",
