@@ -52,6 +52,8 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         if (validHex.test(value)) {
             return value;
         }
+
+        return 'transparent';
     };
 
     const borderColor = () => {
@@ -146,8 +148,10 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
     };
 
     const textColor = textColorForBackgroundColor(backgroundColor()).hex();
-
     const secondaryTextColor = textColorForBackgroundColor(backgroundColor()).alpha(0.5).toString();
+
+    const headerTextColor = headerColor() === 'transparent' ? textColor : textColorForBackgroundColor(headerColor()).hex();
+    const secondaryHeaderTextColor = headerColor() === 'transparent' ? secondaryTextColor : textColorForBackgroundColor(headerColor()).alpha(0.5).toString();
 
     const colors = hasEmailCustomization ? {
         backgroundColor: backgroundColor(),
@@ -159,7 +163,9 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         linkColor: linkColor() || undefined,
         dividerColor: dividerColor() || undefined,
         textColor,
-        secondaryTextColor
+        secondaryTextColor,
+        headerTextColor,
+        secondaryHeaderTextColor
     } : {};
 
     return <NewsletterPreviewContent

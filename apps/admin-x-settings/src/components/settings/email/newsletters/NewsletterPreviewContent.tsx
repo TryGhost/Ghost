@@ -41,6 +41,8 @@ const NewsletterPreviewContent: React.FC<{
     accentColor?: string;
     textColor?: string;
     secondaryTextColor?: string;
+    headerTextColor?: string;
+    secondaryHeaderTextColor?: string;
     titleColor?: string;
     dividerColor?: string;
     buttonColor?: string;
@@ -81,6 +83,8 @@ const NewsletterPreviewContent: React.FC<{
     accentColor,
     textColor,
     secondaryTextColor,
+    headerTextColor,
+    secondaryHeaderTextColor,
     titleColor,
     dividerColor,
     buttonColor,
@@ -110,14 +114,14 @@ const NewsletterPreviewContent: React.FC<{
     let emailHeader;
 
     if (isManagedEmail(config)) {
-        emailHeader = <><p className="leading-normal"><span className="text-grey-900 font-semibold">From: </span><span>{senderName} ({senderEmail})</span></p>
+        emailHeader = <><p className="leading-normal"><span className="font-semibold text-grey-900">From: </span><span>{senderName} ({senderEmail})</span></p>
             <p className="leading-normal">
-                <span className="text-grey-900 font-semibold">Reply-to: </span>{senderReplyTo ? senderReplyTo : senderEmail}
+                <span className="font-semibold text-grey-900">Reply-to: </span>{senderReplyTo ? senderReplyTo : senderEmail}
             </p>
         </>;
     } else {
-        emailHeader = <><p className="leading-normal"><span className="text-grey-900 font-semibold">{senderName}</span><span> {senderEmail}</span></p>
-            <p className="leading-normal"><span className="text-grey-900 font-semibold">To:</span> Jamie Larson jamie@example.com</p></>;
+        emailHeader = <><p className="leading-normal"><span className="font-semibold text-grey-900">{senderName}</span><span> {senderEmail}</span></p>
+            <p className="leading-normal"><span className="font-semibold text-grey-900">To:</span> Jamie Larson jamie@example.com</p></>;
     }
 
     let excerptClasses = 'mb-5 text-pretty leading-[1.7] text-black';
@@ -144,7 +148,7 @@ const NewsletterPreviewContent: React.FC<{
             <div className="absolute inset-0 m-5 flex items-center justify-center">
                 <div className="mx-auto my-0 flex max-h-full w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-sm">
                     {/* Email header */}
-                    <div className="flex-column border-grey-200 text-grey-700 flex min-h-[77px] justify-center rounded-t-sm border-b bg-white px-6 text-sm">
+                    <div className="flex-column flex min-h-[77px] justify-center rounded-t-sm border-b border-grey-200 bg-white px-6 text-sm text-grey-700">
                         {emailHeader}
                     </div>
 
@@ -153,14 +157,14 @@ const NewsletterPreviewContent: React.FC<{
                         <div className="px-[5.4rem]" style={{backgroundColor: headerColor}}>
                             {headerImage && (
                                 <div>
-                                    <img alt="" className="mb-4 mt-6 block" src={headerImage} />
+                                    <img alt="" className="mb-4 block" src={headerImage} />
                                 </div>
                             )}
                             {showHeader && (
                                 <div className="py-3">
                                     {headerIcon && <img alt="" className="mx-auto mb-2 size-10" role="presentation" src={headerIcon} />}
-                                    {headerTitle && <h4 className="text-grey-900 mb-1 text-center text-[1.6rem] font-bold uppercase leading-tight tracking-tight" style={{color: textColor}}>{headerTitle}</h4>}
-                                    {headerSubtitle && <h5 className="text-grey-700 mb-1 text-center text-[1.3rem] font-normal" style={{color: secondaryTextColor}}>{headerSubtitle}</h5>}
+                                    {headerTitle && <h4 className="mb-1 text-center text-[1.6rem] font-bold uppercase leading-tight tracking-tight text-grey-900" style={{color: textColor}}>{headerTitle}</h4>}
+                                    {headerSubtitle && <h5 className="mb-1 text-center text-[1.3rem] font-normal text-grey-700" style={{color: secondaryTextColor}}>{headerSubtitle}</h5>}
                                 </div>
                             )}
                             {showPostTitleSection && (
@@ -168,7 +172,7 @@ const NewsletterPreviewContent: React.FC<{
                                     {hasEmailCustomization ? (
                                         <>
                                             <h2 className={clsx(
-                                                'leading-supertight text-4xl font-bold text-black',
+                                                'text-4xl font-bold leading-supertight text-black',
                                                 titleFontCategory === 'serif' && 'font-serif',
                                                 titleFontWeight === 'normal' && 'font-normal',
                                                 titleFontWeight === 'medium' && 'font-medium',
@@ -178,13 +182,13 @@ const NewsletterPreviewContent: React.FC<{
                                                 showExcerpt ? 'mb-2' : 'mb-8'
                                             )} style={{color: titleColor}}>Delivery Apps Are Changing Your Neighbourhood</h2>
                                             {showExcerpt && (
-                                                <p className={excerptClasses} style={{color: textColor}}>Delivery apps are thriving—local restaurants and workers are paying the price.</p>
+                                                <p className={excerptClasses} style={{color: headerTextColor}}>Delivery apps are thriving—local restaurants and workers are paying the price.</p>
                                             )}
                                         </>
                                     ) : (
                                         <>
                                             <h2 className={clsx(
-                                                'leading-supertight text-4xl font-bold text-black',
+                                                'text-4xl font-bold leading-supertight text-black',
                                                 titleFontCategory === 'serif' && 'font-serif',
                                                 titleAlignment === 'center' ? 'text-center' : 'text-left',
                                                 showExcerpt ? 'mb-2' : 'mb-8'
@@ -197,14 +201,14 @@ const NewsletterPreviewContent: React.FC<{
                                         </>
                                     )}
                                     <div className={clsx(
-                                        'text-md text-grey-700 flex w-full justify-between text-center leading-none',
+                                        'flex w-full justify-between text-center text-md leading-none text-grey-700',
                                         titleAlignment === 'center' ? 'flex-col gap-1' : 'flex-row'
                                     )}>
-                                        <p className="pb-1 text-[1.3rem]" style={{color: secondaryTextColor}}>
+                                        <p className="pb-1 text-[1.3rem]" style={{color: hasEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}>
                                             By {authorPlaceholder}
                                             <span className="before:pl-0.5 before:pr-1 before:content-['•']">{currentDate}</span>
                                         </p>
-                                        <p className="pb-1 text-[1.3rem] underline" style={{color: secondaryTextColor}}><span>View in browser</span></p>
+                                        <p className="pb-1 text-[1.3rem] underline" style={{color: hasEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}><span>View in browser</span></p>
                                     </div>
                                 </div>
                             )}
@@ -223,14 +227,14 @@ const NewsletterPreviewContent: React.FC<{
                                             imageCorners === 'squircle' && 'rounded-lg'
                                         )} src={hasEmailCustomization ? 'https://images.unsplash.com/photo-1526367790999-0150786686a2?q=80&w=2942&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' : CoverImage} />
                                     </div>
-                                    <div className="text-grey-700 mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem]" style={{color: secondaryTextColor}}>Feature image caption</div>
+                                    <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem] text-grey-700" style={{color: hasEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}>Feature image caption</div>
                                 </>
                             )}
                         </div>
 
                         <div className={clsx('px-[5.4rem]', headerColor !== 'transparent' && 'pt-10')}>
                             <div className={clsx(
-                                'border-grey-200 max-w-[600px] border-b pb-5 leading-[27.2px] text-black',
+                                'max-w-[600px] border-b border-grey-200 pb-5 leading-[27.2px] text-black',
                                 dividerStyle === 'dashed' && 'border-dashed',
                                 dividerStyle === 'dotted' && 'border-b-2 border-dotted',
                                 bodyFontCategory === 'serif' ? 'font-serif text-[1.8rem]' : 'text-[1.7rem] tracking-tight',
@@ -271,7 +275,7 @@ const NewsletterPreviewContent: React.FC<{
                                         <p className="mb-6" style={{color: textColor}}>Yet, the convenience factor keeps us coming back. The ease of one-click ordering means fewer people are dining in, changing the social fabric of our communities. Restaurants designed for shared experiences are evolving into ghost kitchens, optimized for delivery rather than connection.</p>
                                         <h3
                                             className={clsx(
-                                                'leading-supertight mb-[13px] mt-[39px] text-[2.6rem]',
+                                                'mb-[13px] mt-[39px] text-[2.6rem] leading-supertight',
                                                 titleFontCategory === 'serif' && 'font-serif',
                                                 titleFontCategory === 'sans_serif' && 'font-sans',
                                                 titleFontWeight === 'normal' && 'font-normal',
@@ -284,7 +288,7 @@ const NewsletterPreviewContent: React.FC<{
                                         <p className="mb-6" style={{color: textColor}}>Some cities are beginning to push back. In San Francisco, legislation has been proposed to cap delivery app fees and ensure a fairer share of profits for restaurants. Other local governments are exploring ways to offer support to brick-and-mortar establishments, whether through grants, tax relief, or public campaigns that encourage residents to dine in more often.</p>
                                         <h3
                                             className={clsx(
-                                                'leading-supertight mb-[13px] mt-[39px] text-[2.6rem]',
+                                                'mb-[13px] mt-[39px] text-[2.6rem] leading-supertight',
                                                 titleFontCategory === 'serif' && 'font-serif',
                                                 titleFontCategory === 'sans_serif' && 'font-sans',
                                                 titleFontWeight === 'normal' && 'font-normal',
@@ -307,7 +311,7 @@ const NewsletterPreviewContent: React.FC<{
 
                             {/* Feedback */}
                             {(showFeedback || showCommentCta) && (
-                                <div className={clsx('border-grey-200 grid gap-5 border-b px-6 py-5', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-dotted')} style={{borderColor: dividerColor}}>
+                                <div className={clsx('grid gap-5 border-b border-grey-200 px-6 py-5', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-dotted')} style={{borderColor: dividerColor}}>
                                     <div className="flex justify-center gap-3">
                                         {showFeedback && (
                                             <>
@@ -339,7 +343,7 @@ const NewsletterPreviewContent: React.FC<{
 
                             {/* Latest posts */}
                             {showLatestPosts && (
-                                <div className={clsx('border-grey-200 border-b py-6', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-dotted')} style={{borderColor: dividerColor}}>
+                                <div className={clsx('border-b border-grey-200 py-6', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-dotted')} style={{borderColor: dividerColor}}>
                                     <h3 className="mb-4 mt-2 pb-1 text-[1.2rem] font-semibold uppercase tracking-wide text-black" style={{color: titleColor}}>Keep reading</h3>
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
@@ -353,7 +357,7 @@ const NewsletterPreviewContent: React.FC<{
                                                     titleFontWeight === 'bold' && 'font-bold'
                                                 )}
                                                 style={{color: titleColor}}>The three latest posts published on your site</h4>
-                                            <p className="text-grey-700 m-0 text-base" style={{color: secondaryTextColor}}>Posts sent as an email only will never be shown here.</p>
+                                            <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Posts sent as an email only will never be shown here.</p>
                                         </div>
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
                                             <img alt="Latest post" className={clsx(
@@ -373,7 +377,7 @@ const NewsletterPreviewContent: React.FC<{
                                                     titleFontWeight === 'semibold' && 'font-semibold',
                                                     titleFontWeight === 'bold' && 'font-bold'
                                                 )} style={{color: titleColor}}>Displayed at the bottom of each newsletter</h4>
-                                            <p className="text-grey-700 m-0 text-base" style={{color: secondaryTextColor}}>Giving your readers one more place to discover your stories.</p>
+                                            <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Giving your readers one more place to discover your stories.</p>
                                         </div>
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
                                             <img alt="Latest post" className={clsx(
@@ -393,7 +397,7 @@ const NewsletterPreviewContent: React.FC<{
                                                     titleFontWeight === 'semibold' && 'font-semibold',
                                                     titleFontWeight === 'bold' && 'font-bold'
                                                 )} style={{color: titleColor}}>To keep your work front and center</h4>
-                                            <p className="text-grey-700 m-0 text-base" style={{color: secondaryTextColor}}>Making sure that your audience stays engaged.</p>
+                                            <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Making sure that your audience stays engaged.</p>
                                         </div>
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
                                             <img alt="Latest post" className={clsx(
@@ -407,7 +411,7 @@ const NewsletterPreviewContent: React.FC<{
 
                             {/* Subscription details */}
                             {showSubscriptionDetails && (
-                                <div className={clsx('border-grey-200 border-b py-8', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-dotted')} style={{borderColor: dividerColor}}>
+                                <div className={clsx('border-b border-grey-200 py-8', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-dotted')} style={{borderColor: dividerColor}}>
                                     <h4 className="mb-3 text-[1.2rem] uppercase tracking-wide text-black" style={{color: titleColor}}>Subscription details</h4>
                                     <p className="m-0 mb-4 text-base" style={{color: textColor}}>You are receiving this because you are a paid subscriber to {siteTitle}. Your subscription will renew on 17 Jul 2024.</p>
                                     <div className="flex">
@@ -416,7 +420,7 @@ const NewsletterPreviewContent: React.FC<{
                                             <p style={{color: textColor}}>Email: jamie@example.com</p>
                                             <p style={{color: textColor}}>Member since: 17 July 2023</p>
                                         </div>
-                                        <span className={clsx('text-grey-700 w-full self-end whitespace-nowrap text-right text-base underline', backgroundColorIsDark && 'text-white')}>
+                                        <span className={clsx('w-full self-end whitespace-nowrap text-right text-base text-grey-700 underline', backgroundColorIsDark && 'text-white')}>
                                             Manage subscription
                                         </span>
                                     </div>
@@ -425,16 +429,16 @@ const NewsletterPreviewContent: React.FC<{
 
                             {/* Footer */}
                             <div className="flex flex-col items-center pt-10">
-                                <div dangerouslySetInnerHTML={{__html: processedFooterContent || ''}} className="text leading-base text-grey-700 break-words px-8 py-3 text-center text-[1.3rem] [&_a]:underline" style={{color: secondaryTextColor}} />
+                                <div dangerouslySetInnerHTML={{__html: processedFooterContent || ''}} className="text break-words px-8 py-3 text-center text-[1.3rem] leading-base text-grey-700 [&_a]:underline" style={{color: secondaryTextColor}} />
 
-                                <div className="text-grey-700 px-8 pb-14 pt-3 text-center text-[1.3rem]">
+                                <div className="px-8 pb-14 pt-3 text-center text-[1.3rem] text-grey-700">
                                     <span style={{color: secondaryTextColor}}>{siteTitle} © {currentYear} &mdash; </span>
                                     <span className="pointer-events-none cursor-auto underline" style={{color: secondaryTextColor}}>Unsubscribe</span>
                                 </div>
 
                                 {showBadge && (
                                     <div className="flex flex-col items-center pb-[40px] pt-[10px]">
-                                        <a className="text-grey-900 pointer-events-none inline-flex cursor-auto items-center px-2 py-1 text-[1.25rem] font-semibold tracking-tight" href="https://ghost.org" style={{color: textColor}}>
+                                        <a className="pointer-events-none inline-flex cursor-auto items-center px-2 py-1 text-[1.25rem] font-semibold tracking-tight text-grey-900" href="https://ghost.org" style={{color: textColor}}>
                                             <GhostOrb className="mr-[6px] size-4"/>
                                             <span>Powered by Ghost</span>
                                         </a>
