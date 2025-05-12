@@ -1125,7 +1125,7 @@ module.exports = class MemberRepository {
                     const context = options?.context || {};
                     const source = this._resolveContextSource(context);
 
-                    const event = SubscriptionActivatedEvent.create({
+                    const subscriptionActivatedEvent = SubscriptionActivatedEvent.create({
                         source,
                         tierId: ghostProduct?.get('id'),
                         memberId: memberModel.id,
@@ -1133,7 +1133,7 @@ module.exports = class MemberRepository {
                         offerId: offerId,
                         batchId: options.batch_id
                     });
-                    this.dispatchEvent(event, options);
+                    this.dispatchEvent(subscriptionActivatedEvent, options);
                 }
 
                 // Dispatch cancellation event, i.e. send paid cancellation staff notification, if:
@@ -1146,7 +1146,7 @@ module.exports = class MemberRepository {
                     const canceledAt = new Date(stripeSubscriptionData.canceled_at * 1000);
                     const expiryAt = cancelNow ? canceledAt : updatedStripeCustomerSubscriptionModel.get('current_period_end');
 
-                    const event = SubscriptionCancelledEvent.create({
+                    const subscriptionCancelledEvent = SubscriptionCancelledEvent.create({
                         source,
                         tierId: ghostProduct?.get('id'),
                         memberId: memberModel.id,
@@ -1156,7 +1156,7 @@ module.exports = class MemberRepository {
                         expiryAt
                     });
 
-                    this.dispatchEvent(event, options);
+                    this.dispatchEvent(subscriptionCancelledEvent, options);
                 }
             }
         } else {
