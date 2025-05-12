@@ -12,8 +12,37 @@ import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 
 interface postAnalyticsProps {}
 
+// Grouped link type after processing
+interface GroupedLinkData {
+    url: string;
+    clicks: number;
+    edited: boolean;
+}
+
 const sanitizeUrl = (url: string): string => {
     return url.replace(/^https?:\/\//, '');
+};
+
+const cleanTrackedUrl = (url: string, showTitle = false): string => {
+    // Extract the URL before the ? but keep the hash part
+    const [urlPart, queryPart] = url.split('?');
+    
+    if (!queryPart) {
+        // Check if the urlPart itself has a hash
+        const hashIndex = urlPart.indexOf('#');
+        if (hashIndex > -1) {
+            return showTitle ? urlPart.substring(0, hashIndex) : urlPart;
+        }
+        return urlPart;
+    }
+    
+    // If there's a hash in the query part, preserve it
+    const hashMatch = queryPart.match(/#(.+)$/);
+    if (hashMatch) {
+        return showTitle ? urlPart : `${urlPart}#${hashMatch[1]}`;
+    }
+    
+    return urlPart;
 };
 
 const Newsletter: React.FC<postAnalyticsProps> = () => {
@@ -87,6 +116,28 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
             color: 'hsl(var(--chart-gray))'
         }
     } satisfies ChartConfig;
+
+    // Process links data to group by URL
+    const processedLinks = topLinks.reduce<Record<string, GroupedLinkData>>((acc, link) => {
+        // For grouping, we use the clean URL (path only with hash)
+        const cleanUrl = cleanTrackedUrl(link.url, false);
+        
+        if (!acc[cleanUrl]) {
+            acc[cleanUrl] = {
+                url: cleanUrl,
+                clicks: 0,
+                edited: false
+            };
+        }
+        
+        acc[cleanUrl].clicks += link.clicks;
+        acc[cleanUrl].edited = acc[cleanUrl].edited || link.edited;
+        
+        return acc;
+    }, {});
+    
+    // Sort by click count
+    const displayLinks: GroupedLinkData[] = Object.values(processedLinks).sort((a, b) => b.clicks - a.clicks);
 
     return (
         <PostAnalyticsLayout>
@@ -210,54 +261,59 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {topLinks?.map(row => (
-                                                <TableRow key={row.url}>
-                                                    <TableCell className='max-w-0'>
-                                                        <div className='flex items-center gap-2'>
-                                                            {editingUrl === row.url ? (
-                                                                <div ref={containerRef} className='flex w-full items-center gap-2'>
-                                                                    <Input
-                                                                        ref={inputRef}
-                                                                        className="h-7 w-full border-border bg-background text-sm"
-                                                                        value={editedUrl}
-                                                                        onChange={e => setEditedUrl(e.target.value)}
-                                                                    />
-                                                                    <Button
-                                                                        size='sm'
-                                                                        onClick={handleUpdate}
-                                                                    >
-                                                                        Update
-                                                                    </Button>
-                                                                </div>
-                                                            ) : (
-                                                                <>
-                                                                    <Button
-                                                                        className='shrink-0 bg-background'
-                                                                        size='sm'
-                                                                        variant='outline'
-                                                                        onClick={() => handleEdit(row.url)}
-                                                                    >
-                                                                        <LucideIcon.Pen />
-                                                                    </Button>
-                                                                    <a
-                                                                        className='block truncate font-medium hover:underline'
-                                                                        href={row.url}
-                                                                        rel="noreferrer"
-                                                                        target='_blank'
-                                                                        title={row.url}
-                                                                    >
-                                                                        {sanitizeUrl(row.url)}
-                                                                    </a>
-                                                                    {row.edited && (
-                                                                        <span className='text-xs text-gray-500'>(edited)</span>
-                                                                    )}
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className='text-right font-mono text-sm'>{formatNumber(row.clicks)}</TableCell>
-                                                </TableRow>
-                                            ))}
+                                            {displayLinks.map((row) => {
+                                                const url = row.url;
+                                                const edited = row.edited;
+                                                
+                                                return (
+                                                    <TableRow key={url}>
+                                                        <TableCell className='max-w-0'>
+                                                            <div className='flex items-center gap-2'>
+                                                                {editingUrl === url ? (
+                                                                    <div ref={containerRef} className='flex w-full items-center gap-2'>
+                                                                        <Input
+                                                                            ref={inputRef}
+                                                                            className="h-7 w-full border-border bg-background text-sm"
+                                                                            value={editedUrl}
+                                                                            onChange={e => setEditedUrl(e.target.value)}
+                                                                        />
+                                                                        <Button
+                                                                            size='sm'
+                                                                            onClick={handleUpdate}
+                                                                        >
+                                                                            Update
+                                                                        </Button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <>
+                                                                        <Button
+                                                                            className='shrink-0 bg-background'
+                                                                            size='sm'
+                                                                            variant='outline'
+                                                                            onClick={() => handleEdit(url)}
+                                                                        >
+                                                                            <LucideIcon.Pen />
+                                                                        </Button>
+                                                                        <a
+                                                                            className='block truncate font-medium hover:underline'
+                                                                            href={url}
+                                                                            rel="noreferrer"
+                                                                            target='_blank'
+                                                                            title={url}
+                                                                        >
+                                                                            {sanitizeUrl(url)}
+                                                                        </a>
+                                                                        {edited && (
+                                                                            <span className='text-xs text-gray-500'>(edited)</span>
+                                                                        )}
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className='text-right font-mono text-sm'>{formatNumber(row.clicks)}</TableCell>
+                                                    </TableRow>
+                                                );
+                                            })}
                                         </TableBody>
                                         <TableFooter className='bg-transparent'>
                                             <TableRow>
