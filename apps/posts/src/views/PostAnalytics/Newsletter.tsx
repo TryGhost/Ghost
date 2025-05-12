@@ -203,14 +203,14 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>Link</TableHead>
-                                                <TableHead className='text-right'>No. of members</TableHead>
+                                                <TableHead className='w-full'>Link</TableHead>
+                                                <TableHead className='w-[0%] text-nowrap text-right'>No. of members</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {topLinks?.map(row => (
                                                 <TableRow key={row.url}>
-                                                    <TableCell>
+                                                    <TableCell className='max-w-0'>
                                                         <div className='flex items-center gap-2'>
                                                             {editingUrl === row.url ? (
                                                                 <div ref={containerRef} className='flex w-full items-center gap-2'>
@@ -230,7 +230,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                             ) : (
                                                                 <>
                                                                     <Button
-                                                                        className='bg-background'
+                                                                        className='shrink-0 bg-background'
                                                                         size='sm'
                                                                         variant='outline'
                                                                         onClick={() => handleEdit(row.url)}
@@ -238,12 +238,13 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                         <LucideIcon.Pen />
                                                                     </Button>
                                                                     <a
-                                                                        className='inline-flex items-center gap-2 font-medium hover:underline'
+                                                                        className='block truncate font-medium hover:underline'
                                                                         href={row.url}
                                                                         rel="noreferrer"
                                                                         target='_blank'
+                                                                        title={row.url}
                                                                     >
-                                                                        <span>{sanitizeUrl(row.url)}</span>
+                                                                        {sanitizeUrl(row.url)}
                                                                     </a>
                                                                     {row.edited && (
                                                                         <span className='text-xs text-gray-500'>(edited)</span>
