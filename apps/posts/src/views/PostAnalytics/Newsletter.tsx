@@ -6,7 +6,7 @@ import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, ViewHeader, formatNumber, formatPercentage} from '@tryghost/shade';
 import {calculateYAxisWidth} from '@src/utils/chart-helpers';
 import {useEditLinks} from '@src/hooks/useEditLinks';
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {useParams} from '@tryghost/admin-x-framework';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 
@@ -117,27 +117,30 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         }
     } satisfies ChartConfig;
 
-    // Process links data to group by URL
-    const processedLinks = topLinks.reduce<Record<string, GroupedLinkData>>((acc, link) => {
-        // For grouping, we use the clean URL (path only with hash)
-        const cleanUrl = cleanTrackedUrl(link.url, false);
+    // Memoize link processing to avoid unnecessary recomputation on renders
+    const displayLinks = useMemo(() => {
+        // Process links data to group by URL
+        const processedLinks = topLinks.reduce<Record<string, GroupedLinkData>>((acc, link) => {
+            // For grouping, we use the clean URL (path only with hash)
+            const cleanUrl = cleanTrackedUrl(link.url, false);
+            
+            if (!acc[cleanUrl]) {
+                acc[cleanUrl] = {
+                    url: cleanUrl,
+                    clicks: 0,
+                    edited: false
+                };
+            }
+            
+            acc[cleanUrl].clicks += link.clicks;
+            acc[cleanUrl].edited = acc[cleanUrl].edited || link.edited;
+            
+            return acc;
+        }, {});
         
-        if (!acc[cleanUrl]) {
-            acc[cleanUrl] = {
-                url: cleanUrl,
-                clicks: 0,
-                edited: false
-            };
-        }
-        
-        acc[cleanUrl].clicks += link.clicks;
-        acc[cleanUrl].edited = acc[cleanUrl].edited || link.edited;
-        
-        return acc;
-    }, {});
-    
-    // Sort by click count
-    const displayLinks: GroupedLinkData[] = Object.values(processedLinks).sort((a, b) => b.clicks - a.clicks);
+        // Sort by click count
+        return Object.values(processedLinks).sort((a, b) => b.clicks - a.clicks);
+    }, [topLinks]); // Only recalculate when topLinks changes
 
     return (
         <PostAnalyticsLayout>
