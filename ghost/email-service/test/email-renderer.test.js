@@ -2117,14 +2117,14 @@ describe('Email renderer', function () {
 
     describe('getTemplateData', function () {
         let settings = {};
-        let labsEnabled = true;
+        let labsEnabled = false;
         let emailRenderer;
 
         beforeEach(function () {
             settings = {
                 timezone: 'Etc/UTC'
             };
-            labsEnabled = true;
+            labsEnabled = false;
             emailRenderer = new EmailRenderer({
                 audienceFeedbackService: {
                     buildLink: (_uuid, _postId, score) => {
@@ -2546,6 +2546,41 @@ describe('Email renderer', function () {
                         url: 'http://example.com'
                     }
                 ]);
+        });
+
+        async function testButtonBorderRadius(buttonCorners, expectedRadius) {
+            labsEnabled = true;
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'serif',
+                title_alignment: 'left',
+                body_font_category: 'sans_serif',
+                show_latest_posts: true,
+                button_corners: buttonCorners
+            });
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.buttonBorderRadius, expectedRadius);
+        }
+
+        it('sets buttonBorderRadius to correct default (emailCustomizationAlpha)', async function () {
+            await testButtonBorderRadius(null, '6px');
+        });
+
+        it('sets buttonBorderRadius to correct rounded value (emailCustomizationAlpha)', async function () {
+            await testButtonBorderRadius('rounded', '6px');
+        });
+
+        it('sets buttonBorderRadius to correct square value (emailCustomizationAlpha)', async function () {
+            await testButtonBorderRadius('square', '0');
+        });
+
+        it('sets buttonBorderRadius to correct pill value (emailCustomizationAlpha)', async function () {
+            await testButtonBorderRadius('pill', '9999px');
         });
     });
 
