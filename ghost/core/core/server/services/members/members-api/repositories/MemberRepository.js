@@ -1050,8 +1050,8 @@ module.exports = class MemberRepository {
         };
         let eventData = {};
 
-        const shouldBeDeleted = stripeSubscriptionData.metadata && !!stripeSubscriptionData.metadata.ghost_migrated_to && stripeSubscriptionData.status === 'canceled';
-        if (shouldBeDeleted) {
+        const stripeCustomerSubscriptionModelShouldBeDeleted = stripeSubscriptionData.metadata && !!stripeSubscriptionData.metadata.ghost_migrated_to && stripeSubscriptionData.status === 'canceled';
+        if (stripeCustomerSubscriptionModelShouldBeDeleted) {
             logging.warn(`Subscription ${subscriptionData.subscription_id} is marked for deletion, skipping linking.`);
 
             if (stripeCustomerSubscriptionModel) {
@@ -1223,7 +1223,7 @@ module.exports = class MemberRepository {
         let memberProducts = (await memberModel.related('products').fetch(options)).toJSON();
         const oldMemberProducts = memberModel.related('products').toJSON();
         let status = memberProducts.length === 0 ? 'free' : 'comped';
-        if (!shouldBeDeleted && this.isActiveSubscriptionStatus(stripeSubscriptionData.status)) {
+        if (!stripeCustomerSubscriptionModelShouldBeDeleted && this.isActiveSubscriptionStatus(stripeSubscriptionData.status)) {
             if (this.isComplimentarySubscription(stripeSubscriptionData)) {
                 status = 'comped';
             } else {
