@@ -1077,12 +1077,12 @@ module.exports = class MemberRepository {
             // Stripe doesn't send the discount/offer info in the subscription.created event
             // So we need to record the offer redemption event upon updating the subscription here
             if (stripeCustomerSubscriptionModel.get('offer_id') === null && subscriptionData.offer_id) {
-                const event = OfferRedemptionEvent.create({
+                const offerRedemptionEvent = OfferRedemptionEvent.create({
                     memberId: memberModel.id,
                     offerId: subscriptionData.offer_id,
                     subscriptionId: updatedStripeCustomerSubscriptionModel.id
                 }, updatedStripeCustomerSubscriptionModel.get('created_at'));
-                this.dispatchEvent(event, options);
+                this.dispatchEvent(offerRedemptionEvent, options);
             }
 
             if (stripeCustomerSubscriptionModel.get('mrr') !== updatedStripeCustomerSubscriptionModel.get('mrr') || stripeCustomerSubscriptionModel.get('plan_id') !== updatedStripeCustomerSubscriptionModel.get('plan_id') || stripeCustomerSubscriptionModel.get('status') !== updatedStripeCustomerSubscriptionModel.get('status') || stripeCustomerSubscriptionModel.get('cancel_at_period_end') !== updatedStripeCustomerSubscriptionModel.get('cancel_at_period_end')) {
