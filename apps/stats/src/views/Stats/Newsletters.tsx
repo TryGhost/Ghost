@@ -1,4 +1,4 @@
-import AudienceSelect from './components/AudienceSelect';
+// import AudienceSelect from './components/AudienceSelect';
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import DateRangeSelect from './components/DateRangeSelect';
 import React, {useMemo, useState} from 'react';
@@ -51,7 +51,7 @@ const BarTooltipContent = ({active, payload}: BarTooltipProps) => {
     }
 
     const currentItem = payload[0].payload;
-    const sendDate = typeof currentItem.send_date === 'string' ? 
+    const sendDate = typeof currentItem.send_date === 'string' ?
         new Date(currentItem.send_date) : currentItem.send_date;
 
     return (
@@ -125,7 +125,7 @@ const NewsletterKPIs: React.FC<{
 
         // Convert deltas to cumulative counts
         let runningTotal = totalSubscribers;
-        
+
         // Go backwards through the array to calculate cumulative values
         // Starting from the current total and subtracting deltas
         const cumulativeData = [...sanitizedData]
@@ -293,26 +293,26 @@ const Newsletters: React.FC = () => {
     const {range} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
     const navigate = useNavigate();
-    
+
     // Get stats from real data using the new hooks
     const {data: newsletterStatsData, isLoading: isStatsLoading} = useNewsletterStatsWithRange(range);
     const {data: subscriberStatsData, isLoading: isSubscriberStatsLoading} = useSubscriberCountWithRange(range);
-    
+
     // Prepare the data - wrap in useMemo to avoid dependency changes
     const newsletterStats = useMemo(() => {
         if (!newsletterStatsData?.stats || newsletterStatsData?.stats.length === 0) {
             return [];
         }
-        
+
         // Clone the data for sorting
         const stats = [...newsletterStatsData.stats];
-        
+
         // Apply client-side sorting
         const [field, direction = 'desc'] = sortBy.split(' ');
-        
+
         return stats.sort((a, b) => {
             let valueA, valueB;
-            
+
             // Handle different sort fields
             if (field === 'date') {
                 valueA = new Date(a.send_date).getTime();
@@ -326,12 +326,12 @@ const Newsletters: React.FC = () => {
             } else {
                 return 0;
             }
-            
+
             // Apply sort direction
             return direction === 'desc' ? valueB - valueA : valueA - valueB;
         });
     }, [newsletterStatsData, sortBy]);
-    
+
     // Calculate totals
     const totals = useMemo(() => {
         if (!newsletterStatsData?.stats || newsletterStatsData.stats.length === 0) {
@@ -344,11 +344,11 @@ const Newsletters: React.FC = () => {
 
         // Use all stats for calculating averages, not just the sorted/limited ones
         const allStats = newsletterStatsData.stats;
-        
+
         // Calculate average open and click rates from all stats
         const totalOpenRate = allStats.reduce((sum, stat) => sum + (stat.open_rate || 0), 0);
         const totalClickRate = allStats.reduce((sum, stat) => sum + (stat.click_rate || 0), 0);
-        
+
         return {
             totalSubscribers: subscriberStatsData?.stats?.[0]?.total || 0,
             avgOpenRate: totalOpenRate / allStats.length,
@@ -379,7 +379,7 @@ const Newsletters: React.FC = () => {
             <ViewHeader className='before:hidden'>
                 <H1>Newsletters</H1>
                 <ViewHeaderActions>
-                    <AudienceSelect />
+                    {/* <AudienceSelect /> */}
                     <DateRangeSelect />
                 </ViewHeaderActions>
             </ViewHeader>
