@@ -139,19 +139,19 @@ class PostsStatsService {
             const paidReferrersCTE = this._buildPaidReferrersSubquery(postId, options);
             const mrrReferrersCTE = this._buildMrrReferrersSubquery(postId, options);
 
-            // Create unified sources list
-            //  - this is to avoid having to join with the referrer_urls table
-            //   and deal with deduplication
-            const baseReferrersQuery = this.knex('members_created_events as mce')
-                .select('mce.referrer_source as source')
+            // Create unified sources list with referrer_url
+            // Since we assume there's only one referrer_url per source, we can include it directly
+            const baseReferrersQuery = this.knex
+                .select(
+                    'mce.referrer_source as source',
+                    this.knex.raw('MIN(mce.referrer_url) as referrer_url')
+                )
+                .from('members_created_events as mce')
                 .where('mce.attribution_id', postId)
                 .where('mce.attribution_type', 'post')
-                .union((qb) => {
-                    qb.select('msce.referrer_source as source')
-                        .from('members_subscription_created_events as msce')
-                        .where('msce.attribution_id', postId)
-                        .where('msce.attribution_type', 'post');
-                });
+                .whereNotNull('mce.referrer_source')
+                .groupBy('mce.referrer_source')
+                .orderBy('mce.referrer_source');
 
             // Now join all the data
             let query = this.knex
@@ -161,15 +161,7 @@ class PostsStatsService {
                 .with('all_referrers', baseReferrersQuery)
                 .select(
                     'ar.source',
-                    this.knex.raw(`(
-                        SELECT referrer_url 
-                        FROM members_created_events 
-                        WHERE attribution_id = ? 
-                        AND attribution_type = 'post'
-                        AND referrer_source = ar.source
-                        AND referrer_url IS NOT NULL
-                        LIMIT 1
-                    ) as referrer_url`, [postId]),
+                    'ar.referrer_url',
                     this.knex.raw('COALESCE(fr.free_members, 0) as free_members'),
                     this.knex.raw('COALESCE(pr.paid_members, 0) as paid_members'),
                     this.knex.raw('COALESCE(mr.mrr, 0) as mrr')
