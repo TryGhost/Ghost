@@ -1068,7 +1068,7 @@ module.exports = class MemberRepository {
             if (!subscriptionData.offer_id) {
                 delete subscriptionData.offer_id;
             }
-            const updated = await this._StripeCustomerSubscription.edit(subscriptionData, {
+            const updatedStripeCustomerSubscriptionModel = await this._StripeCustomerSubscription.edit(subscriptionData, {
                 ...options,
                 id: stripeCustomerSubscriptionModel.id
             });
@@ -1080,14 +1080,14 @@ module.exports = class MemberRepository {
                 const event = OfferRedemptionEvent.create({
                     memberId: memberModel.id,
                     offerId: subscriptionData.offer_id,
-                    subscriptionId: updated.id
-                }, updated.get('created_at'));
+                    subscriptionId: updatedStripeCustomerSubscriptionModel.id
+                }, updatedStripeCustomerSubscriptionModel.get('created_at'));
                 this.dispatchEvent(event, options);
             }
 
-            if (stripeCustomerSubscriptionModel.get('mrr') !== updated.get('mrr') || stripeCustomerSubscriptionModel.get('plan_id') !== updated.get('plan_id') || stripeCustomerSubscriptionModel.get('status') !== updated.get('status') || stripeCustomerSubscriptionModel.get('cancel_at_period_end') !== updated.get('cancel_at_period_end')) {
+            if (stripeCustomerSubscriptionModel.get('mrr') !== updatedStripeCustomerSubscriptionModel.get('mrr') || stripeCustomerSubscriptionModel.get('plan_id') !== updatedStripeCustomerSubscriptionModel.get('plan_id') || stripeCustomerSubscriptionModel.get('status') !== updatedStripeCustomerSubscriptionModel.get('status') || stripeCustomerSubscriptionModel.get('cancel_at_period_end') !== updatedStripeCustomerSubscriptionModel.get('cancel_at_period_end')) {
                 const originalMrrDelta = stripeCustomerSubscriptionModel.get('mrr');
-                const updatedMrrDelta = updated.get('mrr');
+                const updatedMrrDelta = updatedStripeCustomerSubscriptionModel.get('mrr');
 
                 const getEventType = (originalStatus, updatedStatus) => {
                     if (originalStatus === updatedStatus) {
@@ -1102,7 +1102,7 @@ module.exports = class MemberRepository {
                 };
 
                 const originalStatus = getStatus(stripeCustomerSubscriptionModel);
-                const updatedStatus = getStatus(updated);
+                const updatedStatus = getStatus(updatedStripeCustomerSubscriptionModel);
                 const eventType = getEventType(originalStatus, updatedStatus);
 
                 const mrrDelta = updatedMrrDelta - originalMrrDelta;
@@ -1111,9 +1111,9 @@ module.exports = class MemberRepository {
                     member_id: memberModel.id,
                     source: 'stripe',
                     type: eventType,
-                    subscription_id: updated.id,
+                    subscription_id: updatedStripeCustomerSubscriptionModel.id,
                     from_plan: stripeCustomerSubscriptionModel.get('plan_id'),
-                    to_plan: updated.get('status') === 'canceled' ? null : updated.get('plan_id'),
+                    to_plan: updatedStripeCustomerSubscriptionModel.get('status') === 'canceled' ? null : updatedStripeCustomerSubscriptionModel.get('plan_id'),
                     currency: subscriptionPriceData.currency,
                     mrr_delta: mrrDelta
                 }, options);
@@ -1129,7 +1129,7 @@ module.exports = class MemberRepository {
                         source,
                         tierId: ghostProduct?.get('id'),
                         memberId: memberModel.id,
-                        subscriptionId: updated.get('id'),
+                        subscriptionId: updatedStripeCustomerSubscriptionModel.get('id'),
                         offerId: offerId,
                         batchId: options.batch_id
                     });
@@ -1144,13 +1144,13 @@ module.exports = class MemberRepository {
                     const source = this._resolveContextSource(context);
                     const cancelNow = updatedStatus === 'expired';
                     const canceledAt = new Date(stripeSubscriptionData.canceled_at * 1000);
-                    const expiryAt = cancelNow ? canceledAt : updated.get('current_period_end');
+                    const expiryAt = cancelNow ? canceledAt : updatedStripeCustomerSubscriptionModel.get('current_period_end');
 
                     const event = SubscriptionCancelledEvent.create({
                         source,
                         tierId: ghostProduct?.get('id'),
                         memberId: memberModel.id,
-                        subscriptionId: updated.get('id'),
+                        subscriptionId: updatedStripeCustomerSubscriptionModel.get('id'),
                         cancelNow,
                         canceledAt,
                         expiryAt
