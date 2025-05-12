@@ -939,7 +939,7 @@ module.exports = class MemberRepository {
         }
         const stripePaymentMethodData = paymentMethodId ? await this._stripeAPIService.getCardPaymentMethod(paymentMethodId) : null;
 
-        const model = await this.getSubscriptionByStripeID(stripeSubscriptionData.id, {...options, forUpdate: true});
+        const stripeCustomerSubscriptionModel = await this.getSubscriptionByStripeID(stripeSubscriptionData.id, {...options, forUpdate: true});
 
         const subscriptionPriceData = _.get(stripeSubscriptionData, 'items.data[0].price');
         let ghostProduct;
@@ -1054,15 +1054,15 @@ module.exports = class MemberRepository {
         if (shouldBeDeleted) {
             logging.warn(`Subscription ${subscriptionData.subscription_id} is marked for deletion, skipping linking.`);
 
-            if (model) {
+            if (stripeCustomerSubscriptionModel) {
                 // Delete all paid subscription events manually for this subscription
                 // This is the only related event without a foreign key constraint
-                await this._MemberPaidSubscriptionEvent.query().where('subscription_id', model.id).delete().transacting(options.transacting);
+                await this._MemberPaidSubscriptionEvent.query().where('subscription_id', stripeCustomerSubscriptionModel.id).delete().transacting(options.transacting);
 
                 // Delete the subscription in the database because we don't want to show it in the UI or in our data calculations
-                await model.destroy(options);
+                await stripeCustomerSubscriptionModel.destroy(options);
             }
-        } else if (model) {
+        } else if (stripeCustomerSubscriptionModel) {
             // CASE: Offer is already mapped against sub, don't overwrite it with NULL
             // Needed for trial offers, which don't have a stripe coupon/discount attached to sub
             if (!subscriptionData.offer_id) {
@@ -1070,13 +1070,13 @@ module.exports = class MemberRepository {
             }
             const updated = await this._StripeCustomerSubscription.edit(subscriptionData, {
                 ...options,
-                id: model.id
+                id: stripeCustomerSubscriptionModel.id
             });
 
             // CASE: Existing free member subscribes to a paid tier with an offer
             // Stripe doesn't send the discount/offer info in the subscription.created event
             // So we need to record the offer redemption event upon updating the subscription here
-            if (model.get('offer_id') === null && subscriptionData.offer_id) {
+            if (stripeCustomerSubscriptionModel.get('offer_id') === null && subscriptionData.offer_id) {
                 const event = OfferRedemptionEvent.create({
                     memberId: memberModel.id,
                     offerId: subscriptionData.offer_id,
@@ -1085,8 +1085,8 @@ module.exports = class MemberRepository {
                 this.dispatchEvent(event, options);
             }
 
-            if (model.get('mrr') !== updated.get('mrr') || model.get('plan_id') !== updated.get('plan_id') || model.get('status') !== updated.get('status') || model.get('cancel_at_period_end') !== updated.get('cancel_at_period_end')) {
-                const originalMrrDelta = model.get('mrr');
+            if (stripeCustomerSubscriptionModel.get('mrr') !== updated.get('mrr') || stripeCustomerSubscriptionModel.get('plan_id') !== updated.get('plan_id') || stripeCustomerSubscriptionModel.get('status') !== updated.get('status') || stripeCustomerSubscriptionModel.get('cancel_at_period_end') !== updated.get('cancel_at_period_end')) {
+                const originalMrrDelta = stripeCustomerSubscriptionModel.get('mrr');
                 const updatedMrrDelta = updated.get('mrr');
 
                 const getEventType = (originalStatus, updatedStatus) => {
@@ -1101,7 +1101,7 @@ module.exports = class MemberRepository {
                     return updatedStatus;
                 };
 
-                const originalStatus = getStatus(model);
+                const originalStatus = getStatus(stripeCustomerSubscriptionModel);
                 const updatedStatus = getStatus(updated);
                 const eventType = getEventType(originalStatus, updatedStatus);
 
@@ -1112,7 +1112,7 @@ module.exports = class MemberRepository {
                     source: 'stripe',
                     type: eventType,
                     subscription_id: updated.id,
-                    from_plan: model.get('plan_id'),
+                    from_plan: stripeCustomerSubscriptionModel.get('plan_id'),
                     to_plan: updated.get('status') === 'canceled' ? null : updated.get('plan_id'),
                     currency: subscriptionPriceData.currency,
                     mrr_delta: mrrDelta
@@ -1230,7 +1230,7 @@ module.exports = class MemberRepository {
                 status = 'paid';
             }
 
-            if (model) {
+            if (stripeCustomerSubscriptionModel) {
                 // We might need to...
                 // 1. delete the previous product from the linked member products (in case an existing subscription changed product/price)
                 // 2. fix the list of products linked to a member (an existing subscription doesn't have a linked product to this member)
@@ -1238,14 +1238,14 @@ module.exports = class MemberRepository {
                 const subscriptions = await memberModel.related('stripeSubscriptions').fetch(options);
 
                 const previousProduct = await this._productRepository.get({
-                    stripe_price_id: model.get('stripe_price_id')
+                    stripe_price_id: stripeCustomerSubscriptionModel.get('stripe_price_id')
                 }, options);
 
                 if (previousProduct) {
                     let activeSubscriptionForPreviousProduct = false;
 
                     for (const subscriptionModel of subscriptions.models) {
-                        if (this.isActiveSubscriptionStatus(subscriptionModel.get('status')) && subscriptionModel.id !== model.id) {
+                        if (this.isActiveSubscriptionStatus(subscriptionModel.get('status')) && subscriptionModel.id !== stripeCustomerSubscriptionModel.id) {
                             try {
                                 const subscriptionProduct = await this._productRepository.get({stripe_price_id: subscriptionModel.get('stripe_price_id')}, options);
                                 if (subscriptionProduct && previousProduct && subscriptionProduct.id === previousProduct.id) {
