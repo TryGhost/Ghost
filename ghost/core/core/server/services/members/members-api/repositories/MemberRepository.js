@@ -928,20 +928,20 @@ module.exports = class MemberRepository {
             throw new errors.NotFoundError({message: tpl(messages.subscriptionNotFound)});
         }
 
-        const subscription = await this._stripeAPIService.getSubscription(data.subscription.id);
+        const stripeSubscriptionData = await this._stripeAPIService.getSubscription(data.subscription.id);
         let paymentMethodId;
-        if (!subscription.default_payment_method) {
+        if (!stripeSubscriptionData.default_payment_method) {
             paymentMethodId = null;
-        } else if (typeof subscription.default_payment_method === 'string') {
-            paymentMethodId = subscription.default_payment_method;
+        } else if (typeof stripeSubscriptionData.default_payment_method === 'string') {
+            paymentMethodId = stripeSubscriptionData.default_payment_method;
         } else {
-            paymentMethodId = subscription.default_payment_method.id;
+            paymentMethodId = stripeSubscriptionData.default_payment_method.id;
         }
         const paymentMethod = paymentMethodId ? await this._stripeAPIService.getCardPaymentMethod(paymentMethodId) : null;
 
-        const model = await this.getSubscriptionByStripeID(subscription.id, {...options, forUpdate: true});
+        const model = await this.getSubscriptionByStripeID(stripeSubscriptionData.id, {...options, forUpdate: true});
 
-        const subscriptionPriceData = _.get(subscription, 'items.data[0].price');
+        const subscriptionPriceData = _.get(stripeSubscriptionData, 'items.data[0].price');
         let ghostProduct;
         try {
             ghostProduct = await this._productRepository.get({stripe_product_id: subscriptionPriceData.product}, options);
@@ -973,14 +973,14 @@ module.exports = class MemberRepository {
                 }, options);
             } else {
                 // Log error if no Ghost products found
-                logging.error(`There was an error linking subscription - ${subscription.id}, no Products exist.`);
+                logging.error(`There was an error linking subscription - ${stripeSubscriptionData.id}, no Products exist.`);
             }
         } catch (e) {
-            logging.error(`Failed to handle prices and product for - ${subscription.id}.`);
+            logging.error(`Failed to handle prices and product for - ${stripeSubscriptionData.id}.`);
             logging.error(e);
         }
 
-        let stripeCouponId = subscription.discount && subscription.discount.coupon ? subscription.discount.coupon.id : null;
+        let stripeCouponId = stripeSubscriptionData.discount && stripeSubscriptionData.discount.coupon ? stripeSubscriptionData.discount.coupon.id : null;
 
         // For trial offers, offer id is passed from metadata as there is no stripe coupon
         let offerId = data.offerId || null;
@@ -992,26 +992,26 @@ module.exports = class MemberRepository {
             if (offer) {
                 offerId = offer.id;
             } else {
-                logging.error(`Received an unknown stripe coupon id (${stripeCouponId}) for subscription - ${subscription.id}.`);
+                logging.error(`Received an unknown stripe coupon id (${stripeCouponId}) for subscription - ${stripeSubscriptionData.id}.`);
             }
         } else if (offerId) {
             offer = await this._offerRepository.getById(offerId, {transacting: options.transacting});
         }
 
         const subscriptionData = {
-            customer_id: subscription.customer,
-            subscription_id: subscription.id,
-            status: subscription.status,
-            cancel_at_period_end: subscription.cancel_at_period_end,
-            cancellation_reason: this.getCancellationReason(subscription),
-            current_period_end: new Date(subscription.current_period_end * 1000),
-            start_date: new Date(subscription.start_date * 1000),
+            customer_id: stripeSubscriptionData.customer,
+            subscription_id: stripeSubscriptionData.id,
+            status: stripeSubscriptionData.status,
+            cancel_at_period_end: stripeSubscriptionData.cancel_at_period_end,
+            cancellation_reason: this.getCancellationReason(stripeSubscriptionData),
+            current_period_end: new Date(stripeSubscriptionData.current_period_end * 1000),
+            start_date: new Date(stripeSubscriptionData.start_date * 1000),
             default_payment_card_last4: paymentMethod && paymentMethod.card && paymentMethod.card.last4 || null,
             stripe_price_id: subscriptionPriceData.id,
             plan_id: subscriptionPriceData.id,
             // trial start and end are returned as Stripe timestamps and need coversion
-            trial_start_at: subscription.trial_start ? new Date(subscription.trial_start * 1000) : null,
-            trial_end_at: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+            trial_start_at: stripeSubscriptionData.trial_start ? new Date(stripeSubscriptionData.trial_start * 1000) : null,
+            trial_end_at: stripeSubscriptionData.trial_end ? new Date(stripeSubscriptionData.trial_end * 1000) : null,
             // NOTE: Defaulting to interval as migration to nullable field
             // turned out to be much bigger problem.
             // Ideally, would need nickname field to be nullable on the DB level
@@ -1023,9 +1023,9 @@ module.exports = class MemberRepository {
             mrr: this.getMRR({
                 interval: _.get(subscriptionPriceData, 'recurring.interval', ''),
                 amount: subscriptionPriceData.unit_amount,
-                status: subscription.status,
-                canceled: subscription.cancel_at_period_end,
-                discount: subscription.discount
+                status: stripeSubscriptionData.status,
+                canceled: stripeSubscriptionData.cancel_at_period_end,
+                discount: stripeSubscriptionData.discount
             }),
             offer_id: offerId
         };
@@ -1050,7 +1050,7 @@ module.exports = class MemberRepository {
         };
         let eventData = {};
 
-        const shouldBeDeleted = subscription.metadata && !!subscription.metadata.ghost_migrated_to && subscription.status === 'canceled';
+        const shouldBeDeleted = stripeSubscriptionData.metadata && !!stripeSubscriptionData.metadata.ghost_migrated_to && stripeSubscriptionData.status === 'canceled';
         if (shouldBeDeleted) {
             logging.warn(`Subscription ${subscriptionData.subscription_id} is marked for deletion, skipping linking.`);
 
@@ -1143,7 +1143,7 @@ module.exports = class MemberRepository {
                     const context = options?.context || {};
                     const source = this._resolveContextSource(context);
                     const cancelNow = updatedStatus === 'expired';
-                    const canceledAt = new Date(subscription.canceled_at * 1000);
+                    const canceledAt = new Date(stripeSubscriptionData.canceled_at * 1000);
                     const expiryAt = cancelNow ? canceledAt : updated.get('current_period_end');
 
                     const event = SubscriptionCancelledEvent.create({
@@ -1160,7 +1160,7 @@ module.exports = class MemberRepository {
                 }
             }
         } else {
-            eventData.created_at = new Date(subscription.start_date * 1000);
+            eventData.created_at = new Date(stripeSubscriptionData.start_date * 1000);
             const subscriptionModel = await this._StripeCustomerSubscription.add(subscriptionData, options);
             await this._MemberPaidSubscriptionEvent.add({
                 member_id: memberModel.id,
@@ -1177,12 +1177,12 @@ module.exports = class MemberRepository {
             const context = options?.context || {};
             const source = this._resolveContextSource(context);
             const attribution = {
-                id: data.attribution?.id ?? subscription.metadata?.attribution_id ?? null,
-                url: data.attribution?.url ?? subscription.metadata?.attribution_url ?? null,
-                type: data.attribution?.type ?? subscription.metadata?.attribution_type ?? null,
-                referrerSource: data.attribution?.referrerSource ?? subscription.metadata?.referrer_source ?? null,
-                referrerMedium: data.attribution?.referrerMedium ?? subscription.metadata?.referrer_medium ?? null,
-                referrerUrl: data.attribution?.referrerUrl ?? subscription.metadata?.referrer_url ?? null
+                id: data.attribution?.id ?? stripeSubscriptionData.metadata?.attribution_id ?? null,
+                url: data.attribution?.url ?? stripeSubscriptionData.metadata?.attribution_url ?? null,
+                type: data.attribution?.type ?? stripeSubscriptionData.metadata?.attribution_type ?? null,
+                referrerSource: data.attribution?.referrerSource ?? stripeSubscriptionData.metadata?.referrer_source ?? null,
+                referrerMedium: data.attribution?.referrerMedium ?? stripeSubscriptionData.metadata?.referrer_medium ?? null,
+                referrerUrl: data.attribution?.referrerUrl ?? stripeSubscriptionData.metadata?.referrer_url ?? null
             };
 
             const subscriptionCreatedEvent = SubscriptionCreatedEvent.create({
@@ -1223,8 +1223,8 @@ module.exports = class MemberRepository {
         let memberProducts = (await memberModel.related('products').fetch(options)).toJSON();
         const oldMemberProducts = memberModel.related('products').toJSON();
         let status = memberProducts.length === 0 ? 'free' : 'comped';
-        if (!shouldBeDeleted && this.isActiveSubscriptionStatus(subscription.status)) {
-            if (this.isComplimentarySubscription(subscription)) {
+        if (!shouldBeDeleted && this.isActiveSubscriptionStatus(stripeSubscriptionData.status)) {
+            if (this.isComplimentarySubscription(stripeSubscriptionData)) {
                 status = 'comped';
             } else {
                 status = 'paid';
