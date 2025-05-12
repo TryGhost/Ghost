@@ -913,11 +913,11 @@ module.exports = class MemberRepository {
             options.batch_id = ObjectId().toHexString();
         }
 
-        const member = await this._Member.findOne({
+        const memberModel = await this._Member.findOne({
             id: data.id
         }, {...options, forUpdate: true});
 
-        const customer = await member.related('stripeCustomers').query({
+        const customer = await memberModel.related('stripeCustomers').query({
             where: {
                 customer_id: data.subscription.customer
             }
@@ -1078,7 +1078,7 @@ module.exports = class MemberRepository {
             // So we need to record the offer redemption event upon updating the subscription here
             if (model.get('offer_id') === null && subscriptionData.offer_id) {
                 const event = OfferRedemptionEvent.create({
-                    memberId: member.id,
+                    memberId: memberModel.id,
                     offerId: subscriptionData.offer_id,
                     subscriptionId: updated.id
                 }, updated.get('created_at'));
@@ -1108,7 +1108,7 @@ module.exports = class MemberRepository {
                 const mrrDelta = updatedMrrDelta - originalMrrDelta;
 
                 await this._MemberPaidSubscriptionEvent.add({
-                    member_id: member.id,
+                    member_id: memberModel.id,
                     source: 'stripe',
                     type: eventType,
                     subscription_id: updated.id,
@@ -1128,7 +1128,7 @@ module.exports = class MemberRepository {
                     const event = SubscriptionActivatedEvent.create({
                         source,
                         tierId: ghostProduct?.get('id'),
-                        memberId: member.id,
+                        memberId: memberModel.id,
                         subscriptionId: updated.get('id'),
                         offerId: offerId,
                         batchId: options.batch_id
@@ -1149,7 +1149,7 @@ module.exports = class MemberRepository {
                     const event = SubscriptionCancelledEvent.create({
                         source,
                         tierId: ghostProduct?.get('id'),
-                        memberId: member.id,
+                        memberId: memberModel.id,
                         subscriptionId: updated.get('id'),
                         cancelNow,
                         canceledAt,
@@ -1163,7 +1163,7 @@ module.exports = class MemberRepository {
             eventData.created_at = new Date(subscription.start_date * 1000);
             const subscriptionModel = await this._StripeCustomerSubscription.add(subscriptionData, options);
             await this._MemberPaidSubscriptionEvent.add({
-                member_id: member.id,
+                member_id: memberModel.id,
                 subscription_id: subscriptionModel.id,
                 type: 'created',
                 source: 'stripe',
@@ -1188,7 +1188,7 @@ module.exports = class MemberRepository {
             const subscriptionCreatedEvent = SubscriptionCreatedEvent.create({
                 source,
                 tierId: ghostProduct?.get('id'),
-                memberId: member.id,
+                memberId: memberModel.id,
                 subscriptionId: subscriptionModel.get('id'),
                 offerId: offerId,
                 attribution: attribution,
@@ -1199,7 +1199,7 @@ module.exports = class MemberRepository {
 
             if (offerId) {
                 const offerRedemptionEvent = OfferRedemptionEvent.create({
-                    memberId: member.id,
+                    memberId: memberModel.id,
                     offerId: offerId,
                     subscriptionId: subscriptionModel.get('id')
                 });
@@ -1210,7 +1210,7 @@ module.exports = class MemberRepository {
                 const activatedEvent = SubscriptionActivatedEvent.create({
                     source,
                     tierId: ghostProduct?.get('id'),
-                    memberId: member.id,
+                    memberId: memberModel.id,
                     subscriptionId: subscriptionModel.get('id'),
                     offerId: offerId,
                     attribution: attribution,
@@ -1220,8 +1220,8 @@ module.exports = class MemberRepository {
             }
         }
 
-        let memberProducts = (await member.related('products').fetch(options)).toJSON();
-        const oldMemberProducts = member.related('products').toJSON();
+        let memberProducts = (await memberModel.related('products').fetch(options)).toJSON();
+        const oldMemberProducts = memberModel.related('products').toJSON();
         let status = memberProducts.length === 0 ? 'free' : 'comped';
         if (!shouldBeDeleted && this.isActiveSubscriptionStatus(subscription.status)) {
             if (this.isComplimentarySubscription(subscription)) {
@@ -1235,7 +1235,7 @@ module.exports = class MemberRepository {
                 // 1. delete the previous product from the linked member products (in case an existing subscription changed product/price)
                 // 2. fix the list of products linked to a member (an existing subscription doesn't have a linked product to this member)
 
-                const subscriptions = await member.related('stripeSubscriptions').fetch(options);
+                const subscriptions = await memberModel.related('stripeSubscriptions').fetch(options);
 
                 const previousProduct = await this._productRepository.get({
                     stripe_price_id: model.get('stripe_price_id')
@@ -1280,7 +1280,7 @@ module.exports = class MemberRepository {
                 memberProducts.push(ghostProduct.toJSON());
             }
         } else {
-            const subscriptions = await member.related('stripeSubscriptions').fetch(options);
+            const subscriptions = await memberModel.related('stripeSubscriptions').fetch(options);
             let activeSubscriptionForGhostProduct = false;
             for (const subscriptionModel of subscriptions.models) {
                 if (this.isActiveSubscriptionStatus(subscriptionModel.get('status'))) {
@@ -1338,7 +1338,7 @@ module.exports = class MemberRepository {
 
         for (const productToAdd of productsToAdd) {
             await this._MemberProductEvent.add({
-                member_id: member.id,
+                member_id: memberModel.id,
                 product_id: productToAdd,
                 action: 'added'
             }, options);
@@ -1346,7 +1346,7 @@ module.exports = class MemberRepository {
 
         for (const productToRemove of productsToRemove) {
             await this._MemberProductEvent.add({
-                member_id: member.id,
+                member_id: memberModel.id,
                 product_id: productToRemove,
                 action: 'removed'
             }, options);
