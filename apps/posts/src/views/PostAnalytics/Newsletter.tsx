@@ -193,8 +193,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                         </Card>
                         <Card>
                             <CardHeader>
-                                <CardTitle>Email clicks</CardTitle>
-                                <CardDescription>Which links got the most clicks</CardDescription>
+                                <CardTitle>Newsletter clicks</CardTitle>
+                                <CardDescription>Which links resonated with your readers</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <Separator />
