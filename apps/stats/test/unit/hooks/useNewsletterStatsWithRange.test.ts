@@ -1,20 +1,35 @@
 import {type MockedFunction, vi} from 'vitest';
-import {getRangeDates} from '../../../src/hooks/useGrowthStats';
-import {useNewsletterStats, useSubscriberCount} from '@tryghost/admin-x-framework/api/stats';
-import {useNewsletterStatsWithRange, useSubscriberCountWithRange} from '../../../src/hooks/useNewsletterStatsWithRange';
 
-// Mock the dependent hooks and functions
+// Setup mocks with vi.mock calls to ensure proper hoisting
 vi.mock('@tryghost/admin-x-framework/api/stats', () => ({
     useNewsletterStats: vi.fn().mockReturnValue({isLoading: false, data: []}),
-    useSubscriberCount: vi.fn().mockReturnValue({isLoading: false, data: []})
+    useSubscriberCount: vi.fn().mockReturnValue({isLoading: false, data: []}),
+    useMemberCountHistory: vi.fn().mockReturnValue({isLoading: false, data: []}),
+    useMrrHistory: vi.fn().mockReturnValue({isLoading: false, data: []}),
+    useTopPostsStats: vi.fn().mockReturnValue({isLoading: false, data: []})
 }));
 
 vi.mock('../../../src/hooks/useGrowthStats', () => ({
-    getRangeDates: vi.fn(),
+    getRangeDates: vi.fn().mockImplementation((range: number) => {
+        if (range === 7) {
+            return {
+                dateFrom: '2023-01-01',
+                endDate: '2023-01-07'
+            };
+        } else if (range === 90) {
+            return {
+                dateFrom: '2023-01-01',
+                endDate: '2023-04-01'
+            };
+        }
+        return {
+            dateFrom: '2023-01-01',
+            endDate: '2023-01-30'
+        };
+    }),
     useGrowthStats: vi.fn()
 }));
 
-// Mock React's useMemo to just call the function directly
 vi.mock('react', () => {
     const original = vi.importActual('react');
     return {
@@ -23,17 +38,28 @@ vi.mock('react', () => {
     };
 });
 
+// Now import the actual modules being tested
+import {getRangeDates} from '../../../src/hooks/useGrowthStats';
+import {useNewsletterStats, useSubscriberCount} from '@tryghost/admin-x-framework/api/stats';
+import {useNewsletterStatsWithRange, useSubscriberCountWithRange} from '../../../src/hooks/useNewsletterStatsWithRange';
+
+// Define TypeScript interface for mocked function return values
+interface DateRange {
+    dateFrom: string;
+    endDate: string;
+}
+
 describe('Newsletter Stats Hooks with Range', function () {
     // Setup type for mocked functions
-    const mockUseNewsletterStats = useNewsletterStats as unknown as MockedFunction<typeof useNewsletterStats>;
-    const mockUseSubscriberCount = useSubscriberCount as unknown as MockedFunction<typeof useSubscriberCount>;
-    const mockGetRangeDates = getRangeDates as unknown as MockedFunction<typeof getRangeDates>;
+    const mockUseNewsletterStats = useNewsletterStats as MockedFunction<typeof useNewsletterStats>;
+    const mockUseSubscriberCount = useSubscriberCount as MockedFunction<typeof useSubscriberCount>;
+    const mockGetRangeDates = getRangeDates as MockedFunction<typeof getRangeDates>;
 
     beforeEach(function () {
         vi.resetAllMocks();
         
-        // Setup mock for getRangeDates with appropriate return values
-        mockGetRangeDates.mockImplementation(function (range: number) {
+        // Reset mock implementations
+        mockGetRangeDates.mockImplementation((range: number): DateRange => {
             if (range === 7) {
                 return {
                     dateFrom: '2023-01-01',
@@ -44,13 +70,11 @@ describe('Newsletter Stats Hooks with Range', function () {
                     dateFrom: '2023-01-01',
                     endDate: '2023-04-01'
                 };
-            } else {
-                // Default case (30 days)
-                return {
-                    dateFrom: '2023-01-01',
-                    endDate: '2023-01-30'
-                };
             }
+            return {
+                dateFrom: '2023-01-01',
+                endDate: '2023-01-30'
+            };
         });
     });
 

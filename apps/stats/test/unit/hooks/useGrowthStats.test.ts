@@ -1,13 +1,46 @@
 import {type MockedFunction, vi} from 'vitest';
-import {getRangeDates, useGrowthStats} from '../../../src/hooks/useGrowthStats';
-import {renderHook} from '@testing-library/react';
-import {useMemberCountHistory, useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
 
-// Mock the dependent hooks
+// Import React for renderHook
+import {renderHook} from '@testing-library/react';
+
+// Setup mocks with vi.mock calls to ensure proper hoisting
 vi.mock('@tryghost/admin-x-framework/api/stats', () => ({
-    useMemberCountHistory: vi.fn(),
-    useMrrHistory: vi.fn()
+    useNewsletterStats: vi.fn().mockReturnValue({isLoading: false, data: []}),
+    useSubscriberCount: vi.fn().mockReturnValue({isLoading: false, data: []}),
+    useMemberCountHistory: vi.fn().mockReturnValue({
+        isLoading: false,
+        data: {
+            stats: [],
+            meta: {
+                totals: { paid: 0, free: 0, comped: 0 },
+                pagination: { page: 1, pages: 1, total: 0, limit: 15, next: null, prev: null }
+            }
+        }
+    }),
+    useMrrHistory: vi.fn().mockReturnValue({
+        isLoading: false,
+        data: {
+            stats: [],
+            meta: {
+                pagination: { page: 1, pages: 1, total: 0, limit: 15, next: null, prev: null }
+            }
+        }
+    }),
+    useTopPostsStats: vi.fn().mockReturnValue({isLoading: false, data: []})
 }));
+
+// Setup React mock preserving all original exports
+vi.mock('react', async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+        ...actual,
+        useMemo: <T>(fn: () => T) => fn()
+    };
+});
+
+// Now import the actual modules being tested
+import {getRangeDates, useGrowthStats} from '../../../src/hooks/useGrowthStats';
+import {useMemberCountHistory, useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
 
 describe('Growth Stats', function () {
     describe('getRangeDates', function () {
@@ -54,6 +87,7 @@ describe('Growth Stats', function () {
     });
 
     describe('useGrowthStats', function () {
+        // Mock the hook return values
         const mockUseMemberCountHistory = useMemberCountHistory as MockedFunction<typeof useMemberCountHistory>;
         const mockUseMrrHistory = useMrrHistory as MockedFunction<typeof useMrrHistory>;
         
@@ -61,53 +95,48 @@ describe('Growth Stats', function () {
             vi.resetAllMocks();
             vi.spyOn(Date, 'now').mockImplementation(() => new Date('2023-01-30T12:00:00Z').getTime());
             
-            // Default mock return values
+            // Default mock implementations
             mockUseMemberCountHistory.mockReturnValue({
                 isLoading: false,
+                error: null,
+                isError: false,
+                isLoadingError: false,
+                isRefetchError: false,
+                isSuccess: true,
                 data: {
                     stats: [],
-                    meta: {}
+                    meta: {
+                        totals: { paid: 0, free: 0, comped: 0 },
+                        pagination: { page: 1, pages: 1, total: 0, limit: 15, next: null, prev: null }
+                    }
                 },
                 status: 'success',
-                isSuccess: true,
-                isError: false,
-                error: null,
-                isRefetchError: false,
-                isLoadingError: false,
-                isPaused: false,
+                fetchStatus: 'idle',
                 isFetched: true,
-                isFetchedAfterMount: true,
                 isFetching: false,
-                isPlaceholderData: false,
-                isPreviousData: false,
-                isRefetching: false,
-                isStale: false,
-                refetch: vi.fn(),
-                remove: vi.fn()
+                isPaused: false,
+                refetch: vi.fn()
             });
             
             mockUseMrrHistory.mockReturnValue({
                 isLoading: false,
+                error: null,
+                isError: false,
+                isLoadingError: false,
+                isRefetchError: false,
+                isSuccess: true,
                 data: {
                     stats: [],
-                    meta: {}
+                    meta: {
+                        pagination: { page: 1, pages: 1, total: 0, limit: 15, next: null, prev: null }
+                    }
                 },
                 status: 'success',
-                isSuccess: true,
-                isError: false,
-                error: null,
-                isRefetchError: false,
-                isLoadingError: false,
-                isPaused: false,
+                fetchStatus: 'idle',
                 isFetched: true,
-                isFetchedAfterMount: true,
                 isFetching: false,
-                isPlaceholderData: false,
-                isPreviousData: false,
-                isRefetching: false,
-                isStale: false,
-                refetch: vi.fn(),
-                remove: vi.fn()
+                isPaused: false,
+                refetch: vi.fn()
             });
         });
 
@@ -136,25 +165,21 @@ describe('Growth Stats', function () {
         });
 
         it('handles loading state correctly', function () {
+            // Mock loading state
             mockUseMemberCountHistory.mockReturnValue({
                 isLoading: true,
+                error: null,
+                isError: false,
+                isLoadingError: false,
+                isRefetchError: false,
+                isSuccess: false,
                 data: undefined,
                 status: 'loading',
-                isSuccess: false,
-                isError: false,
-                error: null,
-                isRefetchError: false,
-                isLoadingError: false,
-                isPaused: false,
+                fetchStatus: 'fetching',
                 isFetched: false,
-                isFetchedAfterMount: false,
                 isFetching: true,
-                isPlaceholderData: false,
-                isPreviousData: false,
-                isRefetching: false,
-                isStale: false,
-                refetch: vi.fn(),
-                remove: vi.fn()
+                isPaused: false,
+                refetch: vi.fn()
             });
             
             const {result} = renderHook(() => useGrowthStats(30));
@@ -163,32 +188,30 @@ describe('Growth Stats', function () {
         });
 
         it('transforms data correctly when available', function () {
-            // Mock a minimal data response
+            // Setup mocks with sample data
             mockUseMemberCountHistory.mockReturnValue({
                 isLoading: false,
+                error: null,
+                isError: false,
+                isLoadingError: false,
+                isRefetchError: false,
+                isSuccess: true,
                 data: {
                     stats: [
                         {date: '2023-01-29', free: 10, paid: 5, comped: 2, paid_subscribed: 4, paid_canceled: 1},
                         {date: '2023-01-30', free: 12, paid: 6, comped: 2, paid_subscribed: 5, paid_canceled: 1}
                     ],
-                    meta: {}
+                    meta: {
+                        totals: { paid: 6, free: 12, comped: 2 },
+                        pagination: { page: 1, pages: 1, total: 2, limit: 15, next: null, prev: null }
+                    }
                 },
                 status: 'success',
-                isSuccess: true,
-                isError: false,
-                error: null,
-                isRefetchError: false,
-                isLoadingError: false,
-                isPaused: false,
+                fetchStatus: 'idle',
                 isFetched: true,
-                isFetchedAfterMount: true,
                 isFetching: false,
-                isPlaceholderData: false,
-                isPreviousData: false,
-                isRefetching: false,
-                isStale: false,
-                refetch: vi.fn(),
-                remove: vi.fn()
+                isPaused: false,
+                refetch: vi.fn()
             });
             
             const {result} = renderHook(() => useGrowthStats(30));
