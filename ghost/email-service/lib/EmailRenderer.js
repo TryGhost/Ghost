@@ -314,13 +314,26 @@ class EmailRenderer {
         return allowedSegments;
     }
 
-    async renderPostBaseHtml(post) {
+    async renderPostBaseHtml(post, newsletter) {
         const postUrl = this.#getPostUrl(post);
+
+        const renderOptions = {
+            target: 'email',
+            postUrl
+        };
+
+        if (this.getLabs()?.isSet('emailCustomizationAlpha')) {
+            renderOptions.design = {
+                buttonCorners: newsletter?.get('button_corners')
+            };
+        }
+
         let html;
         if (post.get('lexical')) {
             // only lexical's renderer is async
             html = await this.#renderers.lexical.render(
-                post.get('lexical'), {target: 'email', postUrl}
+                post.get('lexical'),
+                renderOptions
             );
         } else {
             html = this.#renderers.mobiledoc.render(
@@ -339,7 +352,7 @@ class EmailRenderer {
      * @returns {Promise<EmailBody>}
      */
     async renderBody(post, newsletter, segment, options) {
-        let html = await this.renderPostBaseHtml(post);
+        let html = await this.renderPostBaseHtml(post, newsletter);
 
         // We don't allow the usage of the %%{uuid}%% replacement in the email body (only in links and special cases)
         // So we need to filter them before we introduce the real %%{uuid}%%
