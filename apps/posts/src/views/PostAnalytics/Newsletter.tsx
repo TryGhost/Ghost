@@ -1,9 +1,9 @@
-import AudienceSelect from './components/AudienceSelect';
+// import AudienceSelect from './components/AudienceSelect';
 import KpiCard, {KpiCardContent, KpiCardIcon, KpiCardLabel, KpiCardValue} from './components/KpiCard';
 import PostAnalyticsContent from './components/PostAnalyticsContent';
 import PostAnalyticsHeader from './components/PostAnalyticsHeader';
 import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, ViewHeader, formatNumber, formatPercentage} from '@tryghost/shade';
 import {calculateYAxisWidth} from '@src/utils/chart-helpers';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useRef, useState} from 'react';
@@ -92,9 +92,9 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         <PostAnalyticsLayout>
             <ViewHeader className='items-end pb-4'>
                 <PostAnalyticsHeader currentTab='Newsletter' />
-                <ViewHeaderActions className='mb-2'>
+                {/* <ViewHeaderActions className='mb-2'>
                     <AudienceSelect />
-                </ViewHeaderActions>
+                </ViewHeaderActions> */}
             </ViewHeader>
             <PostAnalyticsContent>
                 {isLoading ? 'Loading' :
@@ -178,12 +178,14 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             barSize={48}
                                             dataKey="current"
                                             fill="var(--color-current)"
+                                            minPointSize={2}
                                             radius={0}
                                         />
                                         <Recharts.Bar
                                             barSize={48}
                                             dataKey="average"
                                             fill="var(--color-average)"
+                                            minPointSize={2}
                                             radius={0}
                                         />
                                         <ChartLegend content={<ChartLegendContent />} />
@@ -193,8 +195,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                         </Card>
                         <Card>
                             <CardHeader>
-                                <CardTitle>Email clicks</CardTitle>
-                                <CardDescription>Which links got the most clicks</CardDescription>
+                                <CardTitle>Newsletter clicks</CardTitle>
+                                <CardDescription>Which links resonated with your readers</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <Separator />
@@ -203,14 +205,14 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>Link</TableHead>
-                                                <TableHead className='text-right'>No. of members</TableHead>
+                                                <TableHead className='w-full'>Link</TableHead>
+                                                <TableHead className='w-[0%] text-nowrap text-right'>No. of members</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {topLinks?.map(row => (
                                                 <TableRow key={row.url}>
-                                                    <TableCell>
+                                                    <TableCell className='max-w-0'>
                                                         <div className='flex items-center gap-2'>
                                                             {editingUrl === row.url ? (
                                                                 <div ref={containerRef} className='flex w-full items-center gap-2'>
@@ -230,7 +232,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                             ) : (
                                                                 <>
                                                                     <Button
-                                                                        className='bg-background'
+                                                                        className='shrink-0 bg-background'
                                                                         size='sm'
                                                                         variant='outline'
                                                                         onClick={() => handleEdit(row.url)}
@@ -238,12 +240,13 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                         <LucideIcon.Pen />
                                                                     </Button>
                                                                     <a
-                                                                        className='inline-flex items-center gap-2 font-medium hover:underline'
+                                                                        className='block truncate font-medium hover:underline'
                                                                         href={row.url}
                                                                         rel="noreferrer"
                                                                         target='_blank'
+                                                                        title={row.url}
                                                                     >
-                                                                        <span>{sanitizeUrl(row.url)}</span>
+                                                                        {sanitizeUrl(row.url)}
                                                                     </a>
                                                                     {row.edited && (
                                                                         <span className='text-xs text-gray-500'>(edited)</span>
@@ -256,6 +259,16 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                 </TableRow>
                                             ))}
                                         </TableBody>
+                                        <TableFooter className='bg-transparent'>
+                                            <TableRow>
+                                                <TableCell className='group-hover:bg-transparent' colSpan={2}>
+                                                    <div className='ml-2 mt-1 flex items-center gap-2 text-green'>
+                                                        <LucideIcon.ArrowUp size={20} strokeWidth={1.5} />
+                                                        Sent a broken link? You can update it!
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableFooter>
                                     </Table>
                                     :
                                     <div className='py-20 text-center text-sm text-gray-700'>
