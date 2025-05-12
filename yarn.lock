@@ -7457,6 +7457,14 @@
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "^24.1.1"
 
+"@tryghost/html-to-plaintext@1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-plaintext/-/html-to-plaintext-1.0.2.tgz#30efe45a4c5e2ffd874f962029fe23ef5ef7b091"
+  integrity sha512-PFTbyB7eYEAUpWHNKuZ8o2P6UZ119WDe/JLx4XlP5qUnGFykW3dZ5JhA85ZCrmGosdXyEc4cOUDwFmGD6jxqyQ==
+  dependencies:
+    html-to-text "8.2.1"
+    lodash "4.17.21"
+
 "@tryghost/http-cache-utils@0.1.19":
   version "0.1.19"
   resolved "https://registry.yarnpkg.com/@tryghost/http-cache-utils/-/http-cache-utils-0.1.19.tgz#3b7c9a5c6b9f3d75d4c5b757abfeacd2086e2344"
@@ -7685,6 +7693,16 @@
     gelf-stream "^1.1.1"
     json-stringify-safe "^5.0.1"
     lodash "^4.17.21"
+
+"@tryghost/members-csv@2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-2.0.2.tgz#fb0e9e92da6d73dd6e62c287bc99b1c2b167c9bd"
+  integrity sha512-eOIMxAKrum+NPSp9eMgXX8fBw45krLUBo4iIMY4/b1Aqint8Qah32MW2pm9UrvkTNUWPlnrGgJXJ74kxmQHxXQ==
+  dependencies:
+    fs-extra "11.3.0"
+    lodash "4.17.21"
+    papaparse "5.3.2"
+    pump "3.0.2"
 
 "@tryghost/metrics@1.0.37":
   version "1.0.37"
