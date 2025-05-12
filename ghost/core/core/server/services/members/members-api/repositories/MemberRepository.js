@@ -1161,16 +1161,16 @@ module.exports = class MemberRepository {
             }
         } else {
             eventData.created_at = new Date(stripeSubscriptionData.start_date * 1000);
-            const subscriptionModel = await this._StripeCustomerSubscription.add(subscriptionData, options);
+            const newStripeCustomerSubscriptionModel = await this._StripeCustomerSubscription.add(subscriptionData, options);
             await this._MemberPaidSubscriptionEvent.add({
                 member_id: memberModel.id,
-                subscription_id: subscriptionModel.id,
+                subscription_id: newStripeCustomerSubscriptionModel.id,
                 type: 'created',
                 source: 'stripe',
                 from_plan: null,
                 to_plan: subscriptionPriceData.id,
                 currency: subscriptionPriceData.currency,
-                mrr_delta: subscriptionModel.get('mrr'),
+                mrr_delta: newStripeCustomerSubscriptionModel.get('mrr'),
                 ...eventData
             }, options);
 
@@ -1189,7 +1189,7 @@ module.exports = class MemberRepository {
                 source,
                 tierId: ghostProduct?.get('id'),
                 memberId: memberModel.id,
-                subscriptionId: subscriptionModel.get('id'),
+                subscriptionId: newStripeCustomerSubscriptionModel.get('id'),
                 offerId: offerId,
                 attribution: attribution,
                 batchId: options.batch_id
@@ -1201,17 +1201,17 @@ module.exports = class MemberRepository {
                 const offerRedemptionEvent = OfferRedemptionEvent.create({
                     memberId: memberModel.id,
                     offerId: offerId,
-                    subscriptionId: subscriptionModel.get('id')
+                    subscriptionId: newStripeCustomerSubscriptionModel.get('id')
                 });
                 this.dispatchEvent(offerRedemptionEvent, options);
             }
 
-            if (getStatus(subscriptionModel) === 'active') {
+            if (getStatus(newStripeCustomerSubscriptionModel) === 'active') {
                 const subscriptionActivatedEvent = SubscriptionActivatedEvent.create({
                     source,
                     tierId: ghostProduct?.get('id'),
                     memberId: memberModel.id,
-                    subscriptionId: subscriptionModel.get('id'),
+                    subscriptionId: newStripeCustomerSubscriptionModel.get('id'),
                     offerId: offerId,
                     attribution: attribution,
                     batchId: options.batch_id
