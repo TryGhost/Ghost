@@ -40,6 +40,22 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         return '#ffffff';
     };
 
+    const headerColor = () => {
+        const value = newsletter.header_color;
+
+        if (!value || value === 'transparent') {
+            return 'transparent';
+        }
+
+        const validHex = /#([0-9a-f]{3}){1,2}$/i;
+
+        if (validHex.test(value)) {
+            return value;
+        }
+
+        return 'transparent';
+    };
+
     const borderColor = () => {
         const value = newsletter.border_color;
 
@@ -132,11 +148,14 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
     };
 
     const textColor = textColorForBackgroundColor(backgroundColor()).hex();
-
     const secondaryTextColor = textColorForBackgroundColor(backgroundColor()).alpha(0.5).toString();
+
+    const headerTextColor = headerColor() === 'transparent' ? textColor : textColorForBackgroundColor(headerColor()).hex();
+    const secondaryHeaderTextColor = headerColor() === 'transparent' ? secondaryTextColor : textColorForBackgroundColor(headerColor()).alpha(0.5).toString();
 
     const colors = hasEmailCustomization ? {
         backgroundColor: backgroundColor(),
+        headerColor: headerColor(),
         borderColor: borderColor() || undefined,
         secondaryBorderColor,
         titleColor: titleColor() || undefined,
@@ -144,7 +163,9 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         linkColor: linkColor() || undefined,
         dividerColor: dividerColor() || undefined,
         textColor,
-        secondaryTextColor
+        secondaryTextColor,
+        headerTextColor,
+        secondaryHeaderTextColor
     } : {};
 
     return <NewsletterPreviewContent
@@ -156,6 +177,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         buttonStyle={newsletter.button_style || 'fill'}
         dividerStyle={newsletter.divider_style || 'solid'}
         footerContent={newsletter.footer_content}
+        headerColor={colors.headerColor || headerColor()}
         headerIcon={newsletter.show_header_icon ? icon : undefined}
         headerImage={newsletter.header_image}
         headerSubtitle={headerSubtitle}

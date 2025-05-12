@@ -423,6 +423,19 @@ const Sidebar: React.FC<{
                         direction='rtl'
                         swatches={[
                             {
+                                value: 'transparent',
+                                title: 'Transparent',
+                                hex: '#00000000'
+                            }
+                        ]}
+                        title='Header background color'
+                        value={newsletter.header_color || 'transparent'}
+                        onChange={color => updateNewsletter({header_color: color!})}
+                    />
+                    <ColorPickerField
+                        direction='rtl'
+                        swatches={[
+                            {
                                 value: null,
                                 title: 'Auto',
                                 hex: backgroundColorIsDark() ? '#ffffff' : '#000000'
