@@ -6,7 +6,7 @@ import SortButton from './components/SortButton';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
-import {calculateYAxisWidth, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
+import {calculateYAxisWidth, getPeriodText, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useNewsletterStatsWithRange, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
@@ -392,7 +392,7 @@ const Newsletters: React.FC = () => {
                 <Card>
                     <CardHeader>
                         <CardTitle>Top newsletters</CardTitle>
-                        <CardDescription>Which newsletters performed best in this period</CardDescription>
+                        <CardDescription>Performance of newsletters sent {getPeriodText(range)}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Separator/>
