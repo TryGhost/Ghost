@@ -139,19 +139,21 @@ class PostsStatsService {
             const paidReferrersCTE = this._buildPaidReferrersSubquery(postId, options);
             const mrrReferrersCTE = this._buildMrrReferrersSubquery(postId, options);
 
-            // Base query to get all referrer sources and URLs for the post
+            // Create unified sources list
+            //  - this is to avoid having to join with the referrer_urls table
+            //   and deal with deduplication
             const baseReferrersQuery = this.knex('members_created_events as mce')
-                .select('mce.referrer_source as source', 'mce.referrer_url')
+                .select('mce.referrer_source as source')
                 .where('mce.attribution_id', postId)
                 .where('mce.attribution_type', 'post')
                 .union((qb) => {
-                    qb.select('msce.referrer_source as source', 'msce.referrer_url')
+                    qb.select('msce.referrer_source as source')
                         .from('members_subscription_created_events as msce')
                         .where('msce.attribution_id', postId)
                         .where('msce.attribution_type', 'post');
                 });
 
-            // Use knex.raw for GROUP BY to accommodate SQLite in tests
+            // Now join all the data
             let query = this.knex
                 .with('free_referrers', freeReferrersCTE)
                 .with('paid_referrers', paidReferrersCTE)
@@ -159,7 +161,15 @@ class PostsStatsService {
                 .with('all_referrers', baseReferrersQuery)
                 .select(
                     'ar.source',
-                    'ar.referrer_url',
+                    this.knex.raw(`(
+                        SELECT referrer_url 
+                        FROM members_created_events 
+                        WHERE attribution_id = ? 
+                        AND attribution_type = 'post'
+                        AND referrer_source = ar.source
+                        AND referrer_url IS NOT NULL
+                        LIMIT 1
+                    ) as referrer_url`, [postId]),
                     this.knex.raw('COALESCE(fr.free_members, 0) as free_members'),
                     this.knex.raw('COALESCE(pr.paid_members, 0) as paid_members'),
                     this.knex.raw('COALESCE(mr.mrr, 0) as mrr')
@@ -168,8 +178,7 @@ class PostsStatsService {
                 .leftJoin('free_referrers as fr', 'ar.source', 'fr.source')
                 .leftJoin('paid_referrers as pr', 'ar.source', 'pr.source')
                 .leftJoin('mrr_referrers as mr', 'ar.source', 'mr.source')
-                .whereNotNull('ar.source')
-                .groupBy('ar.source');
+                .whereNotNull('ar.source');
 
             const results = await query
                 .orderBy(orderField, orderDirection)
