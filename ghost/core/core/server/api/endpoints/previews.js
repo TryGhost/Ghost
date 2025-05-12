@@ -66,19 +66,17 @@ const controller = {
                 }
             }
         },
-        query(frame) {
+        async query(frame) {
             _addMemberContextToFrame(frame);
 
-            return models.Post.findOne(Object.assign({status: 'all'}, frame.data), frame.options)
-                .then((model) => {
-                    if (!model) {
-                        throw new errors.NotFoundError({
-                            message: tpl(messages.postNotFound)
-                        });
-                    }
-
-                    return model;
+            const model = await models.Post.findOne(Object.assign({status: 'all'}, frame.data), frame.options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.postNotFound)
                 });
+            }
+
+            return model;
         }
     }
 };
