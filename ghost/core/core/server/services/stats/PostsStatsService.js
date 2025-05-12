@@ -139,24 +139,42 @@ class PostsStatsService {
             const paidReferrersCTE = this._buildPaidReferrersSubquery(postId, options);
             const mrrReferrersCTE = this._buildMrrReferrersSubquery(postId, options);
 
-            // Base query to get all referrer sources and URLs for the post
-            const baseReferrersQuery = this.knex('members_created_events as mce')
-                .select('mce.referrer_source as source', 'mce.referrer_url')
+            // First, let's get all sources from both tables using separate queries
+            // Then combine and group them in a cross-database compatible way
+            const membersCreatedSources = this.knex('members_created_events as mce')
+                .select('mce.referrer_source as source')
+                .select('mce.referrer_url')
                 .where('mce.attribution_id', postId)
                 .where('mce.attribution_type', 'post')
-                .union((qb) => {
-                    qb.select('msce.referrer_source as source', 'msce.referrer_url')
-                        .from('members_subscription_created_events as msce')
-                        .where('msce.attribution_id', postId)
-                        .where('msce.attribution_type', 'post');
+                .whereNotNull('mce.referrer_source');
+
+            const membersSubscriptionSources = this.knex('members_subscription_created_events as msce')
+                .select('msce.referrer_source as source')
+                .select('msce.referrer_url')
+                .where('msce.attribution_id', postId)
+                .where('msce.attribution_type', 'post')
+                .whereNotNull('msce.referrer_source');
+
+            // Using a simpler combined query that works in SQLite
+            const allSources = this.knex.select('source', 'referrer_url')
+                .from(membersCreatedSources.as('sources1'))
+                .union(function () {
+                    this.select('source', 'referrer_url')
+                        .from(membersSubscriptionSources.as('sources2'));
                 });
 
-            // Use knex.raw for GROUP BY to accommodate SQLite in tests
+            // Create the final CTE that we'll use to get all referrers
+            const allReferrersCTE = this.knex.select('source')
+                .select(this.knex.raw('MIN(referrer_url) as referrer_url'))
+                .from(allSources.as('all_sources'))
+                .groupBy('source');
+
+            // Now join all the data
             let query = this.knex
                 .with('free_referrers', freeReferrersCTE)
                 .with('paid_referrers', paidReferrersCTE)
                 .with('mrr_referrers', mrrReferrersCTE)
-                .with('all_referrers', baseReferrersQuery)
+                .with('all_referrers', allReferrersCTE)
                 .select(
                     'ar.source',
                     'ar.referrer_url',
@@ -168,8 +186,7 @@ class PostsStatsService {
                 .leftJoin('free_referrers as fr', 'ar.source', 'fr.source')
                 .leftJoin('paid_referrers as pr', 'ar.source', 'pr.source')
                 .leftJoin('mrr_referrers as mr', 'ar.source', 'mr.source')
-                .whereNotNull('ar.source')
-                .groupBy('ar.source');
+                .whereNotNull('ar.source');
 
             const results = await query
                 .orderBy(orderField, orderDirection)
