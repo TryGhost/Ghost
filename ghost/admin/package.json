@@ -51,7 +51,7 @@
     "@tryghost/kg-converters": "1.1.0",
     "@tryghost/koenig-lexical": "1.6.11",
     "@tryghost/limit-service": "1.2.15",
-    "@tryghost/members-csv": "0.0.0",
+    "@tryghost/members-csv": "2.0.2",
     "@tryghost/nql": "0.12.7",
     "@tryghost/nql-lang": "0.6.3",
     "@tryghost/string": "0.2.13",

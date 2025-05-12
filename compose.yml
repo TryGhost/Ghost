@@ -14,10 +14,8 @@ x-service-template: &service-template
     - node_modules_ghost_domain-events:/home/ghost/ghost/domain-events/node_modules:delegated
     - node_modules_ghost_email-addresses:/home/ghost/ghost/email-addresses/node_modules:delegated
     - node_modules_ghost_email-service:/home/ghost/ghost/email-service/node_modules:delegated
-    - node_modules_ghost_html-to-plaintext:/home/ghost/ghost/html-to-plaintext/node_modules:delegated
     - node_modules_ghost_i18n:/home/ghost/ghost/i18n/node_modules:delegated
     - node_modules_ghost_job-manager:/home/ghost/ghost/job-manager/node_modules:delegated
-    - node_modules_ghost_members-csv:/home/ghost/ghost/members-csv/node_modules:delegated
     - node_modules_ghost_mw-error-handler:/home/ghost/ghost/mw-error-handler/node_modules:delegated
     - node_modules_ghost_mw-vhost:/home/ghost/ghost/mw-vhost/node_modules:delegated
     - node_modules_ghost_prometheus-metrics:/home/ghost/ghost/prometheus-metrics/node_modules:delegated
@@ -165,10 +163,8 @@ volumes:
   node_modules_ghost_domain-events: {}
   node_modules_ghost_email-addresses: {}
   node_modules_ghost_email-service: {}
-  node_modules_ghost_html-to-plaintext: {}
   node_modules_ghost_i18n: {}
   node_modules_ghost_job-manager: {}
-  node_modules_ghost_members-csv: {}
   node_modules_ghost_mw-error-handler: {}
   node_modules_ghost_mw-vhost: {}
   node_modules_ghost_prometheus-metrics: {}
