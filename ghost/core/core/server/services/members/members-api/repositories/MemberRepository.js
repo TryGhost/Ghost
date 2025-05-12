@@ -913,38 +913,38 @@ module.exports = class MemberRepository {
             options.batch_id = ObjectId().toHexString();
         }
 
-        const member = await this._Member.findOne({
+        const memberModel = await this._Member.findOne({
             id: data.id
         }, {...options, forUpdate: true});
 
-        const customer = await member.related('stripeCustomers').query({
+        const customerModel = await memberModel.related('stripeCustomers').query({
             where: {
                 customer_id: data.subscription.customer
             }
         }).fetchOne(options);
 
-        if (!customer) {
+        if (!customerModel) {
             // Maybe just link the customer?
             throw new errors.NotFoundError({message: tpl(messages.subscriptionNotFound)});
         }
 
-        const subscription = await this._stripeAPIService.getSubscription(data.subscription.id);
+        const stripeSubscription = await this._stripeAPIService.getSubscription(data.subscription.id);
         let paymentMethodId;
-        if (!subscription.default_payment_method) {
+        if (!stripeSubscription.default_payment_method) {
             paymentMethodId = null;
-        } else if (typeof subscription.default_payment_method === 'string') {
-            paymentMethodId = subscription.default_payment_method;
+        } else if (typeof stripeSubscription.default_payment_method === 'string') {
+            paymentMethodId = stripeSubscription.default_payment_method;
         } else {
-            paymentMethodId = subscription.default_payment_method.id;
+            paymentMethodId = stripeSubscription.default_payment_method.id;
         }
-        const paymentMethod = paymentMethodId ? await this._stripeAPIService.getCardPaymentMethod(paymentMethodId) : null;
+        const stripePaymentMethod = paymentMethodId ? await this._stripeAPIService.getCardPaymentMethod(paymentMethodId) : null;
 
-        const model = await this.getSubscriptionByStripeID(subscription.id, {...options, forUpdate: true});
+        const originalSubscriptionModel = await this.getSubscriptionByStripeID(stripeSubscription.id, {...options, forUpdate: true});
 
-        const subscriptionPriceData = _.get(subscription, 'items.data[0].price');
+        const stripeSubscriptionPriceData = _.get(stripeSubscription, 'items.data[0].price');
         let ghostProduct;
         try {
-            ghostProduct = await this._productRepository.get({stripe_product_id: subscriptionPriceData.product}, options);
+            ghostProduct = await this._productRepository.get({stripe_product_id: stripeSubscriptionPriceData.product}, options);
             // Use first Ghost product as default product in case of missing link
             if (!ghostProduct) {
                 ghostProduct = await this._productRepository.getDefaultProduct({
@@ -960,72 +960,72 @@ module.exports = class MemberRepository {
                     name: ghostProduct.get('name'),
                     stripe_prices: [
                         {
-                            stripe_price_id: subscriptionPriceData.id,
-                            stripe_product_id: subscriptionPriceData.product,
-                            active: subscriptionPriceData.active,
-                            nickname: subscriptionPriceData.nickname,
-                            currency: subscriptionPriceData.currency,
-                            amount: subscriptionPriceData.unit_amount,
-                            type: subscriptionPriceData.type,
-                            interval: (subscriptionPriceData.recurring && subscriptionPriceData.recurring.interval) || null
+                            stripe_price_id: stripeSubscriptionPriceData.id,
+                            stripe_product_id: stripeSubscriptionPriceData.product,
+                            active: stripeSubscriptionPriceData.active,
+                            nickname: stripeSubscriptionPriceData.nickname,
+                            currency: stripeSubscriptionPriceData.currency,
+                            amount: stripeSubscriptionPriceData.unit_amount,
+                            type: stripeSubscriptionPriceData.type,
+                            interval: (stripeSubscriptionPriceData.recurring && stripeSubscriptionPriceData.recurring.interval) || null
                         }
                     ]
                 }, options);
             } else {
                 // Log error if no Ghost products found
-                logging.error(`There was an error linking subscription - ${subscription.id}, no Products exist.`);
+                logging.error(`There was an error linking subscription - ${stripeSubscription.id}, no Products exist.`);
             }
         } catch (e) {
-            logging.error(`Failed to handle prices and product for - ${subscription.id}.`);
+            logging.error(`Failed to handle prices and product for - ${stripeSubscription.id}.`);
             logging.error(e);
         }
 
-        let stripeCouponId = subscription.discount && subscription.discount.coupon ? subscription.discount.coupon.id : null;
+        let stripeCouponId = stripeSubscription.discount && stripeSubscription.discount.coupon ? stripeSubscription.discount.coupon.id : null;
 
         // For trial offers, offer id is passed from metadata as there is no stripe coupon
         let offerId = data.offerId || null;
-        let offer = null;
+        let offerModel = null;
 
         if (stripeCouponId) {
             // Get the offer from our database
-            offer = await this._offerRepository.getByStripeCouponId(stripeCouponId, {transacting: options.transacting});
-            if (offer) {
-                offerId = offer.id;
+            offerModel = await this._offerRepository.getByStripeCouponId(stripeCouponId, {transacting: options.transacting});
+            if (offerModel) {
+                offerId = offerModel.id;
             } else {
-                logging.error(`Received an unknown stripe coupon id (${stripeCouponId}) for subscription - ${subscription.id}.`);
+                logging.error(`Received an unknown stripe coupon id (${stripeCouponId}) for subscription - ${stripeSubscription.id}.`);
             }
         } else if (offerId) {
-            offer = await this._offerRepository.getById(offerId, {transacting: options.transacting});
+            offerModel = await this._offerRepository.getById(offerId, {transacting: options.transacting});
         }
 
         const subscriptionData = {
-            customer_id: subscription.customer,
-            subscription_id: subscription.id,
-            status: subscription.status,
-            cancel_at_period_end: subscription.cancel_at_period_end,
-            cancellation_reason: this.getCancellationReason(subscription),
-            current_period_end: new Date(subscription.current_period_end * 1000),
-            start_date: new Date(subscription.start_date * 1000),
-            default_payment_card_last4: paymentMethod && paymentMethod.card && paymentMethod.card.last4 || null,
-            stripe_price_id: subscriptionPriceData.id,
-            plan_id: subscriptionPriceData.id,
+            customer_id: stripeSubscription.customer,
+            subscription_id: stripeSubscription.id,
+            status: stripeSubscription.status,
+            cancel_at_period_end: stripeSubscription.cancel_at_period_end,
+            cancellation_reason: this.getCancellationReason(stripeSubscription),
+            current_period_end: new Date(stripeSubscription.current_period_end * 1000),
+            start_date: new Date(stripeSubscription.start_date * 1000),
+            default_payment_card_last4: stripePaymentMethod && stripePaymentMethod.card && stripePaymentMethod.card.last4 || null,
+            stripe_price_id: stripeSubscriptionPriceData.id,
+            plan_id: stripeSubscriptionPriceData.id,
             // trial start and end are returned as Stripe timestamps and need coversion
-            trial_start_at: subscription.trial_start ? new Date(subscription.trial_start * 1000) : null,
-            trial_end_at: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+            trial_start_at: stripeSubscription.trial_start ? new Date(stripeSubscription.trial_start * 1000) : null,
+            trial_end_at: stripeSubscription.trial_end ? new Date(stripeSubscription.trial_end * 1000) : null,
             // NOTE: Defaulting to interval as migration to nullable field
             // turned out to be much bigger problem.
             // Ideally, would need nickname field to be nullable on the DB level
             // condition can be simplified once this is done
-            plan_nickname: subscriptionPriceData.nickname || _.get(subscriptionPriceData, 'recurring.interval'),
-            plan_interval: _.get(subscriptionPriceData, 'recurring.interval', ''),
-            plan_amount: subscriptionPriceData.unit_amount,
-            plan_currency: subscriptionPriceData.currency,
+            plan_nickname: stripeSubscriptionPriceData.nickname || _.get(stripeSubscriptionPriceData, 'recurring.interval'),
+            plan_interval: _.get(stripeSubscriptionPriceData, 'recurring.interval', ''),
+            plan_amount: stripeSubscriptionPriceData.unit_amount,
+            plan_currency: stripeSubscriptionPriceData.currency,
             mrr: this.getMRR({
-                interval: _.get(subscriptionPriceData, 'recurring.interval', ''),
-                amount: subscriptionPriceData.unit_amount,
-                status: subscription.status,
-                canceled: subscription.cancel_at_period_end,
-                discount: subscription.discount
+                interval: _.get(stripeSubscriptionPriceData, 'recurring.interval', ''),
+                amount: stripeSubscriptionPriceData.unit_amount,
+                status: stripeSubscription.status,
+                canceled: stripeSubscription.cancel_at_period_end,
+                discount: stripeSubscription.discount
             }),
             offer_id: offerId
         };
@@ -1050,44 +1050,44 @@ module.exports = class MemberRepository {
         };
         let eventData = {};
 
-        const shouldBeDeleted = subscription.metadata && !!subscription.metadata.ghost_migrated_to && subscription.status === 'canceled';
-        if (shouldBeDeleted) {
+        const subscriptionModelShouldBeDeleted = stripeSubscription.metadata && !!stripeSubscription.metadata.ghost_migrated_to && stripeSubscription.status === 'canceled';
+        if (subscriptionModelShouldBeDeleted) {
             logging.warn(`Subscription ${subscriptionData.subscription_id} is marked for deletion, skipping linking.`);
 
-            if (model) {
+            if (originalSubscriptionModel) {
                 // Delete all paid subscription events manually for this subscription
                 // This is the only related event without a foreign key constraint
-                await this._MemberPaidSubscriptionEvent.query().where('subscription_id', model.id).delete().transacting(options.transacting);
+                await this._MemberPaidSubscriptionEvent.query().where('subscription_id', originalSubscriptionModel.id).delete().transacting(options.transacting);
 
                 // Delete the subscription in the database because we don't want to show it in the UI or in our data calculations
-                await model.destroy(options);
+                await originalSubscriptionModel.destroy(options);
             }
-        } else if (model) {
+        } else if (originalSubscriptionModel) {
             // CASE: Offer is already mapped against sub, don't overwrite it with NULL
             // Needed for trial offers, which don't have a stripe coupon/discount attached to sub
             if (!subscriptionData.offer_id) {
                 delete subscriptionData.offer_id;
             }
-            const updated = await this._StripeCustomerSubscription.edit(subscriptionData, {
+            const updatedSubscriptionModel = await this._StripeCustomerSubscription.edit(subscriptionData, {
                 ...options,
-                id: model.id
+                id: originalSubscriptionModel.id
             });
 
             // CASE: Existing free member subscribes to a paid tier with an offer
             // Stripe doesn't send the discount/offer info in the subscription.created event
             // So we need to record the offer redemption event upon updating the subscription here
-            if (model.get('offer_id') === null && subscriptionData.offer_id) {
+            if (originalSubscriptionModel.get('offer_id') === null && subscriptionData.offer_id) {
                 const event = OfferRedemptionEvent.create({
-                    memberId: member.id,
+                    memberId: memberModel.id,
                     offerId: subscriptionData.offer_id,
-                    subscriptionId: updated.id
-                }, updated.get('created_at'));
+                    subscriptionId: updatedSubscriptionModel.id
+                }, updatedSubscriptionModel.get('created_at'));
                 this.dispatchEvent(event, options);
             }
 
-            if (model.get('mrr') !== updated.get('mrr') || model.get('plan_id') !== updated.get('plan_id') || model.get('status') !== updated.get('status') || model.get('cancel_at_period_end') !== updated.get('cancel_at_period_end')) {
-                const originalMrrDelta = model.get('mrr');
-                const updatedMrrDelta = updated.get('mrr');
+            if (originalSubscriptionModel.get('mrr') !== updatedSubscriptionModel.get('mrr') || originalSubscriptionModel.get('plan_id') !== updatedSubscriptionModel.get('plan_id') || originalSubscriptionModel.get('status') !== updatedSubscriptionModel.get('status') || originalSubscriptionModel.get('cancel_at_period_end') !== updatedSubscriptionModel.get('cancel_at_period_end')) {
+                const originalSubscriptionMrrDelta = originalSubscriptionModel.get('mrr');
+                const updatedSubscriptionMrrDelta = updatedSubscriptionModel.get('mrr');
 
                 const getEventType = (originalStatus, updatedStatus) => {
                     if (originalStatus === updatedStatus) {
@@ -1101,35 +1101,35 @@ module.exports = class MemberRepository {
                     return updatedStatus;
                 };
 
-                const originalStatus = getStatus(model);
-                const updatedStatus = getStatus(updated);
-                const eventType = getEventType(originalStatus, updatedStatus);
+                const originalSubscriptionStatus = getStatus(originalSubscriptionModel);
+                const updatedSubscriptionStatus = getStatus(updatedSubscriptionModel);
+                const eventType = getEventType(originalSubscriptionStatus, updatedSubscriptionStatus);
 
-                const mrrDelta = updatedMrrDelta - originalMrrDelta;
+                const mrrDelta = updatedSubscriptionMrrDelta - originalSubscriptionMrrDelta;
 
                 await this._MemberPaidSubscriptionEvent.add({
-                    member_id: member.id,
+                    member_id: memberModel.id,
                     source: 'stripe',
                     type: eventType,
-                    subscription_id: updated.id,
-                    from_plan: model.get('plan_id'),
-                    to_plan: updated.get('status') === 'canceled' ? null : updated.get('plan_id'),
-                    currency: subscriptionPriceData.currency,
+                    subscription_id: updatedSubscriptionModel.id,
+                    from_plan: originalSubscriptionModel.get('plan_id'),
+                    to_plan: updatedSubscriptionModel.get('status') === 'canceled' ? null : updatedSubscriptionModel.get('plan_id'),
+                    currency: stripeSubscriptionPriceData.currency,
                     mrr_delta: mrrDelta
                 }, options);
 
                 // Did we activate this subscription?
                 // This happens when an incomplete subscription is completed
                 // This always happens during the 3D secure flow, so it is important to catch
-                if (originalStatus !== 'active' && updatedStatus === 'active') {
+                if (originalSubscriptionStatus !== 'active' && updatedSubscriptionStatus === 'active') {
                     const context = options?.context || {};
                     const source = this._resolveContextSource(context);
 
                     const event = SubscriptionActivatedEvent.create({
                         source,
                         tierId: ghostProduct?.get('id'),
-                        memberId: member.id,
-                        subscriptionId: updated.get('id'),
+                        memberId: memberModel.id,
+                        subscriptionId: updatedSubscriptionModel.get('id'),
                         offerId: offerId,
                         batchId: options.batch_id
                     });
@@ -1139,18 +1139,18 @@ module.exports = class MemberRepository {
                 // Dispatch cancellation event, i.e. send paid cancellation staff notification, if:
                 // 1. The subscription has been set to cancel at period end, by the member in Portal, status 'canceled'
                 // 2. The subscription has been immediately canceled (e.g. due to multiple failed payments), status 'expired'
-                if (this.isActiveSubscriptionStatus(originalStatus) && (updatedStatus === 'canceled' || updatedStatus === 'expired')) {
+                if (this.isActiveSubscriptionStatus(originalSubscriptionStatus) && (updatedSubscriptionStatus === 'canceled' || updatedSubscriptionStatus === 'expired')) {
                     const context = options?.context || {};
                     const source = this._resolveContextSource(context);
-                    const cancelNow = updatedStatus === 'expired';
-                    const canceledAt = new Date(subscription.canceled_at * 1000);
-                    const expiryAt = cancelNow ? canceledAt : updated.get('current_period_end');
+                    const cancelNow = updatedSubscriptionStatus === 'expired';
+                    const canceledAt = new Date(stripeSubscription.canceled_at * 1000);
+                    const expiryAt = cancelNow ? canceledAt : updatedSubscriptionModel.get('current_period_end');
 
                     const event = SubscriptionCancelledEvent.create({
                         source,
                         tierId: ghostProduct?.get('id'),
-                        memberId: member.id,
-                        subscriptionId: updated.get('id'),
+                        memberId: memberModel.id,
+                        subscriptionId: updatedSubscriptionModel.get('id'),
                         cancelNow,
                         canceledAt,
                         expiryAt
@@ -1160,36 +1160,38 @@ module.exports = class MemberRepository {
                 }
             }
         } else {
-            eventData.created_at = new Date(subscription.start_date * 1000);
-            const subscriptionModel = await this._StripeCustomerSubscription.add(subscriptionData, options);
+            // CASE: New Stripe subscription created for member
+            // Create a new subscription model for the member and dispatch events
+            eventData.created_at = new Date(stripeSubscription.start_date * 1000);
+            const newSubscriptionModel = await this._StripeCustomerSubscription.add(subscriptionData, options);
             await this._MemberPaidSubscriptionEvent.add({
-                member_id: member.id,
-                subscription_id: subscriptionModel.id,
+                member_id: memberModel.id,
+                subscription_id: newSubscriptionModel.id,
                 type: 'created',
                 source: 'stripe',
                 from_plan: null,
-                to_plan: subscriptionPriceData.id,
-                currency: subscriptionPriceData.currency,
-                mrr_delta: subscriptionModel.get('mrr'),
+                to_plan: stripeSubscriptionPriceData.id,
+                currency: stripeSubscriptionPriceData.currency,
+                mrr_delta: newSubscriptionModel.get('mrr'),
                 ...eventData
             }, options);
 
             const context = options?.context || {};
             const source = this._resolveContextSource(context);
             const attribution = {
-                id: data.attribution?.id ?? subscription.metadata?.attribution_id ?? null,
-                url: data.attribution?.url ?? subscription.metadata?.attribution_url ?? null,
-                type: data.attribution?.type ?? subscription.metadata?.attribution_type ?? null,
-                referrerSource: data.attribution?.referrerSource ?? subscription.metadata?.referrer_source ?? null,
-                referrerMedium: data.attribution?.referrerMedium ?? subscription.metadata?.referrer_medium ?? null,
-                referrerUrl: data.attribution?.referrerUrl ?? subscription.metadata?.referrer_url ?? null
+                id: data.attribution?.id ?? stripeSubscription.metadata?.attribution_id ?? null,
+                url: data.attribution?.url ?? stripeSubscription.metadata?.attribution_url ?? null,
+                type: data.attribution?.type ?? stripeSubscription.metadata?.attribution_type ?? null,
+                referrerSource: data.attribution?.referrerSource ?? stripeSubscription.metadata?.referrer_source ?? null,
+                referrerMedium: data.attribution?.referrerMedium ?? stripeSubscription.metadata?.referrer_medium ?? null,
+                referrerUrl: data.attribution?.referrerUrl ?? stripeSubscription.metadata?.referrer_url ?? null
             };
 
             const subscriptionCreatedEvent = SubscriptionCreatedEvent.create({
                 source,
                 tierId: ghostProduct?.get('id'),
-                memberId: member.id,
-                subscriptionId: subscriptionModel.get('id'),
+                memberId: memberModel.id,
+                subscriptionId: newSubscriptionModel.get('id'),
                 offerId: offerId,
                 attribution: attribution,
                 batchId: options.batch_id
@@ -1199,19 +1201,19 @@ module.exports = class MemberRepository {
 
             if (offerId) {
                 const offerRedemptionEvent = OfferRedemptionEvent.create({
-                    memberId: member.id,
+                    memberId: memberModel.id,
                     offerId: offerId,
-                    subscriptionId: subscriptionModel.get('id')
+                    subscriptionId: newSubscriptionModel.get('id')
                 });
                 this.dispatchEvent(offerRedemptionEvent, options);
             }
 
-            if (getStatus(subscriptionModel) === 'active') {
+            if (getStatus(newSubscriptionModel) === 'active') {
                 const activatedEvent = SubscriptionActivatedEvent.create({
                     source,
                     tierId: ghostProduct?.get('id'),
-                    memberId: member.id,
-                    subscriptionId: subscriptionModel.get('id'),
+                    memberId: memberModel.id,
+                    subscriptionId: newSubscriptionModel.get('id'),
                     offerId: offerId,
                     attribution: attribution,
                     batchId: options.batch_id
@@ -1220,42 +1222,42 @@ module.exports = class MemberRepository {
             }
         }
 
-        let memberProducts = (await member.related('products').fetch(options)).toJSON();
-        const oldMemberProducts = member.related('products').toJSON();
-        let status = memberProducts.length === 0 ? 'free' : 'comped';
-        if (!shouldBeDeleted && this.isActiveSubscriptionStatus(subscription.status)) {
-            if (this.isComplimentarySubscription(subscription)) {
+        let memberUpdatedProducts = (await memberModel.related('products').fetch(options)).toJSON();
+        const memberOriginalProducts = memberModel.related('products').toJSON();
+        let status = memberUpdatedProducts.length === 0 ? 'free' : 'comped';
+        if (!subscriptionModelShouldBeDeleted && this.isActiveSubscriptionStatus(stripeSubscription.status)) {
+            if (this.isComplimentarySubscription(stripeSubscription)) {
                 status = 'comped';
             } else {
                 status = 'paid';
             }
 
-            if (model) {
+            if (originalSubscriptionModel) {
                 // We might need to...
                 // 1. delete the previous product from the linked member products (in case an existing subscription changed product/price)
                 // 2. fix the list of products linked to a member (an existing subscription doesn't have a linked product to this member)
 
-                const subscriptions = await member.related('stripeSubscriptions').fetch(options);
+                const subscriptions = await memberModel.related('stripeSubscriptions').fetch(options);
 
                 const previousProduct = await this._productRepository.get({
-                    stripe_price_id: model.get('stripe_price_id')
+                    stripe_price_id: originalSubscriptionModel.get('stripe_price_id')
                 }, options);
 
                 if (previousProduct) {
                     let activeSubscriptionForPreviousProduct = false;
 
                     for (const subscriptionModel of subscriptions.models) {
-                        if (this.isActiveSubscriptionStatus(subscriptionModel.get('status')) && subscriptionModel.id !== model.id) {
+                        if (this.isActiveSubscriptionStatus(subscriptionModel.get('status')) && subscriptionModel.id !== subscriptionModel.id) {
                             try {
                                 const subscriptionProduct = await this._productRepository.get({stripe_price_id: subscriptionModel.get('stripe_price_id')}, options);
                                 if (subscriptionProduct && previousProduct && subscriptionProduct.id === previousProduct.id) {
                                     activeSubscriptionForPreviousProduct = true;
                                 }
 
-                                if (subscriptionProduct && !memberProducts.find(p => p.id === subscriptionProduct.id)) {
+                                if (subscriptionProduct && !memberUpdatedProducts.find(p => p.id === subscriptionProduct.id)) {
                                     // Due to a bug in the past it is possible that this subscription's product wasn't added to the member products
                                     // So we need to add it again
-                                    memberProducts.push(subscriptionProduct.toJSON());
+                                    memberUpdatedProducts.push(subscriptionProduct.toJSON());
                                 }
                             } catch (e) {
                                 logging.error(`Failed to attach products to member - ${data.id}`);
@@ -1266,7 +1268,7 @@ module.exports = class MemberRepository {
 
                     if (!activeSubscriptionForPreviousProduct) {
                         // We can safely remove the product from this member because it doesn't have any other remaining active subscription for it
-                        memberProducts = memberProducts.filter((product) => {
+                        memberUpdatedProducts = memberUpdatedProducts.filter((product) => {
                             return product.id !== previousProduct.id;
                         });
                     }
@@ -1277,10 +1279,10 @@ module.exports = class MemberRepository {
                 // Note: we add the product here
                 // We don't override the products because in an edge case a member can have multiple subscriptions
                 // We'll need to keep all the products related to those subscriptions to avoid creating other issues
-                memberProducts.push(ghostProduct.toJSON());
+                memberUpdatedProducts.push(ghostProduct.toJSON());
             }
         } else {
-            const subscriptions = await member.related('stripeSubscriptions').fetch(options);
+            const subscriptions = await memberModel.related('stripeSubscriptions').fetch(options);
             let activeSubscriptionForGhostProduct = false;
             for (const subscriptionModel of subscriptions.models) {
                 if (this.isActiveSubscriptionStatus(subscriptionModel.get('status'))) {
@@ -1291,10 +1293,10 @@ module.exports = class MemberRepository {
                             activeSubscriptionForGhostProduct = true;
                         }
 
-                        if (subscriptionProduct && !memberProducts.find(p => p.id === subscriptionProduct.id)) {
+                        if (subscriptionProduct && !memberUpdatedProducts.find(p => p.id === subscriptionProduct.id)) {
                             // Due to a bug in the past it is possible that this subscription's product wasn't added to the member products
                             // So we need to add it again
-                            memberProducts.push(subscriptionProduct.toJSON());
+                            memberUpdatedProducts.push(subscriptionProduct.toJSON());
                         }
                     } catch (e) {
                         logging.error(`Failed to attach products to member - ${data.id}`);
@@ -1305,40 +1307,40 @@ module.exports = class MemberRepository {
 
             if (!activeSubscriptionForGhostProduct) {
                 // We don't have an active subscription for this product anymore, so we can safely unlink it from the member
-                memberProducts = memberProducts.filter((product) => {
+                memberUpdatedProducts = memberUpdatedProducts.filter((product) => {
                     return product.id !== ghostProduct.id;
                 });
             }
 
-            if (memberProducts.length === 0) {
+            if (memberUpdatedProducts.length === 0) {
                 // If all products were removed, set the status back to 'free'
                 status = 'free';
             }
         }
 
-        let updatedMember;
+        let updatedMemberModel;
         try {
             // Remove duplicate products from the list
-            memberProducts = _.uniqBy(memberProducts, function (e) {
+            memberUpdatedProducts = _.uniqBy(memberUpdatedProducts, function (e) {
                 return e.id;
             });
             // Edit member with updated products assoicated
-            updatedMember = await this._Member.edit({status: status, products: memberProducts}, {...options, id: data.id});
+            updatedMemberModel = await this._Member.edit({status: status, products: memberUpdatedProducts}, {...options, id: data.id});
         } catch (e) {
             logging.error(`Failed to update member - ${data.id} - with related products`);
             logging.error(e);
-            updatedMember = await this._Member.edit({status: status}, {...options, id: data.id});
+            updatedMemberModel = await this._Member.edit({status: status}, {...options, id: data.id});
         }
 
-        const newMemberProductIds = memberProducts.map(product => product.id);
-        const oldMemberProductIds = oldMemberProducts.map(product => product.id);
+        const newMemberProductIds = memberUpdatedProducts.map(product => product.id);
+        const oldMemberProductIds = memberOriginalProducts.map(product => product.id);
 
         const productsToAdd = _.differenceWith(newMemberProductIds, oldMemberProductIds);
         const productsToRemove = _.differenceWith(oldMemberProductIds, newMemberProductIds);
 
         for (const productToAdd of productsToAdd) {
             await this._MemberProductEvent.add({
-                member_id: member.id,
+                member_id: memberModel.id,
                 product_id: productToAdd,
                 action: 'added'
             }, options);
@@ -1346,17 +1348,17 @@ module.exports = class MemberRepository {
 
         for (const productToRemove of productsToRemove) {
             await this._MemberProductEvent.add({
-                member_id: member.id,
+                member_id: memberModel.id,
                 product_id: productToRemove,
                 action: 'removed'
             }, options);
         }
 
-        if (updatedMember.attributes.status !== updatedMember._previousAttributes.status) {
+        if (updatedMemberModel.attributes.status !== updatedMemberModel._previousAttributes.status) {
             await this._MemberStatusEvent.add({
                 member_id: data.id,
-                from_status: updatedMember._previousAttributes.status,
-                to_status: updatedMember.get('status'),
+                from_status: updatedMemberModel._previousAttributes.status,
+                to_status: updatedMemberModel.get('status'),
                 ...eventData
             }, options);
         }
