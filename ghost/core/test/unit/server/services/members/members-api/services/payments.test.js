@@ -300,4 +300,101 @@ describe('PaymentsService', function () {
             assert.equal(stripeAPIService.createCheckoutSession.getCall(0).args[2].trialDays, undefined);
         });
     });
+
+    describe('createPriceForTierCadence with JPY', function () {
+        it('correctly handles JPY as a zero decimal currency', async function () {
+            const BaseModel = Bookshelf.Model.extend({}, {
+                async add() {},
+                async edit() {}
+            });
+            const Offer = BaseModel.extend({
+                tableName: 'offers'
+            });
+            const StripeProduct = BaseModel.extend({
+                tableName: 'stripe_products'
+            });
+            const StripePrice = BaseModel.extend({
+                tableName: 'stripe_prices'
+            });
+            const StripeCustomer = BaseModel.extend({
+                tableName: 'stripe_customers'
+            });
+
+            const offersAPI = {
+                repository: {},
+                getOffer: sinon.stub(),
+                createOffer: sinon.stub(),
+                updateOffer: sinon.stub(),
+                listOffers: sinon.stub()
+            };
+            
+            const stripeAPIService = {
+                _stripe: {},
+                _configured: true,
+                labs: {},
+                PAYMENT_METHOD_TYPES: [],
+                createCheckoutSession: sinon.stub(),
+                getCustomer: sinon.stub(),
+                createCustomer: sinon.stub(),
+                getProduct: sinon.fake.resolves({
+                    id: 'prod_1',
+                    active: true
+                }),
+                createProduct: sinon.fake.resolves({
+                    id: 'prod_1',
+                    active: true
+                }),
+                createPrice: sinon.fake(function (data) {
+                    return Promise.resolve({
+                        id: 'price_1',
+                        active: data.active,
+                        unit_amount: data.amount,
+                        currency: data.currency,
+                        nickname: data.nickname,
+                        recurring: {
+                            interval: data.interval
+                        }
+                    });
+                }),
+                updatePrice: sinon.stub(),
+                createCoupon: sinon.stub()
+            };
+            
+            const service = new PaymentsService({
+                Offer,
+                StripeProduct,
+                StripePrice,
+                StripeCustomer,
+                offersAPI,
+                stripeAPIService,
+                settingsCache: {
+                    get: sinon.stub()
+                }
+            });
+
+            // JPYティアを作成
+            const tier = await Tier.create({
+                name: 'JPY Tier',
+                slug: 'jpy-tier',
+                currency: 'JPY',
+                monthlyPrice: 1000,
+                yearlyPrice: 10000
+            });
+
+            // StripeProductを作成
+            const product = StripeProduct.forge({
+                id: 'id_1',
+                stripe_product_id: 'prod_1',
+                product_id: tier.id.toHexString()
+            });
+            await product.save(null, {method: 'insert'});
+
+            // 月額プランの価格を作成
+            await service.createPriceForTierCadence(tier, 'month');
+
+            // JPYはゼロ小数点通貨なので、金額は100で割られずにStripeに渡される
+            assert.equal(stripeAPIService.createPrice.firstCall.args[0].amount, 10);
+            assert.equal(stripeAPIService.createPrice.firstCall.args[0].currency, 'JPY');
+        });
+    });
 });
