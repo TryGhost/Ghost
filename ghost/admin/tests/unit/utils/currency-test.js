@@ -5,15 +5,15 @@ import {expect} from 'chai';
 describe('Unit: Util: currency', function () {
     describe('isZeroDecimalCurrency', function () {
         it('correctly identifies zero decimal currencies', function () {
-            // JPYはゼロ小数点通貨
+            // JPY is a zero decimal currencies
             expect(isZeroDecimalCurrency('JPY')).to.be.true;
             expect(isZeroDecimalCurrency('jpy')).to.be.true;
             
-            // 他のゼロ小数点通貨も確認
+            // Check other zero decimal currencies
             expect(isZeroDecimalCurrency('BIF')).to.be.true;
             expect(isZeroDecimalCurrency('KRW')).to.be.true;
             
-            // 通常の通貨はfalseを返す
+            // Normal currency returns false
             expect(isZeroDecimalCurrency('USD')).to.be.false;
             expect(isZeroDecimalCurrency('EUR')).to.be.false;
             expect(isZeroDecimalCurrency('GBP')).to.be.false;
@@ -27,24 +27,25 @@ describe('Unit: Util: currency', function () {
     
     describe('getNonDecimal', function () {
         it('does not divide zero decimal currencies by 100', function () {
-            // JPYはゼロ小数点通貨なので、金額をそのまま返す
+            // JPY is a zero decimal currency, so the amount is returned as is
             expect(getNonDecimal(1000, 'JPY')).to.equal(1000);
             expect(getNonDecimal(500, 'jpy')).to.equal(500);
             
-            // 他のゼロ小数点通貨も確認
+            // Check other zero decimal currencies
             expect(getNonDecimal(1000, 'BIF')).to.equal(1000);
             expect(getNonDecimal(500, 'KRW')).to.equal(500);
         });
         
         it('divides normal currencies by 100', function () {
-            // 通常の通貨は100で割る
+            // Normal currency is divided by 100
+            // 1000 cents = 10 dollars
             expect(getNonDecimal(1000, 'USD')).to.equal(10);
             expect(getNonDecimal(500, 'EUR')).to.equal(5);
             expect(getNonDecimal(250, 'GBP')).to.equal(2.5);
         });
         
         it('handles null or undefined currency', function () {
-            // 通貨が指定されていない場合は100で割る
+            // Divide by 100 if currency not specified
             expect(getNonDecimal(1000)).to.equal(10);
             expect(getNonDecimal(500, null)).to.equal(5);
             expect(getNonDecimal(250, undefined)).to.equal(2.5);

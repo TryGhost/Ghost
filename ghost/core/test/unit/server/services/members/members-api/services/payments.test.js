@@ -381,7 +381,7 @@ describe('PaymentsService', function () {
                 yearlyPrice: 10000
             });
 
-            // StripeProductを作成
+            // Create StripeProduct
             const product = StripeProduct.forge({
                 id: 'id_1',
                 stripe_product_id: 'prod_1',
@@ -389,10 +389,10 @@ describe('PaymentsService', function () {
             });
             await product.save(null, {method: 'insert'});
 
-            // 月額プランの価格を作成
+            // Create monthly plan price
             await service.createPriceForTierCadence(tier, 'month');
 
-            // JPYはゼロ小数点通貨なので、金額は100で割られずにStripeに渡される
+            // JPY is a zero dicimal currency, so the amount is passed to Stripe without being divided by 100
             assert.equal(stripeAPIService.createPrice.firstCall.args[0].amount, 10);
             assert.equal(stripeAPIService.createPrice.firstCall.args[0].currency, 'JPY');
         });
