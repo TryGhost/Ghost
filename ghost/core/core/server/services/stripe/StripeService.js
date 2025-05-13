@@ -108,6 +108,9 @@ module.exports = class StripeService {
                     },
                     tokenData: {}
                 });
+            },
+            getTokenDataFromMagicLinkToken(token){
+                return membersService.api.getTokenDataFromMagicLinkToken(token);
             }
         });
 

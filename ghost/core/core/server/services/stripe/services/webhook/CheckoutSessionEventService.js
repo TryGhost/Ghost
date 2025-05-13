@@ -24,6 +24,7 @@ module.exports = class CheckoutSessionEventService {
      * @param {object} deps.donationRepository
      * @param {object} deps.staffServiceEmails
      * @param {function} deps.sendSignupEmail
+     * @param {function} deps.getTokenDataFromMagicLinkToken
      */
     constructor(deps) {
         this.api = deps.api;
@@ -175,8 +176,12 @@ module.exports = class CheckoutSessionEventService {
         const checkoutType = _.get(session, 'metadata.checkoutType');
 
         if (!member) {
+            // Create a new member
+            const successUrl = new URL(session.success_url);
+            const token = successUrl.searchParams.get('token');
+            const tokenData = await this.deps.getTokenDataFromMagicLinkToken(token);
+            const newsletters = tokenData.newsletters || [];
             const metadataName = _.get(session, 'metadata.name');
-            const metadataNewsletters = _.get(session, 'metadata.newsletters');
             const attribution = {
                 id: session.metadata?.attribution_id ?? null,
                 url: session.metadata?.attribution_url ?? null,
@@ -190,11 +195,11 @@ module.exports = class CheckoutSessionEventService {
             const name = metadataName || payerName || null;
 
             const memberData = {email: customer.email, name, attribution};
-            if (metadataNewsletters) {
+            if (newsletters && newsletters.length > 0) {
                 try {
-                    memberData.newsletters = JSON.parse(metadataNewsletters);
+                    memberData.newsletters = newsletters;
                 } catch (e) {
-                    logging.error(`Ignoring invalid newsletters data - ${metadataNewsletters}.`);
+                    logging.error(`Ignoring invalid newsletters data - ${newsletters}.`);
                 }
             }
 
