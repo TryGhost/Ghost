@@ -121,15 +121,17 @@ describe('RouterController', function () {
                 settingsCache,
                 newslettersService: newslettersServiceStub
             });
+            const newsletters = [
+                {id: 'abc123', name: 'Newsletter 1'},
+                {id: 'def456', name: 'Newsletter 2'}
+            ];
+            const newslettersString = JSON.stringify(newsletters);
             const req = {
                 body: {
                     tierId: 'tier_123',
                     cadence: 'month',
                     metadata: {
-                        newsletters: [
-                            {id: 'abc123', name: 'Newsletter 1'},
-                            {id: 'def456', name: 'Newsletter 2'}
-                        ]
+                        newsletters: newslettersString
                     }
                 }
             };
@@ -139,14 +141,13 @@ describe('RouterController', function () {
                 end: () => {}
             });
 
+            const expectedNewsletters = JSON.stringify([{id: 'abc123'}, {id: 'def456'}]);
+
             getPaymentLinkSpy.calledOnce.should.be.true();
 
             getPaymentLinkSpy.calledWith(sinon.match({
                 metadata: {
-                    newsletters: [
-                        {id: 'abc123'},
-                        {id: 'def456'}
-                    ]
+                    newsletters: expectedNewsletters
                 }
             })).should.be.true();
         });

@@ -508,7 +508,10 @@ module.exports = class RouterController {
 
         // Store attribution data in the metadata
         await this._setAttributionMetadata(metadata);
-        metadata.newsletters = await this._validateNewsletters(metadata.newsletters ?? []);
+
+        if (metadata.newsletters) {
+            metadata.newsletters = JSON.stringify(await this._validateNewsletters(JSON.parse(metadata.newsletters)));
+        }
 
         // Build options
         const options = {
