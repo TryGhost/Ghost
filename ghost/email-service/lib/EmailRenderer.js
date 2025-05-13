@@ -964,6 +964,8 @@ class EmailRenderer {
      * @private
      */
     async getTemplateData({post, newsletter, html, addPaywall, segment}) {
+        const labs = this.getLabs();
+
         let accentColor = this.#settingsCache.get('accent_color') || '#15212A';
         let adjustedAccentColor;
         let adjustedAccentContrastColor;
@@ -983,6 +985,16 @@ class EmailRenderer {
         const textColor = textColorForBackgroundColor(backgroundColor).hex();
         const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
         const linkColor = backgroundIsDark ? '#ffffff' : accentColor;
+
+        let buttonBorderRadius = '6px';
+
+        if (labs.isSet('emailCustomizationAlpha')) {
+            if (newsletter.get('button_corners') === 'square') {
+                buttonBorderRadius = '0';
+            } else if (newsletter.get('button_corners') === 'pill') {
+                buttonBorderRadius = '9999px';
+            }
+        }
 
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
         const {href: postFeatureImage, width: postFeatureImageWidth, height: postFeatureImageHeight} = await this.limitImageWidth(post.get('feature_image'));
@@ -1126,6 +1138,7 @@ class EmailRenderer {
             textColor: textColor,
             secondaryTextColor: secondaryTextColor,
             linkColor: linkColor,
+            buttonBorderRadius,
 
             headerImage,
             headerImageWidth,
