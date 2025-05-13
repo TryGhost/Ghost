@@ -1,9 +1,11 @@
 {
   "name": "@tryghost/api-framework",
-  "version": "0.0.0",
+  "version": "0.9.0",
   "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/api-framework",
   "author": "Ghost Foundation",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
