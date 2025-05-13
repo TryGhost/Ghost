@@ -5472,19 +5472,19 @@
   dependencies:
     type-detect "4.0.8"
 
-"@sinonjs/fake-timers@11.3.1", "@sinonjs/fake-timers@^11.2.2":
-  version "11.3.1"
-  resolved "https://registry.yarnpkg.com/@sinonjs/fake-timers/-/fake-timers-11.3.1.tgz#51d6e8d83ca261ff02c0ab0e68e9db23d5cd5999"
-  integrity sha512-EVJO7nW5M/F5Tur0Rf2z/QoMo+1Ia963RiMtapiQrEWvY0iBUvADo8Beegwjpnle5BHkyHuoxSTW3jF43H1XRA==
-  dependencies:
-    "@sinonjs/commons" "^3.0.1"
-
 "@sinonjs/fake-timers@^10.0.2", "@sinonjs/fake-timers@^10.3.0":
   version "10.3.0"
   resolved "https://registry.yarnpkg.com/@sinonjs/fake-timers/-/fake-timers-10.3.0.tgz#55fdff1ecab9f354019129daf4df0dd4d923ea66"
   integrity sha512-V4BG07kuYSUkTCSBHG8G8TNhM+F19jXFWnQtzj+we8DrkpSBCee9Z3Ms8yiGer/dlmhe35/Xdgyo3/0rQKg7YA==
   dependencies:
     "@sinonjs/commons" "^3.0.0"
+
+"@sinonjs/fake-timers@^11.2.2":
+  version "11.3.1"
+  resolved "https://registry.yarnpkg.com/@sinonjs/fake-timers/-/fake-timers-11.3.1.tgz#51d6e8d83ca261ff02c0ab0e68e9db23d5cd5999"
+  integrity sha512-EVJO7nW5M/F5Tur0Rf2z/QoMo+1Ia963RiMtapiQrEWvY0iBUvADo8Beegwjpnle5BHkyHuoxSTW3jF43H1XRA==
+  dependencies:
+    "@sinonjs/commons" "^3.0.1"
 
 "@sinonjs/fake-timers@^13.0.1", "@sinonjs/fake-timers@^13.0.5":
   version "13.0.5"
@@ -7251,6 +7251,20 @@
     ajv "^6.12.6"
     lodash "^4.17.11"
 
+"@tryghost/api-framework@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/api-framework/-/api-framework-1.0.1.tgz#1133484adbcd3f801a524bce4bdfada5d26d4057"
+  integrity sha512-QC2IiEMj6j7zUjRCl5xavMbaJBQ0UmN438fUCfMh/VZi+z6vqkxverkFgTAcru3dnNCkZofRIFCj2zRsAKG2mA==
+  dependencies:
+    "@tryghost/debug" "0.1.34"
+    "@tryghost/errors" "1.3.7"
+    "@tryghost/promise" "0.3.14"
+    "@tryghost/tpl" "0.1.34"
+    "@tryghost/validator" "0.2.16"
+    json-stable-stringify "1.3.0"
+    jsonpath "1.1.1"
+    lodash "4.17.21"
+
 "@tryghost/bookshelf-collision@^0.1.47":
   version "0.1.47"
   resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-collision/-/bookshelf-collision-0.1.47.tgz#6fdf15d047556e1657efcf78c44618ceed5dc279"
@@ -7394,6 +7408,11 @@
     "@tryghost/root-utils" "^0.3.32"
     debug "^4.3.1"
 
+"@tryghost/domain-events@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-1.0.0.tgz#c2e35a61c1528dfa637fda76bfc12c4b19bafb0e"
+  integrity sha512-21uvwgebMmDYqcf53X1cIyccc+mId+unDiQEQrCKWOk7gDQkfD4Mv8G2Nw9SyHddVKnxCRpo5XE6uf0TxiC+qw==
+
 "@tryghost/elasticsearch@^3.0.23":
   version "3.0.23"
   resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch/-/elasticsearch-3.0.23.tgz#45563fdaa8969cd153bacae7b8538b45681d467c"
@@ -7497,6 +7516,20 @@
     "@jest/expect-utils" "^28.0.1"
     "@tryghost/errors" "^1.3.7"
     jest-snapshot "^29.0.0"
+
+"@tryghost/job-manager@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-1.0.0.tgz#1bfba0da06c1df979d3747640b450ba0383ba5d2"
+  integrity sha512-FUC5q2N1vIykl1IDOqpLyEUn1doIWvSkiW2axsqkglrZifoTO2OPZ0+2C9h8X8oYUvVFhS8u/d0dZnjoZxu8Rw==
+  dependencies:
+    "@breejs/later" "4.2.0"
+    "@tryghost/errors" "1.3.7"
+    "@tryghost/logging" "2.4.21"
+    bree "6.5.0"
+    cron-validate "1.4.5"
+    fastq "1.19.1"
+    p-wait-for "3.2.0"
+    workerpool "9.2.0"
 
 "@tryghost/kg-card-factory@5.1.1":
   version "5.1.1"
@@ -7710,6 +7743,23 @@
   dependencies:
     lodash "^4.17.11"
 
+"@tryghost/mw-error-handler@1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-1.0.6.tgz#bddc9927f935cc3832242c3fd0de0b1600ccb5f3"
+  integrity sha512-XCQ6/inwtl1tm9B5Gmuq7au9ekGUVII3GMzPEgrpjtQkDy9UK72fIdtD7RvlkAXlrGuT7xQJrcUCoKbl45mtKA==
+  dependencies:
+    "@tryghost/debug" "0.1.34"
+    "@tryghost/errors" "1.3.7"
+    "@tryghost/http-cache-utils" "0.1.19"
+    "@tryghost/tpl" "0.1.34"
+    lodash "4.17.21"
+    semver "7.7.2"
+
+"@tryghost/mw-vhost@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-vhost/-/mw-vhost-1.0.0.tgz#7d2f88ed5304f9520e46af6e70f021fdbfed7b59"
+  integrity sha512-YwMzn7UcFyuwPcRAFeKHsM3MopbX65s8KdSBhrt7jitiCpoPnTiPuUl/Zi1f5XxOz+7uXj766bL/AJGtqQ7l9Q==
+
 "@tryghost/nodemailer@0.3.47":
   version "0.3.47"
   resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.47.tgz#fea7b79426786322c255868868311da91a4dda52"
@@ -7800,6 +7850,14 @@
   dependencies:
     caller "^1.0.1"
     find-root "^1.1.0"
+
+"@tryghost/security@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/security/-/security-1.0.0.tgz#04138f915b66ec06c1a42dd33125d2f4e25c7248"
+  integrity sha512-HtKPDR+p6Uwr4cPAGr4huTlIM7IGmEt6D6wV2UI8hqnA0s28ZqTnVjmh2NoH5wWeFDMBFfa0Ed9DJIFyT40U3A==
+  dependencies:
+    "@tryghost/string" "0.2.15"
+    bcryptjs "2.4.3"
 
 "@tryghost/server@^0.1.37":
   version "0.1.37"
@@ -14338,11 +14396,6 @@ define-property@^2.0.2:
     is-descriptor "^1.0.2"
     isobject "^3.0.1"
 
-delay@5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/delay/-/delay-5.0.0.tgz#137045ef1b96e5071060dd5be60bf9334436bd1d"
-  integrity sha512-ReEBKkIfe4ya47wlPYf/gu5ib6yUG0/Aez0JQZQz94kiWtRQvZIQbTiehsnwHvLSWJnQdhVeqYue7Id1dKr0qw==
-
 delayed-stream@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/delayed-stream/-/delayed-stream-1.0.0.tgz#df3ae199acadfb7d440aaae0b29e2272b24ec619"
@@ -17003,7 +17056,7 @@ eslint-visitor-keys@^3.3.0, eslint-visitor-keys@^3.4.1, eslint-visitor-keys@^3.4
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-3.4.3.tgz#0cd72fe8550e3c2eae156a96a4dddcd1c8ac5800"
   integrity sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag==
 
-eslint@8.57.1, eslint@^8.47.0:
+eslint@8.57.1:
   version "8.57.1"
   resolved "https://registry.yarnpkg.com/eslint/-/eslint-8.57.1.tgz#7df109654aba7e3bbe5c8eae533c5e461d3c6ca9"
   integrity sha512-ypowyDxpVSYpkXr9WPv2PAZCtNip1Mv5KTW0SCurXv/9iOpcrH9PaqUElksqEB6pChqHGDRCFTyrZlGhnLNGiA==
@@ -27918,13 +27971,6 @@ rewire@6.0.0:
   integrity sha512-7sZdz5dptqBCapJYocw9EcppLU62KMEqDLIILJnNET2iqzXHaQfaVP5SOJ06XvjX+dNIDJbzjw0ZWzrgDhtjYg==
   dependencies:
     eslint "^7.32.0"
-
-rewire@7.0.0:
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/rewire/-/rewire-7.0.0.tgz#41db5482370c88758ffc9a719f7c92a761fa8fbf"
-  integrity sha512-DyyNyzwMtGYgu0Zl/ya0PR/oaunM+VuCuBxCuhYJHHaV0V+YvYa3bBGxb5OZ71vndgmp1pYY8F4YOwQo1siRGw==
-  dependencies:
-    eslint "^8.47.0"
 
 rfdc@^1.4.1:
   version "1.4.1"

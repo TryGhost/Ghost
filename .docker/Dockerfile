@@ -67,18 +67,12 @@ COPY ghost/admin/lib/asset-delivery/package.json ghost/admin/lib/asset-delivery/
 COPY ghost/admin/lib/ember-power-calendar-moment/package.json ghost/admin/lib/ember-power-calendar-moment/package.json
 COPY ghost/admin/lib/ember-power-calendar-utils/package.json ghost/admin/lib/ember-power-calendar-utils/package.json
 COPY ghost/admin/package.json ghost/admin/package.json
-COPY ghost/api-framework/package.json ghost/api-framework/package.json
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/custom-fonts/package.json ghost/custom-fonts/package.json
-COPY ghost/domain-events/package.json ghost/domain-events/package.json
 COPY ghost/email-addresses/package.json ghost/email-addresses/package.json
 COPY ghost/email-service/package.json ghost/email-service/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
-COPY ghost/job-manager/package.json ghost/job-manager/package.json
-COPY ghost/mw-error-handler/package.json ghost/mw-error-handler/package.json
-COPY ghost/mw-vhost/package.json ghost/mw-vhost/package.json
 COPY ghost/prometheus-metrics/package.json ghost/prometheus-metrics/package.json
-COPY ghost/security/package.json ghost/security/package.json
 
 RUN --mount=type=cache,target=/home/ghost/.yarn-cache \
     yarn config set cache-folder /home/ghost/.yarn-cache && \
