@@ -73,6 +73,8 @@ const QUERY_KEYS = {
     postsByAccount: ['account_posts'],
     postsLikedByAccount: ['account_liked_posts'],
     notifications: (handle: string) => ['notifications', handle],
+    blockedAccounts: (handle: string) => ['blocked_accounts', handle],
+    blockedDomains: (handle: string) => ['blocked_domains', handle],
     post: (id: string) => ['post', id]
 };
 
@@ -213,6 +215,36 @@ function updateReplyCountInCache(queryClient: QueryClient, id: string, delta: nu
                 return activity;
             })
         };
+    });
+}
+
+export function useBlockedAccountsForUser(handle: string) {
+    return useInfiniteQuery({
+        queryKey: QUERY_KEYS.blockedAccounts(handle),
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.getBlockedAccounts(pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+}
+
+export function useBlockedDomainsForUser(handle: string) {
+    return useInfiniteQuery({
+        queryKey: QUERY_KEYS.blockedDomains(handle),
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.getBlockedDomains(pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
     });
 }
 

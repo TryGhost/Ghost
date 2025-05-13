@@ -47,7 +47,7 @@ const tabsListVariants = cva(
             variant: {
                 segmented: 'h-[34px] rounded-lg bg-muted px-[3px]',
                 button: 'gap-2',
-                underline: 'gap-3 border-b pb-1',
+                underline: 'w-full gap-5 border-b border-b-gray-200 pb-1 dark:border-gray-950',
                 kpis: 'gap-1 p-3'
             }
         },
@@ -79,7 +79,7 @@ const tabsTriggerVariants = cva(
             variant: {
                 segmented: 'h-7 rounded-md text-sm font-medium data-[state=active]:shadow-md',
                 button: 'h-[34px] gap-1.5 rounded-md border border-input py-2 text-sm font-medium hover:bg-muted/50 data-[state=active]:bg-muted/70 data-[state=active]:font-semibold',
-                underline: 'relative h-[34px] px-0 text-md font-semibold text-foreground/70 after:absolute after:inset-x-0 after:bottom-[-5px] after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:!opacity-100',
+                underline: 'relative h-[34px] px-0 text-md font-semibold text-gray-600 after:absolute after:inset-x-0 after:bottom-[-4px] after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:!opacity-100',
                 kpis: 'rounded-md pt-2 text-foreground hover:bg-muted/50 data-[state=active]:bg-muted'
             }
         },
