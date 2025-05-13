@@ -369,9 +369,9 @@ module.exports = class RouterController {
 
         if (member) {
             options.successUrl = this._generateSuccessUrl(options.successUrl, tier.welcomePageURL);
-            
+
             const restrictCheckout = member.get('status') === 'paid';
-            
+
             if (restrictCheckout) {
                 // This member is already subscribed to a paid tier
                 // We don't want to create a duplicate subscription
@@ -413,17 +413,17 @@ module.exports = class RouterController {
         try {
             // Create URL objects
             const siteUrl = this._urlUtils.getSiteUrl();
-            
+
             // This will throw if welcomePageURL is invalid
             const welcomeUrl = new URL(
-                welcomePageURL.startsWith('http') ? welcomePageURL : welcomePageURL, 
+                welcomePageURL.startsWith('http') ? welcomePageURL : welcomePageURL,
                 siteUrl
             );
-            
+
             // Add success parameters
             welcomeUrl.searchParams.set('success', 'true');
             welcomeUrl.searchParams.set('action', 'signup');
-            
+
             return welcomeUrl.href;
         } catch (err) {
             logging.warn(`Invalid welcome page URL "${welcomePageURL}", using original success URL`, err);
@@ -674,39 +674,45 @@ module.exports = class RouterController {
     async _validateNewsletters(req) {
         const {newsletters: requestedNewsletters} = req.body;
 
-        if (requestedNewsletters && requestedNewsletters.length > 0 && requestedNewsletters.every(newsletter => newsletter.name !== undefined)) {
-            const newsletterNames = requestedNewsletters.map(newsletter => newsletter.name);
-            const newsletterNamesFilter = newsletterNames.map(newsletter => `'${newsletter.replace(/("|')/g, '\\$1')}'`);
-            const newsletters = (await this._newslettersService.getAll({
-                filter: `name:[${newsletterNamesFilter}]`,
-                columns: ['id','name','status']
-            }));
-
-            // Check for invalid newsletters
-            if (newsletters.length !== newsletterNames.length) {
-                const validNewsletters = newsletters.map(newsletter => newsletter.name);
-                const invalidNewsletters = newsletterNames.filter(newsletter => !validNewsletters.includes(newsletter));
-
-                throw new errors.BadRequestError({
-                    message: tpl(messages.invalidNewsletters, {newsletters: invalidNewsletters})
-                });
-            }
-
-            // Check for archived newsletters
-            const archivedNewsletters = newsletters
-                .filter(newsletter => newsletter.status === 'archived')
-                .map(newsletter => newsletter.name);
-
-            if (archivedNewsletters && archivedNewsletters.length > 0) {
-                throw new errors.BadRequestError({
-                    message: tpl(messages.archivedNewsletters, {newsletters: archivedNewsletters})
-                });
-            }
-
-            return newsletters
-                .filter(newsletter => newsletter.status === 'active')
-                .map(newsletter => ({id: newsletter.id}));
+        if (!requestedNewsletters || requestedNewsletters.length === 0) {
+            return undefined;
         }
+
+        if (requestedNewsletters.some(newsletter => !newsletter.name)) {
+            return undefined;
+        }
+
+        const requestedNewsletterNames = requestedNewsletters.map(newsletter => newsletter.name);
+        const requestedNewsletterNamesFilter = requestedNewsletterNames.map(newsletter => `'${newsletter.replace(/("|')/g, '\\$1')}'`);
+        const matchedNewsletters = (await this._newslettersService.getAll({
+            filter: `name:[${requestedNewsletterNamesFilter}]`,
+            columns: ['id','name','status']
+        }));
+
+        // Check for invalid newsletters
+        if (matchedNewsletters.length !== requestedNewsletterNames.length) {
+            const validNewsletterNames = matchedNewsletters.map(newsletter => newsletter.name);
+            const invalidNewsletterNames = requestedNewsletterNames.filter(newsletter => !validNewsletterNames.includes(newsletter));
+
+            throw new errors.BadRequestError({
+                message: tpl(messages.invalidNewsletters, {newsletters: invalidNewsletterNames})
+            });
+        }
+
+        // Check for archived newsletters
+        const requestedArchivedNewsletters = matchedNewsletters
+            .filter(newsletter => newsletter.status === 'archived')
+            .map(newsletter => newsletter.name);
+
+        if (requestedArchivedNewsletters && requestedArchivedNewsletters.length > 0) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.archivedNewsletters, {newsletters: requestedArchivedNewsletters})
+            });
+        }
+
+        return matchedNewsletters
+            .filter(newsletter => newsletter.status === 'active')
+            .map(newsletter => ({id: newsletter.id}));
     }
 };
 
