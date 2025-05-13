@@ -1,7 +1,7 @@
 import React from 'react';
 import {LucideIcon} from '@tryghost/shade';
 
-export type NotificationType = 'like' | 'follow' | 'reply' | 'repost';
+export type NotificationType = 'like' | 'follow' | 'reply' | 'repost' | 'mention';
 export type NotificationIconSize = 'sm' | 'lg';
 
 interface NotificationIconProps {
@@ -33,6 +33,10 @@ const NotificationIcon: React.FC<NotificationIconProps> = ({notificationType, si
     case 'repost':
         icon = <LucideIcon.Repeat2 color={iconColor} size={iconSize} strokeWidth={strokeWidth} />;
         badgeColor = 'bg-green-500';
+        break;
+    case 'mention':
+        icon = <LucideIcon.AtSign className={`${size === 'sm' ? 'size-[12px]' : 'size-5'}`} color={iconColor} size={iconSize} strokeWidth={strokeWidth} />;
+        badgeColor = 'bg-orange-500';
         break;
     }
 
