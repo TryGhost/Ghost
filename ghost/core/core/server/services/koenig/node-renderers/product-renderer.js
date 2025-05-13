@@ -37,8 +37,8 @@ export function renderProductNode(node, options = {}) {
     }
 
     const htmlString = options.target === 'email'
-        ? emailCardTemplate({data: templateData})
-        : cardTemplate({data: templateData});
+        ? emailCardTemplate({data: templateData, feature: options.feature})
+        : cardTemplate({data: templateData, feature: options.feature});
 
     const element = document.createElement('div');
     element.innerHTML = htmlString.trim();
@@ -75,7 +75,7 @@ export function cardTemplate({data}) {
     );
 }
 
-export function emailCardTemplate({data}) {
+export function emailCardTemplate({data, feature}) {
     let imageDimensions;
 
     if (data.productImageWidth && data.productImageHeight) {
@@ -87,6 +87,48 @@ export function emailCardTemplate({data}) {
         if (data.productImageWidth >= 560) {
             imageDimensions = getResizedImageDimensions(imageDimensions, {width: 560});
         }
+    }
+
+    if (feature?.emailCustomizationAlpha) {
+        return (
+            `
+             <table class="kg-product-card" cellspacing="0" cellpadding="0" border="0">
+                ${data.productImageSrc ? `
+                    <tr>
+                        <td class="kg-product-image" align="center">
+                            <img src="${data.productImageSrc}" ${imageDimensions ? `width="${imageDimensions.width}"` : ''} ${imageDimensions ? `height="${imageDimensions.height}"` : ''} border="0"/>
+                        </td>
+                    </tr>
+                ` : ''}
+                <tr>
+                    <td valign="top">
+                        <h4 class="kg-product-title">${data.productTitle}</h4>
+                    </td>
+                </tr>
+                ${data.productRatingEnabled ? `
+                    <tr class="kg-product-rating">
+                        <td valign="top">
+                            <img src="${`https://static.ghost.org/v4.0.0/images/star-rating-${data.productStarRating}.png`}" border="0" />
+                        </td>
+                    </tr>
+                ` : ''}
+                <tr>
+                    <td class="kg-product-description-wrapper">
+                        <div class="kg-product-description">${data.productDescription}</div>
+                    </td>
+                </tr>
+                ${data.productButtonEnabled ? `
+                    <tr>
+                        <td class="kg-product-button-wrapper">
+                            <div class="btn btn-accent">
+                                <a href="${data.productUrl}"><span>${data.productButton}</span></a>
+                            </div>
+                        </td>
+                    </tr>
+                ` : ''}
+            </table>
+            `
+        );
     }
 
     return (
