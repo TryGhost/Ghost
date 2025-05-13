@@ -3,7 +3,7 @@ import ActivityItem from '@src/components/activities/ActivityItem';
 import Layout from '@src/components/layout';
 import React, {useState} from 'react';
 import {Account} from '@src/api/activitypub';
-import {Button, H2, H4, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade';
+import {Button, H2, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade';
 import {NoValueLabel, showToast} from '@tryghost/admin-x-design-system';
 import {useBlockDomainMutationForUser, useBlockMutationForUser, useBlockedAccountsForUser, useBlockedDomainsForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@hooks/use-activity-pub-queries';
 
@@ -104,7 +104,6 @@ const Moderation: React.FC = () => {
                             {!blockedAccountsLoading && blockedAccounts.length === 0 ? (
                                 <NoValueLabel icon='block'>
                                     <div className='mt-2 flex max-w-[400px] flex-col items-center gap-1 text-center'>
-                                        {/* <H4>Block unwanted accounts</H4> */}
                                         <p>When you block someone, they won&apos;t be able to follow you or interact with your content on the social web.</p>
                                         <Button className='mt-3.5' variant='secondary' asChild>
                                             <a href="https://activitypub.ghost.org/blocking-users/" rel="noopener noreferrer" target="_blank">Learn more</a>
@@ -159,7 +158,6 @@ const Moderation: React.FC = () => {
                             {!blockedDomainsLoading && blockedDomains.length === 0 ? (
                                 <NoValueLabel icon='block'>
                                     <div className='mt-2 flex max-w-[400px] flex-col items-center gap-1 text-center'>
-                                        {/* <H4>Block unwanted domains</H4> */}
                                         <p>When you block a domain, all users from that domain won&apos;t be able to follow you or interact with your content.</p>
                                         <Button className='mt-3.5' variant='secondary' asChild>
                                             <a href="https://activitypub.ghost.org/blocking-domains/" rel="noopener noreferrer" target="_blank">Learn more</a>
