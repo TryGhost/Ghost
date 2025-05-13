@@ -891,12 +891,12 @@ describe('RouterController', function () {
         });
 
         it('validates newsletters', async function () {
-            const req = { body: { newsletters: [
+            const requestedNewsletters = [
                 {name: 'Newsletter 1'},
                 {name: 'Newsletter 2'},
                 {name: 'Newsletter 3'}
-            ]}};
-            const result = await routerController._validateNewsletters(req);
+            ];
+            const result = await routerController._validateNewsletters(requestedNewsletters);
             result.should.eql([
                 {id: 'abc123'},
                 {id: 'def456'},
@@ -905,35 +905,35 @@ describe('RouterController', function () {
         });
 
         it('returns undefined if newsletters is an empty array', async function () {
-            const req = { body: { newsletters: [] } };
-            const result = await routerController._validateNewsletters(req);
+            const requestedNewsletters = [];
+            const result = await routerController._validateNewsletters(requestedNewsletters);
             assert.equal(result, undefined);
         });
 
         it('returns undefined if newsletters is undefined', async function () {
-            const req = { body: { } };
-            const result = await routerController._validateNewsletters(req);
+            const requestedNewsletters = undefined;
+            const result = await routerController._validateNewsletters(requestedNewsletters);
             assert.equal(result, undefined);
         });
 
         it('returns undefined if any newsletter is missing a name', async function () {
-            const req = { body: { newsletters: [
+            const requestedNewsletters = [
                 {name: 'Newsletter 1'},
                 {id: 'def456'}
-            ]}};
-            const result = await routerController._validateNewsletters(req);
+            ];
+            const result = await routerController._validateNewsletters(requestedNewsletters);
             assert.equal(result, undefined);
         });
 
         it('throws an error if an invalid newsletter is provided', async function () {
-            const req = { body: { newsletters: [
+            const requestedNewsletters = [
                 {name: 'Newsletter 1'},
                 {name: 'Newsletter 2'},
                 {name: 'Newsletter 3'},
                 {name: 'fake newsletter'}
-            ]}};
+            ];
             try {
-                await routerController._validateNewsletters(req);
+                await routerController._validateNewsletters(requestedNewsletters);
                 assert.fail('Expected function to throw BadRequestError');
             } catch (error) {
                 assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
@@ -948,14 +948,14 @@ describe('RouterController', function () {
                 {id: 'ghi789', name: 'Newsletter 3', status: 'active'}
             ]);
 
-            const req = { body: { newsletters: [
+            const requestedNewsletters = [
                 {name: 'Newsletter 1'},
                 {name: 'Newsletter 2'},
                 {name: 'Newsletter 3'},
-            ]}};
+            ];
 
             try {
-                await routerController._validateNewsletters(req);
+                await routerController._validateNewsletters(requestedNewsletters);
                 assert.fail('Expected function to throw BadRequestError');
             } catch (error) {
                 assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');

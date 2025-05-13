@@ -649,7 +649,7 @@ module.exports = class RouterController {
             labels: req.body.labels,
             name: req.body.name,
             reqIp: req.ip ?? undefined,
-            newsletters: await this._validateNewsletters(req),
+            newsletters: await this._validateNewsletters(req.body?.newsletters ?? []),
             attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory)
         };
 
@@ -671,9 +671,13 @@ module.exports = class RouterController {
         return await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer});
     }
 
-    async _validateNewsletters(req) {
-        const {newsletters: requestedNewsletters} = req.body;
-
+    /**
+     * Validates the newsletters in the request body
+     * @param {object[]} requestedNewsletters
+     * @param {string} requestedNewsletters[].name
+     * @returns {Promise<object[] | undefined>} The validated newsletters
+     */
+    async _validateNewsletters(requestedNewsletters) {
         if (!requestedNewsletters || requestedNewsletters.length === 0) {
             return undefined;
         }
