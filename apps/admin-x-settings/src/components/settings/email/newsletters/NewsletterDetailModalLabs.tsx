@@ -585,7 +585,7 @@ const Sidebar: React.FC<{
                     </div>
                     <div className='flex w-full justify-between'>
                         <div>Button corners</div>
-                        <ButtonGroup activeKey={newsletter.button_corners || 'squircle'} buttons={[
+                        <ButtonGroup activeKey={newsletter.button_corners || 'rounded'} buttons={[
                             {
                                 key: 'square',
                                 icon: 'square',
@@ -597,24 +597,24 @@ const Sidebar: React.FC<{
                                 onClick: () => updateNewsletter({button_corners: 'square'})
                             },
                             {
-                                key: 'squircle',
-                                icon: 'squircle',
-                                label: 'Squircle',
-                                tooltip: 'Slightly rounded',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({button_corners: 'squircle'})
-                            },
-                            {
                                 key: 'rounded',
-                                icon: 'circle',
+                                icon: 'squircle',
                                 label: 'Rounded',
-                                tooltip: 'Fully rounded',
+                                tooltip: 'Rounded',
                                 hideLabel: true,
                                 link: false,
                                 size: 'sm',
                                 onClick: () => updateNewsletter({button_corners: 'rounded'})
+                            },
+                            {
+                                key: 'pill',
+                                icon: 'circle',
+                                label: 'Pill',
+                                tooltip: 'Pill',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({button_corners: 'pill'})
                             }
                         ]} clearBg={false} />
                     </div>

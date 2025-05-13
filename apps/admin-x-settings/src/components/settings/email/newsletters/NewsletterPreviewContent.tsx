@@ -249,8 +249,8 @@ const NewsletterPreviewContent: React.FC<{
                                         <button
                                             className={clsx(
                                                 'px-[18px] py-2 font-sans text-[15px]',
-                                                buttonCorners === 'squircle' && 'rounded-[6px]',
-                                                buttonCorners === 'rounded' && 'rounded-full',
+                                                buttonCorners === 'rounded' && 'rounded-[6px]',
+                                                buttonCorners === 'pill' && 'rounded-full',
                                                 buttonCorners === 'square' && 'rounded-none',
                                                 buttonStyle === 'outline'
                                                     ? 'border bg-transparent'
