@@ -342,6 +342,63 @@ describe('ProductNode', function () {
             `);
         }));
 
+        it('renders email (emailCustomizationAlpha)', editorTest(function () {
+            const payload = {
+                productButton: 'Click me',
+                productButtonEnabled: true,
+                productDescription: 'This product is ok',
+                productImageSrc: 'https://example.com/images/ok.jpg',
+                productRatingEnabled: true,
+                productStarRating: 3,
+                productTitle: 'Product title!',
+                productUrl: 'https://example.com/product/ok'
+            };
+
+            const options = {
+                target: 'email',
+                feature: {
+                    emailCustomizationAlpha: true
+                }
+            };
+
+            const productNode = $createProductNode(payload);
+            const {element} = productNode.exportDOM({...exportOptions, ...options});
+
+            element.outerHTML.should.prettifyTo(`
+                <table class="kg-product-card" cellspacing="0" cellpadding="0" border="0">
+                    <tbody>
+                        <tr>
+                            <td class="kg-product-image" align="center">
+                                <img src="https://example.com/images/ok.jpg" border="0">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td valign="top">
+                                <h4 class="kg-product-title">Product title!</h4>
+                            </td>
+                        </tr>
+                        <tr class="kg-product-rating">
+                            <td valign="top">
+                                <img src="https://static.ghost.org/v4.0.0/images/star-rating-3.png" border="0">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="kg-product-description-wrapper">
+                                <div class="kg-product-description">This product is ok</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="kg-product-button-wrapper">
+                                <div class="btn btn-accent">
+                                    <a href="https://example.com/product/ok"><span>Click me</span></a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `);
+        }));
+
         it('renders email with img width and height', editorTest(function () {
             const payload = {
                 productButton: 'Click me',
