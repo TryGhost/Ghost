@@ -351,16 +351,21 @@ module.exports = class RouterController {
         const member = options.member;
 
         if (!member && options.email) {
+            const tokenData = {
+                email: options.email,
+                attribution: {
+                    id: options.metadata.attribution_id ?? null,
+                    type: options.metadata.attribution_type ?? null,
+                    url: options.metadata.attribution_url ?? null
+                }
+            }
+            if (options.metadata.newsletters) {
+                tokenData.newsletters = await this._validateNewsletters(JSON.parse(options.metadata.newsletters));
+                delete options.metadata.newsletters;
+            }
             // Create a signup link if there is no member with this email address
             options.successUrl = await this._magicLinkService.getMagicLink({
-                tokenData: {
-                    email: options.email,
-                    attribution: {
-                        id: options.metadata.attribution_id ?? null,
-                        type: options.metadata.attribution_type ?? null,
-                        url: options.metadata.attribution_url ?? null
-                    }
-                },
+                tokenData,
                 type: 'signup',
                 // Redirect to the original success url after sign up
                 referrer: options.successUrl
@@ -369,9 +374,9 @@ module.exports = class RouterController {
 
         if (member) {
             options.successUrl = this._generateSuccessUrl(options.successUrl, tier.welcomePageURL);
-            
+
             const restrictCheckout = member.get('status') === 'paid';
-            
+
             if (restrictCheckout) {
                 // This member is already subscribed to a paid tier
                 // We don't want to create a duplicate subscription
@@ -413,17 +418,17 @@ module.exports = class RouterController {
         try {
             // Create URL objects
             const siteUrl = this._urlUtils.getSiteUrl();
-            
+
             // This will throw if welcomePageURL is invalid
             const welcomeUrl = new URL(
-                welcomePageURL.startsWith('http') ? welcomePageURL : welcomePageURL, 
+                welcomePageURL.startsWith('http') ? welcomePageURL : welcomePageURL,
                 siteUrl
             );
-            
+
             // Add success parameters
             welcomeUrl.searchParams.set('success', 'true');
             welcomeUrl.searchParams.set('action', 'signup');
-            
+
             return welcomeUrl.href;
         } catch (err) {
             logging.warn(`Invalid welcome page URL "${welcomePageURL}", using original success URL`, err);
@@ -649,7 +654,7 @@ module.exports = class RouterController {
             labels: req.body.labels,
             name: req.body.name,
             reqIp: req.ip ?? undefined,
-            newsletters: await this._validateNewsletters(req),
+            newsletters: await this._validateNewsletters(req.body.newsletters || null),
             attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory)
         };
 
@@ -671,9 +676,7 @@ module.exports = class RouterController {
         return await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer});
     }
 
-    async _validateNewsletters(req) {
-        const {newsletters: requestedNewsletters} = req.body;
-
+    async _validateNewsletters(requestedNewsletters) {
         if (requestedNewsletters && requestedNewsletters.length > 0 && requestedNewsletters.every(newsletter => newsletter.name !== undefined)) {
             const newsletterNames = requestedNewsletters.map(newsletter => newsletter.name);
             const newsletterNamesFilter = newsletterNames.map(newsletter => `'${newsletter.replace(/("|')/g, '\\$1')}'`);
