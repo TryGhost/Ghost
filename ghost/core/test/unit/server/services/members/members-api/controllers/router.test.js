@@ -104,6 +104,53 @@ describe('RouterController', function () {
             })).should.be.true();
         });
 
+        it('parses newsletters from the request body', async function () {
+            const newslettersServiceStub = {
+                getAll: sinon.stub()
+            };
+            newslettersServiceStub.getAll.resolves([
+                {id: 'abc123', name: 'Newsletter 1', status: 'active'},
+                {id: 'def456', name: 'Newsletter 2', status: 'active'}
+            ]);
+            const routerController = new RouterController({
+                tiersService,
+                paymentsService,
+                offersAPI,
+                stripeAPIService,
+                labsService,
+                settingsCache,
+                newslettersService: newslettersServiceStub
+            });
+            const req = {
+                body: {
+                    tierId: 'tier_123',
+                    cadence: 'month',
+                    metadata: {
+                        newsletters: [
+                            {id: 'abc123', name: 'Newsletter 1'},
+                            {id: 'def456', name: 'Newsletter 2'}
+                        ]
+                    }
+                }
+            };
+
+            await routerController.createCheckoutSession(req, {
+                writeHead: () => {},
+                end: () => {}
+            });
+
+            getPaymentLinkSpy.calledOnce.should.be.true();
+
+            getPaymentLinkSpy.calledWith(sinon.match({
+                metadata: {
+                    newsletters: [
+                        {id: 'abc123'},
+                        {id: 'def456'}
+                    ]
+                }
+            })).should.be.true();
+        });
+
         describe('_getSubscriptionCheckoutData', function () {
             it('returns a BadRequestError if both offerId and tierId are missing', async function () {
                 const routerController = new RouterController({
