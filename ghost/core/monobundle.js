@@ -105,7 +105,7 @@ function getWorkspaces(from) {
     const workspaces = getWorkspaces(cwd)
         .filter(w => !w.startsWith(cwd) && fs.existsSync(path.join(w, 'package.json')))
         .filter(w => !w.includes('apps/'))
-        .filter(w => !w.includes('ghost/admin'));
+        .filter(w => !w.includes('/admin/'));
 
     console.log('workspaces', workspaces);
     console.log('\n-------------------------\n');

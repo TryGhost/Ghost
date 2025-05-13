@@ -105,7 +105,6 @@ const COMMAND_GHOST = {
     name: 'ghost',
     // Note: if this isn't working for you, please use Node 18 and above
     command: 'nx run ghost:dev',
-    cwd: path.resolve(__dirname, '../../ghost/core'),
     prefixColor: 'blue',
     env: {
         // In development mode, we allow self-signed certificates (for sending webmentions and oembeds)
@@ -116,7 +115,6 @@ const COMMAND_GHOST = {
 const COMMAND_ADMIN = {
     name: 'admin',
     command: `nx run ghost-admin:dev --live-reload-base-url=${liveReloadBaseUrl} --live-reload-port=4201`,
-    cwd: path.resolve(__dirname, '../../ghost/admin'),
     prefixColor: 'green',
     env: {}
 };
@@ -124,7 +122,6 @@ const COMMAND_ADMIN = {
 const COMMAND_BROWSERTESTS = {
     name: 'browser-tests',
     command: 'nx run ghost:test:browser',
-    cwd: path.resolve(__dirname, '../../ghost/core'),
     prefixColor: 'blue',
     env: {}
 };
@@ -132,7 +129,6 @@ const COMMAND_BROWSERTESTS = {
 const COMMAND_TYPESCRIPT = {
     name: 'ts',
     command: `while [ 1 ]; do nx watch --projects=${tsPackages} -- nx run \\$NX_PROJECT_NAME:build:ts; done`,
-    cwd: path.resolve(__dirname, '../../'),
     prefixColor: 'cyan',
     env: {}
 };
@@ -142,13 +138,11 @@ const adminXApps = '@tryghost/admin-x-settings,@tryghost/admin-x-activitypub,@tr
 const COMMANDS_ADMINX = [{
     name: 'adminXDeps',
     command: 'while [ 1 ]; do nx watch --projects=apps/admin-x-design-system,apps/admin-x-framework,apps/shade,apps/stats -- nx run \\$NX_PROJECT_NAME:build; done',
-    cwd: path.resolve(__dirname, '../..'),
     prefixColor: '#C72AF7',
     env: {}
 }, {
     name: 'adminX',
     command: `nx run-many --projects=${adminXApps} --parallel=${adminXApps.length} --targets=dev`,
-    cwd: path.resolve(__dirname, '../../apps/admin-x-settings', '../../apps/admin-x-activitypub'),
     prefixColor: '#C72AF7',
     env: {}
 }];
@@ -167,7 +161,6 @@ if (GHOST_APP_FLAGS.includes('portal') || GHOST_APP_FLAGS.includes('all')) {
     commands.push({
         name: 'portal',
         command: 'nx run @tryghost/portal:dev',
-        cwd: path.resolve(__dirname, '../../apps/portal'),
         prefixColor: 'magenta',
         env: {}
     });
@@ -190,7 +183,6 @@ if (GHOST_APP_FLAGS.includes('signup') || GHOST_APP_FLAGS.includes('all')) {
     commands.push({
         name: 'signup-form',
         command: GHOST_APP_FLAGS.includes('signup') ? 'nx run @tryghost/signup-form:dev' : 'nx run @tryghost/signup-form:preview',
-        cwd: path.resolve(__dirname, '../../apps/signup-form'),
         prefixColor: 'magenta',
         env: {}
     });
@@ -201,7 +193,6 @@ if (GHOST_APP_FLAGS.includes('announcement-bar') || GHOST_APP_FLAGS.includes('an
     commands.push({
         name: 'announcement-bar',
         command: 'nx run @tryghost/announcement-bar:dev',
-        cwd: path.resolve(__dirname, '../../apps/announcement-bar'),
         prefixColor: '#DC9D00',
         env: {}
     });
@@ -212,7 +203,6 @@ if (GHOST_APP_FLAGS.includes('search') || GHOST_APP_FLAGS.includes('all')) {
     commands.push({
         name: 'search',
         command: 'nx run @tryghost/sodo-search:dev',
-        cwd: path.resolve(__dirname, '../../apps/sodo-search'),
         prefixColor: '#23de43',
         env: {}
     });
@@ -251,7 +241,6 @@ if (GHOST_APP_FLAGS.includes('comments') || GHOST_APP_FLAGS.includes('all')) {
     commands.push({
         name: 'comments',
         command: 'nx run @tryghost/comments-ui:dev',
-        cwd: path.resolve(__dirname, '../../apps/comments-ui'),
         prefixColor: '#E55137',
         env: {}
     });
