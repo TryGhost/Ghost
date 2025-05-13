@@ -72,6 +72,10 @@ describe('RouterController', function () {
         };
     });
 
+    afterEach(function () {
+        sinon.restore();
+    });
+
     describe('createCheckoutSession', function (){
         it('passes offer metadata to payment link method', async function (){
             const routerController = new RouterController({
@@ -97,6 +101,54 @@ describe('RouterController', function () {
             // Payment link is called with the offer id in metadata
             getPaymentLinkSpy.calledWith(sinon.match({
                 metadata: {offer: 'offer_123'}
+            })).should.be.true();
+        });
+
+        it('parses newsletters from the request body', async function () {
+            const newslettersServiceStub = {
+                getAll: sinon.stub()
+            };
+            newslettersServiceStub.getAll.resolves([
+                {id: 'abc123', name: 'Newsletter 1', status: 'active'},
+                {id: 'def456', name: 'Newsletter 2', status: 'active'}
+            ]);
+            const routerController = new RouterController({
+                tiersService,
+                paymentsService,
+                offersAPI,
+                stripeAPIService,
+                labsService,
+                settingsCache,
+                newslettersService: newslettersServiceStub
+            });
+            const newsletters = [
+                {id: 'abc123', name: 'Newsletter 1'},
+                {id: 'def456', name: 'Newsletter 2'}
+            ];
+            const newslettersString = JSON.stringify(newsletters);
+            const req = {
+                body: {
+                    tierId: 'tier_123',
+                    cadence: 'month',
+                    metadata: {
+                        newsletters: newslettersString
+                    }
+                }
+            };
+
+            await routerController.createCheckoutSession(req, {
+                writeHead: () => {},
+                end: () => {}
+            });
+
+            const expectedNewsletters = JSON.stringify([{id: 'abc123'}, {id: 'def456'}]);
+
+            getPaymentLinkSpy.calledOnce.should.be.true();
+
+            getPaymentLinkSpy.calledWith(sinon.match({
+                metadata: {
+                    newsletters: expectedNewsletters
+                }
             })).should.be.true();
         });
 
@@ -821,7 +873,7 @@ describe('RouterController', function () {
 
             const originalUrl = 'https://example.com/success';
             const result = routerController._generateSuccessUrl(originalUrl, null);
-            
+
             assert.equal(result, originalUrl);
         });
 
@@ -833,7 +885,7 @@ describe('RouterController', function () {
             const originalUrl = 'https://example.com/success';
             const welcomePageURL = '/welcome-paid-members/';
             const result = routerController._generateSuccessUrl(originalUrl, welcomePageURL);
-            
+
             assert.equal(result, 'https://example.com/welcome-paid-members/?success=true&action=signup');
         });
 
@@ -845,7 +897,7 @@ describe('RouterController', function () {
             const originalUrl = 'https://example.com/success';
             const welcomePageURL = 'https://external-site.com/welcome';
             const result = routerController._generateSuccessUrl(originalUrl, welcomePageURL);
-            
+
             assert.equal(result, 'https://external-site.com/welcome?success=true&action=signup');
         });
 
@@ -858,8 +910,105 @@ describe('RouterController', function () {
             // Using a URL that would throw an error when trying to create a URL object
             const welcomePageURL = 'http://invalid-url:-with-bad-port';
             const result = routerController._generateSuccessUrl(originalUrl, welcomePageURL);
-            
+
             assert.equal(result, originalUrl);
+        });
+    });
+
+    describe('_validateNewsletters', function () {
+        let newslettersServiceStub;
+        let routerController;
+        beforeEach(function () {
+            newslettersServiceStub = {
+                getAll: sinon.stub()
+            };
+            newslettersServiceStub.getAll.resolves([
+                {id: 'abc123', name: 'Newsletter 1', status: 'active'},
+                {id: 'def456', name: 'Newsletter 2', status: 'active'},
+                {id: 'ghi789', name: 'Newsletter 3', status: 'active'}
+            ]);
+            routerController = new RouterController({
+                tiersService,
+                paymentsService,
+                offersAPI,
+                stripeAPIService,
+                labsService,
+                settingsCache,
+                newslettersService: newslettersServiceStub
+            });
+        });
+
+        it('validates newsletters', async function () {
+            const requestedNewsletters = [
+                {name: 'Newsletter 1'},
+                {name: 'Newsletter 2'},
+                {name: 'Newsletter 3'}
+            ];
+            const result = await routerController._validateNewsletters(requestedNewsletters);
+            result.should.eql([
+                {id: 'abc123'},
+                {id: 'def456'},
+                {id: 'ghi789'}
+            ]);
+        });
+
+        it('returns undefined if newsletters is an empty array', async function () {
+            const requestedNewsletters = [];
+            const result = await routerController._validateNewsletters(requestedNewsletters);
+            assert.equal(result, undefined);
+        });
+
+        it('returns undefined if newsletters is undefined', async function () {
+            const requestedNewsletters = undefined;
+            const result = await routerController._validateNewsletters(requestedNewsletters);
+            assert.equal(result, undefined);
+        });
+
+        it('returns undefined if any newsletter is missing a name', async function () {
+            const requestedNewsletters = [
+                {name: 'Newsletter 1'},
+                {id: 'def456'}
+            ];
+            const result = await routerController._validateNewsletters(requestedNewsletters);
+            assert.equal(result, undefined);
+        });
+
+        it('throws an error if an invalid newsletter is provided', async function () {
+            const requestedNewsletters = [
+                {name: 'Newsletter 1'},
+                {name: 'Newsletter 2'},
+                {name: 'Newsletter 3'},
+                {name: 'fake newsletter'}
+            ];
+            try {
+                await routerController._validateNewsletters(requestedNewsletters);
+                assert.fail('Expected function to throw BadRequestError');
+            } catch (error) {
+                assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
+                assert.equal(error.message, 'Cannot subscribe to invalid newsletters fake newsletter');
+            }
+        });
+
+        it('throws an error if an archived newsletter is provided', async function () {
+            newslettersServiceStub.getAll.resolves([
+                {id: 'abc123', name: 'Newsletter 1', status: 'active'},
+                {id: 'def456', name: 'Newsletter 2', status: 'archived'},
+                {id: 'ghi789', name: 'Newsletter 3', status: 'active'}
+            ]);
+
+            const requestedNewsletters = [
+                {name: 'Newsletter 1'},
+                {name: 'Newsletter 2'},
+                {name: 'Newsletter 3'}
+            ];
+
+            try {
+                await routerController._validateNewsletters(requestedNewsletters);
+                assert.fail('Expected function to throw BadRequestError');
+            } catch (error) {
+                assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
+                assert.equal(error.message, 'Cannot subscribe to archived newsletters Newsletter 2');
+            }
         });
     });
 });
