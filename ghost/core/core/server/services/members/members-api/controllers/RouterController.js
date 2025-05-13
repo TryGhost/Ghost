@@ -361,7 +361,7 @@ module.exports = class RouterController {
             }
             if (options.metadata.newsletters) {
                 tokenData.newsletters = await this._validateNewsletters(JSON.parse(options.metadata.newsletters));
-                delete options.metadata.newsletters;
+                options.metadata.newsletters = undefined;
             }
             // Create a signup link if there is no member with this email address
             options.successUrl = await this._magicLinkService.getMagicLink({
