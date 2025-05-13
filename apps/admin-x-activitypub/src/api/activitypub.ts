@@ -76,7 +76,7 @@ export interface GetAccountFollowsResponse {
 
 export interface Notification {
     id: string;
-    type: 'like' | 'reply' | 'repost' | 'follow';
+    type: 'like' | 'reply' | 'repost' | 'follow' | 'mention';
     actor: {
         id: string;
         name: string;
