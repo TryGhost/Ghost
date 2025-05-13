@@ -2,7 +2,7 @@ const {EmailRenderer} = require('../');
 const assert = require('assert/strict');
 const cheerio = require('cheerio');
 const {createModel, createModelClass} = require('./utils');
-const linkReplacer = require('@tryghost/link-replacer');
+const linkReplacer = require('../../core/core/server/services/lib/link-replacer');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const {HtmlValidate} = require('html-validate');
@@ -1160,14 +1160,16 @@ describe('Email renderer', function () {
         let renderedPost;
         let postUrl = 'http://example.com';
         let customSettings = {};
+        let renderersStub;
         let emailRenderer;
         let basePost;
+        let baseNewsletter;
         let addTrackingToUrlStub;
         let labsEnabled;
 
         beforeEach(function () {
             renderedPost = '<p>Lexical Test</p><img class="is-light-background" src="test-dark" /><img class="is-dark-background" src="test-light" />';
-            labsEnabled = true; // TODO: odd default because it means we're testing the unused email-customization template
+            labsEnabled = false;
             basePost = {
                 lexical: '{}',
                 visibility: 'public',
@@ -1185,12 +1187,27 @@ describe('Email renderer', function () {
                 }),
                 loaded: ['posts_meta']
             };
+            baseNewsletter = {
+                header_image: null,
+                name: 'Test Newsletter',
+                show_badge: false,
+                feedback_enabled: true,
+                show_post_title_section: true
+            };
             postUrl = 'http://example.com';
             customSettings = {};
             addTrackingToUrlStub = sinon.stub();
             addTrackingToUrlStub.callsFake((u, _post, uuid) => {
                 return new URL('http://tracked-link.com/?m=' + encodeURIComponent(uuid) + '&url=' + encodeURIComponent(u.href));
             });
+            renderersStub = {
+                lexical: {
+                    render: sinon.stub().callsFake(() => (renderedPost))
+                },
+                mobiledoc: {
+                    render: sinon.stub().returns('<p> Mobiledoc Test</p>')
+                }
+            };
             emailRenderer = new EmailRenderer({
                 audienceFeedbackService: {
                     buildLink: (_uuid, _postId, score, key) => {
@@ -1230,18 +1247,7 @@ describe('Email renderer', function () {
                 getPostUrl: () => {
                     return postUrl;
                 },
-                renderers: {
-                    lexical: {
-                        render: () => {
-                            return renderedPost;
-                        }
-                    },
-                    mobiledoc: {
-                        render: () => {
-                            return '<p> Mobiledoc Test</p>';
-                        }
-                    }
-                },
+                renderers: renderersStub,
                 linkReplacer,
                 memberAttributionService: {
                     addPostAttributionTracking: (u) => {
@@ -1273,8 +1279,7 @@ describe('Email renderer', function () {
             });
         });
 
-        it('Renders with labs disabled', async function () {
-            labsEnabled = false;
+        it('Renders', async function () {
             const post = createModel(basePost);
             const newsletter = createModel({
                 header_image: null,
@@ -2064,6 +2069,50 @@ describe('Email renderer', function () {
                 response.html.should.not.containEql('post-excerpt-wrapper');
             });
         });
+
+        it('passes expected data through to lexical renderer', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel(baseNewsletter);
+            const segment = null;
+            const options = {};
+
+            await emailRenderer.renderBody(post, newsletter, segment, options);
+
+            sinon.assert.calledOnce(renderersStub.lexical.render);
+            sinon.assert.calledWithMatch(renderersStub.lexical.render,
+                post.get('lexical'),
+                {
+                    target: 'email',
+                    postUrl: 'http://example.com'
+                }
+            );
+        });
+
+        it('passes expected data through to lexical renderer (emailCustomizationAlpha)', async function () {
+            labsEnabled = {emailCustomizationAlpha: true};
+
+            const post = createModel(basePost);
+            const newsletter = createModel({
+                ...baseNewsletter,
+                button_corners: 'square'
+            });
+            const segment = null;
+            const options = {};
+
+            await emailRenderer.renderBody(post, newsletter, segment, options);
+
+            sinon.assert.calledOnce(renderersStub.lexical.render);
+            sinon.assert.calledWithMatch(renderersStub.lexical.render,
+                post.get('lexical'),
+                {
+                    target: 'email',
+                    postUrl: 'http://example.com',
+                    design: {
+                        buttonCorners: 'square'
+                    }
+                }
+            );
+        });
     });
 
     describe('getTemplateData', function () {
@@ -2701,7 +2750,7 @@ describe('Email renderer', function () {
         beforeEach(function () {
             renderedPost = '<p>Lexical Test</p><img class="is-light-background" src="test-dark" /><img class="is-dark-background" src="test-light" />';
             labsEnabled = true; // TODO: odd default because it means we're testing the unused email-customization template
-            
+
             postUrl = 'http://example.com';
             customSettings = {
                 locale: 'fr',

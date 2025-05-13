@@ -19,6 +19,7 @@
         "dev": "vite build --watch",
         "dev:start": "vite",
         "build": "tsc && vite build",
+        "test:unit": "vitest run test/unit",
         "lint": "yarn run lint:code && yarn run lint:test",
         "lint:code": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
         "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx --cache test",
@@ -27,7 +28,10 @@
     "devDependencies": {
         "@testing-library/react": "14.3.1",
         "@types/react": "18.3.20",
-        "@types/react-dom": "18.3.7"
+        "@types/react-dom": "18.3.7",
+        "msw": "2.8.2",
+        "vite": "4.5.14",
+        "vitest": "3.1.3"
     },
     "nx": {
         "targets": {

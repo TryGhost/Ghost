@@ -151,13 +151,13 @@ export const formatQueryDate = (date: Moment) => {
 export const formatDisplayDate = (dateString: string): string => {
     const date = new Date(dateString);
     const today = new Date();
-    const isToday = date.toDateString() === today.toDateString();
-    const isCurrentYear = date.getFullYear() === today.getFullYear();
+    const isToday = date.toISOString().slice(0, 10) === today.toISOString().slice(0, 10);
+    const isCurrentYear = date.getUTCFullYear() === today.getUTCFullYear();
 
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const day = date.getDate();
-    const month = months[date.getMonth()];
-    const year = date.getFullYear();
+    const day = date.getUTCDate();
+    const month = months[date.getUTCMonth()];
+    const year = date.getUTCFullYear();
 
     if (isToday) {
         return `${day} ${month}`;
@@ -190,4 +190,9 @@ export const formatDuration = (seconds: number): string => {
 // Format a fraction to percentage
 export const formatPercentage = (value: number) => {
     return `${Math.round(value * 100)}%`;
+};
+
+// Check if string is a domain
+export const isValidDomain = (value: string) => {
+    return /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:\/[\w-./?%&=]*)?$/i.test(value);
 };

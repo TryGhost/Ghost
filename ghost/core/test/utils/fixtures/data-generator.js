@@ -2,7 +2,6 @@ const _ = require('lodash');
 const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const moment = require('moment');
-const constants = require('@tryghost/constants');
 const DataGenerator = {};
 
 DataGenerator.markdownToMobiledoc = function markdownToMobiledoc(content) {
@@ -1322,7 +1321,7 @@ DataGenerator.forKnex = (function () {
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
             token: crypto.randomUUID(),
-            expires: Date.now() + constants.ONE_DAY_MS
+            expires: moment().add(1, 'days').valueOf()
         });
     }
 

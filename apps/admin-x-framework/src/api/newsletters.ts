@@ -33,6 +33,7 @@ export type Newsletter = {
     show_subscription_details: boolean;
     show_latest_posts: boolean;
     background_color: string;
+    header_color: string;
     border_color: string | null;
     button_color: string | null;
     link_color: string | null;
@@ -40,6 +41,7 @@ export type Newsletter = {
     divider_color: string | null;
     button_corners: string | null;
     button_style: string | null;
+    image_corners: string | null;
     link_style: string | null;
     divider_style: string | null;
     created_at: string;

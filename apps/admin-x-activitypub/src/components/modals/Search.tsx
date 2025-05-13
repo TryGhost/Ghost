@@ -2,7 +2,7 @@ import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
 import FollowButton from '@components/global/FollowButton';
 import React, {useEffect, useRef} from 'react';
-import {H4, LucideIcon} from '@tryghost/shade';
+import {Button, H4, LucideIcon} from '@tryghost/shade';
 import {LoadingIndicator, NoValueLabel, TextField} from '@tryghost/admin-x-design-system';
 import {SuggestedProfiles} from '../global/SuggestedProfiles';
 import {useDebounce} from 'use-debounce';
@@ -16,6 +16,8 @@ interface AccountSearchResult {
     avatarUrl: string;
     followerCount: number;
     followedByMe: boolean;
+    blockedByMe: boolean;
+    domainBlockedByMe: boolean;
 }
 
 interface AccountSearchResultItemProps {
@@ -25,7 +27,7 @@ interface AccountSearchResultItemProps {
 
 const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
     onOpenChange?: (open: boolean) => void;
-}> = ({account, update}) => {
+}> = ({account, update, onOpenChange}) => {
     const onFollow = () => {
         update(account.id, {
             followedByMe: true,
@@ -46,6 +48,7 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
         <ActivityItem
             key={account.id}
             onClick={() => {
+                onOpenChange?.(false);
                 navigate(`/profile/${account.handle}`);
             }}
         >
@@ -60,14 +63,17 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
                 <span className='line-clamp-1 font-semibold text-black dark:text-white'>{account.name}</span>
                 <span className='line-clamp-1 text-sm text-gray-700 dark:text-gray-600'>{account.handle}</span>
             </div>
-            <FollowButton
-                className='ml-auto'
-                following={account.followedByMe}
-                handle={account.handle}
-                type='secondary'
-                onFollow={onFollow}
-                onUnfollow={onUnfollow}
-            />
+            {account.blockedByMe || account.domainBlockedByMe ?
+                <Button className='pointer-events-none ml-auto min-w-[90px]' variant='destructive'>Blocked</Button> :
+                <FollowButton
+                    className='ml-auto'
+                    following={account.followedByMe}
+                    handle={account.handle}
+                    type='secondary'
+                    onFollow={onFollow}
+                    onUnfollow={onUnfollow}
+                />
+            }
         </ActivityItem>
     );
 };

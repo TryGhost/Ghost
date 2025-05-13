@@ -2232,7 +2232,7 @@ span.dropdown .gh-post-list-cta > span {
 
 .feature-trafficAnalytics .gh-post-analytics-content {
     display: grid;
-    grid-template-columns: auto 288px;
+    grid-template-columns: auto 260px;
     gap: 32px;
 }
 
@@ -2250,11 +2250,10 @@ span.dropdown .gh-post-list-cta > span {
 }
 
 .feature-trafficAnalytics .gh-post-analytics-sidebar {
-    border-left: 1px solid var(--whitegrey);
     display: flex;
     flex-direction: column;
     gap: 1px;
-    padding: 32px 0 32px 24px;
+    padding: 32px 0;
 }
 
 .feature-trafficAnalytics .gh-post-analytics-sidebar-item {
@@ -2270,11 +2269,11 @@ span.dropdown .gh-post-list-cta > span {
 }
 .feature-trafficAnalytics .gh-post-analytics-sidebar-item:hover {
     color: var(--black);
-    background: var(--whitegrey);
+    background: var(--whitegrey-l1);
 }
 
 .feature-trafficAnalytics .gh-post-analytics-sidebar-item.active {
-    background: var(--whitegrey);
+    background: var(--whitegrey-l1);
     color: var(--black);
     font-weight: 600;
 }
@@ -2292,6 +2291,14 @@ span.dropdown .gh-post-list-cta > span {
     padding: 20px 0 0;
     margin: 0 24px;
     border-bottom: 1px solid var(--whitegrey);
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics.no-tabs .tab-panel-selected {
+    margin: 0 24px;
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics.no-tabs {
+    padding: 20px 0;
 }
 
 .feature-trafficAnalytics .gh-tabs-analytics .tab-list .tab {
@@ -2394,6 +2401,10 @@ span.dropdown .gh-post-list-cta > span {
 
 .feature-trafficAnalytics .gh-tabs-analytics .tab-panel {
     background: none;
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics.no-tabs .tab-selected:before {
+    display: none;
 }
 
 @media (max-width: 1320px) {

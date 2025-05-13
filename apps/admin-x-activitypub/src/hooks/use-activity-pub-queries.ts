@@ -6,6 +6,7 @@ import {
     ActivityPubCollectionResponse,
     FollowAccount,
     type GetAccountFollowsResponse,
+    type Post,
     type SearchResults
 } from '../api/activitypub';
 import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
@@ -300,6 +301,62 @@ export function useUnlikeMutationForUser(handle: string) {
     });
 }
 
+export function useBlockDomainMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(account: Account) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.blockDomain(new URL(account.apId));
+        },
+        onMutate: (account: Account) => {
+            queryClient.setQueryData(
+                QUERY_KEYS.account(account.handle),
+                (currentAccount?: Account) => {
+                    if (!currentAccount) {
+                        return currentAccount;
+                    }
+                    return {
+                        ...currentAccount,
+                        domainBlockedByMe: true,
+                        followedByMe: false,
+                        followsMe: false
+                    };
+                }
+            );
+        }
+    });
+}
+
+export function useUnblockDomainMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(account: Account) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.unblockDomain(new URL(account.apId));
+        },
+        onMutate: (account: Account) => {
+            queryClient.setQueryData(
+                QUERY_KEYS.account(account.handle),
+                (currentAccount?: Account) => {
+                    if (!currentAccount) {
+                        return currentAccount;
+                    }
+                    return {
+                        ...currentAccount,
+                        domainBlockedByMe: false
+                    };
+                }
+            );
+        }
+    });
+}
+
 export function useBlockMutationForUser(handle: string) {
     const queryClient = useQueryClient();
 
@@ -325,6 +382,8 @@ export function useBlockMutationForUser(handle: string) {
                     };
                 }
             );
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.feed});
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.inbox});
         }
     });
 }
@@ -689,6 +748,7 @@ export function useSearchForUser(handle: string, query: string) {
     const searchQuery = useQuery({
         queryKey,
         enabled: query.length > 0,
+        refetchOnMount: 'always',
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
@@ -843,15 +903,23 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
+            // Get more handles than we need initially, since some might be filtered out as blocked
+            const fetchLimit = Math.min(limit * 2, suggestedHandles.length);
+
             return Promise.allSettled(
                 suggestedHandles
                     .sort(() => Math.random() - 0.5)
-                    .slice(0, limit)
+                    .slice(0, fetchLimit)
                     .map(suggestedHandle => api.getAccount(suggestedHandle))
             ).then((results) => {
-                return results
+                const accounts = results
                     .filter((result): result is PromiseFulfilledResult<Account> => result.status === 'fulfilled')
-                    .map(result => result.value);
+                    .map(result => result.value)
+                    // Filter out blocked accounts
+                    .filter(account => !account.blockedByMe && !account.domainBlockedByMe);
+
+                // Return only the requested limit of accounts after filtering
+                return accounts.slice(0, limit);
             });
         }
     });
@@ -1190,16 +1258,15 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
 
             return {id};
         },
-        onSuccess: (activity: Activity, _variables, context) => {
-            if (activity.id === undefined) {
-                throw new Error('Activity returned from API has no id');
+        onSuccess: (post: Post, _variables, context) => {
+            if (post.id === undefined) {
+                throw new Error('Post returned from API has no id');
             }
+            const activity = mapPostToActivity(post);
 
-            const preparedActivity = prepareNewActivity(activity);
-
-            updateActivityInPaginatedCollection(queryClient, queryKeyFeed, 'posts', context?.id ?? '', () => preparedActivity);
-            updateActivityInPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '', () => preparedActivity);
-            updateActivityInPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '', () => preparedActivity);
+            updateActivityInPaginatedCollection(queryClient, queryKeyFeed, 'posts', context?.id ?? '', () => activity);
+            updateActivityInPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '', () => activity);
+            updateActivityInPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '', () => activity);
         },
         onError(error, _variables, context) {
             // eslint-disable-next-line no-console

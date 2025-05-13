@@ -1,9 +1,15 @@
 import Growth from './views/PostAnalytics/Growth';
+import Newsletter from './views/PostAnalytics/Newsletter';
 import Web from './views/PostAnalytics/Web';
 import {ErrorPage} from '@tryghost/shade';
 import {Navigate, RouteObject} from '@tryghost/admin-x-framework';
+// import {withFeatureFlag} from '@src/hooks/withFeatureFlag';
 
 export const APP_ROUTE_PREFIX = '/posts';
+
+// Wrap components with feature flag protection where needed
+//  e.g.
+// const ProtectedNewsletter = withFeatureFlag(Newsletter, 'trafficAnalyticsAlpha', '/analytics/', 'Newsletter');
 
 export const routes: RouteObject[] = [
     {
@@ -25,6 +31,11 @@ export const routes: RouteObject[] = [
                 path: 'analytics/:postId/growth',
                 index: true,
                 element: <Growth />
+            },
+            {
+                path: 'analytics/:postId/newsletter',
+                index: true,
+                element: <Newsletter />
             },
             {
                 path: '*',
