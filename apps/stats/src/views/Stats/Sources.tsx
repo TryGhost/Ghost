@@ -6,7 +6,7 @@ import StatsView from './layout/StatsView';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, H1, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber, formatPercentage, formatQueryDate, isValidDomain} from '@tryghost/shade';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
 import {getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
-import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
+import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 

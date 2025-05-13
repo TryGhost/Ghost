@@ -3,7 +3,7 @@ import EmptyStatView from '../EmptyStatView';
 import React, {useState} from 'react';
 import {Card, CardContent, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsList, formatDisplayDate, formatDuration, formatNumber, formatPercentage} from '@tryghost/shade';
 import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
-import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
+import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
