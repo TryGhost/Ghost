@@ -998,7 +998,7 @@ describe('RouterController', function () {
             const requestedNewsletters = [
                 {name: 'Newsletter 1'},
                 {name: 'Newsletter 2'},
-                {name: 'Newsletter 3'},
+                {name: 'Newsletter 3'}
             ];
 
             try {
