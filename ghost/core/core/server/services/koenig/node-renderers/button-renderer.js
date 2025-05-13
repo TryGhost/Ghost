@@ -10,7 +10,7 @@ export function renderButtonNode(node, options = {}) {
     }
 
     if (options.target === 'email') {
-        return emailTemplate(node, document);
+        return emailTemplate(node, options, document);
     } else {
         return frontendTemplate(node, document);
     }
@@ -31,33 +31,26 @@ function frontendTemplate(node, document) {
     return {element: cardDiv};
 }
 
-function emailTemplate(node, document) {
-    const parent = document.createElement('p');
+function emailTemplate(node, options, document) {
+    const {buttonUrl, buttonText} = node;
 
-    const buttonDiv = document.createElement('div');
-    buttonDiv.setAttribute('class', 'btn btn-accent');
-    parent.appendChild(buttonDiv);
+    const html = `
+        <p>
+            <div class="btn btn-accent">
+                <table border="0" cellspacing="0" cellpadding="0" align="${node.alignment}">
+                    <tr>
+                        <td align="center">
+                            <a href="${buttonUrl}">${buttonText}</a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </p>
+    `;
 
-    const table = document.createElement('table');
-    table.setAttribute('border', 0);
-    table.setAttribute('cellspacing', 0);
-    table.setAttribute('cellpadding', 0);
-    table.setAttribute('align', node.alignment);
-    buttonDiv.appendChild(table);
-
-    const row = document.createElement('tr');
-    table.appendChild(row);
-
-    const cell = document.createElement('td');
-    cell.setAttribute('align', 'center');
-    row.appendChild(cell);
-
-    const button = document.createElement('a');
-    button.setAttribute('href', node.buttonUrl);
-    button.textContent = node.buttonText;
-    cell.appendChild(button);
-
-    return {element: parent};
+    const element = document.createElement('p');
+    element.innerHTML = html;
+    return {element};
 }
 
 function getCardClasses(node) {
