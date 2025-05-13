@@ -85,13 +85,3 @@ FROM development-base AS development
 COPY . .
 RUN yarn nx run-many -t build:ts
 CMD ["yarn", "dev"]
-
-# --------------------
-# Tinybird CLI
-# --------------------
-FROM development AS tinybird
-RUN apt update && apt install -y \
-    parallel \
-    python3-pip
-WORKDIR /home/ghost/ghost/web-analytics
-RUN pip install -r requirements.txt

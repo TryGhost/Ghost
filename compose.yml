@@ -65,16 +65,6 @@ services:
       redis:
         condition: service_healthy
 
-  tinybird:
-    <<: *service-template
-    build:
-      context: .
-      dockerfile: ./.docker/Dockerfile
-      target: tinybird
-    working_dir: /home/ghost/ghost/web-analytics
-    profiles: [ tinybird ]
-    tty: true
-
   mysql:
     image: mysql:8.4.5
     container_name: ghost-mysql
