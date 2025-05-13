@@ -13,6 +13,9 @@
         "forceUpdate": false
     },
     "privacy": false,
+    "security": {
+        "staffDeviceVerification": true
+    },
     "useMinFiles": true,
     "paths": {
         "contentPath": "content/",
@@ -127,8 +130,7 @@
             "lifetime": 3600,
             "freeRetries": 10
         },
-        "blocked_email_domains": [],
-        "captcha_enabled": false
+        "blocked_email_domains": []
     },
     "caching": {
         "301": {

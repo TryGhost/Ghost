@@ -744,8 +744,6 @@ const fixtures = {
 
     async enableAllLabsFeatures() {
         const labsValue = Object.fromEntries(labsService.WRITABLE_KEYS_ALLOWLIST
-            // TODO: should test with 2fa enabled
-            .filter(key => key !== 'staff2fa')
             .map(key => [key, true]));
         const labsSetting = DataGenerator.forKnex.createSetting({
             key: 'labs',

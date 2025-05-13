@@ -1,6 +1,5 @@
 const {Router} = require('express');
 const body = require('body-parser');
-const MagicLink = require('@tryghost/magic-link');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
@@ -15,7 +14,8 @@ const RouterController = require('./controllers/RouterController');
 const MemberController = require('./controllers/MemberController');
 const WellKnownController = require('./controllers/WellKnownController');
 
-const {EmailSuppressedEvent} = require('@tryghost/email-suppression-list');
+const {EmailSuppressedEvent} = require('../../email-suppression-list/EmailSuppressionList');
+const MagicLink = require('../../lib/magic-link/MagicLink');
 const DomainEvents = require('@tryghost/domain-events');
 
 module.exports = function MembersAPI({
@@ -73,7 +73,7 @@ module.exports = function MembersAPI({
     settingsCache,
     sentry,
     settingsHelpers,
-    captchaService
+    urlUtils
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -197,7 +197,8 @@ module.exports = function MembersAPI({
         labsService,
         newslettersService,
         settingsCache,
-        sentry
+        sentry,
+        urlUtils
     });
 
     const wellKnownController = new WellKnownController({
@@ -336,7 +337,6 @@ module.exports = function MembersAPI({
     const middleware = {
         sendMagicLink: Router().use(
             body.json(),
-            captchaService.getMiddleware(),
             forwardError((req, res) => routerController.sendMagicLink(req, res))
         ),
         createCheckoutSession: Router().use(

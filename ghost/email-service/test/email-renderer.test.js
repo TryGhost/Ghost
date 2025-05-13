@@ -2,7 +2,7 @@ const {EmailRenderer} = require('../');
 const assert = require('assert/strict');
 const cheerio = require('cheerio');
 const {createModel, createModelClass} = require('./utils');
-const linkReplacer = require('@tryghost/link-replacer');
+const linkReplacer = require('../../core/core/server/services/lib/link-replacer');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const {HtmlValidate} = require('html-validate');
@@ -2688,6 +2688,183 @@ describe('Email renderer', function () {
             const response = await emailRenderer.limitImageWidth('https://example.com/image.png');
             assert.equal(response.width, 300);
             assert.equal(response.href, 'https://example.com/image.png');
+        });
+    });
+    describe('additional i18n tests', function () {
+        let renderedPost;
+        let postUrl = 'http://example.com';
+        let customSettings = {};
+        let emailRenderer;
+        let addTrackingToUrlStub;
+        let labsEnabled;
+
+        beforeEach(function () {
+            renderedPost = '<p>Lexical Test</p><img class="is-light-background" src="test-dark" /><img class="is-dark-background" src="test-light" />';
+            labsEnabled = true; // TODO: odd default because it means we're testing the unused email-customization template
+
+            postUrl = 'http://example.com';
+            customSettings = {
+                locale: 'fr',
+                site_title: 'Cathy\'s Blog'
+            };
+            addTrackingToUrlStub = sinon.stub();
+            addTrackingToUrlStub.callsFake((u, _post, uuid) => {
+                return new URL('http://tracked-link.com/?m=' + encodeURIComponent(uuid) + '&url=' + encodeURIComponent(u.href));
+            });
+            emailRenderer = new EmailRenderer({
+                audienceFeedbackService: {
+                    buildLink: (_uuid, _postId, score, key) => {
+                        return new URL('http://feedback-link.com/?score=' + encodeURIComponent(score) + '&uuid=' + encodeURIComponent(_uuid) + '&key=' + encodeURIComponent(key));
+                    }
+                },
+                urlUtils: {
+                    urlFor: (type) => {
+                        if (type === 'image') {
+                            return 'http://icon.example.com';
+                        }
+                        return 'http://example.com/subdirectory';
+                    },
+                    isSiteUrl: (u) => {
+                        return u.hostname === 'example.com';
+                    }
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (customSettings[key]) {
+                            return customSettings[key];
+                        }
+                        if (key === 'accent_color') {
+                            return '#ffffff';
+                        }
+                        if (key === 'timezone') {
+                            return 'Etc/UTC';
+                        }
+                        if (key === 'icon') {
+                            return 'ICON';
+                        }
+                        if (key === 'visibility') {
+                            return 'paid';
+                        }
+                        if (key === 'title') {
+                            return 'Cathy\'s Blog';
+                        }
+                    }
+                },
+                getPostUrl: () => {
+                    return postUrl;
+                },
+                renderers: {
+                    lexical: {
+                        render: () => {
+                            return renderedPost;
+                        }
+                    },
+                    mobiledoc: {
+                        render: () => {
+                            return '<p> Mobiledoc Test</p>';
+                        }
+                    }
+                },
+                linkReplacer,
+                memberAttributionService: {
+                    addPostAttributionTracking: (u) => {
+                        u.searchParams.append('post_tracking', 'added');
+                        return u;
+                    }
+                },
+                linkTracking: {
+                    service: {
+                        addTrackingToUrl: addTrackingToUrlStub
+                    }
+                },
+                outboundLinkTagger: {
+                    addToUrl: (u, newsletter) => {
+                        u.searchParams.append('source_tracking', newsletter?.get('name') ?? 'site');
+                        return u;
+                    }
+                },
+                labs: {
+                    isSet: (key) => {
+                        if (typeof labsEnabled === 'object') {
+                            return labsEnabled[key] || false;
+                        }
+
+                        return labsEnabled;
+                    }
+                },
+                t: tFr
+            });
+        });
+        it('correctly include the site name in the paywall (in French)', async function () {
+            renderedPost = '<div> Lexical Test </div> <div data-gh-segment="status:-free"> members only section</div> some text for both <!--members-only--> finishing part only for members';
+            let post = {
+                related: () => {
+                    return null;
+                },
+                get: (key) => {
+                    if (key === 'lexical') {
+                        return '{}';
+                    }
+
+                    if (key === 'visibility') {
+                        return 'paid';
+                    }
+
+                    if (key === 'title') {
+                        return 'Test Post';
+                    }
+                },
+                getLazyRelation: () => {
+                    return {
+                        models: [{
+                            get: (key) => {
+                                if (key === 'name') {
+                                    return 'Test Author';
+                                }
+                            }
+                        }]
+                    };
+                }
+            };
+            let newsletter = {
+                get: (key) => {
+                    if (key === 'header_image') {
+                        return null;
+                    }
+
+                    if (key === 'name') {
+                        return 'Test Newsletter';
+                    }
+
+                    if (key === 'badge') {
+                        return false;
+                    }
+
+                    if (key === 'feedback_enabled') {
+                        return true;
+                    }
+
+                    if (key === 'show_post_title_section') {
+                        return true;
+                    }
+
+                    return false;
+                }
+            };
+            let options = {};
+
+            let response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                'status:free',
+                options
+            );
+
+            response.html.should.not.containEql('members only section');
+            response.html.should.containEql('some text for both');
+            response.html.should.not.containEql('finishing part only for members');
+            response.html.should.containEql('Devenez un abonn&#xE9; payant de Cathy&#39;s Blog pour acc&#xE9;der &#xE0; du contenu exclusif');
+            response.plaintext.should.containEql('Devenez un abonné payant de Cathy\'s Blog pour accéder à du contenu exclusif');
         });
     });
 });

@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const constants = require('@tryghost/constants');
+const moment = require('moment');
 const updateUserLastSeenMiddleware = require('../../../../../../core/server/web/api/middleware/update-user-last-seen');
 
 describe('updateUserLastSeenMiddleware', function () {
@@ -28,7 +28,7 @@ describe('updateUserLastSeenMiddleware', function () {
 
     describe('when the last_seen is longer than an hour ago', function () {
         it('calls updateLastSeen on the req.user, calling next with nothing if success', function (done) {
-            const fakeLastSeen = new Date(Date.now() - constants.ONE_HOURS_MS);
+            const fakeLastSeen = moment().subtract(1, 'hours').toDate();
             const fakeUser = {
                 get: sinon.stub().withArgs('last_seen').returns(fakeLastSeen),
                 updateLastSeen: sinon.stub().resolves()
@@ -41,7 +41,7 @@ describe('updateUserLastSeenMiddleware', function () {
         });
 
         it('calls updateLastSeen on the req.user, calling next with err if error', function (done) {
-            const fakeLastSeen = new Date(Date.now() - constants.ONE_HOURS_MS);
+            const fakeLastSeen = moment().subtract(1, 'hours').toDate();
             const fakeError = new Error('gonna need a bigger boat');
             const fakeUser = {
                 get: sinon.stub().withArgs('last_seen').returns(fakeLastSeen),

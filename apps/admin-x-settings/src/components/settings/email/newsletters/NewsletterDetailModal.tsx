@@ -1,10 +1,9 @@
 import NewsletterPreview from './NewsletterPreview';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
-import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
-import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, SelectOption, Separator, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ButtonGroup, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, SelectOption, Separator, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
@@ -13,7 +12,6 @@ import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/image
 import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {renderReplyToEmail, renderSenderEmail} from '../../../../utils/newsletterEmails';
-import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const ReplyToEmailField: React.FC<{
@@ -70,11 +68,10 @@ const Sidebar: React.FC<{
     const {updateRoute} = useRouting();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const limiter = useLimiter();
-    const {settings, siteData, config} = useGlobalData();
+    const {settings, config} = useGlobalData();
     const [icon, defaultEmailAddress] = getSettingValues<string>(settings, ['icon', 'default_email_address', 'support_email_address']);
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
-    const hasEmailCustomization = useFeatureFlag('emailCustomization');
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
@@ -93,16 +90,6 @@ const Sidebar: React.FC<{
         {value: 'serif', label: 'Elegant serif', className: 'font-serif'},
         {value: 'sans_serif', label: 'Clean sans-serif'}
     ];
-
-    const backgroundColorIsDark = () => {
-        if (newsletter.background_color === 'dark') {
-            return true;
-        }
-        if (newsletter.background_color === 'light') {
-            return false;
-        }
-        return textColorForBackgroundColor(newsletter.background_color).hex().toLowerCase() === '#ffffff';
-    };
 
     const confirmStatusChange = async () => {
         if (newsletter.status === 'active') {
@@ -292,49 +279,6 @@ const Sidebar: React.FC<{
                 </Form>
 
                 <Form className='mt-6' gap='sm' margins='lg' title='Body'>
-                    {hasEmailCustomization && <>
-                        <ColorPickerField
-                            direction='rtl'
-                            swatches={[
-                                {
-                                    hex: '#f0f0f0',
-                                    title: 'Light grey'
-                                },
-                                {
-                                    hex: '#ffffff',
-                                    value: 'light',
-                                    title: 'White'
-                                }
-                            ]}
-                            title='Background color'
-                            value={newsletter.background_color || 'light'}
-                            onChange={color => updateNewsletter({background_color: color!})}
-                        />
-                        <ColorPickerField
-                            clearButtonValue={null}
-                            direction='rtl'
-                            swatches={[
-                                {
-                                    hex: siteData.accent_color,
-                                    value: 'accent',
-                                    title: 'Accent'
-                                },
-                                {
-                                    hex: backgroundColorIsDark() ? '#ffffff' : '#000000',
-                                    value: 'auto',
-                                    title: 'Auto'
-                                },
-                                {
-                                    value: null,
-                                    title: 'Transparent',
-                                    hex: '#00000000'
-                                }
-                            ]}
-                            title='Border color'
-                            value={newsletter.border_color}
-                            onChange={color => updateNewsletter({border_color: color})}
-                        />
-                    </>}
                     <Toggle
                         checked={newsletter.show_post_title_section}
                         direction="rtl"
@@ -378,24 +322,6 @@ const Sidebar: React.FC<{
                         className="mb-1 !gap-0"
                         />
                     </div>
-                    {hasEmailCustomization && <ColorPickerField
-                        direction='rtl'
-                        swatches={[
-                            {
-                                value: 'accent',
-                                title: 'Accent',
-                                hex: siteData.accent_color
-                            },
-                            {
-                                value: null,
-                                title: 'Auto',
-                                hex: backgroundColorIsDark() ? '#ffffff' : '#000000'
-                            }
-                        ]}
-                        title='Heading color'
-                        value={newsletter.title_color}
-                        onChange={color => updateNewsletter({title_color: color})}
-                    />}
                     <ToggleGroup gap='lg'>
                         {newsletter.show_post_title_section &&
                             <Toggle

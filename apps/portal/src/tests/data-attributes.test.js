@@ -134,16 +134,6 @@ describe('Member Data attributes:', () => {
             }];
         });
 
-        // Mock hCaptcha
-        window.hcaptcha = {
-            execute: () => { }
-        };
-        jest.spyOn(window.hcaptcha, 'execute').mockImplementation(() => {
-            return Promise.resolve({
-                response: 'testresponse'
-            });
-        });
-
         // Mock window.location
         let locationMock = jest.fn();
         delete window.location;
@@ -173,31 +163,6 @@ describe('Member Data attributes:', () => {
                     refUrl: 'https://example.com/blog/',
                     time: 1611234567890
                 }],
-                integrityToken: 'testtoken'
-            });
-            expect(window.fetch).toHaveBeenLastCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});
-        });
-
-        test('submits captcha response if captcha id specified', async () => {
-            const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
-
-            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler, captchaId: '123123'});
-
-            expect(window.fetch).toHaveBeenCalledTimes(2);
-            const expectedBody = JSON.stringify({
-                email: 'jamie@example.com',
-                emailType: 'signup',
-                labels: ['Gold'],
-                name: 'Jamie Larsen',
-                autoRedirect: true,
-                urlHistory: [{
-                    path: '/blog/',
-                    refMedium: null,
-                    refSource: 'ghost-explore',
-                    refUrl: 'https://example.com/blog/',
-                    time: 1611234567890
-                }],
-                token: 'testresponse',
                 integrityToken: 'testtoken'
             });
             expect(window.fetch).toHaveBeenLastCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});

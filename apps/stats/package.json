@@ -18,6 +18,10 @@
     "scripts": {
         "dev": "vite build --watch",
         "dev:start": "vite",
+        "test": "vitest run",
+        "test:unit": "vitest run test/unit",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage",
         "build": "tsc && vite build",
         "lint": "yarn run lint:code && yarn run lint:test",
         "lint:code": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
@@ -30,13 +34,15 @@
         "@tinybirdco/charts": "0.2.4",
         "@tryghost/admin-x-framework": "0.0.0",
         "@tryghost/shade": "0.0.0",
-        "@types/react": "18.3.3",
-        "@types/react-dom": "18.3.0",
-        "@types/react-svg-map": "^2.1.4",
+        "@types/react": "18.3.20",
+        "@types/react-dom": "18.3.7",
+        "@types/react-svg-map": "2.1.4",
+        "@vitejs/plugin-react": "4.4.1",
         "moment-timezone": "^0.5.48",
         "react": "18.3.1",
         "react-dom": "18.3.1",
-        "react-svg-map": "2.2.0"
+        "react-svg-map": "2.2.0",
+        "vite": "4.5.14"
     },
     "nx": {
         "targets": {
@@ -58,7 +64,7 @@
         }
     },
     "dependencies": {
-        "@radix-ui/react-form": "0.0.3",
+        "@radix-ui/react-form": "0.1.6",
         "@svg-maps/world": "1.0.1",
         "@tryghost/admin-x-framework": "0.0.0",
         "@tryghost/shade": "0.0.0",

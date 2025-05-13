@@ -36,5 +36,14 @@ module.exports = {
                 'onboarding-followers': 'fadeIn 0.2s ease-in 0.5s forwards, scale 0.3s ease-in 0.5s forwards'
             }
         }
-    }
+    },
+    plugins: [
+        require('tailwindcss/plugin')(function ({ addUtilities }) {
+            addUtilities({
+                '.break-anywhere': {
+                    'overflow-wrap': 'anywhere',
+                },
+            })
+        }),
+    ],
 };

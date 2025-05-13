@@ -34,7 +34,7 @@ var ESCAPE_REPLACE = '\\$1';
  *
  * @param {string|RegExp} hostname
  * @param {function} handle
- * @return {Function}
+ * @return {import('express').RequestHandler}
  * @public
  */
 

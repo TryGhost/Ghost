@@ -5,9 +5,7 @@ const ObjectId = require('bson-objectid').default;
 /**
  * @TODO: pass these in as dependencies
  */
-const {PostRevisions} = require('@tryghost/post-revisions');
 const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
-const {PostsBulkAddTagsEvent} = require('@tryghost/post-events');
 
 /**
  * @typedef {Object} IdbBackup
@@ -146,6 +144,7 @@ class Users {
         await this.models.Post.addActions('edited', usersPostIds, {transacting, context});
 
         // dispatch event to ensure collections are updated
+        const {PostsBulkAddTagsEvent} = require('../../shared/events-ts');
         DomainEvents.dispatch(PostsBulkAddTagsEvent.create(usersPostIds));
     }
 
@@ -167,6 +166,8 @@ class Users {
 
         return this.models.Base.transaction(async (t) => {
             frameOptions.transacting = t;
+
+            const {PostRevisions} = require('../lib/PostRevisions');
 
             // null author field for users' post revisions
             const postRevisions = new PostRevisions({

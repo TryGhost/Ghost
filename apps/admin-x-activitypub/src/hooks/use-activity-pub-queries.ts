@@ -6,6 +6,7 @@ import {
     ActivityPubCollectionResponse,
     FollowAccount,
     type GetAccountFollowsResponse,
+    type Post,
     type SearchResults
 } from '../api/activitypub';
 import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
@@ -241,6 +242,31 @@ export function useLikeMutationForUser(handle: string) {
                     likedCount: currentAccount.likedCount + 1
                 };
             });
+        },
+        onError(error: {message: string, statusCode: number}, id) {
+            updateLikedCache(queryClient, QUERY_KEYS.feed, id, false);
+            updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
+            updateLikedCache(queryClient, QUERY_KEYS.profilePosts('index'), id, false);
+            updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
+
+            // Update account liked count
+            queryClient.setQueryData(QUERY_KEYS.account('index'), (currentAccount?: Account) => {
+                if (!currentAccount) {
+                    return currentAccount;
+                }
+                return {
+                    ...currentAccount,
+                    likedCount: currentAccount.likedCount - 1
+                };
+            });
+
+            if (error.statusCode === 403) {
+                showToast({
+                    title: 'Action failed',
+                    message: 'This user has restricted who can interact with their account.',
+                    type: 'error'
+                });
+            }
         }
     });
 }
@@ -271,6 +297,120 @@ export function useUnlikeMutationForUser(handle: string) {
                     likedCount: Math.max(0, currentAccount.likedCount - 1)
                 };
             });
+        }
+    });
+}
+
+export function useBlockDomainMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(account: Account) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.blockDomain(new URL(account.apId));
+        },
+        onMutate: (account: Account) => {
+            queryClient.setQueryData(
+                QUERY_KEYS.account(account.handle),
+                (currentAccount?: Account) => {
+                    if (!currentAccount) {
+                        return currentAccount;
+                    }
+                    return {
+                        ...currentAccount,
+                        domainBlockedByMe: true,
+                        followedByMe: false,
+                        followsMe: false
+                    };
+                }
+            );
+        }
+    });
+}
+
+export function useUnblockDomainMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(account: Account) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.unblockDomain(new URL(account.apId));
+        },
+        onMutate: (account: Account) => {
+            queryClient.setQueryData(
+                QUERY_KEYS.account(account.handle),
+                (currentAccount?: Account) => {
+                    if (!currentAccount) {
+                        return currentAccount;
+                    }
+                    return {
+                        ...currentAccount,
+                        domainBlockedByMe: false
+                    };
+                }
+            );
+        }
+    });
+}
+
+export function useBlockMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(account: Account) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.block(new URL(account.apId));
+        },
+        onMutate: (account: Account) => {
+            queryClient.setQueryData(
+                QUERY_KEYS.account(account.handle),
+                (currentAccount?: Account) => {
+                    if (!currentAccount) {
+                        return currentAccount;
+                    }
+                    return {
+                        ...currentAccount,
+                        blockedByMe: true,
+                        followedByMe: false,
+                        followsMe: false
+                    };
+                }
+            );
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.feed});
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.inbox});
+        }
+    });
+}
+
+export function useUnblockMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(account: Account) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.unblock(new URL(account.apId));
+        },
+        onMutate: (account: Account) => {
+            queryClient.setQueryData(
+                QUERY_KEYS.account(account.handle),
+                (currentAccount?: Account) => {
+                    if (!currentAccount) {
+                        return currentAccount;
+                    }
+                    return {
+                        ...currentAccount,
+                        blockedByMe: false
+                    };
+                }
+            );
         }
     });
 }
@@ -319,6 +459,17 @@ export function useRepostMutationForUser(handle: string) {
         onMutate: (id) => {
             updateRepostCache(queryClient, QUERY_KEYS.feed, id, true);
             updateRepostCache(queryClient, QUERY_KEYS.inbox, id, true);
+        },
+        onError(error: {message: string, statusCode: number}, id) {
+            updateRepostCache(queryClient, QUERY_KEYS.feed, id, false);
+            updateRepostCache(queryClient, QUERY_KEYS.inbox, id, false);
+            if (error.statusCode === 403) {
+                showToast({
+                    title: 'Action failed',
+                    message: 'This user has restricted who can interact with their account.',
+                    type: 'error'
+                });
+            }
         }
     });
 }
@@ -576,7 +727,17 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
 
             onSuccess();
         },
-        onError
+        onError(error: {message: string, statusCode: number}) {
+            onError();
+
+            if (error.statusCode === 403) {
+                showToast({
+                    title: 'Action failed',
+                    message: 'This user has restricted who can interact with their account.',
+                    type: 'error'
+                });
+            }
+        }
     });
 }
 
@@ -587,6 +748,7 @@ export function useSearchForUser(handle: string, query: string) {
     const searchQuery = useQuery({
         queryKey,
         enabled: query.length > 0,
+        refetchOnMount: 'always',
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
@@ -741,15 +903,23 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
+            // Get more handles than we need initially, since some might be filtered out as blocked
+            const fetchLimit = Math.min(limit * 2, suggestedHandles.length);
+
             return Promise.allSettled(
                 suggestedHandles
                     .sort(() => Math.random() - 0.5)
-                    .slice(0, limit)
+                    .slice(0, fetchLimit)
                     .map(suggestedHandle => api.getAccount(suggestedHandle))
             ).then((results) => {
-                return results
+                const accounts = results
                     .filter((result): result is PromiseFulfilledResult<Account> => result.status === 'fulfilled')
-                    .map(result => result.value);
+                    .map(result => result.value)
+                    // Filter out blocked accounts
+                    .filter(account => !account.blockedByMe && !account.domainBlockedByMe);
+
+                // Return only the requested limit of accounts after filtering
+                return accounts.slice(0, limit);
             });
         }
     });
@@ -993,13 +1163,13 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
     const queryClient = useQueryClient();
 
     return useMutation({
-        async mutationFn({inReplyTo, content}: {inReplyTo: string, content: string}) {
+        async mutationFn({inReplyTo, content, imageUrl}: {inReplyTo: string, content: string, imageUrl?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.reply(inReplyTo, content);
+            return api.reply(inReplyTo, content, imageUrl);
         },
-        onMutate: ({inReplyTo, content}) => {
+        onMutate: ({inReplyTo, content, imageUrl}) => {
             if (!actorProps) {
                 throw new Error('Cannot create reply without actor props');
             }
@@ -1007,7 +1177,7 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
             const formattedContent = formatPendingActivityContent(content);
 
             const id = generatePendingActivityId();
-            const activity = generatePendingActivity(actorProps, id, formattedContent);
+            const activity = generatePendingActivity(actorProps, id, formattedContent, imageUrl);
 
             // Add pending activity to the thread after the inReplyTo post
             addActivityToCollection(queryClient, QUERY_KEYS.thread(inReplyTo), 'posts', activity, inReplyTo);
@@ -1029,7 +1199,7 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
 
             updateActivityInCollection(queryClient, QUERY_KEYS.thread(variables.inReplyTo), 'posts', context?.id ?? '', () => preparedActivity);
         },
-        onError: (error, variables, context) => {
+        onError(error: {message: string, statusCode: number}, variables, context) {
             // eslint-disable-next-line no-console
             console.error(error);
 
@@ -1042,6 +1212,13 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
             // We do not need to decrement the reply count of the inReplyTo post
             // in the thread as this is handled locally in the ArticleModal component
 
+            if (error.statusCode === 403) {
+                return showToast({
+                    title: 'Action failed',
+                    message: 'This user has restricted who can interact with their account.',
+                    type: 'error'
+                });
+            }
             showToast({
                 message: 'An error occurred while sending your reply.',
                 type: 'error'
@@ -1057,13 +1234,13 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
     const queryKeyPostsByAccount = QUERY_KEYS.profilePosts('index');
 
     return useMutation({
-        async mutationFn(content: string) {
+        async mutationFn({content, imageUrl}: {content: string, imageUrl?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.note(content);
+            return api.note(content, imageUrl);
         },
-        onMutate: (content: string) => {
+        onMutate: ({content, imageUrl}) => {
             if (!actorProps) {
                 throw new Error('Cannot create note without actor props');
             }
@@ -1071,7 +1248,7 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
             const formattedContent = formatPendingActivityContent(content);
 
             const id = generatePendingActivityId();
-            const activity = generatePendingActivity(actorProps, id, formattedContent);
+            const activity = generatePendingActivity(actorProps, id, formattedContent, imageUrl);
 
             prependActivityToPaginatedCollection(queryClient, queryKeyFeed, 'posts', activity);
             prependActivityToPaginatedCollection(queryClient, queryKeyOutbox, 'data', activity);
@@ -1081,16 +1258,15 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
 
             return {id};
         },
-        onSuccess: (activity: Activity, _variables, context) => {
-            if (activity.id === undefined) {
-                throw new Error('Activity returned from API has no id');
+        onSuccess: (post: Post, _variables, context) => {
+            if (post.id === undefined) {
+                throw new Error('Post returned from API has no id');
             }
+            const activity = mapPostToActivity(post);
 
-            const preparedActivity = prepareNewActivity(activity);
-
-            updateActivityInPaginatedCollection(queryClient, queryKeyFeed, 'posts', context?.id ?? '', () => preparedActivity);
-            updateActivityInPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '', () => preparedActivity);
-            updateActivityInPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '', () => preparedActivity);
+            updateActivityInPaginatedCollection(queryClient, queryKeyFeed, 'posts', context?.id ?? '', () => activity);
+            updateActivityInPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '', () => activity);
+            updateActivityInPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '', () => activity);
         },
         onError(error, _variables, context) {
             // eslint-disable-next-line no-console
@@ -1632,4 +1808,34 @@ export function usePostForUser(handle: string, id: string | null) {
             });
         }
     });
+}
+
+export function useUpdateAccountMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(data: {
+            name: string;
+            username: string;
+            bio: string;
+            avatarUrl: string;
+            bannerImageUrl: string;
+        }) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.updateAccount(data);
+        },
+        onSuccess() {
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEYS.account('index')
+            });
+        }
+    });
+}
+
+export async function uploadFile(file: File) {
+    const siteUrl = await getSiteUrl();
+    const api = createActivityPubAPI('index', siteUrl);
+    return api.upload(file);
 }

@@ -1,4 +1,5 @@
 import EmptyStatView from './EmptyStatView';
+import LoadingIndicator from '../components/LoadingIndicator';
 import React from 'react';
 import StatsContent from './StatsContent';
 
@@ -14,7 +15,7 @@ const StatsView = <T,>({
     isLoading,
     data,
     children,
-    loadingComponent = 'Loading',
+    loadingComponent = <LoadingIndicator />,
     emptyComponent = <EmptyStatView />
 }: StatsViewProps<T>) => {
     return (

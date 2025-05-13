@@ -73,7 +73,10 @@ describe('ActivityPubAPI', function () {
                         expect(init?.body).toEqual('{"content":"Hello, world!"}');
                     },
                     response: JSONResponse({
-                        id: 'https://example.com/note/abc123'
+                        post: {
+                            id: 'https://example.com/note/abc123',
+                            content: 'Hello, world!'
+                        }
                     })
                 }
             });
@@ -88,7 +91,103 @@ describe('ActivityPubAPI', function () {
             const result = await api.note('Hello, world!');
 
             expect(result).toEqual({
-                id: 'https://example.com/note/abc123'
+                id: 'https://example.com/note/abc123',
+                content: 'Hello, world!'
+            });
+        });
+
+        test('It creates a note with image and returns it', async function () {
+            const fakeFetch = Fetch({
+                [`https://activitypub.api/.ghost/activitypub/actions/note`]: {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('POST');
+                        expect(init?.body).toEqual('{"content":"Hello, world!","imageUrl":"https://example.com/image.jpg"}');
+                    },
+                    response: JSONResponse({
+                        post: {
+                            id: 'https://example.com/note/abc123',
+                            content: 'Hello, world!',
+                            image: 'https://example.com/image.jpg'
+                        }
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.note('Hello, world!', 'https://example.com/image.jpg');
+
+            expect(result).toEqual({
+                id: 'https://example.com/note/abc123',
+                content: 'Hello, world!',
+                image: 'https://example.com/image.jpg'
+            });
+        });
+    });
+
+    describe('reply', function () {
+        test('It creates a reply and returns it', async function () {
+            const fakeFetch = Fetch({
+                [`https://activitypub.api/.ghost/activitypub/actions/reply/123`]: {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('POST');
+                        expect(init?.body).toEqual('{"content":"Hello, world!"}');
+                    },
+                    response: JSONResponse({
+                        id: 'https://example.com/reply/abc123'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.reply('123', 'Hello, world!');
+
+            expect(result).toEqual({
+                id: 'https://example.com/reply/abc123'
+            });
+        });
+
+        test('It creates a reply with image and returns it', async function () {
+            const fakeFetch = Fetch({
+                [`https://activitypub.api/.ghost/activitypub/actions/reply/123`]: {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('POST');
+                        expect(init?.body).toEqual('{"content":"Hello, world!","imageUrl":"https://example.com/image.jpg"}');
+                    },
+                    response: JSONResponse({
+                        id: 'https://example.com/reply/abc123',
+                        content: 'Hello, world!',
+                        inReplyTo: '123',
+                        image: 'https://example.com/image.jpg'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.reply('123', 'Hello, world!', 'https://example.com/image.jpg');
+
+            expect(result).toEqual({
+                id: 'https://example.com/reply/abc123',
+                content: 'Hello, world!',
+                inReplyTo: '123',
+                image: 'https://example.com/image.jpg'
             });
         });
     });
@@ -1365,6 +1464,44 @@ describe('ActivityPubAPI', function () {
             };
 
             expect(actual).toEqual(expected);
+        });
+    });
+
+    describe('updateAccount', function () {
+        test('It updates an account', async function () {
+            const data = {
+                name: 'Foo Bar Baz',
+                username: 'foo-bar-baz',
+                bio: 'Just a foo bar baz',
+                avatarUrl: 'https://example.com/avatar.png',
+                bannerImageUrl: 'https://example.com/banner.png'
+            };
+
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/account`]: {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('PUT');
+                        expect(init?.body).toEqual(JSON.stringify(data));
+                    },
+                    response: JSONResponse({})
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            await api.updateAccount(data);
         });
     });
 });

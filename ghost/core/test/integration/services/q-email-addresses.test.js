@@ -1,5 +1,5 @@
 const DomainEvents = require('@tryghost/domain-events');
-const {Mention} = require('@tryghost/webmentions');
+const Mention = require('../../../core/server/services/mentions/Mention');
 const mentionsService = require('../../../core/server/services/mentions');
 const assert = require('assert/strict');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');

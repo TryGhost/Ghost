@@ -36,13 +36,15 @@
     "reset:data:xxl": "cd ghost/core && node index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123",
     "docker": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run --rm -it ghost",
     "docker:dev": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose up --attach=ghost --force-recreate --no-log-prefix",
-    "docker:build": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose build",
+    "docker:build": "yarn docker:clean && docker compose build ghost",
+    "docker:clean": "echo \"Deleting node_modules volumes...\" && COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose down --remove-orphans && docker volume ls -q -f name=ghost_node_modules | xargs -I{} docker volume rm {}",
     "docker:shell": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run --rm -it ghost /bin/bash",
+    "docker:mysql": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose up mysql -d --wait && docker compose exec mysql mysql -u root -proot ghost",
     "docker:sleep": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run -d --name ghost-devcontainer --rm -it ghost /bin/bash -c 'sleep infinity'",
     "docker:sleep:stop": "docker stop ghost-devcontainer",
-    "docker:test:unit": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run --rm --no-deps ghost yarn test:unit",
+    "docker:test:unit": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} NX_DAEMON=false docker compose run --rm --no-deps ghost yarn test:unit",
     "docker:test:browser": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run --rm ghost yarn test:browser",
-    "docker:test:all": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run --rm ghost yarn nx run ghost:test:all",
+    "docker:test:all": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} NX_DAEMON=false docker compose run --rm ghost yarn nx run ghost:test:all",
     "docker:reset": "docker compose down -v && docker compose up -d --wait",
     "docker:restart": "docker compose down && docker compose up -d --wait",
     "docker:down": "docker compose down",
@@ -54,7 +56,7 @@
     "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn",
     "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main\"",
     "prepare": "husky install .github/hooks",
-    "tb": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run --rm --no-deps -it -w /home/ghost/ghost/web-analytics ghost /bin/bash --init-file /home/ghost/ghost/web-analytics/entrypoint.sh",
+    "tb": "docker compose run --rm --no-deps -it tinybird /bin/bash --init-file /home/ghost/ghost/web-analytics/entrypoint.sh",
     "tbcli": "docker run --rm -v $(pwd):/ghost -w /ghost/ghost/web-analytics -it tinybirdco/tinybird-cli-docker /bin/bash --init-file /ghost/ghost/web-analytics/entrypoint.sh",
     "tb:update": "docker pull tinybirdco/tinybird-cli-docker",
     "tb:local": "tb local start",
@@ -63,9 +65,9 @@
     "tbf": "tb local start && cd ghost/core/core/server/data/tinybird && tb dev"
   },
   "resolutions": {
-    "@tryghost/errors": "1.3.5",
+    "@tryghost/errors": "^1.3.7",
     "@tryghost/logging": "2.4.21",
-    "jackspeak": "2.1.1",
+    "jackspeak": "2.3.6",
     "moment": "2.24.0",
     "moment-timezone": "0.5.45"
   },
@@ -81,10 +83,10 @@
     "eslint-plugin-react": "7.37.5",
     "husky": "8.0.3",
     "inquirer": "8.2.6",
-    "lint-staged": "15.5.1",
-    "nx": "19.8.14",
+    "lint-staged": "15.5.2",
+    "nx": "20.8.1",
     "rimraf": "5.0.10",
     "ts-node": "10.9.2",
-    "typescript": "5.8.2"
+    "typescript": "5.8.3"
   }
 }

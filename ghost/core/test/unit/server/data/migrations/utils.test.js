@@ -170,7 +170,7 @@ describe('migrations/utils', function () {
 const Knex = require('knex');
 const ObjectId = require('bson-objectid').default;
 
-async function setupDb() {
+async function setupPermissionsDb() {
     const knex = Knex({
         client: 'sqlite',
         connection: {
@@ -254,6 +254,36 @@ async function setupDb() {
     return knex;
 }
 
+async function setupSettingsDb() {
+    const knex = Knex({
+        client: 'sqlite',
+        connection: {
+            filename: ':memory:'
+        },
+        // Suppress warnings from knex
+        useNullAsDefault: true
+    });
+
+    await knex.raw(`
+        CREATE TABLE \`settings\` (
+            \`id\` varchar(24) not null,
+            \`key\` varchar(50) not null,
+            \`value\` text null,
+            \`group\` varchar(50) not null,
+            \`type\` varchar(50) not null,
+            \`flags\` varchar(50) null,
+            \`created_at\` datetime not null,
+            \`created_by\` varchar(24) not null,
+            \`updated_at\` datetime null,
+            \`updated_by\` varchar(24) null,
+            primary key (\`id\`)
+        );
+    `);
+    await knex.raw(`CREATE UNIQUE INDEX \`settings_key_unique\` on \`settings\` (\`key\`);`);
+
+    return knex;
+}
+
 async function runUpMigration(knex, migration) {
     {
         const transacting = await knex.transaction();
@@ -271,7 +301,7 @@ async function runUpMigration(knex, migration) {
 describe('migrations/utils/permissions', function () {
     describe('addPermission', function () {
         it('Accepts a name, action and object and returns a migration which adds a permission to the database', async function () {
-            const knex = await setupDb();
+            const knex = await setupPermissionsDb();
 
             const migration = utils.addPermission({
                 name: 'scarface',
@@ -303,7 +333,7 @@ describe('migrations/utils/permissions', function () {
 
     describe('addPermissionToRole', function () {
         it('Accepts a permission name and role name and returns a migration which adds a permission to the database', async function () {
-            const knex = await setupDb();
+            const knex = await setupPermissionsDb();
 
             const migration = utils.addPermissionToRole({
                 permission: 'Permission Name',
@@ -363,7 +393,7 @@ describe('migrations/utils/permissions', function () {
 
         describe('Throws errors', function () {
             it('Throws when permission cannot be found in up migration', async function () {
-                const knex = await setupDb();
+                const knex = await setupPermissionsDb();
 
                 const migration = utils.addPermissionToRole({
                     permission: 'Unimaginable',
@@ -380,7 +410,7 @@ describe('migrations/utils/permissions', function () {
             });
 
             it('Does not throw when permission cannot be found in down migration', async function () {
-                const knex = await setupDb();
+                const knex = await setupPermissionsDb();
 
                 const migration = utils.addPermissionToRole({
                     permission: 'Permission Name',
@@ -396,7 +426,7 @@ describe('migrations/utils/permissions', function () {
             });
 
             it('Throws when role cannot be found', async function () {
-                const knex = await setupDb();
+                const knex = await setupPermissionsDb();
 
                 const migration = utils.addPermissionToRole({
                     permission: 'Permission Name',
@@ -413,7 +443,7 @@ describe('migrations/utils/permissions', function () {
             });
 
             it('Does not throw when role cannot be found in down migration', async function () {
-                const knex = await setupDb();
+                const knex = await setupPermissionsDb();
 
                 const migration = utils.addPermissionToRole({
                     permission: 'Permission Name',
@@ -432,7 +462,7 @@ describe('migrations/utils/permissions', function () {
 
     describe('addPermissionWithRoles', function () {
         it('Accepts addPermission config and a list of roles, and creates the permission, linking it to roles', async function () {
-            const knex = await setupDb();
+            const knex = await setupPermissionsDb();
 
             const migration = utils.addPermissionWithRoles({
                 name: 'scarface',
@@ -552,6 +582,136 @@ describe('migrations/utils/permissions', function () {
             });
 
             should.ok(!permissionAttachedToOtherRoleAfterDown, 'The permission was removed from the other role.');
+        });
+    });
+});
+
+describe('migrations/utils/settings', function () {
+    describe('addSetting', function () {
+        it('Accepts a setting spec and returns a migration which adds a setting to the database', async function () {
+            const knex = await setupSettingsDb();
+
+            const migration = utils.addSetting({
+                key: 'test_key',
+                value: 'test_value',
+                type: 'string',
+                group: 'test_group',
+                flags: 'PUBLIC'
+            });
+
+            const runDownMigration = await runUpMigration(knex, migration);
+
+            const allSettingsAfterUp = await knex('settings').select();
+            const addedSettingAfterUp = allSettingsAfterUp.find((row) => {
+                return row.key === 'test_key';
+            });
+
+            should.equal(addedSettingAfterUp.key, 'test_key', 'The setting was added to the database');
+            should.equal(addedSettingAfterUp.value, 'test_value');
+            should.equal(addedSettingAfterUp.type, 'string');
+            should.equal(addedSettingAfterUp.group, 'test_group');
+            should.equal(addedSettingAfterUp.flags, 'PUBLIC');
+
+            await runDownMigration();
+
+            const allSettingsAfterDown = await knex('settings').select();
+
+            should.equal(allSettingsAfterDown.length, 0, 'The setting was removed');
+        });
+
+        it('Skips adding if setting already exists', async function () {
+            const knex = await setupSettingsDb();
+
+            // First add a setting
+            const firstMigration = utils.addSetting({
+                key: 'test_key',
+                value: 'test_value',
+                type: 'string',
+                group: 'test_group',
+                flags: 'PUBLIC'
+            });
+
+            await runUpMigration(knex, firstMigration);
+
+            // Try to add the same setting again
+            const secondMigration = utils.addSetting({
+                key: 'test_key',
+                value: 'new_value',
+                type: 'string',
+                group: 'test_group',
+                flags: 'PUBLIC'
+            });
+
+            const runDownMigration = await runUpMigration(knex, secondMigration);
+
+            const allSettingsAfterUp = await knex('settings').select();
+            const existingSetting = allSettingsAfterUp.find((row) => {
+                return row.key === 'test_key';
+            });
+
+            should.equal(existingSetting.value, 'test_value', 'The original value was preserved');
+
+            await runDownMigration();
+
+            const allSettingsAfterDown = await knex('settings').select();
+
+            should.equal(allSettingsAfterDown.length, 0, 'The setting was removed');
+        });
+    });
+
+    describe('removeSetting', function () {
+        it('Accepts a key and returns a migration which removes a setting from the database', async function () {
+            const knex = await setupSettingsDb();
+
+            await knex('settings').insert({
+                id: ObjectId().toHexString(),
+                key: 'remove_test_key',
+                value: 'test_value',
+                type: 'string',
+                group: 'test_group',
+                flags: 'PUBLIC',
+                created_at: knex.raw('CURRENT_TIMESTAMP'),
+                created_by: 1
+            });
+
+            const allSettingsAtStart = await knex('settings').select();
+
+            const migration = utils.removeSetting('remove_test_key');
+            const runDownMigration = await runUpMigration(knex, migration);
+
+            const allSettingsAfterUp = await knex('settings').select();
+
+            await runDownMigration();
+
+            const allSettingsAfterDown = await knex('settings').select();
+            const restoredSettingAfterDown = allSettingsAfterDown.find((row) => {
+                return row.key === 'remove_test_key';
+            });
+
+            should.equal(allSettingsAtStart.length, 1, 'Started with one setting');
+            should.equal(allSettingsAfterUp.length, 0, 'Setting was removed');
+            should.equal(allSettingsAfterDown.length, 1, 'Ended with one setting');
+            should.equal(restoredSettingAfterDown.key, 'remove_test_key', 'Setting was restored');
+        });
+
+        it('Skips removal if setting does not exist', async function () {
+            const knex = await setupSettingsDb();
+
+            const allSettingsAtStart = await knex('settings').select();
+
+            const migration = utils.removeSetting('non_existent_key');
+
+            const runDownMigration = await runUpMigration(knex, migration);
+
+            const allSettingsAfterUp = await knex('settings').select();
+
+            await runDownMigration();
+
+            const allSettingsAfterDown = await knex('settings').select();
+
+            should.equal(allSettingsAtStart.length, 0, 'No settings in place at the start');
+            should.equal(allSettingsAfterUp.length, 0, 'No settings were removed');
+            should.equal(allSettingsAfterDown.length, 0, 'No settings were restored');
         });
     });
 });

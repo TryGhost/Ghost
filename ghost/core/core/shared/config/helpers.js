@@ -1,5 +1,3 @@
-const crypto = require('crypto');
-const os = require('os');
 const path = require('path');
 const {URL} = require('url');
 
@@ -66,22 +64,23 @@ const isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
     return this.get('privacy')[privacyFlag] === false;
 };
 
-/** @type {string|null} */
-let processTmpDirPath = null;
-
 /**
- * Get a tmp dir path for the current process
- *
- * @returns {string} - tmp dir path for the current process
+ * @callback getStaticUrlPrefixFn
+ * @param {'images'|'media'|'files'} type
+ * @returns {string}
  */
-function getProcessTmpDirPath() {
-    // Memoize the computed path to avoid re-computing it on each call - The
-    // value should not change during the lifetime of the process.
-    if (processTmpDirPath === null) {
-        processTmpDirPath = path.join(os.tmpdir(), `ghost_${crypto.randomUUID()}`);
+function getStaticUrlPrefix(type) {
+    switch (type) {
+    case 'images':
+        return 'content/images';
+    case 'media':
+        return 'content/media';
+    case 'files':
+        return 'content/files';
+    default:
+        // eslint-disable-next-line ghost/ghost-custom/no-native-error
+        throw new Error('getStaticUrlPrefix was called with: ' + type);
     }
-
-    return processTmpDirPath;
 }
 
 /**
@@ -108,7 +107,7 @@ const getContentPath = function getContentPath(type) {
     case 'settings':
         return path.join(this.get('paths:contentPath'), 'settings/');
     case 'public':
-        return path.join(getProcessTmpDirPath(this), 'public/');
+        return path.join(this.get('paths:contentPath'), 'public/');
     default:
         // new Error is allowed here, as we do not want config to depend on @tryghost/error
         // @TODO: revisit this decision when @tryghost/error is no longer dependent on all of ghost-ignition
@@ -121,10 +120,12 @@ const getContentPath = function getContentPath(type) {
  * @typedef ConfigHelpers
  * @property {isPrivacyDisabledFn} isPrivacyDisabled
  * @property {getContentPathFn} getContentPath
+ * @property {getStaticUrlPrefixFn} getStaticUrlPrefix
  */
 module.exports.bindAll = (nconf) => {
     nconf.isPrivacyDisabled = isPrivacyDisabled.bind(nconf);
     nconf.getContentPath = getContentPath.bind(nconf);
     nconf.getBackendMountPath = getBackendMountPath.bind(nconf);
     nconf.getFrontendMountPath = getFrontendMountPath.bind(nconf);
+    nconf.getStaticUrlPrefix = getStaticUrlPrefix.bind(nconf);
 };

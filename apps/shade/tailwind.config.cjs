@@ -78,6 +78,7 @@ module.exports = {
                 400: '#42C6FF',
                 500: '#14B8FF',
                 600: '#00A4EB',
+                700: '#3778F1',
                 DEFAULT: '#14B8FF'
             },
             purple: {
@@ -141,7 +142,7 @@ module.exports = {
         },
         letterSpacing: {
             tightest: '-.05em',
-            tighter: '-.025em',
+            tighter: '-.02em',
             tight: '-.01em',
             normal: '0',
             wide: '.01em',
@@ -321,7 +322,8 @@ module.exports = {
                 max: 'max-content',
                 fit: 'fit-content',
                 prose: '65ch',
-                page: '148rem'
+                page: '148rem',
+                pageminsidebar: '116rem'
             },
             borderRadius: {
                 sm: 'calc(var(--radius) - 4px)',
@@ -342,7 +344,7 @@ module.exports = {
                 lg: '1.5rem',
                 xl: '1.7rem',
                 '2xl': '2.2rem',
-                '3xl': '2.7rem',
+                '3xl': '2.8rem',
                 '4xl': '3.2rem',
                 '5xl': [
                     '4.0rem',

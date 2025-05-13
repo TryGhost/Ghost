@@ -1,9 +1,4 @@
-const os = require('os');
-const should = require('should');
-
 const configUtils = require('../../../utils/configUtils');
-
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 describe('vhost utils', function () {
     beforeEach(function () {
@@ -55,30 +50,18 @@ describe('vhost utils', function () {
             configUtils.config.getFrontendMountPath().should.eql(/.*/);
         });
     });
-});
 
-describe('getContentPath', function () {
-    it('should return the correct path for type: public', function () {
-        const publicPath = configUtils.config.getContentPath('public');
+    describe('getStaticUrlPrefix', function () {
+        it('should return the correct static url prefix', function () {
+            configUtils.config.getStaticUrlPrefix('images').should.eql('content/images');
+            configUtils.config.getStaticUrlPrefix('media').should.eql('content/media');
+            configUtils.config.getStaticUrlPrefix('files').should.eql('content/files');
+        });
 
-        // Path should be in the tmpdir
-        const tmpdir = os.tmpdir();
-
-        publicPath.startsWith(tmpdir).should.be.true();
-
-        // Path should end with /public/
-        publicPath.endsWith('/public/').should.be.true();
-
-        // Path should include /ghost_
-        publicPath.includes('/ghost_').should.be.true();
-
-        // Path should contain a uuid at the correct location
-        const publicPathParts = publicPath.split('/');
-        const uuidPart = publicPathParts[publicPathParts.length - 3].replace('ghost_', '');
-
-        UUID_REGEX.test(uuidPart).should.be.true();
-
-        // Path should be memoized
-        configUtils.config.getContentPath('public').should.eql(publicPath);
+        it('should throw an error if the type is not valid', function () {
+            (function () {
+                configUtils.config.getStaticUrlPrefix('invalid');
+            }).should.throw('getStaticUrlPrefix was called with: invalid');
+        });
     });
 });

@@ -2488,9 +2488,7 @@ describe('Members API', function () {
             .expectStatus(200)
             .expectEmptyBody() // express-test body parsing doesn't support CSV
             .matchHeaderSnapshot({
-                etag: anyEtag,
                 'content-version': anyContentVersion,
-                'content-length': anyContentLength,
                 'content-disposition': anyString
             });
 
@@ -2511,7 +2509,6 @@ describe('Members API', function () {
             .expectStatus(200)
             .expectEmptyBody() // express-test body parsing doesn't support CSV
             .matchHeaderSnapshot({
-                etag: anyEtag,
                 'content-version': anyContentVersion,
                 'content-disposition': anyString
             });

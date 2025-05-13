@@ -1,6 +1,4 @@
-const should = require('should');
 const sinon = require('sinon');
-
 // Thing we are testing
 const redirectAdminUrls = require('../../../../../core/server/web/admin/middleware/redirect-admin-urls');
 

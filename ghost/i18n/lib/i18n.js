@@ -35,10 +35,11 @@ const SUPPORTED_LOCALES = [
     'mk', // Macedonian
     'mn', // Mongolian
     'ms', // Malay
+    'nb', // Norwegian Bokmål
     'ne', // Nepali
     'nl', // Dutch
     'nn', // Norwegian Nynorsk
-    'no', // Norwegian
+    'pa', // Punjabi (Gurmukhi, India)
     'pl', // Polish
     'pt', // Portuguese
     'pt-BR', // Portuguese (Brazil)
@@ -109,7 +110,10 @@ module.exports = (lng = 'en', ns = 'portal') => {
         returnEmptyString: false,
 
         // do not load a fallback
-        fallbackLng: false,
+        fallbackLng: {
+            no: ['nb', 'en'],
+            default: ['en']
+        },
 
         ns: ns,
         defaultNS: ns,

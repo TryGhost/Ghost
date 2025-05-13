@@ -22,11 +22,12 @@
     "build"
   ],
   "devDependencies": {
+    "@types/nodemailer": "6.4.17",
     "c8": "8.0.1",
     "mocha": "10.8.2",
     "sinon": "15.2.0",
     "ts-node": "10.9.2",
-    "typescript": "5.8.2"
+    "typescript": "5.8.3"
   },
   "dependencies": {
     "nodemailer": "6.10.1"

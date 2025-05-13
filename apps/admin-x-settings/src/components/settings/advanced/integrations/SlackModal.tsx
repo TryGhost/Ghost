@@ -58,7 +58,7 @@ const SlackModal = NiceModal.create(() => {
         >
             <IntegrationHeader
                 detail='A messaging app for teams'
-                icon={<Icon className='h-14 w-14' />}
+                icon={<Icon className='size-14' />}
                 title='Slack'
             />
             <div className='mt-7'>

@@ -851,7 +851,7 @@
 
 .gh-post-analytics-meta-text {
     color: var(--midgrey-l2);
-    font-size: 1.35rem;
+    font-size: 1.3rem;
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -2223,4 +2223,212 @@ span.dropdown .gh-post-list-cta > span {
 
 .gh-post-list-button {
     flex: 0 0 auto;
+}
+
+/* Traffic Analytics beta related styles */
+.feature-trafficAnalytics .gh-canvas-header {
+    border-bottom: none;
+}
+
+.feature-trafficAnalytics .gh-post-analytics-content {
+    display: grid;
+    grid-template-columns: auto 260px;
+    gap: 32px;
+}
+
+.feature-trafficAnalytics .gh-post-analytics-header {
+    padding-bottom: 0;
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics {
+    margin-top: 32px;
+    border-radius: 12px;
+}
+
+.feature-trafficAnalytics .gh-post-analytics-box {
+    border-radius: 12px;
+}
+
+.feature-trafficAnalytics .gh-post-analytics-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 32px 0;
+}
+
+.feature-trafficAnalytics .gh-post-analytics-sidebar-item {
+    display: flex;
+    height: 36px;
+    align-items: center;
+    gap: 8px;
+    border-radius: 7px;
+    color: var(--middarkgrey);
+    padding: 8px 12px;
+    font-weight: 500;
+    cursor: pointer;
+}
+.feature-trafficAnalytics .gh-post-analytics-sidebar-item:hover {
+    color: var(--black);
+    background: var(--whitegrey-l1);
+}
+
+.feature-trafficAnalytics .gh-post-analytics-sidebar-item.active {
+    background: var(--whitegrey-l1);
+    color: var(--black);
+    font-weight: 600;
+}
+
+.feature-trafficAnalytics .gh-post-analytics-sidebar-item svg {
+    width: 18px;
+    height: 18px;
+    stroke: 1.5px;
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics .tab-list {
+    background: none;
+    box-shadow: none;
+    gap: 20px;
+    padding: 20px 0 0;
+    margin: 0 24px;
+    border-bottom: 1px solid var(--whitegrey);
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics.no-tabs .tab-panel-selected {
+    margin: 0 24px;
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics.no-tabs {
+    padding: 20px 0;
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics .tab-list .tab {
+    border: none;
+    padding: 0 0 12px;
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics .tab {
+    border: none;
+    box-shadow: none;
+    position: relative;
+    color: var(--middarkgrey);
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics .tab:hover,
+.feature-trafficAnalytics .gh-tabs-analytics .tab-selected {
+    color: var(--black);
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics .tab:before {
+    display: block;
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: transparent;
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics .tab:not(.tab-selected):hover:before {
+    background: var(--lightgrey);
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics .tab-selected:before {
+    background: var(--black);
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics .tab-list .tab h3 {
+    order: 2;
+    font-size: 23px;
+    line-height: 35px;
+    margin-top: -2px;
+    margin-bottom: 0;
+    color: inherit;
+}
+
+.feature-trafficAnalytics .gh-newsletter-clicks-header {
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0;
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics .tab-list .tab p {
+    order: 1;
+    font-size: 14px;
+    text-transform: none;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+    line-height: 22.5px;
+    color: inherit;
+    letter-spacing: 0;
+}
+
+.feature-trafficAnalytics .analytics-tab-percentage {
+    opacity: 0.75;
+    font-weight: 500;
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics .tab-list .tab p svg {
+    display: none;
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics .tab-panel-selected {
+    padding-top: 16px;
+}
+
+.feature-trafficAnalytics .gh-feedback-events-feed {
+    padding-right: 0;
+    padding-left: 24px;
+}
+
+.feature-trafficAnalytics .gh-feedback-events-feed-container {
+    width: 200px;
+    height: 200px;
+}
+
+.feature-trafficAnalytics .gh-post-activity-feed-pagination-link-wrapper {
+    display: block;
+    flex-grow: 1;
+}
+
+.feature-trafficAnalytics .gh-post-activity-feed-pagination-link {
+    display: inline-flex;
+}
+
+.feature-trafficAnalytics .gh-post-activity-feed-pagination-link-wrapper svg {
+    margin-bottom: -2px;
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics .tab-panel {
+    background: none;
+}
+
+.feature-trafficAnalytics .gh-tabs-analytics.no-tabs .tab-selected:before {
+    display: none;
+}
+
+@media (max-width: 1320px) {
+    .feature-trafficAnalytics .gh-post-analytics-content {
+        grid-template-columns: auto 240px;
+    }
+
+    .feature-trafficAnalytics .gh-tabs-analytics .tab-list .tab p {
+        font-size: 13px;
+    }
+
+    .feature-trafficAnalytics .gh-tabs-analytics .tab-list .tab h3 {
+        font-size: 21px;
+        line-height: 25px;
+    }
+
+    .feature-trafficAnalytics .analytics-tab-percentage {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .feature-trafficAnalytics .gh-tabs-analytics .tab-list {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 8px;
+    }
 }
