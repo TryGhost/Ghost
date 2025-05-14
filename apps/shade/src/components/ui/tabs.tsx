@@ -5,7 +5,7 @@ import {cn} from '@/lib/utils';
 import {cva} from 'class-variance-authority';
 import {TrendingDown, TrendingUp} from 'lucide-react';
 
-type TabsVariant = 'segmented' | 'button' | 'underline' | 'kpis';
+type TabsVariant = 'segmented' | 'button' | 'underline' | 'navbar' | 'kpis';
 
 const TabsVariantContext = React.createContext<TabsVariant>('segmented');
 
@@ -21,6 +21,7 @@ const tabsVariants = cva(
                 segmented: '',
                 button: '',
                 underline: '',
+                navbar: '',
                 kpis: ''
             }
         },
@@ -48,7 +49,8 @@ const tabsListVariants = cva(
                 segmented: 'h-[34px] rounded-lg bg-muted px-[3px]',
                 button: 'gap-2',
                 underline: 'gap-3 border-b pb-1',
-                kpis: 'gap-1 p-3'
+                navbar: 'gap-0',
+                kpis: 'border-b'
             }
         },
         defaultVariants: {
@@ -80,7 +82,8 @@ const tabsTriggerVariants = cva(
                 segmented: 'h-7 rounded-md text-sm font-medium data-[state=active]:shadow-md',
                 button: 'h-[34px] gap-1.5 rounded-md border border-input py-2 text-sm font-medium hover:bg-muted/50 data-[state=active]:bg-muted/70 data-[state=active]:font-semibold',
                 underline: 'relative h-[34px] px-0 text-md font-semibold text-foreground/70 after:absolute after:inset-x-0 after:bottom-[-5px] after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:!opacity-100',
-                kpis: 'rounded-md pt-2 text-foreground hover:bg-muted/50 data-[state=active]:bg-muted'
+                navbar: 'relative h-[60px] px-3 text-md font-semibold text-muted-foreground after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:!opacity-100',
+                kpis: 'relative rounded-none border-border bg-transparent p-6 text-foreground after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] first:rounded-tl-md last:rounded-tr-md hover:bg-muted/50 data-[state=active]:after:opacity-100 [&:not(:last-child)]:border-r'
             }
         },
         defaultVariants: {
@@ -112,6 +115,7 @@ const tabsContentVariants = cva(
                 segmented: '',
                 button: '',
                 underline: '',
+                navbar: '',
                 kpis: ''
             }
         },
@@ -163,9 +167,14 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value, diffDirection, d
         diffDirection === 'same' && 'bg-gray-200 text-gray-700'
     );
     return (
-        <div className='flex w-full flex-col items-start'>
-            <div className='items-top flex gap-2 font-semibold tracking-tight'>
-                <span className='text-sm font-medium text-gray-800'>{label}</span>
+        <div className='flex w-full flex-col items-start gap-2'>
+            <div className='text-base font-medium tracking-tight text-gray-700'>
+                {label}
+            </div>
+            <div className='flex flex-col items-start gap-1'>
+                <div className='text-[2.0rem] font-semibold tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>
+                    {value}
+                </div>
                 {diffValue &&
                     <>
                         <div className={diffContainerClassName}>
@@ -180,7 +189,6 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value, diffDirection, d
                     </>
                 }
             </div>
-            <div className='text-[2.0rem] font-semibold tracking-tight xl:text-[2.3rem] xl:tracking-[-0.04em]'>{value}</div>
         </div>
     );
 };
