@@ -86,7 +86,7 @@ function generateResources(locales, ns) {
 
 /**
  * @param {string} [lng]
- * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'|'newsletter'} ns
+ * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'} ns
  */
 module.exports = (lng = 'en', ns = 'portal') => {
     const i18nextInstance = i18next.createInstance();
