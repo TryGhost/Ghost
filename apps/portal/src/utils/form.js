@@ -10,7 +10,7 @@ export const FormInputError = ({field, t}) => {
             return t(`Enter your email address`);
 
         default:
-            return t(`Please enter {{fieldName}}`, {fieldName: field.name});
+            return t(`Please enter {fieldName}`, {fieldName: field.name});
         }
     }
 

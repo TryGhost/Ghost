@@ -4,7 +4,7 @@ module.exports = ({t, siteTitle, email, siteDomain, siteUrl, siteLogo, token, de
   <head>
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>🔑 ${t('Your verification code for {{siteTitle}}', {siteTitle, interpolation: {escapeValue: false}})}</title>
+    <title>🔑 ${t('Your verification code for {siteTitle}', {siteTitle, interpolation: {escapeValue: false}})}</title>
     <style>
     /* -------------------------------------
         RESPONSIVE AND MOBILE FRIENDLY STYLES
@@ -107,7 +107,7 @@ module.exports = ({t, siteTitle, email, siteDomain, siteUrl, siteLogo, token, de
           <div class="content" style="box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;">
 
             <!-- START CENTERED CONTAINER -->
-            <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">${t('Here\'s your code to login to {{siteTitle}}', {siteTitle, interpolation: {escapeValue: false}})}</span>
+            <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">${t('Here\'s your code to login to {siteTitle}', {siteTitle, interpolation: {escapeValue: false}})}</span>
             <table class="main" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;">
 
               <!-- START MAIN CONTENT AREA -->
@@ -120,7 +120,7 @@ module.exports = ({t, siteTitle, email, siteDomain, siteUrl, siteLogo, token, de
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">
                         <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 20px; color: #15212A; font-weight: 600; line-height: 24px; margin: 0; margin-bottom: 15px; margin-top: 50px;">${t('Sign in verification')}</p>
-                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 24px; margin-bottom: 32px;">${is2FARequired ? '' : t('You just tried to access your account from a new device.')} ${t('For security verification, enter the code below to sign in to {{siteTitle}}:', {siteTitle, interpolation: {escapeValue: false}})}</p>
+                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 24px; margin-bottom: 32px;">${is2FARequired ? '' : t('You just tried to access your account from a new device.')} ${t('For security verification, enter the code below to sign in to {siteTitle}:', {siteTitle, interpolation: {escapeValue: false}})}</p>
                       </td>
                     </tr>
                     <tr>

@@ -26,7 +26,7 @@ const CTABox: React.FC<Props> = ({isFirst, isPaid}) => {
         window.location.href = '#/portal/signin';
     };
 
-    const text = reactStringReplace(isPaid ? t('Become a paid member of {{publication}} to start commenting.') : t('Become a member of {{publication}} to start commenting.'), '{{publication}}', () => (
+    const text = reactStringReplace(isPaid ? t('Become a paid member of {publication} to start commenting.') : t('Become a member of {publication} to start commenting.'), '{publication}', () => (
         <span className="font-semibold">{publication}</span>
     ));
 

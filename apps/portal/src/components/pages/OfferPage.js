@@ -381,7 +381,7 @@ export default class OfferPage extends React.Component {
         let label = t('Continue');
 
         if (offer.type === 'trial') {
-            label = t('Start {{amount}}-day free trial', {amount: offer.amount});
+            label = t('Start {amount}-day free trial', {amount: offer.amount});
         }
 
         let isRunning = false;
@@ -442,7 +442,7 @@ export default class OfferPage extends React.Component {
 
         if (offer.type === 'fixed') {
             return (
-                <h5 className="gh-portal-discount-label">{t('{{amount}} off', {
+                <h5 className="gh-portal-discount-label">{t('{amount} off', {
                     amount: `${getCurrencySymbol(offer.currency)}${offer.amount / 100}`
                 })}</h5>
             );
@@ -450,12 +450,12 @@ export default class OfferPage extends React.Component {
 
         if (offer.type === 'trial') {
             return (
-                <h5 className="gh-portal-discount-label">{t('{{amount}} days free', {amount: offer.amount})}</h5>
+                <h5 className="gh-portal-discount-label">{t('{amount} days free', {amount: offer.amount})}</h5>
             );
         }
 
         return (
-            <h5 className="gh-portal-discount-label">{t('{{amount}} off', {amount: offer.amount + '%'})}</h5>
+            <h5 className="gh-portal-discount-label">{t('{amount} off', {amount: offer.amount + '%'})}</h5>
         );
     }
 
@@ -520,21 +520,21 @@ export default class OfferPage extends React.Component {
 
     renderOfferMessage({offer, product, t}) {
         const offerMessages = {
-            forever: t(`{{amount}} off forever.`, {
+            forever: t(`{amount} off forever.`, {
                 amount: this.getOffAmount({offer})
             }),
-            firstPeriod: t(`{{amount}} off for first {{period}}.`, {
+            firstPeriod: t(`{amount} off for first {period}.`, {
                 amount: this.getOffAmount({offer}),
                 period: offer.cadence
             }),
-            firstNMonths: t(`{{amount}} off for first {{number}} months.`, {
+            firstNMonths: t(`{amount} off for first {number} months.`, {
                 amount: this.getOffAmount({offer}),
                 number: offer.duration_in_months || ''
             })
         };
 
         const originalPrice = this.getOriginalPrice({offer, product});
-        const renewsLabel = t(`Renews at {{price}}.`, {price: originalPrice, interpolation: {escapeValue: false}});
+        const renewsLabel = t(`Renews at {price}.`, {price: originalPrice, interpolation: {escapeValue: false}});
 
         let offerLabel = '';
         let useRenewsLabel = false;
@@ -555,7 +555,7 @@ export default class OfferPage extends React.Component {
         }
         if (discountDuration === 'trial') {
             return (
-                <p className="footnote">{t('Try free for {{amount}} days, then {{originalPrice}}.', {
+                <p className="footnote">{t('Try free for amount} days, then {originalPrice}.', {
                     amount: offer.amount,
                     originalPrice: originalPrice,
                     interpolation: {escapeValue: false}

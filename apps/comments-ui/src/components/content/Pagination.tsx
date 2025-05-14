@@ -18,7 +18,7 @@ const Pagination = () => {
         return null;
     }
 
-    const text = t(`Load more ({{amount}})`, {amount: formatNumber(commentsLeft)});
+    const text = t(`Load more ({amount})`, {amount: formatNumber(commentsLeft)});
 
     return (
         <button className="text-md group mb-10 flex items-center px-0 pb-2 pt-0 text-left font-sans font-semibold text-neutral-700 dark:text-white" data-testid="pagination-component" type="button" onClick={loadMore}>

@@ -39,7 +39,7 @@ export default function EmailReceivingPage() {
                 <p>
                     <Interpolate
                         syntax={SYNTAX_I18NEXT}
-                        string={t(`The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.`)}
+                        string={t(`The email address we have for you is memberEmail} — if that's not correct, you can update it in your <button>account settings area</button>.`)}
                         mapping={{
                             memberEmail: <strong>{member.email}</strong>,
                             button: <button className="gh-portal-btn-text" onClick={() => onAction('switchPage', {lastPage: 'emailReceivingFAQ', page: 'accountProfile'})}/>
@@ -56,7 +56,7 @@ export default function EmailReceivingPage() {
                 <p>
                     <Interpolate
                         syntax={SYNTAX_I18NEXT}
-                        string={t(`In your email client add {{senderEmail}} to your contacts list. This signals to your mail provider that emails sent from this address should be trusted.`)}
+                        string={t(`In your email client add {senderEmail} to your contacts list. This signals to your mail provider that emails sent from this address should be trusted.`)}
                         mapping={{
                             senderEmail: <strong>{defaultNewsletterSenderEmail}</strong>
                         }}
@@ -68,7 +68,7 @@ export default function EmailReceivingPage() {
                 <p>
                     <Interpolate
                         syntax={SYNTAX_I18NEXT}
-                        string={t(`Send an email to {{senderEmail}} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.`)}
+                        string={t(`Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.`)}
                         mapping={{
                             senderEmail: <strong>{defaultNewsletterSenderEmail}</strong>
                         }}
@@ -80,7 +80,7 @@ export default function EmailReceivingPage() {
                 <p>
                     <Interpolate
                         syntax={SYNTAX_I18NEXT}
-                        string={t(`If you have a corporate or government email account, reach out to your IT department and ask them to allow emails to be received from {{senderEmail}}`)}
+                        string={t(`If you have a corporate or government email account, reach out to your IT department and ask them to allow emails to be received from {senderEmail}`)}
                         mapping={{
                             senderEmail: <strong>{defaultNewsletterSenderEmail}</strong>
                         }}
@@ -92,7 +92,7 @@ export default function EmailReceivingPage() {
                 <p>
                     <Interpolate
                         syntax={SYNTAX_I18NEXT}
-                        string={t(`If you've completed all these checks and you're still not receiving emails, you can reach out to get support by contacting {{supportAddress}}.`)}
+                        string={t(`If you've completed all these checks and you're still not receiving emails, you can reach out to get support by contacting {supportAddress}.`)}
                         mapping={{
                             supportAddress: <a href={supportAddress} onClick={() => {
                                 supportAddress && window.open(supportAddress);

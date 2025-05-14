@@ -90,13 +90,10 @@ function generateResources(locales, ns) {
  */
 module.exports = (lng = 'en', ns = 'portal') => {
     const i18nextInstance = i18next.createInstance();
-    let interpolation = {};
-    if (ns === 'newsletter') {
-        interpolation = {
-            prefix: '{',
-            suffix: '}'
-        };
-    }
+    const interpolation = {
+        prefix: '{',
+        suffix: '}'
+    };
 
     let resources = generateResources(SUPPORTED_LOCALES, ns);
     i18nextInstance.init({

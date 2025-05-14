@@ -51,12 +51,12 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
             t('This site is invite-only, contact the owner for access.');
             t('Unable to initiate checkout session');
             t('This site is not accepting payments at the moment.');
-            t('Too many attempts try again in {{number}} minutes.');
-            t('Too many attempts try again in {{number}} hours.');
-            t('Too many attempts try again in {{number}} days.');
-            t('Too many different sign-in attempts, try again in {{number}} minutes');
-            t('Too many different sign-in attempts, try again in {{number}} hours');
-            t('Too many different sign-in attempts, try again in {{number}} days');
+            t('Too many attempts try again in {number} minutes.');
+            t('Too many attempts try again in {number} hours.');
+            t('Too many attempts try again in {number} days.');
+            t('Too many different sign-in attempts, try again in {number} minutes');
+            t('Too many different sign-in attempts, try again in {number} hours');
+            t('Too many different sign-in attempts, try again in {number} days');
             t('Failed to send magic link email');
             t('This site only accepts paid members.');
             t('Signups from this email domain are currently restricted.');
@@ -76,14 +76,14 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
     };
 
     const prepareErrorMessage = (message = null) => {
-        // Check for a number in message, if found, replace the number with {{number}} and return the number.
+        // Check for a number in message, if found, replace the number with {number} and return the number.
         // Assumes there's only one number in the message.
         if (!message) {
             return {preparedMessage: 'An error occurred', number: null};
         }
         const number = message.match(/\d+/);
         if (number) {
-            message = message.replace(number[0], '{{number}}');
+            message = message.replace(number[0], '{number}');
         }
         return {preparedMessage: message, number: number ? number[0] : null};
     };
