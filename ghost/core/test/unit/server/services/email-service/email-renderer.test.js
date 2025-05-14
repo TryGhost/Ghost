@@ -74,12 +74,12 @@ const getMembersValidationKey = () => {
 
 // load the i18n module
 const i18nLib = require('@tryghost/i18n');
-const i18n = i18nLib('en', 'newsletter');
+const i18n = i18nLib('en', 'ghost');
 const t = (key, options) => {
     return i18n.t(key, options);
 };
 
-const i18nFr = i18nLib('fr', 'newsletter');
+const i18nFr = i18nLib('fr', 'ghost');
 const tFr = (key, options) => {
     return i18nFr.t(key, options);
 };
