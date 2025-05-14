@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.119.2",
+  "version": "5.119.3",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -43,7 +43,7 @@
     "test:browser:setup": "npx playwright install",
     "test:ci:e2e": "c8 -c ./.c8rc.e2e.json -o coverage-e2e yarn test:e2e -b",
     "test:ci:regression": "yarn test:regression -b",
-    "test:ci:integration": "c8 -c ./.c8rc.e2e.json -o coverage-integration --lines 52 --functions 47 --branches 74 --statements 52 yarn test:integration -b",
+    "test:ci:integration": "c8 -c ./.c8rc.e2e.json -o coverage-integration --lines 52 --functions 47 --branches 73 --statements 52 yarn test:integration -b",
     "test:unit:slow": "yarn test:unit --reporter=mocha-slow-test-reporter",
     "test:int:slow": "yarn test:integration --reporter=mocha-slow-test-reporter",
     "test:e2e:slow": "yarn test:e2e --reporter=mocha-slow-test-reporter",
@@ -67,53 +67,51 @@
     "@isaacs/ttlcache": "1.4.1",
     "@sentry/node": "7.120.3",
     "@slack/webhook": "7.0.5",
-    "@tryghost/adapter-base-cache": "0.1.13",
-    "@tryghost/admin-api-schema": "4.5.6",
-    "@tryghost/api-framework": "0.0.0",
+    "@tryghost/adapter-base-cache": "0.1.15",
+    "@tryghost/admin-api-schema": "4.5.8",
+    "@tryghost/api-framework": "1.0.1",
     "@tryghost/bookshelf-plugins": "0.6.26",
-    "@tryghost/color-utils": "0.2.3",
-    "@tryghost/config-url-helpers": "1.0.13",
-    "@tryghost/custom-fonts": "0.0.0",
+    "@tryghost/color-utils": "0.2.5",
+    "@tryghost/config-url-helpers": "1.0.15",
+    "@tryghost/custom-fonts": "1.0.0",
     "@tryghost/database-info": "0.3.29",
     "@tryghost/debug": "0.1.34",
-    "@tryghost/domain-events": "0.0.0",
-    "@tryghost/email-addresses": "0.0.0",
+    "@tryghost/domain-events": "1.0.0",
     "@tryghost/email-mock-receiver": "0.3.10",
-    "@tryghost/email-service": "0.0.0",
     "@tryghost/errors": "1.3.7",
-    "@tryghost/helpers": "1.1.91",
+    "@tryghost/helpers": "1.1.93",
     "@tryghost/html-to-plaintext": "1.0.2",
     "@tryghost/http-cache-utils": "0.1.19",
     "@tryghost/i18n": "0.0.0",
-    "@tryghost/image-transform": "1.4.1",
-    "@tryghost/job-manager": "0.0.0",
-    "@tryghost/kg-card-factory": "5.1.0",
-    "@tryghost/kg-converters": "1.1.0",
+    "@tryghost/image-transform": "1.4.3",
+    "@tryghost/job-manager": "1.0.0",
+    "@tryghost/kg-card-factory": "5.1.1",
+    "@tryghost/kg-converters": "1.1.3",
     "@tryghost/kg-default-atoms": "5.1.0",
-    "@tryghost/kg-default-cards": "10.1.1",
-    "@tryghost/kg-default-nodes": "1.4.7",
-    "@tryghost/kg-html-to-lexical": "1.2.7",
-    "@tryghost/kg-lexical-html-renderer": "1.3.7",
-    "@tryghost/kg-mobiledoc-html-renderer": "7.1.1",
-    "@tryghost/limit-service": "1.2.15",
+    "@tryghost/kg-default-cards": "10.1.2",
+    "@tryghost/kg-default-nodes": "1.4.10",
+    "@tryghost/kg-html-to-lexical": "1.2.10",
+    "@tryghost/kg-lexical-html-renderer": "1.3.10",
+    "@tryghost/kg-mobiledoc-html-renderer": "7.1.2",
+    "@tryghost/limit-service": "1.2.17",
     "@tryghost/logging": "2.4.21",
     "@tryghost/members-csv": "2.0.2",
     "@tryghost/metrics": "1.0.37",
-    "@tryghost/mw-error-handler": "0.0.0",
-    "@tryghost/mw-vhost": "0.0.0",
+    "@tryghost/mw-error-handler": "1.0.6",
+    "@tryghost/mw-vhost": "1.0.0",
     "@tryghost/nodemailer": "0.3.47",
     "@tryghost/nql": "0.12.7",
     "@tryghost/pretty-cli": "1.2.46",
-    "@tryghost/prometheus-metrics": "0.0.0",
+    "@tryghost/prometheus-metrics": "1.0.0",
     "@tryghost/promise": "0.3.14",
-    "@tryghost/referrer-parser": "0.1.2",
+    "@tryghost/referrer-parser": "0.1.4",
     "@tryghost/request": "1.0.10",
     "@tryghost/root-utils": "0.3.32",
-    "@tryghost/security": "0.0.0",
-    "@tryghost/social-urls": "0.1.47",
-    "@tryghost/string": "0.2.13",
+    "@tryghost/security": "1.0.0",
+    "@tryghost/social-urls": "0.1.49",
+    "@tryghost/string": "0.2.15",
     "@tryghost/tpl": "0.1.34",
-    "@tryghost/url-utils": "4.4.9",
+    "@tryghost/url-utils": "4.4.11",
     "@tryghost/validator": "0.2.16",
     "@tryghost/version": "0.1.32",
     "@tryghost/zip": "1.1.48",
@@ -194,6 +192,7 @@
     "nconf": "0.13.0",
     "node-fetch": "2.7.0",
     "node-jose": "2.2.0",
+    "nodemailer": "6.10.1",
     "otplib": "12.0.1",
     "papaparse": "5.3.2",
     "path-match": "1.2.4",
@@ -207,7 +206,7 @@
     "stripe": "8.222.0",
     "superagent": "5.3.1",
     "superagent-throttle": "1.0.1",
-    "terser": "5.39.0",
+    "terser": "5.39.1",
     "tiny-glob": "0.2.9",
     "tough-cookie": "4.1.4",
     "ua-parser-js": "1.0.40",
@@ -215,7 +214,7 @@
     "xml": "1.0.1"
   },
   "optionalDependencies": {
-    "@tryghost/html-to-mobiledoc": "3.2.3",
+    "@tryghost/html-to-mobiledoc": "3.2.4",
     "sqlite3": "5.1.7"
   },
   "devDependencies": {
@@ -226,8 +225,9 @@
     "@types/bookshelf": "1.2.9",
     "@types/common-tags": "1.8.4",
     "@types/jsonwebtoken": "9.0.9",
-    "@types/node": "22.15.8",
+    "@types/node": "22.15.18",
     "@types/node-jose": "1.1.13",
+    "@types/nodemailer": "6.4.17",
     "@types/sinon": "17.0.4",
     "@types/supertest": "6.0.3",
     "c8": "8.0.1",
@@ -238,6 +238,7 @@
     "expect": "29.7.0",
     "find-root": "1.1.0",
     "form-data": "4.0.2",
+    "html-validate": "8.29.0",
     "inquirer": "8.2.6",
     "jwk-to-pem": "2.0.7",
     "jwks-rsa": "3.2.0",
@@ -270,7 +271,6 @@
       "archive": {
         "dependsOn": [
           "build:assets",
-          "^build:ts",
           "build:tsc",
           {
             "projects": [
@@ -282,81 +282,35 @@
       },
       "dev": {
         "dependsOn": [
-          "^build:ts",
           "build:assets"
-        ]
-      },
-      "test": {
-        "dependsOn": [
-          "^build:ts"
-        ]
-      },
-      "test:single": {
-        "dependsOn": [
-          "^build:ts"
         ]
       },
       "test:all": {
         "dependsOn": [
-          "^build:ts",
           "build:assets"
         ]
       },
       "test:unit": {
         "dependsOn": [
-          "^build:ts",
           "build:assets"
-        ]
-      },
-      "test:integration": {
-        "dependsOn": [
-          "^build:ts"
-        ]
-      },
-      "test:regression": {
-        "dependsOn": [
-          "^build:ts"
         ]
       },
       "test:browser": {
         "dependsOn": [
-          "^build:ts",
           "build:assets",
           "ghost-admin:build"
         ]
       },
       "test:browser:admin": {
         "dependsOn": [
-          "^build:ts",
           "build:assets",
           "ghost-admin:build"
         ]
       },
       "test:browser:portal": {
         "dependsOn": [
-          "^build:ts",
           "build:assets",
           "ghost-admin:build"
-        ]
-      },
-      "test:e2e": {
-        "dependsOn": [
-          "^build:ts"
-        ]
-      },
-      "test:ci:e2e": {
-        "dependsOn": [
-          "^build:ts"
-        ]
-      },
-      "test:ci:regression": {
-        "dependsOn": [
-          "^build:ts"
-        ]
-      },
-      "test:ci:integration": {
-        "dependsOn": [
-          "^build:ts"
         ]
       }
     }

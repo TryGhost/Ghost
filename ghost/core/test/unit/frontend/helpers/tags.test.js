@@ -6,12 +6,14 @@ const models = require('../../../../core/server/models');
 const tagsHelper = require('../../../../core/frontend/helpers/tags');
 
 describe('{{tags}} helper', function () {
+    let urlServiceGetUrlByResourceIdStub;
+
     before(function () {
         models.init();
     });
 
     beforeEach(function () {
-        sinon.stub(urlService, 'getUrlByResourceId');
+        urlServiceGetUrlByResourceIdStub = sinon.stub(urlService, 'getUrlByResourceId');
     });
 
     afterEach(function () {
@@ -103,8 +105,8 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'bar', slug: 'bar'})
         ];
 
-        urlService.getUrlByResourceId.withArgs(tags[0].id).returns('tag url 1');
-        urlService.getUrlByResourceId.withArgs(tags[1].id).returns('tag url 2');
+        urlServiceGetUrlByResourceIdStub.withArgs(tags[0].id).returns('tag url 1');
+        urlServiceGetUrlByResourceIdStub.withArgs(tags[1].id).returns('tag url 2');
 
         const rendered = tagsHelper.call({tags: tags});
         should.exist(rendered);
@@ -118,7 +120,7 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'bar', slug: 'bar'})
         ];
 
-        urlService.getUrlByResourceId.withArgs(tags[0].id).returns('tag url 1');
+        urlServiceGetUrlByResourceIdStub.withArgs(tags[0].id).returns('tag url 1');
 
         const rendered = tagsHelper.call({tags: tags}, {hash: {limit: '1'}});
         should.exist(rendered);
@@ -132,7 +134,7 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'bar', slug: 'bar'})
         ];
 
-        urlService.getUrlByResourceId.withArgs(tags[1].id).returns('tag url 2');
+        urlServiceGetUrlByResourceIdStub.withArgs(tags[1].id).returns('tag url 2');
 
         const rendered = tagsHelper.call({tags: tags}, {hash: {from: '2'}});
         should.exist(rendered);
@@ -146,7 +148,7 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'bar', slug: 'bar'})
         ];
 
-        urlService.getUrlByResourceId.withArgs(tags[0].id).returns('tag url x');
+        urlServiceGetUrlByResourceIdStub.withArgs(tags[0].id).returns('tag url x');
 
         const rendered = tagsHelper.call({tags: tags}, {hash: {to: '1'}});
         should.exist(rendered);
@@ -161,8 +163,8 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'baz', slug: 'baz'})
         ];
 
-        urlService.getUrlByResourceId.withArgs(tags[1].id).returns('tag url b');
-        urlService.getUrlByResourceId.withArgs(tags[2].id).returns('tag url c');
+        urlServiceGetUrlByResourceIdStub.withArgs(tags[1].id).returns('tag url b');
+        urlServiceGetUrlByResourceIdStub.withArgs(tags[2].id).returns('tag url c');
 
         const rendered = tagsHelper.call({tags: tags}, {hash: {from: '2', to: '3'}});
         should.exist(rendered);
@@ -177,7 +179,7 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'baz', slug: 'baz'})
         ];
 
-        urlService.getUrlByResourceId.withArgs(tags[1].id).returns('tag url b');
+        urlServiceGetUrlByResourceIdStub.withArgs(tags[1].id).returns('tag url b');
 
         const rendered = tagsHelper.call({tags: tags}, {hash: {from: '2', limit: '1'}});
         should.exist(rendered);
@@ -192,9 +194,9 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'baz', slug: 'baz'})
         ];
 
-        urlService.getUrlByResourceId.withArgs(tags[0].id).returns('tag url a');
-        urlService.getUrlByResourceId.withArgs(tags[1].id).returns('tag url b');
-        urlService.getUrlByResourceId.withArgs(tags[2].id).returns('tag url c');
+        urlServiceGetUrlByResourceIdStub.withArgs(tags[0].id).returns('tag url a');
+        urlServiceGetUrlByResourceIdStub.withArgs(tags[1].id).returns('tag url b');
+        urlServiceGetUrlByResourceIdStub.withArgs(tags[2].id).returns('tag url c');
 
         const rendered = tagsHelper.call({tags: tags}, {hash: {from: '1', to: '3', limit: '2'}});
         should.exist(rendered);
@@ -217,11 +219,11 @@ describe('{{tags}} helper', function () {
         ];
 
         beforeEach(function () {
-            urlService.getUrlByResourceId.withArgs(tags[0].id).returns('1');
-            urlService.getUrlByResourceId.withArgs(tags[1].id).returns('2');
-            urlService.getUrlByResourceId.withArgs(tags[2].id).returns('3');
-            urlService.getUrlByResourceId.withArgs(tags[3].id).returns('4');
-            urlService.getUrlByResourceId.withArgs(tags[4].id).returns('5');
+            urlServiceGetUrlByResourceIdStub.withArgs(tags[0].id).returns('1');
+            urlServiceGetUrlByResourceIdStub.withArgs(tags[1].id).returns('2');
+            urlServiceGetUrlByResourceIdStub.withArgs(tags[2].id).returns('3');
+            urlServiceGetUrlByResourceIdStub.withArgs(tags[3].id).returns('4');
+            urlServiceGetUrlByResourceIdStub.withArgs(tags[4].id).returns('5');
         });
 
         it('will not output internal tags by default', function () {

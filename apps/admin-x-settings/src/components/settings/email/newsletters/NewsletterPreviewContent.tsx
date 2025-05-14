@@ -98,6 +98,7 @@ const NewsletterPreviewContent: React.FC<{
     const showHeader = headerIcon || headerTitle;
     const {config} = useGlobalData();
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
+    const hasEmailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
 
     const currentDate = new Date().toLocaleDateString('default', {
         year: 'numeric',
@@ -249,8 +250,8 @@ const NewsletterPreviewContent: React.FC<{
                                         <button
                                             className={clsx(
                                                 'px-[18px] py-2 font-sans text-[15px]',
-                                                buttonCorners === 'squircle' && 'rounded-[6px]',
-                                                buttonCorners === 'rounded' && 'rounded-full',
+                                                buttonCorners === 'rounded' && 'rounded-[6px]',
+                                                buttonCorners === 'pill' && 'rounded-full',
                                                 buttonCorners === 'square' && 'rounded-none',
                                                 buttonStyle === 'outline'
                                                     ? 'border bg-transparent'
@@ -305,6 +306,33 @@ const NewsletterPreviewContent: React.FC<{
                                         <p className="mb-6" style={{color: textColor}}>This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.</p>
                                         <p className="mb-6" style={{color: textColor}}>Over there on the right you&apos;ll see some settings that allow you to customize the look and feel of this template to make it perfectly suited to your brand. Email templates are exceptionally finnicky to make, but we&apos;ve spent a long time optimising this one to make it work beautifully across devices, email clients and content types.</p>
                                         <p className="mb-6" style={{color: textColor}}>So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.</p>
+                                        {hasEmailCustomizationAlpha && (
+                                            <button
+                                                className={clsx(
+                                                    'px-[18px] py-2 font-sans text-[15px]',
+                                                    buttonCorners === 'rounded' && 'rounded-[6px]',
+                                                    buttonCorners === 'pill' && 'rounded-full',
+                                                    buttonCorners === 'square' && 'rounded-none',
+                                                    buttonStyle === 'outline'
+                                                        ? 'border bg-transparent'
+                                                        : 'text-white',
+                                                    linkStyle === 'bold' && 'font-bold'
+                                                )}
+                                                style={
+                                                    buttonStyle === 'outline'
+                                                        ? {
+                                                            borderColor: buttonColor || accentColor,
+                                                            color: buttonColor || accentColor
+                                                        }
+                                                        : {
+                                                            backgroundColor: buttonColor || accentColor
+                                                        }
+                                                }
+                                                type="button"
+                                            >
+                                            Upgrade now
+                                            </button>
+                                        )}
                                     </>
                                 )}
                             </div>
