@@ -88,7 +88,7 @@ describe('InMemoryMilestoneRepository', function () {
 
     it('Can return the latest milestone for members', async function () {
         const latestMemberCountMilestone = await repository.getLatestByType('members');
-        const timeDiff = new Date(latestMemberCountMilestone.createdAt) - new Date('2023-02-01T00:00:00.000Z');
+        const timeDiff = new Date(latestMemberCountMilestone.createdAt).getTime() - new Date('2023-02-01T00:00:00.000Z').getTime();
         assert(timeDiff === 0);
         assert(latestMemberCountMilestone.type === 'members');
         assert(latestMemberCountMilestone.value === 600);
@@ -96,7 +96,7 @@ describe('InMemoryMilestoneRepository', function () {
 
     it('Can return the latest milestone for ARR', async function () {
         const latestArrMilestone = await repository.getLatestByType('arr');
-        const timeDiff = new Date(latestArrMilestone.createdAt) - new Date('2023-02-01T01:00:00Z');
+        const timeDiff = new Date(latestArrMilestone.createdAt).getTime() - new Date('2023-02-01T01:00:00Z').getTime();
         assert(timeDiff === 0);
         assert(latestArrMilestone.value === 60000);
         assert(latestArrMilestone.type = 'arr');
@@ -105,7 +105,7 @@ describe('InMemoryMilestoneRepository', function () {
 
     it('Can return the latest milestone for ARR for a specific currency', async function () {
         const latestArrMilestone = await repository.getLatestByType('arr', 'gbp');
-        const timeDiff = new Date(latestArrMilestone.createdAt) - new Date('2023-01-30T00:00:00Z');
+        const timeDiff = new Date(latestArrMilestone.createdAt).getTime() - new Date('2023-01-30T00:00:00Z').getTime();
         assert(timeDiff === 0);
         assert(latestArrMilestone.value === 2000);
         assert(latestArrMilestone.type = 'arr');
@@ -114,13 +114,13 @@ describe('InMemoryMilestoneRepository', function () {
 
     it('Can return the last sent email', async function () {
         const lastEmailSentMilestone = await repository.getLastEmailSent();
-        const timeDiff = new Date(lastEmailSentMilestone.emailSentAt) - new Date('2023-02-01T01:00:00Z');
+        const timeDiff = new Date(lastEmailSentMilestone.emailSentAt).getTime() - new Date('2023-02-01T01:00:00Z').getTime();
         assert(timeDiff === 0);
     });
 
     it('Can return the ARR milestone for a given value', async function () {
         const arrMilestoneForValue = await repository.getByARR(50000, 'usd');
-        const timeDiff = new Date(arrMilestoneForValue.createdAt) - new Date('2023-02-01T01:00:00Z');
+        const timeDiff = new Date(arrMilestoneForValue.createdAt).getTime() - new Date('2023-02-01T01:00:00Z').getTime();
         assert(timeDiff === 0);
         assert(arrMilestoneForValue.type === 'arr');
         assert(arrMilestoneForValue.value === 50000);
@@ -130,7 +130,7 @@ describe('InMemoryMilestoneRepository', function () {
 
     it('Can return the Members count milestone for a given value', async function () {
         const membersCountForValue = await repository.getByCount(100);
-        const timeDiff = new Date(membersCountForValue.createdAt) - new Date('2023-01-01T00:00:00Z');
+        const timeDiff = new Date(membersCountForValue.createdAt).getTime() - new Date('2023-01-01T00:00:00Z').getTime();
         assert(timeDiff === 0);
         assert(membersCountForValue.type === 'members');
         assert(membersCountForValue.value === 100);

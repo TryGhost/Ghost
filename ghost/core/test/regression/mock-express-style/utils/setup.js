@@ -42,7 +42,7 @@ module.exports = {
      * This is a really rough frontend-only version of Ghost boot
      * In order for this test pattern to be really considered the right pattern this needs to be replaced
      * With something based on the real boot
-     * @returns {object} express App
+     * @returns {Promise<object>} express App
      */
     initGhost: async (options = {}) => {
         const app = await boot(Object.assign({

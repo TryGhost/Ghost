@@ -73,7 +73,7 @@ describe('Unit - apps/amp/lib/router', function () {
 
             ampController.renderer(req, res, function (err) {
                 (err instanceof errors.NotFoundError).should.be.true();
-                renderer.renderer.called.should.be.false();
+                rendererStub.called.should.be.false();
                 done();
             });
         });
@@ -81,6 +81,7 @@ describe('Unit - apps/amp/lib/router', function () {
 
     describe('fn: getPostData', function () {
         let entryLookupStub;
+        let urlServiceGetPermalinkByUrlStub;
         let post;
 
         beforeEach(function () {
@@ -98,7 +99,7 @@ describe('Unit - apps/amp/lib/router', function () {
                 return entryLookupStub;
             });
 
-            sinon.stub(urlService, 'getPermalinkByUrl');
+            urlServiceGetPermalinkByUrlStub = sinon.stub(urlService, 'getPermalinkByUrl');
         });
 
         afterEach(function () {
@@ -108,7 +109,7 @@ describe('Unit - apps/amp/lib/router', function () {
         it('should successfully get the post data from slug', function (done) {
             res.locals.relativeUrl = req.originalUrl = '/welcome/amp';
 
-            urlService.getPermalinkByUrl.withArgs('/welcome/').returns('/:slug/');
+            urlServiceGetPermalinkByUrlStub.withArgs('/welcome/').returns('/:slug/');
 
             dataService.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}})
                 .resolves({
@@ -125,7 +126,7 @@ describe('Unit - apps/amp/lib/router', function () {
             req.originalUrl = '/blog/welcome/amp';
             res.locals.relativeUrl = '/welcome/amp';
 
-            urlService.getPermalinkByUrl.withArgs('/welcome/').returns('/:slug/');
+            urlServiceGetPermalinkByUrlStub.withArgs('/welcome/').returns('/:slug/');
 
             dataService.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}}).resolves({
                 entry: post
@@ -140,7 +141,7 @@ describe('Unit - apps/amp/lib/router', function () {
         it('should return error if entrylookup returns NotFoundError', function (done) {
             res.locals.relativeUrl = req.originalUrl = '/welcome/amp';
 
-            urlService.getPermalinkByUrl.withArgs('/welcome/').returns('/:slug/');
+            urlServiceGetPermalinkByUrlStub.withArgs('/welcome/').returns('/:slug/');
 
             dataService.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}})
                 .rejects(new errors.NotFoundError());

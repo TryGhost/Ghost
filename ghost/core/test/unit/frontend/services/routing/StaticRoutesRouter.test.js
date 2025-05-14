@@ -9,6 +9,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
     let res;
     let next;
     let routerCreatedSpy;
+    let mountRouteSpy;
 
     afterEach(async function () {
         await configUtils.restore();
@@ -17,7 +18,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
     beforeEach(function () {
         routerCreatedSpy = sinon.spy();
 
-        sinon.spy(StaticRoutesRouter.prototype, 'mountRoute');
+        mountRouteSpy = sinon.spy(StaticRoutesRouter.prototype, 'mountRoute');
         sinon.spy(StaticRoutesRouter.prototype, 'mountRouter');
 
         req = sinon.stub();
@@ -44,11 +45,11 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             routerCreatedSpy.calledOnce.should.be.true();
             routerCreatedSpy.calledWith(staticRoutesRouter).should.be.true();
 
-            staticRoutesRouter.mountRoute.callCount.should.eql(1);
+            mountRouteSpy.callCount.should.eql(1);
 
             // parent route
-            staticRoutesRouter.mountRoute.args[0][0].should.eql('/about/');
-            staticRoutesRouter.mountRoute.args[0][1].should.eql(controllers.static);
+            mountRouteSpy.args[0][0].should.eql('/about/');
+            mountRouteSpy.args[0][1].should.eql(controllers.static);
         });
 
         it('initialize with data+filter', function () {
@@ -66,11 +67,11 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             routerCreatedSpy.calledOnce.should.be.true();
             routerCreatedSpy.calledWith(staticRoutesRouter).should.be.true();
 
-            staticRoutesRouter.mountRoute.callCount.should.eql(1);
+            mountRouteSpy.callCount.should.eql(1);
 
             // parent route
-            staticRoutesRouter.mountRoute.args[0][0].should.eql('/about/');
-            staticRoutesRouter.mountRoute.args[0][1].should.eql(controllers.static);
+            mountRouteSpy.args[0][0].should.eql('/about/');
+            mountRouteSpy.args[0][1].should.eql(controllers.static);
         });
 
         it('fn: _prepareStaticRouteContext', function () {
@@ -126,15 +127,15 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 routerCreatedSpy.calledOnce.should.be.true();
                 routerCreatedSpy.calledWith(staticRoutesRouter).should.be.true();
 
-                staticRoutesRouter.mountRoute.callCount.should.eql(2);
+                mountRouteSpy.callCount.should.eql(2);
 
                 // parent route
-                staticRoutesRouter.mountRoute.args[0][0].should.eql('/channel/');
-                staticRoutesRouter.mountRoute.args[0][1].should.eql(controllers.channel);
+                mountRouteSpy.args[0][0].should.eql('/channel/');
+                mountRouteSpy.args[0][1].should.eql(controllers.channel);
 
                 // pagination feature
-                staticRoutesRouter.mountRoute.args[1][0].should.eql('/channel/page/:page(\\d+)');
-                staticRoutesRouter.mountRoute.args[1][1].should.eql(controllers.channel);
+                mountRouteSpy.args[1][0].should.eql('/channel/page/:page(\\d+)');
+                mountRouteSpy.args[1][1].should.eql(controllers.channel);
             });
 
             it('initialize with controller+filter', function () {
@@ -153,15 +154,15 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 routerCreatedSpy.calledOnce.should.be.true();
                 routerCreatedSpy.calledWith(staticRoutesRouter).should.be.true();
 
-                staticRoutesRouter.mountRoute.callCount.should.eql(2);
+                mountRouteSpy.callCount.should.eql(2);
 
                 // parent route
-                staticRoutesRouter.mountRoute.args[0][0].should.eql('/channel/');
-                staticRoutesRouter.mountRoute.args[0][1].should.eql(controllers.channel);
+                mountRouteSpy.args[0][0].should.eql('/channel/');
+                mountRouteSpy.args[0][1].should.eql(controllers.channel);
 
                 // pagination feature
-                staticRoutesRouter.mountRoute.args[1][0].should.eql('/channel/page/:page(\\d+)');
-                staticRoutesRouter.mountRoute.args[1][1].should.eql(controllers.channel);
+                mountRouteSpy.args[1][0].should.eql('/channel/page/:page(\\d+)');
+                mountRouteSpy.args[1][1].should.eql(controllers.channel);
             });
 
             it('initialize with controller+data', function () {
@@ -176,21 +177,21 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             it('initialize on subdirectory with controller+data+filter', function () {
                 configUtils.set('url', 'http://localhost:2366/blog/');
 
-                const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
+                new StaticRoutesRouter('/channel/', {
                     controller: 'channel',
                     data: {query: {}, router: {}},
                     filter: 'author:michi'
                 }, routerCreatedSpy);
 
-                staticRoutesRouter.mountRoute.callCount.should.eql(2);
+                mountRouteSpy.callCount.should.eql(2);
 
                 // parent route
-                staticRoutesRouter.mountRoute.args[0][0].should.eql('/channel/');
-                staticRoutesRouter.mountRoute.args[0][1].should.eql(controllers.channel);
+                mountRouteSpy.args[0][0].should.eql('/channel/');
+                mountRouteSpy.args[0][1].should.eql(controllers.channel);
 
                 // pagination feature
-                staticRoutesRouter.mountRoute.args[1][0].should.eql('/channel/page/:page(\\d+)');
-                staticRoutesRouter.mountRoute.args[1][1].should.eql(controllers.channel);
+                mountRouteSpy.args[1][0].should.eql('/channel/page/:page(\\d+)');
+                mountRouteSpy.args[1][1].should.eql(controllers.channel);
             });
         });
 

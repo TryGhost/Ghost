@@ -157,7 +157,7 @@ describe('Mail: Ghostmailer', function () {
 
             mailer = new mail.GhostMailer();
 
-            sandbox.stub(mailer, 'sendMail').resolves();
+            const sendMailSpy = sandbox.stub(mailer, 'sendMail').resolves();
             mailer.transport.transporter.name = 'NOT DIRECT';
 
             await mailer.send({
@@ -166,7 +166,7 @@ describe('Mail: Ghostmailer', function () {
                 html: 'content'
             });
 
-            mailer.sendMail.firstCall.args[0].from.should.equal('"Blog Title" <static@example.com>');
+            sendMailSpy.firstCall.args[0].from.should.equal('"Blog Title" <static@example.com>');
         });
 
         describe('should fall back to [blog.title] <noreply@[blog.url]>', function () {
@@ -239,7 +239,7 @@ describe('Mail: Ghostmailer', function () {
 
             mailer = new mail.GhostMailer();
 
-            sandbox.stub(mailer, 'sendMail').resolves();
+            const sendMailSpy = sandbox.stub(mailer, 'sendMail').resolves();
             mailer.transport.transporter.name = 'NOT DIRECT';
 
             await mailer.send({
@@ -248,7 +248,7 @@ describe('Mail: Ghostmailer', function () {
                 html: 'content'
             });
 
-            mailer.sendMail.firstCall.args[0].from.should.equal('"bar" <from@default.com>');
+            sendMailSpy.firstCall.args[0].from.should.equal('"bar" <from@default.com>');
         });
 
         it('should attach blog title', async function () {
@@ -258,7 +258,7 @@ describe('Mail: Ghostmailer', function () {
 
             mailer = new mail.GhostMailer();
 
-            sandbox.stub(mailer, 'sendMail').resolves();
+            const sendMailSpy = sandbox.stub(mailer, 'sendMail').resolves();
             mailer.transport.transporter.name = 'NOT DIRECT';
 
             await mailer.send({
@@ -267,7 +267,7 @@ describe('Mail: Ghostmailer', function () {
                 html: 'content'
             });
 
-            mailer.sendMail.firstCall.args[0].from.should.equal('"Test" <from@default.com>');
+            sendMailSpy.firstCall.args[0].from.should.equal('"Test" <from@default.com>');
 
             // only from set
             configUtils.set({mail: {from: 'from@default.com'}});
@@ -278,7 +278,7 @@ describe('Mail: Ghostmailer', function () {
                 html: 'content'
             });
 
-            mailer.sendMail.firstCall.args[0].from.should.equal('"Test" <from@default.com>');
+            sendMailSpy.firstCall.args[0].from.should.equal('"Test" <from@default.com>');
         });
 
         it('should ignore theme title if from address is Title <email@address.com> format', async function () {
@@ -286,7 +286,7 @@ describe('Mail: Ghostmailer', function () {
 
             mailer = new mail.GhostMailer();
 
-            sandbox.stub(mailer, 'sendMail').resolves();
+            const sendMailSpy = sandbox.stub(mailer, 'sendMail').resolves();
             mailer.transport.transporter.name = 'NOT DIRECT';
 
             await mailer.send({
@@ -295,7 +295,7 @@ describe('Mail: Ghostmailer', function () {
                 html: 'content'
             });
 
-            mailer.sendMail.firstCall.args[0].from.should.equal('"R2D2" <from@default.com>');
+            sendMailSpy.firstCall.args[0].from.should.equal('"R2D2" <from@default.com>');
 
             // only from set
             configUtils.set({mail: {from: '"R2D2" <from@default.com>'}});
@@ -305,7 +305,7 @@ describe('Mail: Ghostmailer', function () {
                 html: 'content'
             });
 
-            mailer.sendMail.firstCall.args[0].from.should.equal('"R2D2" <from@default.com>');
+            sendMailSpy.firstCall.args[0].from.should.equal('"R2D2" <from@default.com>');
         });
 
         it('should use default title if not theme title is provided', async function () {
@@ -314,7 +314,7 @@ describe('Mail: Ghostmailer', function () {
 
             mailer = new mail.GhostMailer();
 
-            sandbox.stub(mailer, 'sendMail').resolves();
+            const sendMailSpy = sandbox.stub(mailer, 'sendMail').resolves();
             mailer.transport.transporter.name = 'NOT DIRECT';
 
             await mailer.send({
@@ -323,7 +323,7 @@ describe('Mail: Ghostmailer', function () {
                 html: 'content'
             });
 
-            mailer.sendMail.firstCall.args[0].from.should.equal('"Ghost at default.com" <noreply@default.com>');
+            sendMailSpy.firstCall.args[0].from.should.equal('"Ghost at default.com" <noreply@default.com>');
         });
     });
 });

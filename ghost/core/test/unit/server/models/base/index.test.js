@@ -17,9 +17,9 @@ describe('Models: base', function () {
     describe('generateSlug', function () {
         let Model;
         let options = {};
-
+        let securityStringSafeStub;
         beforeEach(function () {
-            sinon.stub(security.string, 'safe');
+            securityStringSafeStub = sinon.stub(security.string, 'safe');
             sinon.stub(urlUtils, 'getProtectedSlugs').returns(['upsi', 'schwupsi']);
 
             Model = sinon.stub();
@@ -31,7 +31,7 @@ describe('Models: base', function () {
 
         it('default', function () {
             Model.findOne.resolves(false);
-            security.string.safe.withArgs('My-Slug').returns('my-slug');
+            securityStringSafeStub.withArgs('My-Slug').returns('my-slug');
 
             return models.Base.Model.generateSlug(Model, 'My-Slug', options)
                 .then((slug) => {
@@ -49,7 +49,7 @@ describe('Models: base', function () {
                 return Promise.resolve(null);
             });
 
-            security.string.safe.withArgs('My-Slug').returns('my-slug');
+            securityStringSafeStub.withArgs('My-Slug').returns('my-slug');
 
             return models.Base.Model.generateSlug(Model, 'My-Slug', {modelId: 'incorrect-model-id'})
                 .then((slug) => {
@@ -67,7 +67,7 @@ describe('Models: base', function () {
                 return Promise.resolve(null);
             });
 
-            security.string.safe.withArgs('My-Slug').returns('my-slug');
+            securityStringSafeStub.withArgs('My-Slug').returns('my-slug');
 
             return models.Base.Model.generateSlug(Model, 'My-Slug', {modelId: 'correct-model-id'})
                 .then((slug) => {
@@ -85,7 +85,7 @@ describe('Models: base', function () {
                 return Promise.resolve(false);
             });
 
-            security.string.safe.withArgs('My-Slug').returns('my-slug');
+            securityStringSafeStub.withArgs('My-Slug').returns('my-slug');
 
             return models.Base.Model.generateSlug(Model, 'My-Slug', options)
                 .then((slug) => {
@@ -97,7 +97,7 @@ describe('Models: base', function () {
             Model.findOne.resolves(false);
             const slug = new Array(500).join('a');
 
-            security.string.safe.withArgs(slug).returns(slug);
+            securityStringSafeStub.withArgs(slug).returns(slug);
 
             return models.Base.Model.generateSlug(Model, slug, options)
                 .then((generatedSlug) => {
@@ -109,7 +109,7 @@ describe('Models: base', function () {
             Model.findOne.resolves(false);
             const slug = 'upsi';
 
-            security.string.safe.withArgs(slug).returns(slug);
+            securityStringSafeStub.withArgs(slug).returns(slug);
 
             return models.Base.Model.generateSlug(Model, slug, options)
                 .then((generatedSlug) => {
@@ -125,7 +125,7 @@ describe('Models: base', function () {
                 tableName: 'tag'
             };
 
-            security.string.safe.withArgs(slug).returns(slug);
+            securityStringSafeStub.withArgs(slug).returns(slug);
 
             return models.Base.Model.generateSlug(Model, slug, options)
                 .then((generatedSlug) => {
@@ -135,7 +135,7 @@ describe('Models: base', function () {
 
         it('contains invisible unicode', function () {
             Model.findOne.resolves(false);
-            security.string.safe.withArgs('abc\u0008').returns('abc');
+            securityStringSafeStub.withArgs('abc\u0008').returns('abc');
 
             return models.Base.Model.generateSlug(Model, 'abc\u0008', options)
                 .then((slug) => {

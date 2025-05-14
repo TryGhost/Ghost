@@ -1,4 +1,4 @@
-require('should');
+const should = require('should');
 
 const Tier = require('../../../../../../core/server/services/tiers/Tier');
 const ObjectID = require('bson-objectid').default;

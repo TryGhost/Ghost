@@ -166,7 +166,7 @@ class ParentRouter {
 
     /**
      * @description Very important function to get the actual express router, which satisfies express.
-     * @returns {Express-Router}
+     * @returns {import('express').Router}
      */
     router() {
         return this._router;
