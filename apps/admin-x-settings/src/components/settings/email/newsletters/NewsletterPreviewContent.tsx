@@ -36,16 +36,20 @@ const NewsletterPreviewContent: React.FC<{
     showBadge?: boolean;
 
     backgroundColor?: string;
+    headerColor?: string;
     borderColor?: string;
     accentColor?: string;
     textColor?: string;
     secondaryTextColor?: string;
+    headerTextColor?: string;
+    secondaryHeaderTextColor?: string;
     titleColor?: string;
     dividerColor?: string;
     buttonColor?: string;
     linkColor?: string;
     buttonStyle?: string;
     buttonCorners?: string;
+    imageCorners?: string;
     linkStyle?: string;
     dividerStyle?: string;
 }> = ({
@@ -75,21 +79,26 @@ const NewsletterPreviewContent: React.FC<{
     showBadge,
 
     backgroundColor,
+    headerColor,
     accentColor,
     textColor,
     secondaryTextColor,
+    headerTextColor,
+    secondaryHeaderTextColor,
     titleColor,
     dividerColor,
     buttonColor,
     linkColor,
     buttonCorners,
     buttonStyle,
+    imageCorners,
     linkStyle,
     dividerStyle
 }) => {
     const showHeader = headerIcon || headerTitle;
     const {config} = useGlobalData();
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
+    const hasEmailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
 
     const currentDate = new Date().toLocaleDateString('default', {
         year: 'numeric',
@@ -146,10 +155,10 @@ const NewsletterPreviewContent: React.FC<{
 
                     {/* Email content */}
                     <div className="overflow-y-auto p-4 text-sm" style={{backgroundColor}}>
-                        <div className="border border-transparent px-[5.4rem]">
+                        <div className="px-[5.4rem]" style={{backgroundColor: headerColor}}>
                             {headerImage && (
                                 <div>
-                                    <img alt="" className="mb-4 mt-6 block" src={headerImage} />
+                                    <img alt="" className="mb-4 block" src={headerImage} />
                                 </div>
                             )}
                             {showHeader && (
@@ -166,14 +175,15 @@ const NewsletterPreviewContent: React.FC<{
                                             <h2 className={clsx(
                                                 'text-4xl font-bold leading-supertight text-black',
                                                 titleFontCategory === 'serif' && 'font-serif',
-                                                titleFontWeight === 'normal' ? 'font-normal' : 'font-bold',
+                                                titleFontWeight === 'normal' && 'font-normal',
+                                                titleFontWeight === 'medium' && 'font-medium',
+                                                titleFontWeight === 'semibold' && 'font-semibold',
+                                                titleFontWeight === 'bold' && 'font-bold',
                                                 titleAlignment === 'center' ? 'text-center' : 'text-left',
                                                 showExcerpt ? 'mb-2' : 'mb-8'
-                                            )} style={{color: titleColor}}>
-                                                Delivery Apps Are Changing Your Neighbourhood
-                                            </h2>
+                                            )} style={{color: titleColor}}>Delivery Apps Are Changing Your Neighbourhood</h2>
                                             {showExcerpt && (
-                                                <p className={excerptClasses} style={{color: textColor}}>Delivery apps are thriving—local restaurants and workers are paying the price.</p>
+                                                <p className={excerptClasses} style={{color: headerTextColor}}>Delivery apps are thriving—local restaurants and workers are paying the price.</p>
                                             )}
                                         </>
                                     ) : (
@@ -195,11 +205,11 @@ const NewsletterPreviewContent: React.FC<{
                                         'flex w-full justify-between text-center text-md leading-none text-grey-700',
                                         titleAlignment === 'center' ? 'flex-col gap-1' : 'flex-row'
                                     )}>
-                                        <p className="pb-1 text-[1.3rem]" style={{color: secondaryTextColor}}>
+                                        <p className="pb-1 text-[1.3rem]" style={{color: hasEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}>
                                             By {authorPlaceholder}
                                             <span className="before:pl-0.5 before:pr-1 before:content-['•']">{currentDate}</span>
                                         </p>
-                                        <p className="pb-1 text-[1.3rem] underline" style={{color: secondaryTextColor}}><span>View in browser</span></p>
+                                        <p className="pb-1 text-[1.3rem] underline" style={{color: hasEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}><span>View in browser</span></p>
                                     </div>
                                 </div>
                             )}
@@ -208,15 +218,22 @@ const NewsletterPreviewContent: React.FC<{
                             {showFeatureImage && (
                                 <>
                                     <div className={clsx(
-                                        'h-[300px] w-full max-w-[600px] bg-cover bg-no-repeat',
-                                        showPostTitleSection ? '' : 'pt-6'
+                                        'w-full max-w-[600px] bg-cover bg-no-repeat',
+                                        showPostTitleSection ? '' : 'pt-6',
+                                        hasEmailCustomization ? 'h-[unset]' : 'h-[300px]'
                                     )}>
-                                        <img alt="Feature" className='min-h-full min-w-full shrink-0' src={CoverImage} />
+                                        <img alt="Feature" className={clsx(
+                                            'min-h-full min-w-full shrink-0',
+                                            imageCorners === 'square' && 'rounded-none',
+                                            imageCorners === 'squircle' && 'rounded-lg'
+                                        )} src={hasEmailCustomization ? 'https://images.unsplash.com/photo-1526367790999-0150786686a2?q=80&w=2942&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' : CoverImage} />
                                     </div>
-                                    <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem] text-grey-700" style={{color: secondaryTextColor}}>Feature image caption</div>
+                                    <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem] text-grey-700" style={{color: hasEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}>Feature image caption</div>
                                 </>
                             )}
+                        </div>
 
+                        <div className={clsx('px-[5.4rem]', headerColor !== 'transparent' && 'pt-10')}>
                             <div className={clsx(
                                 'max-w-[600px] border-b border-grey-200 pb-5 leading-[27.2px] text-black',
                                 dividerStyle === 'dashed' && 'border-dashed',
@@ -233,8 +250,8 @@ const NewsletterPreviewContent: React.FC<{
                                         <button
                                             className={clsx(
                                                 'px-[18px] py-2 font-sans text-[15px]',
-                                                buttonCorners === 'squircle' && 'rounded-[6px]',
-                                                buttonCorners === 'rounded' && 'rounded-full',
+                                                buttonCorners === 'rounded' && 'rounded-[6px]',
+                                                buttonCorners === 'pill' && 'rounded-full',
                                                 buttonCorners === 'square' && 'rounded-none',
                                                 buttonStyle === 'outline'
                                                     ? 'border bg-transparent'
@@ -257,10 +274,30 @@ const NewsletterPreviewContent: React.FC<{
                                         </button>
                                         <hr className={clsx('my-6 border-[#e0e7eb]', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-t-0 border-dotted')} style={{borderColor: dividerColor}} />
                                         <p className="mb-6" style={{color: textColor}}>Yet, the convenience factor keeps us coming back. The ease of one-click ordering means fewer people are dining in, changing the social fabric of our communities. Restaurants designed for shared experiences are evolving into ghost kitchens, optimized for delivery rather than connection.</p>
-                                        <h3 className={clsx('mb-[13px] mt-[39px] text-[2.6rem] leading-supertight', titleFontCategory === 'serif' && 'font-serif', titleFontCategory === 'sans_serif' && 'font-sans', titleFontWeight === 'normal' ? 'font-normal' : 'font-bold')} style={{color: titleColor}}>When Convenience Comes at a Cost</h3>
+                                        <h3
+                                            className={clsx(
+                                                'mb-[13px] mt-[39px] text-[2.6rem] leading-supertight',
+                                                titleFontCategory === 'serif' && 'font-serif',
+                                                titleFontCategory === 'sans_serif' && 'font-sans',
+                                                titleFontWeight === 'normal' && 'font-normal',
+                                                titleFontWeight === 'medium' && 'font-medium',
+                                                titleFontWeight === 'semibold' && 'font-semibold',
+                                                titleFontWeight === 'bold' && 'font-bold'
+                                            )}
+                                            style={{color: titleColor}}>When Convenience Comes at a Cost</h3>
                                         <p className="mb-6" style={{color: textColor}}>So, what’s the future of food culture in an on-demand world? Can these platforms adapt to better support small businesses and workers? Or will we wake up one day to find that the places we once loved have vanished?</p>
                                         <p className="mb-6" style={{color: textColor}}>Some cities are beginning to push back. In San Francisco, legislation has been proposed to cap delivery app fees and ensure a fairer share of profits for restaurants. Other local governments are exploring ways to offer support to brick-and-mortar establishments, whether through grants, tax relief, or public campaigns that encourage residents to dine in more often.</p>
-                                        <h3 className={clsx('mb-[13px] mt-[39px] text-[2.6rem] leading-supertight', titleFontCategory === 'serif' && 'font-serif', titleFontCategory === 'sans_serif' && 'font-sans', titleFontWeight === 'normal' ? 'font-normal' : 'font-bold')} style={{color: titleColor}}>Reimagining How We Eat</h3>
+                                        <h3
+                                            className={clsx(
+                                                'mb-[13px] mt-[39px] text-[2.6rem] leading-supertight',
+                                                titleFontCategory === 'serif' && 'font-serif',
+                                                titleFontCategory === 'sans_serif' && 'font-sans',
+                                                titleFontWeight === 'normal' && 'font-normal',
+                                                titleFontWeight === 'medium' && 'font-medium',
+                                                titleFontWeight === 'semibold' && 'font-semibold',
+                                                titleFontWeight === 'bold' && 'font-bold'
+                                            )}
+                                            style={{color: titleColor}}>Reimagining How We Eat</h3>
                                         <p className="mb-6" style={{color: textColor}}>Consumers are also starting to pay more attention. There&apos;s a growing movement toward mindful eating—not just in terms of ingredients, but in how we support the systems that bring food to our tables. Choosing to pick up instead of ordering in, tipping delivery drivers fairly, or subscribing to local restaurant coalitions can all make a difference.</p>
                                         <p className="mb-6" style={{color: textColor}}>Ultimately, the story of delivery apps isn’t just about technology or convenience—it’s about the kind of communities we want to live in. And that future depends, in part, on the choices we make every day.</p>
                                     </>
@@ -269,6 +306,33 @@ const NewsletterPreviewContent: React.FC<{
                                         <p className="mb-6" style={{color: textColor}}>This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.</p>
                                         <p className="mb-6" style={{color: textColor}}>Over there on the right you&apos;ll see some settings that allow you to customize the look and feel of this template to make it perfectly suited to your brand. Email templates are exceptionally finnicky to make, but we&apos;ve spent a long time optimising this one to make it work beautifully across devices, email clients and content types.</p>
                                         <p className="mb-6" style={{color: textColor}}>So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.</p>
+                                        {hasEmailCustomizationAlpha && (
+                                            <button
+                                                className={clsx(
+                                                    'px-[18px] py-2 font-sans text-[15px]',
+                                                    buttonCorners === 'rounded' && 'rounded-[6px]',
+                                                    buttonCorners === 'pill' && 'rounded-full',
+                                                    buttonCorners === 'square' && 'rounded-none',
+                                                    buttonStyle === 'outline'
+                                                        ? 'border bg-transparent'
+                                                        : 'text-white',
+                                                    linkStyle === 'bold' && 'font-bold'
+                                                )}
+                                                style={
+                                                    buttonStyle === 'outline'
+                                                        ? {
+                                                            borderColor: buttonColor || accentColor,
+                                                            color: buttonColor || accentColor
+                                                        }
+                                                        : {
+                                                            backgroundColor: buttonColor || accentColor
+                                                        }
+                                                }
+                                                type="button"
+                                            >
+                                            Upgrade now
+                                            </button>
+                                        )}
                                     </>
                                 )}
                             </div>
@@ -308,32 +372,66 @@ const NewsletterPreviewContent: React.FC<{
                             {/* Latest posts */}
                             {showLatestPosts && (
                                 <div className={clsx('border-b border-grey-200 py-6', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-dotted')} style={{borderColor: dividerColor}}>
-                                    <h3 className="mb-4 mt-2 pb-1 text-[1.2rem] font-semibold uppercase tracking-wide text-black" style={{color: textColor}}>Keep reading</h3>
+                                    <h3 className="mb-4 mt-2 pb-1 text-[1.2rem] font-semibold uppercase tracking-wide text-black" style={{color: titleColor}}>Keep reading</h3>
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
-                                            <h4 className={clsx('mt-0.5 text-[1.9rem] text-black', hasEmailCustomization && titleFontCategory === 'serif' ? 'font-serif' : '', titleFontWeight === 'normal' ? 'font-normal' : 'font-bold')} style={{color: textColor}}>The three latest posts published on your site</h4>
+                                            <h4
+                                                className={clsx(
+                                                    'mt-0.5 text-[1.9rem] text-black',
+                                                    hasEmailCustomization && titleFontCategory === 'serif' && 'font-serif',
+                                                    titleFontWeight === 'normal' && 'font-normal',
+                                                    titleFontWeight === 'medium' && 'font-medium',
+                                                    titleFontWeight === 'semibold' && 'font-semibold',
+                                                    titleFontWeight === 'bold' && 'font-bold'
+                                                )}
+                                                style={{color: titleColor}}>The three latest posts published on your site</h4>
                                             <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Posts sent as an email only will never be shown here.</p>
                                         </div>
-                                        <div className="aspect-square h-auto w-full max-w-[100px] bg-grey-200 bg-cover bg-no-repeat">
-                                            <img alt="Latest post" src={LatestPosts1} />
+                                        <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
+                                            <img alt="Latest post" className={clsx(
+                                                imageCorners === 'square' && 'rounded-none',
+                                                imageCorners === 'squircle' && 'rounded-lg'
+                                            )} src={LatestPosts1} />
                                         </div>
                                     </div>
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
-                                            <h4 className={clsx('mt-0.5 text-[1.9rem] text-black', hasEmailCustomization && titleFontCategory === 'serif' ? 'font-serif' : '', titleFontWeight === 'normal' ? 'font-normal' : 'font-bold')} style={{color: textColor}}>Displayed at the bottom of each newsletter</h4>
+                                            <h4
+                                                className={clsx(
+                                                    'mt-0.5 text-[1.9rem] text-black',
+                                                    hasEmailCustomization && titleFontCategory === 'serif' && 'font-serif',
+                                                    titleFontWeight === 'normal' && 'font-normal',
+                                                    titleFontWeight === 'medium' && 'font-medium',
+                                                    titleFontWeight === 'semibold' && 'font-semibold',
+                                                    titleFontWeight === 'bold' && 'font-bold'
+                                                )} style={{color: titleColor}}>Displayed at the bottom of each newsletter</h4>
                                             <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Giving your readers one more place to discover your stories.</p>
                                         </div>
-                                        <div className="aspect-square h-auto w-full max-w-[100px] bg-grey-200 bg-cover bg-no-repeat">
-                                            <img alt="Latest post" src={LatestPosts2} />
+                                        <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
+                                            <img alt="Latest post" className={clsx(
+                                                imageCorners === 'square' && 'rounded-none',
+                                                imageCorners === 'squircle' && 'rounded-lg'
+                                            )} src={LatestPosts2} />
                                         </div>
                                     </div>
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
-                                            <h4 className={clsx('mt-0.5 text-[1.9rem] text-black', hasEmailCustomization && titleFontCategory === 'serif' ? 'font-serif' : '', titleFontWeight === 'normal' ? 'font-normal' : 'font-bold')} style={{color: textColor}}>To keep your work front and center</h4>
+                                            <h4
+                                                className={clsx(
+                                                    'mt-0.5 text-[1.9rem] text-black',
+                                                    hasEmailCustomization && titleFontCategory === 'serif' && 'font-serif',
+                                                    titleFontWeight === 'normal' && 'font-normal',
+                                                    titleFontWeight === 'medium' && 'font-medium',
+                                                    titleFontWeight === 'semibold' && 'font-semibold',
+                                                    titleFontWeight === 'bold' && 'font-bold'
+                                                )} style={{color: titleColor}}>To keep your work front and center</h4>
                                             <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Making sure that your audience stays engaged.</p>
                                         </div>
-                                        <div className="aspect-square h-auto w-full max-w-[100px] bg-grey-200 bg-cover bg-no-repeat">
-                                            <img alt="Latest post" src={LatestPosts3} />
+                                        <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
+                                            <img alt="Latest post" className={clsx(
+                                                imageCorners === 'square' && 'rounded-none',
+                                                imageCorners === 'squircle' && 'rounded-lg'
+                                            )} src={LatestPosts3} />
                                         </div>
                                     </div>
                                 </div>
@@ -342,7 +440,7 @@ const NewsletterPreviewContent: React.FC<{
                             {/* Subscription details */}
                             {showSubscriptionDetails && (
                                 <div className={clsx('border-b border-grey-200 py-8', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-dotted')} style={{borderColor: dividerColor}}>
-                                    <h4 className="mb-3 text-[1.2rem] uppercase tracking-wide text-black" style={{color: textColor}}>Subscription details</h4>
+                                    <h4 className="mb-3 text-[1.2rem] uppercase tracking-wide text-black" style={{color: titleColor}}>Subscription details</h4>
                                     <p className="m-0 mb-4 text-base" style={{color: textColor}}>You are receiving this because you are a paid subscriber to {siteTitle}. Your subscription will renew on 17 Jul 2024.</p>
                                     <div className="flex">
                                         <div className="shrink-0 text-base">

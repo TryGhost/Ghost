@@ -1,15 +1,17 @@
 const logging = require('@tryghost/logging');
 const DomainEvents = require('@tryghost/domain-events');
-const {TierCreatedEvent, TierPriceChangeEvent, TierNameChangeEvent} = require('@tryghost/tiers');
-const OfferCreatedEvent = require('@tryghost/members-offers').events.OfferCreatedEvent;
+const TierCreatedEvent = require('../../../../../../core/server/services/tiers/TierCreatedEvent');
+const TierPriceChangeEvent = require('../../../../../../core/server/services/tiers/TierPriceChangeEvent');
+const TierNameChangeEvent = require('../../../../../../core/server/services/tiers/TierNameChangeEvent');
+const OfferCreatedEvent = require('../../../../../../core/server/services/offers/domain/events/OfferCreatedEvent');
 const {BadRequestError} = require('@tryghost/errors');
 
 class PaymentsService {
     /**
      * @param {object} deps
      * @param {import('bookshelf').Model} deps.Offer
-     * @param {import('@tryghost/members-offers/lib/application/OffersAPI')} deps.offersAPI
-     * @param {import('@tryghost/members-stripe-service/lib/StripeAPI')} deps.stripeAPIService
+     * @param {import('../../../offers/application/OffersAPI')} deps.offersAPI
+     * @param {import('../../../stripe/StripeAPI')} deps.stripeAPIService
      * @param {{get(key: string): any}} deps.settingsCache
      */
     constructor(deps) {
@@ -55,7 +57,7 @@ class PaymentsService {
 
     /**
      * @param {object} params
-     * @param {Tier} params.tier
+     * @param {import('../../../tiers/Tier')} params.tier
      * @param {Tier.Cadence} params.cadence
      * @param {Offer} [params.offer]
      * @param {Member} [params.member]
@@ -127,7 +129,7 @@ class PaymentsService {
         if (member && isAuthenticated) {
             customer = await this.getCustomerForMember(member);
         }
-        
+
         const data = {
             priceId: (await this.getPriceForDonations()).id,
             metadata,
@@ -135,7 +137,7 @@ class PaymentsService {
             cancelUrl: cancelUrl,
             customer,
             customerEmail: !customer && email ? email : null,
-            personalNote: personalNote 
+            personalNote: personalNote
 
         };
 
@@ -181,7 +183,7 @@ class PaymentsService {
     }
 
     /**
-     * @param {import('@tryghost/tiers').Tier} tier
+     * @param {import('../../../tiers/Tier')} tier
      * @returns {Promise<{id: string}>}
      */
     async getProductForTier(tier) {
@@ -209,7 +211,7 @@ class PaymentsService {
     }
 
     /**
-     * @param {import('@tryghost/tiers').Tier} tier
+     * @param {import('../../../tiers/Tier')} tier
      * @returns {Promise<import('stripe').default.Product>}
      */
     async createProductForTier(tier) {
@@ -222,7 +224,7 @@ class PaymentsService {
     }
 
     /**
-     * @param {import('@tryghost/tiers').Tier} tier
+     * @param {import('../../../tiers/Tier')} tier
      * @returns {Promise<void>}
      */
     async updateNameForTierProducts(tier) {
@@ -396,7 +398,7 @@ class PaymentsService {
     }
 
     /**
-     * @param {import('@tryghost/tiers').Tier} tier
+     * @param {import('../../../tiers/Tier')} tier
      * @param {'month'|'year'} cadence
      * @returns {Promise<{id: string}>}
      */
@@ -440,7 +442,7 @@ class PaymentsService {
     }
 
     /**
-     * @param {import('@tryghost/tiers').Tier} tier
+     * @param {import('../../../tiers/Tier')} tier
      * @param {'month'|'year'} cadence
      * @returns {Promise<import('stripe').default.Price>}
      */

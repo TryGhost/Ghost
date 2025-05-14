@@ -37,7 +37,7 @@ const PaidAccountActions = () => {
         const compExpiry = getCompExpiry({member});
         if (isComplimentary) {
             if (compExpiry) {
-                label = `${t('Complimentary')} - ${t('Expires {{expiryDate}}', {expiryDate: compExpiry})}`;
+                label = `${t('Complimentary')} - ${t('Expires {expiryDate}', {expiryDate: compExpiry})}`;
             } else {
                 label = label ? `${t('Complimentary')} (${label})` : t(`Complimentary`);
             }
@@ -177,7 +177,7 @@ function FreeTrialLabel({subscription, t}) {
         return (
             <p className="gh-portal-account-discountcontainer">
                 <div>
-                    <span>{t('Free Trial – Ends {{trialEnd}}', {trialEnd})}</span>
+                    <span>{t('Free Trial – Ends trialEnd}', {trialEnd})}</span>
                     {/* <span>{getSubFreeTrialDaysLeft({sub: subscription})} days left</span> */}
                 </div>
             </p>
@@ -210,7 +210,7 @@ function getOfferLabel({offer, price, subscriptionStartDate, t}) {
             if (isInThePast(offerEndDate)) {
                 return '';
             }
-            durationLabel = t('Ends {{offerEndDate}}', {offerEndDate: getDateString(offerEndDate)});
+            durationLabel = t('Ends offerEndDate}', {offerEndDate: getDateString(offerEndDate)});
         }
         offerLabel = `${getUpdatedOfferPrice({offer, price, useFormatted: true})}/${price.interval}${durationLabel ? ` — ${durationLabel}` : ``}`;
     }

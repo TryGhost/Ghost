@@ -19,6 +19,7 @@ import HistoryModal from '../../settings/advanced/HistoryModal';
 import InviteUserModal from '../../settings/general/InviteUserModal';
 import NavigationModal from '../../settings/site/NavigationModal';
 import NewsletterDetailModal from '../../settings/email/newsletters/NewsletterDetailModal';
+import NewsletterDetailModalAlpha from '../../settings/email/newsletters/NewsletterDetailModalAlpha';
 import NewsletterDetailModalLabs from '../../settings/email/newsletters/NewsletterDetailModalLabs';
 import OfferSuccess from '../../settings/growth/offers/OfferSuccess';
 // import OffersModal from '../../settings/growth/offers/OffersIndex';
@@ -34,10 +35,13 @@ import ZapierModal from '../../settings/advanced/integrations/ZapierModal';
 
 // Wrapper component to conditionally render based on feature flag
 const ConditionalNewsletterDetailModal: ModalComponent = (props) => {
-    const hasEmailCustomization = useFeatureFlag('emailCustomization');
+    const showPrototypeSettings = useFeatureFlag('emailCustomization');
+    const showAlphaSettings = useFeatureFlag('emailCustomizationAlpha');
 
-    if (hasEmailCustomization) {
+    if (showPrototypeSettings) {
         return <NewsletterDetailModalLabs {...props} />;
+    } else if (showAlphaSettings) {
+        return <NewsletterDetailModalAlpha {...props} />;
     } else {
         return <NewsletterDetailModal {...props} />;
     }

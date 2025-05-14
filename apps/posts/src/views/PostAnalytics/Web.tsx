@@ -63,7 +63,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
                 {isLoading ? 'Loading' :
                     <>
                         <Kpis queryParams={params} />
-                        <div className='grid grid-cols-2 gap-8'>
+                        <div className='grid grid-cols-2 gap-6'>
                             <Sources queryParams={params} />
                             <Locations queryParams={params} />
                         </div>

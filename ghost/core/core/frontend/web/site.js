@@ -6,7 +6,6 @@ const {MemberPageViewEvent} = require('../../shared/events');
 
 // App requires
 const config = require('../../shared/config');
-const constants = require('@tryghost/constants');
 const storage = require('../../server/adapters/storage');
 const urlUtils = require('../../shared/url-utils');
 const sitemapHandler = require('../services/sitemap/handler');
@@ -23,8 +22,8 @@ const errorHandler = require('@tryghost/mw-error-handler');
 const mw = require('./middleware');
 
 const STATIC_IMAGE_URL_PREFIX = `/${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
-const STATIC_MEDIA_URL_PREFIX = `/${constants.STATIC_MEDIA_URL_PREFIX}`;
-const STATIC_FILES_URL_PREFIX = `/${constants.STATIC_FILES_URL_PREFIX}`;
+const STATIC_MEDIA_URL_PREFIX = `/${config.getStaticUrlPrefix('media')}`;
+const STATIC_FILES_URL_PREFIX = `/${config.getStaticUrlPrefix('files')}`;
 
 let router;
 

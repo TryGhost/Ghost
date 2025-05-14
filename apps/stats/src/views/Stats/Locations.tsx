@@ -1,16 +1,17 @@
 import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import DateRangeSelect from './components/DateRangeSelect';
 import React, {useState} from 'react';
+import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, H1, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, cn, formatNumber, formatQueryDate} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn, formatNumber, formatQueryDate} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {getCountryFlag, getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
-import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
+import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -158,16 +159,17 @@ const Locations:React.FC = () => {
 
     return (
         <StatsLayout>
-            <ViewHeader>
-                <H1>Locations</H1>
-                <ViewHeaderActions>
-                    <AudienceSelect />
-                    <DateRangeSelect />
-                </ViewHeaderActions>
-            </ViewHeader>
+            <StatsHeader>
+                <AudienceSelect />
+                <DateRangeSelect />
+            </StatsHeader>
             <StatsView data={data} isLoading={isLoading}>
-                <Card variant='plain'>
-                    <CardContent className='border-none pt-8'>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Top Locations</CardTitle>
+                        <CardDescription>A geographic breakdown of your readers {getPeriodText(range)}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
                         <div className='svg-map-container relative mx-auto max-w-[680px] [&_.svg-map]:stroke-background'>
                             <SVGMap
                                 locationClassName={getLocationClassName}
@@ -195,17 +197,8 @@ const Locations:React.FC = () => {
                                 </div>
                             )}
                         </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Top Locations</CardTitle>
-                        <CardDescription>A geographic breakdown of your readers {getPeriodText(range)}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
                         {isLoading ? 'Loading' :
-                            <>
-                                <Separator />
+                            <div className='mt-6'>
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
@@ -227,7 +220,7 @@ const Locations:React.FC = () => {
                                         })}
                                     </TableBody>
                                 </Table>
-                            </>
+                            </div>
                         }
                     </CardContent>
                 </Card>

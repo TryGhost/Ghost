@@ -35,7 +35,7 @@ export const TipsAndDonationsSuccessStyle = `
 const SupportSuccess = () => {
     const {onAction, brandColor, site, t} = useContext(AppContext);
     const successTitle = t('Thank you for your support');
-    const successDescription = t('To continue to stay up to date, subscribe to {{publication}} below.', {publication: site?.title});
+    const successDescription = t('To continue to stay up to date, subscribe to {publication} below.', {publication: site?.title});
     const buttonLabel = t('Sign up');
 
     return (

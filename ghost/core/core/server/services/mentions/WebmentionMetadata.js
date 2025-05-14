@@ -30,7 +30,7 @@ module.exports = class WebmentionMetadata {
 
     /**
      * @param {URL} url
-     * @returns {Promise<import('@tryghost/webmentions/lib/MentionsAPI').WebmentionMetadata>}
+     * @returns {Promise<import('./MentionsAPI').WebmentionMetadata>}
      */
     async fetch(url) {
         const mappedUrl = this.#getMappedUrl(url);

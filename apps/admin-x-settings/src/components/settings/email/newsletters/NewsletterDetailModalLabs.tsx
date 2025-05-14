@@ -94,6 +94,8 @@ const Sidebar: React.FC<{
 
     const fontWeightOptions: SelectOption[] = [
         {value: 'normal', label: 'Normal'},
+        {value: 'medium', label: 'Medium'},
+        {value: 'semibold', label: 'Semi-bold'},
         {value: 'bold', label: 'Bold'}
     ];
 
@@ -421,6 +423,19 @@ const Sidebar: React.FC<{
                         direction='rtl'
                         swatches={[
                             {
+                                value: 'transparent',
+                                title: 'Transparent',
+                                hex: '#00000000'
+                            }
+                        ]}
+                        title='Header background color'
+                        value={newsletter.header_color || 'transparent'}
+                        onChange={color => updateNewsletter({header_color: color!})}
+                    />
+                    <ColorPickerField
+                        direction='rtl'
+                        swatches={[
+                            {
                                 value: null,
                                 title: 'Auto',
                                 hex: backgroundColorIsDark() ? '#ffffff' : '#000000'
@@ -570,7 +585,7 @@ const Sidebar: React.FC<{
                     </div>
                     <div className='flex w-full justify-between'>
                         <div>Button corners</div>
-                        <ButtonGroup activeKey={newsletter.button_corners || 'squircle'} buttons={[
+                        <ButtonGroup activeKey={newsletter.button_corners || 'rounded'} buttons={[
                             {
                                 key: 'square',
                                 icon: 'square',
@@ -582,24 +597,49 @@ const Sidebar: React.FC<{
                                 onClick: () => updateNewsletter({button_corners: 'square'})
                             },
                             {
-                                key: 'squircle',
-                                icon: 'squircle',
-                                label: 'Squircle',
-                                tooltip: 'Slightly rounded',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({button_corners: 'squircle'})
-                            },
-                            {
                                 key: 'rounded',
-                                icon: 'circle',
+                                icon: 'squircle',
                                 label: 'Rounded',
-                                tooltip: 'Fully rounded',
+                                tooltip: 'Rounded',
                                 hideLabel: true,
                                 link: false,
                                 size: 'sm',
                                 onClick: () => updateNewsletter({button_corners: 'rounded'})
+                            },
+                            {
+                                key: 'pill',
+                                icon: 'circle',
+                                label: 'Pill',
+                                tooltip: 'Pill',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({button_corners: 'pill'})
+                            }
+                        ]} clearBg={false} />
+                    </div>
+                    <div className='flex w-full justify-between'>
+                        <div>Image corners</div>
+                        <ButtonGroup activeKey={newsletter.image_corners || 'square'} buttons={[
+                            {
+                                key: 'square',
+                                icon: 'square',
+                                label: 'Square',
+                                tooltip: 'Squared',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({image_corners: 'square'})
+                            },
+                            {
+                                key: 'squircle',
+                                icon: 'squircle',
+                                label: 'Squircle',
+                                tooltip: 'Rounded',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({image_corners: 'squircle'})
                             }
                         ]} clearBg={false} />
                     </div>

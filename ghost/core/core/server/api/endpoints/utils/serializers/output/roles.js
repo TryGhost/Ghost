@@ -2,7 +2,7 @@ const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output
 const canThis = require('../../../../../services/permissions').canThis;
 
 module.exports = {
-    browse(models, apiConfig, frame) {
+    async browse(models, apiConfig, frame) {
         debug('browse');
 
         const roles = models.toJSON(frame.options);
@@ -12,7 +12,7 @@ module.exports = {
                 roles: roles
             };
         } else {
-            return Promise.all(
+            const results = await Promise.all(
                 roles.map(async (role) => {
                     let permissionResult;
                     try {
@@ -21,14 +21,13 @@ module.exports = {
                     } catch (err) {
                         permissionResult = {};
                     }
-                    return permissionResult && permissionResult.name && (permissionResult.name !== 'Owner');   
-                }))
-                .then(results => roles.filter((_v, index) => results[index]))   
-                .then((filteredRoles) => {
-                    return frame.response = {
-                        roles: filteredRoles
-                    };
-                });
+                    return permissionResult && permissionResult.name && (permissionResult.name !== 'Owner');
+                })
+            );
+            const filteredRoles = roles.filter((_v, index) => results[index]);
+            return frame.response = {
+                roles: filteredRoles
+            };
         }
     }
 };

@@ -1,5 +1,4 @@
-import {useContext, useEffect, useState} from 'react';
-import AppContext from '../../AppContext';
+import {useEffect, useRef, useState} from 'react';
 
 export const SwitchStyles = `
     .gh-portal-for-switch label,
@@ -80,16 +79,24 @@ export const SwitchStyles = `
 `;
 
 function Switch({id, label = '', onToggle, checked = false, dataTestId = 'switch-input'}) {
-    const {action} = useContext(AppContext);
     const [isChecked, setIsChecked] = useState(checked);
-    const isActionChanged = ['updateNewsletter:failed', 'updateNewsletter:success'].includes(action);
+
     useEffect(() => {
         setIsChecked(checked);
-    }, [checked, isActionChanged]);
+    }, [checked]);
+    
+    const inputRef = useRef(null);
+    useEffect(() => {
+        if (inputRef.current && inputRef.current.checked !== isChecked) {
+            inputRef.current.checked = isChecked;
+        }
+    }, [isChecked, id]);
+
     return (
         <div className="gh-portal-for-switch" data-test-switch={dataTestId}>
             <label className="switch" htmlFor={id}>
                 <input
+                    ref={inputRef}
                     type="checkbox"
                     checked={isChecked}
                     id={id}

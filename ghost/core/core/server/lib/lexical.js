@@ -74,7 +74,9 @@ module.exports = {
                     && typeof storage.getStorage('images').saveRaw === 'function';
             },
             feature: {
-                contentVisibility: labs.isSet('contentVisibility')
+                contentVisibility: labs.isSet('contentVisibility'),
+                emailCustomization: labs.isSet('emailCustomization'),
+                emailCustomizationAlpha: labs.isSet('emailCustomizationAlpha')
             }
         }, userOptions);
 

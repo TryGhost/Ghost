@@ -5,6 +5,7 @@ import React, {useEffect, useRef} from 'react';
 import getName from '@src/utils/get-name';
 import getUsername from '@src/utils/get-username';
 import {Actor} from '@src/api/activitypub';
+import {Button} from '@tryghost/shade';
 import {List, LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
 import {handleProfileClickRR} from '@src/utils/handle-profile-click';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -62,7 +63,7 @@ const ActorList: React.FC<ActorListProps> = ({
                     </NoValueLabel>
                 ) : (
                     <List>
-                        {actors.map(({actor, isFollowing}) => {
+                        {actors.map(({actor, isFollowing, blockedByMe, domainBlockedByMe}) => {
                             return (
                                 <React.Fragment key={actor.id}>
                                     <ActivityItem key={actor.id}
@@ -77,12 +78,15 @@ const ActorList: React.FC<ActorListProps> = ({
                                                 <div className='line-clamp-1 text-sm'>{actor.handle || getUsername(actor)}</div>
                                             </div>
                                         </div>
-                                        <FollowButton
-                                            className='ml-auto'
-                                            following={isFollowing}
-                                            handle={actor.handle || getUsername(actor)}
-                                            type='secondary'
-                                        />
+                                        {blockedByMe || domainBlockedByMe ?
+                                            <Button className='pointer-events-none ml-auto min-w-[90px]' variant='destructive'>Blocked</Button> :
+                                            <FollowButton
+                                                className='ml-auto'
+                                                following={isFollowing}
+                                                handle={actor.handle || getUsername(actor)}
+                                                type='secondary'
+                                            />
+                                        }
                                     </ActivityItem>
                                 </React.Fragment>
                             );

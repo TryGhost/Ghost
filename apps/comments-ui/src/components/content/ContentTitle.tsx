@@ -19,7 +19,7 @@ const Count: React.FC<CountProps> = ({showCount, count}) => {
     }
 
     return (
-        <div className="text-md text-neutral-900/50 sm:text-lg dark:text-white/50" data-testid="count">{t('{{amount}} comments', {amount: formatNumber(count)})}</div>
+        <div className="text-md text-neutral-900/50 sm:text-lg dark:text-white/50" data-testid="count">{t('{amount} comments', {amount: formatNumber(count)})}</div>
     );
 };
 

@@ -86,7 +86,7 @@ type TableHeadButtonProps = React.ComponentProps<typeof Button>;
 
 const TableHeadButton: React.FC<TableHeadButtonProps> = ({className, children, ...props}) => {
     const buttonClassName = cn(
-        'text-sm text-gray-700 hover:bg-transparent px-0 [&_svg]:size-4 gap-1',
+        'text-sm leading-4 text-right text-gray-700 hover:bg-transparent px-0 [&_svg]:size-4 gap-1',
         className
     );
     return (

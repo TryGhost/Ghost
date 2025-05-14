@@ -41,6 +41,7 @@ const SUPPORTED_LOCALES = [
     'ne', // Nepali
     'nl', // Dutch
     'nn', // Norwegian Nynorsk
+    'pa', // Punjabi (Gurmukhi, India)
     'pl', // Polish
     'pt', // Portuguese
     'pt-BR', // Portuguese (Brazil)
@@ -93,18 +94,10 @@ function generateResources(locales, ns) {
  */
 module.exports = (lng = 'en', ns = 'portal', options = {}) => {
     const i18nextInstance = i18next.createInstance();
-    let interpolation = {
-        prefix: '{{',
-        suffix: '}}'
+    const interpolation = {
+        prefix: '{',
+        suffix: '}'
     };
-
-    // Set single curly braces for theme and newsletter namespaces
-    if (ns === 'theme' || ns === 'newsletter') {
-        interpolation = {
-            prefix: '{',
-            suffix: '}'
-        };
-    }
 
     // Only disable HTML escaping for theme namespace
     if (ns === 'theme') {

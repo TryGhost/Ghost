@@ -22,6 +22,7 @@ export default class extends Component {
     @tracked showMemberTierModal = false;
     @tracked tiersList;
     @tracked newslettersList;
+    @tracked loadingSubscriptionId = null;
 
     get isAddComplimentaryAllowed() {
         if (!this.membersUtils.paidMembersEnabled) {
@@ -144,68 +145,83 @@ export default class extends Component {
 
     @action
     cancelSubscription(subscriptionId) {
+        this.loadingSubscriptionId = subscriptionId;
         this.cancelSubscriptionTask.perform(subscriptionId);
     }
 
     @action
     removeComplimentary(tierId) {
+        this.loadingSubscriptionId = `complimentary-${tierId}`;
         this.removeComplimentaryTask.perform(tierId);
     }
 
     @action
     continueSubscription(subscriptionId) {
+        this.loadingSubscriptionId = subscriptionId;
         this.continueSubscriptionTask.perform(subscriptionId);
     }
 
     @task({drop: true})
     *cancelSubscriptionTask(subscriptionId) {
-        let url = this.ghostPaths.url.api('members', this.member.get('id'), 'subscriptions', subscriptionId);
+        try {
+            let url = this.ghostPaths.url.api('members', this.member.get('id'), 'subscriptions', subscriptionId);
 
-        let response = yield this.ajax.put(url, {
-            data: {
-                cancel_at_period_end: true
-            }
-        });
+            let response = yield this.ajax.put(url, {
+                data: {
+                    cancel_at_period_end: true
+                }
+            });
 
-        this.store.pushPayload('member', response);
-        return response;
+            this.store.pushPayload('member', response);
+            return response;
+        } finally {
+            this.loadingSubscriptionId = null;
+        }
     }
 
     @task({drop: true})
     *removeComplimentaryTask(tierId) {
-        let url = this.ghostPaths.url.api(`members/${this.member.get('id')}`);
-        let tiers = this.member.get('tiers') || [];
+        try {
+            let url = this.ghostPaths.url.api(`members/${this.member.get('id')}`);
+            let tiers = this.member.get('tiers') || [];
 
-        const updatedTiers = tiers
-            .filter(tier => tier.id !== tierId)
-            .map(tier => ({id: tier.id}));
+            const updatedTiers = tiers
+                .filter(tier => tier.id !== tierId)
+                .map(tier => ({id: tier.id}));
 
-        let response = yield this.ajax.put(url, {
-            data: {
-                members: [{
-                    id: this.member.get('id'),
-                    email: this.member.get('email'),
-                    tiers: updatedTiers
-                }]
-            }
-        });
+            let response = yield this.ajax.put(url, {
+                data: {
+                    members: [{
+                        id: this.member.get('id'),
+                        email: this.member.get('email'),
+                        tiers: updatedTiers
+                    }]
+                }
+            });
 
-        this.store.pushPayload('member', response);
-        return response;
+            this.store.pushPayload('member', response);
+            return response;
+        } finally {
+            this.loadingSubscriptionId = null;
+        }
     }
 
     @task({drop: true})
     *continueSubscriptionTask(subscriptionId) {
-        let url = this.ghostPaths.url.api('members', this.member.get('id'), 'subscriptions', subscriptionId);
+        try {
+            let url = this.ghostPaths.url.api('members', this.member.get('id'), 'subscriptions', subscriptionId);
 
-        let response = yield this.ajax.put(url, {
-            data: {
-                cancel_at_period_end: false
-            }
-        });
+            let response = yield this.ajax.put(url, {
+                data: {
+                    cancel_at_period_end: false
+                }
+            });
 
-        this.store.pushPayload('member', response);
-        return response;
+            this.store.pushPayload('member', response);
+            return response;
+        } finally {
+            this.loadingSubscriptionId = null;
+        }
     }
 
     @task({drop: true})

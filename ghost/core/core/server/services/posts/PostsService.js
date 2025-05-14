@@ -5,14 +5,6 @@ const errors = require('@tryghost/errors');
 const ObjectId = require('bson-objectid').default;
 const pick = require('lodash/pick');
 const DomainEvents = require('@tryghost/domain-events');
-const {
-    PostsBulkDestroyedEvent,
-    PostsBulkUnpublishedEvent,
-    PostsBulkUnscheduledEvent,
-    PostsBulkFeaturedEvent,
-    PostsBulkUnfeaturedEvent,
-    PostsBulkAddTagsEvent
-} = require('@tryghost/post-events');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
@@ -140,6 +132,14 @@ class PostsService {
     }
 
     async bulkEdit(data, options) {
+        const {
+            PostsBulkAddTagsEvent,
+            PostsBulkUnpublishedEvent,
+            PostsBulkFeaturedEvent,
+            PostsBulkUnfeaturedEvent,
+            PostsBulkUnscheduledEvent
+        } = require('../../../shared/events-ts');
+
         if (data.action === 'unpublish') {
             const updateResult = await this.#updatePosts({status: 'draft'}, {filter: this.#mergeFilters('status:published', options.filter), context: options.context, actionName: 'unpublished'});
             DomainEvents.dispatch(PostsBulkUnpublishedEvent.create(updateResult.editIds));
@@ -352,6 +352,7 @@ class PostsService {
 
     async bulkDestroy(options) {
         const result = await this.#bulkDestroy(options);
+        const {PostsBulkDestroyedEvent} = require('../../../shared/events-ts');
         DomainEvents.dispatch(PostsBulkDestroyedEvent.create(result.deleteIds));
 
         return result;

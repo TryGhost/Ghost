@@ -100,7 +100,7 @@ function ShowPaidMemberMessage({site, isPaid}) {
 
     if (isPaid) {
         return (
-            <p style={{textAlign: 'center', marginTop: '12px', marginBottom: '0', color: 'var(--grey6)'}}>{t('Unsubscribing from emails will not cancel your paid subscription to {{title}}', {title: site?.title})}</p>
+            <p style={{textAlign: 'center', marginTop: '12px', marginBottom: '0', color: 'var(--grey6)'}}>{t('Unsubscribing from emails will not cancel your paid subscription to {title}', {title: site?.title})}</p>
         );
     }
     return null;
@@ -166,8 +166,8 @@ export default function NewsletterManagement({
             </div>
             <footer className={'gh-portal-action-footer' + (hasMemberGotEmailSuppression({member}) ? ' gh-feature-suppressions' : '')}>
                 <div style={{width: '100%'}}>
-                    <ShowPaidMemberMessage 
-                        isPaid={isPaidMember} 
+                    <ShowPaidMemberMessage
+                        isPaid={isPaidMember}
                         site={site}
                         subscribedNewsletters={subscribedNewsletters}
                     />

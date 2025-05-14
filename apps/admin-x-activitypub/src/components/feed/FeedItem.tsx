@@ -105,7 +105,7 @@ export function renderFeedAttachment(
                 : 'cursor-pointer mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10';
 
             let imageUrl;
-            if (object.image === undefined) {
+            if (!object.image) {
                 imageUrl = attachment.url;
             } else if (typeof object.image === 'string') {
                 imageUrl = object.image;

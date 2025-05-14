@@ -1,16 +1,14 @@
 import Pagination from './Pagination';
+import i18nLib from '@tryghost/i18n';
 import {AppContext} from '../../AppContext';
 import {render, screen} from '@testing-library/react';
 
+const i18n = i18nLib('en', 'comments');
+
 const contextualRender = (ui, {appContext, ...renderOptions}) => {
     const contextWithDefaults = {
-        t: (str, replacements) => {
-            if (replacements) {
-                return str.replace(/{{([^{}]*)}}/g, (_, key) => replacements[key]);
-            }
-            return str;
-        },
-        ...appContext
+        ...appContext,
+        t: i18n.t
     };
 
     return render(

@@ -19,6 +19,7 @@
         "dev": "vite build --watch",
         "dev:start": "vite",
         "test": "vitest run",
+        "test:unit": "vitest run test/unit",
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",
         "build": "tsc && vite build",
@@ -40,7 +41,8 @@
         "moment-timezone": "^0.5.48",
         "react": "18.3.1",
         "react-dom": "18.3.1",
-        "react-svg-map": "2.2.0"
+        "react-svg-map": "2.2.0",
+        "vite": "4.5.14"
     },
     "nx": {
         "targets": {
@@ -62,7 +64,7 @@
         }
     },
     "dependencies": {
-        "@radix-ui/react-form": "0.1.4",
+        "@radix-ui/react-form": "0.1.6",
         "@svg-maps/world": "1.0.1",
         "@tryghost/admin-x-framework": "0.0.0",
         "@tryghost/shade": "0.0.0",

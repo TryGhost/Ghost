@@ -70,8 +70,9 @@ class ExternalMediaInliner {
 
     /**
      *
+     * @param {string} requestURL - url of remote media
      * @param {Object} response - response from request
-     * @returns {Object}
+     * @returns {Promise<Object>}
      */
     async extractFileDataFromResponse(requestURL, response) {
         let extension;

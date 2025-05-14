@@ -1,6 +1,6 @@
 class EmailAddressServiceWrapper {
     /**
-     * @type {import('@tryghost/email-addresses').EmailAddressService}
+     * @type {import('./EmailAddressService').EmailAddressService}
      */
     service;
 
@@ -14,9 +14,7 @@ class EmailAddressServiceWrapper {
         const settingsHelpers = require('../settings-helpers');
         const validator = require('@tryghost/validator');
 
-        const {
-            EmailAddressService
-        } = require('@tryghost/email-addresses');
+        const {EmailAddressService} = require('./EmailAddressService');
 
         this.service = new EmailAddressService({
             labs,

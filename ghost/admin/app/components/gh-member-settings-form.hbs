@@ -65,7 +65,7 @@
                             data-test-input="member-note"
                         />
                         <GhErrorMessage @errors={{this.member.errors}} @property="note" />
-                        <p> Maximum: <b>500</b> characters. You’ve used
+                        <p> Maximum: <b>500</b> characters. You've used
                             {{gh-count-down-characters this.scratchMember.note 500}}</p>
                     </GhFormGroup>
                 </div>
@@ -168,6 +168,7 @@
                                                     <li>
                                                         <button
                                                             type="button"
+                                                            class="{{if (eq this.loadingSubscriptionId (concat 'complimentary-' (or tier.id tier.tier_id))) 'is-loading' ''}}"
                                                             {{on "click" (fn this.removeComplimentary (or tier.id tier.tier_id))}}
                                                             data-test-button="remove-complimentary"
                                                         >
@@ -199,11 +200,11 @@
                                                     <li>
                                                     {{#if (not-eq sub.status "canceled")}}
                                                         {{#if sub.cancel_at_period_end}}
-                                                            <button type="button" {{on "click" (fn this.continueSubscription sub.id)}}>
+                                                            <button type="button" class="{{if (eq this.loadingSubscriptionId sub.id) 'is-loading' ''}}" {{on "click" (fn this.continueSubscription sub.id)}}>
                                                                 <span>Continue subscription</span>
                                                             </button>
                                                         {{else}}
-                                                            <button type="button" {{on "click" (fn this.cancelSubscription sub.id)}}>
+                                                            <button type="button" class="{{if (eq this.loadingSubscriptionId sub.id) 'is-loading' ''}}" {{on "click" (fn this.cancelSubscription sub.id)}}>
                                                                 <span class="red">Cancel subscription</span>
                                                             </button>
                                                         {{/if}}
@@ -241,7 +242,12 @@
                                                 </GhDropdownButton>
                                                 <GhDropdown @name="subscription-menu-complimentary" @tagName="ul" @classNames="tier-actions-menu dropdown-menu dropdown-align-right">
                                                     <li>
-                                                        <button type="button" {{on "click" (fn this.removeComplimentary tier.id)}}>
+                                                        <button
+                                                            type="button"
+                                                            class="{{if (eq this.loadingSubscriptionId (concat 'complimentary-' (or tier.id tier.tier_id))) 'is-loading' ''}}"
+                                                            {{on "click" (fn this.removeComplimentary (or tier.id tier.tier_id))}}
+                                                            data-test-button="remove-complimentary"
+                                                        >
                                                             <span class="red">Remove complimentary subscription</span>
                                                         </button>
                                                     </li>

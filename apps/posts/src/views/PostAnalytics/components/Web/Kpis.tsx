@@ -1,10 +1,9 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import EmptyStatView from '../EmptyStatView';
 import React, {useState} from 'react';
-import {Card, CardContent, ChartConfig, ChartContainer, ChartTooltip, Recharts, Tabs, TabsList, formatDisplayDate, formatDuration, formatNumber, formatPercentage} from '@tryghost/shade';
-import {KpiTabTrigger, KpiTabValue} from '../KpiTab';
+import {Card, CardContent, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsList, formatDisplayDate, formatDuration, formatNumber, formatPercentage} from '@tryghost/shade';
 import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
-import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
+import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -108,8 +107,8 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
                     {(data && data.length !== 0 && kpiValues.visits !== '0') ?
                         <Card>
                             <CardContent>
-                                <Tabs defaultValue="visits" variant='underline'>
-                                    <TabsList className="grid grid-cols-4 gap-5">
+                                <Tabs defaultValue="visits" variant='kpis'>
+                                    <TabsList className="-mx-6 grid grid-cols-2">
                                         <KpiTabTrigger value="visits" onClick={() => {
                                             setCurrentTab('visits');
                                         }}>
@@ -180,7 +179,7 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
                             </CardContent>
                         </Card>
                         :
-                        <div className='mt-10'>
+                        <div className='mt-10 grow'>
                             <EmptyStatView />
                         </div>
                     }

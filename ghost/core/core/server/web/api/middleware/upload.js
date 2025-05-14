@@ -164,7 +164,7 @@ const checkFileIsValid = (fileData, types, extensions) => {
 /**
  *
  * @param {String} filepath
- * @returns {String | null}
+ * @returns {Promise<String | null>}
  *
  * Reads the SVG file, sanitizes it, and writes the sanitized content back to the file.
  * Returns the sanitized content or null if the SVG could not be sanitized.
@@ -216,7 +216,7 @@ const sanitizeSvgContent = (content) => {
  *
  * @param {String} filepath
  * @param {Boolean} isZipped
- * @returns {String | null}
+ * @returns {Promise<String | null>}
  *
  * Reads .svg or .svgz files and returns the content as a string.
  *

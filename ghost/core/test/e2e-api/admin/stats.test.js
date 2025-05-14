@@ -245,4 +245,33 @@ describe('Stats API', function () {
                 });
         });
     });
+
+    describe('Top Referrers for a post', function () {
+        it('Can fetch top referrers for a post', async function () {
+            await agent
+                .get(`/stats/posts/${fixtureManager.get('posts', 1).id}/top-referrers`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
+                    etag: anyEtag
+                })
+                .expect(({body}) => {
+                    assert.ok(body.stats, 'Response should contain a stats property');
+                    assert.ok(Array.isArray(body.stats), 'body.stats should be an array');
+                });
+        });
+    });
+
+    describe('Post Growth Stats', function () {
+        it('Can fetch post growth stats', async function () {
+            await agent
+                .get(`/stats/posts/${fixtureManager.get('posts', 1).id}/growth`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.ok(body.stats, 'Response should contain a stats property');
+                    assert.ok(Array.isArray(body.stats), 'body.stats should be an array');
+                });
+        });
+    });
 });

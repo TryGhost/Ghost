@@ -1,11 +1,13 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const constants = require('@tryghost/constants');
 const security = require('@tryghost/security');
+const moment = require('moment');
+
 const settingsCache = require('../../shared/settings-cache');
 const limitService = require('../services/limits');
 const ghostBookshelf = require('./base');
 const {setIsRoles} = require('./role-utils');
+
 const messages = {
     notEnoughPermission: 'You do not have permission to perform this action',
     roleNotFound: 'Role not found',
@@ -38,7 +40,7 @@ Invite = ghostBookshelf.Model.extend({
             data.status = 'pending';
         }
 
-        data.expires = Date.now() + constants.ONE_WEEK_MS;
+        data.expires = moment().add(1, 'week').valueOf();
         data.token = security.tokens.generateFromEmail({
             email: data.email,
             expires: data.expires,

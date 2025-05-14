@@ -23,12 +23,13 @@ export interface Account {
     followsMe: boolean;
     followedByMe: boolean;
     blockedByMe: boolean;
+    domainBlockedByMe: boolean;
     attachment: { name: string; value: string }[];
 }
 
 export type AccountSearchResult = Pick<
     Account,
-    'id' | 'name' | 'handle' | 'avatarUrl' | 'followedByMe' | 'followerCount'
+    'id' | 'name' | 'handle' | 'avatarUrl' | 'followedByMe' | 'followerCount' | 'blockedByMe' | 'domainBlockedByMe'
 >;
 
 export interface SearchResults {
@@ -66,7 +67,7 @@ export type AccountFollowsType = 'following' | 'followers';
 
 type GetAccountResponse = Account
 
-export type FollowAccount = Pick<Account, 'id' | 'name' | 'handle' | 'avatarUrl'> & {isFollowing: true};
+export type FollowAccount = Pick<Account, 'id' | 'name' | 'handle' | 'avatarUrl' | 'blockedByMe' | 'domainBlockedByMe'> & {isFollowing: true};
 
 export interface GetAccountFollowsResponse {
     accounts: FollowAccount[];
@@ -75,7 +76,7 @@ export interface GetAccountFollowsResponse {
 
 export interface Notification {
     id: string;
-    type: 'like' | 'reply' | 'repost' | 'follow';
+    type: 'like' | 'reply' | 'repost' | 'follow' | 'mention';
     actor: {
         id: string;
         name: string;
@@ -202,6 +203,24 @@ export class ActivityPubAPI {
         return json;
     }
 
+    async blockDomain(domain: URL): Promise<boolean> {
+        const url = new URL(
+            `.ghost/activitypub/actions/block/domain/${encodeURIComponent(domain.href)}`,
+            this.apiUrl
+        );
+        await this.fetchJSON(url, 'POST');
+        return true;
+    }
+
+    async unblockDomain(domain: URL): Promise<boolean> {
+        const url = new URL(
+            `.ghost/activitypub/actions/unblock/domain/${encodeURIComponent(domain.href)}`,
+            this.apiUrl
+        );
+        await this.fetchJSON(url, 'POST');
+        return true;
+    }
+
     async block(id: URL): Promise<boolean> {
         const url = new URL(
             `.ghost/activitypub/actions/block/${encodeURIComponent(id.href)}`,
@@ -258,10 +277,10 @@ export class ActivityPubAPI {
         return response;
     }
 
-    async note(content: string, imageUrl?: string): Promise<Activity> {
+    async note(content: string, imageUrl?: string): Promise<Post> {
         const url = new URL('.ghost/activitypub/actions/note', this.apiUrl);
         const response = await this.fetchJSON(url, 'POST', {content, imageUrl});
-        return response;
+        return (response as {post: Post}).post;
     }
 
     async delete(id: string): Promise<void> {

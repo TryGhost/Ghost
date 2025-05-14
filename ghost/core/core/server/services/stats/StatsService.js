@@ -64,6 +64,14 @@ class StatsService {
     }
 
     /**
+     * @param {string} postId
+     */
+    async getReferrersForPost(postId, options) {
+        const result = await this.posts.getReferrersForPost(postId, options);
+        return result;
+    }
+
+    /**
      * @param {Object} options
      */
     async getTopContent(options = {}) {
@@ -78,6 +86,41 @@ class StatsService {
     async getTopPosts(options = {}) {
         // Return the original { data: results } structure
         const result = await this.posts.getTopPosts(options);
+        return result;
+    }
+
+    /**
+     * @param {string} postId
+     */
+    async getGrowthStatsForPost(postId) {
+        return await this.posts.getGrowthStatsForPost(postId);
+    }
+
+    /**
+     * Get newsletter stats for sent posts
+     * @param {Object} options
+     * @param {string} [options.order='published_at desc'] - Order field and direction
+     * @param {number} [options.limit=20] - Max number of results to return
+     * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
+     * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
+     * @returns {Promise<{data: Object[]}>}
+     */
+    async getNewsletterStats(options = {}) {
+        // Return newsletter stats from posts with newsletter_id not null
+        const result = await this.posts.getNewsletterStats(options);
+        return result;
+    }
+
+    /**
+     * Get newsletter subscriber statistics including total count and daily deltas
+     * 
+     * @param {Object} options
+     * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
+     * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
+     * @returns {Promise<{data: Object}>}
+     */
+    async getNewsletterSubscriberStats(options = {}) {
+        const result = await this.posts.getNewsletterSubscriberStats(options);
         return result;
     }
 

@@ -31,8 +31,8 @@ describe('Labs Service', function () {
     it('returns an alpha flag when dev experiments in toggled', function () {
         configUtils.set('enableDeveloperExperiments', true);
         sinon.stub(process.env, 'NODE_ENV').value('production');
-        sinon.stub(settingsCache, 'get');
-        settingsCache.get.withArgs('labs').returns({
+        const getSpy = sinon.stub(settingsCache, 'get');
+        getSpy.withArgs('labs').returns({
             urlCache: true
         });
 
@@ -51,8 +51,8 @@ describe('Labs Service', function () {
         configUtils.set('labs', {
             collections: false
         });
-        sinon.stub(settingsCache, 'get');
-        settingsCache.get.withArgs('labs').returns({
+        const getSpy = sinon.stub(settingsCache, 'get');
+        getSpy.withArgs('labs').returns({
             collections: true,
             members: true
         });
@@ -79,8 +79,8 @@ describe('Labs Service', function () {
     });
 
     it('members flag is true when members_signup_access setting is "all"', function () {
-        sinon.stub(settingsCache, 'get');
-        settingsCache.get.withArgs('members_signup_access').returns('all');
+        const getSpy = sinon.stub(settingsCache, 'get');
+        getSpy.withArgs('members_signup_access').returns('all');
 
         assert.deepEqual(labs.getAll(), expectedLabsObject({
             members: true
@@ -90,9 +90,9 @@ describe('Labs Service', function () {
     });
 
     it('returns other allowlisted flags along with members', function () {
-        sinon.stub(settingsCache, 'get');
-        settingsCache.get.withArgs('members_signup_access').returns('all');
-        settingsCache.get.withArgs('labs').returns({
+        const getSpy = sinon.stub(settingsCache, 'get');
+        getSpy.withArgs('members_signup_access').returns('all');
+        getSpy.withArgs('labs').returns({
             activitypub: false
         });
 
@@ -106,8 +106,8 @@ describe('Labs Service', function () {
     });
 
     it('members flag is false when members_signup_access setting is "none"', function () {
-        sinon.stub(settingsCache, 'get');
-        settingsCache.get.withArgs('members_signup_access').returns('none');
+        const getSpy = sinon.stub(settingsCache, 'get');
+        getSpy.withArgs('members_signup_access').returns('none');
 
         assert.deepEqual(labs.getAll(), expectedLabsObject({
             members: false
