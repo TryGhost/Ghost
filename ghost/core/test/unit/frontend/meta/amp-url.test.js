@@ -8,6 +8,8 @@ let getAmpUrl = rewire('../../../../core/frontend/meta/amp-url');
 
 describe('getAmpUrl', function () {
     let getUrlStub;
+    let urlJoinStub;
+    let urlForStub;
 
     beforeEach(function () {
         getUrlStub = sinon.stub();
@@ -15,8 +17,8 @@ describe('getAmpUrl', function () {
         getAmpUrl = rewire('../../../../core/frontend/meta/amp-url');
         getAmpUrl.__set__('getUrl', getUrlStub);
 
-        sinon.stub(urlUtils, 'urlJoin');
-        sinon.stub(urlUtils, 'urlFor').withArgs('home', true).returns('http://localhost:9999');
+        urlJoinStub = sinon.stub(urlUtils, 'urlJoin');
+        urlForStub = sinon.stub(urlUtils, 'urlFor').withArgs('home', true).returns('http://localhost:9999');
     });
 
     afterEach(function () {
@@ -30,12 +32,12 @@ describe('getAmpUrl', function () {
         post.context = ['post'];
 
         getUrlStub.withArgs(post, false).returns('url');
-        urlUtils.urlJoin.withArgs('http://localhost:9999', 'url', 'amp/').returns('url');
+        urlJoinStub.withArgs('http://localhost:9999', 'url', 'amp/').returns('url');
 
         should.exist(getAmpUrl(post));
 
-        urlUtils.urlJoin.calledOnce.should.be.true();
-        urlUtils.urlFor.calledOnce.should.be.true();
+        urlJoinStub.calledOnce.should.be.true();
+        urlForStub.calledOnce.should.be.true();
         getUrlStub.calledOnce.should.be.true();
     });
 
@@ -47,8 +49,8 @@ describe('getAmpUrl', function () {
 
         should.not.exist(getAmpUrl(tag));
 
-        urlUtils.urlJoin.called.should.be.false();
-        urlUtils.urlFor.called.should.be.false();
+        urlJoinStub.called.should.be.false();
+        urlForStub.called.should.be.false();
         getUrlStub.called.should.be.false();
     });
 
@@ -60,8 +62,8 @@ describe('getAmpUrl', function () {
 
         should.not.exist(getAmpUrl(author));
 
-        urlUtils.urlJoin.called.should.be.false();
-        urlUtils.urlFor.called.should.be.false();
+        urlJoinStub.called.should.be.false();
+        urlForStub.called.should.be.false();
         getUrlStub.called.should.be.false();
     });
 
@@ -73,8 +75,8 @@ describe('getAmpUrl', function () {
 
         should.not.exist(getAmpUrl(post));
 
-        urlUtils.urlJoin.called.should.be.false();
-        urlUtils.urlFor.called.should.be.false();
+        urlJoinStub.called.should.be.false();
+        urlForStub.called.should.be.false();
         getUrlStub.called.should.be.false();
     });
 });
