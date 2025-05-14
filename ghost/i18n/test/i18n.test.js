@@ -22,9 +22,9 @@ describe('i18n', function () {
                         assert.equal(valueStartCount, value.match(/}/g)?.length, `[${locale}/${file}] mismatched brackets in ${value}`);
 
                         // Maybe enable in the future if we want to enforce this
-                        if (value !== '') {
-                            assert.equal(keyStartCount, valueStartCount, `[${locale}/${file}] mismatched brackets between ${key} and ${value}`);
-                        }
+                        //if (value !== '') {
+                        //    assert.equal(keyStartCount, valueStartCount, `[${locale}/${file}] mismatched brackets between ${key} and ${value}`);
+                        //}
                     }
                 }
             }

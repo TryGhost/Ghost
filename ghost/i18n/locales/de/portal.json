@@ -145,7 +145,7 @@
     "Sorry, no recommendations are available right now.": "Entschuldige, aktuell sind keine Empfehlungen verfügbar.",
     "Sorry, that didn’t work.": "Entschuldige, das hat nicht funktioniert.",
     "Spam complaints": "Spam-Beschwerden",
-    "Start {amount}-day free trial": "Auswählen",
+    "Start {amount}-day free trial": "Auswählen {amount}",
     "Starting {startDate}": "Beginnt am {startDate}",
     "Starting today": "Beginnt heute",
     "Submit feedback": "Feedback senden",
