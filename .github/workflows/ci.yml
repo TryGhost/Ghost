@@ -341,6 +341,11 @@ jobs:
       working-directory: ghost/core
       run: yarn knex-migrator init
 
+    - name: Disable man-db trigger refreshes (https://github.com/actions/runner-images/issues/10977)
+      run: |
+        echo 'set man-db/auto-update false' | sudo debconf-communicate >/dev/null
+        sudo dpkg-reconfigure man-db
+
     - name: Get Playwright version
       id: playwright-version
       run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
@@ -699,6 +704,11 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
+      - name: Disable man-db trigger refreshes (https://github.com/actions/runner-images/issues/10977)
+        run: |
+          echo 'set man-db/auto-update false' | sudo debconf-communicate >/dev/null
+          sudo dpkg-reconfigure man-db
+
       - name: Get Playwright version
         id: playwright-version
         run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
@@ -752,6 +762,11 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
+      - name: Disable man-db trigger refreshes (https://github.com/actions/runner-images/issues/10977)
+        run: |
+          echo 'set man-db/auto-update false' | sudo debconf-communicate >/dev/null
+          sudo dpkg-reconfigure man-db
+
       - name: Get Playwright version
         id: playwright-version
         run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
@@ -804,6 +819,11 @@ jobs:
         uses: ./.github/actions/restore-cache
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Disable man-db trigger refreshes (https://github.com/actions/runner-images/issues/10977)
+        run: |
+          echo 'set man-db/auto-update false' | sudo debconf-communicate >/dev/null
+          sudo dpkg-reconfigure man-db
 
       - name: Get Playwright version
         id: playwright-version
