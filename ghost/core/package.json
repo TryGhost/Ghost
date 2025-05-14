@@ -271,7 +271,6 @@
       "archive": {
         "dependsOn": [
           "build:assets",
-          "^build:ts",
           "build:tsc",
           {
             "projects": [
@@ -283,81 +282,35 @@
       },
       "dev": {
         "dependsOn": [
-          "^build:ts",
           "build:assets"
-        ]
-      },
-      "test": {
-        "dependsOn": [
-          "^build:ts"
-        ]
-      },
-      "test:single": {
-        "dependsOn": [
-          "^build:ts"
         ]
       },
       "test:all": {
         "dependsOn": [
-          "^build:ts",
           "build:assets"
         ]
       },
       "test:unit": {
         "dependsOn": [
-          "^build:ts",
           "build:assets"
-        ]
-      },
-      "test:integration": {
-        "dependsOn": [
-          "^build:ts"
-        ]
-      },
-      "test:regression": {
-        "dependsOn": [
-          "^build:ts"
         ]
       },
       "test:browser": {
         "dependsOn": [
-          "^build:ts",
           "build:assets",
           "ghost-admin:build"
         ]
       },
       "test:browser:admin": {
         "dependsOn": [
-          "^build:ts",
           "build:assets",
           "ghost-admin:build"
         ]
       },
       "test:browser:portal": {
         "dependsOn": [
-          "^build:ts",
           "build:assets",
           "ghost-admin:build"
-        ]
-      },
-      "test:e2e": {
-        "dependsOn": [
-          "^build:ts"
-        ]
-      },
-      "test:ci:e2e": {
-        "dependsOn": [
-          "^build:ts"
-        ]
-      },
-      "test:ci:regression": {
-        "dependsOn": [
-          "^build:ts"
-        ]
-      },
-      "test:ci:integration": {
-        "dependsOn": [
-          "^build:ts"
         ]
       }
     }
