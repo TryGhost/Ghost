@@ -3,9 +3,10 @@ import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import DateRangeSelect from './components/DateRangeSelect';
 import PostMenu from './components/PostMenu';
 import React, {useState} from 'react';
+import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, KpiTabTrigger, KpiTabValue, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {calculateYAxisWidth, getPeriodText, getRangeDates, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
@@ -227,13 +228,10 @@ const Web:React.FC = () => {
 
     return (
         <StatsLayout>
-            <ViewHeader className='before:hidden'>
-                <H1>Web</H1>
-                <ViewHeaderActions>
-                    <AudienceSelect />
-                    <DateRangeSelect />
-                </ViewHeaderActions>
-            </ViewHeader>
+            <StatsHeader>
+                <AudienceSelect />
+                <DateRangeSelect />
+            </StatsHeader>
             <StatsView data={topContent} isLoading={isLoading}>
                 <Card>
                     <CardContent>

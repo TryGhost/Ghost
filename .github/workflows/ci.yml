@@ -15,8 +15,6 @@ env:
     ${{ github.workspace }}/apps/*/node_modules
     ${{ github.workspace }}/ghost/*/node_modules
     ~/.cache/ms-playwright/
-  CACHED_BUILD_PATHS: |
-    ${{ github.workspace }}/ghost/*/build
   NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
   NODE_VERSION: 20.11.1
 
@@ -169,13 +167,6 @@ jobs:
           key: ${{ env.cachekey }}
           restore-keys: ${{ env.IS_MAIN == 'false' && env.DEPENDENCY_CACHE_RESTORE_KEYS || 'dep-never-restore'}}
 
-      - name: Check build cache
-        uses: actions/cache@v4
-        id: cache_built_packages
-        with:
-          path: ${{ env.CACHED_BUILD_PATHS }}
-          key: ${{ env.HEAD_COMMIT }}
-
       - name: Set up Node
         uses: actions/setup-node@v4
         env:
@@ -185,10 +176,6 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --prefer-offline --frozen-lockfile
-
-      - name: Build packages
-        if: steps.cache_built_packages.outputs.cache-hit != 'true'
-        run: yarn nx run-many -t build:ts
 
     outputs:
       changed_admin: ${{ steps.changed.outputs.admin }}

@@ -1,9 +1,10 @@
 import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import DateRangeSelect from './components/DateRangeSelect';
 import React from 'react';
+import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, H1, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber, formatPercentage, formatQueryDate, isValidDomain} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber, formatPercentage, formatQueryDate, isValidDomain} from '@tryghost/shade';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
 import {getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
@@ -118,13 +119,10 @@ const Sources:React.FC = () => {
 
     return (
         <StatsLayout>
-            <ViewHeader className='before:hidden'>
-                <H1>Sources</H1>
-                <ViewHeaderActions>
-                    <AudienceSelect />
-                    <DateRangeSelect />
-                </ViewHeaderActions>
-            </ViewHeader>
+            <StatsHeader>
+                <AudienceSelect />
+                <DateRangeSelect />
+            </StatsHeader>
             <StatsView data={data} isLoading={isLoading}>
                 <Card className='-mb-5'>
                     <CardHeader className='border-none'>

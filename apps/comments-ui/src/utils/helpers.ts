@@ -39,7 +39,7 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
     }
 
     if (minutesDiff < 60) {
-        return t('{{amount}} mins ago', {amount: minutesDiff});
+        return t('{amount} mins ago', {amount: minutesDiff});
     }
 
     const hoursDiff = Math.round(minutesDiff / 60);
@@ -69,7 +69,7 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
     }
 
     // We're not older than yesterday, so show relative hours
-    return t('{{amount}} hrs ago', {amount: hoursDiff});
+    return t('{amount} hrs ago', {amount: hoursDiff});
 }
 
 export function formatExplicitTime(dateString: string): string {
