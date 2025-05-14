@@ -1,5 +1,6 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
 import {renderEmptyContainer} from '../../utils/render-empty-container';
+import {oneline} from '../../utils/tagged-template-fns.mjs';
 
 export function renderButtonNode(node, options = {}) {
     addCreateDocumentOption(options);
@@ -34,18 +35,16 @@ function frontendTemplate(node, document) {
 function emailTemplate(node, options, document) {
     const {buttonUrl, buttonText} = node;
 
-    const html = `
-        <p>
-            <div class="btn btn-accent">
-                <table border="0" cellspacing="0" cellpadding="0" align="${node.alignment}">
-                    <tr>
-                        <td align="center">
-                            <a href="${buttonUrl}">${buttonText}</a>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        </p>
+    const html = oneline`
+        <div class="btn btn-accent">
+            <table border="0" cellspacing="0" cellpadding="0" align="${node.alignment}">
+                <tr>
+                    <td align="center">
+                        <a href="${buttonUrl}">${buttonText}</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
     `;
 
     const element = document.createElement('p');
