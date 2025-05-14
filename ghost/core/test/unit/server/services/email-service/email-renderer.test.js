@@ -2347,9 +2347,70 @@ describe('Email renderer', function () {
                 title: 'post-title post-title-no-excerpt post-title-serif post-title-left',
                 titleLink: 'post-title-link post-title-link-left',
                 meta: 'post-meta post-meta-left',
+                header: '',
                 excerpt: 'post-excerpt post-excerpt-no-feature-image post-excerpt-serif-sans post-excerpt-left',
                 body: 'post-content-sans-serif'
             });
+        });
+
+        it('applies "header-serif" class when both title and body fonts are serif', async function () {
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'serif',
+                body_font_category: 'serif'
+            });
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.classes.header, 'header-serif');
+        });
+
+        it('applies no header class for serif title + sans serif body', async function () {
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'serif',
+                body_font_category: 'sans_serif'
+            });
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.classes.header, '');
+        });
+
+        it('applies "header-serif" class for sans serif title + serif body', async function () {
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'sans_serif',
+                body_font_category: 'serif'
+            });
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.classes.header, 'header-serif');
+        });
+
+        it('applies no header class when both title and body fonts are sans serif', async function () {
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'sans_serif',
+                body_font_category: 'sans_serif'
+            });
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.classes.header, '');
         });
 
         it('has correct excerpt classes for serif title+body', async function () {

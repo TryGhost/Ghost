@@ -1080,6 +1080,7 @@ class EmailRenderer {
         }
 
         let excerptFontClass = '';
+        let headerFontClass = '';
         const bodyFont = newsletter.get('body_font_category');
         const titleFont = newsletter.get('title_font_category');
 
@@ -1087,6 +1088,10 @@ class EmailRenderer {
             excerptFontClass = 'post-excerpt-serif-serif';
         } else if (titleFont === 'serif' && bodyFont !== 'serif') {
             excerptFontClass = 'post-excerpt-serif-sans';
+        }
+
+        if (bodyFont === 'serif') {
+            headerFontClass = 'header-serif';
         }
 
         const data = {
@@ -1154,6 +1159,7 @@ class EmailRenderer {
                 title: 'post-title' + ` ` + (post.get('custom_excerpt') ? 'post-title-with-excerpt' : 'post-title-no-excerpt') + (newsletter.get('title_font_category') === 'serif' ? ` post-title-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-title-left` : ``),
                 titleLink: 'post-title-link' + (newsletter.get('title_alignment') === 'left' ? ` post-title-link-left` : ``),
                 excerpt: 'post-excerpt' + ` ` + (newsletter.get('show_feature_image') && !!postFeatureImage ? 'post-excerpt-with-feature-image' : 'post-excerpt-no-feature-image') + ` ` + excerptFontClass + (newsletter.get('title_alignment') === 'left' ? ` post-excerpt-left` : ``),
+                header: headerFontClass,
                 meta: 'post-meta' + (newsletter.get('title_alignment') === 'left' ? ` post-meta-left` : ` post-meta-center`),
                 body: newsletter.get('body_font_category') === 'sans_serif' ? `post-content-sans-serif` : `post-content`
             },
