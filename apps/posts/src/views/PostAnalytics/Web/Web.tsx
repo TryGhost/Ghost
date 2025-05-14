@@ -1,11 +1,10 @@
-import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
-import DateRangeSelect from './components/DateRangeSelect';
-import Kpis from './components/Web/Kpis';
-import Locations from './components/Web/Locations';
-import PostAnalyticsContent from './components/PostAnalyticsContent';
-import PostAnalyticsHeader from './components/PostAnalyticsHeader';
-import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
-import Sources from './components/Web/Sources';
+import AudienceSelect, {getAudienceQueryParam} from '../components/AudienceSelect';
+import DateRangeSelect from '../components/DateRangeSelect';
+import Kpis from './components/Kpis';
+import Locations from './components/Locations';
+import PostAnalyticsContent from '../components/PostAnalyticsContent';
+import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
+import Sources from './components/Sources';
 import {ViewHeader, ViewHeaderActions, formatQueryDate} from '@tryghost/shade';
 import {getRangeDates} from '@src/utils/chart-helpers';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
@@ -51,7 +50,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
     const isLoading = isConfigLoading || isPostLoading;
 
     return (
-        <PostAnalyticsLayout>
+        <>
             <ViewHeader className='items-end pb-4'>
                 <PostAnalyticsHeader currentTab='Web' />
                 <ViewHeaderActions className='mb-2'>
@@ -70,7 +69,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
                     </>
                 }
             </PostAnalyticsContent>
-        </PostAnalyticsLayout>
+        </>
     );
 };
 

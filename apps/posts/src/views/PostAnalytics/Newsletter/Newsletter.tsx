@@ -1,8 +1,7 @@
 // import AudienceSelect from './components/AudienceSelect';
-import KpiCard, {KpiCardContent, KpiCardIcon, KpiCardLabel, KpiCardValue} from './components/KpiCard';
-import PostAnalyticsContent from './components/PostAnalyticsContent';
-import PostAnalyticsHeader from './components/PostAnalyticsHeader';
-import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
+import KpiCard, {KpiCardContent, KpiCardIcon, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
+import PostAnalyticsContent from '../components/PostAnalyticsContent';
+import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, ViewHeader, formatNumber, formatPercentage} from '@tryghost/shade';
 import {calculateYAxisWidth} from '@src/utils/chart-helpers';
 import {useEditLinks} from '@src/hooks/useEditLinks';
@@ -26,7 +25,7 @@ const sanitizeUrl = (url: string): string => {
 const cleanTrackedUrl = (url: string, showTitle = false): string => {
     // Extract the URL before the ? but keep the hash part
     const [urlPart, queryPart] = url.split('?');
-    
+
     if (!queryPart) {
         // Check if the urlPart itself has a hash
         const hashIndex = urlPart.indexOf('#');
@@ -35,13 +34,13 @@ const cleanTrackedUrl = (url: string, showTitle = false): string => {
         }
         return urlPart;
     }
-    
+
     // If there's a hash in the query part, preserve it
     const hashMatch = queryPart.match(/#(.+)$/);
     if (hashMatch) {
         return showTitle ? urlPart : `${urlPart}#${hashMatch[1]}`;
     }
-    
+
     return urlPart;
 };
 
@@ -123,7 +122,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         const processedLinks = topLinks.reduce<Record<string, GroupedLinkData>>((acc, link) => {
             // For grouping, we use the clean URL (path only with hash)
             const cleanUrl = cleanTrackedUrl(link.url, false);
-            
+
             if (!acc[cleanUrl]) {
                 acc[cleanUrl] = {
                     url: cleanUrl,
@@ -131,19 +130,19 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                     edited: false
                 };
             }
-            
+
             acc[cleanUrl].clicks += link.clicks;
             acc[cleanUrl].edited = acc[cleanUrl].edited || link.edited;
-            
+
             return acc;
         }, {});
-        
+
         // Sort by click count
         return Object.values(processedLinks).sort((a, b) => b.clicks - a.clicks);
     }, [topLinks]); // Only recalculate when topLinks changes
 
     return (
-        <PostAnalyticsLayout>
+        <>
             <ViewHeader className='items-end pb-4'>
                 <PostAnalyticsHeader currentTab='Newsletter' />
                 {/* <ViewHeaderActions className='mb-2'>
@@ -267,7 +266,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             {displayLinks.map((row) => {
                                                 const url = row.url;
                                                 const edited = row.edited;
-                                                
+
                                                 return (
                                                     <TableRow key={url}>
                                                         <TableCell className='max-w-0'>
@@ -339,7 +338,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                     </div>
                 }
             </PostAnalyticsContent>
-        </PostAnalyticsLayout>
+        </>
     );
 };
 

@@ -1,8 +1,8 @@
-import Growth from './views/PostAnalytics/Growth';
-import Newsletter from './views/PostAnalytics/Newsletter';
-import Overview from './views/PostAnalytics/Overview';
+import Growth from './views/PostAnalytics/Growth/Growth';
+import Newsletter from './views/PostAnalytics/Newsletter/Newsletter';
+import Overview from './views/PostAnalytics/Overview/Overview';
 import PostAnalytics from './views/PostAnalytics/PostAnalytics';
-import Web from './views/PostAnalytics/Web';
+import Web from './views/PostAnalytics/Web/Web';
 import {ErrorPage} from '@tryghost/shade';
 import {RouteObject} from '@tryghost/admin-x-framework';
 // import {withFeatureFlag} from '@src/hooks/withFeatureFlag';

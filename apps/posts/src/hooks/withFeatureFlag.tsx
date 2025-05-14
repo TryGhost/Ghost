@@ -1,4 +1,4 @@
-import PostAnalyticsLayout from '@src/views/PostAnalytics/layout/PostAnalyticsLayout';
+import PostAnalyticsLayout from '@src/views/PostAnalytics/components/layout/PostAnalyticsLayout';
 import PostAnalyticsView from '@src/views/PostAnalytics/components/PostAnalyticsView';
 import React from 'react';
 import {H1, ViewHeader} from '@tryghost/shade';
@@ -6,7 +6,7 @@ import {useFeatureFlag} from './useFeatureFlag';
 
 /**
  * Higher-Order Component that wraps a component with feature flag checking
- * 
+ *
  * @param Component The component to wrap
  * @param flagName The name of the feature flag to check
  * @param fallbackPath The path to redirect to if feature flag is disabled
@@ -21,12 +21,12 @@ export const withFeatureFlag = <P extends object>(
 ) => {
     const WrappedComponent = (props: P) => {
         const {isLoading, redirect} = useFeatureFlag(flagName, fallbackPath);
-        
+
         // If we have a redirect component, render it
         if (redirect) {
             return redirect;
         }
-        
+
         // If we're loading, render a loading state
         if (isLoading) {
             return (
@@ -40,13 +40,13 @@ export const withFeatureFlag = <P extends object>(
                 </PostAnalyticsLayout>
             );
         }
-        
+
         // Otherwise render the wrapped component
         return <Component {...props} />;
     };
-    
+
     // Set display name for debugging
     WrappedComponent.displayName = `withFeatureFlag(${Component.displayName || Component.name || 'Component'})`;
-    
+
     return WrappedComponent;
-}; 
+};
