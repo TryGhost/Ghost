@@ -73,7 +73,7 @@
     "@tryghost/bookshelf-plugins": "0.6.26",
     "@tryghost/color-utils": "0.2.5",
     "@tryghost/config-url-helpers": "1.0.15",
-    "@tryghost/custom-fonts": "0.0.0",
+    "@tryghost/custom-fonts": "1.0.0",
     "@tryghost/database-info": "0.3.29",
     "@tryghost/debug": "0.1.34",
     "@tryghost/domain-events": "1.0.0",
