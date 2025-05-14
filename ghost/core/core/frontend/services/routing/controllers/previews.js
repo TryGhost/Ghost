@@ -59,13 +59,6 @@ module.exports = function previewController(req, res, next) {
                 return urlUtils.redirect301(res, urlUtils.urlJoin('/email', post.uuid, '/'));
             }
 
-            // Set access based on member status and post visibility
-            const member = req.query?.member_status && req.query.member_status !== 'anonymous' 
-                ? {status: req.query.member_status} 
-                : null;
-            // we literally don't even need this, because we get post.access from the API anyway.
-            //post.access = checkPostAccess(post, member);
-
             return renderer.renderEntry(req, res)(post);
         })
         .catch(renderer.handleError(next));
