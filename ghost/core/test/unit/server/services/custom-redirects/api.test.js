@@ -9,6 +9,12 @@ const CustomRedirectsAPI = require('../../../../../core/server/services/custom-r
 describe('UNIT: redirects CustomRedirectsAPI class', function () {
     let customRedirectsAPI;
     let redirectManager;
+    let fsPathExistsStub;
+    let fsReadFileStub;
+    let fsUnlinkStub;
+    let fsMoveStub;
+    let fsCopyStub;
+    let fsWriteFileStub;
     const basePath = path.join(__dirname, '../../../../utils/fixtures/data/');
 
     before(function () {
@@ -26,12 +32,12 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
             addRedirect: sinon.stub()
         };
 
-        sinon.stub(fs, 'pathExists');
-        sinon.stub(fs, 'writeFile');
-        sinon.stub(fs, 'readFile');
-        sinon.stub(fs, 'unlink');
-        sinon.stub(fs, 'move');
-        sinon.stub(fs, 'copy');
+        fsPathExistsStub = sinon.stub(fs, 'pathExists');
+        fsWriteFileStub = sinon.stub(fs, 'writeFile');
+        fsReadFileStub = sinon.stub(fs, 'readFile');
+        fsUnlinkStub = sinon.stub(fs, 'unlink');
+        fsMoveStub = sinon.stub(fs, 'move');
+        fsCopyStub = sinon.stub(fs, 'copy');
         sinon.spy(logging, 'error');
     });
 
@@ -55,8 +61,8 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
 
     describe('get', function () {
         it('returns empty array if file does not exist', async function () {
-            fs.pathExists.withArgs(`${basePath}redirects.yaml`).resolves(false);
-            fs.pathExists.withArgs(`${basePath}redirects.json`).resolves(false);
+            fsPathExistsStub.withArgs(`${basePath}redirects.yaml`).resolves(false);
+            fsPathExistsStub.withArgs(`${basePath}redirects.json`).resolves(false);
 
             const file = await customRedirectsAPI.get();
 
@@ -64,11 +70,11 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
         });
 
         it('returns a redirects YAML file if it exists', async function () {
-            fs.pathExists.withArgs(`${basePath}redirects.yaml`).resolves(true);
-            fs.pathExists.withArgs(`${basePath}redirects.json`).resolves(false);
+            fsPathExistsStub.withArgs(`${basePath}redirects.yaml`).resolves(true);
+            fsPathExistsStub.withArgs(`${basePath}redirects.json`).resolves(false);
 
-            fs.readFile.withArgs(`${basePath}redirects.yaml`, 'utf-8').resolves('yaml content');
-            fs.readFile.withArgs(`${basePath}redirects.json`, 'utf-8').resolves(null);
+            fsReadFileStub.withArgs(`${basePath}redirects.yaml`, 'utf-8').resolves('yaml content');
+            fsReadFileStub.withArgs(`${basePath}redirects.json`, 'utf-8').resolves(null);
 
             const file = await customRedirectsAPI.get();
 
@@ -81,11 +87,11 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
                 to: '/$1'
             }];
 
-            fs.pathExists.withArgs(`${basePath}redirects.yaml`).resolves(false);
-            fs.pathExists.withArgs(`${basePath}redirects.json`).resolves(true);
+            fsPathExistsStub.withArgs(`${basePath}redirects.yaml`).resolves(false);
+            fsPathExistsStub.withArgs(`${basePath}redirects.json`).resolves(true);
 
-            fs.readFile.withArgs(`${basePath}redirects.yaml`, 'utf-8').resolves(null);
-            fs.readFile.withArgs(`${basePath}redirects.json`, 'utf-8').resolves(JSON.stringify(redirectJSONFixture));
+            fsReadFileStub.withArgs(`${basePath}redirects.yaml`, 'utf-8').resolves(null);
+            fsReadFileStub.withArgs(`${basePath}redirects.json`, 'utf-8').resolves(JSON.stringify(redirectJSONFixture));
 
             const file = await customRedirectsAPI.get();
 
@@ -97,7 +103,7 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
         it('throws a syntax error when setting invalid JSON redirects file', async function () {
             const invalidJSON = '{invalid json';
             const invalidFilePath = path.join(__dirname, '/invalid/redirects/path.json');
-            fs.readFile.withArgs(invalidFilePath, 'utf-8').resolves(invalidJSON);
+            fsReadFileStub.withArgs(invalidFilePath, 'utf-8').resolves(invalidJSON);
 
             let expectedErrorMessage;
 
@@ -123,7 +129,7 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
 
         it('throws a syntax error when setting invalid (plain string) YAML redirects file', async function () {
             const invalidFilePath = path.join(__dirname, '/invalid/redirects/yaml.json');
-            fs.readFile.withArgs(invalidFilePath, 'utf-8').resolves('x');
+            fsReadFileStub.withArgs(invalidFilePath, 'utf-8').resolves('x');
 
             try {
                 await customRedirectsAPI.setFromFilePath(invalidFilePath, '.yaml');
@@ -136,7 +142,7 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
 
         it('throws a syntax error when setting invalid (empty) YAML redirects file', async function () {
             const invalidFilePath = path.join(__dirname, '/invalid/redirects/yaml.json');
-            fs.readFile.withArgs(invalidFilePath, 'utf-8').resolves('');
+            fsReadFileStub.withArgs(invalidFilePath, 'utf-8').resolves('');
 
             try {
                 await customRedirectsAPI.setFromFilePath(invalidFilePath, '.yaml');
@@ -149,7 +155,7 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
 
         it('throws bad request error when the YAML file is invalid', async function () {
             const invalidFilePath = path.join(__dirname, '/invalid/redirects/yaml.json');
-            fs.readFile.withArgs(invalidFilePath, 'utf-8').resolves(`
+            fsReadFileStub.withArgs(invalidFilePath, 'utf-8').resolves(`
                 routes:
                 \
                 invalid yaml:
@@ -177,14 +183,14 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
             }]);
 
             // redirects.json file already exits
-            fs.pathExists.withArgs(existingRedirectsFilePath).resolves(true);
-            fs.pathExists.withArgs(`${basePath}redirects.yaml`).resolves(false);
+            fsPathExistsStub.withArgs(existingRedirectsFilePath).resolves(true);
+            fsPathExistsStub.withArgs(`${basePath}redirects.yaml`).resolves(false);
             // incoming redirects file
-            fs.readFile.withArgs(incomingFilePath, 'utf-8').resolves(redirectsJSONConfig);
+            fsReadFileStub.withArgs(incomingFilePath, 'utf-8').resolves(redirectsJSONConfig);
             // backup file already exists
-            fs.pathExists.withArgs(backupFilePath).resolves(true);
-            fs.unlink.withArgs(backupFilePath).resolves(true);
-            fs.move.withArgs(incomingFilePath, backupFilePath).resolves(true);
+            fsPathExistsStub.withArgs(backupFilePath).resolves(true);
+            fsUnlinkStub.withArgs(backupFilePath).resolves(true);
+            fsMoveStub.withArgs(incomingFilePath, backupFilePath).resolves(true);
 
             customRedirectsAPI = new CustomRedirectsAPI({
                 basePath,
@@ -196,15 +202,15 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
             await customRedirectsAPI.setFromFilePath(incomingFilePath, '.json');
 
             // backed up file with the same name already exists so remove it
-            fs.unlink.called.should.be.true();
-            fs.unlink.calledWith(backupFilePath).should.be.true();
+            fsUnlinkStub.called.should.be.true();
+            fsUnlinkStub.calledWith(backupFilePath).should.be.true();
 
             // backed up current routes file
-            fs.move.called.should.be.true();
-            fs.move.calledWith(existingRedirectsFilePath, backupFilePath).should.be.true();
+            fsMoveStub.called.should.be.true();
+            fsMoveStub.calledWith(existingRedirectsFilePath, backupFilePath).should.be.true();
 
             // written new routes file
-            fs.writeFile.calledWith(existingRedirectsFilePath, redirectsJSONConfig, 'utf-8').should.be.true();
+            fsWriteFileStub.calledWith(existingRedirectsFilePath, redirectsJSONConfig, 'utf-8').should.be.true();
 
             // redirects have been re-registered
             redirectManager.removeAllRedirects.calledOnce.should.be.true();
@@ -226,15 +232,15 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
             `;
 
             // redirects.json file already exits
-            fs.pathExists.withArgs(`${basePath}redirects.json`).resolves(false);
-            fs.pathExists.withArgs(`${basePath}redirects.yaml`).resolves(true);
+            fsPathExistsStub.withArgs(`${basePath}redirects.json`).resolves(false);
+            fsPathExistsStub.withArgs(`${basePath}redirects.yaml`).resolves(true);
             // incoming redirects file
-            fs.readFile.withArgs(incomingFilePath, 'utf-8').resolves(redirectsYamlConfig);
+            fsReadFileStub.withArgs(incomingFilePath, 'utf-8').resolves(redirectsYamlConfig);
             // backup file DOES not exists yet
-            fs.pathExists.withArgs(backupFilePath).resolves(false);
+            fsPathExistsStub.withArgs(backupFilePath).resolves(false);
             // should not be called
-            fs.unlink.withArgs(backupFilePath).resolves(false);
-            fs.move.withArgs(`${basePath}redirects.yaml`, backupFilePath).resolves(true);
+            fsUnlinkStub.withArgs(backupFilePath).resolves(false);
+            fsMoveStub.withArgs(`${basePath}redirects.yaml`, backupFilePath).resolves(true);
 
             customRedirectsAPI = new CustomRedirectsAPI({
                 basePath,
@@ -246,13 +252,13 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
             await customRedirectsAPI.setFromFilePath(incomingFilePath, '.yaml');
 
             // no existing backup file name match, did not remove any files
-            fs.unlink.called.should.not.be.true();
+            fsUnlinkStub.called.should.not.be.true();
 
             // backed up current routes file
-            fs.move.called.should.be.true();
+            fsMoveStub.called.should.be.true();
 
             // overwritten with incoming routes.yaml file
-            fs.copy.calledWith(incomingFilePath, `${basePath}redirects.yaml`).should.be.true();
+            fsCopyStub.calledWith(incomingFilePath, `${basePath}redirects.yaml`).should.be.true();
 
             // redirects have been re-registered
             redirectManager.removeAllRedirects.calledOnce.should.be.true();
@@ -274,15 +280,15 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
             `;
 
             // redirects.json file already exits
-            fs.pathExists.withArgs(`${basePath}redirects.json`).resolves(false);
-            fs.pathExists.withArgs(`${basePath}redirects.yaml`).resolves(true);
+            fsPathExistsStub.withArgs(`${basePath}redirects.json`).resolves(false);
+            fsPathExistsStub.withArgs(`${basePath}redirects.yaml`).resolves(true);
             // incoming redirects file
-            fs.readFile.withArgs(incomingFilePath, 'utf-8').resolves(invalidYaml);
+            fsReadFileStub.withArgs(incomingFilePath, 'utf-8').resolves(invalidYaml);
             // backup file DOES not exists yet
-            fs.pathExists.withArgs(backupFilePath).resolves(false);
+            fsPathExistsStub.withArgs(backupFilePath).resolves(false);
             // should not be called
-            fs.unlink.withArgs(backupFilePath).resolves(false);
-            fs.move.withArgs(`${basePath}redirects.yaml`, backupFilePath).resolves(true);
+            fsUnlinkStub.withArgs(backupFilePath).resolves(false);
+            fsMoveStub.withArgs(`${basePath}redirects.yaml`, backupFilePath).resolves(true);
 
             customRedirectsAPI = new CustomRedirectsAPI({
                 basePath,
@@ -299,8 +305,8 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
                 err.errorType.should.eql('BadRequestError');
             }
 
-            fs.unlink.called.should.not.be.true();
-            fs.move.called.should.not.be.true();
+            fsUnlinkStub.called.should.not.be.true();
+            fsMoveStub.called.should.not.be.true();
         });
     });
 });
