@@ -50,21 +50,24 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                             </BreadcrumbList>
                         </Breadcrumb>
                         <div className='flex items-center gap-2'>
-                            <Button variant='ghost'><LucideIcon.RefreshCw /></Button>
-                            <Button variant='ghost'><LucideIcon.Share /></Button>
-                            <Button variant='ghost'><LucideIcon.Ellipsis /></Button>
+                            <Button variant='outline'><LucideIcon.RefreshCw /></Button>
+                            <Button variant='outline'><LucideIcon.Share /></Button>
+                            <Button variant='outline'><LucideIcon.Ellipsis /></Button>
                         </div>
                     </div>
                     {!isPostLoading &&
-                        <div>
-                            <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
-                                {post && post.title}
-                            </H1>
-                            {typedPost && typedPost.published_at && (
-                                <div className='mt-1 flex items-center justify-start text-sm leading-[1.65em] text-muted-foreground'>
+                        <div className='flex items-center gap-6'>
+                            <div className='h-[82px] w-[132px] rounded-md bg-muted'></div>
+                            <div>
+                                <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
+                                    {post && post.title}
+                                </H1>
+                                {typedPost && typedPost.published_at && (
+                                    <div className='mt-0.5 flex items-center justify-start text-sm leading-[1.65em] text-muted-foreground'>
                             Published on your site on {moment.utc(typedPost.published_at).format('D MMM YYYY')} at {moment.utc(typedPost.published_at).format('HH:mm')}
-                                </div>
-                            )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     }
                     <Navbar className='-mt-1'>
