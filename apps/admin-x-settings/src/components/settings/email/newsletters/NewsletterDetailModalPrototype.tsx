@@ -632,14 +632,14 @@ const Sidebar: React.FC<{
                                 onClick: () => updateNewsletter({image_corners: 'square'})
                             },
                             {
-                                key: 'squircle',
+                                key: 'rounded',
                                 icon: 'squircle',
-                                label: 'Squircle',
+                                label: 'Rounded',
                                 tooltip: 'Rounded',
                                 hideLabel: true,
                                 link: false,
                                 size: 'sm',
-                                onClick: () => updateNewsletter({image_corners: 'squircle'})
+                                onClick: () => updateNewsletter({image_corners: 'rounded'})
                             }
                         ]} clearBg={false} />
                     </div>
