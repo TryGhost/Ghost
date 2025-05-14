@@ -20,7 +20,7 @@ import InviteUserModal from '../../settings/general/InviteUserModal';
 import NavigationModal from '../../settings/site/NavigationModal';
 import NewsletterDetailModal from '../../settings/email/newsletters/NewsletterDetailModal';
 import NewsletterDetailModalAlpha from '../../settings/email/newsletters/NewsletterDetailModalAlpha';
-import NewsletterDetailModalLabs from '../../settings/email/newsletters/NewsletterDetailModalLabs';
+import NewsletterDetailModalPrototype from '../../settings/email/newsletters/NewsletterDetailModalPrototype';
 import OfferSuccess from '../../settings/growth/offers/OfferSuccess';
 // import OffersModal from '../../settings/growth/offers/OffersIndex';
 import OffersContainerModal from '../../settings/growth/offers/OffersContainerModal';
@@ -39,7 +39,7 @@ const ConditionalNewsletterDetailModal: ModalComponent = (props) => {
     const showAlphaSettings = useFeatureFlag('emailCustomizationAlpha');
 
     if (showPrototypeSettings) {
-        return <NewsletterDetailModalLabs {...props} />;
+        return <NewsletterDetailModalPrototype {...props} />;
     } else if (showAlphaSettings) {
         return <NewsletterDetailModalAlpha {...props} />;
     } else {
