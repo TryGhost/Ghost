@@ -60,8 +60,6 @@ module.exports = function previewController(req, res, next) {
                 return urlUtils.redirect301(res, urlUtils.urlJoin('/email', post.uuid, '/'));
             }
 
-            post.access = !!post.html;
-
             return renderer.renderEntry(req, res)(post);
         })
         .catch(renderer.handleError(next));
