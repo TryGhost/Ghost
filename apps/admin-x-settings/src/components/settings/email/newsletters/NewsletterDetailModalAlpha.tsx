@@ -404,6 +404,31 @@ const Sidebar: React.FC<{
                         ]} clearBg={false} />
                     </div>
                     <div className='flex w-full justify-between'>
+                        <div>Button style</div>
+                        <ButtonGroup activeKey={newsletter.button_style || 'fill'} buttons={[
+                            {
+                                key: 'fill',
+                                icon: 'squircle-fill',
+                                label: 'Fill',
+                                tooltip: 'Fill',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({button_style: 'fill'})
+                            },
+                            {
+                                key: 'outline',
+                                icon: 'squircle',
+                                label: 'Outline',
+                                tooltip: 'Outline',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({button_style: 'outline'})
+                            }
+                        ]} clearBg={false} />
+                    </div>
+                    <div className='flex w-full justify-between'>
                         <div>Button corners</div>
                         <ButtonGroup activeKey={newsletter.button_corners || 'rounded'} buttons={[
                             {
