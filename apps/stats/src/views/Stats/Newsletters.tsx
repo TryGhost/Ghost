@@ -3,9 +3,10 @@ import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import DateRangeSelect from './components/DateRangeSelect';
 import React, {useMemo, useState} from 'react';
 import SortButton from './components/SortButton';
+import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 import {calculateYAxisWidth, getPeriodText, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -376,13 +377,10 @@ const Newsletters: React.FC = () => {
 
     return (
         <StatsLayout>
-            <ViewHeader className='before:hidden'>
-                <H1>Newsletters</H1>
-                <ViewHeaderActions>
-                    {/* <AudienceSelect /> */}
-                    <DateRangeSelect />
-                </ViewHeaderActions>
-            </ViewHeader>
+            <StatsHeader>
+                {/* <AudienceSelect /> */}
+                <DateRangeSelect />
+            </StatsHeader>
             <StatsView data={subscribersData} isLoading={isLoading}>
                 <Card>
                     <CardContent>
