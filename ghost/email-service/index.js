@@ -14,5 +14,5 @@ module.exports = {
     BatchSendingService: require('./lib/BatchSendingService'),
     EmailEventProcessor: require('./lib/EmailEventProcessor'),
     EmailEventStorage: require('./lib/EmailEventStorage'),
-    MailgunEmailProvider: require('./lib/MailgunEmailProvider')
+    BulkEmailProvider: require('./lib/BulkEmailProvider')
 };
