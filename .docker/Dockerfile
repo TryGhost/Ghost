@@ -68,7 +68,6 @@ COPY ghost/admin/lib/ember-power-calendar-moment/package.json ghost/admin/lib/em
 COPY ghost/admin/lib/ember-power-calendar-utils/package.json ghost/admin/lib/ember-power-calendar-utils/package.json
 COPY ghost/admin/package.json ghost/admin/package.json
 COPY ghost/core/package.json ghost/core/package.json
-COPY ghost/custom-fonts/package.json ghost/custom-fonts/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
 
 RUN --mount=type=cache,target=/home/ghost/.yarn-cache \

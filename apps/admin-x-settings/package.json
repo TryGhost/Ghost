@@ -49,7 +49,7 @@
     "@testing-library/react": "14.3.1",
     "@tryghost/admin-x-design-system": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",
-    "@tryghost/custom-fonts": "0.0.0",
+    "@tryghost/custom-fonts": "1.0.0",
     "@types/react": "18.3.20",
     "@types/react-dom": "18.3.7",
     "@types/validator": "13.15.0",
