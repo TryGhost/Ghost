@@ -2094,7 +2094,8 @@ describe('Email renderer', function () {
             const post = createModel(basePost);
             const newsletter = createModel({
                 ...baseNewsletter,
-                button_corners: 'square'
+                button_corners: 'square',
+                button_style: 'outline'
             });
             const segment = null;
             const options = {};
@@ -2108,7 +2109,8 @@ describe('Email renderer', function () {
                     target: 'email',
                     postUrl: 'http://example.com',
                     design: {
-                        buttonCorners: 'square'
+                        buttonCorners: 'square',
+                        buttonStyle: 'outline'
                     }
                 }
             );
@@ -2548,8 +2550,9 @@ describe('Email renderer', function () {
                 ]);
         });
 
-        async function testButtonBorderRadius(buttonCorners, expectedRadius) {
-            labsEnabled = true;
+        async function testDataProperty(newsletterSettings, property, expectedValue, options = {labsEnabled: true}) {
+            labsEnabled = options.labsEnabled ?? false;
+
             const html = '';
             const post = createModel({
                 posts_meta: createModel({}),
@@ -2561,10 +2564,16 @@ describe('Email renderer', function () {
                 title_alignment: 'left',
                 body_font_category: 'sans_serif',
                 show_latest_posts: true,
-                button_corners: buttonCorners
+                ...newsletterSettings
             });
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
-            assert.equal(data.buttonBorderRadius, expectedRadius);
+            assert.equal(data[property], expectedValue);
+        }
+
+        async function testButtonBorderRadius(buttonCorners, expectedRadius) {
+            return await testDataProperty({
+                button_corners: buttonCorners
+            }, 'buttonBorderRadius', expectedRadius, {labsEnabled: true});
         }
 
         it('sets buttonBorderRadius to correct default (emailCustomizationAlpha)', async function () {
@@ -2581,6 +2590,24 @@ describe('Email renderer', function () {
 
         it('sets buttonBorderRadius to correct pill value (emailCustomizationAlpha)', async function () {
             await testButtonBorderRadius('pill', '9999px');
+        });
+
+        async function testHasOutlineButtons(buttonStyle, expectedValue) {
+            return await testDataProperty({
+                button_style: buttonStyle
+            }, 'hasOutlineButtons', expectedValue, {labsEnabled: true});
+        }
+
+        it('sets hasOutlineButtons to correct default (emailCustomizationAlpha)', async function () {
+            await testHasOutlineButtons(null, false);
+        });
+
+        it('sets hasOutlineButtons to correct fill value (emailCustomizationAlpha)', async function () {
+            await testHasOutlineButtons('fill', false);
+        });
+
+        it('sets hasOutlineButtons to correct outline value (emailCustomizationAlpha)', async function () {
+            await testHasOutlineButtons('outline', true);
         });
     });
 
