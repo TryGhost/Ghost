@@ -94,15 +94,9 @@ const prepareContentFolder = async (options) => {
     await fs.writeFile(path.join(contentFolderForTests, 'images', '2022', '05', 'test.jpg'), GIF1x1);
 };
 
-// CASE: Ghost Server needs Starting
-// In this case we need to ensure that Ghost is started cleanly:
-// - ensure the DB is reset
-// - CASE: If we are in force start mode the server is already running so we
-//      - stop the server (if we are in force start mode it will be running)
-//      - reload affected services - just settings and not the frontend!?
-// - Start Ghost: Uses OLD Boot process
-const freshModeGhostStart = async (options) => {
-    // Stop the server
+// Stop Ghost if it's running, reset the DB, and start Ghost
+const _startGhost = async (options) => {
+    // Stop the server -- noops if it's not running
     await stopGhost();
 
     // Adapter cache has to be cleared to avoid reusing cached adapter instances between restarts
@@ -159,7 +153,7 @@ const startGhost = async (options) => {
     // @TODO: tidy up the tmp folders after tests
     await prepareContentFolder(options);
 
-    await freshModeGhostStart(options);
+    await _startGhost(options);
 
     // Expose fixture data, wrap-up and return
     await exposeFixtures();
