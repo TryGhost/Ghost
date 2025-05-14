@@ -11,10 +11,6 @@ const boot = require('../../core/boot');
 const models = require('../../core/server/models');
 const urlService = require('../../core/server/services/url');
 const settingsService = require('../../core/server/services/settings/settings-service');
-const routeSettingsService = require('../../core/server/services/route-settings');
-const themeService = require('../../core/server/services/themes');
-const limits = require('../../core/server/services/limits');
-const customRedirectsService = require('../../core/server/services/custom-redirects');
 const adapterManager = require('../../core/server/services/adapter-manager');
 
 // Other Test Utilities
@@ -98,55 +94,6 @@ const prepareContentFolder = async (options) => {
     await fs.writeFile(path.join(contentFolderForTests, 'images', '2022', '05', 'test.jpg'), GIF1x1);
 };
 
-// CASE: Ghost Server is Running
-// In this case we need to reset things so it's as though Ghost just booted:
-// - truncate database
-// - re-run default fixtures
-// - reload affected services
-const restartModeGhostStart = async ({frontend, copyThemes, copySettings}) => {
-    debug('Reload Mode');
-
-    // TODO: figure out why we need this if we reset again later?
-    urlServiceUtils.reset();
-
-    await dbUtils.reset({truncate: true});
-
-    debug('init done');
-
-    // Adapter cache has to be cleared to avoid reusing cached adapter instances between restarts
-    adapterManager.clearCache();
-
-    // Reset the settings cache
-    await settingsService.init();
-    debug('settings done');
-
-    if (copySettings) {
-        await routeSettingsService.init();
-    }
-    if (copyThemes || frontend) {
-        await themeService.init();
-    }
-    if (copyThemes) {
-        await themeService.loadInactiveThemes();
-    }
-
-    // Reload the URL service & wait for it to be ready again
-    // @TODO: why/how is this different to urlService.resetGenerators?
-    urlServiceUtils.reset();
-    urlServiceUtils.init({urlCache: !frontend});
-
-    if (frontend) {
-        await urlServiceUtils.isFinished();
-    }
-
-    debug('routes done');
-
-    await customRedirectsService.init();
-
-    // Reload limits service
-    limits.init();
-};
-
 // CASE: Ghost Server needs Starting
 // In this case we need to ensure that Ghost is started cleanly:
 // - ensure the DB is reset
@@ -155,13 +102,7 @@ const restartModeGhostStart = async ({frontend, copyThemes, copySettings}) => {
 //      - reload affected services - just settings and not the frontend!?
 // - Start Ghost: Uses OLD Boot process
 const freshModeGhostStart = async (options) => {
-    if (options.forceStart) {
-        debug('Forced Restart Mode');
-    } else {
-        debug('Fresh Start Mode');
-    }
-
-    // Stop the server (forceStart Mode)
+    // Stop the server
     await stopGhost();
 
     // Adapter cache has to be cleared to avoid reusing cached adapter instances between restarts
@@ -194,7 +135,6 @@ const freshModeGhostStart = async (options) => {
  * @param {boolean} [options.frontend]
  * @param {boolean} [options.redirectsFile]
  * @param {String} [options.redirectsFileExt]
- * @param {boolean} [options.forceStart]
  * @param {boolean} [options.copyThemes]
  * @param {boolean} [options.copySettings]
  * @param {String} [options.routesFilePath] - path to a routes configuration file to start the instance with
@@ -210,7 +150,6 @@ const startGhost = async (options) => {
         frontend: true,
         redirectsFile: false,
         redirectsFileExt: '.json',
-        forceStart: false,
         copyThemes: false,
         copySettings: false,
         contentFolder: path.join(os.tmpdir(), crypto.randomUUID(), 'ghost-test'),
@@ -220,11 +159,7 @@ const startGhost = async (options) => {
     // @TODO: tidy up the tmp folders after tests
     await prepareContentFolder(options);
 
-    if (ghostServer && ghostServer.httpServer && !options.forceStart) {
-        await restartModeGhostStart(options);
-    } else {
-        await freshModeGhostStart(options);
-    }
+    await freshModeGhostStart(options);
 
     // Expose fixture data, wrap-up and return
     await exposeFixtures();
