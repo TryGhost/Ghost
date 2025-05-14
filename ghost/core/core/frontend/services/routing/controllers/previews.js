@@ -3,7 +3,6 @@ const config = require('../../../../shared/config');
 const {routerManager} = require('../');
 const urlUtils = require('../../../../shared/url-utils');
 const renderer = require('../../rendering');
-const {checkPostAccess} = require('../../../../server/services/members/content-gating');
 
 /**
  * @description Preview Controller.
@@ -28,7 +27,7 @@ module.exports = function previewController(req, res, next) {
         .read(params)
         .then(function then(result) {
             const post = result[res.routerOptions.query.resource][0];
-
+            console.log('post', post);
             if (!post) {
                 return next();
             }
@@ -65,7 +64,8 @@ module.exports = function previewController(req, res, next) {
             const member = req.query?.member_status && req.query.member_status !== 'anonymous' 
                 ? {status: req.query.member_status} 
                 : null;
-            post.access = checkPostAccess(post, member);
+            // we literally don't even need this, because we get post.access from the API anyway.
+            //post.access = checkPostAccess(post, member);
 
             return renderer.renderEntry(req, res)(post);
         })
