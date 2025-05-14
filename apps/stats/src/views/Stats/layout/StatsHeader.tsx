@@ -1,6 +1,5 @@
-import Navbar, {NavbarActions} from './Navbar';
 import React from 'react';
-import {H1, Tabs, TabsList, TabsTrigger, ViewHeader} from '@tryghost/shade';
+import {H1, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger, ViewHeader} from '@tryghost/shade';
 import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
 
 interface StatsHeaderProps {
