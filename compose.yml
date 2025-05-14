@@ -13,7 +13,6 @@ x-service-template: &service-template
     - node_modules_ghost_email-addresses:/home/ghost/ghost/email-addresses/node_modules:delegated
     - node_modules_ghost_email-service:/home/ghost/ghost/email-service/node_modules:delegated
     - node_modules_ghost_i18n:/home/ghost/ghost/i18n/node_modules:delegated
-    - node_modules_ghost_prometheus-metrics:/home/ghost/ghost/prometheus-metrics/node_modules:delegated
     - node_modules_apps_admin-x-activitypub:/home/ghost/apps/admin-x-activitypub/node_modules:delegated
     - node_modules_apps_admin-x-design-system:/home/ghost/apps/admin-x-design-system/node_modules:delegated
     - node_modules_apps_admin-x-framework:/home/ghost/apps/admin-x-framework/node_modules:delegated
@@ -146,7 +145,6 @@ volumes:
   node_modules_ghost_email-addresses: {}
   node_modules_ghost_email-service: {}
   node_modules_ghost_i18n: {}
-  node_modules_ghost_prometheus-metrics: {}
   node_modules_apps_admin-x-activitypub: {}
   node_modules_apps_admin-x-design-system: {}
   node_modules_apps_admin-x-framework: {}
