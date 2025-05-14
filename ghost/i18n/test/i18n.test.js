@@ -276,9 +276,9 @@ describe('i18n', function () {
             assert.equal(t('Welcome, {name}', {name: 'John'}), 'Welcome, John');
         });
 
-        it('uses double curly braces for portal namespace interpolation', async function () {
+        it('uses single curly braces for portal namespace interpolation', async function () {
             const t = i18n('en', 'portal').t;
-            assert.equal(t('Welcome, {{name}}', {name: 'John'}), 'Welcome, John');
+            assert.equal(t('Welcome, {name}', {name: 'John'}), 'Welcome, John');
         });
 
         it('uses single curly braces for ghost namespace interpolation', async function () {
@@ -310,8 +310,8 @@ describe('i18n', function () {
             assert.equal(instance.options.keySeparator, false);
 
             // Verify interpolation configuration for portal namespace
-            assert.equal(instance.options.interpolation.prefix, '{{');
-            assert.equal(instance.options.interpolation.suffix, '}}');
+            assert.equal(instance.options.interpolation.prefix, '{');
+            assert.equal(instance.options.interpolation.suffix, '}');
         });
 
         it('initializes with correct theme configuration', function () {
