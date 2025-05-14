@@ -13,7 +13,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
     const location = useLocation();
 
     return (
-        <div className='mb-8'>
+        <>
             <ViewHeader className='min-h-0 pb-6 pt-9 before:hidden'>
                 <H1>Stats</H1>
             </ViewHeader>
@@ -52,7 +52,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                 </NavbarActions>
             </Navbar>
 
-        </div>
+        </>
     );
 };
 

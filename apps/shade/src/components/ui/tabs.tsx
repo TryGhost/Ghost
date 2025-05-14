@@ -168,8 +168,13 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value, diffDirection, d
     );
     return (
         <div className='flex w-full flex-col items-start gap-2'>
-            <div className='items-top flex gap-2 font-semibold tracking-tight'>
-                <span className='text-base font-medium text-gray-700'>{label}</span>
+            <div className='text-base font-medium tracking-tight text-gray-700'>
+                {label}
+            </div>
+            <div className='flex flex-col items-start gap-1'>
+                <div className='text-[2.0rem] font-semibold tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>
+                    {value}
+                </div>
                 {diffValue &&
                     <>
                         <div className={diffContainerClassName}>
@@ -184,7 +189,6 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value, diffDirection, d
                     </>
                 }
             </div>
-            <div className='text-[2.0rem] font-semibold tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>{value}</div>
         </div>
     );
 };
