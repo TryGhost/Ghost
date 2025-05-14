@@ -13,13 +13,13 @@ describe('i18n', function () {
                 const translationFile = require(path.join(`../locales/`, locale, file));
 
                 for (const key of Object.keys(translationFile)) {
-                    const keyStartCount = key.match(/{{/g)?.length;
-                    assert.equal(keyStartCount, key.match(/}}/g)?.length, `[${locale}/${file}] mismatched brackets in ${key}`);
+                    const keyStartCount = key.match(/{/g)?.length;
+                    assert.equal(keyStartCount, key.match(/}/g)?.length, `[${locale}/${file}] mismatched brackets in ${key}`);
 
                     const value = translationFile[key];
                     if (typeof value === 'string') {
-                        const valueStartCount = value.match(/{{/g)?.length;
-                        assert.equal(valueStartCount, value.match(/}}/g)?.length, `[${locale}/${file}] mismatched brackets in ${value}`);
+                        const valueStartCount = value.match(/{/g)?.length;
+                        assert.equal(valueStartCount, value.match(/}/g)?.length, `[${locale}/${file}] mismatched brackets in ${value}`);
 
                         // Maybe enable in the future if we want to enforce this
                         //if (value !== '') {
