@@ -1,3 +1,4 @@
+require('should');
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
