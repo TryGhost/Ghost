@@ -84,7 +84,6 @@
     "lint-staged": "15.5.2",
     "nx": "20.8.1",
     "rimraf": "5.0.10",
-    "ts-node": "10.9.2",
     "typescript": "5.8.3"
   }
 }
