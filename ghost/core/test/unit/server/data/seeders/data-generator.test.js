@@ -1,6 +1,6 @@
 require('should');
 
-const knex = require('knex');
+const knex = require('knex').default;
 
 const importers = require('../../../../../core/server/data/seeders/importers');
 const ProductsImporter = importers.find(i => i.table === 'products');
@@ -76,7 +76,6 @@ describe('Data Generator', function () {
 
     it('Can import the whole dataset without error', async function () {
         const dataGenerator = new DataGenerator({
-            eventsOnly: false,
             knex: db,
             schema,
             schemaTables,
