@@ -6,7 +6,7 @@ const contextualRender = (ui, {appContext, ...renderOptions}) => {
     const contextWithDefaults = {
         t: (str, replacements) => {
             if (replacements) {
-                return str.replace(/{{([^{}]*)}}/g, (_, key) => replacements[key]);
+                return str.replace(/{([^{}]*)}/g, (_, key) => replacements[key]);
             }
             return str;
         },
