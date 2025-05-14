@@ -79,5 +79,4 @@ RUN --mount=type=cache,target=/home/ghost/.yarn-cache \
 # --------------------
 FROM development-base AS development
 COPY . .
-RUN yarn nx run-many -t build:ts
 CMD ["yarn", "dev"]
