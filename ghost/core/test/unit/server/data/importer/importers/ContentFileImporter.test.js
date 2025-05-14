@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const _ = require('lodash');
 const sinon = require('sinon');
 
@@ -13,9 +14,9 @@ describe('ContentFileImporter', function () {
             type: 'images',
             store: {}
         });
-        imageImporter.type.should.eql('images');
-        imageImporter.preProcess.should.be.instanceof(Function);
-        imageImporter.doImport.should.be.instanceof(Function);
+        assert.equal(imageImporter.type, 'images');
+        assert.equal(imageImporter.preProcess instanceof Function, true);
+        assert.equal(imageImporter.doImport instanceof Function, true);
     });
 
     it('does preprocess posts, users and tags correctly', function () {
@@ -29,26 +30,26 @@ describe('ContentFileImporter', function () {
         inputData = inputData.data.data;
         outputData = outputData.data.data;
 
-        inputData.posts[0].markdown.should.not.containEql('/content/images/my-image.png');
-        inputData.posts[0].html.should.not.containEql('/content/images/my-image.png');
-        outputData.posts[0].markdown.should.containEql('/content/images/my-image.png');
-        outputData.posts[0].html.should.containEql('/content/images/my-image.png');
+        assert.equal(inputData.posts[0].markdown.includes('/content/images/my-image.png'), false);
+        assert.equal(inputData.posts[0].html.includes('/content/images/my-image.png'), false);
+        assert.equal(outputData.posts[0].markdown.includes('/content/images/my-image.png'), true);
+        assert.equal(outputData.posts[0].html.includes('/content/images/my-image.png'), true);
 
-        inputData.posts[0].markdown.should.not.containEql('/content/images/photos/cat.jpg');
-        inputData.posts[0].html.should.not.containEql('/content/images/photos/cat.jpg');
-        outputData.posts[0].markdown.should.containEql('/content/images/photos/cat.jpg');
-        outputData.posts[0].html.should.containEql('/content/images/photos/cat.jpg');
+        assert.equal(inputData.posts[0].markdown.includes('/content/images/photos/cat.jpg'), false);
+        assert.equal(inputData.posts[0].html.includes('/content/images/photos/cat.jpg'), false);
+        assert.equal(outputData.posts[0].markdown.includes('/content/images/photos/cat.jpg'), true);
+        assert.equal(outputData.posts[0].html.includes('/content/images/photos/cat.jpg'), true);
 
-        inputData.posts[0].feature_image.should.eql('/images/my-image.png');
-        outputData.posts[0].feature_image.should.eql('/content/images/my-image.png');
+        assert.equal(inputData.posts[0].feature_image, '/images/my-image.png');
+        assert.equal(outputData.posts[0].feature_image, '/content/images/my-image.png');
 
-        inputData.tags[0].feature_image.should.eql('/images/my-image.png');
-        outputData.tags[0].feature_image.should.eql('/content/images/my-image.png');
+        assert.equal(inputData.tags[0].feature_image, '/images/my-image.png');
+        assert.equal(outputData.tags[0].feature_image, '/content/images/my-image.png');
 
-        inputData.users[0].profile_image.should.eql('/images/my-image.png');
-        inputData.users[0].cover_image.should.eql('/images/photos/cat.jpg');
-        outputData.users[0].profile_image.should.eql('/content/images/my-image.png');
-        outputData.users[0].cover_image.should.eql('/content/images/photos/cat.jpg');
+        assert.equal(inputData.users[0].profile_image, '/images/my-image.png');
+        assert.equal(inputData.users[0].cover_image, '/images/photos/cat.jpg');
+        assert.equal(outputData.users[0].profile_image, '/content/images/my-image.png');
+        assert.equal(outputData.users[0].cover_image, '/content/images/photos/cat.jpg');
     });
 
     it('does import the images correctly', async function () {
@@ -62,7 +63,7 @@ describe('ContentFileImporter', function () {
 
         await imageImporter.doImport(inputData.images);
 
-        storageApi.save.calledTwice.should.be.true();
+        assert.equal(storageApi.save.calledTwice, true);
     });
 
     it('does import the files correctly', async function () {
@@ -76,8 +77,8 @@ describe('ContentFileImporter', function () {
 
         await imageImporter.doImport(inputData.files);
 
-        storageApi.save.calledOnce.should.be.true();
-        storageApi.save.args[0][0].name.should.eql('best-memes.pdf');
-        storageApi.save.args[0][0].newPath.should.eql('/content/files/best-memes.pdf');
+        assert.equal(storageApi.save.calledOnce, true);
+        assert.equal(storageApi.save.args[0][0].name, 'best-memes.pdf');
+        assert.equal(storageApi.save.args[0][0].newPath, '/content/files/best-memes.pdf');
     });
 });

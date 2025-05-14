@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const EmailSegmenter = require('../../../../../core/server/services/email-service/EmailSegmenter');
 const sinon = require('sinon');
 
@@ -35,11 +36,11 @@ describe('Email segmenter', function () {
                 }
             }, 'all', null
             );
-            listStub.calledOnce.should.be.true();
-            listStub.calledWith({
+            assert.equal(listStub.calledOnce, true);
+            sinon.assert.calledWith(listStub, {
                 filter: 'newsletters.id:\'newsletter-123\'+email_disabled:0'
-            }).should.be.true();
-            response.should.eql(12);
+            });
+            assert.equal(response, 12);
         });
 
         it('throws errors for incorrect recipient filter or visibility', async function () {
@@ -57,7 +58,7 @@ describe('Email segmenter', function () {
                 }, 'none', null
                 );
             } catch (e) {
-                e.message.should.eql('Cannot send email to "none" recipient filter');
+                assert.equal(e.message, 'Cannot send email to "none" recipient filter');
             }
 
             try {
@@ -71,7 +72,7 @@ describe('Email segmenter', function () {
                 }, 'members', null
                 );
             } catch (e) {
-                e.message.should.eql('Unexpected visibility value "". Use one of the valid: "members", "paid".');
+                assert.equal(e.message, 'Unexpected visibility value "". Use one of the valid: "members", "paid".');
             }
         });
 
@@ -92,11 +93,11 @@ describe('Email segmenter', function () {
                 null
             );
 
-            listStub.calledOnce.should.be.true();
-            listStub.calledWith({
+            assert.equal(listStub.calledOnce, true);
+            sinon.assert.calledWith(listStub, {
                 filter: 'newsletters.id:\'newsletter-123\'+email_disabled:0+(labels:test)+status:-free'
-            }).should.be.true();
-            response.should.eql(12);
+            });
+            assert.equal(response, 12);
         });
 
         it('creates correct filter and count for paid visibility and custom segment', async function () {
@@ -116,11 +117,11 @@ describe('Email segmenter', function () {
                 'status:free'
             );
 
-            listStub.calledOnce.should.be.true();
-            listStub.calledWith({
+            assert.equal(listStub.calledOnce, true);
+            sinon.assert.calledWith(listStub, {
                 filter: 'newsletters.id:\'newsletter-123\'+email_disabled:0+(labels:test)+(status:free)'
-            }).should.be.true();
-            response.should.eql(12);
+            });
+            assert.equal(response, 12);
         });
     });
 });
