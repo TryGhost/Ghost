@@ -324,7 +324,8 @@ class EmailRenderer {
 
         if (this.getLabs()?.isSet('emailCustomizationAlpha')) {
             renderOptions.design = {
-                buttonCorners: newsletter?.get('button_corners')
+                buttonCorners: newsletter?.get('button_corners'),
+                buttonStyle: newsletter?.get('button_style')
             };
         }
 
@@ -996,6 +997,11 @@ class EmailRenderer {
             }
         }
 
+        let hasOutlineButtons = false;
+        if (labs.isSet('emailCustomizationAlpha') && newsletter.get('button_style') === 'outline') {
+            hasOutlineButtons = true;
+        }
+
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
         const {href: postFeatureImage, width: postFeatureImageWidth, height: postFeatureImageHeight} = await this.limitImageWidth(post.get('feature_image'));
 
@@ -1149,6 +1155,7 @@ class EmailRenderer {
             showHeaderName: newsletter.get('show_header_name'),
             showFeatureImage: newsletter.get('show_feature_image') && !!postFeatureImage,
             footerContent: newsletter.get('footer_content'),
+            hasOutlineButtons,
 
             classes: {
                 title: 'post-title' + ` ` + (post.get('custom_excerpt') ? 'post-title-with-excerpt' : 'post-title-no-excerpt') + (newsletter.get('title_font_category') === 'serif' ? ` post-title-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-title-left` : ``),
