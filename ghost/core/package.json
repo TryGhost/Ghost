@@ -104,7 +104,7 @@
     "@tryghost/nodemailer": "0.3.47",
     "@tryghost/nql": "0.12.7",
     "@tryghost/pretty-cli": "1.2.46",
-    "@tryghost/prometheus-metrics": "0.0.0",
+    "@tryghost/prometheus-metrics": "1.0.0",
     "@tryghost/promise": "0.3.14",
     "@tryghost/referrer-parser": "0.1.4",
     "@tryghost/request": "1.0.10",
