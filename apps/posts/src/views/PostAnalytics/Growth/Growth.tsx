@@ -1,7 +1,7 @@
 import KpiCard, {KpiCardContent, KpiCardIcon, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, formatNumber} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber} from '@tryghost/shade';
 import {SourceRow} from '../Web/components/Sources';
 import {useParams} from '@tryghost/admin-x-framework';
 import {usePostReferrers} from '../../../hooks/usePostReferrers';
@@ -33,9 +33,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
 
     return (
         <>
-            <ViewHeader className='items-end pb-4'>
-                <PostAnalyticsHeader currentTab='Growth' />
-            </ViewHeader>
+            <PostAnalyticsHeader currentTab='Growth' />
             <PostAnalyticsContent>
                 {isLoading ? 'Loading' :
                     <div className='flex flex-col items-stretch gap-6'>

@@ -2,7 +2,7 @@
 import KpiCard, {KpiCardContent, KpiCardIcon, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, ViewHeader, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
 import {calculateYAxisWidth} from '@src/utils/chart-helpers';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useMemo, useRef, useState} from 'react';
@@ -143,12 +143,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     return (
         <>
-            <ViewHeader className='items-end pb-4'>
-                <PostAnalyticsHeader currentTab='Newsletter' />
-                {/* <ViewHeaderActions className='mb-2'>
-                    <AudienceSelect />
-                </ViewHeaderActions> */}
-            </ViewHeader>
+            <PostAnalyticsHeader currentTab='Newsletter' />
             <PostAnalyticsContent>
                 {isLoading ? 'Loading' :
                     <div className='flex flex-col items-stretch gap-6'>
