@@ -1,11 +1,10 @@
-import KpiCard, {KpiCardContent, KpiCardIcon, KpiCardLabel, KpiCardValue} from './components/KpiCard';
-import PostAnalyticsContent from './components/PostAnalyticsContent';
-import PostAnalyticsHeader from './components/PostAnalyticsHeader';
-import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
+import KpiCard, {KpiCardContent, KpiCardIcon, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
+import PostAnalyticsContent from '../components/PostAnalyticsContent';
+import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, formatNumber} from '@tryghost/shade';
-import {SourceRow} from './components/Web/Sources';
+import {SourceRow} from '../Web/components/Sources';
 import {useParams} from '@tryghost/admin-x-framework';
-import {usePostReferrers} from '../../hooks/usePostReferrers';
+import {usePostReferrers} from '../../../hooks/usePostReferrers';
 
 const centsToDollars = (value : number) => {
     return Math.round(value / 100);
@@ -16,7 +15,7 @@ const hasLinkableUrl = (url: string | undefined): boolean => {
     if (!url) {
         return false;
     }
-    
+
     try {
         new URL(url);
         return true;
@@ -33,7 +32,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
     const {stats: postReferrers, totals, isLoading} = usePostReferrers(postId || '');
 
     return (
-        <PostAnalyticsLayout>
+        <>
             <ViewHeader className='items-end pb-4'>
                 <PostAnalyticsHeader currentTab='Growth' />
             </ViewHeader>
@@ -126,7 +125,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                     </div>
                 }
             </PostAnalyticsContent>
-        </PostAnalyticsLayout>
+        </>
     );
 };
 
