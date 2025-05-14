@@ -126,12 +126,13 @@ describe('i18n', function () {
         });
     });
 
-    describe('newsletter i18n', function () {
+    describe('newsletter (now ghost) i18n', function () {
         it('should be able to translate and interpolate a date', async function () {
             const t = i18n('fr', 'ghost').t;
             assert.equal(t('Your subscription will renew on {date}.', {date: '8 Oct 2024'}), 'Votre abonnement sera renouvelé le 8 Oct 2024.');
         });
     });
+
     describe('it gracefully falls back to en if a file is missing', function () {
         it('should be able to translate a key that is missing in the locale', async function () {
             const resources = i18n.generateResources(['xx'], 'portal');
@@ -287,8 +288,8 @@ describe('i18n', function () {
             assert.equal(t('Welcome, {{name}}', {name: 'John'}), 'Welcome, John');
         });
 
-        it('uses single curly braces for newsletter namespace interpolation', async function () {
-            const t = i18n('en', 'newsletter').t;
+        it('uses single curly braces for ghost namespace interpolation', async function () {
+            const t = i18n('en', 'ghost').t;
             assert.equal(t('Welcome, {name}', {name: 'John'}), 'Welcome, John');
         });
 
@@ -337,19 +338,20 @@ describe('i18n', function () {
             assert.equal(instance.options.interpolation.suffix, '}');
         });
 
-        it('initializes with correct newsletter configuration', function () {
-            const instance = i18n('en', 'newsletter');
+        it('initializes with correct newsletter (now ghost) configuration', function () {
+            // note: we just merged newsletter into Ghost, so there might be some redundancy here
+            const instance = i18n('en', 'ghost');
 
             // Verify basic configuration
             assert.equal(instance.language, 'en');
-            assert.deepEqual(instance.options.ns, ['newsletter']);
-            assert.equal(instance.options.defaultNS, 'newsletter');
+            assert.deepEqual(instance.options.ns, ['ghost']);
+            assert.equal(instance.options.defaultNS, 'ghost');
             assert.equal(instance.options.fallbackLng.default[0], 'en');
             assert.equal(instance.options.returnEmptyString, false);
             assert.equal(instance.options.nsSeparator, false);
             assert.equal(instance.options.keySeparator, false);
 
-            // Verify interpolation configuration for newsletter namespace
+            // Verify interpolation configuration for ghost namespace
             assert.equal(instance.options.interpolation.prefix, '{');
             assert.equal(instance.options.interpolation.suffix, '}');
         });
