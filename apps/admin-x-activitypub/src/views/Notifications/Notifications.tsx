@@ -122,9 +122,7 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
         }
         break;
     case 'mention':
-        if (group.inReplyTo && typeof group.inReplyTo !== 'string') {
-            return <>{actorText} mentioned you in a {group.inReplyTo?.type === 'article' ? 'post' : 'note'}</>;
-        }
+        return <>{actorText} mentioned you in a {group.inReplyTo?.type === 'article' ? 'post' : 'note'}</>;
     }
 
     return <></>;
@@ -202,7 +200,7 @@ const Notifications: React.FC = () => {
             }
             break;
         case 'mention':
-            if (group.post && group.inReplyTo) {
+            if (group.post) {
                 navigate(`/feed/${encodeURIComponent(group.post.id)}`);
             }
             break;
@@ -332,7 +330,7 @@ const Notifications: React.FC = () => {
                                                     }
                                                 </div>
                                                 {(
-                                                    ((group.type === 'reply' || group.type === 'mention') && group.inReplyTo) ||
+                                                    ((group.type === 'reply' && group.inReplyTo) || group.type === 'mention') ||
                                                     (group.type === 'like' && !group.post?.name && group.post?.content) ||
                                                     (group.type === 'repost' && !group.post?.name && group.post?.content)
                                                 ) && (
