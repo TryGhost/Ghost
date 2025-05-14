@@ -1,3 +1,4 @@
+import DateRangeSelect from '../components/DateRangeSelect';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 
@@ -5,10 +6,10 @@ const Overview: React.FC = () => {
     return (
         <>
             <PostAnalyticsHeader currentTab='Overview'>
-                [View actions]
+                <DateRangeSelect />
             </PostAnalyticsHeader>
             <PostAnalyticsContent>
-                <div>Hey analytics overview</div>
+                <div>Analytics overview</div>
             </PostAnalyticsContent>
         </>
     );
