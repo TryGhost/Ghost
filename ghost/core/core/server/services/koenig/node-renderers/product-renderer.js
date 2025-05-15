@@ -92,40 +92,48 @@ export function emailCardTemplate({data, feature}) {
     if (feature?.emailCustomizationAlpha) {
         return (
             `
-             <table class="kg-product-card" cellspacing="0" cellpadding="0" border="0">
-                ${data.productImageSrc ? `
-                    <tr>
-                        <td class="kg-product-image" align="center">
-                            <img src="${data.productImageSrc}" ${imageDimensions ? `width="${imageDimensions.width}"` : ''} ${imageDimensions ? `height="${imageDimensions.height}"` : ''} border="0"/>
-                        </td>
-                    </tr>
-                ` : ''}
+            <table class="kg-product-card" cellspacing="0" cellpadding="0" border="0">
                 <tr>
-                    <td valign="top">
-                        <h4 class="kg-product-title">${data.productTitle}</h4>
+                    <td class="kg-product-card-container">
+                        <table cellspacing="0" cellpadding="0" border="0">
+                            ${data.productImageSrc ? `
+                                <tr>
+                                    <td class="kg-product-image" align="center">
+                                        <img src="${data.productImageSrc}" ${imageDimensions ? `width="${imageDimensions.width}"` : ''} ${imageDimensions ? `height="${imageDimensions.height}"` : ''} border="0"/>
+                                    </td>
+                                </tr>
+                            ` : ''}
+                            <tr>
+                                <td valign="top">
+                                    <h4 class="kg-product-title">${data.productTitle}</h4>
+                                </td>
+                            </tr>
+                            ${data.productRatingEnabled ? `
+                                <tr class="kg-product-rating">
+                                    <td valign="top">
+                                        <img src="${`https://static.ghost.org/v4.0.0/images/star-rating-${data.productStarRating}.png`}" border="0" />
+                                    </td>
+                                </tr>
+                            ` : ''}
+                            <tr>
+                                <td class="kg-product-description-wrapper">${data.productDescription}</td>
+                            </tr>
+                            ${data.productButtonEnabled ? `
+                                <tr>
+                                    <td class="kg-product-button-wrapper">
+                                        <table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0">
+                                            <tr>
+                                                <td align="center" width="100%">
+                                                    <a href="${data.productUrl}">${data.productButton}</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            ` : ''}
+                        </table>
                     </td>
                 </tr>
-                ${data.productRatingEnabled ? `
-                    <tr class="kg-product-rating">
-                        <td valign="top">
-                            <img src="${`https://static.ghost.org/v4.0.0/images/star-rating-${data.productStarRating}.png`}" border="0" />
-                        </td>
-                    </tr>
-                ` : ''}
-                <tr>
-                    <td class="kg-product-description-wrapper">
-                        <div class="kg-product-description">${data.productDescription}</div>
-                    </td>
-                </tr>
-                ${data.productButtonEnabled ? `
-                    <tr>
-                        <td class="kg-product-button-wrapper">
-                            <div class="btn btn-accent">
-                                <a href="${data.productUrl}"><span>${data.productButton}</span></a>
-                            </div>
-                        </td>
-                    </tr>
-                ` : ''}
             </table>
             `
         );

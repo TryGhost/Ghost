@@ -65,15 +65,63 @@ function cardTemplate(nodeData, options = {}) {
         `;
 }
 
-function emailTemplate(nodeData) {
+function emailTemplate(nodeData, feature) {
     const backgroundAccent = nodeData.backgroundColor === 'accent' ? `background-color: ${nodeData.accentColor};` : '';
     const buttonAccent = nodeData.buttonColor === 'accent' ? `background-color: ${nodeData.accentColor};` : nodeData.buttonColor;
     const buttonStyle = nodeData.buttonColor !== 'accent' ? `background-color: ${nodeData.buttonColor};` : '';
     const alignment = nodeData.alignment === 'center' ? 'text-align: center;' : '';
     const backgroundImageStyle = nodeData.backgroundImageSrc ? (nodeData.layout !== 'split' ? `background-image: url(${nodeData.backgroundImageSrc}); background-size: cover; background-position: center center;` : `background-color: ${nodeData.backgroundColor};`) : `background-color: ${nodeData.backgroundColor};`;
-    const splitImageStyle = `background-image: url(${nodeData.backgroundImageSrc}); background-size: ${nodeData.backgroundSize !== 'contain' ? 'cover' : '40%'}; background-position: center`;
+    const splitImageStyle = `background-image: url(${nodeData.backgroundImageSrc}); background-size: ${nodeData.backgroundSize !== 'contain' ? 'cover' : '50%'}; background-position: center`;
 
-    return `
+    if (feature?.emailCustomizationAlpha) {
+        return (
+            `
+            <div class="kg-header-card kg-v2" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
+                ${nodeData.layout === 'split' && nodeData.backgroundImageSrc ? `
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                            <td background="${nodeData.backgroundImageSrc}" style="${splitImageStyle}" class="kg-header-card-image"></td>
+                        </tr>
+                    </table>
+                ` : ''}
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
+                    <tr>
+                        <td class="kg-header-card-content" style="${nodeData.layout === 'split' && nodeData.backgroundSize === 'contain' ? 'padding-top: 0;' : ''}">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td>
+                                        <h2 class="kg-header-card-heading" style="color:${nodeData.textColor};">${nodeData.header}</h2>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="kg-header-card-subheading-wrapper">
+                                        <p class="kg-header-card-subheading" style="color:${nodeData.textColor};">${nodeData.subheader}</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    ${nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '' ? `
+                                        <td class="kg-header-button-wrapper">
+                                            <table class="btn" border="0" cellspacing="0" cellpadding="0" align="${nodeData.alignment}">
+                                                <tr>
+                                                    <td align="center" style="${buttonStyle} ${buttonAccent}">
+                                                        <a href="${nodeData.buttonUrl}" style="color: ${nodeData.buttonTextColor};">${nodeData.buttonText}</a>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    ` : ''}
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            `
+        );
+    }
+
+    return (
+        `
         <div class="kg-header-card kg-v2" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
             ${nodeData.layout === 'split' && nodeData.backgroundImageSrc ? `
                 <div class="kg-header-card-image" background="${nodeData.backgroundImageSrc}" style="${splitImageStyle}"></div>
@@ -86,7 +134,8 @@ function emailTemplate(nodeData) {
                 ` : ''}
             </div>
         </div>
-    `;
+        `
+    );
 }
 
 export function renderHeaderNodeV2(dataset, options = {}) {
@@ -117,7 +166,7 @@ export function renderHeaderNodeV2(dataset, options = {}) {
         const emailDoc = options.createDocument();
         const emailDiv = emailDoc.createElement('div');
 
-        emailDiv.innerHTML = emailTemplate(node, options)?.trim();
+        emailDiv.innerHTML = emailTemplate(node, options.feature)?.trim();
 
         return {element: emailDiv.firstElementChild};
         // return {element: document.createElement('div')}; // TODO
