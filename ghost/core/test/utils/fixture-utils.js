@@ -247,22 +247,26 @@ const fixtures = {
         return models.User.add(user, context.internal);
     },
 
-    overrideOwnerUser: function overrideOwnerUser(slug) {
-        return models.User.getOwnerUser(context.internal)
-            .then(function (ownerUser) {
-                const user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
+    overrideOwnerUser: async function overrideOwnerUser(slug) {
+        const ownerUser = await models.User.getOwnerUser({...context.internal, withRelated: ['apiKeys']});
 
-                if (slug) {
-                    user.slug = slug;
-                }
+        const user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
 
-                return models.User.edit(user, _.merge({id: ownerUser.id}, context.internal));
-            })
-            .then((ownerUser) => {
-                const userApiKey = {...DataGenerator.forKnex.user_api_keys[0], user_id: ownerUser.id};
-                // Insert a new API key for the owner user
-                return models.ApiKey.add(userApiKey, context.internal);
-            });
+        if (slug) {
+            user.slug = slug;
+        }
+
+        await models.User.edit(user, _.merge({id: ownerUser.id}, context.internal));
+
+        // Check if user already has an API key using the related data we already fetched
+        const existingApiKeys = ownerUser.related('apiKeys');
+        if (existingApiKeys.length === 0) {
+            const userApiKey = {...DataGenerator.forKnex.user_api_keys[0], user_id: ownerUser.id};
+            // Only insert a new API key if one doesn't exist
+            await models.ApiKey.add(userApiKey, context.internal);
+        }
+
+        return ownerUser;
     },
 
     changeOwnerUserStatus: function changeOwnerUserStatus(options) {
