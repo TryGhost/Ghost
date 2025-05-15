@@ -46,7 +46,7 @@ export default function AccountEmailPage() {
                     <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}>
                         <Interpolate
                             syntax={SYNTAX_I18NEXT}
-                            string={t('{{memberEmail}} will no longer receive emails when someone replies to your comments.')}
+                            string={t('{memberEmail} will no longer receive emails when someone replies to your comments.')}
                             mapping={{
                                 memberEmail: <strong>{member?.email}</strong>
                             }}
@@ -69,7 +69,7 @@ export default function AccountEmailPage() {
                 <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}>
                     <Interpolate
                         syntax={SYNTAX_I18NEXT}
-                        string={t('{{memberEmail}} will no longer receive {{newsletterName}} newsletter.')}
+                        string={t('{memberEmail} will no longer receive {newsletterName} newsletter.')}
                         mapping={{
                             memberEmail: <strong>{member?.email}</strong>,
                             newsletterName: <strong>{unsubscribedNewsletter?.name}</strong>

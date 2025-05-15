@@ -43,7 +43,7 @@
     "test:browser:setup": "npx playwright install",
     "test:ci:e2e": "c8 -c ./.c8rc.e2e.json -o coverage-e2e yarn test:e2e -b",
     "test:ci:regression": "yarn test:regression -b",
-    "test:ci:integration": "c8 -c ./.c8rc.e2e.json -o coverage-integration --lines 52 --functions 47 --branches 74 --statements 52 yarn test:integration -b",
+    "test:ci:integration": "c8 -c ./.c8rc.e2e.json -o coverage-integration --lines 52 --functions 47 --branches 73 --statements 52 yarn test:integration -b",
     "test:unit:slow": "yarn test:unit --reporter=mocha-slow-test-reporter",
     "test:int:slow": "yarn test:integration --reporter=mocha-slow-test-reporter",
     "test:e2e:slow": "yarn test:e2e --reporter=mocha-slow-test-reporter",
@@ -73,13 +73,11 @@
     "@tryghost/bookshelf-plugins": "0.6.26",
     "@tryghost/color-utils": "0.2.5",
     "@tryghost/config-url-helpers": "1.0.15",
-    "@tryghost/custom-fonts": "0.0.0",
+    "@tryghost/custom-fonts": "1.0.0",
     "@tryghost/database-info": "0.3.29",
     "@tryghost/debug": "0.1.34",
     "@tryghost/domain-events": "1.0.0",
-    "@tryghost/email-addresses": "0.0.0",
     "@tryghost/email-mock-receiver": "0.3.10",
-    "@tryghost/email-service": "0.0.0",
     "@tryghost/errors": "1.3.7",
     "@tryghost/helpers": "1.1.93",
     "@tryghost/html-to-plaintext": "1.0.2",
@@ -91,9 +89,9 @@
     "@tryghost/kg-converters": "1.1.3",
     "@tryghost/kg-default-atoms": "5.1.0",
     "@tryghost/kg-default-cards": "10.1.2",
-    "@tryghost/kg-default-nodes": "1.4.8",
-    "@tryghost/kg-html-to-lexical": "1.2.8",
-    "@tryghost/kg-lexical-html-renderer": "1.3.8",
+    "@tryghost/kg-default-nodes": "1.4.10",
+    "@tryghost/kg-html-to-lexical": "1.2.10",
+    "@tryghost/kg-lexical-html-renderer": "1.3.10",
     "@tryghost/kg-mobiledoc-html-renderer": "7.1.2",
     "@tryghost/limit-service": "1.2.17",
     "@tryghost/logging": "2.4.21",
@@ -104,7 +102,7 @@
     "@tryghost/nodemailer": "0.3.47",
     "@tryghost/nql": "0.12.7",
     "@tryghost/pretty-cli": "1.2.46",
-    "@tryghost/prometheus-metrics": "0.0.0",
+    "@tryghost/prometheus-metrics": "1.0.0",
     "@tryghost/promise": "0.3.14",
     "@tryghost/referrer-parser": "0.1.4",
     "@tryghost/request": "1.0.10",
@@ -194,6 +192,7 @@
     "nconf": "0.13.0",
     "node-fetch": "2.7.0",
     "node-jose": "2.2.0",
+    "nodemailer": "6.10.1",
     "otplib": "12.0.1",
     "papaparse": "5.3.2",
     "path-match": "1.2.4",
@@ -226,8 +225,9 @@
     "@types/bookshelf": "1.2.9",
     "@types/common-tags": "1.8.4",
     "@types/jsonwebtoken": "9.0.9",
-    "@types/node": "22.15.8",
+    "@types/node": "22.15.18",
     "@types/node-jose": "1.1.13",
+    "@types/nodemailer": "6.4.17",
     "@types/sinon": "17.0.4",
     "@types/supertest": "6.0.3",
     "c8": "8.0.1",
@@ -238,6 +238,7 @@
     "expect": "29.7.0",
     "find-root": "1.1.0",
     "form-data": "4.0.2",
+    "html-validate": "8.29.0",
     "inquirer": "8.2.6",
     "jwk-to-pem": "2.0.7",
     "jwks-rsa": "3.2.0",
@@ -270,7 +271,6 @@
       "archive": {
         "dependsOn": [
           "build:assets",
-          "^build:ts",
           "build:tsc",
           {
             "projects": [
@@ -282,81 +282,35 @@
       },
       "dev": {
         "dependsOn": [
-          "^build:ts",
           "build:assets"
-        ]
-      },
-      "test": {
-        "dependsOn": [
-          "^build:ts"
-        ]
-      },
-      "test:single": {
-        "dependsOn": [
-          "^build:ts"
         ]
       },
       "test:all": {
         "dependsOn": [
-          "^build:ts",
           "build:assets"
         ]
       },
       "test:unit": {
         "dependsOn": [
-          "^build:ts",
           "build:assets"
-        ]
-      },
-      "test:integration": {
-        "dependsOn": [
-          "^build:ts"
-        ]
-      },
-      "test:regression": {
-        "dependsOn": [
-          "^build:ts"
         ]
       },
       "test:browser": {
         "dependsOn": [
-          "^build:ts",
           "build:assets",
           "ghost-admin:build"
         ]
       },
       "test:browser:admin": {
         "dependsOn": [
-          "^build:ts",
           "build:assets",
           "ghost-admin:build"
         ]
       },
       "test:browser:portal": {
         "dependsOn": [
-          "^build:ts",
           "build:assets",
           "ghost-admin:build"
-        ]
-      },
-      "test:e2e": {
-        "dependsOn": [
-          "^build:ts"
-        ]
-      },
-      "test:ci:e2e": {
-        "dependsOn": [
-          "^build:ts"
-        ]
-      },
-      "test:ci:regression": {
-        "dependsOn": [
-          "^build:ts"
-        ]
-      },
-      "test:ci:integration": {
-        "dependsOn": [
-          "^build:ts"
         ]
       }
     }

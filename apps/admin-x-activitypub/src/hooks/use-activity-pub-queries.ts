@@ -74,6 +74,8 @@ const QUERY_KEYS = {
     postsByAccount: ['account_posts'],
     postsLikedByAccount: ['account_liked_posts'],
     notifications: (handle: string) => ['notifications', handle],
+    blockedAccounts: (handle: string) => ['blocked_accounts', handle],
+    blockedDomains: (handle: string) => ['blocked_domains', handle],
     post: (id: string) => ['post', id]
 };
 
@@ -308,6 +310,38 @@ function updateReplyCountInCache(queryClient: QueryClient, id: string, delta: nu
     });
 }
 
+export function useBlockedAccountsForUser(handle: string) {
+    return useInfiniteQuery({
+        queryKey: QUERY_KEYS.blockedAccounts(handle),
+        refetchOnMount: 'always',
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.getBlockedAccounts(pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+}
+
+export function useBlockedDomainsForUser(handle: string) {
+    return useInfiniteQuery({
+        queryKey: QUERY_KEYS.blockedDomains(handle),
+        refetchOnMount: 'always',
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.getBlockedDomains(pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+}
+
 export function useLikeMutationForUser(handle: string) {
     const queryClient = useQueryClient();
 
@@ -400,15 +434,18 @@ export function useBlockDomainMutationForUser(handle: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
-        async mutationFn(account: Account) {
+        async mutationFn(data: {url: string, handle?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.blockDomain(new URL(account.apId));
+            return api.blockDomain(new URL(data.url));
         },
-        onMutate: (account: Account) => {
+        onMutate: (data: {url: string, handle?: string}) => {
+            if (!data.handle) {
+                return;
+            }
             queryClient.setQueryData(
-                QUERY_KEYS.account(account.handle),
+                QUERY_KEYS.account(handle),
                 (currentAccount?: Account) => {
                     if (!currentAccount) {
                         return currentAccount;
@@ -429,15 +466,18 @@ export function useUnblockDomainMutationForUser(handle: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
-        async mutationFn(account: Account) {
+        async mutationFn(data: {url: string, handle?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.unblockDomain(new URL(account.apId));
+            return api.unblockDomain(new URL(data.url));
         },
-        onMutate: (account: Account) => {
+        onMutate: (data: {url: string, handle?: string}) => {
+            if (!data.handle) {
+                return;
+            }
             queryClient.setQueryData(
-                QUERY_KEYS.account(account.handle),
+                QUERY_KEYS.account(handle),
                 (currentAccount?: Account) => {
                     if (!currentAccount) {
                         return currentAccount;

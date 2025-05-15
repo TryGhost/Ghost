@@ -15,7 +15,7 @@ const messages = {
  * @param {import('@tryghost/api-framework').Frame} frame
  * @return {Promise}
  */
-const nonePublicAuth = (apiConfig, frame) => {
+const nonePublicAuth = async (apiConfig, frame) => {
     debug('check admin permissions');
 
     let singular;
@@ -40,9 +40,9 @@ const nonePublicAuth = (apiConfig, frame) => {
         unsafeAttrObject = apiConfig.unsafeAttrsObject(frame);
     }
 
-    const permsPromise = permissions.canThis(frame.options.context)[apiConfig.method][singular](permissionIdentifier, unsafeAttrObject);
+    try {
+        const result = await permissions.canThis(frame.options.context)[apiConfig.method][singular](permissionIdentifier, unsafeAttrObject);
 
-    return permsPromise.then((result) => {
         /*
          * Allow the permissions function to return a list of excluded attributes.
          * If it does, omit those attrs from the data passed through
@@ -56,23 +56,23 @@ const nonePublicAuth = (apiConfig, frame) => {
         if (result && result.excludedAttrs && _.has(frame, `data.[${apiConfig.docName}][0]`)) {
             frame.data[apiConfig.docName][0] = _.omit(frame.data[apiConfig.docName][0], result.excludedAttrs);
         }
-    }).catch((err) => {
+    } catch (err) {
         if (err instanceof errors.NoPermissionError) {
             err.message = tpl(messages.noPermissionToCall, {
                 method: apiConfig.method,
                 docName: apiConfig.docName
             });
-            return Promise.reject(err);
+            throw err;
         }
 
         if (errors.utils.isGhostError(err)) {
-            return Promise.reject(err);
+            throw err;
         }
 
-        return Promise.reject(new errors.InternalServerError({
-            err: err
-        }));
-    });
+        throw new errors.InternalServerError({
+            err
+        });
+    }
 };
 
 // @TODO: https://github.com/TryGhost/Ghost/issues/10735

@@ -46,17 +46,15 @@ const controller = {
             'id'
         ],
         permissions: true,
-        query(frame) {
-            return models.Snippet.findOne(frame.data, frame.options)
-                .then((model) => {
-                    if (!model) {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: tpl(messages.snippetNotFound)
-                        }));
-                    }
-
-                    return model;
+        async query(frame) {
+            const model = await models.Snippet.findOne(frame.data, frame.options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.snippetNotFound)
                 });
+            }
+
+            return model;
         }
     },
 
@@ -97,17 +95,15 @@ const controller = {
             }
         },
         permissions: true,
-        query(frame) {
-            return models.Snippet.edit(frame.data.snippets[0], frame.options)
-                .then((model) => {
-                    if (!model) {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: tpl(messages.snippetNotFound)
-                        }));
-                    }
-
-                    return model;
+        async query(frame) {
+            const model = await models.Snippet.edit(frame.data.snippets[0], frame.options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.snippetNotFound)
                 });
+            }
+
+            return model;
         }
     },
 
