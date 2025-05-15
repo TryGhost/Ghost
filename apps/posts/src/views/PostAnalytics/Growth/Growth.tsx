@@ -4,9 +4,9 @@ import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import {BarChartLoadingIndicator, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber} from '@tryghost/shade';
 import {SourceRow} from '../Web/components/Sources';
 import {useParams} from '@tryghost/admin-x-framework';
-import {usePostReferrers} from '../../../hooks/usePostReferrers';
+import {usePostReferrers} from '@src/hooks/usePostReferrers';
 
-const centsToDollars = (value : number) => {
+export const centsToDollars = (value : number) => {
     return Math.round(value / 100);
 };
 
