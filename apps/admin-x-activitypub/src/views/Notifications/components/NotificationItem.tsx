@@ -51,7 +51,7 @@ const Avatars = ({children}: {children: React.ReactNode}) => {
 
 const Content = ({children}: {children: React.ReactNode}) => {
     return (
-        <div className='col-start-2 row-start-2 -mt-0.5 grow'>
+        <div className='col-start-2 row-start-2 -mt-0.5 grow overflow-hidden'>
             {children}
         </div>
     );
