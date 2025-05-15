@@ -4,12 +4,59 @@ import NewsletterOverview from './components/NewsletterPerformance';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import WebOverview from './components/WebPerformance';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, formatNumber} from '@tryghost/shade';
-import {useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, formatNumber, formatQueryDate} from '@tryghost/shade';
+import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
+import {centsToDollars} from '../Growth/Growth';
+import {getRangeDates} from '@src/utils/chart-helpers';
+import {getStatEndpointUrl, getToken, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
+import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useMemo} from 'react';
+import {usePostReferrers} from '@src/hooks/usePostReferrers';
+import {useQuery} from '@tinybirdco/charts';
 
 const Overview: React.FC = () => {
     const {postId} = useParams();
     const navigate = useNavigate();
+    const {range, statsConfig, isLoading: isConfigLoading} = useGlobalData();
+    const {totals, isLoading} = usePostReferrers(postId || '');
+    const {startDate, endDate, timezone} = getRangeDates(range);
+
+    const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
+        searchParams: {
+            filter: `id:${postId}`,
+            fields: 'title,slug,published_at,uuid'
+        }
+    });
+
+    const params = useMemo(() => {
+        const baseParams = {
+            site_uuid: statsConfig?.id || '',
+            date_from: formatQueryDate(startDate),
+            date_to: formatQueryDate(endDate),
+            timezone: timezone,
+            post_uuid: ''
+        };
+
+        if (!isPostLoading && post?.uuid) {
+            return {
+                ...baseParams,
+                post_uuid: post.uuid
+            };
+        }
+
+        return baseParams;
+    }, [isPostLoading, post, statsConfig?.id, startDate, endDate, timezone]);
+
+    const {data, loading} = useQuery({
+        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
+        token: getToken(statsConfig),
+        params: params
+    });
+
+    const kpiValues = getWebKpiValues(data as unknown as KpiDataItem[] | null);
+
+    const kpiIsLoading = isLoading || isConfigLoading || loading;
 
     return (
         <>
@@ -22,50 +69,56 @@ const Overview: React.FC = () => {
                         <CardTitle>Newsletter performance</CardTitle>
                     </CardHeader>
                     <CardContent className='flex items-stretch p-0'>
-                        <KpiCard className='grow' onClick={() => {
-                            navigate(`/analytics/x/${postId}/web`);
-                        }}>
-                            <KpiCardLabel>
-                                <LucideIcon.MousePointer size={16} strokeWidth={1.5} />
-                                Unique visitors
-                            </KpiCardLabel>
-                            <KpiCardContent>
-                                <KpiCardValue>{formatNumber(18997)}</KpiCardValue>
-                            </KpiCardContent>
-                        </KpiCard>
-                        <KpiCard className='grow' onClick={() => {
-                            navigate(`/analytics/x/${postId}/web`);
-                        }}>
-                            <KpiCardLabel>
-                                <LucideIcon.Eye size={16} strokeWidth={1.5} />
-                                Pageviews
-                            </KpiCardLabel>
-                            <KpiCardContent>
-                                <KpiCardValue>{formatNumber(29127)}</KpiCardValue>
-                            </KpiCardContent>
-                        </KpiCard>
-                        <KpiCard className='grow' onClick={() => {
-                            navigate(`/analytics/x/${postId}/growth`);
-                        }}>
-                            <KpiCardLabel>
-                                <LucideIcon.UserPlus size={16} strokeWidth={1.5} />
-                                Conversions
-                            </KpiCardLabel>
-                            <KpiCardContent>
-                                <KpiCardValue>{formatNumber(18997)}</KpiCardValue>
-                            </KpiCardContent>
-                        </KpiCard>
-                        <KpiCard className='grow' onClick={() => {
-                            navigate(`/analytics/x/${postId}/growth`);
-                        }}>
-                            <KpiCardLabel>
-                                <LucideIcon.DollarSign size={16} strokeWidth={1.5} />
-                                MRR impact
-                            </KpiCardLabel>
-                            <KpiCardContent>
-                                <KpiCardValue>$91</KpiCardValue>
-                            </KpiCardContent>
-                        </KpiCard>
+                        {kpiIsLoading ?
+                            ''
+                            :
+                            <>
+                                <KpiCard className='grow' onClick={() => {
+                                    navigate(`/analytics/x/${postId}/web`);
+                                }}>
+                                    <KpiCardLabel>
+                                        <LucideIcon.MousePointer size={16} strokeWidth={1.5} />
+                                    Unique visitors
+                                    </KpiCardLabel>
+                                    <KpiCardContent>
+                                        <KpiCardValue>{formatNumber(kpiValues.visits)}</KpiCardValue>
+                                    </KpiCardContent>
+                                </KpiCard>
+                                <KpiCard className='grow' onClick={() => {
+                                    navigate(`/analytics/x/${postId}/web`);
+                                }}>
+                                    <KpiCardLabel>
+                                        <LucideIcon.Eye size={16} strokeWidth={1.5} />
+                                    Pageviews
+                                    </KpiCardLabel>
+                                    <KpiCardContent>
+                                        <KpiCardValue>{formatNumber(kpiValues.views)}</KpiCardValue>
+                                    </KpiCardContent>
+                                </KpiCard>
+                                <KpiCard className='grow' onClick={() => {
+                                    navigate(`/analytics/x/${postId}/growth`);
+                                }}>
+                                    <KpiCardLabel>
+                                        <LucideIcon.UserPlus size={16} strokeWidth={1.5} />
+                                    Conversions
+                                    </KpiCardLabel>
+                                    <KpiCardContent>
+                                        <KpiCardValue>{formatNumber((totals?.free_members || 0) + (totals?.paid_members || 0))}</KpiCardValue>
+                                    </KpiCardContent>
+                                </KpiCard>
+                                <KpiCard className='grow' onClick={() => {
+                                    navigate(`/analytics/x/${postId}/growth`);
+                                }}>
+                                    <KpiCardLabel>
+                                        <LucideIcon.DollarSign size={16} strokeWidth={1.5} />
+                                    MRR impact
+                                    </KpiCardLabel>
+                                    <KpiCardContent>
+                                        <KpiCardValue>${centsToDollars(totals?.mrr || 0)}</KpiCardValue>
+                                    </KpiCardContent>
+                                </KpiCard>
+                            </>
+                        }
                     </CardContent>
                 </Card>
                 <Card className='group/card'>
@@ -104,24 +157,6 @@ const Overview: React.FC = () => {
                         <WebOverview />
                     </CardContent>
                 </Card>
-                {/* <div className='grid grid-cols-2 gap-8'>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Help box 1</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            Description...
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Help box 2</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            Description...
-                        </CardContent>
-                    </Card>
-                </div> */}
             </PostAnalyticsContent>
         </>
     );
