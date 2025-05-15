@@ -12,6 +12,8 @@ require('./server/overrides');
 const debug = require('@tryghost/debug')('boot');
 // END OF GLOBAL REQUIRES
 
+console.log('boot.js loaded');
+
 /**
  * Helper class to create consistent log messages
  */

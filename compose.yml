@@ -4,8 +4,6 @@ name: ghost
 x-service-template: &service-template
   volumes:
     - .:/home/ghost
-    - ${SSH_AUTH_SOCK}:/ssh-agent
-    - ${HOME}/.gitconfig:/root/.gitconfig:ro
     - node_modules_ghost_root:/home/ghost/node_modules:delegated
     - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
     - node_modules_ghost_core:/home/ghost/ghost/core/node_modules:delegated
@@ -36,6 +34,8 @@ x-service-template: &service-template
 services:
   ghost:
     <<: *service-template
+    # Use either the pre-built image (if available) or build from source
+    image: ghost-development
     build:
       context: .
       dockerfile: ./.docker/Dockerfile

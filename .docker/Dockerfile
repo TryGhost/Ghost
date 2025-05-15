@@ -16,6 +16,9 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     apt clean
 
+ENV NX_CACHE_DIRECTORY=/home/nx/.nxcache
+ENV NX_WORKSPACE_DATA_DIRECTORY=/home/nx/.nx
+
 # --------------------
 # Playwright Version
 # --------------------
@@ -70,8 +73,8 @@ COPY ghost/admin/package.json ghost/admin/package.json
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
 
-RUN --mount=type=cache,target=/home/ghost/.yarn-cache \
-    yarn config set cache-folder /home/ghost/.yarn-cache && \
+RUN --mount=type=cache,target=/home/yarn/.yarn-cache \
+    yarn config set cache-folder /home/yarn/.yarn-cache && \
     yarn install --frozen-lockfile --prefer-offline
 
 # --------------------
