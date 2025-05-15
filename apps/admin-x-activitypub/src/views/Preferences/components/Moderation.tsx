@@ -58,14 +58,14 @@ const Moderation: React.FC = () => {
         });
     };
 
-    const handleDomainUnblock = (account: Account) => {
+    const handleDomainUnblock = (domain: {url: string}) => {
         setUnblockedDomainIds((prev) => {
             const newSet = new Set([...prev]);
-            newSet.add(account.apId);
+            newSet.add(domain.url);
             return newSet;
         });
 
-        unblockDomainMutation.mutate(account);
+        unblockDomainMutation.mutate({url: domain.url});
 
         showToast({
             title: 'Domain unblocked',
@@ -73,14 +73,14 @@ const Moderation: React.FC = () => {
         });
     };
 
-    const handleDomainBlock = (account: Account) => {
+    const handleDomainBlock = (domain: {url: string}) => {
         setUnblockedDomainIds((prev) => {
             const newSet = new Set([...prev]);
-            newSet.delete(account.apId);
+            newSet.delete(domain.url);
             return newSet;
         });
 
-        blockDomainMutation.mutate(account);
+        blockDomainMutation.mutate({url: domain.url});
 
         showToast({
             title: 'Domain blocked',
@@ -166,14 +166,14 @@ const Moderation: React.FC = () => {
                                 </NoValueLabel>
                             ) : (
                                 blockedDomains.map((domain, index) => (
-                                    <ActivityItem key={domain.apId ? domain.apId : `loading-${index}`}>
+                                    <ActivityItem key={domain.url ? domain.url : `loading-${index}`}>
                                         <div className='flex min-w-0 flex-col'>
                                             <span className='block truncate font-semibold text-black dark:text-white'>
-                                                {!blockedDomainsLoading ? domain.name : <Skeleton className='w-48' />}
+                                                {!blockedDomainsLoading ? new URL(domain.url).hostname : <Skeleton className='w-48' />}
                                             </span>
                                         </div>
 
-                                        {unblockedDomainIds.has(domain.apId) ? (
+                                        {unblockedDomainIds.has(domain.url) ? (
                                             <Button
                                                 className='ml-auto min-w-[90px] text-red hover:!bg-red/5 hover:text-red-400'
                                                 variant='outline'
@@ -187,10 +187,10 @@ const Moderation: React.FC = () => {
                                                     className='ml-auto min-w-[90px]'
                                                     variant='destructive'
                                                     onClick={() => handleDomainUnblock(domain)}
-                                                    onMouseEnter={() => setHoveredItemId(domain.apId)}
+                                                    onMouseEnter={() => setHoveredItemId(domain.url)}
                                                     onMouseLeave={() => setHoveredItemId(null)}
                                                 >
-                                                    {hoveredItemId === domain.apId ? 'Unblock' : 'Blocked'}
+                                                    {hoveredItemId === domain.url ? 'Unblock' : 'Blocked'}
                                                 </Button> :
                                                 <div className='ml-auto w-16'>
                                                     <Skeleton />

@@ -221,6 +221,7 @@ function updateReplyCountInCache(queryClient: QueryClient, id: string, delta: nu
 export function useBlockedAccountsForUser(handle: string) {
     return useInfiniteQuery({
         queryKey: QUERY_KEYS.blockedAccounts(handle),
+        refetchOnMount: 'always',
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
@@ -236,6 +237,7 @@ export function useBlockedAccountsForUser(handle: string) {
 export function useBlockedDomainsForUser(handle: string) {
     return useInfiniteQuery({
         queryKey: QUERY_KEYS.blockedDomains(handle),
+        refetchOnMount: 'always',
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
