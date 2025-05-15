@@ -73,9 +73,9 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
 
     const handleDomainBlock = () => {
         if (isDomainBlocked) {
-            unblockDomainMutation.mutate(account);
+            unblockDomainMutation.mutate({url: account.apId, handle: account.handle});
         } else {
-            blockDomainMutation.mutate(account);
+            blockDomainMutation.mutate({url: account.apId, handle: account.handle});
             showToast({
                 title: 'Domain blocked',
                 type: 'success'
