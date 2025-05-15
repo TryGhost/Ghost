@@ -37,6 +37,10 @@ describe('Themes middleware', function () {
     let fakeSiteData;
     let fakeLabsData;
     let fakeCustomThemeSettingsData;
+    let activeThemeGetStub;
+    let settingsCacheGetStub;
+    let hbsUpdateTemplateOptionsStub;
+    let hbsUpdateLocalTemplateOptionsStub;
 
     beforeEach(function () {
         req = {app: {}, header: () => {}};
@@ -65,10 +69,10 @@ describe('Themes middleware', function () {
             header_typography: 'Sans-Serif'
         };
 
-        sandbox.stub(activeTheme, 'get')
+        activeThemeGetStub = sandbox.stub(activeTheme, 'get')
             .returns(fakeActiveTheme);
 
-        sandbox.stub(settingsCache, 'get')
+        settingsCacheGetStub = sandbox.stub(settingsCache, 'get')
             .withArgs('active_theme').returns(fakeActiveThemeName);
 
         sandbox.stub(labs, 'getAll').returns(fakeLabsData);
@@ -79,8 +83,8 @@ describe('Themes middleware', function () {
         sandbox.stub(customThemeSettingsCache, 'getAll')
             .returns(fakeCustomThemeSettingsData);
 
-        sandbox.stub(hbs, 'updateTemplateOptions');
-        sandbox.stub(hbs, 'updateLocalTemplateOptions');
+        hbsUpdateTemplateOptionsStub = sandbox.stub(hbs, 'updateTemplateOptions');
+        hbsUpdateLocalTemplateOptionsStub = sandbox.stub(hbs, 'updateLocalTemplateOptions');
     });
 
     it('mounts active theme if not yet mounted', function (done) {
@@ -117,8 +121,8 @@ describe('Themes middleware', function () {
     });
 
     it('throws error if theme is missing', function (done) {
-        activeTheme.get.restore();
-        sandbox.stub(activeTheme, 'get')
+        activeThemeGetStub.restore();
+        activeThemeGetStub = sandbox.stub(activeTheme, 'get')
             .returns(undefined);
 
         executeMiddleware(middleware, req, res, function next(err) {
@@ -127,7 +131,7 @@ describe('Themes middleware', function () {
                 should.exist(err);
                 err.message.should.eql('The currently active theme "bacon-sensation" is missing.');
 
-                activeTheme.get.called.should.be.true();
+                activeThemeGetStub.called.should.be.true();
                 fakeActiveTheme.mount.called.should.be.false();
 
                 done();
@@ -145,8 +149,8 @@ describe('Themes middleware', function () {
                 try {
                     should.not.exist(err);
 
-                    hbs.updateTemplateOptions.calledOnce.should.be.true();
-                    const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
+                    hbsUpdateTemplateOptionsStub.calledOnce.should.be.true();
+                    const templateOptions = hbsUpdateTemplateOptionsStub.firstCall.args[0];
                     const data = templateOptions.data;
 
                     data.should.be.an.Object().with.properties('site', 'labs', 'config', 'custom');
@@ -182,12 +186,11 @@ describe('Themes middleware', function () {
         });
 
         it('switches @site.signup_url to RSS when signup is disabled', function (done) {
-            settingsCache.get
-                .withArgs('members_signup_access').returns('none');
+            settingsCacheGetStub.withArgs('members_signup_access').returns('none');
 
             executeMiddleware(middleware, req, res, function next() {
                 try {
-                    const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
+                    const templateOptions = hbsUpdateTemplateOptionsStub.firstCall.args[0];
                     const data = templateOptions.data;
 
                     should.exist(data.site.signup_url);
@@ -212,8 +215,8 @@ describe('Themes middleware', function () {
                 try {
                     should.not.exist(err);
 
-                    hbs.updateLocalTemplateOptions.calledOnce.should.be.true();
-                    const templateOptions = hbs.updateLocalTemplateOptions.firstCall.args[1];
+                    hbsUpdateLocalTemplateOptionsStub.calledOnce.should.be.true();
+                    const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
                     const data = templateOptions.data;
 
                     data.should.be.an.Object().with.properties('site');
@@ -239,8 +242,8 @@ describe('Themes middleware', function () {
                 try {
                     should.not.exist(err);
 
-                    hbs.updateLocalTemplateOptions.calledOnce.should.be.true();
-                    const templateOptions = hbs.updateLocalTemplateOptions.firstCall.args[1];
+                    hbsUpdateLocalTemplateOptionsStub.calledOnce.should.be.true();
+                    const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
                     const data = templateOptions.data;
 
                     data.should.be.an.Object().with.properties('site');
@@ -268,8 +271,8 @@ describe('Themes middleware', function () {
                 try {
                     should.not.exist(err);
 
-                    hbs.updateLocalTemplateOptions.calledOnce.should.be.true();
-                    const templateOptions = hbs.updateLocalTemplateOptions.firstCall.args[1];
+                    hbsUpdateLocalTemplateOptionsStub.calledOnce.should.be.true();
+                    const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
                     const data = templateOptions.data;
 
                     data.should.be.an.Object().with.properties('site', 'custom');
@@ -295,8 +298,8 @@ describe('Themes middleware', function () {
                 try {
                     should.not.exist(err);
 
-                    hbs.updateLocalTemplateOptions.calledOnce.should.be.true();
-                    const templateOptions = hbs.updateLocalTemplateOptions.firstCall.args[1];
+                    hbsUpdateLocalTemplateOptionsStub.calledOnce.should.be.true();
+                    const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
                     const data = templateOptions.data;
 
                     data.should.be.an.Object().with.properties('site', 'custom');
@@ -323,8 +326,8 @@ describe('Themes middleware', function () {
                 try {
                     should.not.exist(err);
 
-                    hbs.updateLocalTemplateOptions.calledOnce.should.be.true();
-                    const templateOptions = hbs.updateLocalTemplateOptions.firstCall.args[1];
+                    hbsUpdateLocalTemplateOptionsStub.calledOnce.should.be.true();
+                    const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
                     const data = templateOptions.data;
 
                     data.should.be.an.Object().with.properties('site', 'custom');
@@ -349,8 +352,8 @@ describe('Themes middleware', function () {
                 try {
                     should.not.exist(err);
 
-                    hbs.updateLocalTemplateOptions.calledOnce.should.be.true();
-                    const templateOptions = hbs.updateLocalTemplateOptions.firstCall.args[1];
+                    hbsUpdateLocalTemplateOptionsStub.calledOnce.should.be.true();
+                    const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
                     const data = templateOptions.data;
 
                     data.should.be.an.Object().with.properties('site', 'custom');

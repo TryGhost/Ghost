@@ -84,36 +84,28 @@ const controller = {
         headers: {
             cacheInvalidate: true
         },
-        permissions: (frame) => {
-            return models.User.findOne({role: 'Owner', status: 'all'})
-                .then((owner) => {
-                    if (owner.id !== frame.options.context.user) {
-                        throw new errors.NoPermissionError({message: tpl(messages.notTheBlogOwner)});
-                    }
-                });
+        permissions: async (frame) => {
+            const owner = await models.User.findOne({role: 'Owner', status: 'all'});
+            if (owner.id !== frame.options.context.user) {
+                throw new errors.NoPermissionError({message: tpl(messages.notTheBlogOwner)});
+            }
         },
         validation: {
             docName: 'setup'
         },
-        query(frame) {
-            return Promise.resolve()
-                .then(() => {
-                    return auth.setup.assertSetupCompleted(true)();
-                })
-                .then(() => {
-                    const setupDetails = {
-                        name: frame.data.setup[0].name,
-                        email: frame.data.setup[0].email,
-                        password: frame.data.setup[0].password,
-                        blogTitle: frame.data.setup[0].blogTitle,
-                        status: 'active'
-                    };
+        async query(frame) {
+            await auth.setup.assertSetupCompleted(true)();
 
-                    return auth.setup.setupUser(setupDetails);
-                })
-                .then((data) => {
-                    return auth.setup.doSettings(data, api.settings);
-                });
+            const setupDetails = {
+                name: frame.data.setup[0].name,
+                email: frame.data.setup[0].email,
+                password: frame.data.setup[0].password,
+                blogTitle: frame.data.setup[0].blogTitle,
+                status: 'active'
+            };
+
+            const data = await auth.setup.setupUser(setupDetails);
+            return auth.setup.doSettings(data, api.settings);
         }
     },
 
@@ -145,17 +137,10 @@ const controller = {
         options: [
             'email'
         ],
-        query(frame) {
-            return Promise.resolve()
-                .then(() => {
-                    return auth.setup.assertSetupCompleted(true)();
-                })
-                .then(() => {
-                    return auth.passwordreset.generateToken(frame.data.password_reset[0].email, api.settings);
-                })
-                .then((token) => {
-                    return auth.passwordreset.sendResetNotification(token, api.mail);
-                });
+        async query(frame) {
+            await auth.setup.assertSetupCompleted(true)();
+            const token = await auth.passwordreset.generateToken(frame.data.password_reset[0].email, api.settings);
+            return auth.passwordreset.sendResetNotification(token, api.mail);
         }
     },
 
@@ -174,25 +159,15 @@ const controller = {
         options: [
             'ip'
         ],
-        query(frame) {
-            return Promise.resolve()
-                .then(() => {
-                    return auth.setup.assertSetupCompleted(true)();
-                })
-                .then(() => {
-                    return auth.passwordreset.extractTokenParts(frame);
-                })
-                .then((params) => {
-                    return auth.passwordreset.protectBruteForce(params);
-                })
-                .then(({options, tokenParts}) => {
-                    options = Object.assign(options, {context: {internal: true}});
-                    return auth.passwordreset.doReset(options, tokenParts, api.settings)
-                        .then((params) => {
-                            web.shared.middleware.api.spamPrevention.userLogin().reset(frame.options.ip, `${tokenParts.email}login`);
-                            return params;
-                        });
-                });
+        async query(frame) {
+            await auth.setup.assertSetupCompleted(true)();
+            const params = await auth.passwordreset.extractTokenParts(frame);
+            const {options, tokenParts} = await auth.passwordreset.protectBruteForce(params);
+            const internalOptions = Object.assign(options, {context: {internal: true}});
+
+            const doResetParams = await auth.passwordreset.doReset(internalOptions, tokenParts, api.settings);
+            web.shared.middleware.api.spamPrevention.userLogin().reset(frame.options.ip, `${tokenParts.email}login`);
+            return doResetParams;
         }
     },
 
@@ -204,14 +179,9 @@ const controller = {
             docName: 'invitations'
         },
         permissions: false,
-        query(frame) {
-            return Promise.resolve()
-                .then(() => {
-                    return auth.setup.assertSetupCompleted(true)();
-                })
-                .then(() => {
-                    return invitations.accept(frame.data);
-                });
+        async query(frame) {
+            await auth.setup.assertSetupCompleted(true)();
+            return invitations.accept(frame.data);
         }
     },
 
@@ -226,16 +196,10 @@ const controller = {
             docName: 'invitations'
         },
         permissions: false,
-        query(frame) {
-            return Promise.resolve()
-                .then(() => {
-                    return auth.setup.assertSetupCompleted(true)();
-                })
-                .then(() => {
-                    const email = frame.data.email;
-
-                    return models.Invite.findOne({email: email, status: 'sent'}, frame.options);
-                });
+        async query(frame) {
+            await auth.setup.assertSetupCompleted(true)();
+            const email = frame.data.email;
+            return models.Invite.findOne({email, status: 'sent'}, frame.options);
         }
     },
 

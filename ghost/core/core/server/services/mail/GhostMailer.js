@@ -16,7 +16,7 @@ const messages = {
     reason: ' Reason: {reason}.',
     messageSent: 'Message sent. Double check inbox and spam folder!'
 };
-const {EmailAddressParser} = require('@tryghost/email-addresses');
+const EmailAddressParser = require('../email-address/EmailAddressParser');
 
 function getDomain() {
     const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));

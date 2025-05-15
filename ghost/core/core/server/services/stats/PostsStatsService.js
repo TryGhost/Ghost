@@ -139,24 +139,45 @@ class PostsStatsService {
             const paidReferrersCTE = this._buildPaidReferrersSubquery(postId, options);
             const mrrReferrersCTE = this._buildMrrReferrersSubquery(postId, options);
 
-            const baseReferrersQuery = this.knex('members_created_events as mce')
+            // First, let's get all sources from both tables using separate queries
+            // Then combine and group them in a cross-database compatible way
+            const membersCreatedSources = this.knex('members_created_events as mce')
                 .select('mce.referrer_source as source')
+                .select('mce.referrer_url')
                 .where('mce.attribution_id', postId)
                 .where('mce.attribution_type', 'post')
-                .union((qb) => {
-                    qb.select('msce.referrer_source as source')
-                        .from('members_subscription_created_events as msce')
-                        .where('msce.attribution_id', postId)
-                        .where('msce.attribution_type', 'post');
+                .whereNotNull('mce.referrer_source');
+
+            const membersSubscriptionSources = this.knex('members_subscription_created_events as msce')
+                .select('msce.referrer_source as source')
+                .select('msce.referrer_url')
+                .where('msce.attribution_id', postId)
+                .where('msce.attribution_type', 'post')
+                .whereNotNull('msce.referrer_source');
+
+            // Using a simpler combined query that works in SQLite
+            const allSources = this.knex.select('source', 'referrer_url')
+                .from(membersCreatedSources.as('sources1'))
+                .union(function () {
+                    this.select('source', 'referrer_url')
+                        .from(membersSubscriptionSources.as('sources2'));
                 });
 
+            // Create the final CTE that we'll use to get all referrers
+            const allReferrersCTE = this.knex.select('source')
+                .select(this.knex.raw('MIN(referrer_url) as referrer_url'))
+                .from(allSources.as('all_sources'))
+                .groupBy('source');
+
+            // Now join all the data
             let query = this.knex
                 .with('free_referrers', freeReferrersCTE)
                 .with('paid_referrers', paidReferrersCTE)
                 .with('mrr_referrers', mrrReferrersCTE)
-                .with('all_referrers', baseReferrersQuery)
+                .with('all_referrers', allReferrersCTE)
                 .select(
                     'ar.source',
+                    'ar.referrer_url',
                     this.knex.raw('COALESCE(fr.free_members, 0) as free_members'),
                     this.knex.raw('COALESCE(pr.paid_members, 0) as paid_members'),
                     this.knex.raw('COALESCE(mr.mrr, 0) as mrr')

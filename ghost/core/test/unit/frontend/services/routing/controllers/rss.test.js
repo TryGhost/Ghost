@@ -19,6 +19,7 @@ describe('Unit - services/routing/controllers/rss', function () {
     let req;
     let res;
     let fetchDataStub;
+    let rssServiceRenderStub;
     let posts;
 
     beforeEach(function () {
@@ -47,11 +48,11 @@ describe('Unit - services/routing/controllers/rss', function () {
 
         sinon.stub(security.string, 'safe').returns('safe');
 
-        sinon.stub(rssService, 'render');
+        rssServiceRenderStub = sinon.stub(rssService, 'render');
 
-        sinon.stub(settingsCache, 'get');
-        settingsCache.get.withArgs('title').returns('Ghost');
-        settingsCache.get.withArgs('description').returns('Ghost is cool!');
+        const settingsCacheGetStub = sinon.stub(settingsCache, 'get');
+        settingsCacheGetStub.withArgs('title').returns('Ghost');
+        settingsCacheGetStub.withArgs('description').returns('Ghost is cool!');
     });
 
     afterEach(function () {
@@ -63,7 +64,7 @@ describe('Unit - services/routing/controllers/rss', function () {
             posts: posts
         });
 
-        rssService.render.callsFake(function (_res, baseUrl, data) {
+        rssServiceRenderStub.callsFake(function (_res, baseUrl, data) {
             baseUrl.should.eql('/rss/');
             data.posts.should.eql(posts);
             data.title.should.eql('Ghost');
