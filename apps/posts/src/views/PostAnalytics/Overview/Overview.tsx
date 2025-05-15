@@ -2,7 +2,7 @@ import DateRangeSelect from '../components/DateRangeSelect';
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, LucideIcon, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
 import {GroupedLinkData, cleanTrackedUrl, sanitizeUrl} from '../Newsletter/Newsletter';
 import {useMemo} from 'react';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -59,8 +59,6 @@ const Overview: React.FC = () => {
             .sort((a, b) => b.clicks - a.clicks)
             .slice(0, 5);
     }, [topLinks]); // Only recalculate when topLinks changes
-
-    const isLoading = isNewsletterStatsLoading;
 
     const radialBarChartClassName = 'mx-auto aspect-square w-full min-h-[250px] max-w-[250px]';
 
@@ -135,151 +133,157 @@ const Overview: React.FC = () => {
                         </Button>
                     </div>
                     <CardContent>
-                        <div className='grid grid-cols-2 items-start gap-8'>
-                            <div className='mx-auto flex size-full min-h-[250px] flex-wrap items-start justify-center gap-6'>
-                                <ChartContainer
-                                    className={radialBarChartClassName}
-                                    config={opensChartConfig}
-                                >
-                                    <Recharts.RadialBarChart
-                                        data={opensChartData}
-                                        endAngle={-176}
-                                        innerRadius={72}
-                                        outerRadius={110}
-                                        startAngle={90}
+                        {isNewsletterStatsLoading ?
+                            <div className='flex min-h-[250px] items-center justify-center'>
+                                <BarChartLoadingIndicator />
+                            </div>
+                            :
+                            <div className='grid grid-cols-2 items-start gap-8'>
+                                <div className='mx-auto flex size-full min-h-[250px] flex-wrap items-start justify-center gap-6'>
+                                    <ChartContainer
+                                        className={radialBarChartClassName}
+                                        config={opensChartConfig}
                                     >
-                                        <Recharts.PolarGrid
-                                            className="first:fill-muted last:fill-background"
-                                            gridType="circle"
-                                            polarRadius={[80, 64]}
-                                            radialLines={false}
-                                            stroke="none"
-                                        />
-                                        <Recharts.RadialBar cornerRadius={10} dataKey="opens" background />
-                                        <Recharts.PolarRadiusAxis axisLine={false} tick={false} tickLine={false}>
-                                            <Recharts.Label
-                                                content={({viewBox}) => {
-                                                    if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
-                                                        return (
-                                                            <text
-                                                                dominantBaseline="middle"
-                                                                textAnchor="middle"
-                                                                x={viewBox.cx}
-                                                                y={viewBox.cy}
-                                                            >
-                                                                <tspan
-                                                                    className="fill-foreground text-[2.6rem] font-semibold"
+                                        <Recharts.RadialBarChart
+                                            data={opensChartData}
+                                            endAngle={-176}
+                                            innerRadius={72}
+                                            outerRadius={110}
+                                            startAngle={90}
+                                        >
+                                            <Recharts.PolarGrid
+                                                className="first:fill-muted last:fill-background"
+                                                gridType="circle"
+                                                polarRadius={[80, 64]}
+                                                radialLines={false}
+                                                stroke="none"
+                                            />
+                                            <Recharts.RadialBar cornerRadius={10} dataKey="opens" background />
+                                            <Recharts.PolarRadiusAxis axisLine={false} tick={false} tickLine={false}>
+                                                <Recharts.Label
+                                                    content={({viewBox}) => {
+                                                        if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+                                                            return (
+                                                                <text
+                                                                    dominantBaseline="middle"
+                                                                    textAnchor="middle"
                                                                     x={viewBox.cx}
                                                                     y={viewBox.cy}
                                                                 >
-                                                                    {formatPercentage(opensChartData[0].opens)}
-                                                                </tspan>
-                                                                <tspan
-                                                                    className="fill-muted-foreground font-medium"
-                                                                    x={viewBox.cx}
-                                                                    y={(viewBox.cy || 0) + 24}
-                                                                >
+                                                                    <tspan
+                                                                        className="fill-foreground text-[2.6rem] font-semibold"
+                                                                        x={viewBox.cx}
+                                                                        y={viewBox.cy}
+                                                                    >
+                                                                        {formatPercentage(opensChartData[0].opens)}
+                                                                    </tspan>
+                                                                    <tspan
+                                                                        className="fill-muted-foreground font-medium"
+                                                                        x={viewBox.cx}
+                                                                        y={(viewBox.cy || 0) + 24}
+                                                                    >
                                                                     Opens
-                                                                </tspan>
-                                                            </text>
-                                                        );
-                                                    }
-                                                }}
-                                            />
-                                        </Recharts.PolarRadiusAxis>
-                                    </Recharts.RadialBarChart>
-                                </ChartContainer>
+                                                                    </tspan>
+                                                                </text>
+                                                            );
+                                                        }
+                                                    }}
+                                                />
+                                            </Recharts.PolarRadiusAxis>
+                                        </Recharts.RadialBarChart>
+                                    </ChartContainer>
 
-                                <ChartContainer
-                                    className={radialBarChartClassName}
-                                    config={clickschartConfig}
-                                >
-                                    <Recharts.RadialBarChart
-                                        data={clicksChartData}
-                                        endAngle={29}
-                                        innerRadius={72}
-                                        outerRadius={110}
-                                        startAngle={90}
+                                    <ChartContainer
+                                        className={radialBarChartClassName}
+                                        config={clickschartConfig}
                                     >
-                                        <Recharts.PolarGrid
-                                            className="first:fill-muted last:fill-background"
-                                            gridType="circle"
-                                            polarRadius={[80, 64]}
-                                            radialLines={false}
-                                            stroke="none"
-                                        />
-                                        <Recharts.RadialBar cornerRadius={10} dataKey="clicks" background />
-                                        <Recharts.PolarRadiusAxis axisLine={false} tick={false} tickLine={false}>
-                                            <Recharts.Label
-                                                content={({viewBox}) => {
-                                                    if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
-                                                        return (
-                                                            <text
-                                                                dominantBaseline="middle"
-                                                                textAnchor="middle"
-                                                                x={viewBox.cx}
-                                                                y={viewBox.cy}
-                                                            >
-                                                                <tspan
-                                                                    className="fill-foreground text-[2.6rem] font-semibold"
+                                        <Recharts.RadialBarChart
+                                            data={clicksChartData}
+                                            endAngle={29}
+                                            innerRadius={72}
+                                            outerRadius={110}
+                                            startAngle={90}
+                                        >
+                                            <Recharts.PolarGrid
+                                                className="first:fill-muted last:fill-background"
+                                                gridType="circle"
+                                                polarRadius={[80, 64]}
+                                                radialLines={false}
+                                                stroke="none"
+                                            />
+                                            <Recharts.RadialBar cornerRadius={10} dataKey="clicks" background />
+                                            <Recharts.PolarRadiusAxis axisLine={false} tick={false} tickLine={false}>
+                                                <Recharts.Label
+                                                    content={({viewBox}) => {
+                                                        if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+                                                            return (
+                                                                <text
+                                                                    dominantBaseline="middle"
+                                                                    textAnchor="middle"
                                                                     x={viewBox.cx}
                                                                     y={viewBox.cy}
                                                                 >
-                                                                    {formatPercentage(clicksChartData[0].clicks)}
-                                                                </tspan>
-                                                                <tspan
-                                                                    className="fill-muted-foreground font-medium"
-                                                                    x={viewBox.cx}
-                                                                    y={(viewBox.cy || 0) + 24}
-                                                                >
+                                                                    <tspan
+                                                                        className="fill-foreground text-[2.6rem] font-semibold"
+                                                                        x={viewBox.cx}
+                                                                        y={viewBox.cy}
+                                                                    >
+                                                                        {formatPercentage(clicksChartData[0].clicks)}
+                                                                    </tspan>
+                                                                    <tspan
+                                                                        className="fill-muted-foreground font-medium"
+                                                                        x={viewBox.cx}
+                                                                        y={(viewBox.cy || 0) + 24}
+                                                                    >
                                                                     Clicks
-                                                                </tspan>
-                                                            </text>
-                                                        );
-                                                    }
-                                                }}
-                                            />
-                                        </Recharts.PolarRadiusAxis>
-                                    </Recharts.RadialBarChart>
-                                </ChartContainer>
-                            </div>
-                            <div>
-                                {topLinks.length > 0
-                                    ?
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead className='w-full'>
-                                                    <div className='flex items-center gap-1.5'>
-                                                        <LucideIcon.Link size={16} strokeWidth={1.25}/>
+                                                                    </tspan>
+                                                                </text>
+                                                            );
+                                                        }
+                                                    }}
+                                                />
+                                            </Recharts.PolarRadiusAxis>
+                                        </Recharts.RadialBarChart>
+                                    </ChartContainer>
+                                </div>
+                                <div>
+                                    {topLinks.length > 0
+                                        ?
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead className='w-full'>
+                                                        <div className='flex items-center gap-1.5'>
+                                                            <LucideIcon.Link size={16} strokeWidth={1.25}/>
                                                         Link clicks
-                                                    </div>
-                                                </TableHead>
-                                                <TableHead className='w-[0%] text-nowrap text-right'>No. of members clicked</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {displayLinks.map((row) => {
-                                                return (
-                                                    <TableRow key={row.url}>
-                                                        <TableCell className='max-w-0'>
-                                                            <div className='flex items-center gap-2'>
-                                                                {sanitizeUrl(row.url)}
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell className='text-right font-mono text-sm'>{formatNumber(row.clicks)}</TableCell>
-                                                    </TableRow>
-                                                );
-                                            })}
-                                        </TableBody>
-                                    </Table>
-                                    :
-                                    <div className='py-20 text-center text-sm text-gray-700'>
+                                                        </div>
+                                                    </TableHead>
+                                                    <TableHead className='w-[0%] text-nowrap text-right'>No. of members clicked</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {displayLinks.map((row) => {
+                                                    return (
+                                                        <TableRow key={row.url}>
+                                                            <TableCell className='max-w-0'>
+                                                                <div className='flex items-center gap-2'>
+                                                                    {sanitizeUrl(row.url)}
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell className='text-right font-mono text-sm'>{formatNumber(row.clicks)}</TableCell>
+                                                        </TableRow>
+                                                    );
+                                                })}
+                                            </TableBody>
+                                        </Table>
+                                        :
+                                        <div className='py-20 text-center text-sm text-gray-700'>
                                     You have no links in your post.
-                                    </div>
-                                }
+                                        </div>
+                                    }
+                                </div>
                             </div>
-                        </div>
+                        }
                     </CardContent>
                 </Card>
                 <Card>
@@ -291,7 +295,7 @@ const Overview: React.FC = () => {
                         <div>Chart</div>
                     </CardContent>
                 </Card>
-                <div className='grid grid-cols-2 gap-8'>
+                {/* <div className='grid grid-cols-2 gap-8'>
                     <Card>
                         <CardHeader>
                             <CardTitle>Help box 1</CardTitle>
@@ -308,7 +312,7 @@ const Overview: React.FC = () => {
                             Description...
                         </CardContent>
                     </Card>
-                </div>
+                </div> */}
             </PostAnalyticsContent>
         </>
     );
