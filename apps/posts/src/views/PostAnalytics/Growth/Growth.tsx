@@ -1,4 +1,4 @@
-import KpiCard, {KpiCardContent, KpiCardIcon, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
+import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber} from '@tryghost/shade';
@@ -42,32 +42,32 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                 <CardTitle>Newsletters</CardTitle>
                                 <CardDescription>How did this post perform</CardDescription>
                             </CardHeader>
-                            <CardContent className='p-5'>
-                                <div className='grid grid-cols-3 gap-6'>
-                                    <KpiCard className='border-none p-0'>
-                                        <KpiCardIcon>
+                            <CardContent className='p-0'>
+                                <div className='flex items-stretch'>
+                                    <KpiCard className='grow'>
+                                        <KpiCardLabel>
                                             <LucideIcon.User strokeWidth={1.5} />
-                                        </KpiCardIcon>
+                                            Free members
+                                        </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardLabel>Free members</KpiCardLabel>
                                             <KpiCardValue>{formatNumber(totals?.free_members || 0)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
-                                    <KpiCard className='border-none p-0'>
-                                        <KpiCardIcon>
+                                    <KpiCard className='grow'>
+                                        <KpiCardLabel>
                                             <LucideIcon.WalletCards strokeWidth={1.5} />
-                                        </KpiCardIcon>
+                                            Paid members
+                                        </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardLabel>Paid members</KpiCardLabel>
                                             <KpiCardValue>{formatNumber(totals?.paid_members || 0)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
-                                    <KpiCard className='border-none p-0'>
-                                        <KpiCardIcon>
+                                    <KpiCard className='grow'>
+                                        <KpiCardLabel>
                                             <LucideIcon.CircleDollarSign strokeWidth={1.5} />
-                                        </KpiCardIcon>
+                                            MRR
+                                        </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardLabel>MRR</KpiCardLabel>
                                             <KpiCardValue>+${centsToDollars(totals?.mrr || 0)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>

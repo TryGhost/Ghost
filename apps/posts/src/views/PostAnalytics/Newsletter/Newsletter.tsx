@@ -1,5 +1,5 @@
 // import AudienceSelect from './components/AudienceSelect';
-import KpiCard, {KpiCardContent, KpiCardIcon, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
+import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
@@ -153,31 +153,31 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                 <CardDescription>How did this post perform</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className='-mx-1 grid grid-cols-3 gap-6 pt-5'>
-                                    <KpiCard className='border-none p-0'>
-                                        <KpiCardIcon>
+                                <div className='-mx-6 flex items-stretch border-b'>
+                                    <KpiCard className='grow'>
+                                        <KpiCardLabel>
                                             <LucideIcon.Send strokeWidth={1.5} />
-                                        </KpiCardIcon>
+                                            Sent
+                                        </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardLabel>Sent</KpiCardLabel>
                                             <KpiCardValue>{formatNumber(stats.sent)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
-                                    <KpiCard className='border-none p-0'>
-                                        <KpiCardIcon>
+                                    <KpiCard className='grow'>
+                                        <KpiCardLabel>
                                             <LucideIcon.MailOpen strokeWidth={1.5} />
-                                        </KpiCardIcon>
+                                            Opened
+                                        </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardLabel>Opened</KpiCardLabel>
                                             <KpiCardValue>{formatNumber(stats.opened)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
-                                    <KpiCard className='border-none p-0'>
-                                        <KpiCardIcon>
+                                    <KpiCard className='grow'>
+                                        <KpiCardLabel>
                                             <LucideIcon.MousePointerClick strokeWidth={1.5} />
-                                        </KpiCardIcon>
+                                            Clicked
+                                        </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardLabel>Clicked</KpiCardLabel>
                                             <KpiCardValue>{formatNumber(stats.clicked)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
