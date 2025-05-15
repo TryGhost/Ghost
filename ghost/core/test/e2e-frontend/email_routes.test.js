@@ -15,7 +15,7 @@ describe('Frontend Routing: Email Routes', function () {
     let emailPosts;
 
     before(async function () {
-        await testUtils.startGhost();
+        await testUtils.startGhost({forceStart: true});
 
         request = supertest.agent(config.get('url'));
 
