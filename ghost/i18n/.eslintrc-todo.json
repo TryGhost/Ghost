@@ -1,0 +1,164 @@
+{
+  "overrides": [
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/ar/portal.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/context.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/de/portal.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/de-CH/ghost.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/de-CH/portal.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/hr/portal.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/hu/comments.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/hu/ghost.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/hu/portal.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/is/portal.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/it/portal.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/ja/ghost.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/lt/portal.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/lv/portal.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/nn/portal.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/pt/comments.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/si/portal.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/sk/ghost.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/sq/ghost.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/sq/portal.json"
+      ]
+    }
+  ]
+}

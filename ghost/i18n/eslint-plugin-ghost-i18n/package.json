@@ -1,0 +1,9 @@
+{
+    "name": "eslint-plugin-ghost-i18n",
+    "version": "1.0.0",
+    "description": "ESLint plugin for Ghost i18n validation",
+    "main": "index.js",
+    "peerDependencies": {
+        "eslint": ">=6.0.0"
+    }
+} 

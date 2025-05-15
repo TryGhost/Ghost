@@ -11,7 +11,8 @@
     "test:base": "NODE_ENV=testing c8 --include index.js --include lib --check-coverage --100  --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
     "test": "yarn test:base && yarn translate",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
-    "lint": "yarn lint:code && yarn lint:test",
+    "lint:i18n": "eslint locales/**/*.json --ext .jsonc --cache",
+    "lint": "yarn lint:code && yarn lint:test && yarn lint:i18n",
     "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache",
     "translate": "yarn translate:ghost && yarn translate:portal && yarn translate:signup-form && yarn translate:comments && yarn translate:search && node generate-context.js",
     "translate:ghost": "NAMESPACE=ghost i18next '../core/core/{frontend,server,shared}/**/*.{js,jsx}' '../core/core/server/services/email-service/email-templates/**/*.hbs'",
@@ -27,7 +28,10 @@
   ],
   "devDependencies": {
     "c8": "8.0.1",
+    "eslint-plugin-ghost-i18n": "file:./eslint-plugin-ghost-i18n",
+    "eslint-todo-generator": "^0.1.0",
     "i18next-parser": "8.13.0",
+    "jsonc-eslint-parser": "^2.3.0",
     "mocha": "10.8.2"
   },
   "dependencies": {
