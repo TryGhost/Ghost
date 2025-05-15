@@ -90,6 +90,11 @@ export interface Notification {
         title: string | null;
         content: string;
         url: string;
+        likeCount: number;
+        likedByMe: boolean;
+        repostCount: number;
+        repostedByMe: boolean;
+        replyCount: number;
     },
     inReplyTo: null | {
         id: string;
