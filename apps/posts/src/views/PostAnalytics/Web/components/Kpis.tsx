@@ -7,13 +7,13 @@ import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
-type KpiMetric = {
+export type KpiMetric = {
     dataKey: string;
     label: string;
     formatter: (value: number) => string;
 };
 
-const KPI_METRICS: Record<string, KpiMetric> = {
+export const KPI_METRICS: Record<string, KpiMetric> = {
     visits: {
         dataKey: 'visits',
         label: 'Visitors',
