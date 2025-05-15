@@ -257,6 +257,11 @@ const fixtures = {
                 }
 
                 return models.User.edit(user, _.merge({id: ownerUser.id}, context.internal));
+            })
+            .then((ownerUser) => {
+                const userApiKey = {...DataGenerator.Content.user_api_keys[0], user_id: ownerUser.id};
+                // Insert a new API key for the owner user
+                return models.ApiKey.add(userApiKey, context.internal);
             });
     },
 

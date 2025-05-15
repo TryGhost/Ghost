@@ -748,6 +748,14 @@ DataGenerator.Content = {
         }
     ],
 
+    user_api_keys: [
+        {
+            id: ObjectId().toHexString(),
+            type: 'admin',
+            secret: _.repeat('f', 64)
+        }
+    ],
+
     emails: [
         {
             id: ObjectId().toHexString(),
