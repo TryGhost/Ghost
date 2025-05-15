@@ -20,7 +20,7 @@ export const routes: RouteObject[] = [
         errorElement: <ErrorPage onBackToDashboard={() => {}} />, // @TODO: add back to dashboard click handle
         children: [
             {
-                path: 'analytics/x/:postId',
+                path: 'analytics/beta/:postId',
                 element: <PostAnalytics />,
                 children: [
                     {

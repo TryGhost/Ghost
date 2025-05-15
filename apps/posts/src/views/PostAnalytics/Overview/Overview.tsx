@@ -74,7 +74,7 @@ const Overview: React.FC = () => {
                             :
                             <>
                                 <KpiCard className='grow' onClick={() => {
-                                    navigate(`/analytics/x/${postId}/web`);
+                                    navigate(`/analytics/beta/${postId}/web`);
                                 }}>
                                     <KpiCardLabel>
                                         <LucideIcon.MousePointer size={16} strokeWidth={1.5} />
@@ -85,7 +85,7 @@ const Overview: React.FC = () => {
                                     </KpiCardContent>
                                 </KpiCard>
                                 <KpiCard className='grow' onClick={() => {
-                                    navigate(`/analytics/x/${postId}/web`);
+                                    navigate(`/analytics/beta/${postId}/web`);
                                 }}>
                                     <KpiCardLabel>
                                         <LucideIcon.Eye size={16} strokeWidth={1.5} />
@@ -96,7 +96,7 @@ const Overview: React.FC = () => {
                                     </KpiCardContent>
                                 </KpiCard>
                                 <KpiCard className='grow' onClick={() => {
-                                    navigate(`/analytics/x/${postId}/growth`);
+                                    navigate(`/analytics/beta/${postId}/growth`);
                                 }}>
                                     <KpiCardLabel>
                                         <LucideIcon.UserPlus size={16} strokeWidth={1.5} />
@@ -107,7 +107,7 @@ const Overview: React.FC = () => {
                                     </KpiCardContent>
                                 </KpiCard>
                                 <KpiCard className='grow' onClick={() => {
-                                    navigate(`/analytics/x/${postId}/growth`);
+                                    navigate(`/analytics/beta/${postId}/growth`);
                                 }}>
                                     <KpiCardLabel>
                                         <LucideIcon.DollarSign size={16} strokeWidth={1.5} />
@@ -128,7 +128,7 @@ const Overview: React.FC = () => {
                             <CardDescription>How members interacted with this email</CardDescription>
                         </CardHeader>
                         <Button className='mr-6 opacity-0 transition-all group-hover/card:opacity-100' variant='outline' onClick={() => {
-                            navigate(`/analytics/x/${postId}/newsletter`);
+                            navigate(`/analytics/beta/${postId}/newsletter`);
                         }}>
                                 View more
                             <LucideIcon.ArrowRight />
@@ -146,7 +146,7 @@ const Overview: React.FC = () => {
                             <CardDescription>Unique visitors since you published this post</CardDescription>
                         </CardHeader>
                         <Button className='mr-6 opacity-0 transition-all group-hover/card:opacity-100' variant='outline' onClick={() => {
-                            navigate(`/analytics/x/${postId}/web`);
+                            navigate(`/analytics/beta/${postId}/web`);
                         }}>
                                 View more
                             <LucideIcon.ArrowRight />
