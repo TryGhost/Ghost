@@ -24,6 +24,12 @@ module.exports = {
                 'ghost-i18n/matching-variables': 'error'
             }
         },
+        {
+            files: ['context.json'],
+            rules: {
+                'ghost-i18n/matching-variables': 'off'
+            }
+        },
         ...todoConfig.overrides
     ]
 };
