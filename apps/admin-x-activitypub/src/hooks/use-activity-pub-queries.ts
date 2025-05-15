@@ -187,7 +187,7 @@ function updateNotificationsLikedCache(queryClient: QueryClient, handle: string,
                                         ...notification,
                                         post: {
                                             ...notification.post,
-                                            liked: liked
+                                            likedByMe: liked
                                         }
                                     };
                                 }

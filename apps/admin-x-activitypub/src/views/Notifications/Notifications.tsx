@@ -370,7 +370,11 @@ const Notifications: React.FC = () => {
                                                             commentCount={group.post.replyCount || 0}
                                                             layout="notification"
                                                             likeCount={group.post.likeCount || 0}
-                                                            object={group.post}
+                                                            object={{
+                                                                ...group.post,
+                                                                liked: group.post.likedByMe,
+                                                                reposted: group.post.repostedByMe
+                                                            }}
                                                             repostCount={group.post.repostCount || 0}
                                                             onCommentClick={() => handleCommentClick(group.post?.id)}
                                                             onLikeClick={handleLikeClick}
