@@ -19,7 +19,6 @@ describe('Custom Frontend routing', function () {
         const routesFilePath = path.join(configUtils.config.get('paths:appRoot'), 'test/utils/fixtures/settings/newroutes.yaml');
 
         await testUtils.startGhost({
-            forceStart: true,
             routesFilePath
         });
         request = supertest.agent(configUtils.config.get('url'));
