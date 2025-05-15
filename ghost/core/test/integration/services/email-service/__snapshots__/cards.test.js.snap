@@ -119,7 +119,7 @@ table.body td {
     border-right-width: 0 !important;
   }
 
-  table.body .btn table {
+  table.body table.btn {
     width: 100% !important;
   }
 
@@ -340,29 +340,6 @@ table.body h2 span {
     margin: 2em 0 !important;
   }
 
-  table.body .kg-header-card.kg-v2 span {
-    font-size: inherit !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-content {
-    padding-top: 64px !important;
-    padding-bottom: 64px !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-image + .kg-header-card-content {
-    padding-top: 52px !important;
-    padding-bottom: 52px !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-heading {
-    font-size: 2.2em !important;
-    line-height: 1.1 !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-subheading {
-    line-height: 1.3em !important;
-  }
-
   .feature-image-caption {
     font-size: 13px!important;
   }
@@ -477,15 +454,6 @@ table.body h2 span {
     font-family: inherit;
     font-weight: inherit;
     line-height: inherit;
-  }
-
-  .btn-primary table td:hover {
-    background-color: #34495e !important;
-  }
-
-  .btn-primary a:hover {
-    background-color: #34495e !important;
-    border-color: #34495e !important;
   }
 }
 </style>
@@ -850,7 +818,7 @@ table.body td {
     border-right-width: 0 !important;
   }
 
-  table.body .btn table {
+  table.body table.btn {
     width: 100% !important;
   }
 
@@ -1071,29 +1039,6 @@ table.body h2 span {
     margin: 2em 0 !important;
   }
 
-  table.body .kg-header-card.kg-v2 span {
-    font-size: inherit !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-content {
-    padding-top: 64px !important;
-    padding-bottom: 64px !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-image + .kg-header-card-content {
-    padding-top: 52px !important;
-    padding-bottom: 52px !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-heading {
-    font-size: 2.2em !important;
-    line-height: 1.1 !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-subheading {
-    line-height: 1.3em !important;
-  }
-
   .feature-image-caption {
     font-size: 13px!important;
   }
@@ -1208,15 +1153,6 @@ table.body h2 span {
     font-family: inherit;
     font-weight: inherit;
     line-height: inherit;
-  }
-
-  .btn-primary table td:hover {
-    background-color: #34495e !important;
-  }
-
-  .btn-primary a:hover {
-    background-color: #34495e !important;
-    border-color: #34495e !important;
   }
 }
 </style>
