@@ -45,7 +45,8 @@ describe('CallToActionNode', function () {
         };
         exportOptions = {
             exportFormat: 'html',
-            dom
+            dom,
+            feature: {}
         };
     });
 
@@ -477,6 +478,20 @@ describe('CallToActionNode', function () {
         it('skips link to image when button is not shown (web)', testSkippedImageLink('web', 'minimal'));
         it('skips link to image when button is not shown (email, minimal)', testSkippedImageLink('email', 'minimal'));
         it('skips link to image when button is not shown (email, immersive)', testSkippedImageLink('email', 'immersive'));
+
+        it('can render email with emailCustomizationAlpha', editorTest(function () {
+            exportOptions.target = 'email';
+            exportOptions.feature.emailCustomizationAlpha = true;
+
+            testRender(({element}) => {
+                // very basic test to ensure we don't error
+                element.tagName.should.equal('TABLE');
+
+                // check for an emailCustomizationAlpha specific change to make
+                // sure we're hitting the right code path
+                should.exist(element.querySelector('table.btn'), 'table.btn element should exist');
+            });
+        }));
     });
 
     describe('exportJSON', function () {
