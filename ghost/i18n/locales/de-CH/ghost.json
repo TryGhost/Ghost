@@ -53,7 +53,7 @@
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Willkommen zurück! Verwenden Sie diesen Link, um sich sicher bei Ihrem {siteTitle}-Konto einzuloggen:",
     "When:": "",
     "Where:": "",
-    "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Sie erhalten diese Nachricht, da Sie ein <strong>%%{status}%% Mitglied</strong> unserer Seite «{{site}}» sind.",
+    "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Sie erhalten diese Nachricht, da Sie ein <strong>%%{status}%% Mitglied</strong> unserer Seite «{site}» sind.",
     "You can also copy & paste this URL into your browser:": "Sie können diese URL auch kopieren und in Ihre Browserzeile einfügen:",
     "You just tried to access your account from a new device.": "",
     "You will not be signed up, and no account will be created for you.": "Sie werden nicht registriert und es wird kein Konto für Sie angelegt.",
