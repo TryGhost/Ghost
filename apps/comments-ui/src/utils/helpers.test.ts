@@ -58,7 +58,7 @@ describe('formatRelativeTime', () => {
 
     const t = (key: string, vars?: Record<string, string | number>) => {
         if (vars) {
-            return key.replace('{{amount}}', vars.amount.toString());
+            return key.replace('{amount}', vars.amount.toString());
         }
         return key;
     };

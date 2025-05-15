@@ -1,6 +1,6 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const {EmailAddressParser} = require('@tryghost/email-addresses');
+const EmailAddressParser = require('../email-address/EmailAddressParser');
 const logging = require('@tryghost/logging');
 const crypto = require('crypto');
 

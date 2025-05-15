@@ -5,6 +5,7 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
 
 import APAvatar from '@components/global/APAvatar';
+import FeedItemStats from '@components/feed/FeedItemStats';
 import NotificationItem from './components/NotificationItem';
 import Separator from '@components/global/Separator';
 
@@ -118,13 +119,11 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
         return <>{actorText} reposted your {group.post?.type === 'article' ? 'post' : 'note'}</>;
     case 'reply':
         if (group.inReplyTo && typeof group.inReplyTo !== 'string') {
-            return <>{actorText} replied to your {group.inReplyTo?.type === 'article' ? 'post' : 'note'}</>;
+            return actorText;
         }
         break;
     case 'mention':
-        if (group.inReplyTo && typeof group.inReplyTo !== 'string') {
-            return <>{actorText} mentioned you in a {group.inReplyTo?.type === 'article' ? 'post' : 'note'}</>;
-        }
+        return actorText;
     }
 
     return <></>;
@@ -139,6 +138,17 @@ const Notifications: React.FC = () => {
             ...prev,
             [groupId]: !prev[groupId]
         }));
+    };
+
+    const handleLikeClick = () => {
+        // Do API req or smth
+        // Don't need to know about setting timeouts or anything like that
+    };
+
+    const handleCommentClick = (postId?: string) => {
+        if (postId) {
+            navigate(`/feed/${encodeURIComponent(postId)}`);
+        }
     };
 
     const maxAvatars = 5;
@@ -202,7 +212,7 @@ const Notifications: React.FC = () => {
             }
             break;
         case 'mention':
-            if (group.post && group.inReplyTo) {
+            if (group.post) {
                 navigate(`/feed/${encodeURIComponent(group.post.id)}`);
             }
             break;
@@ -332,7 +342,7 @@ const Notifications: React.FC = () => {
                                                     }
                                                 </div>
                                                 {(
-                                                    ((group.type === 'reply' || group.type === 'mention') && group.inReplyTo) ||
+                                                    ((group.type === 'reply' && group.inReplyTo) || group.type === 'mention') ||
                                                     (group.type === 'like' && !group.post?.name && group.post?.content) ||
                                                     (group.type === 'repost' && !group.post?.name && group.post?.content)
                                                 ) && (
@@ -350,6 +360,24 @@ const Notifications: React.FC = () => {
                                                             </div>
                                                         </>
                                                     )
+                                                )}
+                                                {((group.type === 'reply' && group.post) || group.type === 'mention') && (
+                                                    <div className="mt-1.5">
+                                                        <FeedItemStats
+                                                            buttonClassName='hover:bg-gray-200'
+                                                            commentCount={group.post.replyCount || 0}
+                                                            layout="notification"
+                                                            likeCount={group.post.likeCount || 0}
+                                                            object={{
+                                                                ...group.post,
+                                                                liked: group.post.likedByMe,
+                                                                reposted: group.post.repostedByMe
+                                                            }}
+                                                            repostCount={group.post.repostCount || 0}
+                                                            onCommentClick={() => handleCommentClick(group.post?.id)}
+                                                            onLikeClick={handleLikeClick}
+                                                        />
+                                                    </div>
                                                 )}
                                             </NotificationItem.Content>
                                         </NotificationItem>

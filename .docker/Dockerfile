@@ -68,11 +68,7 @@ COPY ghost/admin/lib/ember-power-calendar-moment/package.json ghost/admin/lib/em
 COPY ghost/admin/lib/ember-power-calendar-utils/package.json ghost/admin/lib/ember-power-calendar-utils/package.json
 COPY ghost/admin/package.json ghost/admin/package.json
 COPY ghost/core/package.json ghost/core/package.json
-COPY ghost/custom-fonts/package.json ghost/custom-fonts/package.json
-COPY ghost/email-addresses/package.json ghost/email-addresses/package.json
-COPY ghost/email-service/package.json ghost/email-service/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
-COPY ghost/prometheus-metrics/package.json ghost/prometheus-metrics/package.json
 
 RUN --mount=type=cache,target=/home/ghost/.yarn-cache \
     yarn config set cache-folder /home/ghost/.yarn-cache && \
@@ -83,5 +79,4 @@ RUN --mount=type=cache,target=/home/ghost/.yarn-cache \
 # --------------------
 FROM development-base AS development
 COPY . .
-RUN yarn nx run-many -t build:ts
 CMD ["yarn", "dev"]

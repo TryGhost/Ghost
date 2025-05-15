@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const signinEmail = require('../../../../../../core/server/services/auth/session/emails/signin');
 
 const t = s => s;
@@ -16,11 +17,11 @@ const baseDetails = {
 describe('signin-email', function () {
     it('Displays the "new device" text when is2FARequired is false', function () {
         const emailText = signinEmail(Object.assign({}, baseDetails, {is2FARequired: false}));
-        emailText.should.match(/You just tried to access your account from a new device/);
+        assert.equal(emailText.includes('You just tried to access your account from a new device'), true);
     });
 
     it('Does not display the "new device" text when is2FARequired is true', function () {
         const emailText = signinEmail(Object.assign({}, baseDetails, {is2FARequired: true}));
-        emailText.should.not.match(/You just tried to access your account from a new device/);
+        assert.equal(emailText.includes('You just tried to access your account from a new device'), false);
     });
 });

@@ -15,7 +15,7 @@ function calculateMemberTier(member, freeTier) {
     const activeSubscriptions = member.subscriptions.filter(sub => sub.status === 'active');
     if (activeSubscriptions.length === 0) {
         return freeTier;
-    } 
+    }
     if (activeSubscriptions.length === 1) {
         return activeSubscriptions[0].tier;
     }
@@ -29,7 +29,7 @@ function calculateMemberTier(member, freeTier) {
 /**
  * Returns the frontend caching middleware.
  * @param {GetFreeTier} [getFreeTier] - Async function that takes no arguments and resolves to the free tier object.
- * @returns {function} Middleware function.
+ * @returns {Promise<import('express').RequestHandler>} Middleware function.
  */
 const getMiddleware = async (getFreeTier = async () => {
     const {tiers} = await api.tiers.browse();
