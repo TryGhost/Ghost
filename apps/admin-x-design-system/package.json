@@ -12,7 +12,7 @@
     "build": "tsc -p tsconfig.declaration.json && vite build",
     "prepare": "yarn build",
     "test": "yarn test:unit",
-    "test:unit": "yarn test:types && yarn nx build && vitest run",
+    "test:unit": "yarn test:types && vitest run",
     "test:types": "tsc --noEmit",
     "lint:code": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
     "lint": "yarn lint:code && yarn lint:test",
