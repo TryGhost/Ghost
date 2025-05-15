@@ -164,14 +164,14 @@ describe('Default Frontend routing', function () {
             before(async function () {
                 configUtils.set('admin:redirects', false);
 
-                await testUtils.startGhost({forceStart: true});
+                await testUtils.startGhost();
                 request = supertest.agent(configUtils.config.get('url'));
             });
 
             after(async function () {
                 await configUtils.restore();
 
-                await testUtils.startGhost({forceStart: true});
+                await testUtils.startGhost();
                 request = supertest.agent(configUtils.config.get('url'));
             });
 
