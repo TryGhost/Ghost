@@ -259,7 +259,7 @@ const fixtures = {
                 return models.User.edit(user, _.merge({id: ownerUser.id}, context.internal));
             })
             .then((ownerUser) => {
-                const userApiKey = {...DataGenerator.Content.user_api_keys[0], user_id: ownerUser.id};
+                const userApiKey = {...DataGenerator.forKnex.user_api_keys[0], user_id: ownerUser.id};
                 // Insert a new API key for the owner user
                 return models.ApiKey.add(userApiKey, context.internal);
             });
@@ -295,7 +295,7 @@ const fixtures = {
         let roles = await models.Role.fetchAll();
         roles = roles.toJSON();
 
-        return Promise.all(usersWithoutOwner.map((user) => {
+        const users = await Promise.all(usersWithoutOwner.map((user) => {
             let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, {user_id: user.id});
 
             userRolesRelations = _.map(userRolesRelations, function (userRolesRelation) {
@@ -306,6 +306,14 @@ const fixtures = {
 
             return models.User.add(user, context.internal);
         }));
+
+        // // Add API key for each user
+        await Promise.all(users.map((user) => {
+            const userApiKey = _.find(DataGenerator.forKnex.user_api_keys, {user_id: user.id});
+            return models.ApiKey.add(userApiKey, context.internal);
+        }));
+
+        return users;
     },
 
     createInactiveUser() {

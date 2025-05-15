@@ -748,14 +748,6 @@ DataGenerator.Content = {
         }
     ],
 
-    user_api_keys: [
-        {
-            id: ObjectId().toHexString(),
-            type: 'admin',
-            secret: _.repeat('f', 64)
-        }
-    ],
-
     emails: [
         {
             id: ObjectId().toHexString(),
@@ -1511,6 +1503,45 @@ DataGenerator.forKnex = (function () {
         }
     ];
 
+    const user_api_keys = [
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[0].id, // owner
+            type: 'admin',
+            secret: _.repeat('0', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[1].id, // admin
+            type: 'admin',
+            secret: _.repeat('1', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[2].id, // editor
+            type: 'admin',
+            secret: _.repeat('2', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[3].id, // author
+            type: 'admin',
+            secret: _.repeat('3', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[7].id, // contributor
+            type: 'admin',
+            secret: _.repeat('4', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[9].id,
+            type: 'admin',
+            secret: _.repeat('5', 64)
+        }
+    ];
+
     const posts_meta = [
         {
             id: ObjectId().toHexString(),
@@ -1995,6 +2026,7 @@ DataGenerator.forKnex = (function () {
         roles,
         users,
         roles_users,
+        user_api_keys,
         webhooks,
         integrations,
         api_keys,
