@@ -23,7 +23,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid'
+            fields: 'title,slug,published_at,uuid,feature_image'
         }
     });
 
@@ -57,13 +57,17 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     </div>
                     {!isPostLoading &&
                         <div className='flex items-center gap-6'>
-                            {/* <div className='h-[82px] w-[132px] rounded-md bg-muted'></div> */}
+                            {post.feature_image &&
+                                <div className='h-[82px] w-[132px] rounded-md bg-cover' style={{
+                                    backgroundImage: `url(${post.feature_image})`
+                                }}></div>
+                            }
                             <div>
                                 <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
                                     {post && post.title}
                                 </H1>
                                 {typedPost && typedPost.published_at && (
-                                    <div className='mt-0.5 flex items-center justify-start text-sm leading-[1.65em] text-muted-foreground'>
+                                    <div className='text-muted-foreground mt-0.5 flex items-center justify-start text-sm leading-[1.65em]'>
                             Published on your site on {moment.utc(typedPost.published_at).format('D MMM YYYY')} at {moment.utc(typedPost.published_at).format('HH:mm')}
                                     </div>
                                 )}
