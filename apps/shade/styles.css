@@ -43,7 +43,7 @@
         --primary-foreground: 0 0% 100%;
         --secondary: 204 14% 93%;
         --secondary-foreground: 216 11% 9%;
-        --accent: 200 12% 96%;
+        --accent: 240 11% 98%;
         --accent-foreground: 216 11% 9%;
         --destructive: 354 92% 50%;
         --destructive-foreground: 0 0% 100%;
@@ -55,6 +55,10 @@
         --chart-4: 201 82% 90%;
         --chart-5: 201 87% 94%;
         --chart-gray: 210 13% 88%;
+        --chart-blue: 198 100% 54%;
+        --chart-green: 127 62% 50%;
+        --chart-purple: 264 100% 63%;
+        --chart-pink: 332 96% 58%;
         /* --chart-1: 221.2 83.2% 53.3%;
         --chart-2: 212 95% 68%;
         --chart-3: 216 92% 60%;

@@ -25,11 +25,20 @@ export const KpiCardValue: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ch
     );
 };
 
-const KpiCard: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
+const KpiCard: React.FC<React.HTMLAttributes<HTMLButtonElement>> = ({children, className, ...props}) => {
     return (
-        <div className={cn('flex flex-col border-r last:border-none items-start gap-6 px-6 py-5', className)} {...props}>
+        <button
+            className={
+                cn(
+                    'flex flex-col border-r border-border last:border-none items-start gap-6 px-6 py-5 transition-all',
+                    props.onClick ? 'hover:bg-accent' : 'cursor-auto',
+                    className
+                )}
+            type='button'
+            {...props}
+        >
             {children}
-        </div>
+        </button>
     );
 };
 
