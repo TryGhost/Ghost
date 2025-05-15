@@ -13,6 +13,14 @@
         "ghost-i18n/matching-variables": "off"
       },
       "files": [
+        "locales/da/portal.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
         "locales/de/portal.json"
       ]
     },
@@ -150,6 +158,14 @@
       },
       "files": [
         "locales/sq/portal.json"
+      ]
+    },
+    {
+      "rules": {
+        "ghost-i18n/matching-variables": "off"
+      },
+      "files": [
+        "locales/th/portal.json"
       ]
     }
   ]
