@@ -119,14 +119,6 @@ table.body td {
     border-right-width: 0 !important;
   }
 
-  table.body table.btn {
-    width: 100% !important;
-  }
-
-  table.body .btn a {
-    width: 100% !important;
-  }
-
   table.body .img-responsive {
     height: auto !important;
     max-width: 100% !important;
@@ -406,18 +398,6 @@ table.body h2 span {
   table.body .kg-cta-minimal img.kg-cta-image {
     width: 52px !important;
     height: 52px !important;
-  }
-
-  table.body .kg-cta-minimal a.kg-cta-button {
-    display: inline-block !important;
-  }
-
-  table.body .kg-cta-minimal table.kg-cta-button-wrapper td {
-    padding: 4px 16px 5px;
-  }
-
-  table.body .kg-cta-immersive .kg-cta-button-wrapper {
-    padding: 6px 18px 7px;
   }
 }
 @media all {
@@ -818,14 +798,6 @@ table.body td {
     border-right-width: 0 !important;
   }
 
-  table.body table.btn {
-    width: 100% !important;
-  }
-
-  table.body .btn a {
-    width: 100% !important;
-  }
-
   table.body .img-responsive {
     height: auto !important;
     max-width: 100% !important;
@@ -1105,18 +1077,6 @@ table.body h2 span {
   table.body .kg-cta-minimal img.kg-cta-image {
     width: 52px !important;
     height: 52px !important;
-  }
-
-  table.body .kg-cta-minimal a.kg-cta-button {
-    display: inline-block !important;
-  }
-
-  table.body .kg-cta-minimal table.kg-cta-button-wrapper td {
-    padding: 4px 16px 5px;
-  }
-
-  table.body .kg-cta-immersive .kg-cta-button-wrapper {
-    padding: 6px 18px 7px;
   }
 }
 @media all {
@@ -4067,14 +4027,6 @@ table.body td {
     border-right-width: 0 !important;
   }
 
-  table.body table.btn {
-    width: 100% !important;
-  }
-
-  table.body .btn a {
-    width: 100% !important;
-  }
-
   table.body .img-responsive {
     height: auto !important;
     max-width: 100% !important;
@@ -4355,18 +4307,6 @@ table.body h2 span {
     width: 52px !important;
     height: 52px !important;
   }
-
-  table.body .kg-cta-minimal a.kg-cta-button {
-    display: inline-block !important;
-  }
-
-  table.body .kg-cta-minimal table.kg-cta-button-wrapper td {
-    padding: 4px 16px 5px;
-  }
-
-  table.body .kg-cta-immersive .kg-cta-button-wrapper {
-    padding: 6px 18px 7px;
-  }
 }
 @media all {
   .subscription-details p.hidden {
@@ -4579,7 +4519,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                 </tr>
             </table>
             <div class=\\"kg-bookmark-spacer--outlook\\" style=\\"height: 1.5em;\\">&nbsp;</div>
-        <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>Vinz</span><span style=\\"white-space: pre-wrap;\\">,</span></p><!--members-only--><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\"><table class=\\"btn btn-accent\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 16px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border-radius: 6px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></td></tr></tbody></table><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\">I had an idea...</div></div><div style=\\"background: transparent;
+        <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>Vinz</span><span style=\\"white-space: pre-wrap;\\">,</span></p><!--members-only--><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\"><table class=\\"btn btn-accent\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border-radius: 6px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></td></tr></tbody></table><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\">I had an idea...</div></div><div style=\\"background: transparent;
         border: 1px solid rgba(124, 139, 154, 0.25); border-radius: 4px; padding: 20px; margin-bottom: 1.5em;\\">
             <h4 style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top: 0px;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4>
             <div style=\\"font-size: 1rem; line-height: 1.5; margin-bottom: -1.5em;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Just kidding</span></p></div>
@@ -4680,7 +4620,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                     <td class=\\"kg-product-button-wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; margin-top: 0; padding-top: 16px; padding-bottom: 0;\\" valign=\\"top\\">
                                         <table class=\\"btn btn-accent\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: 100%;\\" width=\\"100%\\">
                                             <tbody><tr>
-                                                <td align=\\"center\\" width=\\"100%\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 16px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\">
+                                                <td align=\\"center\\" width=\\"100%\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\">
                                                     <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border-radius: 6px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click here</a>
                                                 </td>
                                             </tr>
@@ -5355,14 +5295,6 @@ table.body td {
     border-right-width: 0 !important;
   }
 
-  table.body table.btn {
-    width: 100% !important;
-  }
-
-  table.body .btn a {
-    width: 100% !important;
-  }
-
   table.body .img-responsive {
     height: auto !important;
     max-width: 100% !important;
@@ -5643,18 +5575,6 @@ table.body h2 span {
     width: 52px !important;
     height: 52px !important;
   }
-
-  table.body .kg-cta-minimal a.kg-cta-button {
-    display: inline-block !important;
-  }
-
-  table.body .kg-cta-minimal table.kg-cta-button-wrapper td {
-    padding: 4px 16px 5px;
-  }
-
-  table.body .kg-cta-immersive .kg-cta-button-wrapper {
-    padding: 6px 18px 7px;
-  }
 }
 @media all {
   .subscription-details p.hidden {
@@ -5879,7 +5799,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                 </tr>
             </table>
             <div class=\\"kg-bookmark-spacer--outlook\\" style=\\"height: 1.5em;\\">&nbsp;</div>
-        <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>there</span><span style=\\"white-space: pre-wrap;\\">,</span></p><div><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hello there, fellow users of electronic mail.</span></p><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"></div><!--members-only--><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\"><table class=\\"btn btn-accent\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 16px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border-radius: 6px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></td></tr></tbody></table><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\">I had an idea...</div></div><div style=\\"background: transparent;
+        <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>there</span><span style=\\"white-space: pre-wrap;\\">,</span></p><div><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hello there, fellow users of electronic mail.</span></p><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"></div><!--members-only--><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\"><table class=\\"btn btn-accent\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border-radius: 6px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></td></tr></tbody></table><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\">I had an idea...</div></div><div style=\\"background: transparent;
         border: 1px solid rgba(124, 139, 154, 0.25); border-radius: 4px; padding: 20px; margin-bottom: 1.5em;\\">
             <h4 style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top: 0px;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4>
             <div style=\\"font-size: 1rem; line-height: 1.5; margin-bottom: -1.5em;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Just kidding</span></p></div>
@@ -5980,7 +5900,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                     <td class=\\"kg-product-button-wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; margin-top: 0; padding-top: 16px; padding-bottom: 0;\\" valign=\\"top\\">
                                         <table class=\\"btn btn-accent\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: 100%;\\" width=\\"100%\\">
                                             <tbody><tr>
-                                                <td align=\\"center\\" width=\\"100%\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 16px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\">
+                                                <td align=\\"center\\" width=\\"100%\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\">
                                                     <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border-radius: 6px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click here</a>
                                                 </td>
                                             </tr>

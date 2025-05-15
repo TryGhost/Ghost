@@ -1135,6 +1135,34 @@ img.kg-cta-image {
     text-align: center;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.kg-cta-button-container {
+    padding-top: 20px;
+}
+
+.kg-cta-immersive.kg-cta-centered table.btn {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.kg-cta-minimal table.btn td.kg-style-accent {
+    background-color: {{accentColor}} !important;
+}
+
+.kg-cta-immersive table.btn td.kg-style-accent {
+    background-color: {{accentColor}} !important;
+    color: #fff !important;
+}
+
+.kg-cta-card .btn a.kg-style-accent {
+    background-color: {{accentColor}} !important;
+    color: #fff !important;
+}
+
+.kg-cta-has-img.kg-cta-immersive table.btn {
+    width: 100%;
+}
+{{else}}
 .kg-cta-button-container {
     padding-top: 20px;
 }
@@ -1198,6 +1226,7 @@ img.kg-cta-image {
     background-color: {{accentColor}} !important;
     color: #fff !important;
 }
+{{/hasFeature}}
 
 .kg-header-card {
     margin: 0 0 1.5em 0;
@@ -1705,7 +1734,7 @@ table.btn {
     width: auto;
 }
 table.btn td {
-    padding: 8px 16px;
+    padding: 8px 20px 9px;
     background-color: #ffffff;
     border-radius: {{buttonBorderRadius}};
     text-align: center;
@@ -1920,18 +1949,15 @@ table.btn-accent a {
     }
 
     {{#hasFeature "emailCustomizationAlpha"}}
-    table.body table.btn {
-        width: 100% !important;
-    }
     {{else}}
     table.body .btn table {
         width: 100% !important;
     }
-    {{/hasFeature}}
 
     table.body .btn a {
         width: 100% !important;
     }
+    {{/hasFeature}}
 
     table.body .img-responsive {
         height: auto !important;
@@ -2238,6 +2264,8 @@ table.btn-accent a {
         height: 52px !important;
     }
 
+    {{#hasFeature "emailCustomizationAlpha"}}
+    {{else}}
     table.body .kg-cta-minimal a.kg-cta-button {
         display: inline-block !important;
     }
@@ -2249,6 +2277,7 @@ table.btn-accent a {
     table.body .kg-cta-immersive .kg-cta-button-wrapper {
         padding: 6px 18px 7px;
     }
+    {{/hasFeature}}
 }
 
 /* -------------------------------------
