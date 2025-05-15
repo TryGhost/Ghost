@@ -513,6 +513,7 @@ describe('Front-end members behavior', function () {
         let membersPost;
         let paidPost;
         let membersPostWithPaywallCard;
+        let paidPostWithPaywallCardEmailOnly;
         let labelPost;
         let productPost;
 
@@ -543,6 +544,19 @@ describe('Front-end members behavior', function () {
                 published_at: moment().add(5, 'seconds').toDate()
             });
 
+            paidPostWithPaywallCardEmailOnly = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'thou-shalt-be-paid-for-email-only',
+                visibility: 'paid',
+                uuid: 'd96d663d-c378-4921-a007-47b3158835f9',
+                published_at: moment().add(30, 'seconds').toDate(),
+                mobiledoc: '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Before paywall"]]],[10,0],[1,"p",[[0,[],0,"After paywall"]]]]}',
+                html: '<p>Before paywall</p><!--members-only--><p>After paywall</p>',
+                status: 'sent',
+                posts_meta: {
+                    email_only: true
+                }
+            });
+
             labelPost = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'thou-must-be-labelled-vip',
                 visibility: 'label:vip',
@@ -560,6 +574,7 @@ describe('Front-end members behavior', function () {
                 membersPost,
                 paidPost,
                 membersPostWithPaywallCard,
+                paidPostWithPaywallCardEmailOnly,
                 labelPost,
                 productPost
             ]);
@@ -611,6 +626,15 @@ describe('Front-end members behavior', function () {
                     .expect(assertContentIsPresent);
 
                 assert(spy.notCalled, 'A page view from a non-member shouldn\'t generate a MemberPageViewEvent event');
+            });
+
+            it('cannot read paid post with paywall card email only content', async function () {
+                await request
+                    .get('/email/d96d663d-c378-4921-a007-47b3158835f9/')
+                    .expect(200)
+                    .expect((res) => {
+                        res.text.should.match(/This post is for/);
+                    });
             });
         });
 
@@ -750,6 +774,17 @@ describe('Front-end members behavior', function () {
                     .get('/thou-must-have-default-product/')
                     .expect(200)
                     .expect(assertContentIsAbsent);
+            });
+
+            it('can read content in paid post before paywall card for email only post', async function () {
+                await request
+                    .get('/email/d96d663d-c378-4921-a007-47b3158835f9/')
+                    .expect(200)
+                    .expect((res) => {
+                        res.text.should.match(/Before paywall/);
+                        res.text.should.not.match(/After paywall/);
+                        res.text.should.match(/This post is for/);
+                    });
             });
         });
 
@@ -903,6 +938,18 @@ describe('Front-end members behavior', function () {
                 assert(spy.calledOnce, 'A page view from a member should generate a MemberPageViewEvent event');
                 member = await models.Member.findOne({email});
                 assert.notEqual(member.get('last_seen_at'), null, 'The member should have a `last_seen_at` property after having visited a page while logged-in.');
+            });
+
+            it('can read full paid post with paywall card email only content', async function () {
+                await request
+                    .get('/email/d96d663d-c378-4921-a007-47b3158835f9/')
+                    .expect(200)
+                    .expect(assertContentIsAbsent)
+                    .expect((res) => {
+                        res.text.should.match(/Before paywall/);
+                        res.text.should.match(/After paywall/);
+                        res.text.should.not.match(/This post is for/);
+                    });
             });
         });
 
