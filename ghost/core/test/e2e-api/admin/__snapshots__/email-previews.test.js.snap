@@ -226,7 +226,7 @@ table.body td {
     border-right-width: 0 !important;
   }
 
-  table.body .btn table {
+  table.body table.btn {
     width: 100% !important;
   }
 
@@ -447,29 +447,6 @@ table.body h2 span {
     margin: 2em 0 !important;
   }
 
-  table.body .kg-header-card.kg-v2 span {
-    font-size: inherit !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-content {
-    padding-top: 64px !important;
-    padding-bottom: 64px !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-image + .kg-header-card-content {
-    padding-top: 52px !important;
-    padding-bottom: 52px !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-heading {
-    font-size: 2.2em !important;
-    line-height: 1.1 !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-subheading {
-    line-height: 1.3em !important;
-  }
-
   .feature-image-caption {
     font-size: 13px!important;
   }
@@ -584,15 +561,6 @@ table.body h2 span {
     font-family: inherit;
     font-weight: inherit;
     line-height: inherit;
-  }
-
-  .btn-primary table td:hover {
-    background-color: #34495e !important;
-  }
-
-  .btn-primary a:hover {
-    background-color: #34495e !important;
-    border-color: #34495e !important;
   }
 }
 </style>
@@ -852,7 +820,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24812",
+  "content-length": "23974",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -992,7 +960,7 @@ table.body td {
     border-right-width: 0 !important;
   }
 
-  table.body .btn table {
+  table.body table.btn {
     width: 100% !important;
   }
 
@@ -1213,29 +1181,6 @@ table.body h2 span {
     margin: 2em 0 !important;
   }
 
-  table.body .kg-header-card.kg-v2 span {
-    font-size: inherit !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-content {
-    padding-top: 64px !important;
-    padding-bottom: 64px !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-image + .kg-header-card-content {
-    padding-top: 52px !important;
-    padding-bottom: 52px !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-heading {
-    font-size: 2.2em !important;
-    line-height: 1.1 !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-subheading {
-    line-height: 1.3em !important;
-  }
-
   .feature-image-caption {
     font-size: 13px!important;
   }
@@ -1350,15 +1295,6 @@ table.body h2 span {
     font-family: inherit;
     font-weight: inherit;
     line-height: inherit;
-  }
-
-  .btn-primary table td:hover {
-    background-color: #34495e !important;
-  }
-
-  .btn-primary a:hover {
-    background-color: #34495e !important;
-    border-color: #34495e !important;
   }
 }
 </style>
@@ -1640,7 +1576,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "29184",
+  "content-length": "28346",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1811,7 +1747,7 @@ table.body td {
     border-right-width: 0 !important;
   }
 
-  table.body .btn table {
+  table.body table.btn {
     width: 100% !important;
   }
 
@@ -2032,29 +1968,6 @@ table.body h2 span {
     margin: 2em 0 !important;
   }
 
-  table.body .kg-header-card.kg-v2 span {
-    font-size: inherit !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-content {
-    padding-top: 64px !important;
-    padding-bottom: 64px !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-image + .kg-header-card-content {
-    padding-top: 52px !important;
-    padding-bottom: 52px !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-heading {
-    font-size: 2.2em !important;
-    line-height: 1.1 !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-subheading {
-    line-height: 1.3em !important;
-  }
-
   .feature-image-caption {
     font-size: 13px!important;
   }
@@ -2169,15 +2082,6 @@ table.body h2 span {
     font-family: inherit;
     font-weight: inherit;
     line-height: inherit;
-  }
-
-  .btn-primary table td:hover {
-    background-color: #34495e !important;
-  }
-
-  .btn-primary a:hover {
-    background-color: #34495e !important;
-    border-color: #34495e !important;
   }
 }
 </style>
@@ -2444,7 +2348,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24566",
+  "content-length": "23728",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2944,7 +2848,7 @@ table.body td {
     border-right-width: 0 !important;
   }
 
-  table.body .btn table {
+  table.body table.btn {
     width: 100% !important;
   }
 
@@ -3165,29 +3069,6 @@ table.body h2 span {
     margin: 2em 0 !important;
   }
 
-  table.body .kg-header-card.kg-v2 span {
-    font-size: inherit !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-content {
-    padding-top: 64px !important;
-    padding-bottom: 64px !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-image + .kg-header-card-content {
-    padding-top: 52px !important;
-    padding-bottom: 52px !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-heading {
-    font-size: 2.2em !important;
-    line-height: 1.1 !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-subheading {
-    line-height: 1.3em !important;
-  }
-
   .feature-image-caption {
     font-size: 13px!important;
   }
@@ -3302,15 +3183,6 @@ table.body h2 span {
     font-family: inherit;
     font-weight: inherit;
     line-height: inherit;
-  }
-
-  .btn-primary table td:hover {
-    background-color: #34495e !important;
-  }
-
-  .btn-primary a:hover {
-    background-color: #34495e !important;
-    border-color: #34495e !important;
   }
 }
 </style>
@@ -3591,7 +3463,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "25451",
+  "content-length": "24613",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4117,7 +3989,7 @@ table.body td {
     border-right-width: 0 !important;
   }
 
-  table.body .btn table {
+  table.body table.btn {
     width: 100% !important;
   }
 
@@ -4338,29 +4210,6 @@ table.body h2 span {
     margin: 2em 0 !important;
   }
 
-  table.body .kg-header-card.kg-v2 span {
-    font-size: inherit !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-content {
-    padding-top: 64px !important;
-    padding-bottom: 64px !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-image + .kg-header-card-content {
-    padding-top: 52px !important;
-    padding-bottom: 52px !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-heading {
-    font-size: 2.2em !important;
-    line-height: 1.1 !important;
-  }
-
-  table.body .kg-header-card.kg-v2 .kg-header-card-subheading {
-    line-height: 1.3em !important;
-  }
-
   .feature-image-caption {
     font-size: 13px!important;
   }
@@ -4475,15 +4324,6 @@ table.body h2 span {
     font-family: inherit;
     font-weight: inherit;
     line-height: inherit;
-  }
-
-  .btn-primary table td:hover {
-    background-color: #34495e !important;
-  }
-
-  .btn-primary a:hover {
-    background-color: #34495e !important;
-    border-color: #34495e !important;
   }
 }
 </style>
@@ -4764,7 +4604,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "25451",
+  "content-length": "24613",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
