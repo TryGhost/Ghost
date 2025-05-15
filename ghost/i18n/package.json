@@ -12,6 +12,7 @@
     "test": "yarn test:base && yarn translate",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint:i18n": "eslint locales/**/*.json --ext .jsonc --cache",
+    "lint:i18n:update-todos": "eslint-todo-generator -f json 'locales/**/*.json'",
     "lint": "yarn lint:code && yarn lint:test && yarn lint:i18n",
     "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache",
     "translate": "yarn translate:ghost && yarn translate:portal && yarn translate:signup-form && yarn translate:comments && yarn translate:search && node generate-context.js",
