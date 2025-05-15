@@ -1240,6 +1240,73 @@ img.kg-cta-image {
     color: #ffffff;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.kg-header-card h2 {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.1em;
+    margin: 0 0 0.125em;
+}
+
+.kg-header-card.kg-size-small h2 {
+    font-size: 26px;
+}
+
+.kg-header-card.kg-size-large h2 {
+    font-size: 36px;
+}
+
+.kg-header-card h3 {
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1.5em;
+    margin: 0;
+}
+
+.kg-header-card h3 strong {
+    font-weight: 600;
+}
+
+.kg-header-button-wrapper {
+    padding-top: 20px;
+}
+
+/* Header v2 */
+
+.kg-header-card.kg-v2 {
+    padding: 0;
+    text-align: inherit;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-image {
+    height: 320px;
+    background-repeat: no-repeat;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-content {
+    padding: 40px;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-heading {
+    margin: 0;
+    line-height: 1em;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-subheading-wrapper {
+    padding: 16px 0 0;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-subheading {
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.5em;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-heading a,
+.kg-header-card.kg-v2 .kg-header-card-subheading a {
+    color: inherit;
+}
+{{else}}
 .kg-header-card h2 {
     font-size: 3em;
     font-weight: 700;
@@ -1279,18 +1346,15 @@ img.kg-cta-image {
 }
 
 .kg-header-card-button {
+    margin: 0;
     margin-top: 1.75em;
     background: #ffffff;
     border-radius: 5px;
-    {{#hasFeature "emailCustomizationAlpha"}}
-    border-radius: {{buttonBorderRadius}};
-    {{/hasFeature}}
     box-sizing: border-box;
     cursor: pointer;
     display: inline-block;
     font-size: 14px;
     font-weight: bold;
-    margin: 0;
     padding: 8px 16px;
     text-decoration: none !important;
     color: #15171A;
@@ -1350,7 +1414,72 @@ img.kg-cta-image {
     font-size: 16px;
     font-weight: 500;
 }
+{{/hasFeature}}
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.kg-product-card {
+    margin: 0 0 1.5em;
+    border-radius: 6px;
+    border: 1px solid #e9e9e9;
+}
+
+.kg-product-card-container {
+    padding: 20px;
+}
+
+.kg-product-image {
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 16px;
+}
+
+.kg-product-image img {
+    width: 100%;
+    height: auto;
+    padding: 0;
+    border: none;
+}
+
+.kg-product-title {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    font-size: 22px !important;
+    font-weight: 700;
+}
+
+.kg-product-rating {
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.kg-product-rating img {
+    width: 96px;
+}
+
+.kg-product-description-wrapper {
+    margin-bottom: 0;
+    padding-top: 8px;
+    padding-bottom: 0;
+}
+
+.kg-product-description-wrapper p {
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.4;
+    opacity: 0.7;
+}
+
+.kg-product-button-wrapper {
+    margin-top: 0;
+    padding-top: 16px;
+    padding-bottom: 0;
+}
+
+.kg-product-button-wrapper table.btn {
+    width: 100%;
+}
+{{else}}
 .kg-product-card {
     margin: 0 0 1.5em;
     padding: 20px;
@@ -1423,6 +1552,7 @@ img.kg-cta-image {
     display: block;
     padding: 12px 25px;
 }
+{{/hasFeature}}
 
 .kg-audio-card {
     width: auto;
@@ -1568,6 +1698,42 @@ img.kg-cta-image {
 /* -------------------------------------
     BUTTONS
 ------------------------------------- */
+
+{{#hasFeature "emailCustomizationAlpha"}}
+table.btn {
+    box-sizing: border-box;
+    width: auto;
+}
+table.btn td {
+    padding: 8px 16px;
+    background-color: #ffffff;
+    border-radius: {{buttonBorderRadius}};
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+}
+
+table.btn a {
+    border-radius: {{buttonBorderRadius}};
+    box-sizing: border-box;
+    color: #15212A;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+    text-decoration: none;
+}
+
+table.btn-accent td {
+    background-color: {{adjustedAccentColor}};
+}
+
+table.btn-accent a {
+    background-color: {{adjustedAccentColor}};
+    border-color: {{adjustedAccentColor}};
+    color: {{adjustedAccentContrastColor}};
+}
+{{else}}
 .btn {
     box-sizing: border-box;
     width: 100%;
@@ -1629,7 +1795,7 @@ img.kg-cta-image {
     border-color: {{adjustedAccentColor}};
     color: {{adjustedAccentContrastColor}};
 }
-
+{{/hasFeature}}
 /* -------------------------------------
     OTHER STYLES THAT MIGHT BE USEFUL
 ------------------------------------- */
@@ -1753,9 +1919,15 @@ img.kg-cta-image {
         border-right-width: 0 !important;
     }
 
+    {{#hasFeature "emailCustomizationAlpha"}}
+    table.body table.btn {
+        width: 100% !important;
+    }
+    {{else}}
     table.body .btn table {
         width: 100% !important;
     }
+    {{/hasFeature}}
 
     table.body .btn a {
         width: 100% !important;
@@ -1973,7 +2145,9 @@ img.kg-cta-image {
         margin: 2em 0 !important;
     }
 
-    table.body .kg-header-card.kg-v2 span {
+    {{#hasFeature "emailCustomizationAlpha"}}
+    {{else}}
+        table.body .kg-header-card.kg-v2 span {
         font-size: inherit !important;
     }
 
@@ -1995,6 +2169,7 @@ img.kg-cta-image {
     table.body .kg-header-card.kg-v2 .kg-header-card-subheading {
         line-height: 1.3em !important;
     }
+    {{/hasFeature}}
 
    .feature-image-caption {
         font-size: 13px!important;
@@ -2115,6 +2290,8 @@ img.kg-cta-image {
         line-height: inherit;
     }
 
+    {{#hasFeature "emailCustomizationAlpha"}}
+    {{else}}
     .btn-primary table td:hover {
         background-color: #34495e !important;
     }
@@ -2123,6 +2300,7 @@ img.kg-cta-image {
         background-color: #34495e !important;
         border-color: #34495e !important;
     }
+    {{/hasFeature}}
 }
 
 {{#if showBadge}}
