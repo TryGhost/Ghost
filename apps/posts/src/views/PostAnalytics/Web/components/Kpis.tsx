@@ -102,7 +102,7 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
 
     return (
         <>
-            {isLoading ? 'Loading' :
+            {isLoading ? '' :
                 <>
                     {(data && data.length !== 0 && kpiValues.visits !== '0') ?
                         <Card>

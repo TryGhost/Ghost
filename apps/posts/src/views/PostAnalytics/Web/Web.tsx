@@ -5,7 +5,7 @@ import Locations from './components/Locations';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import Sources from './components/Sources';
-import {formatQueryDate} from '@tryghost/shade';
+import {BarChartLoadingIndicator, formatQueryDate} from '@tryghost/shade';
 import {getRangeDates} from '@src/utils/chart-helpers';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -56,7 +56,11 @@ const Web: React.FC<postAnalyticsProps> = () => {
                 <DateRangeSelect />
             </PostAnalyticsHeader>
             <PostAnalyticsContent>
-                {isLoading ? 'Loading' :
+                {isLoading ?
+                    <div className='flex size-full grow items-center justify-center'>
+                        <BarChartLoadingIndicator />
+                    </div>
+                    :
                     <>
                         <Kpis queryParams={params} />
                         <div className='grid grid-cols-2 gap-6'>

@@ -2,7 +2,7 @@
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
 import {calculateYAxisWidth} from '@src/utils/chart-helpers';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useMemo, useRef, useState} from 'react';
@@ -145,7 +145,11 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         <>
             <PostAnalyticsHeader currentTab='Newsletter' />
             <PostAnalyticsContent>
-                {isLoading ? 'Loading' :
+                {isLoading ?
+                    <div className='flex size-full grow items-center justify-center'>
+                        <BarChartLoadingIndicator />
+                    </div>
+                    :
                     <div className='flex flex-col items-stretch gap-6'>
                         <Card>
                             <CardHeader className='hidden'>
