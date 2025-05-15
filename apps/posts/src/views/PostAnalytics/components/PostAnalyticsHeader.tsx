@@ -57,7 +57,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     </div>
                     {!isPostLoading &&
                         <div className='flex items-center gap-6'>
-                            <div className='h-[82px] w-[132px] rounded-md bg-muted'></div>
+                            {/* <div className='h-[82px] w-[132px] rounded-md bg-muted'></div> */}
                             <div>
                                 <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
                                     {post && post.title}

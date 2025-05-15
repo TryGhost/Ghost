@@ -6,10 +6,10 @@ import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 
 const NewsletterOverview:React.FC = () => {
     const {postId} = useParams();
-    const {topLinks, isLoading: isNewsletterStatsLoading} = usePostNewsletterStats(postId || '');
+    const {stats, topLinks, isLoading: isNewsletterStatsLoading} = usePostNewsletterStats(postId || '');
 
     const opensChartData = [
-        {opens: 0.71, fill: 'var(--color-opens)'}
+        {opens: Number((stats.opened / stats.sent).toFixed(2)), fill: 'var(--color-opens)'}
     ];
     const opensChartConfig = {
         opens: {
@@ -19,7 +19,7 @@ const NewsletterOverview:React.FC = () => {
     } satisfies ChartConfig;
 
     const clicksChartData = [
-        {clicks: 0.19, fill: 'var(--color-clicks)'}
+        {clicks: Number((stats.clicked / stats.sent).toFixed(2)), fill: 'var(--color-clicks)'}
     ];
     const clickschartConfig = {
         clicks: {
@@ -72,10 +72,10 @@ const NewsletterOverview:React.FC = () => {
                         >
                             <Recharts.RadialBarChart
                                 data={opensChartData}
-                                endAngle={-176}
+                                // endAngle={2}
                                 innerRadius={72}
                                 outerRadius={110}
-                                startAngle={90}
+                                // startAngle={90}
                             >
                                 <Recharts.PolarGrid
                                     className="first:fill-muted last:fill-background"
@@ -125,10 +125,10 @@ const NewsletterOverview:React.FC = () => {
                         >
                             <Recharts.RadialBarChart
                                 data={clicksChartData}
-                                endAngle={29}
+                                // endAngle={29}
                                 innerRadius={72}
                                 outerRadius={110}
-                                startAngle={90}
+                                // startAngle={90}
                             >
                                 <Recharts.PolarGrid
                                     className="first:fill-muted last:fill-background"
@@ -178,25 +178,27 @@ const NewsletterOverview:React.FC = () => {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className='w-full'>
-                                            <div className='flex items-center gap-1.5'>
-                                                <LucideIcon.Link size={16} strokeWidth={1.25}/>
-                                            Link clicks
+                                        <TableHead className='w-full' colSpan={2}>
+                                            <div className='flex items-center justify-between gap-6'>
+                                                <div className='flex items-center gap-1.5'>
+                                                    <LucideIcon.Link size={16} strokeWidth={1.25}/>
+                                                    Top links
+                                                </div>
+                                                No. of members clicked
                                             </div>
                                         </TableHead>
-                                        <TableHead className='w-[0%] text-nowrap text-right'>No. of members clicked</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {displayLinks.map((row) => {
                                         return (
                                             <TableRow key={row.url}>
-                                                <TableCell className='max-w-0'>
-                                                    <div className='flex items-center gap-2'>
+                                                <TableCell className='max-w-0 group-hover:!bg-transparent'>
+                                                    <div className='block items-center gap-2 truncate'>
                                                         {sanitizeUrl(row.url)}
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className='text-right font-mono text-sm'>{formatNumber(row.clicks)}</TableCell>
+                                                <TableCell className='w-[10%] text-right font-mono text-sm group-hover:!bg-transparent'>{formatNumber(row.clicks)}</TableCell>
                                             </TableRow>
                                         );
                                     })}
@@ -204,7 +206,7 @@ const NewsletterOverview:React.FC = () => {
                             </Table>
                             :
                             <div className='py-20 text-center text-sm text-gray-700'>
-                        You have no links in your post.
+                                You have no links in your post.
                             </div>
                         }
                     </div>
