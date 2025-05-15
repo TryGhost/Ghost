@@ -27,5 +27,6 @@ module.exports.init = async function init() {
 
     // The final intention is to have this run on a schedule
     // For the initial version, we'll just ping when the server starts
-    await explorePingService.ping();
+    // Without waiting for the response
+    explorePingService.ping();
 };
