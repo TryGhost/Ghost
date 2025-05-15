@@ -194,9 +194,15 @@ const NewsletterOverview:React.FC = () => {
                                         return (
                                             <TableRow key={row.url}>
                                                 <TableCell className='max-w-0 group-hover:!bg-transparent'>
-                                                    <div className='block items-center gap-2 truncate'>
+                                                    <a
+                                                        className='block truncate font-medium hover:underline'
+                                                        href={row.url}
+                                                        rel="noreferrer"
+                                                        target='_blank'
+                                                        title={row.url}
+                                                    >
                                                         {sanitizeUrl(row.url)}
-                                                    </div>
+                                                    </a>
                                                 </TableCell>
                                                 <TableCell className='w-[10%] text-right font-mono text-sm group-hover:!bg-transparent'>{formatNumber(row.clicks)}</TableCell>
                                             </TableRow>
