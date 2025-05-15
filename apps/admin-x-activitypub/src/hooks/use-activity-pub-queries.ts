@@ -337,13 +337,16 @@ export function useBlockDomainMutationForUser(handle: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
-        async mutationFn(account: Account) {
+        async mutationFn(data: {url: string, handle?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.blockDomain(new URL(account.apId));
+            return api.blockDomain(new URL(data.url));
         },
-        onMutate: (account: Account) => {
+        onMutate: (data: {url: string, handle?: string}) => {
+            if (!data.handle) {
+                return;
+            }
             queryClient.setQueryData(
                 QUERY_KEYS.account(account.handle),
                 (currentAccount?: Account) => {
@@ -366,13 +369,16 @@ export function useUnblockDomainMutationForUser(handle: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
-        async mutationFn(account: Account) {
+        async mutationFn(data: {url: string, handle?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.unblockDomain(new URL(account.apId));
+            return api.unblockDomain(new URL(data.url));
         },
-        onMutate: (account: Account) => {
+        onMutate: (data: {url: string, handle?: string}) => {
+            if (!data.handle) {
+                return;
+            }
             queryClient.setQueryData(
                 QUERY_KEYS.account(account.handle),
                 (currentAccount?: Account) => {
