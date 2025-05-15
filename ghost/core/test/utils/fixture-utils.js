@@ -160,20 +160,6 @@ const fixtures = {
             mobiledoc: DataGenerator.markdownToMobiledoc('Before paywall\n\n<!--members-only-->\n\nAfter paywall'),
             visibility: 'paid',
             authors: [owner.toJSON()]
-        },
-        {
-            id: '618ba1ffbe2896111140a6ef',
-            title: 'This has a paywall - email only',
-            slug: 'paywall-email-only',
-            lexical: '',
-            status: 'sent',
-            uuid: '8f4d1162-f643-4e1f-9f07-3246487d3fd6',
-            mobiledoc: DataGenerator.markdownToMobiledoc('Before paywall\n\n<!--members-only-->\n\nAfter paywall'),
-            visibility: 'paid',
-            authors: [owner.toJSON()],
-            posts_meta: {
-                email_only: true
-            }
         }];
 
         for (const post of gatedPosts) {
