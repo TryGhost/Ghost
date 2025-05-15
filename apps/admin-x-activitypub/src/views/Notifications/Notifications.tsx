@@ -363,7 +363,7 @@ const Notifications: React.FC = () => {
                                                         </>
                                                     )
                                                 )}
-                                                {(group.type === 'reply' || group.type === 'mention') && group.post && (
+                                                {((group.type === 'reply' && group.post) || group.type === 'mention') && (
                                                     <div className="mt-1.5">
                                                         <FeedItemStats
                                                             buttonClassName='hover:bg-gray-200'
