@@ -3,6 +3,7 @@ import Error from '@components/layout/Error';
 import Explore from '@views/Explore';
 import Feed from './views/Feed/Feed';
 import Inbox from '@views/Inbox';
+import Moderation from '@views/Preferences/components/Moderation';
 import Note from './views/Feed/Note';
 import Notifications from '@views/Notifications';
 import Onboarding from '@components/layout/Onboarding';
@@ -76,6 +77,12 @@ export const routes: CustomRouteObject[] = [
                 path: 'preferences',
                 element: <Preferences />,
                 pageTitle: 'Preferences'
+            },
+            {
+                path: 'preferences/moderation',
+                element: <Moderation />,
+                pageTitle: 'Moderation',
+                showBackButton: true
             },
             {
                 path: 'preferences/threads-sharing',
