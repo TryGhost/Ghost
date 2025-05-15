@@ -12,17 +12,17 @@ import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 interface postAnalyticsProps {}
 
 // Grouped link type after processing
-interface GroupedLinkData {
+export interface GroupedLinkData {
     url: string;
     clicks: number;
     edited: boolean;
 }
 
-const sanitizeUrl = (url: string): string => {
+export const sanitizeUrl = (url: string): string => {
     return url.replace(/^https?:\/\//, '');
 };
 
-const cleanTrackedUrl = (url: string, showTitle = false): string => {
+export const cleanTrackedUrl = (url: string, showTitle = false): string => {
     // Extract the URL before the ? but keep the hash part
     const [urlPart, queryPart] = url.split('?');
 
