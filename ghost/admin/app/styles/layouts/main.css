@@ -2346,13 +2346,13 @@ section.gh-ds h2 {
     top: 4px;
     right: 8px;
     padding: 5px;
-    color: #ddd;
+    color: var(--midlightgrey);
     font-size: 2.2rem;
     line-height: 1;
 }
 
 .gh-sidebar-banner-close:hover {
-    color: #15171A;
+    color: var(--midgrey);
 }
 
 .gh-sidebar-banner a > strong {
