@@ -203,6 +203,52 @@ function updateNotificationsLikedCache(queryClient: QueryClient, handle: string,
     );
 }
 
+function updateNotificationsRepostCache(queryClient: QueryClient, handle: string, id: string, reposted: boolean) {
+    const notificationQueryKey = QUERY_KEYS.notifications(handle);
+    queryClient.setQueriesData(
+        {queryKey: notificationQueryKey},
+        (current?: {pages?: {notifications?: Notification[]}[]}) => {
+            if (!current || !current.pages) {
+                return current;
+            }
+
+            try {
+                return {
+                    ...current,
+                    pages: current.pages.map((page) => {
+                        if (!page || !page.notifications) {
+                            return page;
+                        }
+
+                        return {
+                            ...page,
+                            notifications: page.notifications.map((notification) => {
+                                if (!notification || !notification.post) {
+                                    return notification;
+                                }
+
+                                if (notification.post.id === id) {
+                                    return {
+                                        ...notification,
+                                        post: {
+                                            ...notification.post,
+                                            repostedByMe: reposted,
+                                            repostCount: Math.max(reposted ? notification.post.repostCount + 1 : notification.post.repostCount - 1, 0)
+                                        }
+                                    };
+                                }
+                                return notification;
+                            })
+                        };
+                    })
+                };
+            } catch (error) {
+                return current;
+            }
+        }
+    );
+}
+
 function updateReplyCountInCache(queryClient: QueryClient, id: string, delta: number) {
     const queryKeys = [
         QUERY_KEYS.feed,
@@ -508,10 +554,12 @@ export function useRepostMutationForUser(handle: string) {
         onMutate: (id) => {
             updateRepostCache(queryClient, QUERY_KEYS.feed, id, true);
             updateRepostCache(queryClient, QUERY_KEYS.inbox, id, true);
+            updateNotificationsRepostCache(queryClient, handle, id, true);
         },
         onError(error: {message: string, statusCode: number}, id) {
             updateRepostCache(queryClient, QUERY_KEYS.feed, id, false);
             updateRepostCache(queryClient, QUERY_KEYS.inbox, id, false);
+            updateNotificationsRepostCache(queryClient, handle, id, false);
             if (error.statusCode === 403) {
                 showToast({
                     title: 'Action failed',
@@ -536,6 +584,7 @@ export function useDerepostMutationForUser(handle: string) {
         onMutate: (id) => {
             updateRepostCache(queryClient, QUERY_KEYS.feed, id, false);
             updateRepostCache(queryClient, QUERY_KEYS.inbox, id, false);
+            updateNotificationsRepostCache(queryClient, handle, id, false);
         }
     });
 }
