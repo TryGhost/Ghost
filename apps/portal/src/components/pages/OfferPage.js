@@ -555,7 +555,7 @@ export default class OfferPage extends React.Component {
         }
         if (discountDuration === 'trial') {
             return (
-                <p className="footnote">{t('Try free for amount} days, then {originalPrice}.', {
+                <p className="footnote">{t('Try free for {amount} days, then {originalPrice}.', {
                     amount: offer.amount,
                     originalPrice: originalPrice,
                     interpolation: {escapeValue: false}
