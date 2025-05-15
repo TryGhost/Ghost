@@ -180,7 +180,7 @@
     "Too many different sign-in attempts, try again in {number} hours": "Pārāk daudz dažādu pierakstīšanās mēģinājumu. Mēģiniet vēlreiz pēc {number}\u00a0stundām",
     "Too many different sign-in attempts, try again in {number} minutes": "Pārāk daudz dažādu pierakstīšanās mēģinājumu, mēģiniet vēlreiz pēc {number}\u00a0minūtēm",
     "Too many sign-up attempts, try again later": "",
-    "Try free for {amount} days, then {originalPrice}.": "Mēģiniet bez maksas {amount}\u00a0dienas, pēc tam {original Price}.",
+    "Try free for {amount} days, then {originalPrice}.": "Mēģiniet bez maksas {amount}\u00a0dienas, pēc tam {originalPrice}.",
     "Unable to initiate checkout session": "Nevar uzsākt norēķināšanās sesiju",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Atbloķējiet piekļuvi visiem biļeteniem, kļūstot par maksas abonentu.",
     "Unsubscribe from all emails": "Anulēt visu e-pasta ziņojumu abonēšanu",
