@@ -67,7 +67,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                     {post && post.title}
                                 </H1>
                                 {typedPost && typedPost.published_at && (
-                                    <div className='text-muted-foreground mt-0.5 flex items-center justify-start text-sm leading-[1.65em]'>
+                                    <div className='mt-0.5 flex items-center justify-start text-sm leading-[1.65em] text-muted-foreground'>
                             Published on your site on {moment.utc(typedPost.published_at).format('D MMM YYYY')} at {moment.utc(typedPost.published_at).format('HH:mm')}
                                     </div>
                                 )}
@@ -78,22 +78,22 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                         <Tabs className="w-full" defaultValue={currentTab} variant='navbar'>
                             <TabsList>
                                 <TabsTrigger value="Overview" onClick={() => {
-                                    navigate(`/analytics/x/${postId}`);
+                                    navigate(`/analytics/beta/${postId}`);
                                 }}>
                                 Overview
                                 </TabsTrigger>
                                 <TabsTrigger value="Web" onClick={() => {
-                                    navigate(`/analytics/x/${postId}/web`);
+                                    navigate(`/analytics/beta/${postId}/web`);
                                 }}>
                                 Web stats
                                 </TabsTrigger>
                                 <TabsTrigger value="Newsletter" onClick={() => {
-                                    navigate(`/analytics/x/${postId}/newsletter`);
+                                    navigate(`/analytics/beta/${postId}/newsletter`);
                                 }}>
                                 Newsletter
                                 </TabsTrigger>
                                 <TabsTrigger value="Growth" onClick={() => {
-                                    navigate(`/analytics/x/${postId}/growth`);
+                                    navigate(`/analytics/beta/${postId}/growth`);
                                 }}>
                                 Growth
                                 </TabsTrigger>

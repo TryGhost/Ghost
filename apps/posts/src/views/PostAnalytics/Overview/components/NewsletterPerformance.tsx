@@ -9,7 +9,7 @@ const NewsletterOverview:React.FC = () => {
     const {stats, topLinks, isLoading: isNewsletterStatsLoading} = usePostNewsletterStats(postId || '');
 
     const opensChartData = [
-        {opens: Number((stats.opened / stats.sent).toFixed(2)), fill: 'var(--color-opens)'}
+        {opens: Number((stats?.opened && stats?.sent ? (stats.opened / stats.sent) : 0).toFixed(2)), fill: 'var(--color-opens)'}
     ];
     const opensChartConfig = {
         opens: {
@@ -19,7 +19,7 @@ const NewsletterOverview:React.FC = () => {
     } satisfies ChartConfig;
 
     const clicksChartData = [
-        {clicks: Number((stats.clicked / stats.sent).toFixed(2)), fill: 'var(--color-clicks)'}
+        {clicks: Number((stats?.clicked && stats?.sent ? (stats.clicked / stats.sent) : 0).toFixed(2)), fill: 'var(--color-clicks)'}
     ];
     const clickschartConfig = {
         clicks: {
