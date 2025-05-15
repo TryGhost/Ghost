@@ -4,7 +4,6 @@ import {Account} from '@src/api/activitypub';
 import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LucideIcon, cn} from '@tryghost/shade';
 import {Link, useNavigate} from '@tryghost/admin-x-framework';
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useSearchForUser} from '@hooks/use-activity-pub-queries';
 
 interface SettingsProps {
@@ -13,7 +12,6 @@ interface SettingsProps {
 }
 
 const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
-    const {isEnabled} = useFeatureFlags();
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const navigate = useNavigate();
 
@@ -48,17 +46,15 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                     </DialogContent>
                 </Dialog>
             </SettingItem>
-            {isEnabled('moderation') &&
-                <SettingItem withHover onClick={() => navigate('/preferences/moderation')}>
-                    <SettingHeader>
-                        <SettingTitle>Moderation</SettingTitle>
-                        <SettingDescription>Manage blocked users and domains</SettingDescription>
-                    </SettingHeader>
-                    <SettingAction className='flex items-center gap-2'>
-                        <LucideIcon.ChevronRight size={20} />
-                    </SettingAction>
-                </SettingItem>
-            }
+            <SettingItem withHover onClick={() => navigate('/preferences/moderation')}>
+                <SettingHeader>
+                    <SettingTitle>Moderation</SettingTitle>
+                    <SettingDescription>Manage blocked users and domains</SettingDescription>
+                </SettingHeader>
+                <SettingAction className='flex items-center gap-2'>
+                    <LucideIcon.ChevronRight size={20} />
+                </SettingAction>
+            </SettingItem>
             <SettingItem withHover onClick={() => !threadsIsFetching && navigate('/preferences/threads-sharing', {state: {account, threadsAccount: threadsData?.accounts[0], isEnabled: threadsEnabled}})}>
                 <SettingHeader>
                     <SettingTitle>Threads sharing</SettingTitle>
