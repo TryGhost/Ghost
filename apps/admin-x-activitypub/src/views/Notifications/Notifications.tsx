@@ -119,11 +119,11 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
         return <>{actorText} reposted your {group.post?.type === 'article' ? 'post' : 'note'}</>;
     case 'reply':
         if (group.inReplyTo && typeof group.inReplyTo !== 'string') {
-            return <>{actorText} replied to your {group.inReplyTo?.type === 'article' ? 'post' : 'note'}</>;
+            return actorText;
         }
         break;
     case 'mention':
-        return <>{actorText} mentioned you in a {group.inReplyTo?.type === 'article' ? 'post' : 'note'}</>;
+        return actorText;
     }
 
     return <></>;
