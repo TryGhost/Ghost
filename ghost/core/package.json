@@ -110,6 +110,7 @@
     "@tryghost/security": "1.0.0",
     "@tryghost/social-urls": "0.1.49",
     "@tryghost/string": "0.2.15",
+    "@tryghost/timezone-data": "0.4.7",
     "@tryghost/tpl": "0.1.34",
     "@tryghost/url-utils": "4.4.11",
     "@tryghost/validator": "0.2.16",

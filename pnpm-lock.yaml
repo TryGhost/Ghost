@@ -26,6 +26,9 @@ importers:
       concurrently:
         specifier: 8.2.2
         version: 8.2.2
+      debug:
+        specifier: 4.4.1
+        version: 4.4.1(supports-color@8.1.1)
       eslint:
         specifier: 8.57.1
         version: 8.57.1
@@ -46,7 +49,7 @@ importers:
         version: 15.5.2
       nx:
         specifier: 20.8.1
-        version: 20.8.1
+        version: 20.8.1(debug@4.4.1)
       rimraf:
         specifier: 5.0.10
         version: 5.0.10
@@ -467,7 +470,7 @@ importers:
     dependencies:
       '@tryghost/content-api':
         specifier: 1.11.24
-        version: 1.11.24
+        version: 1.11.24(debug@4.4.1)
       react:
         specifier: 17.0.2
         version: 17.0.2
@@ -1039,7 +1042,7 @@ importers:
     dependencies:
       '@tryghost/content-api':
         specifier: 1.11.24
-        version: 1.11.24
+        version: 1.11.24(debug@4.4.1)
       flexsearch:
         specifier: 0.8.153
         version: 0.8.153
@@ -1288,7 +1291,7 @@ importers:
         version: 3.0.1
       ember-cli:
         specifier: 3.24.0
-        version: 3.24.0(babel-core@6.26.3)(ejs@3.1.10)(encoding@0.1.13)(handlebars@4.7.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.7)
+        version: 3.24.0(babel-core@6.26.3)(debug@4.4.1)(ejs@3.1.10)(encoding@0.1.13)(handlebars@4.7.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.7)
       ember-cli-app-version:
         specifier: 5.0.0
         version: 5.0.0
@@ -1303,7 +1306,7 @@ importers:
         version: 1.0.3
       ember-cli-dependency-checker:
         specifier: 3.3.2
-        version: 3.3.2(ember-cli@3.24.0(babel-core@6.26.3)(ejs@3.1.10)(encoding@0.1.13)(handlebars@4.7.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.7))
+        version: 3.3.2(ember-cli@3.24.0(babel-core@6.26.3)(debug@4.4.1)(ejs@3.1.10)(encoding@0.1.13)(handlebars@4.7.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.7))
       ember-cli-deprecation-workflow:
         specifier: 2.2.0
         version: 2.2.0
@@ -1507,7 +1510,7 @@ importers:
         version: 4.0.0(chai@4.5.0)(sinon@17.0.1)
       testem:
         specifier: 3.16.0
-        version: 3.16.0(babel-core@6.26.3)(ejs@3.1.10)(handlebars@4.7.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.7)
+        version: 3.16.0(babel-core@6.26.3)(debug@4.4.1)(ejs@3.1.10)(handlebars@4.7.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.7)
       tracked-built-ins:
         specifier: 3.4.0
         version: 3.4.0(@babel/core@7.27.1)
@@ -1537,7 +1540,7 @@ importers:
         version: 7.120.3
       '@slack/webhook':
         specifier: 7.0.5
-        version: 7.0.5
+        version: 7.0.5(debug@4.4.1)
       '@tryghost/adapter-base-cache':
         specifier: 0.1.15
         version: 0.1.15
@@ -1636,7 +1639,7 @@ importers:
         version: 1.0.0
       '@tryghost/nodemailer':
         specifier: 0.3.47
-        version: 0.3.47(babel-core@6.26.3)(ejs@3.1.10)(handlebars@4.7.8)(lodash@4.17.21)(underscore@1.13.7)
+        version: 0.3.47(babel-core@6.26.3)(debug@4.4.1)(ejs@3.1.10)(handlebars@4.7.8)(lodash@4.17.21)(underscore@1.13.7)
       '@tryghost/nql':
         specifier: 0.12.7
         version: 0.12.7
@@ -1667,6 +1670,9 @@ importers:
       '@tryghost/string':
         specifier: 0.2.15
         version: 0.2.15
+      '@tryghost/timezone-data':
+        specifier: 0.4.7
+        version: 0.4.7
       '@tryghost/tpl':
         specifier: 0.1.34
         version: 0.1.34
@@ -1861,7 +1867,7 @@ importers:
         version: 3.6.1
       mailgun.js:
         specifier: 10.4.0
-        version: 10.4.0
+        version: 10.4.0(debug@4.4.1)
       metascraper:
         specifier: 5.45.15
         version: 5.45.15
@@ -23998,11 +24004,11 @@ snapshots:
 
   '@slack/types@2.14.0': {}
 
-  '@slack/webhook@7.0.5':
+  '@slack/webhook@7.0.5(debug@4.4.1)':
     dependencies:
       '@slack/types': 2.14.0
       '@types/node': 22.15.18
-      axios: 1.9.0
+      axios: 1.9.0(debug@4.4.1)
     transitivePeerDependencies:
       - debug
 
@@ -25732,9 +25738,9 @@ snapshots:
       '@tryghost/root-utils': 0.3.32
       nconf: 0.12.1
 
-  '@tryghost/content-api@1.11.24':
+  '@tryghost/content-api@1.11.24(debug@4.4.1)':
     dependencies:
-      axios: 1.9.0
+      axios: 1.9.0(debug@4.4.1)
     transitivePeerDependencies:
       - debug
 
@@ -26060,13 +26066,13 @@ snapshots:
 
   '@tryghost/mw-vhost@1.0.0': {}
 
-  '@tryghost/nodemailer@0.3.47(babel-core@6.26.3)(ejs@3.1.10)(handlebars@4.7.8)(lodash@4.17.21)(underscore@1.13.7)':
+  '@tryghost/nodemailer@0.3.47(babel-core@6.26.3)(debug@4.4.1)(ejs@3.1.10)(handlebars@4.7.8)(lodash@4.17.21)(underscore@1.13.7)':
     dependencies:
       '@aws-sdk/client-ses': 3.810.0
       '@tryghost/errors': 1.3.7
       nodemailer: 6.10.1
       nodemailer-direct-transport: 3.3.2
-      nodemailer-mailgun-transport: 2.1.5(babel-core@6.26.3)(ejs@3.1.10)(handlebars@4.7.8)(lodash@4.17.21)(underscore@1.13.7)
+      nodemailer-mailgun-transport: 2.1.5(babel-core@6.26.3)(debug@4.4.1)(ejs@3.1.10)(handlebars@4.7.8)(lodash@4.17.21)(underscore@1.13.7)
       nodemailer-stub-transport: 1.1.0
     transitivePeerDependencies:
       - arc-templates
@@ -26642,7 +26648,7 @@ snapshots:
       '@types/node': 22.15.18
     optional: true
 
-  '@typescript-eslint/eslint-plugin@6.9.1(@typescript-eslint/parser@6.9.1(eslint@8.57.1)(typescript@5.2.2))(eslint@8.57.1)(typescript@5.2.2)':
+  '@typescript-eslint/eslint-plugin@6.9.1(@typescript-eslint/parser@6.9.1(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.2.2)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
       '@typescript-eslint/parser': 6.9.1(eslint@8.57.1)(typescript@5.2.2)
@@ -27575,9 +27581,9 @@ snapshots:
 
   aws4@1.13.2: {}
 
-  axios@1.9.0:
+  axios@1.9.0(debug@4.4.1):
     dependencies:
-      follow-redirects: 1.15.9
+      follow-redirects: 1.15.9(debug@4.4.1)
       form-data: 4.0.2
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
@@ -31100,10 +31106,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-cli-dependency-checker@3.3.2(ember-cli@3.24.0(babel-core@6.26.3)(ejs@3.1.10)(encoding@0.1.13)(handlebars@4.7.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.7)):
+  ember-cli-dependency-checker@3.3.2(ember-cli@3.24.0(babel-core@6.26.3)(debug@4.4.1)(ejs@3.1.10)(encoding@0.1.13)(handlebars@4.7.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.7)):
     dependencies:
       chalk: 2.4.2
-      ember-cli: 3.24.0(babel-core@6.26.3)(ejs@3.1.10)(encoding@0.1.13)(handlebars@4.7.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.7)
+      ember-cli: 3.24.0(babel-core@6.26.3)(debug@4.4.1)(ejs@3.1.10)(encoding@0.1.13)(handlebars@4.7.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.7)
       find-yarn-workspace-root: 1.2.1
       is-git-url: 1.0.0
       resolve: 1.22.10
@@ -31427,7 +31433,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-cli@3.24.0(babel-core@6.26.3)(ejs@3.1.10)(encoding@0.1.13)(handlebars@4.7.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.7):
+  ember-cli@3.24.0(babel-core@6.26.3)(debug@4.4.1)(ejs@3.1.10)(encoding@0.1.13)(handlebars@4.7.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.7):
     dependencies:
       '@babel/core': 7.27.1
       '@babel/plugin-transform-modules-amd': 7.27.1(@babel/core@7.27.1)
@@ -31484,7 +31490,7 @@ snapshots:
       heimdalljs-fs-monitor: 1.1.1
       heimdalljs-graph: 1.0.0
       heimdalljs-logger: 0.1.10
-      http-proxy: 1.18.1
+      http-proxy: 1.18.1(debug@4.4.1)
       inflection: 1.13.4
       is-git-url: 1.0.0
       is-language-code: 2.0.0
@@ -31512,7 +31518,7 @@ snapshots:
       sort-package-json: 1.57.0
       symlink-or-copy: 1.3.1
       temp: 0.9.4
-      testem: 3.16.0(babel-core@6.26.3)(ejs@3.1.10)(handlebars@4.7.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.7)
+      testem: 3.16.0(babel-core@6.26.3)(debug@4.4.1)(ejs@3.1.10)(handlebars@4.7.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.7)
       tiny-lr: 2.0.0
       tree-sync: 2.1.0
       uuid: 8.3.2
@@ -32664,7 +32670,7 @@ snapshots:
   eslint-plugin-ghost@3.4.0(eslint@8.57.1):
     dependencies:
       '@kapouer/eslint-plugin-no-return-in-loop': 1.0.0
-      '@typescript-eslint/eslint-plugin': 6.9.1(@typescript-eslint/parser@6.9.1(eslint@8.57.1)(typescript@5.2.2))(eslint@8.57.1)(typescript@5.2.2)
+      '@typescript-eslint/eslint-plugin': 6.9.1(@typescript-eslint/parser@6.9.1(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.2.2)
       '@typescript-eslint/parser': 6.9.1(eslint@8.57.1)(typescript@5.2.2)
       eslint: 8.57.1
       eslint-plugin-ember: 11.11.1(eslint@8.57.1)
@@ -33518,7 +33524,9 @@ snapshots:
     dependencies:
       tabbable: 5.3.3
 
-  follow-redirects@1.15.9: {}
+  follow-redirects@1.15.9(debug@4.4.1):
+    optionalDependencies:
+      debug: 4.4.1(supports-color@8.1.1)
 
   for-each@0.3.5:
     dependencies:
@@ -34406,10 +34414,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  http-proxy@1.18.1:
+  http-proxy@1.18.1(debug@4.4.1):
     dependencies:
       eventemitter3: 4.0.7
-      follow-redirects: 1.15.9
+      follow-redirects: 1.15.9(debug@4.4.1)
       requires-port: 1.0.0
     transitivePeerDependencies:
       - debug
@@ -36531,17 +36539,17 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  mailgun.js@10.4.0:
+  mailgun.js@10.4.0(debug@4.4.1):
     dependencies:
-      axios: 1.9.0
+      axios: 1.9.0(debug@4.4.1)
       base-64: 1.0.0
       url-join: 4.0.1
     transitivePeerDependencies:
       - debug
 
-  mailgun.js@8.2.2:
+  mailgun.js@8.2.2(debug@4.4.1):
     dependencies:
-      axios: 1.9.0
+      axios: 1.9.0(debug@4.4.1)
       base-64: 1.0.0
       url-join: 4.0.1
     transitivePeerDependencies:
@@ -37544,11 +37552,11 @@ snapshots:
 
   nodemailer-fetch@1.6.0: {}
 
-  nodemailer-mailgun-transport@2.1.5(babel-core@6.26.3)(ejs@3.1.10)(handlebars@4.7.8)(lodash@4.17.21)(underscore@1.13.7):
+  nodemailer-mailgun-transport@2.1.5(babel-core@6.26.3)(debug@4.4.1)(ejs@3.1.10)(handlebars@4.7.8)(lodash@4.17.21)(underscore@1.13.7):
     dependencies:
       consolidate: 0.15.1(babel-core@6.26.3)(ejs@3.1.10)(handlebars@4.7.8)(lodash@4.17.21)(underscore@1.13.7)
       form-data: 4.0.2
-      mailgun.js: 8.2.2
+      mailgun.js: 8.2.2(debug@4.4.1)
     transitivePeerDependencies:
       - arc-templates
       - atpl
@@ -37719,13 +37727,13 @@ snapshots:
 
   nwsapi@2.2.20: {}
 
-  nx@20.8.1:
+  nx@20.8.1(debug@4.4.1):
     dependencies:
       '@napi-rs/wasm-runtime': 0.2.4
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.2
       '@zkochan/js-yaml': 0.0.7
-      axios: 1.9.0
+      axios: 1.9.0(debug@4.4.1)
       chalk: 4.1.2
       cli-cursor: 3.1.0
       cli-spinners: 2.6.1
@@ -41462,7 +41470,7 @@ snapshots:
       glob: 7.2.3
       minimatch: 3.1.2
 
-  testem@3.16.0(babel-core@6.26.3)(ejs@3.1.10)(handlebars@4.7.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.7):
+  testem@3.16.0(babel-core@6.26.3)(debug@4.4.1)(ejs@3.1.10)(handlebars@4.7.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.7):
     dependencies:
       '@xmldom/xmldom': 0.8.10
       backbone: 1.6.1
@@ -41475,7 +41483,7 @@ snapshots:
       express: 4.21.2
       fireworm: 0.7.2
       glob: 7.2.3
-      http-proxy: 1.18.1
+      http-proxy: 1.18.1(debug@4.4.1)
       js-yaml: 3.14.1
       lodash: 4.17.21
       mkdirp: 3.0.1

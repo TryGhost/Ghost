@@ -65,6 +65,7 @@
     "@actions/core": "1.11.1",
     "chalk": "4.1.2",
     "concurrently": "8.2.2",
+    "debug": "4.4.1",
     "eslint": "8.57.1",
     "eslint-plugin-ghost": "3.4.0",
     "eslint-plugin-react": "7.37.5",
