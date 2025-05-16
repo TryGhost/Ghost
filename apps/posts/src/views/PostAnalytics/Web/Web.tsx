@@ -8,7 +8,7 @@ import Sources from './components/Sources';
 import {BarChartLoadingIndicator, formatQueryDate} from '@tryghost/shade';
 import {getRangeDates} from '@src/utils/chart-helpers';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
-import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useMemo} from 'react';
 import {useParams} from '@tryghost/admin-x-framework';
 

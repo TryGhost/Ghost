@@ -5,7 +5,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableB
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {getCountryFlag} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useQuery} from '@tinybirdco/charts';
 
 countries.registerLocale(enLocale);

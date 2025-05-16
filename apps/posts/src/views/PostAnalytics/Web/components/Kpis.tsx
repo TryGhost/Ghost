@@ -5,7 +5,7 @@ import {Card, CardContent, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrig
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useQuery} from '@tinybirdco/charts';
 
 export type KpiMetric = {
