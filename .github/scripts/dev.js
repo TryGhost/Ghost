@@ -282,9 +282,9 @@ async function handleStripe() {
 
     debug('resetting nx');
     process.env.NX_DISABLE_DB = "true";
-    await exec("yarn nx reset --onlyDaemon");
+    await exec("pnpm nx reset --onlyDaemon");
     debug('nx reset');
-    await exec("yarn nx daemon --start");
+    await exec("pnpm nx daemon --start");
     debug('nx daemon started');
 
     console.log(`Running projects: ${commands.map(c => chalk.green(c.name)).join(', ')}`);

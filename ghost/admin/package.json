@@ -110,7 +110,7 @@
     "ember-modifier": "4.2.0",
     "ember-moment": "10.0.1",
     "ember-one-way-select": "4.0.1",
-    "ember-power-datepicker": "cibernox/ember-power-datepicker",
+    "ember-power-datepicker": "1.0.6",
     "ember-power-select": "6.0.1",
     "ember-resolver": "8.1.0",
     "ember-simple-auth": "5.0.0",
@@ -159,12 +159,6 @@
       "lib/ember-power-calendar-moment",
       "lib/ember-power-calendar-utils"
     ]
-  },
-  "resolutions": {
-    "ember-basic-dropdown": "6.0.2",
-    "ember-in-viewport": "4.1.0",
-    "moment": "2.24.0",
-    "moment-timezone": "0.5.45"
   },
   "ember": {
     "edition": "octane"
