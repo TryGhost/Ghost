@@ -24,8 +24,8 @@ const features = [{
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
 }, {
-    title: 'Stats redesign',
-    description: 'Enables redesigned Stats page',
+    title: 'Analytics Alpha',
+    description: 'Enables alpha stage analytics features',
     flag: 'trafficAnalyticsAlpha'
 }, {
     title: 'Explore',
