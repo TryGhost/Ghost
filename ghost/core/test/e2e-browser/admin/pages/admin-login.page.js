@@ -11,7 +11,7 @@ class AdminLoginPage extends AdminPage {
     sentTwoFactorCodeButton = null;
 
     constructor(page) {
-        super(page);
+        super(page, '/ghost');
 
         this.usernameField = page.getByLabel('Email address');
         this.passwordField = page.getByLabel('Password');
@@ -21,10 +21,6 @@ class AdminLoginPage extends AdminPage {
         this.twoFactorVerifyButton = page.getByRole('button', {name: 'Verify'});
         this.resendTwoFactorCodeButton = page.getByRole('button', {name: 'Resend'});
         this.sentTwoFactorCodeButton = page.getByRole('button', {name: 'Sent'});
-    }
-
-    visit() {
-        this.page.goto('/ghost');
     }
 
     async signIn(usernameField, passwordField) {

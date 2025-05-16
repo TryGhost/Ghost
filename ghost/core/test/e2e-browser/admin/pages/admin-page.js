@@ -1,11 +1,18 @@
 class AdminPage {
-    constructor(page) {
+    pageUrl = '/';
+
+    constructor(page, pageUrl = '/') {
         this.page = page;
+        this.pageUrl = pageUrl;
     }
 
     async logoutByCookieClear() {
         const context = await this.page.context();
         await context.clearCookies();
+    }
+
+    async visit() {
+        await this.page.goto(this.pageUrl);
     }
 }
 
