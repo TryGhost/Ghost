@@ -7,7 +7,6 @@ const config = require('../../../../../shared/config');
 const shared = require('../../../shared');
 const routes = require('./routes');
 const errorHandler = require('@tryghost/mw-error-handler');
-const apiVersionCompatibility = require('../../../../services/api-version-compatibility');
 
 /**
  * @returns {import('express').Application}
@@ -34,7 +33,6 @@ module.exports = function setupApiApp() {
 
     // API error handling
     apiApp.use(errorHandler.resourceNotFound);
-    apiApp.use(apiVersionCompatibility.errorHandler);
     apiApp.use(errorHandler.handleJSONResponse(sentry));
 
     debug('Content API setup end');
