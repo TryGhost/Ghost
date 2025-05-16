@@ -17,18 +17,18 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "dev": "concurrently \"yarn preview -l silent\" \"yarn build:watch\"",
+    "dev": "concurrently \"pnpm run preview -l silent\" \"pnpm run build:watch\"",
     "build": "vite build",
     "build:watch": "vite build --watch",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:ci": "yarn test --coverage",
-    "test:unit": "yarn test:ci",
+    "test:ci": "pnpm run test --coverage",
+    "test:unit": "pnpm run test:ci",
     "lint": "eslint src --ext .js --cache",
-    "preship": "yarn lint",
+    "preship": "pnpm run lint",
     "ship": "node ../../.github/scripts/release-apps.js",
-    "prepublishOnly": "yarn build"
+    "prepublishOnly": "pnpm run build"
   },
   "eslintConfig": {
     "env": {

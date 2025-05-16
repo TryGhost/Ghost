@@ -23,18 +23,18 @@
     "react-dom": "17.0.2"
   },
   "scripts": {
-    "dev": "concurrently \"vite preview -l silent\" \"yarn build:watch\" \"yarn tailwind\"",
-    "build": "vite build && yarn tailwind:base",
+    "dev": "concurrently \"vite preview -l silent\" \"pnpm run build:watch\" \"pnpm run tailwind\"",
+    "build": "vite build && pnpm run tailwind:base",
     "build:watch": "vite build --watch",
-    "tailwind": "yarn tailwind:base --watch ",
+    "tailwind": "pnpm run tailwind:base --watch ",
     "tailwind:base": "npx tailwindcss -i ./src/index.css -o ./umd/main.css --minify",
     "test": "vitest run",
-    "test:ci": "yarn test --coverage",
-    "test:unit": "yarn test:ci",
+    "test:ci": "pnpm run test --coverage",
+    "test:unit": "pnpm run test:ci",
     "lint": "eslint src --ext .js --cache",
-    "preship": "yarn lint",
+    "preship": "pnpm run lint",
     "ship": "node ../../.github/scripts/release-apps.js",
-    "prepublishOnly": "yarn build"
+    "prepublishOnly": "pnpm run build"
   },
   "eslintConfig": {
     "env": {

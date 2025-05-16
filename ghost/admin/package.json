@@ -18,12 +18,12 @@
   "scripts": {
     "dev": "ember serve",
     "build": "ember build --environment=production --silent",
-    "build:dev": "yarn build --environment=development",
+    "build:dev": "pnpm run build --environment=development",
     "test:unit": "true",
     "test": "ember exam --split 2 --parallel",
     "lint:js": "eslint . --cache",
     "lint:hbs": "ember-template-lint .",
-    "lint": "yarn lint:js && yarn lint:hbs"
+    "lint": "pnpm run lint:js && pnpm run lint:hbs"
   },
   "engines": {
     "node": "^18.12.1 || ^20.11.1 || ^22.13.1"

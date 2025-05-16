@@ -11,11 +11,11 @@
     "scripts": {
         "build": "tsc -p tsconfig.declaration.json && vite build",
         "prepare": "pnpm run build",
-        "test": "yarn test:types && yarn nx build && vitest run --coverage",
-        "test:unit": "yarn test:types && yarn nx build && vitest run",
+        "test": "pnpm run test:types && pnpm nx build && vitest run --coverage",
+        "test:unit": "pnpm run test:types && pnpm nx build && vitest run",
         "test:types": "tsc --noEmit",
         "lint:code": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
-        "lint": "yarn lint:code && yarn lint:test",
+        "lint": "pnpm run lint:code && pnpm run lint:test",
         "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build"
