@@ -1,6 +1,7 @@
 const TestAgent = require('./test-agent');
 const errors = require('@tryghost/errors');
 const DataGenerator = require('../fixtures/data-generator');
+const jwt = require('jsonwebtoken');
 
 const roleMap = {
     owner: 0,
@@ -13,6 +14,12 @@ const roleMap = {
 const getRoleUserFromFixtures = (role) => {
     const {email, password} = DataGenerator.Content.users[roleMap[role]];
     return {email, password};
+};
+
+const getUserApiKeyForRole = (role) => {
+    const roleIndex = Object.keys(roleMap).indexOf(role);
+    const {id: apiKeyId, secret: apiKeySecret} = DataGenerator.forKnex.user_api_keys[roleIndex];
+    return {apiKeyId, apiKeySecret};
 };
 
 /**
@@ -77,6 +84,58 @@ class AdminAPITestAgent extends TestAgent {
 
     async loginAsContributor() {
         await this.loginAs(null, null, 'contributor');
+    }
+
+    /**
+     * Gets a staff token for the specified role and sets it as the Authorization header
+     * @param {String} role - The role to get a token for (owner, admin, editor, etc.)
+     * @returns {Promise<void>}
+     */
+    async useStaffTokenFor(role) {
+        const {apiKeyId, apiKeySecret} = getUserApiKeyForRole(role);
+
+        // Create a JWT token with the user's personal token
+        const token = jwt.sign(
+            {},
+            Buffer.from(apiKeySecret, 'hex'),
+            {
+                keyid: apiKeyId,
+                algorithm: 'HS256',
+                expiresIn: '5m',
+                audience: '/admin/',
+                issuer: apiKeyId
+            }
+        );
+
+        // Set the Authorization header for subsequent requests
+        this.defaults.headers = {
+            ...this.defaults.headers,
+            Authorization: `Ghost ${token}`
+        };
+    }
+
+    /**
+     * Gets a staff token for the owner role and sets it as the Authorization header
+     * @returns {Promise<void>}
+     */
+    async useStaffTokenForOwner() {
+        await this.useStaffTokenFor('owner');
+    }
+
+    async useStaffTokenForAdmin() {
+        await this.useStaffTokenFor('admin');
+    }
+
+    async useStaffTokenForEditor() {
+        await this.useStaffTokenFor('editor');
+    }
+
+    async useStaffTokenForAuthor() {
+        await this.useStaffTokenFor('author');
+    }
+
+    async useStaffTokenForContributor() {
+        await this.useStaffTokenFor('contributor');
     }
 }
 
