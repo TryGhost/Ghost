@@ -1,6 +1,6 @@
 import React from 'react';
 import moment from 'moment-timezone';
-import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger, ViewHeader} from '@tryghost/shade';
+import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger, ViewHeader} from '@tryghost/shade';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 
@@ -23,7 +23,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid,feature_image'
+            fields: 'title,slug,published_at,uuid,feature_image,url'
         }
     });
 
@@ -52,7 +52,34 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                         <div className='flex items-center gap-2'>
                             {/* <Button variant='outline'><LucideIcon.RefreshCw /></Button> */}
                             {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
-                            <Button variant='outline'><LucideIcon.Ellipsis /></Button>
+                            {!isPostLoading &&
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant='outline'><LucideIcon.Ellipsis /></Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align='end'>
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuItem asChild>
+                                                <a href={post.url} rel="noopener noreferrer" target="_blank">View in browser</a>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => {
+                                                navigate(`/editor/post/${postId}`, {crossApp: true});
+                                            }}>
+                                                Edit post
+                                                {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
+                                            </DropdownMenuItem>
+                                        </DropdownMenuGroup>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuItem onClick={() => {
+                                                navigate(`/posts/analytics/${postId}`, {crossApp: true});
+                                            }}>
+                                                Switch to original analytics
+                                            </DropdownMenuItem>
+                                        </DropdownMenuGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            }
                         </div>
                     </div>
                     {!isPostLoading &&
@@ -67,7 +94,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                     {post && post.title}
                                 </H1>
                                 {typedPost && typedPost.published_at && (
-                                    <div className='mt-0.5 flex items-center justify-start text-sm leading-[1.65em] text-muted-foreground'>
+                                    <div className='text-muted-foreground mt-0.5 flex items-center justify-start text-sm leading-[1.65em]'>
                             Published on your site on {moment.utc(typedPost.published_at).format('D MMM YYYY')} at {moment.utc(typedPost.published_at).format('HH:mm')}
                                     </div>
                                 )}
