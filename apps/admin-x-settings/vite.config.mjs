@@ -11,16 +11,6 @@ export default (function viteConfig() {
             define: {
                 'process.env.DEBUG': false // Shim env var utilized by the @tryghost/nql package
             },
-            resolve: {
-                // Shim node modules utilized by the @tryghost/nql package
-                alias: {
-                    fs: 'node-shim.cjs',
-                    path: 'node-shim.cjs',
-                    util: 'node-shim.cjs',
-                    // @TODO: Remove this when @tryghost/nql is updated
-                    mingo: resolve(__dirname, '../../node_modules/mingo/dist/mingo.js')
-                }
-            },
             optimizeDeps: {
                 include: ['@tryghost/kg-unsplash-selector', '@tryghost/custom-fonts']
             }

@@ -59,9 +59,18 @@ importers:
 
   apps/admin-x-activitypub:
     dependencies:
+      '@ebay/nice-modal-react':
+        specifier: 1.2.13
+        version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@hookform/resolvers':
+        specifier: 5.0.1
+        version: 5.0.1(react-hook-form@7.56.3(react@18.3.1))
       '@radix-ui/react-form':
         specifier: 0.1.6
         version: 0.1.6(@types/react-dom@18.3.7(@types/react@18.3.21))(@types/react@18.3.21)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@tanstack/react-query':
+        specifier: 4.36.1
+        version: 4.36.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/admin-x-design-system':
         specifier: workspace:*
         version: link:../admin-x-design-system
@@ -80,9 +89,21 @@ importers:
       react-dom:
         specifier: 18.3.1
         version: 18.3.1(react@18.3.1)
+      react-hook-form:
+        specifier: 7.56.3
+        version: 7.56.3(react@18.3.1)
+      react-router:
+        specifier: 7.5.3
+        version: 7.5.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-select:
+        specifier: 5.10.1
+        version: 5.10.1(@types/react@18.3.21)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       use-debounce:
         specifier: 10.0.4
         version: 10.0.4(react@18.3.1)
+      zod:
+        specifier: 3.24.4
+        version: 3.24.4
     devDependencies:
       '@playwright/test':
         specifier: 1.52.0
@@ -389,6 +410,15 @@ importers:
       '@codemirror/lang-html':
         specifier: 6.4.9
         version: 6.4.9
+      '@dnd-kit/sortable':
+        specifier: 7.0.2
+        version: 7.0.2(@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+      '@ebay/nice-modal-react':
+        specifier: 1.2.13
+        version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@tanstack/react-query':
+        specifier: 4.36.1
+        version: 4.36.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/color-utils':
         specifier: 0.2.5
         version: 0.2.5
@@ -404,12 +434,21 @@ importers:
       '@tryghost/timezone-data':
         specifier: 0.4.7
         version: 0.4.7
+      clsx:
+        specifier: 2.1.1
+        version: 2.1.1
       react:
         specifier: 18.3.1
         version: 18.3.1
       react-dom:
         specifier: 18.3.1
         version: 18.3.1(react@18.3.1)
+      react-hot-toast:
+        specifier: 2.5.2
+        version: 2.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-select:
+        specifier: 5.10.1
+        version: 5.10.1(@types/react@18.3.21)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       validator:
         specifier: 7.2.0
         version: 7.2.0
@@ -417,6 +456,9 @@ importers:
       '@playwright/test':
         specifier: 1.52.0
         version: 1.52.0
+      '@sentry/react':
+        specifier: 7.120.3
+        version: 7.120.3(react@18.3.1)
       '@testing-library/react':
         specifier: 14.3.1
         version: 14.3.1(@types/react@18.3.21)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -450,6 +492,9 @@ importers:
       eslint-plugin-tailwindcss:
         specifier: 3.18.0
         version: 3.18.0(tailwindcss@3.4.17)
+      semver:
+        specifier: 7.7.2
+        version: 7.7.2
       stylelint:
         specifier: 15.11.0
         version: 15.11.0(typescript@5.8.3)
@@ -677,6 +722,15 @@ importers:
       '@tryghost/shade':
         specifier: workspace:*
         version: link:../shade
+      i18n-iso-countries:
+        specifier: 7.14.0
+        version: 7.14.0
+      moment:
+        specifier: 2.24.0
+        version: 2.24.0
+      moment-timezone:
+        specifier: 0.5.45
+        version: 0.5.45
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -1129,6 +1183,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: 4.4.1
         version: 4.4.1(vite@4.5.14(@types/node@22.15.18)(less@4.3.0)(terser@5.39.2))
+      moment:
+        specifier: 2.24.0
+        version: 2.24.0
       moment-timezone:
         specifier: 0.5.45
         version: 0.5.45
@@ -1898,6 +1955,9 @@ importers:
       mime-types:
         specifier: 2.1.35
         version: 2.1.35
+      mingo:
+        specifier: 2.5.3
+        version: 2.5.3
       moment:
         specifier: 2.24.0
         version: 2.24.0

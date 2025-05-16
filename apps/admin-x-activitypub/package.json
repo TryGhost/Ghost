@@ -69,9 +69,16 @@
     "@tryghost/admin-x-design-system": "workspace:*",
     "@tryghost/admin-x-framework": "workspace:*",
     "@tryghost/shade": "workspace:*",
+    "@hookform/resolvers": "5.0.1",
+    "react-select": "5.10.1",
     "clsx": "2.1.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "use-debounce": "10.0.4"
+    "react-router": "7.5.3",
+    "use-debounce": "10.0.4",
+    "@tanstack/react-query": "4.36.1",
+    "@ebay/nice-modal-react": "1.2.13",
+    "react-hook-form": "7.56.3",
+    "zod": "3.24.4"
   }
 }

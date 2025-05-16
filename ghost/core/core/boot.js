@@ -578,6 +578,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         // Ensure the error we have is an ignition error
         let serverStartError = error;
         if (!errors.utils.isGhostError(serverStartError)) {
+            console.log('serverStartError', serverStartError);
             serverStartError = new errors.InternalServerError({message: serverStartError.message, err: serverStartError});
         }
 
