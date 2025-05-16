@@ -82,7 +82,7 @@
     "@tryghost/helpers": "1.1.93",
     "@tryghost/html-to-plaintext": "1.0.2",
     "@tryghost/http-cache-utils": "0.1.19",
-    "@tryghost/i18n": "0.0.0",
+    "@tryghost/i18n": "workspace:*",
     "@tryghost/image-transform": "1.4.3",
     "@tryghost/job-manager": "1.0.0",
     "@tryghost/kg-card-factory": "5.1.1",

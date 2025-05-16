@@ -66,9 +66,9 @@
   },
   "dependencies": {
     "@radix-ui/react-form": "0.1.6",
-    "@tryghost/admin-x-design-system": "0.0.0",
-    "@tryghost/admin-x-framework": "0.0.0",
-    "@tryghost/shade": "0.0.0",
+    "@tryghost/admin-x-design-system": "workspace:*",
+    "@tryghost/admin-x-framework": "workspace:*",
+    "@tryghost/shade": "workspace:*",
     "clsx": "2.1.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",

@@ -54,8 +54,8 @@
     },
     "dependencies": {
         "@tinybirdco/charts": "0.2.4",
-        "@tryghost/admin-x-framework": "0.0.0",
-        "@tryghost/shade": "0.0.0",
+        "@tryghost/admin-x-framework": "workspace:*",
+        "@tryghost/shade": "workspace:*",
         "react": "18.3.1",
         "react-dom": "18.3.1"
     }
