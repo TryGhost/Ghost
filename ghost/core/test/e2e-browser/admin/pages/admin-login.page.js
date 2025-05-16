@@ -10,6 +10,9 @@ class AdminLoginPage extends AdminPage {
     resendTwoFactorCodeButton = null;
     sentTwoFactorCodeButton = null;
 
+    /**
+     * @param {import('@playwright/test').Page} page - playwright page object
+     */
     constructor(page) {
         super(page, '/ghost');
 
