@@ -1,4 +1,3 @@
-import DateRangeSelect from '../components/DateRangeSelect';
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import NewsletterOverview from './components/NewsletterPerformance';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
@@ -6,6 +5,7 @@ import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import WebOverview from './components/WebPerformance';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, formatNumber, formatQueryDate} from '@tryghost/shade';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
+import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars} from '../Growth/Growth';
 import {getRangeDates} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken, useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -18,9 +18,9 @@ import {useQuery} from '@tinybirdco/charts';
 const Overview: React.FC = () => {
     const {postId} = useParams();
     const navigate = useNavigate();
-    const {range, statsConfig, isLoading: isConfigLoading} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const {totals, isLoading} = usePostReferrers(postId || '');
-    const {startDate, endDate, timezone} = getRangeDates(range);
+    const {startDate, endDate, timezone} = getRangeDates(STATS_RANGES.ALL_TIME.value);
 
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
@@ -60,9 +60,7 @@ const Overview: React.FC = () => {
 
     return (
         <>
-            <PostAnalyticsHeader currentTab='Overview'>
-                <DateRangeSelect />
-            </PostAnalyticsHeader>
+            <PostAnalyticsHeader currentTab='Overview' />
             <PostAnalyticsContent>
                 <Card className='overflow-hidden p-0'>
                     <CardHeader className='hidden'>

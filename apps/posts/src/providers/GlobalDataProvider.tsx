@@ -1,6 +1,6 @@
 import {Config, useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {ReactNode, createContext, useContext, useState} from 'react';
-import {STATS_DEFAULT_RANGE_KEY, STATS_RANGE_OPTIONS} from '@src/utils/constants';
+import {STATS_RANGES} from '@src/utils/constants';
 import {Setting, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {StatsConfig} from '@tryghost/admin-x-framework';
 
@@ -27,7 +27,7 @@ export const useGlobalData = () => {
 
 const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const config = useBrowseConfig();
-    const [range, setRange] = useState(STATS_RANGE_OPTIONS[STATS_DEFAULT_RANGE_KEY].value);
+    const [range, setRange] = useState(STATS_RANGES.LAST_30_DAYS.value);
     const settings = useBrowseSettings();
 
     // Initialize with all audiences selected (binary 111 = 7)
