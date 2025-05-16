@@ -60,7 +60,15 @@ const Overview: React.FC = () => {
 
     return (
         <>
-            <PostAnalyticsHeader currentTab='Overview' />
+            <PostAnalyticsHeader currentTab='Overview'>
+                <div className='bg-green/10 flex items-center gap-1 text-nowrap rounded-full px-3 py-px pr-4 text-xs text-green-600'>
+                    <LucideIcon.FlaskConical size={16} strokeWidth={1.5} />
+                    You&apos;re viewing Analytics Beta.
+                    <Button className='px-0 text-green-600 !underline' size='sm' variant='link' onClick={() => {
+                        navigate(`/posts/analytics/${postId}`, {crossApp: true});
+                    }}>Switch back</Button>
+                </div>
+            </PostAnalyticsHeader>
             <PostAnalyticsContent>
                 <Card className='overflow-hidden p-0'>
                     <CardHeader className='hidden'>
