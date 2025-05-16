@@ -198,14 +198,14 @@ describe('Frontend Routing', function () {
                 before(async function () {
                     configUtils.set('admin:redirects', false);
 
-                    await testUtils.startGhost({forceStart: true});
+                    await testUtils.startGhost();
                     request = supertest.agent(config.get('url'));
                     await addPosts();
                 });
 
                 after(async function () {
                     configUtils.restore();
-                    await testUtils.startGhost({forceStart: true});
+                    await testUtils.startGhost();
                     request = supertest.agent(config.get('url'));
                     await addPosts();
                 });

@@ -215,7 +215,7 @@ describe('Dynamic Routing', function () {
             before(function () {
                 configUtils.set('admin:redirects', false);
 
-                return testUtils.startGhost({forceStart: true})
+                return testUtils.startGhost()
                     .then(function () {
                         sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
                         request = supertest.agent(config.get('url'));
@@ -225,7 +225,7 @@ describe('Dynamic Routing', function () {
             after(async function () {
                 await configUtils.restore();
 
-                await testUtils.startGhost({forceStart: true});
+                await testUtils.startGhost();
                 sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
                 request = supertest.agent(config.get('url'));
             });
@@ -415,7 +415,7 @@ describe('Dynamic Routing', function () {
             before(function () {
                 configUtils.set('admin:redirects', false);
 
-                return testUtils.startGhost({forceStart: true})
+                return testUtils.startGhost()
                     .then(function () {
                         sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
                         request = supertest.agent(config.get('url'));
@@ -425,7 +425,7 @@ describe('Dynamic Routing', function () {
             after(async function () {
                 await configUtils.restore();
 
-                await testUtils.startGhost({forceStart: true});
+                await testUtils.startGhost();
                 sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
                 request = supertest.agent(config.get('url'));
             });

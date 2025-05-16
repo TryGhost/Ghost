@@ -15,8 +15,6 @@ env:
     ${{ github.workspace }}/apps/*/node_modules
     ${{ github.workspace }}/ghost/*/node_modules
     ~/.cache/ms-playwright/
-  CACHED_BUILD_PATHS: |
-    ${{ github.workspace }}/ghost/*/build
   NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
   NODE_VERSION: 20.11.1
 
@@ -100,7 +98,6 @@ jobs:
               - *shared
               - 'ghost/**'
               - '!ghost/admin/**'
-              - '!ghost/web-analytics/**'
               - '!ghost/core/core/server/data/tinybird/**'
             admin:
               - *shared
@@ -125,9 +122,6 @@ jobs:
             sodo-search:
               - *shared
               - 'apps/sodo-search/**'
-            tinybird:
-              - 'ghost/web-analytics/**'
-              - '!ghost/web-analytics/**/*.md'
             tinybird-forward:
               - 'ghost/core/core/server/data/tinybird/**'
               - '!ghost/core/core/server/data/tinybird/**/*.md'
@@ -173,27 +167,15 @@ jobs:
           key: ${{ env.cachekey }}
           restore-keys: ${{ env.IS_MAIN == 'false' && env.DEPENDENCY_CACHE_RESTORE_KEYS || 'dep-never-restore'}}
 
-      - name: Check build cache
-        uses: actions/cache@v4
-        id: cache_built_packages
-        with:
-          path: ${{ env.CACHED_BUILD_PATHS }}
-          key: ${{ env.HEAD_COMMIT }}
-
       - name: Set up Node
         uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: yarn
 
       - name: Install dependencies
         run: yarn install --prefer-offline --frozen-lockfile
-
-      - name: Build packages
-        if: steps.cache_built_packages.outputs.cache-hit != 'true'
-        run: yarn nx run-many -t build:ts
 
     outputs:
       changed_admin: ${{ steps.changed.outputs.admin }}
@@ -204,7 +186,6 @@ jobs:
       changed_portal: ${{ steps.changed.outputs.portal }}
       changed_signup_form: ${{ steps.changed.outputs.signup-form }}
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
-      changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_tinybird_forward: ${{ steps.changed.outputs.tinybird-forward }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
@@ -360,21 +341,8 @@ jobs:
       working-directory: ghost/core
       run: yarn knex-migrator init
 
-    - name: Get Playwright version
-      id: playwright-version
-      run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
-    - uses: actions/cache@v4
-      name: Check if Playwright browser is cached
-      id: playwright-cache
-      with:
-        path: ~/.cache/ms-playwright
-        key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
-    - name: Install Playwright browser if not cached
-      if: steps.playwright-cache.outputs.cache-hit != 'true'
-      run: npx playwright install --with-deps
-    - name: Install OS dependencies of Playwright if cache hit
-      if: steps.playwright-cache.outputs.cache-hit == 'true'
-      run: npx playwright install-deps
+    - name: Setup Playwright
+      uses: ./.github/actions/setup-playwright
 
     - name: Build Admin
       run: yarn nx run ghost-admin:build:dev
@@ -718,21 +686,8 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Get Playwright version
-        id: playwright-version
-        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v4
-        name: Check if Playwright browser is cached
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
-      - name: Install Playwright browser if not cached
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps
-      - name: Install OS dependencies of Playwright if cache hit
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps
+      - name: Setup Playwright
+        uses: ./.github/actions/setup-playwright
 
       - run: yarn nx run @tryghost/admin-x-settings:test:acceptance
 
@@ -771,21 +726,8 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Get Playwright version
-        id: playwright-version
-        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v4
-        name: Check if Playwright browser is cached
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
-      - name: Install Playwright browser if not cached
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps
-      - name: Install OS dependencies of Playwright if cache hit
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps
+      - name: Setup Playwright
+        uses: ./.github/actions/setup-playwright
 
       - run: yarn nx run @tryghost/comments-ui:test
 
@@ -824,21 +766,8 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Get Playwright version
-        id: playwright-version
-        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v4
-        name: Check if Playwright browser is cached
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
-      - name: Install Playwright browser if not cached
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps
-      - name: Install OS dependencies of Playwright if cache hit
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps
+      - name: Setup Playwright
+        uses: ./.github/actions/setup-playwright
 
       - run: yarn nx run @tryghost/signup-form:test:e2e
 
@@ -883,155 +812,6 @@ jobs:
         run: tb test run
       - name: Deployment check
         run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deploy --check
-
-  # Tinyird Tests (Classic) — This test suite is deprecated and will be removed very soon.
-  job_tinybird:
-    name: Tinybird Tests (Classic)
-    runs-on: ubuntu-latest
-    env:
-      TB_VERSION_WARNING: 0
-    needs: [
-      job_setup
-    ]
-    defaults:
-      run:
-        working-directory: ghost/web-analytics
-    if: needs.job_setup.outputs.changed_tinybird == 'true'
-    steps:
-      - name: Get User Permission
-        id: get-user-permission
-        uses: actions-cool/check-user-permission@v2
-        with:
-          require: write
-          username: ${{ github.triggering_actor }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Check User Permission
-        id: check-user-permission
-        if: steps.get-user-permission.outputs.require-result == 'false'
-        run: |
-          echo "${{ github.triggering_actor }} does not have permissions on this repo."
-          echo "Current permission level is ${{ steps.get-user-permission.outputs.user-permission }}"
-          echo "Job originally triggered by ${{ github.actor }}"
-          exit 1
-      - name: Checkout current commit
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 300
-      - name: Lint datasources and pipes
-        run: |
-          ./scripts/lint.sh
-      - name: Check secrets
-        if: github.event_name == 'pull_request'
-        env:
-          TB_ADMIN_TOKEN: ${{ secrets.TB_ADMIN_TOKEN_STAGING }}
-        run: |
-          if [ -z "${{ env.TB_ADMIN_TOKEN }}" ]; then
-            echo "Tinybird admin token is not available. Did you open this PR from a fork?"
-            echo "If so, please re-open the PR from a branch in the upstream TryGhost/Ghost repository."
-            exit 1
-          fi
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.11
-          architecture: "x64"
-          cache: "pip"
-      - name: Set environment variables
-        run: |
-          _ENV_FLAGS="${ENV_FLAGS:=--wait}"
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            TB_BRANCH_NAME="tmp_ci_pr_${{ github.event.pull_request.number }}"
-          else
-            TB_BRANCH_NAME="tmp_ci_main_$(echo ${{ github.sha }} | cut -c1-7)"
-          fi
-          GIT_BRANCH=${GITHUB_HEAD_REF}
-          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
-          echo "_ENV_FLAGS=$_ENV_FLAGS" >> $GITHUB_ENV
-          echo "TB_BRANCH_NAME=$TB_BRANCH_NAME" >> $GITHUB_ENV
-      - name: Install Tinybird CLI
-        run: |
-          if [ -f "requirements.txt" ]; then
-            pip install -r requirements.txt
-          else
-            pip install tinybird-cli
-          fi
-      - name: Tinybird CLI Version
-        run: tb --version
-      - name: Check all the datafiles syntax
-        run: tb check
-      - name: Check auth
-        run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_STAGING }} auth info
-      - name: Try to delete previous Branch
-        run: |
-          output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} branch ls)
-          # Check if the branch name exists in the output
-          if echo "$output" | grep -q "\b$TB_BRANCH_NAME\b"; then
-            tb \
-            --host ${{ secrets.TB_HOST }} \
-            --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} \
-            branch rm $TB_BRANCH_NAME \
-            --yes
-          else
-            echo "Skipping clean up: The Branch '$TB_BRANCH_NAME' does not exist."
-          fi
-      - name: Create new test Branch with data
-        run: |
-          tb \
-          --host ${{ secrets.TB_HOST }} \
-          --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} \
-          branch create $TB_BRANCH_NAME \
-          ${_ENV_FLAGS}
-      - name: Deploy changes to the test Branch
-        run: |
-          source .tinyenv
-          DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
-          if [ ! -f "$DEPLOY_FILE" ]; then
-            echo "$DEPLOY_FILE not found, running default tb deploy command"
-            tb deploy
-            tb release ls
-          fi
-      - name: Custom deployment to the test Branch
-        run: |
-          source .tinyenv
-          DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
-          if [ -f "$DEPLOY_FILE" ]; then
-              echo "$DEPLOY_FILE found"
-              if ! [ -x "$DEPLOY_FILE" ]; then
-                echo "Error: You do not have permission to execute '$DEPLOY_FILE'. Run:"
-                echo "> chmod +x $DEPLOY_FILE"
-                echo "and commit your changes"
-                exit 1
-              else
-                $DEPLOY_FILE
-              fi
-          fi
-      - name: Append fixtures
-        run: |
-          if [ -f ./scripts/append_fixtures.sh ]; then
-          echo "append_fixtures script found"
-          ./scripts/append_fixtures.sh
-          fi
-      - name: Run fixture tests
-        run: |
-          if [ -f ./scripts/exec_test.sh ]; then
-          ./scripts/exec_test.sh
-          fi
-
-      - name: Try to delete previous Branch
-        if: always()
-        run: |
-          output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} branch ls)
-          # Check if the branch name exists in the output
-          if echo "$output" | grep -q "\b$TB_BRANCH_NAME\b"; then
-            tb \
-                --host ${{ secrets.TB_HOST }} \
-                --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} \
-                branch rm $TB_BRANCH_NAME \
-                --yes
-          else
-            echo "Skipping clean up: The Branch '$TB_BRANCH_NAME' does not exist."
-          fi
 
   job_ghost-cli:
     name: Ghost-CLI tests
@@ -1183,8 +963,7 @@ jobs:
         job_admin_x_settings,
         job_comments_ui,
         job_signup_form,
-        job_tinybird_forward,
-        job_tinybird
+        job_tinybird_forward
       ]
     if: always()
     runs-on: ubuntu-latest
@@ -1332,7 +1111,13 @@ jobs:
         if: steps.version_check.outputs.version_changed == 'true'
         run: echo "${{ steps.cdn_paths.outputs.cdn_paths }}"
 
-      - name: Purge jsdelivr cache
+      - name: Wait before purging jsDelivr cache
+        if: steps.version_check.outputs.version_changed == 'true' && matrix.package_name == '@tryghost/admin-x-activitypub'
+        run: |
+          echo "Purging jsDelivr cache immediately after publishing a new version on NPM is unreliable. Waiting 1 minute before purging cache..."
+          sleep 60
+
+      - name: Purge jsDelivr cache
         if: steps.version_check.outputs.version_changed == 'true'
         uses: gacts/purge-jsdelivr-cache@v1
         with:
@@ -1361,71 +1146,3 @@ jobs:
         run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deployment create --check
       - name: Create a staging deployment
         run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deployment create --wait
-
-  ## Tinybird Tests (Classic) — This job is deprecated and will be removed very soon.
-  deploy_tinybird:
-    runs-on: ubuntu-latest
-    env:
-      TB_VERSION_WARNING: 0
-    needs: [
-      job_setup,
-      job_tinybird
-    ]
-    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird.result == 'success' && needs.job_setup.outputs.is_main == 'true'
-    strategy:
-      matrix:
-        environment: [ 'staging', 'production']
-    name: Deploy Tinybird (Classic)
-    defaults:
-      run:
-        working-directory: ghost/web-analytics
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 300
-          submodules: true
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.11
-          architecture: "x64"
-          cache: "pip"
-      - name: Install Tinybird CLI
-        run: |
-          if [ -f "requirements.txt" ]; then
-            pip install -r requirements.txt
-          else
-            pip install tinybird-cli
-          fi
-      - name: Tinybird version
-        run: tb --version
-      - name: Check auth (staging)
-        if: matrix.environment == 'staging'
-        run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_STAGING }} auth info
-      - name: Check auth (production)
-        if: matrix.environment == 'production'
-        run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_PRODUCTION }} auth info
-      - name: Deploy changes to the main Workspace
-        run: |
-          source .tinyenv
-          DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
-          if [ ! -f "$DEPLOY_FILE" ]; then
-            echo "$DEPLOY_FILE not found, running default tb push command"
-            tb branch current
-            tb deploy
-          fi
-      - name: Custom deployment to the main Workspace
-        run: |
-            source .tinyenv
-            DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
-            if [ -f "$DEPLOY_FILE" ]; then
-              echo "$DEPLOY_FILE found"
-              if ! [ -x "$DEPLOY_FILE" ]; then
-                  echo "Error: You don't have permission to execute '$DEPLOY_FILE'. Run:"
-                  echo "> chmod +x $DEPLOY_FILE"
-                  echo "and commit your changes"
-                  exit 1
-              else
-                  $DEPLOY_FILE
-              fi
-            fi

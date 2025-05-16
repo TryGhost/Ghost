@@ -46,7 +46,15 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                     </DialogContent>
                 </Dialog>
             </SettingItem>
-
+            <SettingItem withHover onClick={() => navigate('/preferences/moderation')}>
+                <SettingHeader>
+                    <SettingTitle>Moderation</SettingTitle>
+                    <SettingDescription>Manage blocked users and domains</SettingDescription>
+                </SettingHeader>
+                <SettingAction className='flex items-center gap-2'>
+                    <LucideIcon.ChevronRight size={20} />
+                </SettingAction>
+            </SettingItem>
             <SettingItem withHover onClick={() => !threadsIsFetching && navigate('/preferences/threads-sharing', {state: {account, threadsAccount: threadsData?.accounts[0], isEnabled: threadsEnabled}})}>
                 <SettingHeader>
                     <SettingTitle>Threads sharing</SettingTitle>

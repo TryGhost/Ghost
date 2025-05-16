@@ -8,7 +8,7 @@ export type Member = {
     id: string,
     uuid: string,
     name: string,
-    avatar: string,
+    avatar_image: string,
     expertise: string
 }
 

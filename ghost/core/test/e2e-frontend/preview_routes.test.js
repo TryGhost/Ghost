@@ -74,6 +74,7 @@ describe('Frontend Routing: Preview Routes', function () {
             .expect((res) => {
                 res.text.should.match(/Before paywall/);
                 res.text.should.not.match(/After paywall/);
+                res.text.should.match(/This post is for/);
             });
     });
 
@@ -85,6 +86,7 @@ describe('Frontend Routing: Preview Routes', function () {
             .expect((res) => {
                 res.text.should.match(/Before paywall/);
                 res.text.should.match(/After paywall/);
+                res.text.should.not.match(/This post is for/);
             });
     });
 

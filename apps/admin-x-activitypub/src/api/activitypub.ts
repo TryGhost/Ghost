@@ -76,7 +76,7 @@ export interface GetAccountFollowsResponse {
 
 export interface Notification {
     id: string;
-    type: 'like' | 'reply' | 'repost' | 'follow';
+    type: 'like' | 'reply' | 'repost' | 'follow' | 'mention';
     actor: {
         id: string;
         name: string;
@@ -90,6 +90,11 @@ export interface Notification {
         title: string | null;
         content: string;
         url: string;
+        likeCount: number;
+        likedByMe: boolean;
+        repostCount: number;
+        repostedByMe: boolean;
+        replyCount: number;
     },
     inReplyTo: null | {
         id: string;
@@ -103,6 +108,16 @@ export interface Notification {
 
 export interface GetNotificationsResponse {
     notifications: Notification[];
+    next: string | null;
+}
+
+export interface GetBlockedAccountsResponse {
+    accounts: Account[];
+    next: string | null;
+}
+
+export interface GetBlockedDomainsResponse {
+    domains: Account[];
     next: string | null;
 }
 
@@ -277,17 +292,10 @@ export class ActivityPubAPI {
         return response;
     }
 
-    async note(content: string, imageUrl?: string): Promise<Activity | Post> {
+    async note(content: string, imageUrl?: string): Promise<Post> {
         const url = new URL('.ghost/activitypub/actions/note', this.apiUrl);
         const response = await this.fetchJSON(url, 'POST', {content, imageUrl});
-        
-        // Check if response has a post property (new format)
-        if (response && 'post' in response) {
-            return (response as {post: Post}).post;
-        }
-        
-        // Otherwise return as Activity (old format)
-        return response as Activity;
+        return (response as {post: Post}).post;
     }
 
     async delete(id: string): Promise<void> {
@@ -436,6 +444,59 @@ export class ActivityPubAPI {
 
         return {
             notifications,
+            next: nextPage
+        };
+    }
+
+    async getBlockedAccounts(next?: string): Promise<GetBlockedAccountsResponse> {
+        const url = new URL('.ghost/activitypub/blocks/accounts', this.apiUrl);
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null) {
+            return {
+                accounts: [],
+                next: null
+            };
+        }
+
+        const accounts = ('blocked_accounts' in json && Array.isArray(json.blocked_accounts))
+            ? json.blocked_accounts as Account[]
+            : [];
+        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        return {
+            accounts,
+            next: nextPage
+        };
+    }
+
+    async getBlockedDomains(next?: string): Promise<GetBlockedDomainsResponse> {
+        const url = new URL('.ghost/activitypub/blocks/domains', this.apiUrl);
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null) {
+            return {
+                domains: [],
+                next: null
+            };
+        }
+
+        const domains = ('blocked_domains' in json && Array.isArray(json.blocked_domains))
+            ? json.blocked_domains as Account[]
+            : [];
+
+        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        return {
+            domains,
             next: nextPage
         };
     }

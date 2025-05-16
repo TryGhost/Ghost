@@ -10,14 +10,13 @@ const controller = {
         headers: {
             disposition: {
                 type: 'file',
-                value() {
-                    return customRedirects.api.getRedirectsFilePath()
-                        .then((filePath) => {
-                            // @deprecated: .json was deprecated in v4.0 but is still the default for backwards compat
-                            return filePath === null || path.extname(filePath) === '.json'
-                                ? 'redirects.json'
-                                : 'redirects.yaml';
-                        });
+                async value() {
+                    const filePath = await customRedirects.api.getRedirectsFilePath();
+
+                    // @deprecated: .json was deprecated in v4.0 but is still the default for backwards compat
+                    return filePath === null || path.extname(filePath) === '.json'
+                        ? 'redirects.json'
+                        : 'redirects.yaml';
                 }
             },
             cacheInvalidate: false

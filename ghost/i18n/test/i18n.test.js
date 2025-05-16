@@ -13,13 +13,13 @@ describe('i18n', function () {
                 const translationFile = require(path.join(`../locales/`, locale, file));
 
                 for (const key of Object.keys(translationFile)) {
-                    const keyStartCount = key.match(/{{/g)?.length;
-                    assert.equal(keyStartCount, key.match(/}}/g)?.length, `[${locale}/${file}] mismatched brackets in ${key}`);
+                    const keyStartCount = key.match(/{/g)?.length;
+                    assert.equal(keyStartCount, key.match(/}/g)?.length, `[${locale}/${file}] mismatched brackets in ${key}`);
 
                     const value = translationFile[key];
                     if (typeof value === 'string') {
-                        const valueStartCount = value.match(/{{/g)?.length;
-                        assert.equal(valueStartCount, value.match(/}}/g)?.length, `[${locale}/${file}] mismatched brackets in ${value}`);
+                        const valueStartCount = value.match(/{/g)?.length;
+                        assert.equal(valueStartCount, value.match(/}/g)?.length, `[${locale}/${file}] mismatched brackets in ${value}`);
 
                         // Maybe enable in the future if we want to enforce this
                         //if (value !== '') {
@@ -147,7 +147,7 @@ describe('i18n', function () {
     });
     describe('newsletter i18n', function () {
         it('should be able to translate and interpolate a date', async function () {
-            const t = i18n('fr', 'newsletter').t;
+            const t = i18n('fr', 'ghost').t;
             assert.equal(t('Your subscription will renew on {date}.', {date: '8 Oct 2024'}), 'Votre abonnement sera renouvelé le 8 Oct 2024.');
         });
     });

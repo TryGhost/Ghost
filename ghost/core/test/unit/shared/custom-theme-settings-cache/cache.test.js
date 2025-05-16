@@ -1,4 +1,4 @@
-require('should');
+const should = require('should');
 
 const Cache = require('../../../../core/shared/custom-theme-settings-cache/CustomThemeSettingsCache');
 

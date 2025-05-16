@@ -11,14 +11,16 @@ describe('UNIT - services/routing/CollectionRouter', function () {
     let res;
     let next;
     let routerCreatedSpy;
+    let mountRouteSpy;
+    let mountRouterSpy;
 
     beforeEach(function () {
         sinon.stub(events, 'emit');
         sinon.stub(events, 'on');
         routerCreatedSpy = sinon.spy();
 
-        sinon.spy(CollectionRouter.prototype, 'mountRoute');
-        sinon.spy(CollectionRouter.prototype, 'mountRouter');
+        mountRouteSpy = sinon.spy(CollectionRouter.prototype, 'mountRoute');
+        mountRouterSpy = sinon.spy(CollectionRouter.prototype, 'mountRouter');
         sinon.spy(CollectionRouter.prototype, 'unmountRoute');
         sinon.spy(express.Router, 'param');
 
@@ -47,24 +49,24 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             routerCreatedSpy.calledOnce.should.be.true();
             routerCreatedSpy.calledWith(collectionRouter).should.be.true();
 
-            collectionRouter.mountRoute.callCount.should.eql(3);
+            mountRouteSpy.callCount.should.eql(3);
             express.Router.param.callCount.should.eql(2);
 
             // parent route
-            collectionRouter.mountRoute.args[0][0].should.eql('/');
-            collectionRouter.mountRoute.args[0][1].should.eql(controllers.collection);
+            mountRouteSpy.args[0][0].should.eql('/');
+            mountRouteSpy.args[0][1].should.eql(controllers.collection);
 
             // pagination feature
-            collectionRouter.mountRoute.args[1][0].should.eql('/page/:page(\\d+)');
-            collectionRouter.mountRoute.args[1][1].should.eql(controllers.collection);
+            mountRouteSpy.args[1][0].should.eql('/page/:page(\\d+)');
+            mountRouteSpy.args[1][1].should.eql(controllers.collection);
 
             // permalinks
-            collectionRouter.mountRoute.args[2][0].should.eql('/:slug/:options(edit)?/');
-            collectionRouter.mountRoute.args[2][1].should.eql(controllers.entry);
+            mountRouteSpy.args[2][0].should.eql('/:slug/:options(edit)?/');
+            mountRouteSpy.args[2][1].should.eql(controllers.entry);
 
-            collectionRouter.mountRouter.callCount.should.eql(1);
-            collectionRouter.mountRouter.args[0][0].should.eql('/');
-            collectionRouter.mountRouter.args[0][1].should.eql(collectionRouter.rssRouter.router());
+            mountRouterSpy.callCount.should.eql(1);
+            mountRouterSpy.args[0][0].should.eql('/');
+            mountRouterSpy.args[0][1].should.eql(collectionRouter.rssRouter.router());
         });
 
         it('router name', function () {
@@ -94,23 +96,23 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             routerCreatedSpy.calledOnce.should.be.true();
             routerCreatedSpy.calledWith(collectionRouter).should.be.true();
 
-            collectionRouter.mountRoute.callCount.should.eql(3);
+            mountRouteSpy.callCount.should.eql(3);
 
             // parent route
-            collectionRouter.mountRoute.args[0][0].should.eql('/blog/');
-            collectionRouter.mountRoute.args[0][1].should.eql(controllers.collection);
+            mountRouteSpy.args[0][0].should.eql('/blog/');
+            mountRouteSpy.args[0][1].should.eql(controllers.collection);
 
             // pagination feature
-            collectionRouter.mountRoute.args[1][0].should.eql('/blog/page/:page(\\d+)');
-            collectionRouter.mountRoute.args[1][1].should.eql(controllers.collection);
+            mountRouteSpy.args[1][0].should.eql('/blog/page/:page(\\d+)');
+            mountRouteSpy.args[1][1].should.eql(controllers.collection);
 
             // permalinks
-            collectionRouter.mountRoute.args[2][0].should.eql('/blog/:year/:slug/:options(edit)?/');
-            collectionRouter.mountRoute.args[2][1].should.eql(controllers.entry);
+            mountRouteSpy.args[2][0].should.eql('/blog/:year/:slug/:options(edit)?/');
+            mountRouteSpy.args[2][1].should.eql(controllers.entry);
 
-            collectionRouter.mountRouter.callCount.should.eql(1);
-            collectionRouter.mountRouter.args[0][0].should.eql('/blog/');
-            collectionRouter.mountRouter.args[0][1].should.eql(collectionRouter.rssRouter.router());
+            mountRouterSpy.callCount.should.eql(1);
+            mountRouterSpy.args[0][0].should.eql('/blog/');
+            mountRouterSpy.args[0][1].should.eql(collectionRouter.rssRouter.router());
         });
 
         it('with custom filter', function () {

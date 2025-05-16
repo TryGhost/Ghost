@@ -111,7 +111,7 @@ const AddDetailsPopup = (props: Props) => {
         return returnable;
     };
 
-    const charsText = reactStringReplace(t('{{amount}} characters left'), '{{amount}}', () => {
+    const charsText = reactStringReplace(t('{amount} characters left'), '{amount}', () => {
         return <b>{expertiseCharsLeft}</b>;
     });
 

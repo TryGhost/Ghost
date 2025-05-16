@@ -117,7 +117,7 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
     const label = t('Confirm');
     const planStartDate = getDateString(subscription.current_period_end);
     const currentActivePlan = getMemberActivePrice({member});
-    let planStartingMessage = t('Starting {{startDate}}', {startDate: planStartDate});
+    let planStartingMessage = t('Starting {startDate}', {startDate: planStartDate});
     if (currentActivePlan.id !== plan.id) {
         planStartingMessage = t('Starting today');
     }
@@ -162,7 +162,7 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
                 <p>
                     <Interpolate
                         syntax={SYNTAX_I18NEXT}
-                        string={t(`If you cancel your subscription now, you will continue to have access until {{periodEnd}}.`)}
+                        string={t(`If you cancel your subscription now, you will continue to have access until {periodEnd}.`)}
                         mapping={{
                             periodEnd: <strong>{getDateString(subscription.current_period_end)}</strong>
                         }}

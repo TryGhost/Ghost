@@ -6,6 +6,7 @@ import {
     ActivityPubCollectionResponse,
     FollowAccount,
     type GetAccountFollowsResponse,
+    type Notification,
     type Post,
     type SearchResults
 } from '../api/activitypub';
@@ -73,6 +74,8 @@ const QUERY_KEYS = {
     postsByAccount: ['account_posts'],
     postsLikedByAccount: ['account_liked_posts'],
     notifications: (handle: string) => ['notifications', handle],
+    blockedAccounts: (handle: string) => ['blocked_accounts', handle],
+    blockedDomains: (handle: string) => ['blocked_domains', handle],
     post: (id: string) => ['post', id]
 };
 
@@ -157,6 +160,97 @@ function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: stri
     });
 }
 
+function updateNotificationsLikedCache(queryClient: QueryClient, handle: string, id: string, liked: boolean) {
+    const notificationQueryKey = QUERY_KEYS.notifications(handle);
+    queryClient.setQueriesData(
+        {queryKey: notificationQueryKey},
+        (current?: {pages?: {notifications?: Notification[]}[]}) => {
+            if (!current || !current.pages) {
+                return current;
+            }
+
+            try {
+                return {
+                    ...current,
+                    pages: current.pages.map((page) => {
+                        if (!page || !page.notifications) {
+                            return page;
+                        }
+
+                        return {
+                            ...page,
+                            notifications: page.notifications.map((notification) => {
+                                if (!notification || !notification.post) {
+                                    return notification;
+                                }
+
+                                if (notification.post.id === id) {
+                                    return {
+                                        ...notification,
+                                        post: {
+                                            ...notification.post,
+                                            likedByMe: liked
+                                        }
+                                    };
+                                }
+                                return notification;
+                            })
+                        };
+                    })
+                };
+            } catch (error) {
+                return current;
+            }
+        }
+    );
+}
+
+function updateNotificationsRepostCache(queryClient: QueryClient, handle: string, id: string, reposted: boolean) {
+    const notificationQueryKey = QUERY_KEYS.notifications(handle);
+    queryClient.setQueriesData(
+        {queryKey: notificationQueryKey},
+        (current?: {pages?: {notifications?: Notification[]}[]}) => {
+            if (!current || !current.pages) {
+                return current;
+            }
+
+            try {
+                return {
+                    ...current,
+                    pages: current.pages.map((page) => {
+                        if (!page || !page.notifications) {
+                            return page;
+                        }
+
+                        return {
+                            ...page,
+                            notifications: page.notifications.map((notification) => {
+                                if (!notification || !notification.post) {
+                                    return notification;
+                                }
+
+                                if (notification.post.id === id) {
+                                    return {
+                                        ...notification,
+                                        post: {
+                                            ...notification.post,
+                                            repostedByMe: reposted,
+                                            repostCount: Math.max(reposted ? notification.post.repostCount + 1 : notification.post.repostCount - 1, 0)
+                                        }
+                                    };
+                                }
+                                return notification;
+                            })
+                        };
+                    })
+                };
+            } catch (error) {
+                return current;
+            }
+        }
+    );
+}
+
 function updateReplyCountInCache(queryClient: QueryClient, id: string, delta: number) {
     const queryKeys = [
         QUERY_KEYS.feed,
@@ -216,6 +310,38 @@ function updateReplyCountInCache(queryClient: QueryClient, id: string, delta: nu
     });
 }
 
+export function useBlockedAccountsForUser(handle: string) {
+    return useInfiniteQuery({
+        queryKey: QUERY_KEYS.blockedAccounts(handle),
+        refetchOnMount: 'always',
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.getBlockedAccounts(pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+}
+
+export function useBlockedDomainsForUser(handle: string) {
+    return useInfiniteQuery({
+        queryKey: QUERY_KEYS.blockedDomains(handle),
+        refetchOnMount: 'always',
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.getBlockedDomains(pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+}
+
 export function useLikeMutationForUser(handle: string) {
     const queryClient = useQueryClient();
 
@@ -231,6 +357,7 @@ export function useLikeMutationForUser(handle: string) {
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, true);
             updateLikedCache(queryClient, QUERY_KEYS.profilePosts('index'), id, true);
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, true);
+            updateNotificationsLikedCache(queryClient, handle, id, true);
 
             // Update account liked count
             queryClient.setQueryData(QUERY_KEYS.account('index'), (currentAccount?: Account) => {
@@ -248,6 +375,7 @@ export function useLikeMutationForUser(handle: string) {
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
             updateLikedCache(queryClient, QUERY_KEYS.profilePosts('index'), id, false);
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
+            updateNotificationsLikedCache(queryClient, handle, id, false);
 
             // Update account liked count
             queryClient.setQueryData(QUERY_KEYS.account('index'), (currentAccount?: Account) => {
@@ -286,6 +414,7 @@ export function useUnlikeMutationForUser(handle: string) {
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
             updateLikedCache(queryClient, QUERY_KEYS.profilePosts('index'), id, false);
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
+            updateNotificationsLikedCache(queryClient, handle, id, false);
 
             // Update account liked count
             queryClient.setQueryData(QUERY_KEYS.account(handle === 'me' ? 'index' : handle), (currentAccount?: Account) => {
@@ -305,15 +434,18 @@ export function useBlockDomainMutationForUser(handle: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
-        async mutationFn(account: Account) {
+        async mutationFn(data: {url: string, handle?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.blockDomain(new URL(account.apId));
+            return api.blockDomain(new URL(data.url));
         },
-        onMutate: (account: Account) => {
+        onMutate: (data: {url: string, handle?: string}) => {
+            if (!data.handle) {
+                return;
+            }
             queryClient.setQueryData(
-                QUERY_KEYS.account(account.handle),
+                QUERY_KEYS.account(handle),
                 (currentAccount?: Account) => {
                     if (!currentAccount) {
                         return currentAccount;
@@ -334,15 +466,18 @@ export function useUnblockDomainMutationForUser(handle: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
-        async mutationFn(account: Account) {
+        async mutationFn(data: {url: string, handle?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.unblockDomain(new URL(account.apId));
+            return api.unblockDomain(new URL(data.url));
         },
-        onMutate: (account: Account) => {
+        onMutate: (data: {url: string, handle?: string}) => {
+            if (!data.handle) {
+                return;
+            }
             queryClient.setQueryData(
-                QUERY_KEYS.account(account.handle),
+                QUERY_KEYS.account(handle),
                 (currentAccount?: Account) => {
                     if (!currentAccount) {
                         return currentAccount;
@@ -382,6 +517,8 @@ export function useBlockMutationForUser(handle: string) {
                     };
                 }
             );
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.feed});
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.inbox});
         }
     });
 }
@@ -457,10 +594,12 @@ export function useRepostMutationForUser(handle: string) {
         onMutate: (id) => {
             updateRepostCache(queryClient, QUERY_KEYS.feed, id, true);
             updateRepostCache(queryClient, QUERY_KEYS.inbox, id, true);
+            updateNotificationsRepostCache(queryClient, handle, id, true);
         },
         onError(error: {message: string, statusCode: number}, id) {
             updateRepostCache(queryClient, QUERY_KEYS.feed, id, false);
             updateRepostCache(queryClient, QUERY_KEYS.inbox, id, false);
+            updateNotificationsRepostCache(queryClient, handle, id, false);
             if (error.statusCode === 403) {
                 showToast({
                     title: 'Action failed',
@@ -485,6 +624,7 @@ export function useDerepostMutationForUser(handle: string) {
         onMutate: (id) => {
             updateRepostCache(queryClient, QUERY_KEYS.feed, id, false);
             updateRepostCache(queryClient, QUERY_KEYS.inbox, id, false);
+            updateNotificationsRepostCache(queryClient, handle, id, false);
         }
     });
 }
@@ -1256,26 +1396,15 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
 
             return {id};
         },
-        onSuccess: (postOrActivity: Post | Activity, _variables, context) => {
-            if (postOrActivity.id === undefined) {
+        onSuccess: (post: Post, _variables, context) => {
+            if (post.id === undefined) {
                 throw new Error('Post returned from API has no id');
             }
+            const activity = mapPostToActivity(post);
 
-            if (!('object' in postOrActivity)) {
-                const post = postOrActivity as Post;
-                const activity = mapPostToActivity(post);
-
-                updateActivityInPaginatedCollection(queryClient, queryKeyFeed, 'posts', context?.id ?? '', () => activity);
-                updateActivityInPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '', () => activity);
-                updateActivityInPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '', () => activity);
-            } else {
-                const activity = postOrActivity as Activity;
-                const preparedActivity = prepareNewActivity(activity);
-
-                updateActivityInPaginatedCollection(queryClient, queryKeyFeed, 'posts', context?.id ?? '', () => preparedActivity);
-                updateActivityInPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '', () => preparedActivity);
-                updateActivityInPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '', () => preparedActivity);
-            }
+            updateActivityInPaginatedCollection(queryClient, queryKeyFeed, 'posts', context?.id ?? '', () => activity);
+            updateActivityInPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '', () => activity);
+            updateActivityInPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '', () => activity);
         },
         onError(error, _variables, context) {
             // eslint-disable-next-line no-console

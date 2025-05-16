@@ -50,6 +50,7 @@ export type TopPostsStatsResponseType = {
 
 export type PostReferrerStatItem = {
     source: string;
+    referrer_url?: string;
     free_members: number;
     paid_members: number;
     mrr: number;

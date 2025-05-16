@@ -8,11 +8,12 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
     };
 
     let model;
+    let modelGetStub;
 
     beforeEach(function () {
         model = sinon.stub();
-        model.get = sinon.stub();
-        model.get.withArgs('plaintext').returns(new Array(5000).join('A'));
+        modelGetStub = sinon.stub(model, 'get');
+        modelGetStub.withArgs('plaintext').returns(new Array(5000).join('A'));
     });
 
     describe('for post', function () {
@@ -26,15 +27,15 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
             const attrs = {};
 
             extraAttrsUtil.forPost(options, model, attrs);
-            assert.ok(model.get.called);
+            assert.ok(modelGetStub.called);
             assert.equal(attrs.excerpt, new Array(501).join('A'));
         });
 
         it('has excerpt when plaintext is null', function () {
-            model.get.withArgs('plaintext').returns(null);
+            modelGetStub.withArgs('plaintext').returns(null);
             const attrs = {};
             extraAttrsUtil.forPost(options, model, attrs);
-            assert.ok(model.get.called);
+            assert.ok(modelGetStub.called);
             assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'excerpt'), true);
             assert.equal(attrs.excerpt, null);
         });
@@ -44,7 +45,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
             extraAttrsUtil.forPost({
                 columns: ['plaintext']
             }, model, attrs);
-            assert.ok(model.get.called);
+            assert.ok(modelGetStub.called);
             assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'plaintext'), true);
         });
 
@@ -53,14 +54,14 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
             extraAttrsUtil.forPost({
                 formats: ['plaintext']
             }, model, attrs);
-            assert.ok(model.get.called);
+            assert.ok(modelGetStub.called);
             assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'plaintext'), true);
         });
 
         it('has excerpt when no columns are passed', function () {
             const attrs = {};
             extraAttrsUtil.forPost({}, model, attrs);
-            assert.ok(model.get.called);
+            assert.ok(modelGetStub.called);
             assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'excerpt'), true);
         });
 

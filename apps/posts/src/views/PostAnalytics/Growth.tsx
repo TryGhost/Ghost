@@ -2,13 +2,27 @@ import KpiCard, {KpiCardContent, KpiCardIcon, KpiCardLabel, KpiCardValue} from '
 import PostAnalyticsContent from './components/PostAnalyticsContent';
 import PostAnalyticsHeader from './components/PostAnalyticsHeader';
 import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, formatNumber, isValidDomain} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, formatNumber} from '@tryghost/shade';
 import {SourceRow} from './components/Web/Sources';
 import {useParams} from '@tryghost/admin-x-framework';
 import {usePostReferrers} from '../../hooks/usePostReferrers';
 
 const centsToDollars = (value : number) => {
     return Math.round(value / 100);
+};
+
+// Check if the source has a valid URL that should be linked
+const hasLinkableUrl = (url: string | undefined): boolean => {
+    if (!url) {
+        return false;
+    }
+    
+    try {
+        new URL(url);
+        return true;
+    } catch (e) {
+        return false;
+    }
 };
 
 interface postAnalyticsProps {}
@@ -85,8 +99,8 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                             {postReferrers?.map(row => (
                                                 <TableRow key={row.source}>
                                                     <TableCell>
-                                                        {row.source && isValidDomain(row.source) ?
-                                                            <a className='group flex items-center gap-1' href={`https://${row.source}`} rel="noreferrer" target="_blank">
+                                                        {row.source && row.referrer_url && hasLinkableUrl(row.referrer_url) ?
+                                                            <a className='group flex items-center gap-1' href={row.referrer_url} rel="noreferrer" target="_blank">
                                                                 <SourceRow className='group-hover:underline' source={row.source} />
                                                             </a>
                                                             :

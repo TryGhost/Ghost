@@ -1,6 +1,6 @@
 import {ReactComponent as AvatarIcon} from '../../images/icons/avatar.svg';
-import {Comment, Member, useAppContext} from '../../AppContext';
-import {getInitials, getMemberInitialsFromComment} from '../../utils/helpers';
+import {Member, useAppContext} from '../../AppContext';
+import {getInitials, getMemberName} from '../../utils/helpers';
 
 function getDimensionClasses() {
     return 'w-8 h-8';
@@ -9,7 +9,7 @@ function getDimensionClasses() {
 export const BlankAvatar = () => {
     const dimensionClasses = getDimensionClasses();
     return (
-        <figure className={`relative ${dimensionClasses}`}>
+        <figure className={`relative ${dimensionClasses}`} data-testid="blank-avatar">
             <div className={`flex items-center justify-center rounded-full bg-black/5 text-neutral-900/25 dark:bg-white/15 dark:text-white/30 ${dimensionClasses}`}>
                 <AvatarIcon className="h-7 w-7 opacity-80" />
             </div>
@@ -18,16 +18,13 @@ export const BlankAvatar = () => {
 };
 
 type AvatarProps = {
-    comment?: Comment;
-    member?: Member;
+    member: Member | null;
 };
 
-export const Avatar: React.FC<AvatarProps> = ({comment, member: propMember}) => {
-    const {member: contextMember, avatarSaturation, t} = useAppContext();
+export const Avatar: React.FC<AvatarProps> = ({member}) => {
+    const {avatarSaturation, t} = useAppContext();
     const dimensionClasses = getDimensionClasses();
-
-    const activeMember = propMember || comment?.member || contextMember;
-    const memberName = activeMember?.name;
+    const memberName = getMemberName(member, t);
 
     const getHashOfString = (str: string) => {
         let hash = 0;
@@ -43,7 +40,7 @@ export const Avatar: React.FC<AvatarProps> = ({comment, member: propMember}) => 
     };
 
     const generateHSL = (): [number, number, number] => {
-        if (!activeMember || !activeMember.name) {
+        if (!memberName) {
             return [0,0,10];
         }
 
@@ -54,7 +51,7 @@ export const Avatar: React.FC<AvatarProps> = ({comment, member: propMember}) => 
         const lRangeBottom = lRangeTop - 20;
         const lRange = [lRangeBottom, lRangeTop];
 
-        const hash = getHashOfString(activeMember.name);
+        const hash = getHashOfString(memberName);
         const h = normalizeHash(hash, hRange[0], hRange[1]);
         const l = normalizeHash(hash, lRange[0], lRange[1]);
 
@@ -65,8 +62,7 @@ export const Avatar: React.FC<AvatarProps> = ({comment, member: propMember}) => 
         return `hsl(${hsl[0]}, ${hsl[1]}%, ${hsl[2]}%)`;
     };
 
-    const memberInitials = (comment && getMemberInitialsFromComment(comment, t)) ||
-        (activeMember && getInitials(activeMember.name || '')) || '';
+    const memberInitials = (getInitials(memberName));
 
     const bgColor = HSLtoString(generateHSL());
     const avatarStyle = {
@@ -82,9 +78,14 @@ export const Avatar: React.FC<AvatarProps> = ({comment, member: propMember}) => 
                 (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-white/70 ${dimensionClasses}`} data-testid="avatar-background">
                     <AvatarIcon className="stroke-white dark:stroke-black/60" />
                 </div>)}
-            {activeMember?.avatar_image && <img alt="Avatar" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} data-testid="avatar-image" src={activeMember.avatar_image} />}
+            {member?.avatar_image && <img alt="Avatar" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} data-testid="avatar-image" src={member.avatar_image} />}
         </>
     );
+
+    // if member is null, render blank avatar
+    if (!member) {
+        return <BlankAvatar />;
+    }
 
     return (
         <figure className={`relative ${dimensionClasses}`} data-testid="avatar">

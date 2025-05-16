@@ -8,8 +8,8 @@ type Props = {
 };
 const RepliesPagination: React.FC<Props> = ({loadMore, count}) => {
     const {t} = useAppContext();
-    const longText = count === 1 ? t('Show 1 more reply') : t('Show {{amount}} more replies', {amount: formatNumber(count)});
-    const shortText = t('{{amount}} more', {amount: formatNumber(count)});
+    const longText = count === 1 ? t('Show 1 more reply') : t('Show {amount} more replies', {amount: formatNumber(count)});
+    const shortText = t('{amount} more', {amount: formatNumber(count)});
 
     return (
         <div className="flex w-full items-center justify-start" data-testid="replies-pagination">

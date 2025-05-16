@@ -52,6 +52,7 @@ describe('PostsStatsService', function () {
             attribution_id: postId,
             attribution_type: 'post',
             referrer_source: referrerSource,
+            referrer_url: referrerSource ? `https://${referrerSource}` : null,
             created_at: createdAt
         });
     }
@@ -68,6 +69,7 @@ describe('PostsStatsService', function () {
             attribution_id: postId,
             attribution_type: 'post',
             referrer_source: referrerSource,
+            referrer_url: referrerSource ? `https://${referrerSource}` : null,
             created_at: createdAt
         });
 
@@ -126,6 +128,7 @@ describe('PostsStatsService', function () {
             table.string('attribution_type');
             table.dateTime('created_at');
             table.string('referrer_source');
+            table.string('referrer_url');
         });
 
         await db.schema.createTable('members_subscription_created_events', function (table) {
@@ -136,6 +139,7 @@ describe('PostsStatsService', function () {
             table.string('attribution_type');
             table.dateTime('created_at');
             table.string('referrer_source');
+            table.string('referrer_url');
         });
 
         await db.schema.createTable('members_paid_subscription_events', function (table) {
@@ -358,10 +362,10 @@ describe('PostsStatsService', function () {
             assert.equal(result.data.length, 4, 'Should return all 4 referrers for post1');
 
             const expectedResults = [
-                {source: 'referrer_1', free_members: 2, paid_members: 1, mrr: 500},
-                {source: 'referrer_2', free_members: 1, paid_members: 0, mrr: 0},
-                {source: 'referrer_4', free_members: 1, paid_members: 0, mrr: 0},
-                {source: 'referrer_3', free_members: 0, paid_members: 1, mrr: 1000}
+                {source: 'referrer_1', free_members: 2, paid_members: 1, mrr: 500, referrer_url: 'https://referrer_1'},
+                {source: 'referrer_2', free_members: 1, paid_members: 0, mrr: 0, referrer_url: 'https://referrer_2'},
+                {source: 'referrer_4', free_members: 1, paid_members: 0, mrr: 0, referrer_url: 'https://referrer_4'},
+                {source: 'referrer_3', free_members: 0, paid_members: 1, mrr: 1000, referrer_url: 'https://referrer_3'}
             ];
 
             const sortFn = (a, b) => {
@@ -390,10 +394,10 @@ describe('PostsStatsService', function () {
             assert.equal(result.data.length, 4, 'Should return all 4 referrers for post1');
 
             const expectedResults = [
-                {source: 'referrer_1', free_members: 0, paid_members: 2, mrr: 1100},
-                {source: 'referrer_2', free_members: 0, paid_members: 1, mrr: 700},
-                {source: 'referrer_3', free_members: 1, paid_members: 0, mrr: 0},
-                {source: 'referrer_4', free_members: 1, paid_members: 0, mrr: 0}
+                {source: 'referrer_1', free_members: 0, paid_members: 2, mrr: 1100, referrer_url: 'https://referrer_1'},
+                {source: 'referrer_2', free_members: 0, paid_members: 1, mrr: 700, referrer_url: 'https://referrer_2'},
+                {source: 'referrer_3', free_members: 1, paid_members: 0, mrr: 0, referrer_url: 'https://referrer_3'},
+                {source: 'referrer_4', free_members: 1, paid_members: 0, mrr: 0, referrer_url: 'https://referrer_4'}
             ];
 
             const sortFn = (a, b) => {
@@ -422,10 +426,10 @@ describe('PostsStatsService', function () {
             assert.equal(result.data.length, 4, 'Should return all 4 referrers for post1');
 
             const expectedResults = [
-                {source: 'referrer_2', free_members: 0, paid_members: 1, mrr: 1200},
-                {source: 'referrer_1', free_members: 0, paid_members: 2, mrr: 1100},
-                {source: 'referrer_3', free_members: 1, paid_members: 0, mrr: 0},
-                {source: 'referrer_4', free_members: 1, paid_members: 0, mrr: 0}
+                {source: 'referrer_2', free_members: 0, paid_members: 1, mrr: 1200, referrer_url: 'https://referrer_2'},
+                {source: 'referrer_1', free_members: 0, paid_members: 2, mrr: 1100, referrer_url: 'https://referrer_1'},
+                {source: 'referrer_3', free_members: 1, paid_members: 0, mrr: 0, referrer_url: 'https://referrer_3'},
+                {source: 'referrer_4', free_members: 1, paid_members: 0, mrr: 0, referrer_url: 'https://referrer_4'}
             ];
 
             const sortFn = (a, b) => {
@@ -456,7 +460,10 @@ describe('PostsStatsService', function () {
                 date_to: new Date()
             });
 
-            assert.equal(lastFifteenDaysResult.data.find(r => r.source === 'referrer_past').free_members, 1);
+            // Make sure we have the result for referrer_past
+            const pastsResult = lastFifteenDaysResult.data.find(r => r.source === 'referrer_past');
+            assert.ok(pastsResult, 'Should have results for referrer_past');
+            assert.equal(pastsResult.free_members, 1, 'Recent referrer should have 1 free member');
 
             // Test filtering to include both dates
             const lastThirtyDaysResult = await service.getReferrersForPost('post1', {
@@ -464,8 +471,15 @@ describe('PostsStatsService', function () {
                 date_to: new Date()
             });
 
-            assert.equal(lastThirtyDaysResult.data.find(r => r.source === 'referrer_past').free_members, 1);
-            assert.equal(lastThirtyDaysResult.data.find(r => r.source === 'referrer_future').free_members, 1);
+            // Make sure we have results for both referrers
+            const pastResult = lastThirtyDaysResult.data.find(r => r.source === 'referrer_past');
+            const futureResult = lastThirtyDaysResult.data.find(r => r.source === 'referrer_future');
+            
+            assert.ok(pastResult, 'Should have results for referrer_past');
+            assert.equal(pastResult.free_members, 1, 'Recent referrer should have 1 free member');
+            
+            assert.ok(futureResult, 'Should have results for referrer_future');
+            assert.equal(futureResult.free_members, 1, 'Older referrer should have 1 free member');
         });
 
         it('respects the limit parameter', async function () {
@@ -480,10 +494,17 @@ describe('PostsStatsService', function () {
 
             assert.ok(result.data, 'Result should have a data property');
             assert.equal(result.data.length, 2, 'Should return only 2 referrers');
-
-            // Verify that only the top 2 referrers by free_members are returned
-            assert.equal(result.data[0].source, 'referrer_1');
-            assert.equal(result.data[1].source, 'referrer_2');
+            
+            // All referrers have 1 free member, so we just check that we got 2 out of the 3 possible sources
+            const validSources = ['referrer_1', 'referrer_2', 'referrer_3'];
+            const returnedSources = result.data.map(item => item.source);
+            
+            // Both returned sources should be from our valid sources list
+            assert.equal(returnedSources.every(source => validSources.includes(source)), true, 
+                'All returned sources should be from our test data');
+                
+            // We should have exactly 2 different sources
+            assert.equal(new Set(returnedSources).size, 2, 'Should return 2 different sources');
         });
     });
 

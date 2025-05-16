@@ -78,7 +78,6 @@
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "sinon": "17.0.1",
-        "ts-node": "10.9.2",
         "typescript": "5.8.3"
     },
     "dependencies": {
@@ -86,13 +85,13 @@
         "@tanstack/react-query": "4.36.1",
         "@tryghost/admin-x-design-system": "0.0.0",
         "@tryghost/shade": "0.0.0",
-        "@types/react": "18.3.20",
+        "@types/react": "18.3.21",
         "@types/react-dom": "18.3.7",
         "@vitejs/plugin-react": "4.4.1",
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "react-router": "7.5.3",
-        "vite": "4.5.6",
+        "vite": "4.5.14",
         "vite-plugin-css-injected-by-js": "3.5.2",
         "vite-plugin-svgr": "3.3.0",
         "vitest": "0.34.3"

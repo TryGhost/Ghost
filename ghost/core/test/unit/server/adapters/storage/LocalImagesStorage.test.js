@@ -11,6 +11,9 @@ describe('Local Images Storage', function () {
     let image;
     let momentStub;
     let localFileStore;
+    let fsMkdirsStub;
+    let fsCopyStub;
+    let fsStatStub;
 
     function fakeDate(mm, yyyy) {
         const month = parseInt(mm, 10);
@@ -31,9 +34,9 @@ describe('Local Images Storage', function () {
     });
 
     beforeEach(function () {
-        sinon.stub(fs, 'mkdirs').resolves();
-        sinon.stub(fs, 'copy').resolves();
-        sinon.stub(fs, 'stat').rejects();
+        fsMkdirsStub = sinon.stub(fs, 'mkdirs').resolves();
+        fsCopyStub = sinon.stub(fs, 'copy').resolves();
+        fsStatStub = sinon.stub(fs, 'stat').rejects();
         sinon.stub(fs, 'unlink').resolves();
 
         image = {
@@ -85,8 +88,8 @@ describe('Local Images Storage', function () {
 
     it('should create month and year directory', function (done) {
         localFileStore.save(image).then(function () {
-            fs.mkdirs.calledOnce.should.be.true();
-            fs.mkdirs.args[0][0].should.equal(path.resolve('./content/images/2013/09'));
+            fsMkdirsStub.calledOnce.should.be.true();
+            fsMkdirsStub.args[0][0].should.equal(path.resolve('./content/images/2013/09'));
 
             done();
         }).catch(done);
@@ -94,22 +97,22 @@ describe('Local Images Storage', function () {
 
     it('should copy temp file to new location', function (done) {
         localFileStore.save(image).then(function () {
-            fs.copy.calledOnce.should.be.true();
-            fs.copy.args[0][0].should.equal('tmp/123456.jpg');
-            fs.copy.args[0][1].should.equal(path.resolve('./content/images/2013/09/IMAGE.jpg'));
+            fsCopyStub.calledOnce.should.be.true();
+            fsCopyStub.args[0][0].should.equal('tmp/123456.jpg');
+            fsCopyStub.args[0][1].should.equal(path.resolve('./content/images/2013/09/IMAGE.jpg'));
 
             done();
         }).catch(done);
     });
 
     it('can upload two different images with the same name without overwriting the first', function (done) {
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-1.jpg')).rejects();
+        fsStatStub.withArgs(path.resolve('./content/images/2013/09/IMAGE.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve('./content/images/2013/09/IMAGE-1.jpg')).rejects();
 
         // if on windows need to setup with back slashes
         // doesn't hurt for the test to cope with both
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-1.jpg')).rejects();
+        fsStatStub.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-1.jpg')).rejects();
 
         localFileStore.save(image).then(function (url) {
             url.should.equal('/content/images/2013/09/IMAGE-1.jpg');
@@ -119,18 +122,18 @@ describe('Local Images Storage', function () {
     });
 
     it('can upload five different images with the same name without overwriting the first', function (done) {
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-1.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-2.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-3.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-4.jpg')).rejects();
+        fsStatStub.withArgs(path.resolve('./content/images/2013/09/IMAGE.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve('./content/images/2013/09/IMAGE-1.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve('./content/images/2013/09/IMAGE-2.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve('./content/images/2013/09/IMAGE-3.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve('./content/images/2013/09/IMAGE-4.jpg')).rejects();
 
         // windows setup
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-1.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-2.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-3.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-4.jpg')).rejects();
+        fsStatStub.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-1.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-2.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-3.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-4.jpg')).rejects();
 
         localFileStore.save(image).then(function (url) {
             url.should.equal('/content/images/2013/09/IMAGE-4.jpg');
@@ -221,9 +224,10 @@ describe('Local Images Storage', function () {
     // @TODO: remove path.join mock...
     describe('on Windows', function () {
         const truePathSep = path.sep;
+        let pathJoinStub;
 
         beforeEach(function () {
-            sinon.stub(path, 'join');
+            pathJoinStub = sinon.stub(path, 'join');
             sinon.stub(configUtils.config, 'getContentPath').returns('content/images/');
         });
 
@@ -233,7 +237,7 @@ describe('Local Images Storage', function () {
 
         it('should return url in proper format for windows', function (done) {
             path.sep = '\\';
-            path.join.returns('content\\images\\2013\\09\\IMAGE.jpg');
+            pathJoinStub.returns('content\\images\\2013\\09\\IMAGE.jpg');
 
             localFileStore.save(image).then(function (url) {
                 if (truePathSep === '\\') {

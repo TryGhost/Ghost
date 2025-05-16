@@ -6,12 +6,14 @@ const models = require('../../../../core/server/models');
 const testUtils = require('../../../utils');
 
 describe('{{authors}} helper', function () {
+    let urlServiceGetUrlByResourceIdStub;
+
     before(function () {
         models.init();
     });
 
     beforeEach(function () {
-        sinon.stub(urlService, 'getUrlByResourceId');
+        urlServiceGetUrlByResourceIdStub = sinon.stub(urlService, 'getUrlByResourceId');
     });
 
     afterEach(function () {
@@ -115,8 +117,8 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'bar', slug: 'bar'})
         ];
 
-        urlService.getUrlByResourceId.withArgs(authors[0].id).returns('author url 1');
-        urlService.getUrlByResourceId.withArgs(authors[1].id).returns('author url 2');
+        urlServiceGetUrlByResourceIdStub.withArgs(authors[0].id).returns('author url 1');
+        urlServiceGetUrlByResourceIdStub.withArgs(authors[1].id).returns('author url 2');
 
         const rendered = authorsHelper.call({authors: authors});
         should.exist(rendered);
@@ -130,7 +132,7 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'bar', slug: 'bar'})
         ];
 
-        urlService.getUrlByResourceId.withArgs(authors[0].id).returns('author url 1');
+        urlServiceGetUrlByResourceIdStub.withArgs(authors[0].id).returns('author url 1');
 
         const rendered = authorsHelper.call({authors: authors}, {hash: {limit: '1'}});
         should.exist(rendered);
@@ -144,7 +146,7 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'bar', slug: 'bar'})
         ];
 
-        urlService.getUrlByResourceId.withArgs(authors[1].id).returns('author url 2');
+        urlServiceGetUrlByResourceIdStub.withArgs(authors[1].id).returns('author url 2');
 
         const rendered = authorsHelper.call({authors: authors}, {hash: {from: '2'}});
         should.exist(rendered);
@@ -158,7 +160,7 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'bar', slug: 'bar'})
         ];
 
-        urlService.getUrlByResourceId.withArgs(authors[0].id).returns('author url');
+        urlServiceGetUrlByResourceIdStub.withArgs(authors[0].id).returns('author url');
 
         const rendered = authorsHelper.call({authors: authors}, {hash: {to: '1'}});
         should.exist(rendered);
@@ -173,8 +175,8 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'baz', slug: 'baz'})
         ];
 
-        urlService.getUrlByResourceId.withArgs(authors[1].id).returns('author url 2');
-        urlService.getUrlByResourceId.withArgs(authors[2].id).returns('author url 3');
+        urlServiceGetUrlByResourceIdStub.withArgs(authors[1].id).returns('author url 2');
+        urlServiceGetUrlByResourceIdStub.withArgs(authors[2].id).returns('author url 3');
 
         const rendered = authorsHelper.call({authors: authors}, {hash: {from: '2', to: '3'}});
         should.exist(rendered);
@@ -189,7 +191,7 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'baz', slug: 'baz'})
         ];
 
-        urlService.getUrlByResourceId.withArgs(authors[1].id).returns('author url x');
+        urlServiceGetUrlByResourceIdStub.withArgs(authors[1].id).returns('author url x');
 
         const rendered = authorsHelper.call({authors: authors}, {hash: {from: '2', limit: '1'}});
         should.exist(rendered);
@@ -204,9 +206,9 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'baz', slug: 'baz'})
         ];
 
-        urlService.getUrlByResourceId.withArgs(authors[0].id).returns('author url a');
-        urlService.getUrlByResourceId.withArgs(authors[1].id).returns('author url b');
-        urlService.getUrlByResourceId.withArgs(authors[2].id).returns('author url c');
+        urlServiceGetUrlByResourceIdStub.withArgs(authors[0].id).returns('author url a');
+        urlServiceGetUrlByResourceIdStub.withArgs(authors[1].id).returns('author url b');
+        urlServiceGetUrlByResourceIdStub.withArgs(authors[2].id).returns('author url c');
 
         const rendered = authorsHelper.call({authors: authors}, {hash: {from: '1', to: '3', limit: '2'}});
         should.exist(rendered);

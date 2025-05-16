@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
@@ -43,7 +44,7 @@ describe('Unit: models/invite', function () {
                 return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.NotFoundError).should.eql(true);
+                        assert.equal(err instanceof errors.NotFoundError, true);
                     });
             });
 
@@ -54,7 +55,7 @@ describe('Unit: models/invite', function () {
                 return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        assert.equal(err instanceof errors.NoPermissionError, true);
                     });
             });
 
@@ -138,7 +139,7 @@ describe('Unit: models/invite', function () {
                     return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true, true)
                         .then(Promise.reject)
                         .catch((err) => {
-                            (err instanceof errors.NoPermissionError).should.eql(true);
+                            assert.equal(err instanceof errors.NoPermissionError, true);
                         });
                 });
 
@@ -149,7 +150,7 @@ describe('Unit: models/invite', function () {
                     return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true, true)
                         .then(Promise.reject)
                         .catch((err) => {
-                            (err instanceof errors.NoPermissionError).should.eql(true);
+                            assert.equal(err instanceof errors.NoPermissionError, true);
                         });
                 });
 
@@ -163,7 +164,7 @@ describe('Unit: models/invite', function () {
                     return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true, true)
                         .then(Promise.reject)
                         .catch((err) => {
-                            (err instanceof errors.NoPermissionError).should.eql(true);
+                            assert.equal(err instanceof errors.NoPermissionError, true);
                             delete loadedPermissions.apiKey;
                         });
                 });
@@ -195,7 +196,7 @@ describe('Unit: models/invite', function () {
                     return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false, true)
                         .then(Promise.reject)
                         .catch((err) => {
-                            (err instanceof errors.NoPermissionError).should.eql(true);
+                            assert.equal(err instanceof errors.NoPermissionError, true);
                         });
                 });
 
@@ -206,7 +207,7 @@ describe('Unit: models/invite', function () {
                     return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false, true)
                         .then(Promise.reject)
                         .catch((err) => {
-                            (err instanceof errors.NoPermissionError).should.eql(true);
+                            assert.equal(err instanceof errors.NoPermissionError, true);
                         });
                 });
 
@@ -217,7 +218,7 @@ describe('Unit: models/invite', function () {
                     return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false, true)
                         .then(Promise.reject)
                         .catch((err) => {
-                            (err instanceof errors.NoPermissionError).should.eql(true);
+                            assert.equal(err instanceof errors.NoPermissionError, true);
                         });
                 });
 
@@ -228,7 +229,7 @@ describe('Unit: models/invite', function () {
                     return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false, true)
                         .then(Promise.reject)
                         .catch((err) => {
-                            (err instanceof errors.NoPermissionError).should.eql(true);
+                            assert.equal(err instanceof errors.NoPermissionError, true);
                         });
                 });
             });
@@ -245,7 +246,7 @@ describe('Unit: models/invite', function () {
                     return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false, true)
                         .then(Promise.reject)
                         .catch((err) => {
-                            (err instanceof errors.NoPermissionError).should.eql(true);
+                            assert.equal(err instanceof errors.NoPermissionError, true);
                         });
                 });
 
@@ -256,7 +257,7 @@ describe('Unit: models/invite', function () {
                     return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false, true)
                         .then(Promise.reject)
                         .catch((err) => {
-                            (err instanceof errors.NoPermissionError).should.eql(true);
+                            assert.equal(err instanceof errors.NoPermissionError, true);
                         });
                 });
 
@@ -267,7 +268,7 @@ describe('Unit: models/invite', function () {
                     return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false, true)
                         .then(Promise.reject)
                         .catch((err) => {
-                            (err instanceof errors.NoPermissionError).should.eql(true);
+                            assert.equal(err instanceof errors.NoPermissionError, true);
                         });
                 });
 
@@ -278,7 +279,7 @@ describe('Unit: models/invite', function () {
                     return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false, true)
                         .then(Promise.reject)
                         .catch((err) => {
-                            (err instanceof errors.NoPermissionError).should.eql(true);
+                            assert.equal(err instanceof errors.NoPermissionError, true);
                         });
                 });
             });
