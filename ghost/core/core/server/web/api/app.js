@@ -24,7 +24,6 @@ module.exports = function setupApiApp() {
 
     // Error handling for requests to non-existent API versions
     apiApp.use(errorHandler.resourceNotFound);
-    apiApp.use(APIVersionCompatibilityService.errorHandler);
     apiApp.use(errorHandler.handleJSONResponse(sentry));
 
     debug('Parent API setup end');
