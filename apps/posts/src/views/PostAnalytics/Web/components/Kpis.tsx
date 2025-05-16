@@ -1,19 +1,20 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
-import EmptyStatView from '../EmptyStatView';
+import EmptyStatView from '../../components/EmptyStatView';
 import React, {useState} from 'react';
 import {Card, CardContent, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsList, formatDisplayDate, formatDuration, formatNumber, formatPercentage} from '@tryghost/shade';
+import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useQuery} from '@tinybirdco/charts';
 
-type KpiMetric = {
+export type KpiMetric = {
     dataKey: string;
     label: string;
     formatter: (value: number) => string;
 };
 
-const KPI_METRICS: Record<string, KpiMetric> = {
+export const KPI_METRICS: Record<string, KpiMetric> = {
     visits: {
         dataKey: 'visits',
         label: 'Visitors',
@@ -64,35 +65,7 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
         };
     });
 
-    // Calculate KPI values
-    const getKpiValues = () => {
-        if (!data?.length) {
-            return {visits: 0, views: 0, bounceRate: 0, duration: 0};
-        }
-
-        // Sum total KPI value from the trend, ponderating using sessions
-        const _ponderatedKPIsTotal = (kpi: keyof typeof data[0]) => {
-            return data.reduce((prev, curr) => {
-                const currValue = Number(curr[kpi] ?? 0);
-                const currVisits = Number(curr.visits);
-                return prev + (currValue * currVisits / totalVisits);
-            }, 0);
-        };
-
-        const totalVisits = data.reduce((sum, item) => sum + Number(item.visits), 0);
-        const totalViews = data.reduce((sum, item) => sum + Number(item.pageviews), 0);
-        const avgBounceRate = _ponderatedKPIsTotal('bounce_rate');
-        const avgDuration = _ponderatedKPIsTotal('avg_session_sec');
-
-        return {
-            visits: formatNumber(totalVisits),
-            views: formatNumber(totalViews),
-            bounceRate: formatPercentage(avgBounceRate),
-            duration: formatDuration(avgDuration)
-        };
-    };
-
-    const kpiValues = getKpiValues();
+    const kpiValues = getWebKpiValues(data as unknown as KpiDataItem[] | null);
 
     const chartConfig = {
         value: {
@@ -102,7 +75,7 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
 
     return (
         <>
-            {isLoading ? 'Loading' :
+            {isLoading ? '' :
                 <>
                     {(data && data.length !== 0 && kpiValues.visits !== '0') ?
                         <Card>

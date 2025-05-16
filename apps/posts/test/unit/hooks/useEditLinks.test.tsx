@@ -1,4 +1,4 @@
-import GlobalDataProvider from '../../../src/providers/GlobalDataProvider';
+import GlobalDataProvider from '../../../src/providers/PostAnalyticsContext';
 import React, {act} from 'react';
 import {HttpResponse, http} from 'msw';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
@@ -56,7 +56,7 @@ describe('useEditLinks', () => {
             http.put('/ghost/api/admin/links/bulk/', async ({request}) => {
                 const url = new URL(request.url);
                 expect(url.searchParams.get('filter')).toBe('post_id:\'test-post-id\'+to:\'https://original.com\'');
-                
+
                 const body = await request.json();
                 expect(body).toEqual({
                     bulk: {
@@ -127,7 +127,7 @@ describe('useEditLinks', () => {
         server.use(
             http.put('/ghost/api/admin/links/bulk/', async () => {
                 await requestPromise; // Hold the request
-                return HttpResponse.json({}); 
+                return HttpResponse.json({});
             })
         );
 
@@ -152,7 +152,7 @@ describe('useEditLinks', () => {
         act(() => {
             resolveRequest({});
         });
-        
+
         await waitFor(() => {
             expect(result.current.isEditLinksLoading).toBe(false);
         });

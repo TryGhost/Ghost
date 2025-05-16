@@ -1,9 +1,8 @@
 // import AudienceSelect from './components/AudienceSelect';
-import KpiCard, {KpiCardContent, KpiCardIcon, KpiCardLabel, KpiCardValue} from './components/KpiCard';
-import PostAnalyticsContent from './components/PostAnalyticsContent';
-import PostAnalyticsHeader from './components/PostAnalyticsHeader';
-import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, ViewHeader, formatNumber, formatPercentage} from '@tryghost/shade';
+import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
+import PostAnalyticsContent from '../components/PostAnalyticsContent';
+import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
 import {calculateYAxisWidth} from '@src/utils/chart-helpers';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useMemo, useRef, useState} from 'react';
@@ -13,20 +12,20 @@ import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 interface postAnalyticsProps {}
 
 // Grouped link type after processing
-interface GroupedLinkData {
+export interface GroupedLinkData {
     url: string;
     clicks: number;
     edited: boolean;
 }
 
-const sanitizeUrl = (url: string): string => {
+export const sanitizeUrl = (url: string): string => {
     return url.replace(/^https?:\/\//, '');
 };
 
-const cleanTrackedUrl = (url: string, showTitle = false): string => {
+export const cleanTrackedUrl = (url: string, showTitle = false): string => {
     // Extract the URL before the ? but keep the hash part
     const [urlPart, queryPart] = url.split('?');
-    
+
     if (!queryPart) {
         // Check if the urlPart itself has a hash
         const hashIndex = urlPart.indexOf('#');
@@ -35,13 +34,13 @@ const cleanTrackedUrl = (url: string, showTitle = false): string => {
         }
         return urlPart;
     }
-    
+
     // If there's a hash in the query part, preserve it
     const hashMatch = queryPart.match(/#(.+)$/);
     if (hashMatch) {
         return showTitle ? urlPart : `${urlPart}#${hashMatch[1]}`;
     }
-    
+
     return urlPart;
 };
 
@@ -123,7 +122,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         const processedLinks = topLinks.reduce<Record<string, GroupedLinkData>>((acc, link) => {
             // For grouping, we use the clean URL (path only with hash)
             const cleanUrl = cleanTrackedUrl(link.url, false);
-            
+
             if (!acc[cleanUrl]) {
                 acc[cleanUrl] = {
                     url: cleanUrl,
@@ -131,27 +130,26 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                     edited: false
                 };
             }
-            
+
             acc[cleanUrl].clicks += link.clicks;
             acc[cleanUrl].edited = acc[cleanUrl].edited || link.edited;
-            
+
             return acc;
         }, {});
-        
+
         // Sort by click count
         return Object.values(processedLinks).sort((a, b) => b.clicks - a.clicks);
     }, [topLinks]); // Only recalculate when topLinks changes
 
     return (
-        <PostAnalyticsLayout>
-            <ViewHeader className='items-end pb-4'>
-                <PostAnalyticsHeader currentTab='Newsletter' />
-                {/* <ViewHeaderActions className='mb-2'>
-                    <AudienceSelect />
-                </ViewHeaderActions> */}
-            </ViewHeader>
+        <>
+            <PostAnalyticsHeader currentTab='Newsletter' />
             <PostAnalyticsContent>
-                {isLoading ? 'Loading' :
+                {isLoading ?
+                    <div className='flex size-full grow items-center justify-center'>
+                        <BarChartLoadingIndicator />
+                    </div>
+                    :
                     <div className='flex flex-col items-stretch gap-6'>
                         <Card>
                             <CardHeader className='hidden'>
@@ -159,31 +157,31 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                 <CardDescription>How did this post perform</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className='-mx-1 grid grid-cols-3 gap-6 pt-5'>
-                                    <KpiCard className='border-none p-0'>
-                                        <KpiCardIcon>
+                                <div className='-mx-6 flex items-stretch border-b'>
+                                    <KpiCard className='grow'>
+                                        <KpiCardLabel>
                                             <LucideIcon.Send strokeWidth={1.5} />
-                                        </KpiCardIcon>
+                                            Sent
+                                        </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardLabel>Sent</KpiCardLabel>
                                             <KpiCardValue>{formatNumber(stats.sent)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
-                                    <KpiCard className='border-none p-0'>
-                                        <KpiCardIcon>
+                                    <KpiCard className='grow'>
+                                        <KpiCardLabel>
                                             <LucideIcon.MailOpen strokeWidth={1.5} />
-                                        </KpiCardIcon>
+                                            Opened
+                                        </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardLabel>Opened</KpiCardLabel>
                                             <KpiCardValue>{formatNumber(stats.opened)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
-                                    <KpiCard className='border-none p-0'>
-                                        <KpiCardIcon>
+                                    <KpiCard className='grow'>
+                                        <KpiCardLabel>
                                             <LucideIcon.MousePointerClick strokeWidth={1.5} />
-                                        </KpiCardIcon>
+                                            Clicked
+                                        </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardLabel>Clicked</KpiCardLabel>
                                             <KpiCardValue>{formatNumber(stats.clicked)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
@@ -267,7 +265,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             {displayLinks.map((row) => {
                                                 const url = row.url;
                                                 const edited = row.edited;
-                                                
+
                                                 return (
                                                     <TableRow key={url}>
                                                         <TableCell className='max-w-0'>
@@ -339,7 +337,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                     </div>
                 }
             </PostAnalyticsContent>
-        </PostAnalyticsLayout>
+        </>
     );
 };
 
