@@ -1,6 +1,10 @@
 class AdminPage {
     pageUrl = '/';
 
+    /**
+     * @param {import('@playwright/test').Page} page - playwright page object
+     * @param {string} pageUrl - default url of the page
+     */
     constructor(page, pageUrl = '/') {
         this.page = page;
         this.pageUrl = pageUrl;
