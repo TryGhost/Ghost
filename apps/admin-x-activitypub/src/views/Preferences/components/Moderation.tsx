@@ -105,9 +105,6 @@ const Moderation: React.FC = () => {
                                 <NoValueLabel icon='block'>
                                     <div className='mt-2 flex max-w-[400px] flex-col items-center gap-1 text-center'>
                                         <p>When you block someone, they won&apos;t be able to follow you or interact with your content on the social web.</p>
-                                        <Button className='mt-3.5' variant='secondary' asChild>
-                                            <a href="https://activitypub.ghost.org/blocking-users/" rel="noopener noreferrer" target="_blank">Learn more</a>
-                                        </Button>
                                     </div>
                                 </NoValueLabel>
                             ) : (
@@ -159,9 +156,6 @@ const Moderation: React.FC = () => {
                                 <NoValueLabel icon='block'>
                                     <div className='mt-2 flex max-w-[400px] flex-col items-center gap-1 text-center'>
                                         <p>When you block a domain, all users from that domain won&apos;t be able to follow you or interact with your content.</p>
-                                        <Button className='mt-3.5' variant='secondary' asChild>
-                                            <a href="https://activitypub.ghost.org/blocking-domains/" rel="noopener noreferrer" target="_blank">Learn more</a>
-                                        </Button>
                                     </div>
                                 </NoValueLabel>
                             ) : (
