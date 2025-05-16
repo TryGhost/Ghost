@@ -75,7 +75,7 @@
                             </li>
                             {{#if (and (gh-user-can-admin this.session.user) this.config.stats (feature "trafficAnalyticsAlpha"))}}
                                 <li>
-                                    <LinkTo class="edit-post" @route="posts-x" @model={{this.post.id}}>Analytics Beta</LinkTo>
+                                    <LinkTo class="edit-post" @route="posts-x" @model={{this.post.id}}>Switch to Ghost Analytics (beta)</LinkTo>
                                 </li>
                             {{/if}}
                             <li>
