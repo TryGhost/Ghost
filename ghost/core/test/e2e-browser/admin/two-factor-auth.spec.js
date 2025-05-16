@@ -14,7 +14,7 @@ test.describe('Two-Factor authentication', () => {
         await new AdminLoginPage(page).logoutByCookieClear();
     });
 
-    test('Authentication with 2FA token works', async ({page, verificationToken}) => {
+    test('Authenticating with 2FA token works', async ({page, verificationToken}) => {
         const {email, password} = fetchOwnerUserFixture();
 
         const adminLoginPage = new AdminLoginPage(page);
