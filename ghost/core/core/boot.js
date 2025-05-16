@@ -313,7 +313,6 @@ async function initServices() {
     const slack = require('./server/services/slack');
     const webhooks = require('./server/services/webhooks');
     const limits = require('./server/services/limits');
-    const apiVersionCompatibility = require('./server/services/api-version-compatibility');
     const scheduling = require('./server/adapters/scheduling');
     const comments = require('./server/services/comments');
     const staffService = require('./server/services/staff');
@@ -368,7 +367,6 @@ async function initServices() {
         emailService.init(),
         emailAnalytics.init(),
         webhooks.listen(),
-        apiVersionCompatibility.init(),
         scheduling.init({
             apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true)
         }),
