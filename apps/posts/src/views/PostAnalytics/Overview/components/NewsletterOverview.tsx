@@ -55,7 +55,7 @@ const NewsletterOverview:React.FC = () => {
             .slice(0, 5);
     }, [topLinks]); // Only recalculate when topLinks changes
 
-    const radialBarChartClassName = 'mx-auto aspect-square w-full min-h-[250px] max-w-[250px]';
+    const radialBarChartClassName = 'mx-auto aspect-square w-full min-h-[200px] max-w-[200px]';
 
     return (
         <>
@@ -64,8 +64,8 @@ const NewsletterOverview:React.FC = () => {
                     <BarChartLoadingIndicator />
                 </div>
                 :
-                <div className='grid grid-cols-2 items-start gap-8 pt-6'>
-                    <div className='mx-auto flex size-full min-h-[250px] flex-wrap items-start justify-center gap-6'>
+                <div className='grid grid-cols-1 items-start gap-8 pt-6 xl:grid-cols-2'>
+                    <div className='mx-auto flex min-h-[250px] flex-wrap items-center justify-center gap-10 xl:size-full xl:gap-0'>
                         <ChartContainer
                             className={radialBarChartClassName}
                             config={opensChartConfig}

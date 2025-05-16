@@ -1,6 +1,6 @@
 import React from 'react';
 import moment from 'moment-timezone';
-import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger, ViewHeader} from '@tryghost/shade';
+import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 
@@ -31,28 +31,29 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
 
     return (
         <>
-            <ViewHeader className='w-full items-start !pb-0 before:hidden'>
-                <div className='flex w-full flex-col gap-5'>
-                    <div className='flex w-full items-center justify-between'>
-                        <Breadcrumb>
-                            <BreadcrumbList>
-                                <BreadcrumbItem>
-                                    <BreadcrumbLink className='cursor-pointer leading-[24px]' onClick={() => navigate('/posts/', {crossApp: true})}>
+            <header className='z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-black'>
+                <div className='relative flex min-h-[102px] w-full items-start justify-between gap-5 p-8 pb-0'>
+                    <div className='flex w-full flex-col gap-5'>
+                        <div className='flex w-full items-center justify-between'>
+                            <Breadcrumb>
+                                <BreadcrumbList>
+                                    <BreadcrumbItem>
+                                        <BreadcrumbLink className='cursor-pointer leading-[24px]' onClick={() => navigate('/posts/', {crossApp: true})}>
                                     Posts
-                                    </BreadcrumbLink>
-                                </BreadcrumbItem>
-                                <BreadcrumbSeparator />
-                                <BreadcrumbItem>
-                                    <BreadcrumbPage className='leading-[24px]'>
+                                        </BreadcrumbLink>
+                                    </BreadcrumbItem>
+                                    <BreadcrumbSeparator />
+                                    <BreadcrumbItem>
+                                        <BreadcrumbPage className='leading-[24px]'>
                                         Analytics
-                                    </BreadcrumbPage>
-                                </BreadcrumbItem>
-                            </BreadcrumbList>
-                        </Breadcrumb>
-                        <div className='flex items-center gap-2'>
-                            {/* <Button variant='outline'><LucideIcon.RefreshCw /></Button> */}
-                            {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
-                            {!isPostLoading &&
+                                        </BreadcrumbPage>
+                                    </BreadcrumbItem>
+                                </BreadcrumbList>
+                            </Breadcrumb>
+                            <div className='flex items-center gap-2'>
+                                {/* <Button variant='outline'><LucideIcon.RefreshCw /></Button> */}
+                                {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
+                                {!isPostLoading &&
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant='outline'><LucideIcon.Ellipsis /></Button>
@@ -69,20 +70,12 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                                 {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
                                             </DropdownMenuItem>
                                         </DropdownMenuGroup>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuGroup>
-                                            <DropdownMenuItem onClick={() => {
-                                                navigate(`/posts/analytics/${postId}`, {crossApp: true});
-                                            }}>
-                                                Switch to original analytics
-                                            </DropdownMenuItem>
-                                        </DropdownMenuGroup>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
-                            }
+                                }
+                            </div>
                         </div>
-                    </div>
-                    {!isPostLoading &&
+                        {!isPostLoading &&
                         <div className='flex items-center gap-6'>
                             {post.feature_image &&
                                 <div className='h-[82px] w-[132px] rounded-md bg-cover' style={{
@@ -94,44 +87,45 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                     {post && post.title}
                                 </H1>
                                 {typedPost && typedPost.published_at && (
-                                    <div className='text-muted-foreground mt-0.5 flex items-center justify-start text-sm leading-[1.65em]'>
+                                    <div className='mt-0.5 flex items-center justify-start text-sm leading-[1.65em] text-muted-foreground'>
                             Published on your site on {moment.utc(typedPost.published_at).format('D MMM YYYY')} at {moment.utc(typedPost.published_at).format('HH:mm')}
                                     </div>
                                 )}
                             </div>
                         </div>
-                    }
-                    <Navbar className='-mt-1'>
-                        <Tabs className="w-full" defaultValue={currentTab} variant='navbar'>
-                            <TabsList>
-                                <TabsTrigger value="Overview" onClick={() => {
-                                    navigate(`/analytics/beta/${postId}`);
-                                }}>
-                                Overview
-                                </TabsTrigger>
-                                <TabsTrigger value="Web" onClick={() => {
-                                    navigate(`/analytics/beta/${postId}/web`);
-                                }}>
-                                Web stats
-                                </TabsTrigger>
-                                <TabsTrigger value="Newsletter" onClick={() => {
-                                    navigate(`/analytics/beta/${postId}/newsletter`);
-                                }}>
-                                Newsletter
-                                </TabsTrigger>
-                                <TabsTrigger value="Growth" onClick={() => {
-                                    navigate(`/analytics/beta/${postId}/growth`);
-                                }}>
-                                Growth
-                                </TabsTrigger>
-                            </TabsList>
-                        </Tabs>
-                        <NavbarActions>
-                            {children}
-                        </NavbarActions>
-                    </Navbar>
+                        }
+                    </div>
                 </div>
-            </ViewHeader>
+            </header>
+            <Navbar className='sticky top-0 z-50 bg-white/70 pt-6 backdrop-blur-md dark:bg-black'>
+                <Tabs className="w-full" defaultValue={currentTab} variant='navbar'>
+                    <TabsList>
+                        <TabsTrigger value="Overview" onClick={() => {
+                            navigate(`/analytics/beta/${postId}`);
+                        }}>
+            Overview
+                        </TabsTrigger>
+                        <TabsTrigger value="Web" onClick={() => {
+                            navigate(`/analytics/beta/${postId}/web`);
+                        }}>
+            Web stats
+                        </TabsTrigger>
+                        <TabsTrigger value="Newsletter" onClick={() => {
+                            navigate(`/analytics/beta/${postId}/newsletter`);
+                        }}>
+            Newsletter
+                        </TabsTrigger>
+                        <TabsTrigger value="Growth" onClick={() => {
+                            navigate(`/analytics/beta/${postId}/growth`);
+                        }}>
+            Growth
+                        </TabsTrigger>
+                    </TabsList>
+                </Tabs>
+                <NavbarActions>
+                    {children}
+                </NavbarActions>
+            </Navbar>
         </>
     );
 };
