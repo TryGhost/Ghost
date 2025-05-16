@@ -16,7 +16,8 @@ export default class App extends React.Component {
         const searchIndex = new SearchIndex({
             adminUrl: props.adminUrl,
             apiKey: props.apiKey,
-            dir: dir
+            dir: dir,
+            locale: i18nLanguage
         });
 
         this.state = {
