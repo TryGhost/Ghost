@@ -1,8 +1,8 @@
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
-import NewsletterOverview from './components/NewsletterPerformance';
+import NewsletterOverview from './components/NewsletterOverview';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import WebOverview from './components/WebPerformance';
+import WebOverview from './components/WebOverview';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, formatNumber, formatQueryDate} from '@tryghost/shade';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {STATS_RANGES} from '@src/utils/constants';
