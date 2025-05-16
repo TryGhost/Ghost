@@ -2,6 +2,7 @@ import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import React, {useMemo} from 'react';
 import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, Recharts, formatDisplayDate, formatNumber, formatQueryDate} from '@tryghost/shade';
 import {KPI_METRICS} from '../../Web/components/Kpis';
+import {STATS_RANGES} from '@src/utils/constants';
 import {calculateYAxisWidth, getRangeDates, getYTicks} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken, useParams} from '@tryghost/admin-x-framework';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
@@ -9,7 +10,6 @@ import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
 const WebOverview:React.FC = () => {
-    const {range} = useGlobalData();
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const currentMetric = KPI_METRICS.visits;
     const {postId} = useParams();
@@ -21,7 +21,7 @@ const WebOverview:React.FC = () => {
         }
     });
 
-    const {startDate, endDate, timezone} = getRangeDates(range);
+    const {startDate, endDate, timezone} = getRangeDates(STATS_RANGES.ALL_TIME.value);
 
     const params = useMemo(() => {
         const baseParams = {

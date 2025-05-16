@@ -1,6 +1,6 @@
 import React from 'react';
 import moment from 'moment-timezone';
-import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, H1, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger, ViewHeader} from '@tryghost/shade';
+import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger, ViewHeader} from '@tryghost/shade';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 
@@ -49,11 +49,11 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 </BreadcrumbItem>
                             </BreadcrumbList>
                         </Breadcrumb>
-                        {/* <div className='flex items-center gap-2'>
-                            <Button variant='outline'><LucideIcon.RefreshCw /></Button>
-                            <Button variant='outline'><LucideIcon.Share /></Button>
+                        <div className='flex items-center gap-2'>
+                            {/* <Button variant='outline'><LucideIcon.RefreshCw /></Button> */}
+                            {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                             <Button variant='outline'><LucideIcon.Ellipsis /></Button>
-                        </div> */}
+                        </div>
                     </div>
                     {!isPostLoading &&
                         <div className='flex items-center gap-6'>
