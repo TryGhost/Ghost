@@ -94,7 +94,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                     {post && post.title}
                                 </H1>
                                 {typedPost && typedPost.published_at && (
-                                    <div className='text-muted-foreground mt-0.5 flex items-center justify-start text-sm leading-[1.65em]'>
+                                    <div className='mt-0.5 flex items-center justify-start text-sm leading-[1.65em] text-muted-foreground'>
                             Published on your site on {moment.utc(typedPost.published_at).format('D MMM YYYY')} at {moment.utc(typedPost.published_at).format('HH:mm')}
                                     </div>
                                 )}
