@@ -7459,10 +7459,10 @@
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "^24.1.1"
 
-"@tryghost/html-to-plaintext@1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/html-to-plaintext/-/html-to-plaintext-1.0.2.tgz#30efe45a4c5e2ffd874f962029fe23ef5ef7b091"
-  integrity sha512-PFTbyB7eYEAUpWHNKuZ8o2P6UZ119WDe/JLx4XlP5qUnGFykW3dZ5JhA85ZCrmGosdXyEc4cOUDwFmGD6jxqyQ==
+"@tryghost/html-to-plaintext@1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-plaintext/-/html-to-plaintext-1.0.3.tgz#c6922072b9b7b7551375c18c52875dc5512b7c47"
+  integrity sha512-Au/pcbtUY7PNJ36hPxwc8aqncaeGGv/1evr/aP5knBdWg7vAZ9k0f+o1sB1hYERMf2kkcNoTM8FfSauEn9+lRA==
   dependencies:
     html-to-text "8.2.1"
     lodash "4.17.21"
