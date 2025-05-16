@@ -1,7 +1,7 @@
 import React from 'react';
 import {LucideIcon, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade';
 import {STATS_RANGES} from '@src/utils/constants';
-import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 
 const DateRangeSelect: React.FC = () => {
     const {range, setRange} = useGlobalData();

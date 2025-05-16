@@ -10,7 +10,7 @@ import {centsToDollars} from '../Growth/Growth';
 import {getRangeDates} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
-import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useMemo} from 'react';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
 import {useQuery} from '@tinybirdco/charts';

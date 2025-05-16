@@ -6,7 +6,7 @@ import {STATS_RANGES} from '@src/utils/constants';
 import {calculateYAxisWidth, getRangeDates, getYTicks} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken, useParams} from '@tryghost/admin-x-framework';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
-import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useQuery} from '@tinybirdco/charts';
 
 const WebOverview:React.FC = () => {
