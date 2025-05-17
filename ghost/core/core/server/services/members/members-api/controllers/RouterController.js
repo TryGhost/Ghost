@@ -558,7 +558,7 @@ module.exports = class RouterController {
 
     async sendMagicLink(req, res) {
         const {email, honeypot, autoRedirect} = req.body;
-        let {emailType, redirect} = req.body;
+        let {emailType, redirect, locale = null} = req.body;
 
         let referrer = req.get('referer');
         if (autoRedirect === false){
@@ -606,9 +606,9 @@ module.exports = class RouterController {
 
         try {
             if (emailType === 'signup' || emailType === 'subscribe') {
-                await this._handleSignup(req, referrer);
+                await this._handleSignup(req, referrer, locale);
             } else {
-                await this._handleSignin(req, referrer);
+                await this._handleSignin(req, referrer, locale);
             }
 
             res.writeHead(201);
@@ -626,7 +626,7 @@ module.exports = class RouterController {
         }
     }
 
-    async _handleSignup(req, referrer = null) {
+    async _handleSignup(req, referrer = null, locale = null) {
         if (!this._allowSelfSignup()) {
             if (this._settingsCache.get('members_signup_access') === 'paid') {
                 throw new errors.BadRequestError({
@@ -657,10 +657,10 @@ module.exports = class RouterController {
             attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory)
         };
 
-        return await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer});
+        return await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer, locale});
     }
 
-    async _handleSignin(req, referrer = null) {
+    async _handleSignin(req, referrer = null, locale = null) {
         const {email, emailType} = req.body;
 
         const member = await this._memberRepository.get({email});
@@ -672,7 +672,7 @@ module.exports = class RouterController {
         }
 
         const tokenData = {};
-        return await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer});
+        return await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer, locale});
     }
 
     /**

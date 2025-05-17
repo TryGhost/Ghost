@@ -18,7 +18,7 @@ const tiersService = require('../tiers');
 const newslettersService = require('../newsletters');
 const memberAttributionService = require('../member-attribution');
 const emailSuppressionList = require('../email-suppression-list');
-const {t} = require('../i18n');
+const i18n = require('../i18n');
 const sentry = require('../../../shared/sentry');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
@@ -75,30 +75,39 @@ function createApiInstance(config) {
                     return ghostMailer.send(msg);
                 }
             },
-            getSubject(type) {
+            async getSubject(type, locale) {
                 const siteTitle = settingsCache.get('title');
-                switch (type) {
-                case 'subscribe':
-                    return `📫 ${t(`Confirm your subscription to {siteTitle}`, {siteTitle, interpolation: {escapeValue: false}})}`;
-                case 'signup':
-                    return `🙌 ${t(`Complete your sign up to {siteTitle}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
-                case 'signup-paid':
-                    return `🙌 ${t(`Thank you for signing up to {siteTitle}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
-                case 'updateEmail':
-                    return `📫 ${t(`Confirm your email update for {siteTitle}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
-                case 'signin':
-                default:
-                    return `🔑 ${t(`Secure sign in link for {siteTitle}`, {siteTitle, interpolation: {escapeValue: false}})}`;
-                }
+                const sitewideLocale = settingsCache.get('locale');
+                const effectiveLocale = locale || sitewideLocale || 'en';
+                
+                return await i18n.withLocale(effectiveLocale, async (t) => {
+                    switch (type) {
+                    case 'subscribe':
+                        return `📫 ${t(`Confirm your subscription to {siteTitle}`, {siteTitle, interpolation: {escapeValue: false}})}`;
+                    case 'signup':
+                        return `🙌 ${t(`Complete your sign up to {siteTitle}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
+                    case 'signup-paid':
+                        return `🙌 ${t(`Thank you for signing up to {siteTitle}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
+                    case 'updateEmail':
+                        return `📫 ${t(`Confirm your email update for {siteTitle}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
+                    case 'signin':
+                    default:
+                        return `🔑 ${t(`Secure sign in link for {siteTitle}`, {siteTitle, interpolation: {escapeValue: false}})}`;
+                    }
+                });
             },
-            getText(url, type, email) {
+            async getText(url, type, email, locale) {
                 const siteTitle = settingsCache.get('title');
-                switch (type) {
-                case 'subscribe':
-                    return trimLeadingWhitespace`
-                        ${t(`Hey there,`)}
+                const sitewideLocale = settingsCache.get('locale');
+                const effectiveLocale = locale || sitewideLocale || 'en';
+                
+                return await i18n.withLocale(effectiveLocale, async (t) => {
+                    switch (type) {
+                    case 'subscribe':
+                        return trimLeadingWhitespace`
+                            ${t(`Hey there,`)}
 
-                        ${t('You\'re one tap away from subscribing to {siteTitle} — please confirm your email address with this link:', {siteTitle, interpolation: {escapeValue: false}})}
+                            ${t('You\'re one tap away from subscribing to {siteTitle} — please confirm your email address with this link:', {siteTitle, interpolation: {escapeValue: false}})}
 
                         ${url}
 
@@ -106,99 +115,105 @@ function createApiInstance(config) {
 
                         ${t('All the best!')}
 
-                        ---
+                            ---
 
-                        ${t('Sent to {email}', {email})}
-                        ${t('If you did not make this request, you can simply delete this message.')} ${t('You will not be subscribed.')}
-                        `;
-                case 'signup':
-                    return trimLeadingWhitespace`
-                        ${t(`Hey there,`)}
+                            ${t('Sent to {email}', {email})}
+                            ${t('If you did not make this request, you can simply delete this message.')} ${t('You will not be subscribed.')}
+                            `;
+                    case 'signup':
+                        return trimLeadingWhitespace`
+                            ${t(`Hey there,`)}
 
-                        ${t('Tap the link below to complete the signup process for {siteTitle}, and be automatically signed in:', {siteTitle, interpolation: {escapeValue: false}})}
+                            ${t('Tap the link below to complete the signup process for {siteTitle}, and be automatically signed in:', {siteTitle, interpolation: {escapeValue: false}})}
 
-                        ${url}
+                            ${url}
 
-                        ${t('For your security, the link will expire in 24 hours time.')}
+                            ${t('For your security, the link will expire in 24 hours time.')}
 
-                        ${t('See you soon!')}
+                            ${t('See you soon!')}
 
-                        ---
+                            ---
 
-                        ${t('Sent to {email}', {email})}
-                        ${t('If you did not make this request, you can simply delete this message.')} ${t('You will not be signed up, and no account will be created for you.')}
-                        `;
-                case 'signup-paid':
-                    return trimLeadingWhitespace`
-                        ${t(`Hey there,`)}
+                            ${t('Sent to {email}', {email})}
+                            ${t('If you did not make this request, you can simply delete this message.')} ${t('You will not be signed up, and no account will be created for you.')}
+                            `;
+                    case 'signup-paid':
+                        return trimLeadingWhitespace`
+                            ${t(`Hey there,`)}
 
-                        ${t('Thank you for subscribing to {siteTitle}. Tap the link below to be automatically signed in:', {siteTitle, interpolation: {escapeValue: false}})}
+                            ${t('Thank you for subscribing to {siteTitle}. Tap the link below to be automatically signed in:', {siteTitle, interpolation: {escapeValue: false}})}
 
-                        ${url}
+                            ${url}
 
-                        ${t('For your security, the link will expire in 24 hours time.')}
+                            ${t('For your security, the link will expire in 24 hours time.')}
 
-                        ${t('See you soon!')}
+                            ${t('See you soon!')}
 
-                        ---
+                            ---
 
-                        ${t('Sent to {email}', {email})}
-                        ${t('Thank you for subscribing to {siteTitle}!', {siteTitle, interpolation: {escapeValue: false}})}
-                        `;
-                case 'updateEmail':
-                    return trimLeadingWhitespace`
-                        ${t(`Hey there,`)}
+                            ${t('Sent to {email}', {email})}
+                            ${t('Thank you for subscribing to {siteTitle}!', {siteTitle, interpolation: {escapeValue: false}})}
+                            `;
+                    case 'updateEmail':
+                        return trimLeadingWhitespace`
+                            ${t(`Hey there,`)}
 
-                        ${t('Please confirm your email address with this link:')}
+                            ${t('Please confirm your email address with this link:')}
 
-                        ${url}
+                            ${url}
 
-                        ${t('For your security, the link will expire in 24 hours time.')}
+                            ${t('For your security, the link will expire in 24 hours time.')}
 
-                        ---
+                            ---
 
-                        ${t('Sent to {email}', {email})}
-                        ${t('If you did not make this request, you can simply delete this message.')} ${t('This email address will not be used.')}
-                        `;
-                case 'signin':
-                default:
-                    return trimLeadingWhitespace`
-                        ${t(`Hey there,`)}
+                            ${t('Sent to {email}', {email})}
+                            ${t('If you did not make this request, you can simply delete this message.')} ${t('This email address will not be used.')}
+                            `;
+                    case 'signin':
+                    default:
+                        return trimLeadingWhitespace`
+                            ${t(`Hey there,`)}
 
-                        ${t('Welcome back! Use this link to securely sign in to your {siteTitle} account:', {siteTitle, interpolation: {escapeValue: false}})}
+                            ${t('Welcome back! Use this link to securely sign in to your {siteTitle} account:', {siteTitle, interpolation: {escapeValue: false}})}
 
-                        ${url}
+                            ${url}
 
-                        ${t('For your security, the link will expire in 24 hours time.')}
+                            ${t('For your security, the link will expire in 24 hours time.')}
 
-                        ${t('See you soon!')}
+                            ${t('See you soon!')}
 
-                        ---
+                            ---
 
-                        ${t('Sent to {email}', {email})}
-                        ${t('If you did not make this request, you can safely ignore this email.')}
-                        `;
-                }
+                            ${t('Sent to {email}', {email})}
+                            ${t('If you did not make this request, you can safely ignore this email.')}
+                            `;
+                    }
+                });
             },
-            getHTML(url, type, email) {
+            async getHTML(url, type, email, locale) {
                 const siteTitle = settingsCache.get('title');
+                const sitewideLocale = settingsCache.get('locale');
+                const effectiveLocale = locale || sitewideLocale || 'en';
                 const siteUrl = urlUtils.urlFor('home', true);
                 const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
                 const siteDomain = (domain && domain[1]);
                 const accentColor = settingsCache.get('accent_color');
-                switch (type) {
-                case 'subscribe':
-                    return subscribeEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
-                case 'signup':
-                    return signupEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
-                case 'signup-paid':
-                    return signupPaidEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
-                case 'updateEmail':
-                    return updateEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
-                case 'signin':
-                default:
-                    return signinEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
-                }
+
+                return await i18n.withLocale(effectiveLocale, async (t) => {
+                    switch (type) {
+                    case 'subscribe':
+                        return subscribeEmail({t, siteTitle, email, url, accentColor, siteDomain, siteUrl});
+                    case 'signup':
+                        return signupEmail({t, siteTitle, email, url, accentColor, siteDomain, siteUrl});
+                    case 'signup-paid':
+                        return signupPaidEmail({t, siteTitle, email, url, accentColor, siteDomain, siteUrl});
+                    case 'updateEmail':
+                        return updateEmail({t, email, url});
+                    case 'signin':
+                    default:
+                        return signinEmail({t, siteTitle, email, url, accentColor, siteDomain, siteUrl});
+                    }
+                });
             }
         },
         models: {

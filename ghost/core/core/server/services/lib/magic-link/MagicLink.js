@@ -56,11 +56,11 @@ class MagicLink {
      * @param {TokenData} options.tokenData - The data for token
      * @param {string} [options.type='signin'] - The type to be passed to the url and content generator functions
      * @param {string} [options.referrer=null] - The referrer of the request, if exists. The member will be redirected back to this URL after signin.
+     * @param {string} [options.locale=null] - The locale to use for the email content
      * @returns {Promise<{token: Token, info: SentMessageInfo}>}
      */
     async sendMagicLink(options) {
         this.sentry?.captureMessage?.(`[Magic Link] Generating magic link`, {extra: options});
-
         if (!isEmail(options.email)) {
             throw new BadRequestError({
                 message: tpl(messages.invalidEmail)
@@ -75,9 +75,9 @@ class MagicLink {
 
         const info = await this.transporter.sendMail({
             to: options.email,
-            subject: this.getSubject(type),
-            text: this.getText(url, type, options.email),
-            html: this.getHTML(url, type, options.email)
+            subject: await this.getSubject(type, options.locale),
+            text: await this.getText(url, type, options.email, options.locale),
+            html: await this.getHTML(url, type, options.email, options.locale)
         });
 
         return {token, info};
@@ -117,9 +117,10 @@ class MagicLink {
  * @param {URL} url - The url which will trigger sign in flow
  * @param {string} type - The type of email to send e.g. signin, signup
  * @param {string} email - The recipient of the email to send
+ * @param {string} [locale=null] - Accepted by the default, but not used
  * @returns {string} text - The text content of an email to send
  */
-function defaultGetText(url, type, email) {
+function defaultGetText(url, type, email, locale=null) {
     let msg = 'sign in';
     if (type === 'signup') {
         msg = 'confirm your email address';
@@ -133,9 +134,10 @@ function defaultGetText(url, type, email) {
  * @param {URL} url - The url which will trigger sign in flow
  * @param {string} type - The type of email to send e.g. signin, signup
  * @param {string} email - The recipient of the email to send
+ * @param {string} [locale=null] - Accepted by the default, but not used
  * @returns {string} HTML - The HTML content of an email to send
  */
-function defaultGetHTML(url, type, email) {
+function defaultGetHTML(url, type, email, locale=null) {
     let msg = 'sign in';
     if (type === 'signup') {
         msg = 'confirm your email address';
@@ -147,9 +149,10 @@ function defaultGetHTML(url, type, email) {
  * defaultGetSubject
  *
  * @param {string} type - The type of email to send e.g. signin, signup
+ * @param {string} [locale=null] - Accepted by the default, but not used
  * @returns {string} subject - The subject of an email to send
  */
-function defaultGetSubject(type) {
+function defaultGetSubject(type, locale=null) {
     if (type === 'signup') {
         return `Signup!`;
     }

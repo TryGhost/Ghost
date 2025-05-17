@@ -2,6 +2,9 @@ const should = require('should');
 const sinon = require('sinon');
 const {UnauthorizedError} = require('@tryghost/errors');
 
+const i18n = require('../../../../core/server/services/i18n');
+i18n.init();
+
 const models = require('../../../../core/server/models');
 
 const sessionController = require('../../../../core/server/api/endpoints/session');
