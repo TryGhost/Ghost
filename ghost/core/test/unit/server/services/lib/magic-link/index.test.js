@@ -69,7 +69,7 @@ describe('MagicLink', function () {
                     id: '420'
                 },
                 type: 'blazeit',
-                referrer: 'https://whatever.com',
+                referrer: 'https://whatever.com'
                 //locale: null
             };
             const {token} = await service.sendMagicLink(args);
