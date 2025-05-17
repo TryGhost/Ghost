@@ -413,5 +413,127 @@ describe('sendMagicLink', function () {
                 .expectStatus(201);
         });
     });
+
+    describe('Magic links can be localized by passing a locale', function () {
+
+        it('Sends magic link email in French when passedlocale is fr', async function () {
+            const email = 'french-user@test.com';
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email,
+                    emailType: 'signup',
+                    locale: 'fr'
+                })
+                .expectEmptyBody()
+                .expectStatus(201);
+
+            // Check email is sent with French subject
+            const mail = mockManager.assert.sentEmail({
+                to: email,
+                subject: /🙌 Finalisez votre inscription à Ghost !/
+            });
+
+            // Verify French content in email
+            should(mail.text).match(/Cliquez sur le lien ci-dessous pour compléter votre inscription à/);
+            should(mail.html).match(/Cliquez sur le lien ci-dessous pour compléter votre inscription à/);
+        });
+
+        it('Sends magic link email in English when locale is en', async function () {
+            const email = 'english-user@test.com';
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email,
+                    emailType: 'signup',
+                    locale: 'en'
+                })
+                .expectEmptyBody()
+                .expectStatus(201);
+
+            // Check email is sent with English subject
+            const mail = mockManager.assert.sentEmail({
+                to: email,
+                subject: /Complete your sign up to Ghost!/
+            });
+
+            // Verify English content in email
+            should(mail.text).containEql("Tap the link below to complete the signup process for Ghost");
+            should(mail.html).containEql("Tap the link below to complete the signup process for Ghost");
+        });
+
+        it('Falls back to sitewide locale when no locale is directly provided', async function () {
+            // Set sitewide locale to Spanish
+            settingsCache.set('locale', {value: 'es'});
+
+            const email = 'no-locale-user@test.com';
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email,
+                    emailType: 'signup'
+                })
+                .expectEmptyBody()
+                .expectStatus(201);
+
+            // Check email is sent with Spanish subject (sitewide locale)
+            const mail = mockManager.assert.sentEmail({
+                to: email,
+                subject: /¡Completa tu registro en Ghost!/
+            });
+
+            // Verify Spanish content in email (sitewide locale)
+            should(mail.text).match(/Da click en el vínculo dado a continuación para completar el registro en/);
+            should(mail.html).match(/Da click en el vínculo dado a continuación para completar el registro en/);
+        });
+
+        it('Passed in locale overrides sitewide locale', async function () {
+            // Set sitewide locale to Spanish
+            settingsCache.set('locale', {value: 'es'});
+
+            const email = 'french-signin@test.com';
+            // request a french magic link
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email,
+                    emailType: 'signup',
+                    locale: 'fr'
+                })
+                .expectEmptyBody()
+                .expectStatus(201);
+
+            // Check email is sent with French subject
+            const mail = mockManager.assert.sentEmail({
+                to: email,
+                subject: /🙌 Finalisez votre inscription à Ghost/
+            });
+
+            // Verify French content in email
+            should(mail.text).match(/Cliquez sur le lien ci-dessous pour compléter votre inscription à/);
+            should(mail.html).match(/Cliquez sur le lien ci-dessous pour compléter votre inscription à/);
+        });
+        // temporarily disabled - the fallback is currently en. Will fix!
+        /*it('Falls back to sitewide locale if the passed in locale is not understood', async function () {
+            // Set sitewide locale to Spanish
+            settingsCache.set('locale', {value: 'es'});
+
+            const email = 'unknown-locale-user@test.com';
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email,
+                    emailType: 'signup',
+                    locale: 'zzz'
+                })
+                .expectEmptyBody()
+                .expectStatus(201);
+
+            // Check email is sent with Spanish subject
+            const mail = mockManager.assert.sentEmail({
+                to: email,
+                subject: /¡Completa tu registro en Ghost!/
+            });
+
+            // Verify Spanish content in email (sitewide locale)
+            should(mail.text).match(/Da click en el vínculo dado a continuación para completar el registro en/);
+            should(mail.html).match(/Da click en el vínculo dado a continuación para completar el registro en/);
+        }); */
+    });
 });
 
