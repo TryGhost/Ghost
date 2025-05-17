@@ -19,6 +19,7 @@ const newslettersService = require('../newsletters');
 const memberAttributionService = require('../member-attribution');
 const emailSuppressionList = require('../email-suppression-list');
 const i18n = require('../i18n');
+const {SUPPORTED_LOCALES} = require('@tryghost/i18n');
 const sentry = require('../../../shared/sentry');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
@@ -26,6 +27,28 @@ const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
 const MAGIC_LINK_TOKEN_MAX_USAGE_COUNT = 7;
 
 const ghostMailer = new mail.GhostMailer();
+
+async function validateLocale(locale) {
+    const sitewideLocale = settingsCache.get('locale');
+    
+    // If no locale provided, use sitewide locale or fall back to English
+    if (!locale) {
+        return sitewideLocale || 'en';
+    }
+
+    if (!SUPPORTED_LOCALES.includes(locale)) {
+        return sitewideLocale || 'en';
+    }
+
+    try {
+        // Try to load the locale to validate it exists
+        await i18n.loadLocale(locale);
+        return locale;
+    } catch (e) {
+        // If locale loading fails, fall back to sitewide locale or English
+        return sitewideLocale || 'en';
+    }
+}
 
 module.exports = createApiInstance;
 
@@ -77,8 +100,7 @@ function createApiInstance(config) {
             },
             async getSubject(type, locale) {
                 const siteTitle = settingsCache.get('title');
-                const sitewideLocale = settingsCache.get('locale');
-                const effectiveLocale = locale || sitewideLocale || 'en';
+                const effectiveLocale = await validateLocale(locale);
                 
                 return await i18n.withLocale(effectiveLocale, async (t) => {
                     switch (type) {
@@ -98,8 +120,7 @@ function createApiInstance(config) {
             },
             async getText(url, type, email, locale) {
                 const siteTitle = settingsCache.get('title');
-                const sitewideLocale = settingsCache.get('locale');
-                const effectiveLocale = locale || sitewideLocale || 'en';
+                const effectiveLocale = await validateLocale(locale);
                 
                 return await i18n.withLocale(effectiveLocale, async (t) => {
                     switch (type) {
@@ -192,8 +213,7 @@ function createApiInstance(config) {
             },
             async getHTML(url, type, email, locale) {
                 const siteTitle = settingsCache.get('title');
-                const sitewideLocale = settingsCache.get('locale');
-                const effectiveLocale = locale || sitewideLocale || 'en';
+                const effectiveLocale = await validateLocale(locale);
                 const siteUrl = urlUtils.urlFor('home', true);
                 const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
                 const siteDomain = (domain && domain[1]);

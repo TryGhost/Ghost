@@ -415,7 +415,6 @@ describe('sendMagicLink', function () {
     });
 
     describe('Magic links can be localized by passing a locale', function () {
-
         it('Sends magic link email in French when passedlocale is fr', async function () {
             const email = 'french-user@test.com';
             await membersAgent.post('/api/send-magic-link')
@@ -456,8 +455,8 @@ describe('sendMagicLink', function () {
             });
 
             // Verify English content in email
-            should(mail.text).containEql("Tap the link below to complete the signup process for Ghost");
-            should(mail.html).containEql("Tap the link below to complete the signup process for Ghost");
+            should(mail.text).containEql('Tap the link below to complete the signup process for Ghost');
+            should(mail.html).containEql('Tap the link below to complete the signup process for Ghost');
         });
 
         it('Falls back to sitewide locale when no locale is directly provided', async function () {
@@ -509,8 +508,8 @@ describe('sendMagicLink', function () {
             should(mail.text).match(/Cliquez sur le lien ci-dessous pour compléter votre inscription à/);
             should(mail.html).match(/Cliquez sur le lien ci-dessous pour compléter votre inscription à/);
         });
-        // temporarily disabled - the fallback is currently en. Will fix!
-        /*it('Falls back to sitewide locale if the passed in locale is not understood', async function () {
+
+        it('Falls back to sitewide locale if the passed in locale is not understood', async function () {
             // Set sitewide locale to Spanish
             settingsCache.set('locale', {value: 'es'});
 
@@ -533,7 +532,7 @@ describe('sendMagicLink', function () {
             // Verify Spanish content in email (sitewide locale)
             should(mail.text).match(/Da click en el vínculo dado a continuación para completar el registro en/);
             should(mail.html).match(/Da click en el vínculo dado a continuación para completar el registro en/);
-        }); */
+        });
     });
 });
 
