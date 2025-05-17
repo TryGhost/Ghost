@@ -82,7 +82,7 @@
     "husky": "8.0.3",
     "inquirer": "8.2.6",
     "lint-staged": "15.5.2",
-    "nx": "20.8.1",
+    "nx": "20.8.2",
     "rimraf": "5.0.10",
     "typescript": "5.8.3"
   }
