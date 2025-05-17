@@ -28185,10 +28185,10 @@ sane@^4.0.0, sane@^4.1.0:
     minimist "^1.1.1"
     walker "~1.0.5"
 
-sanitize-html@2.16.0:
-  version "2.16.0"
-  resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-2.16.0.tgz#2b9973b63fa42e3580020499cbda1d894b3642bc"
-  integrity sha512-0s4caLuHHaZFVxFTG74oW91+j6vW7gKbGD6CD2+miP73CE6z6YtOBN0ArtLd2UGyi4IC7K47v3ENUbQX4jV3Mg==
+sanitize-html@2.17.0:
+  version "2.17.0"
+  resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-2.17.0.tgz#a8f66420a6be981d8fe412e3397cc753782598e4"
+  integrity sha512-dLAADUSS8rBwhaevT12yCezvioCA+bmUTPH/u57xKPT8d++voeYE6HeluA/bPbQ15TwDBG2ii+QZIEmYx8VdxA==
   dependencies:
     deepmerge "^4.2.2"
     escape-string-regexp "^4.0.0"
