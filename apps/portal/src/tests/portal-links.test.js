@@ -232,7 +232,8 @@ describe('Portal Data links:', () => {
                 emailType: 'signup',
                 name: 'Jamie Larsen',
                 plan: 'free',
-                integrityToken: 'testtoken'
+                integrityToken: 'testtoken',
+                locale: expect.any(String)
             });
         });
 
