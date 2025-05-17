@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/api-framework",
   "version": "1.0.1",
-  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/api-framework",
+  "repository": "https://github.com/TryGhost/framework/tree/main/packages/api-framework",
   "author": "Ghost Foundation",
   "publishConfig": {
     "access": "public"
