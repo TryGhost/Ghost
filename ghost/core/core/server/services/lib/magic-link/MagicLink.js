@@ -117,10 +117,11 @@ class MagicLink {
  * @param {URL} url - The url which will trigger sign in flow
  * @param {string} type - The type of email to send e.g. signin, signup
  * @param {string} email - The recipient of the email to send
- * @param {string} [locale=null] - Accepted by the default, but not used
+ * @param {string} [_locale] - Accepted by the default, but not used
  * @returns {string} text - The text content of an email to send
  */
-function defaultGetText(url, type, email, locale=null) {
+// eslint-disable-next-line no-unused-vars
+function defaultGetText(url, type, email, _locale = null) {
     let msg = 'sign in';
     if (type === 'signup') {
         msg = 'confirm your email address';
@@ -134,10 +135,11 @@ function defaultGetText(url, type, email, locale=null) {
  * @param {URL} url - The url which will trigger sign in flow
  * @param {string} type - The type of email to send e.g. signin, signup
  * @param {string} email - The recipient of the email to send
- * @param {string} [locale=null] - Accepted by the default, but not used
+ * @param {string} [_locale] - Accepted by the default, but not used
  * @returns {string} HTML - The HTML content of an email to send
  */
-function defaultGetHTML(url, type, email, locale=null) {
+// eslint-disable-next-line no-unused-vars
+function defaultGetHTML(url, type, email, _locale = null) {
     let msg = 'sign in';
     if (type === 'signup') {
         msg = 'confirm your email address';
@@ -149,10 +151,11 @@ function defaultGetHTML(url, type, email, locale=null) {
  * defaultGetSubject
  *
  * @param {string} type - The type of email to send e.g. signin, signup
- * @param {string} [locale=null] - Accepted by the default, but not used
+ * @param {string} [_locale] - Accepted by the default, but not used
  * @returns {string} subject - The subject of an email to send
  */
-function defaultGetSubject(type, locale=null) {
+// eslint-disable-next-line no-unused-vars
+function defaultGetSubject(type, _locale = null) {
     if (type === 'signup') {
         return `Signup!`;
     }

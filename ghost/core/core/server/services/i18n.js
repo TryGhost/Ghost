@@ -1,4 +1,5 @@
 const debug = require('@tryghost/debug')('i18n');
+const errors = require('@tryghost/errors');
 
 /** @type {import('i18next').i18n} */
 let i18nInstance;
@@ -10,7 +11,9 @@ let i18nInstance;
  */
 async function loadLocale(locale) {
     if (!i18nInstance) {
-        throw new Error('i18n not initialized');
+        throw new errors.InternalServerError({
+            message: 'i18n not initialized'
+        });
     }
     return i18nInstance.loadLanguages(locale);
 }
@@ -23,7 +26,9 @@ async function loadLocale(locale) {
  */
 async function withLocale(locale, operation) {
     if (!i18nInstance) {
-        throw new Error('i18n not initialized');
+        throw new errors.InternalServerError({
+            message: 'i18n not initialized'
+        });
     }
     // Load the locale if not already loaded
     await i18nInstance.loadLanguages(locale);

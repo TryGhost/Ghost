@@ -69,7 +69,8 @@ describe('MagicLink', function () {
                     id: '420'
                 },
                 type: 'blazeit',
-                referrer: 'https://whatever.com'
+                referrer: 'https://whatever.com',
+                //locale: null
             };
             const {token} = await service.sendMagicLink(args);
 
@@ -77,14 +78,13 @@ describe('MagicLink', function () {
             assert(options.getSigninURL.firstCall.calledWithExactly(token, 'blazeit', 'https://whatever.com'));
 
             assert(options.getText.calledOnce);
-            //tests temporarily commented out TODO.
-        //    assert(options.getText.firstCall.calledWithExactly('FAKEURL', 'blazeit', 'test@example.com'));
+            assert(options.getText.firstCall.calledWithExactly('FAKEURL', 'blazeit', 'test@example.com', args.locale));
 
             assert(options.getHTML.calledOnce);
-        //    assert(options.getHTML.firstCall.calledWithExactly('FAKEURL', 'blazeit', 'test@example.com'));
+            assert(options.getHTML.firstCall.calledWithExactly('FAKEURL', 'blazeit', 'test@example.com', args.locale));
 
             assert(options.getSubject.calledOnce);
-            assert(options.getSubject.firstCall.calledWithExactly('blazeit'));
+            assert(options.getSubject.firstCall.calledWithExactly('blazeit', args.locale));
 
             assert(options.transporter.sendMail.calledOnce);
             assert.equal(options.transporter.sendMail.firstCall.args[0].to, args.email);
