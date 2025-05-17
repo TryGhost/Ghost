@@ -32,11 +32,7 @@ async function validateLocale(locale) {
     const sitewideLocale = settingsCache.get('locale');
     
     // If no locale provided, use sitewide locale or fall back to English
-    if (!locale) {
-        return sitewideLocale || 'en';
-    }
-
-    if (!SUPPORTED_LOCALES.includes(locale)) {
+    if (!locale || !SUPPORTED_LOCALES.includes(locale)) {
         return sitewideLocale || 'en';
     }
 
@@ -222,16 +218,16 @@ function createApiInstance(config) {
                 return await i18n.withLocale(effectiveLocale, async (t) => {
                     switch (type) {
                     case 'subscribe':
-                        return subscribeEmail({t, siteTitle, email, url, accentColor, siteDomain, siteUrl});
+                        return subscribeEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
                     case 'signup':
-                        return signupEmail({t, siteTitle, email, url, accentColor, siteDomain, siteUrl});
+                        return signupEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
                     case 'signup-paid':
-                        return signupPaidEmail({t, siteTitle, email, url, accentColor, siteDomain, siteUrl});
+                        return signupPaidEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
                     case 'updateEmail':
-                        return updateEmail({t, email, url});
+                        return updateEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
                     case 'signin':
                     default:
-                        return signinEmail({t, siteTitle, email, url, accentColor, siteDomain, siteUrl});
+                        return signinEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
                     }
                 });
             }
