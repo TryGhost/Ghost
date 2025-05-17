@@ -207,7 +207,7 @@ module.exports = function MembersAPI({
 
     const users = memberRepository;
 
-    async function sendEmailWithMagicLink({email, requestedType, tokenData, options = {forceEmailType: false}, referrer = null}) {
+    async function sendEmailWithMagicLink({email, requestedType, tokenData, options = {forceEmailType: false}, referrer = null, locale = null}) {
         let type = requestedType;
         if (!options.forceEmailType) {
             const member = await users.get({email});
@@ -217,7 +217,10 @@ module.exports = function MembersAPI({
                 type = 'signup';
             }
         }
-        return magicLinkService.sendMagicLink({email, type, tokenData: Object.assign({email, type}, tokenData), referrer});
+        if (!locale) {
+            locale = settingsCache.get('locale') ?? 'en';
+        }
+        return magicLinkService.sendMagicLink({email, type, tokenData: Object.assign({email, type}, tokenData), referrer, locale});
     }
 
     /**
