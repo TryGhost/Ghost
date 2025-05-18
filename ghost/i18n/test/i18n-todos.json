@@ -19,7 +19,7 @@
             {
                 "file": "de-CH/portal.json",
                 "key": "We couldn't unsubscribe you as the email address was not found. Please contact the site owner.",
-                "comment": "Test comment!"
+                "comment": "Invalid variable added to translation"
             },
             {
                 "file": "is/portal.json",
