@@ -3,6 +3,7 @@ const fs = require('fs/promises');
 const path = require('path');
 
 const i18n = require('../');
+const { checkTranslationPair } = require('./utils');
 
 describe('i18n', function () {
     it('does not have mismatched brackets in variables', async function () {
@@ -158,4 +159,83 @@ describe('i18n', function () {
             assert.deepEqual(resources.xx, englishResources.en);
         });
     });
+    describe('i18n-todos are valid', function () {
+        it('has valid structure with required fields', async function () {
+            const todos = require('./i18n-todos.json');
+            
+            // Check top-level structure
+            assert(todos.overrides, 'i18n-todos.json must have an "overrides" object');
+            assert(Array.isArray(todos.overrides.addedVariable), 'overrides.addedVariable must be an array');
+            assert(Array.isArray(todos.overrides.missingVariable), 'overrides.missingVariable must be an array');
+
+            // Validate each entry in addedVariable
+            for (const entry of todos.overrides.addedVariable) {
+                assert(entry.file, 'Each addedVariable entry must have a file field');
+                assert(entry.key, 'Each addedVariable entry must have a key field');
+            }
+
+            // Validate each entry in missingVariable
+            for (const entry of todos.overrides.missingVariable) {
+                assert(entry.file, 'Each missingVariable entry must have a file field');
+                assert(entry.key, 'Each missingVariable entry must have a key field');
+            }
+        });
+    });
+    describe('translation files are valid', function () {
+        it('there are no missing or added variables that are not documented in i18n-todos.json', async function () {
+            const todos = require('./i18n-todos.json');
+            for (const locale of i18n.SUPPORTED_LOCALES) {
+                const translationFiles = await fs.readdir(path.join(`./locales/`, locale));
+
+                for (const file of translationFiles) {
+                    const translationFile = require(path.join(`../locales/`, locale, file));
+                    for (const key of Object.keys(translationFile)) {
+                        const value = translationFile[key];
+                        const result = checkTranslationPair(key, value, translationFile);
+                        if (result.length > 0) {
+                            // Check if all issues are covered by todos
+                            const allIssuesCovered = result.every(issue => {
+                                const todo = todos.overrides[issue].find(todo => 
+                                    todo.file === `${locale}/${file}` && todo.key === key
+                                );
+                                return todo !== undefined;
+                            });
+
+                            assert(allIssuesCovered, 
+                                `[${locale}/${file}]: "${key}" has issues: ${result.join(', ')}. ` +
+                                `All issues must be documented in i18n-todos.json`
+                            );
+                        }
+                    }
+                }
+            }
+        });
+    });
+    // The goal of the test below (TODO) is to make sure that new keys get added to context.json with 
+    // enough information to be useful to translators. The person best positioned to do this is
+    // the person who added the key.
+    // Right now this test is disabled, because as currently set up, the tests run, then translate generates context.json.
+    // So the test could potentially fail one PR after the addition of the new key. Not quite the goal!
+    /* 
+    describe('context.json is valid', function () {
+        it('should not contain any empty values', function () {
+            const context = require('../locales/context.json');
+            
+            function checkForEmptyValues(obj, path = '') {
+                for (const [key, value] of Object.entries(obj)) {
+                    const currentPath = path ? `${path}.${key}` : key;
+                    
+                    if (value === null || value === undefined || value === '') {
+                        assert.fail(`Empty value found at ${currentPath}. If you added a new key for translation, please add it to the ghost/i18n/locales/context.json file.`);
+                    }
+                    
+                    if (typeof value === 'object' && value !== null) {
+                        checkForEmptyValues(value, currentPath);
+                    }
+                }
+            }
+            
+            checkForEmptyValues(context);
+        });
+    }); */
 });
