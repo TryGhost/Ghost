@@ -1,7 +1,11 @@
 {
   "name": "@tryghost/admin-api-schema",
   "version": "4.5.8",
-  "repository": "https://github.com/TryGhost/SDK/tree/main/packages/admin-api-schema",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/SDK.git",
+    "directory": "packages/admin-api-schema"
+  },
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "index.js",
