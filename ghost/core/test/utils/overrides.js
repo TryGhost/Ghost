@@ -34,6 +34,8 @@ mochaHooks.afterEach = async function () {
     await mentionsJobsService.allSettled();
     await jobsService.allSettled();
 
+    mockManager.ensureLogs();
+
     // Last time for events emitted during jobs
     await domainEvents.allSettled();
 

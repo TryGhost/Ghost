@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 
 describe('Admin API', function () {
     let agent;
@@ -7,6 +7,12 @@ describe('Admin API', function () {
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
+
+        mockManager.mockLogging();
+    });
+
+    after(function () {
+        mockManager.restore();
     });
 
     function assertMatchesFixture(fixtureId, response) {
@@ -98,12 +104,16 @@ describe('Admin API', function () {
                 await agent
                     .get('users/me')
                     .expectStatus(403);
+
+                mockManager.assert.loggedAnError({errorType: 'NoPermissionError'});
             });
 
             it('Request to list users will also 403 due to restricted permissions', async function () {
                 await agent
                     .get('users')
                     .expectStatus(403);
+
+                mockManager.assert.loggedAnError({errorType: 'NoPermissionError', message: 'You do not have permission to browse users'});
             });
         });
     });

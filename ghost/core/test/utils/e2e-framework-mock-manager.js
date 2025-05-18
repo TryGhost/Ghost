@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const sinon = require('sinon');
 const assert = require('assert/strict');
 const nock = require('nock');
@@ -279,11 +280,70 @@ const mockLimitService = (limit, options) => {
     mocks.limitService.checkWouldGoOverLimit.withArgs(limit).resolves(options.wouldGoOverLimit);
 };
 
+const mockedLogLevels = ['error', 'fatal'];
+
+const mockLogging = () => {
+    mocks.logging = {
+        calls: [],
+        unassertedCalls: []
+    };
+
+    mocks.logging.log = sinon.stub(logging, 'log').callsFake((...callArgs) => {
+        if (!mockedLogLevels.includes(callArgs[0])) {
+            return;
+        }
+        // Store a copy of the args array to avoid reference issues
+        const argsCopy = [...callArgs];
+        mocks.logging.calls.push(argsCopy);
+        mocks.logging.unassertedCalls.push(argsCopy);
+    });
+};
+
+const loggedAnError = (assertions) => {
+    // Find a call that matches all assertions
+    const matchingCallIndex = mocks.logging.unassertedCalls.findIndex((callArgs) => {
+        if (!mockedLogLevels.includes(callArgs[0])) {
+            return false;
+        }
+
+        const error = callArgs[1][0].err;
+        return Object.keys(assertions).every((key) => {
+            const result = error[key] === assertions[key];
+            return result;
+        });
+    });
+
+    if (matchingCallIndex === -1) {
+        throw new Error(`No matching logging call found for assertions: ${JSON.stringify(assertions)}`);
+    }
+
+    // Remove the matched call from unassertedCalls
+    mocks.logging.unassertedCalls.splice(matchingCallIndex, 1);
+};
+
+const ensureLogs = () => {
+    if (mocks.logging && mocks.logging.log) {
+        if (mocks.logging.unassertedCalls.length > 0) {
+            // convert the unassertedCalls array to a list of strings
+            const calls = mocks.logging.unassertedCalls.map((callArgs) => {
+                const error = callArgs[1][0].err;
+                return `${callArgs[0]} ${error.errorType} ${error.message}`;
+            });
+
+            throw new Error(
+                `Unexpected Log Entry.
+
+Calls:
+${calls.join('\n')}`);
+        }
+    }
+};
+
 const restore = () => {
     // eslint-disable-next-line no-console
     configUtils.restore().catch(console.error);
     sinon.restore();
-    mocks = {};
+
     fakedLabsFlags = {};
     fakedSettings = {};
     emailCount = 0;
@@ -316,12 +376,15 @@ module.exports = {
     mockWebhookRequests,
     mockSetting,
     mockLimitService,
+    mockLogging,
     disableNetwork,
+    ensureLogs,
     restore,
     stripeMocker,
     assert: {
         sentEmail,
-        emittedEvent
+        emittedEvent,
+        loggedAnError
     },
     getMailgunCreateMessageStub: () => mailgunCreateMessageStub
 };
