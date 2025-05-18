@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "test:base": "NODE_ENV=testing c8 --include index.js --include lib --check-coverage --100  --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
-    "test": "yarn test:base && yarn translate",
+    "test": "yarn test:update-ignores && yarn test:base && yarn translate",
+    "test:update-ignores": "node test/remove-unneeded-ignores.js",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
     "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache",
