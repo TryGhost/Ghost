@@ -70,9 +70,7 @@ COPY ghost/admin/package.json ghost/admin/package.json
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
 
-RUN --mount=type=cache,target=/home/ghost/.yarn-cache \
-    yarn config set cache-folder /home/ghost/.yarn-cache && \
-    yarn install --frozen-lockfile --prefer-offline
+RUN yarn install --frozen-lockfile --prefer-offline
 
 # --------------------
 # Development
