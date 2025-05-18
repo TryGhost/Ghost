@@ -2,11 +2,6 @@
     "overrides": {
         "addedVariable": [
             {
-                "file": "ar/portal.json",
-                "key": "{amount} off",
-                "comment": "This translation CANNOT work. Please repair."
-            },
-            {
                 "file": "da/portal.json",
                 "key": "Try free for {amount} days, then {originalPrice}.",
                 "comment": "This translation CANNOT work. Please repair."
@@ -53,11 +48,6 @@
             }
         ],
         "missingVariable": [
-            {
-                "file": "ar/portal.json",
-                "key": "{amount} off",
-                "comment": "variable name error - should not be translated. Please fix."
-            },
             {
                 "file": "da/portal.json",
                 "key": "Try free for {amount} days, then {originalPrice}.",
