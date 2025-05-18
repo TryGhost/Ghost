@@ -216,9 +216,9 @@ describe('i18n', function () {
         it('should not contain any empty values', function () {
             const context = require('../locales/context.json');
             
-            function checkForEmptyValues(obj, path = '') {
+            function checkForEmptyValues(obj, keypath = '') {
                 for (const [key, value] of Object.entries(obj)) {
-                    const currentPath = path ? `${path}.${key}` : key;
+                    const currentPath = keypath ? `${keypath}.${key}` : key;
                     
                     if (value === null || value === undefined || value === '') {
                         assert.fail(`Empty value found at ${currentPath}. If you added a new key for translation, please add it to the ghost/i18n/locales/context.json file.`);
