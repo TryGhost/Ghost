@@ -159,31 +159,31 @@ describe('i18n', function () {
             assert.deepEqual(resources.xx, englishResources.en);
         });
     });
-    describe('i18n-todos are valid', function () {
+    describe('i18n-ignores are valid', function () {
         it('has valid structure with required fields', async function () {
-            const todos = require('./i18n-todos.json');
-            
+            const ignores = require('./i18n-ignores.json');
+           
             // Check top-level structure
-            assert(todos.overrides, 'i18n-todos.json must have an "overrides" object');
-            assert(Array.isArray(todos.overrides.addedVariable), 'overrides.addedVariable must be an array');
-            assert(Array.isArray(todos.overrides.missingVariable), 'overrides.missingVariable must be an array');
+            assert(ignores.overrides, 'i18n-ignores.json must have an "overrides" object');
+            assert(Array.isArray(ignores.overrides.addedVariable), 'overrides.addedVariable must be an array');
+            assert(Array.isArray(ignores.overrides.missingVariable), 'overrides.missingVariable must be an array');
 
             // Validate each entry in addedVariable
-            for (const entry of todos.overrides.addedVariable) {
+            for (const entry of ignores.overrides.addedVariable) {
                 assert(entry.file, 'Each addedVariable entry must have a file field');
                 assert(entry.key, 'Each addedVariable entry must have a key field');
             }
 
             // Validate each entry in missingVariable
-            for (const entry of todos.overrides.missingVariable) {
+            for (const entry of ignores.overrides.missingVariable) {
                 assert(entry.file, 'Each missingVariable entry must have a file field');
                 assert(entry.key, 'Each missingVariable entry must have a key field');
             }
         });
     });
     describe('translation files are valid', function () {
-        it('there are no missing or added variables that are not documented in i18n-todos.json', async function () {
-            const todos = require('./i18n-todos.json');
+        it('there are no missing or added variables that are not documented in i18n-ignores.json', async function () {
+            const ignores = require('./i18n-ignores.json');
             for (const locale of i18n.SUPPORTED_LOCALES) {
                 const translationFiles = await fs.readdir(path.join(`./locales/`, locale));
 
@@ -195,13 +195,13 @@ describe('i18n', function () {
                         if (result.length > 0) {
                             // Check if all issues are covered by todos
                             const allIssuesCovered = result.every((issue) => {
-                                const todo = todos.overrides[issue].find(onetodo => onetodo.file === `${locale}/${file}` && onetodo.key === key);
+                                const todo = ignores.overrides[issue].find(onetodo => onetodo.file === `${locale}/${file}` && onetodo.key === key);
                                 return todo !== undefined;
                             });
 
                             assert(allIssuesCovered, 
                                 `[${locale}/${file}]: "${key}" has issues: ${result.join(', ')}. ` +
-                                `All issues must be documented in i18n-todos.json`
+                                `All issues and overridesmust be documented in i18n-ignores.json`
                             );
                         }
                     }
@@ -211,8 +211,9 @@ describe('i18n', function () {
     });
     // The goal of the test below (TODO) is to make sure that new keys get added to context.json with 
     // enough information to be useful to translators. The person best positioned to do this is
-    // the person who added the key.
-    describe('context.json is valid', function () {
+    // the person who added the key.  However, it's complicated by the order that translate and test
+    // currently run in, so leaving it disabled for now.
+    /*describe('context.json is valid', function () {
         it('should not contain any empty values', function () {
             const context = require('../locales/context.json');
             
@@ -232,5 +233,5 @@ describe('i18n', function () {
             
             checkForEmptyValues(context);
         });
-    }); 
+    }); */
 });

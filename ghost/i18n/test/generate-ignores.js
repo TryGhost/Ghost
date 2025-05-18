@@ -3,9 +3,9 @@ const path = require('path');
 const i18n = require('../');
 const {checkTranslationPair} = require('./utils');
 
-async function generateTodos() {
-    // Load existing todos if they exist
-    let existingTodos = {
+async function generateIgnores() {
+    // Load existing ignores if they exist
+    let existingIgnores = {
         overrides: {
             addedVariable: [],
             missingVariable: []
@@ -13,13 +13,13 @@ async function generateTodos() {
     };
     
     try {
-        const existingContent = await fs.readFile(path.join(__dirname, 'i18n-todos.json'), 'utf8');
-        existingTodos = JSON.parse(existingContent);
+        const existingContent = await fs.readFile(path.join(__dirname, 'i18n-ignores.json'), 'utf8');
+        existingIgnores = JSON.parse(existingContent);
     } catch (error) {
         // If file doesn't exist or is invalid, we'll start fresh
     }
 
-    const newTodos = {
+    const newIgnores = {
         overrides: {
             addedVariable: [],
             missingVariable: []
@@ -29,7 +29,7 @@ async function generateTodos() {
     // Create a map of existing entries for quick lookup
     const existingEntries = new Map();
     for (const issueType of ['addedVariable', 'missingVariable']) {
-        for (const entry of existingTodos.overrides[issueType]) {
+        for (const entry of existingIgnores.overrides[issueType]) {
             const key = `${entry.file}:${entry.key}`;
             existingEntries.set(key, {issueType, entry});
         }
@@ -53,10 +53,10 @@ async function generateTodos() {
                         
                         if (existingEntry && existingEntry.issueType === issue) {
                             // Keep the existing entry with its original comment
-                            newTodos.overrides[issue].push(existingEntry.entry);
+                            newIgnores.overrides[issue].push(existingEntry.entry);
                         } else {
                             // Add new entry
-                            newTodos.overrides[issue].push({
+                            newIgnores.overrides[issue].push({
                                 file: filePath,
                                 key: key,
                                 comment: `Auto-generated: ${issue} detected in translation`
@@ -68,12 +68,12 @@ async function generateTodos() {
         }
     }
 
-    // Write the todos file
+    // Write the ignores file
     await fs.writeFile(
-        path.join(__dirname, 'i18n-todos.json'),
-        JSON.stringify(newTodos, null, 4)
+        path.join(__dirname, 'i18n-ignores.json'),
+        JSON.stringify(newIgnores, null, 4)
     );
 }
 
 // Run the generator
-generateTodos();
+generateIgnores();
