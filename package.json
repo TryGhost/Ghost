@@ -3,7 +3,7 @@
   "version": "0.1.15",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TryGhost/SDK.git",
+    "url": "git+https://github.com/TryGhost/SDK.git",
     "directory": "packages/adapter-base-cache"
   },
   "author": "Ghost Foundation",
