@@ -1,5 +1,9 @@
+/**
+ * Base admin page object that provides common functionality for all admin pages.
+ */
 class AdminPage {
     pageUrl = '/';
+    page = null;
 
     /**
      * @param {import('@playwright/test').Page} page - playwright page object
@@ -15,8 +19,14 @@ class AdminPage {
         await context.clearCookies();
     }
 
-    async visit() {
-        await this.page.goto(this.pageUrl);
+    /**
+     *
+     * @param {string|url} url
+     * @returns {Promise<void>}
+     */
+    async visit(url = null) {
+        const urlToVisit = url || this.pageUrl;
+        await this.page.goto(urlToVisit);
     }
 }
 
