@@ -28,6 +28,9 @@ const MAGIC_LINK_TOKEN_MAX_USAGE_COUNT = 7;
 
 const ghostMailer = new mail.GhostMailer();
 
+// Cache for successfully loaded locales
+const _loadedLocalesCache = new Set();
+
 async function validateLocale(locale) {
     const sitewideLocale = settingsCache.get('locale');
     
@@ -36,9 +39,16 @@ async function validateLocale(locale) {
         return sitewideLocale || 'en';
     }
 
+    // Return cached locale if it's already been loaded successfully
+    if (_loadedLocalesCache.has(locale)) {
+        return locale;
+    }
+
     try {
         // Try to load the locale to validate it exists
         await i18n.loadLocale(locale);
+        // Cache the successfully loaded locale
+        _loadedLocalesCache.add(locale);
         return locale;
     } catch (e) {
         // If locale loading fails, fall back to sitewide locale or English
