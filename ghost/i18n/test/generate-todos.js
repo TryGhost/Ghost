@@ -1,7 +1,7 @@
 const fs = require('fs/promises');
 const path = require('path');
 const i18n = require('../');
-const { checkTranslationPair } = require('./utils');
+const {checkTranslationPair} = require('./utils');
 
 async function generateTodos() {
     // Load existing todos if they exist
@@ -17,7 +17,6 @@ async function generateTodos() {
         existingTodos = JSON.parse(existingContent);
     } catch (error) {
         // If file doesn't exist or is invalid, we'll start fresh
-        console.log('No existing i18n-todos.json found, creating new file');
     }
 
     const newTodos = {
@@ -32,7 +31,7 @@ async function generateTodos() {
     for (const issueType of ['addedVariable', 'missingVariable']) {
         for (const entry of existingTodos.overrides[issueType]) {
             const key = `${entry.file}:${entry.key}`;
-            existingEntries.set(key, { issueType, entry });
+            existingEntries.set(key, {issueType, entry});
         }
     }
 
@@ -77,4 +76,4 @@ async function generateTodos() {
 }
 
 // Run the generator
-generateTodos().catch(console.error);
+generateTodos();

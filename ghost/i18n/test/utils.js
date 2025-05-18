@@ -1,5 +1,7 @@
 function extractVariables(str) {
-    if (!str) return new Set();
+    if (!str) {
+        return new Set();
+    }
     const regex = /\{([^}]+)\}/g;
     const variables = new Set();
     let match;

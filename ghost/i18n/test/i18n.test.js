@@ -3,7 +3,7 @@ const fs = require('fs/promises');
 const path = require('path');
 
 const i18n = require('../');
-const { checkTranslationPair } = require('./utils');
+const {checkTranslationPair} = require('./utils');
 
 describe('i18n', function () {
     it('does not have mismatched brackets in variables', async function () {
@@ -194,10 +194,8 @@ describe('i18n', function () {
                         const result = checkTranslationPair(key, value, translationFile);
                         if (result.length > 0) {
                             // Check if all issues are covered by todos
-                            const allIssuesCovered = result.every(issue => {
-                                const todo = todos.overrides[issue].find(todo => 
-                                    todo.file === `${locale}/${file}` && todo.key === key
-                                );
+                            const allIssuesCovered = result.every((issue) => {
+                                const todo = todos.overrides[issue].find(onetodo => onetodo.file === `${locale}/${file}` && onetodo.key === key);
                                 return todo !== undefined;
                             });
 
