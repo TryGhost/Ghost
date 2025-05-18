@@ -77,4 +77,5 @@ RUN yarn install --frozen-lockfile --prefer-offline
 # --------------------
 FROM development-base AS development
 COPY . .
+RUN yarn build
 CMD ["yarn", "dev"]
