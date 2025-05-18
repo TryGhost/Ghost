@@ -88,6 +88,6 @@
     "nock": "13.5.6",
     "vite": "4.5.14",
     "vite-plugin-svgr": "3.3.0",
-    "vitest": "0.34.3"
+    "vitest": "0.34.6"
   }
 }
