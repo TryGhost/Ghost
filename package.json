@@ -1,7 +1,11 @@
 {
   "name": "@tryghost/image-transform",
   "version": "1.4.3",
-  "repository": "https://github.com/TryGhost/SDK/tree/main/packages/image-transform",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/SDK.git",
+    "directory": "packages/image-transform"
+  },
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "index.js",
