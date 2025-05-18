@@ -1,6 +1,5 @@
 const fs = require('fs/promises');
 const path = require('path');
-const i18n = require('../');
 const {checkTranslationPair} = require('./utils');
 
 async function removeUnneededIgnores() {
@@ -16,6 +15,7 @@ async function removeUnneededIgnores() {
         const existingContent = await fs.readFile(path.join(__dirname, 'i18n-ignores.json'), 'utf8');
         existingIgnores = JSON.parse(existingContent);
     } catch (error) {
+        // eslint-disable-next-line no-console
         console.log('No existing ignores file found');
         return;
     }
@@ -63,8 +63,11 @@ async function removeUnneededIgnores() {
         missingVariable: existingIgnores.overrides.missingVariable.length - keptIgnores.overrides.missingVariable.length
     };
 
+    // eslint-disable-next-line no-console
     console.log('Removed unneeded ignores:');
+    // eslint-disable-next-line no-console
     console.log(`- Added variable ignores removed: ${removedCount.addedVariable}`);
+    // eslint-disable-next-line no-console
     console.log(`- Missing variable ignores removed: ${removedCount.missingVariable}`);
 }
 
