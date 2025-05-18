@@ -1,7 +1,7 @@
 {
     "(save {highestYearlyDiscount}%)": " حفظ {highestYearlyDiscount}%)",
     "{amount} days free": "أيام مجانية {amount}",
-    "{amount} off": "{number} خصم ",
+    "{amount} off": "{amount} خصم ",
     "{amount} off for first {number} months.": "شهور {number} لأول {amount} خصم",
     "{amount} off for first {period}.": ".{period} لأول{amount} خصم  ",
     "{amount} off forever.": "تخفيض {amount} مدى الحياة",
