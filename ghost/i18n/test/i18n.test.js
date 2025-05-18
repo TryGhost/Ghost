@@ -212,9 +212,6 @@ describe('i18n', function () {
     // The goal of the test below (TODO) is to make sure that new keys get added to context.json with 
     // enough information to be useful to translators. The person best positioned to do this is
     // the person who added the key.
-    // Right now this test is disabled, because as currently set up, the tests run, then translate generates context.json.
-    // So the test could potentially fail one PR after the addition of the new key. Not quite the goal!
-    /* 
     describe('context.json is valid', function () {
         it('should not contain any empty values', function () {
             const context = require('../locales/context.json');
@@ -235,5 +232,5 @@ describe('i18n', function () {
             
             checkForEmptyValues(context);
         });
-    }); */
+    }); 
 });
