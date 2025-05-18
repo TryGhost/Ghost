@@ -29,21 +29,26 @@
         "preview": "vite preview"
     },
     "devDependencies": {
-        "@svg-maps/world": "1.0.1",
         "@testing-library/react": "14.3.1",
+        "@testing-library/jest-dom": "5.17.0",
+        "@types/jest": "29.5.14",
+        "@types/react": "18.3.21",
+        "@types/react-svg-map": "2.1.4",
+        "@vitejs/plugin-react": "4.4.1",
+        "vite": "4.5.14",
+        "vitest": "0.34.3"
+    },
+    "dependencies": {
+        "@svg-maps/world": "1.0.1",
         "@tinybirdco/charts": "0.2.4",
         "@tryghost/admin-x-framework": "0.0.0",
         "@tryghost/shade": "0.0.0",
-        "@types/react": "18.3.21",
-        "@types/react-dom": "18.3.7",
-        "@types/react-svg-map": "2.1.4",
-        "@vitejs/plugin-react": "4.4.1",
-        "moment-timezone": "^0.5.48",
+        "i18n-iso-countries": "7.14.0",
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "react-svg-map": "2.2.0",
-        "vite": "4.5.14",
-        "vitest": "0.34.3"
+        "moment": "2.24.0",
+        "moment-timezone": "0.5.45"
     },
     "nx": {
         "targets": {
@@ -63,17 +68,5 @@
                 ]
             }
         }
-    },
-    "dependencies": {
-        "@radix-ui/react-form": "0.1.6",
-        "@svg-maps/world": "1.0.1",
-        "@tryghost/admin-x-framework": "0.0.0",
-        "@tryghost/shade": "0.0.0",
-        "clsx": "2.1.1",
-        "i18n-iso-countries": "7.14.0",
-        "react": "18.3.1",
-        "react-dom": "18.3.1",
-        "react-svg-map": "2.2.0",
-        "use-debounce": "10.0.4"
     }
 }
