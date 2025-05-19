@@ -1,7 +1,7 @@
 import React from 'react';
-import {Skeleton} from '@tryghost/shade';
+import {Skeleton} from './skeleton';
 
-const LoadingIndicator: React.FC = () => {
+const BarChartLoadingIndicator: React.FC = () => {
     return (
         <div className='flex h-full flex-col items-center justify-center gap-3'>
             <div className='flex size-20 items-center justify-center rounded-full'>
@@ -15,4 +15,6 @@ const LoadingIndicator: React.FC = () => {
     );
 };
 
-export default LoadingIndicator;
+export {
+    BarChartLoadingIndicator
+};

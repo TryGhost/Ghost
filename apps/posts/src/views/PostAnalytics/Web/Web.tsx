@@ -1,15 +1,13 @@
-import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
-import DateRangeSelect from './components/DateRangeSelect';
-import Kpis from './components/Web/Kpis';
-import Locations from './components/Web/Locations';
-import PostAnalyticsContent from './components/PostAnalyticsContent';
-import PostAnalyticsHeader from './components/PostAnalyticsHeader';
-import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
-import Sources from './components/Web/Sources';
-import {ViewHeader, ViewHeaderActions, formatQueryDate} from '@tryghost/shade';
-import {getRangeDates} from '@src/utils/chart-helpers';
+import AudienceSelect, {getAudienceQueryParam} from '../components/AudienceSelect';
+import DateRangeSelect from '../components/DateRangeSelect';
+import Kpis from './components/Kpis';
+import Locations from './components/Locations';
+import PostAnalyticsContent from '../components/PostAnalyticsContent';
+import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
+import Sources from './components/Sources';
+import {BarChartLoadingIndicator, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
-import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useMemo} from 'react';
 import {useParams} from '@tryghost/admin-x-framework';
 
@@ -51,26 +49,27 @@ const Web: React.FC<postAnalyticsProps> = () => {
     const isLoading = isConfigLoading || isPostLoading;
 
     return (
-        <PostAnalyticsLayout>
-            <ViewHeader className='items-end pb-4'>
-                <PostAnalyticsHeader currentTab='Web' />
-                <ViewHeaderActions className='mb-2'>
-                    <AudienceSelect />
-                    <DateRangeSelect />
-                </ViewHeaderActions>
-            </ViewHeader>
+        <>
+            <PostAnalyticsHeader currentTab='Web'>
+                <AudienceSelect />
+                <DateRangeSelect />
+            </PostAnalyticsHeader>
             <PostAnalyticsContent>
-                {isLoading ? 'Loading' :
+                {isLoading ?
+                    <div className='flex size-full grow items-center justify-center'>
+                        <BarChartLoadingIndicator />
+                    </div>
+                    :
                     <>
                         <Kpis queryParams={params} />
-                        <div className='grid grid-cols-2 gap-6'>
+                        <div className='grid grid-cols-2 gap-8'>
                             <Sources queryParams={params} />
                             <Locations queryParams={params} />
                         </div>
                     </>
                 }
             </PostAnalyticsContent>
-        </PostAnalyticsLayout>
+        </>
     );
 };
 

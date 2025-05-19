@@ -1,7 +1,7 @@
 import EmptyStatView from './EmptyStatView';
-import LoadingIndicator from '../components/LoadingIndicator';
 import React from 'react';
 import StatsContent from './StatsContent';
+import {BarChartLoadingIndicator} from '@tryghost/shade';
 
 interface StatsViewProps<T> {
     isLoading: boolean;
@@ -15,7 +15,7 @@ const StatsView = <T,>({
     isLoading,
     data,
     children,
-    loadingComponent = <LoadingIndicator />,
+    loadingComponent = <BarChartLoadingIndicator />,
     emptyComponent = <EmptyStatView />
 }: StatsViewProps<T>) => {
     return (

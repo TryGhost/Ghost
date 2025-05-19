@@ -14,28 +14,28 @@ const Sidebar:React.FC = () => {
     return (
         <div className='grow py-8 pr-0'>
             <RightSidebarMenu>
-                <RightSidebarMenuLink onClick={() => {
-                    navigate(`/posts/analytics/${postId}`, {crossApp: true});
+                <RightSidebarMenuLink active={location.pathname === `/analytics/beta/${postId}`} onClick={() => {
+                    navigate(`/analytics/beta/${postId}`);
                 }}>
                     <LucideIcon.LayoutTemplate size={16} strokeWidth={1.25} />
                     Overview
                 </RightSidebarMenuLink>
-                <RightSidebarMenuLink active={location.pathname === `/analytics/${postId}/web`} onClick={() => {
-                    navigate(`/analytics/${postId}/web`);
+                <RightSidebarMenuLink active={location.pathname === `/analytics/beta/${postId}/web`} onClick={() => {
+                    navigate(`/analytics/beta/${postId}/web`);
                 }}>
                     <LucideIcon.MousePointer size={16} strokeWidth={1.25} />
                     Web
                 </RightSidebarMenuLink>
 
-                <RightSidebarMenuLink active={location.pathname === `/analytics/${postId}/newsletter`} onClick={() => {
-                    navigate(`/analytics/${postId}/newsletter`);
+                <RightSidebarMenuLink active={location.pathname === `/analytics/beta/${postId}/newsletter`} onClick={() => {
+                    navigate(`/analytics/beta/${postId}/newsletter`);
                 }}>
                     <LucideIcon.Mail size={16} strokeWidth={1.25} />
                     Newsletter
                 </RightSidebarMenuLink>
 
-                <RightSidebarMenuLink active={location.pathname === `/analytics/${postId}/growth`} onClick={() => {
-                    navigate(`/analytics/${postId}/growth`);
+                <RightSidebarMenuLink active={location.pathname === `/analytics/beta/${postId}/growth`} onClick={() => {
+                    navigate(`/analytics/beta/${postId}/growth`);
                 }}>
                     <LucideIcon.Sprout size={16} strokeWidth={1.25} />
                 Growth

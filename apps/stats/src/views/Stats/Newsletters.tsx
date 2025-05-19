@@ -424,7 +424,7 @@ const Newsletters: React.FC = () => {
                                             <div className='group/link inline-flex items-center gap-2'>
                                                 {post.post_id ?
                                                     <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
-                                                        navigate(`/posts/analytics/${post.post_id}`, {crossApp: true});
+                                                        navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
                                                     }}>
                                                         {post.post_title}
                                                     </Button>
