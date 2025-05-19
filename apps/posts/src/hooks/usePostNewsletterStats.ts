@@ -1,12 +1,29 @@
 import {getPost} from '@tryghost/admin-x-framework/api/posts';
 import {useMemo} from 'react';
-import {useNewsletterStats} from '@tryghost/admin-x-framework/api/stats';
+import {useNewsletterStatsByNewsletterId} from '@tryghost/admin-x-framework/api/stats';
 import {useTopLinks} from '@tryghost/admin-x-framework/api/links';
+
+// Extend the Post type to include newsletter property
+type PostWithNewsletter = {
+    newsletter?: {
+        id: string;
+    };
+    email?: {
+        email_count: number;
+        opened_count: number;
+    };
+    count?: {
+        clicks: number;
+    };
+    // Use unknown instead of any for the index signature
+    [key: string]: unknown;
+};
+
 export const usePostNewsletterStats = (postId: string) => {
     const {data: postResponse, isLoading: isPostLoading} = getPost(postId);
 
     // Fetch the post to get top level stats
-    const post = useMemo(() => postResponse?.posts[0], [postResponse]);
+    const post = useMemo(() => postResponse?.posts[0] as PostWithNewsletter | undefined, [postResponse]);
     const stats = useMemo(() => {
         if (!post) {
             return {
@@ -27,56 +44,77 @@ export const usePostNewsletterStats = (postId: string) => {
         };
     }, [post]);
 
+    // Get the newsletter_id from the post
+    const newsletterId = useMemo(() => post?.newsletter?.id, [post]);
+
     // Fetch the last 20 newsletters and calculate the average open and click rates
-    const {data: newsletterStatsResponse, isLoading: isNewsletterStatsLoading} = useNewsletterStats();
+    const {data: newsletterStatsResponse, isLoading: isNewsletterStatsLoading} = useNewsletterStatsByNewsletterId(newsletterId);
 
-    const averageStats = useMemo(() => {
-        if (!newsletterStatsResponse || !newsletterStatsResponse.stats || newsletterStatsResponse.stats.length === 0) {
-            return {
-                openedRate: 0,
-                clickedRate: 0
-            };
-        }
-
-        const newsletterStats = newsletterStatsResponse.stats;
-
-        const totalOpenedRate = newsletterStats.reduce((acc, curr) => acc + (curr.open_rate || 0), 0);
-        const totalClickedRate = newsletterStats.reduce((acc, curr) => acc + (curr.click_rate || 0), 0);
-
-        const averageOpenedRate = totalOpenedRate / newsletterStats.length;
-        const averageClickedRate = totalClickedRate / newsletterStats.length;
-
-        return {
-            openedRate: Math.round(averageOpenedRate * 100) / 100,
-            clickedRate: Math.round(averageClickedRate * 100) / 100
-        };
-    }, [newsletterStatsResponse]);
-
-    // Fetch the top clicked links for the post
-    const {data: topLinksResponse, isLoading: isTopLinksLoading, refetch: refetchTopLinks} = useTopLinks({
+    // Get the top 5 link clicks from this post
+    const {data: clicksResponse, isLoading: isClicksLoading, refetch: refetchTopLinks} = useTopLinks({
         searchParams: {
-            filter: `post_id:'${postId}'`
+            post_id: postId,
+            limit: '5',
+            filter: 'clicks:>0'
         }
     });
 
-    const topLinks = useMemo(() => {
-        if (!topLinksResponse || !topLinksResponse.links || topLinksResponse.links.length === 0) {
-            return [];
+    const links = useMemo(() => {
+        return clicksResponse?.links.map(link => ({
+            link: link.link,
+            count: link.count?.clicks || 0
+        })) || [];
+    }, [clicksResponse]);
+
+    // Calculate average open and click rates across newsletters
+    const averages = useMemo(() => {
+        if (!newsletterStatsResponse || !newsletterStatsResponse.stats) {
+            return {
+                openRate: 0,
+                clickRate: 0
+            };
         }
 
-        return topLinksResponse.links.sort((a, b) => b.count.clicks - a.count.clicks).map(link => ({
-            url: link.link.to,
-            clicks: link.count.clicks,
-            edited: link.link.edited
-        }));
-    }, [topLinksResponse]);
+        const newsletters = newsletterStatsResponse.stats;
+        if (newsletters.length === 0) {
+            return {
+                openRate: 0,
+                clickRate: 0
+            };
+        }
+
+        const totalOpenRate = newsletters.reduce((sum, newsletter) => sum + (newsletter.open_rate || 0), 0);
+        const totalClickRate = newsletters.reduce((sum, newsletter) => sum + (newsletter.click_rate || 0), 0);
+
+        return {
+            openRate: Number((totalOpenRate / newsletters.length).toFixed(2)),
+            clickRate: Number((totalClickRate / newsletters.length).toFixed(2))
+        };
+    }, [newsletterStatsResponse]);
+
+    // Map links to the format expected by tests
+    const topLinks = useMemo(() => {
+        return links.map(link => ({
+            url: link.link?.to || '',
+            clicks: link.count || 0,
+            edited: link.link?.edited || false
+        })) || [];
+    }, [links]);
+
+    // Map averages to the format expected by tests
+    const averageStats = useMemo(() => {
+        return {
+            openedRate: averages.openRate,
+            clickedRate: averages.clickRate
+        };
+    }, [averages]);
 
     return {
-        isLoading: isPostLoading || isNewsletterStatsLoading || isTopLinksLoading,
         post,
         stats,
         averageStats,
         topLinks,
-        refetchTopLinks
+        refetchTopLinks,
+        isLoading: isPostLoading || isNewsletterStatsLoading || isClicksLoading
     };
 };
