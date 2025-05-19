@@ -32004,10 +32004,10 @@ zip-stream@^4.1.0:
     compress-commons "^4.1.0"
     readable-stream "^3.6.0"
 
-zod@3.25.3:
-  version "3.25.3"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.3.tgz#951c187ed2e6fdc8051015ed4c47bfc16f7566bb"
-  integrity sha512-VGZqnyYNrl8JpEJRZaFPqeVNIuqgXNu4cXZ5cOb6zEUO1OxKbRnWB4UdDIXMmiERWncs0yDQukssHov8JUxykQ==
+zod@3.25.4:
+  version "3.25.4"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.4.tgz#36270e9fa8752ade683b2b8c330e6a1b0b0007ac"
+  integrity sha512-7zz8qNtVv37yCd8OeUW37PMXrR0K/zg+6vw+Z2FJ2+oozVdRbFKldkCoqxd9nJflDrx2ZkjUJrPF2DMj+L4pBQ==
 
 zrender@5.6.0:
   version "5.6.0"
