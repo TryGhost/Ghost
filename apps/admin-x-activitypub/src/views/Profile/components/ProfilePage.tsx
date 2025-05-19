@@ -203,11 +203,12 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                             account={account}
                                             isBlocked={isBlocked}
                                             isDomainBlocked={isDomainBlocked}
-                                            trigger={<Button aria-label='Open profile menu' variant='outline'><LucideIcon.Ellipsis /></Button>}
                                             onBlockAccount={handleBlock}
                                             onBlockDomain={handleDomainBlock}
                                             onCopyHandle={handleCopy}
-                                        />
+                                        >
+                                            <Button aria-label='Open profile menu' variant='outline'><LucideIcon.Ellipsis /></Button>
+                                        </ProfileMenu>
                                     </div>
                                 }
                                 {isCurrentUser && !isLoadingAccount &&
