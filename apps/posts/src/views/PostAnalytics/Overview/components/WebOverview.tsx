@@ -1,9 +1,8 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import React, {useMemo} from 'react';
-import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, Recharts, formatDisplayDate, formatNumber, formatQueryDate} from '@tryghost/shade';
+import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, Recharts, calculateYAxisWidth, formatDisplayDate, formatNumber, formatQueryDate, getRangeDates, getYTicks} from '@tryghost/shade';
 import {KPI_METRICS} from '../../Web/components/Kpis';
 import {STATS_RANGES} from '@src/utils/constants';
-import {calculateYAxisWidth, getRangeDates, getYTicks} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken, useParams} from '@tryghost/admin-x-framework';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';

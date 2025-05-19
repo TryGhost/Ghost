@@ -2,8 +2,7 @@
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
-import {calculateYAxisWidth} from '@src/utils/chart-helpers';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, calculateYAxisWidth, formatNumber, formatPercentage} from '@tryghost/shade';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {useParams} from '@tryghost/admin-x-framework';
@@ -195,7 +194,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             tickFormatter={value => formatPercentage(value)}
                                             tickLine={false}
                                             ticks={barTicks}
-                                            width={calculateYAxisWidth(barTicks, value => formatPercentage(value))}
+                                            width={calculateYAxisWidth(barTicks, (value: number) => formatPercentage(value))}
                                         />
                                         <Recharts.XAxis
                                             axisLine={false}
