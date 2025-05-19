@@ -3,11 +3,27 @@ import {useMemo} from 'react';
 import {useNewsletterStatsByNewsletterId} from '@tryghost/admin-x-framework/api/stats';
 import {useTopLinks} from '@tryghost/admin-x-framework/api/links';
 
+// Extend the Post type to include newsletter property
+type PostWithNewsletter = {
+    newsletter?: {
+        id: string;
+    };
+    email?: {
+        email_count: number;
+        opened_count: number;
+    };
+    count?: {
+        clicks: number;
+    };
+    // Use unknown instead of any for the index signature
+    [key: string]: unknown;
+};
+
 export const usePostNewsletterStats = (postId: string) => {
     const {data: postResponse, isLoading: isPostLoading} = getPost(postId);
 
     // Fetch the post to get top level stats
-    const post = useMemo(() => postResponse?.posts[0], [postResponse]);
+    const post = useMemo(() => postResponse?.posts[0] as PostWithNewsletter | undefined, [postResponse]);
     const stats = useMemo(() => {
         if (!post) {
             return {
@@ -36,9 +52,11 @@ export const usePostNewsletterStats = (postId: string) => {
 
     // Get the top 5 link clicks from this post
     const {data: clicksResponse, isLoading: isClicksLoading} = useTopLinks({
-        postId,
-        limit: 5,
-        filter: 'clicks:>0'
+        searchParams: {
+            post_id: postId,
+            limit: '5',
+            filter: 'clicks:>0'
+        }
     });
 
     const links = useMemo(() => {
@@ -69,15 +87,33 @@ export const usePostNewsletterStats = (postId: string) => {
         const totalClickRate = newsletters.reduce((sum, newsletter) => sum + (newsletter.click_rate || 0), 0);
 
         return {
-            openRate: totalOpenRate / newsletters.length,
-            clickRate: totalClickRate / newsletters.length
+            openRate: Number((totalOpenRate / newsletters.length).toFixed(2)),
+            clickRate: Number((totalClickRate / newsletters.length).toFixed(2))
         };
     }, [newsletterStatsResponse]);
 
+    // Map links to the format expected by tests
+    const topLinks = useMemo(() => {
+        return links.map(link => ({
+            url: link.link?.to || '',
+            clicks: link.count || 0,
+            edited: link.link?.edited || false
+        })) || [];
+    }, [links]);
+
+    // Map averages to the format expected by tests
+    const averageStats = useMemo(() => {
+        return {
+            openedRate: averages.openRate,
+            clickedRate: averages.clickRate
+        };
+    }, [averages]);
+
     return {
+        post,
         stats,
-        links,
-        averages,
+        averageStats,
+        topLinks,
         isLoading: isPostLoading || isNewsletterStatsLoading || isClicksLoading
     };
 };
