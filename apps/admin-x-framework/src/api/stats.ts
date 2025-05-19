@@ -50,6 +50,7 @@ export type TopPostsStatsResponseType = {
 
 export type PostReferrerStatItem = {
     source: string;
+    referrer_url?: string;
     free_members: number;
     paid_members: number;
     mrr: number;
@@ -153,12 +154,76 @@ export const useMrrHistory = createQuery<MrrHistoryResponseType>({
     path: '/stats/mrr/'
 });
 
+export interface NewsletterStatsSearchParams {
+    newsletterId?: string;
+    date_from?: string;
+    date_to?: string;
+    order?: string;
+    limit?: number;
+}
+
+export interface SubscriberCountSearchParams {
+    newsletterId?: string;
+    date_from?: string;
+    date_to?: string;
+}
+
 export const useNewsletterStats = createQuery<NewsletterStatsResponseType>({
     dataType: newsletterStatsDataType,
-    path: '/stats/newsletter-stats/'
+    path: '/stats/newsletter-stats/',
+    defaultSearchParams: {
+        // Empty default params, will be filled by the hook
+    }
 });
+
+// Hook wrapper to accept a newsletterId parameter
+export const useNewsletterStatsByNewsletterId = (newsletterId?: string, options: Partial<NewsletterStatsSearchParams> = {}) => {
+    const searchParams: Record<string, string> = {};
+    
+    if (newsletterId) {
+        searchParams.newsletter_id = newsletterId;
+    }
+    
+    // Add any additional search params
+    if (options.date_from) {
+        searchParams.date_from = options.date_from;
+    }
+    if (options.date_to) {
+        searchParams.date_to = options.date_to;
+    }
+    if (options.order) {
+        searchParams.order = options.order;
+    }
+    if (options.limit) {
+        searchParams.limit = options.limit.toString();
+    }
+    
+    return useNewsletterStats({searchParams});
+};
 
 export const useSubscriberCount = createQuery<NewsletterSubscriberStatsResponseType>({
     dataType: newsletterSubscriberStatsDataType,
-    path: '/stats/subscriber-count/'
+    path: '/stats/subscriber-count/',
+    defaultSearchParams: {
+        // Empty default params, will be filled by the hook
+    }
 });
+
+// Hook wrapper to accept a newsletterId parameter
+export const useSubscriberCountByNewsletterId = (newsletterId?: string, options: Partial<SubscriberCountSearchParams> = {}) => {
+    const searchParams: Record<string, string> = {};
+    
+    if (newsletterId) {
+        searchParams.newsletter_id = newsletterId;
+    }
+    
+    // Add any additional search params
+    if (options.date_from) {
+        searchParams.date_from = options.date_from;
+    }
+    if (options.date_to) {
+        searchParams.date_to = options.date_to;
+    }
+    
+    return useSubscriberCount({searchParams});
+};

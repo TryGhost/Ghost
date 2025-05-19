@@ -6,22 +6,11 @@ x-service-template: &service-template
     - .:/home/ghost
     - ${SSH_AUTH_SOCK}:/ssh-agent
     - ${HOME}/.gitconfig:/root/.gitconfig:ro
+    - node_modules_yarn_lock_hash:/home/ghost/.yarnhash:delegated
     - node_modules_ghost_root:/home/ghost/node_modules:delegated
     - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
-    - node_modules_ghost_api-framework:/home/ghost/ghost/api-framework/node_modules:delegated
     - node_modules_ghost_core:/home/ghost/ghost/core/node_modules:delegated
-    - node_modules_ghost_custom-fonts:/home/ghost/ghost/custom-fonts/node_modules:delegated
-    - node_modules_ghost_domain-events:/home/ghost/ghost/domain-events/node_modules:delegated
-    - node_modules_ghost_email-addresses:/home/ghost/ghost/email-addresses/node_modules:delegated
-    - node_modules_ghost_email-service:/home/ghost/ghost/email-service/node_modules:delegated
-    - node_modules_ghost_html-to-plaintext:/home/ghost/ghost/html-to-plaintext/node_modules:delegated
     - node_modules_ghost_i18n:/home/ghost/ghost/i18n/node_modules:delegated
-    - node_modules_ghost_job-manager:/home/ghost/ghost/job-manager/node_modules:delegated
-    - node_modules_ghost_members-csv:/home/ghost/ghost/members-csv/node_modules:delegated
-    - node_modules_ghost_mw-error-handler:/home/ghost/ghost/mw-error-handler/node_modules:delegated
-    - node_modules_ghost_mw-vhost:/home/ghost/ghost/mw-vhost/node_modules:delegated
-    - node_modules_ghost_prometheus-metrics:/home/ghost/ghost/prometheus-metrics/node_modules:delegated
-    - node_modules_ghost_security:/home/ghost/ghost/security/node_modules:delegated
     - node_modules_apps_admin-x-activitypub:/home/ghost/apps/admin-x-activitypub/node_modules:delegated
     - node_modules_apps_admin-x-design-system:/home/ghost/apps/admin-x-design-system/node_modules:delegated
     - node_modules_apps_admin-x-framework:/home/ghost/apps/admin-x-framework/node_modules:delegated
@@ -72,16 +61,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-
-  tinybird:
-    <<: *service-template
-    build:
-      context: .
-      dockerfile: ./.docker/Dockerfile
-      target: tinybird
-    working_dir: /home/ghost/ghost/web-analytics
-    profiles: [ tinybird ]
-    tty: true
 
   mysql:
     image: mysql:8.4.5
@@ -157,22 +136,11 @@ services:
 volumes:
   mysql-data: {}
   redis-data: {}
+  node_modules_yarn_lock_hash: {}
   node_modules_ghost_root: {}
   node_modules_ghost_admin: {}
-  node_modules_ghost_api-framework: {}
   node_modules_ghost_core: {}
-  node_modules_ghost_custom-fonts: {}
-  node_modules_ghost_domain-events: {}
-  node_modules_ghost_email-addresses: {}
-  node_modules_ghost_email-service: {}
-  node_modules_ghost_html-to-plaintext: {}
   node_modules_ghost_i18n: {}
-  node_modules_ghost_job-manager: {}
-  node_modules_ghost_members-csv: {}
-  node_modules_ghost_mw-error-handler: {}
-  node_modules_ghost_mw-vhost: {}
-  node_modules_ghost_prometheus-metrics: {}
-  node_modules_ghost_security: {}
   node_modules_apps_admin-x-activitypub: {}
   node_modules_apps_admin-x-design-system: {}
   node_modules_apps_admin-x-framework: {}

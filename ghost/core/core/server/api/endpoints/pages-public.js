@@ -86,21 +86,19 @@ const controller = {
             }
         },
         permissions: true,
-        query(frame) {
+        async query(frame) {
             const options = {
                 ...frame.options,
                 mongoTransformer: rejectPrivateFieldsTransformer
             };
-            return models.Post.findOne(frame.data, options)
-                .then((model) => {
-                    if (!model) {
-                        throw new errors.NotFoundError({
-                            message: tpl(messages.pageNotFound)
-                        });
-                    }
-
-                    return model;
+            const model = await models.Post.findOne(frame.data, options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.pageNotFound)
                 });
+            }
+
+            return model;
         }
     }
 };

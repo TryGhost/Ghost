@@ -139,24 +139,45 @@ class PostsStatsService {
             const paidReferrersCTE = this._buildPaidReferrersSubquery(postId, options);
             const mrrReferrersCTE = this._buildMrrReferrersSubquery(postId, options);
 
-            const baseReferrersQuery = this.knex('members_created_events as mce')
+            // First, let's get all sources from both tables using separate queries
+            // Then combine and group them in a cross-database compatible way
+            const membersCreatedSources = this.knex('members_created_events as mce')
                 .select('mce.referrer_source as source')
+                .select('mce.referrer_url')
                 .where('mce.attribution_id', postId)
                 .where('mce.attribution_type', 'post')
-                .union((qb) => {
-                    qb.select('msce.referrer_source as source')
-                        .from('members_subscription_created_events as msce')
-                        .where('msce.attribution_id', postId)
-                        .where('msce.attribution_type', 'post');
+                .whereNotNull('mce.referrer_source');
+
+            const membersSubscriptionSources = this.knex('members_subscription_created_events as msce')
+                .select('msce.referrer_source as source')
+                .select('msce.referrer_url')
+                .where('msce.attribution_id', postId)
+                .where('msce.attribution_type', 'post')
+                .whereNotNull('msce.referrer_source');
+
+            // Using a simpler combined query that works in SQLite
+            const allSources = this.knex.select('source', 'referrer_url')
+                .from(membersCreatedSources.as('sources1'))
+                .union(function () {
+                    this.select('source', 'referrer_url')
+                        .from(membersSubscriptionSources.as('sources2'));
                 });
 
+            // Create the final CTE that we'll use to get all referrers
+            const allReferrersCTE = this.knex.select('source')
+                .select(this.knex.raw('MIN(referrer_url) as referrer_url'))
+                .from(allSources.as('all_sources'))
+                .groupBy('source');
+
+            // Now join all the data
             let query = this.knex
                 .with('free_referrers', freeReferrersCTE)
                 .with('paid_referrers', paidReferrersCTE)
                 .with('mrr_referrers', mrrReferrersCTE)
-                .with('all_referrers', baseReferrersQuery)
+                .with('all_referrers', allReferrersCTE)
                 .select(
                     'ar.source',
+                    'ar.referrer_url',
                     this.knex.raw('COALESCE(fr.free_members, 0) as free_members'),
                     this.knex.raw('COALESCE(pr.paid_members, 0) as paid_members'),
                     this.knex.raw('COALESCE(mr.mrr, 0) as mrr')
@@ -406,16 +427,17 @@ class PostsStatsService {
     }
 
     /**
-     * Get newsletter stats for sent or published posts with a newsletter_id
+     * Get newsletter stats for sent or published posts with a specific newsletter_id
      *
+     * @param {string} newsletterId - ID of the newsletter to get stats for
      * @param {Object} options - Query options
      * @param {string} [options.order='date desc'] - Field to order by ('date', 'open_rate', or 'click_rate') and direction
      * @param {number|string} [options.limit=20] - Maximum number of results to return
      * @param {string} [options.date_from] - Optional start date filter (YYYY-MM-DD)
      * @param {string} [options.date_to] - Optional end date filter (YYYY-MM-DD)
-     * @returns {Promise<{data: NewsletterStatResult[]}>} The newsletter stats for sent/published posts with a newsletter_id
+     * @returns {Promise<{data: NewsletterStatResult[]}>} The newsletter stats for sent/published posts with the specified newsletter_id
      */
-    async getNewsletterStats(options = {}) {
+    async getNewsletterStats(newsletterId, options = {}) {
         try {
             const order = options.order || 'date desc';
             const limitRaw = Number.parseInt(String(options.limit ?? 20), 10);
@@ -481,7 +503,7 @@ class PostsStatsService {
                 .from('posts as p')
                 .leftJoin('emails as e', 'p.id', 'e.post_id')
                 .leftJoin(clicksSubquery, 'p.id', 'clicks.post_id')
-                .whereNotNull('p.newsletter_id')
+                .where('p.newsletter_id', newsletterId)
                 .whereIn('p.status', ['sent', 'published'])
                 .whereNotNull('e.id') // Ensure there is an associated email record
                 .whereRaw(dateFilter)
@@ -492,34 +514,41 @@ class PostsStatsService {
             
             return {data: results};
         } catch (error) {
-            logging.error('Error fetching newsletter stats:', error);
+            logging.error(`Error fetching newsletter stats for newsletter ${newsletterId}:`, error);
             return {data: []};
         }
     }
 
     /**
-     * Get newsletter subscriber statistics including total count and daily deltas
+     * Get newsletter subscriber statistics including total count and daily deltas for a specific newsletter
      * 
+     * @param {string} newsletterId - ID of the newsletter to get subscriber stats for
      * @param {Object} options - Query options
      * @param {string} [options.date_from] - Optional start date filter (YYYY-MM-DD)
      * @param {string} [options.date_to] - Optional end date filter (YYYY-MM-DD)
      * @returns {Promise<{data: Array<{total: number, deltas: Array<{date: string, value: number}>}>}>} The newsletter subscriber stats
      */
-    async getNewsletterSubscriberStats(options = {}) {
+    async getNewsletterSubscriberStats(newsletterId, options = {}) {
         try {
-            // Get total subscriber count from members_newsletters table
-            const totalResult = await this.knex('members_newsletters')
-                .countDistinct('member_id as total');
+            // Get total subscriber count, filtering out members with email disabled
+            const totalResult = await this.knex('members_newsletters as mn')
+                .countDistinct('mn.member_id as total')
+                .join('members as m', 'm.id', 'mn.member_id')
+                .where('mn.newsletter_id', newsletterId)
+                .where('m.email_disabled', 0);
 
             const totalValue = totalResult[0] ? totalResult[0].total : 0;
             const total = parseInt(String(totalValue), 10);
 
-            // Get daily deltas within date range
+            // Get daily deltas within date range for the specific newsletter
             let deltasQuery = this.knex('members_subscribe_events as mse')
                 .select(
                     this.knex.raw(`DATE(mse.created_at) as date`),
                     this.knex.raw(`SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as value`)
                 )
+                .join('members as m', 'm.id', 'mse.member_id')
+                .where('mse.newsletter_id', newsletterId)
+                .where('m.email_disabled', 0) // Only include events for members with emails enabled
                 .groupByRaw('DATE(mse.created_at)')
                 .orderBy('date', 'asc');
 
@@ -555,7 +584,7 @@ class PostsStatsService {
                 }]
             };
         } catch (error) {
-            logging.error('Error fetching newsletter subscriber stats:', error);
+            logging.error(`Error fetching subscriber stats for newsletter ${newsletterId}:`, error);
             return {
                 data: [{
                     total: 0,

@@ -1,12 +1,14 @@
-import AudienceSelect from './components/AudienceSelect';
+// import AudienceSelect from './components/AudienceSelect';
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import DateRangeSelect from './components/DateRangeSelect';
+import NewsletterSelect from './components/NewsletterSelect';
 import React, {useMemo, useState} from 'react';
 import SortButton from './components/SortButton';
+import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
-import {calculateYAxisWidth, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {calculateYAxisWidth, getPeriodText, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useNewsletterStatsWithRange, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
@@ -51,7 +53,7 @@ const BarTooltipContent = ({active, payload}: BarTooltipProps) => {
     }
 
     const currentItem = payload[0].payload;
-    const sendDate = typeof currentItem.send_date === 'string' ? 
+    const sendDate = typeof currentItem.send_date === 'string' ?
         new Date(currentItem.send_date) : currentItem.send_date;
 
     return (
@@ -123,31 +125,25 @@ const NewsletterKPIs: React.FC<{
         // First sanitize the data based on range
         sanitizedData = sanitizeChartData(allSubscribersData, range, 'value', 'exact');
 
-        // Convert deltas to cumulative counts
+        // Convert from deltas to running count (backwards from total)
         let runningTotal = totalSubscribers;
-        
-        // Go backwards through the array to calculate cumulative values
-        // Starting from the current total and subtracting deltas
-        const cumulativeData = [...sanitizedData]
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-            .map((item) => {
-                runningTotal -= item.value;
-                return {
-                    date: item.date,
-                    value: runningTotal + item.value // Value for this specific day
-                };
-            })
-            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        const cumulativeData = [...sanitizedData].reverse().map((item) => {
+            runningTotal -= item.value;
+            return {
+                ...item,
+                value: runningTotal + item.value // Current day's value is before the day's change
+            };
+        }).reverse();
 
         // Map the data for display
         const processedData = cumulativeData.map(item => ({
             ...item,
             formattedValue: formatNumber(item.value),
-            label: 'Subscribers'
+            label: 'Total Subscribers'
         }));
 
         return processedData;
-    }, [allSubscribersData, totalSubscribers, range]);
+    }, [allSubscribersData, range, totalSubscribers]);
 
     const subscribersChartConfig = {
         value: {
@@ -193,7 +189,7 @@ const NewsletterKPIs: React.FC<{
                 </KpiTabTrigger>
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
-                {currentTab === 'total-subscribers' &&
+                {(currentTab === 'total-subscribers') &&
                 <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] w-full' config={subscribersChartConfig}>
                     <Recharts.LineChart
                         data={subscribersData}
@@ -269,6 +265,7 @@ const NewsletterKPIs: React.FC<{
                                 fill="hsl(var(--chart-1))"
                                 isAnimationActive={false}
                                 maxBarSize={32}
+                                minPointSize={2}
                                 radius={0}>
                                 {avgsData.map(entry => (
                                     <Recharts.Cell
@@ -290,29 +287,36 @@ const NewsletterKPIs: React.FC<{
 };
 
 const Newsletters: React.FC = () => {
-    const {range} = useGlobalData();
+    const {range, selectedNewsletterId} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
     const navigate = useNavigate();
-    
-    // Get stats from real data using the new hooks
-    const {data: newsletterStatsData, isLoading: isStatsLoading} = useNewsletterStatsWithRange(range);
-    const {data: subscriberStatsData, isLoading: isSubscriberStatsLoading} = useSubscriberCountWithRange(range);
-    
+
+    // Get stats from real data using the new hooks with selected newsletter
+    const {data: newsletterStatsData, isLoading: isStatsLoading} = useNewsletterStatsWithRange(
+        range,
+        sortBy,
+        selectedNewsletterId || undefined
+    );
+    const {data: subscriberStatsData, isLoading: isSubscriberStatsLoading} = useSubscriberCountWithRange(
+        range,
+        selectedNewsletterId || undefined
+    );
+
     // Prepare the data - wrap in useMemo to avoid dependency changes
     const newsletterStats = useMemo(() => {
         if (!newsletterStatsData?.stats || newsletterStatsData?.stats.length === 0) {
             return [];
         }
-        
+
         // Clone the data for sorting
         const stats = [...newsletterStatsData.stats];
-        
+
         // Apply client-side sorting
         const [field, direction = 'desc'] = sortBy.split(' ');
-        
+
         return stats.sort((a, b) => {
             let valueA, valueB;
-            
+
             // Handle different sort fields
             if (field === 'date') {
                 valueA = new Date(a.send_date).getTime();
@@ -326,12 +330,12 @@ const Newsletters: React.FC = () => {
             } else {
                 return 0;
             }
-            
+
             // Apply sort direction
             return direction === 'desc' ? valueB - valueA : valueA - valueB;
         });
     }, [newsletterStatsData, sortBy]);
-    
+
     // Calculate totals
     const totals = useMemo(() => {
         if (!newsletterStatsData?.stats || newsletterStatsData.stats.length === 0) {
@@ -344,11 +348,11 @@ const Newsletters: React.FC = () => {
 
         // Use all stats for calculating averages, not just the sorted/limited ones
         const allStats = newsletterStatsData.stats;
-        
+
         // Calculate average open and click rates from all stats
         const totalOpenRate = allStats.reduce((sum, stat) => sum + (stat.open_rate || 0), 0);
         const totalClickRate = allStats.reduce((sum, stat) => sum + (stat.click_rate || 0), 0);
-        
+
         return {
             totalSubscribers: subscriberStatsData?.stats?.[0]?.total || 0,
             avgOpenRate: totalOpenRate / allStats.length,
@@ -376,13 +380,10 @@ const Newsletters: React.FC = () => {
 
     return (
         <StatsLayout>
-            <ViewHeader className='before:hidden'>
-                <H1>Newsletters</H1>
-                <ViewHeaderActions>
-                    <AudienceSelect />
-                    <DateRangeSelect />
-                </ViewHeaderActions>
-            </ViewHeader>
+            <StatsHeader>
+                <NewsletterSelect />
+                <DateRangeSelect />
+            </StatsHeader>
             <StatsView data={subscribersData} isLoading={isLoading}>
                 <Card>
                     <CardContent>
@@ -391,8 +392,10 @@ const Newsletters: React.FC = () => {
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Top newsletters</CardTitle>
-                        <CardDescription>Which newsletters performed best in this period</CardDescription>
+                        <CardTitle>Newsletter stats</CardTitle>
+                        <CardDescription>
+                            Performance of newsletter {getPeriodText(range)}
+                        </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Separator/>
@@ -426,7 +429,7 @@ const Newsletters: React.FC = () => {
                                             <div className='group/link inline-flex items-center gap-2'>
                                                 {post.post_id ?
                                                     <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
-                                                        navigate(`/posts/analytics/${post.post_id}`, {crossApp: true});
+                                                        navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
                                                     }}>
                                                         {post.post_title}
                                                     </Button>

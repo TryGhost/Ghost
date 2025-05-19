@@ -69,19 +69,17 @@ const controller = {
                 }
             }
         },
-        query(frame) {
+        async query(frame) {
             const resourceModel = 'Post';
             const resourceType = (frame.options.resource === 'post') ? 'post' : 'page';
             const cleanOptions = {};
             cleanOptions.filter = `status:scheduled+type:${resourceType}`;
             cleanOptions.columns = ['id', 'published_at', 'created_at', 'type'];
 
-            return models[resourceModel].findAll(cleanOptions)
-                .then((result) => {
-                    let response = {};
-                    response[resourceType] = result;
-                    return response;
-                });
+            const result = await models[resourceModel].findAll(cleanOptions);
+            let response = {};
+            response[resourceType] = result;
+            return response;
         }
     }
 };

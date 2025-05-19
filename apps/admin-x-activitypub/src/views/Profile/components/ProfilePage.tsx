@@ -73,9 +73,9 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
 
     const handleDomainBlock = () => {
         if (isDomainBlocked) {
-            unblockDomainMutation.mutate(account);
+            unblockDomainMutation.mutate({url: account.apId, handle: account.handle});
         } else {
-            blockDomainMutation.mutate(account);
+            blockDomainMutation.mutate({url: account.apId, handle: account.handle});
             showToast({
                 title: 'Domain blocked',
                 type: 'success'
@@ -203,11 +203,12 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                             account={account}
                                             isBlocked={isBlocked}
                                             isDomainBlocked={isDomainBlocked}
-                                            trigger={<Button aria-label='Open profile menu' variant='outline'><LucideIcon.Ellipsis /></Button>}
                                             onBlockAccount={handleBlock}
                                             onBlockDomain={handleDomainBlock}
                                             onCopyHandle={handleCopy}
-                                        />
+                                        >
+                                            <Button aria-label='Open profile menu' variant='outline'><LucideIcon.Ellipsis /></Button>
+                                        </ProfileMenu>
                                     </div>
                                 }
                                 {isCurrentUser && !isLoadingAccount &&

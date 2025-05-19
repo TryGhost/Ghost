@@ -5,6 +5,7 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
 
 import APAvatar from '@components/global/APAvatar';
+import FeedItemStats from '@components/feed/FeedItemStats';
 import NotificationItem from './components/NotificationItem';
 import Separator from '@components/global/Separator';
 
@@ -60,6 +61,10 @@ function groupNotifications(notifications: Notification[]): NotificationGroup[] 
             // Group follows that are next to each other in the array
             groupKey = `follow_${notification.type}`;
             break;
+        case 'mention':
+            // Don't group mentions
+            groupKey = `mention_${notification.id}`;
+            break;
         }
 
         if (!groups[groupKey]) {
@@ -114,8 +119,11 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
         return <>{actorText} reposted your {group.post?.type === 'article' ? 'post' : 'note'}</>;
     case 'reply':
         if (group.inReplyTo && typeof group.inReplyTo !== 'string') {
-            return <>{actorText} replied to your {group.inReplyTo?.type === 'article' ? 'post' : 'note'}</>;
+            return actorText;
         }
+        break;
+    case 'mention':
+        return actorText;
     }
 
     return <></>;
@@ -132,6 +140,17 @@ const Notifications: React.FC = () => {
         }));
     };
 
+    const handleLikeClick = () => {
+        // Do API req or smth
+        // Don't need to know about setting timeouts or anything like that
+    };
+
+    const handleCommentClick = (postId?: string) => {
+        if (postId) {
+            navigate(`/feed/${encodeURIComponent(postId)}`);
+        }
+    };
+
     const maxAvatars = 5;
 
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = useNotificationsForUser('index');
@@ -140,8 +159,8 @@ const Notifications: React.FC = () => {
         data?.pages.flatMap((page) => {
             return groupNotifications(page.notifications);
         })
-        // If no notifications, return 5 empty groups for the loading state
-        ?? Array(5).fill({actors: [{}]}));
+        // If no notifications, return 10 empty groups for the loading state
+        ?? Array(10).fill({actors: [{}]}));
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -190,6 +209,11 @@ const Notifications: React.FC = () => {
                 toggleOpen(group.id || `${group.type}_${index}`);
             } else {
                 handleProfileClickRR(group.actors[0].handle, navigate);
+            }
+            break;
+        case 'mention':
+            if (group.post) {
+                navigate(`/feed/${encodeURIComponent(group.post.id)}`);
             }
             break;
         }
@@ -318,11 +342,11 @@ const Notifications: React.FC = () => {
                                                     }
                                                 </div>
                                                 {(
-                                                    (group.type === 'reply' && group.inReplyTo) ||
+                                                    ((group.type === 'reply' && group.inReplyTo) || group.type === 'mention') ||
                                                     (group.type === 'like' && !group.post?.name && group.post?.content) ||
                                                     (group.type === 'repost' && !group.post?.name && group.post?.content)
                                                 ) && (
-                                                    (group.type !== 'reply' ?
+                                                    (group.type !== 'reply' && group.type !== 'mention' ?
                                                         <div
                                                             dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '')}}
                                                             className='ap-note-content mt-0.5 line-clamp-1 text-pretty text-sm text-gray-700 dark:text-gray-600'
@@ -336,6 +360,24 @@ const Notifications: React.FC = () => {
                                                             </div>
                                                         </>
                                                     )
+                                                )}
+                                                {((group.type === 'reply' && group.post) || group.type === 'mention') && (
+                                                    <div className="mt-1.5">
+                                                        <FeedItemStats
+                                                            buttonClassName='hover:bg-gray-200'
+                                                            commentCount={group.post.replyCount || 0}
+                                                            layout="notification"
+                                                            likeCount={group.post.likeCount || 0}
+                                                            object={{
+                                                                ...group.post,
+                                                                liked: group.post.likedByMe,
+                                                                reposted: group.post.repostedByMe
+                                                            }}
+                                                            repostCount={group.post.repostCount || 0}
+                                                            onCommentClick={() => handleCommentClick(group.post?.id)}
+                                                            onLikeClick={handleLikeClick}
+                                                        />
+                                                    </div>
                                                 )}
                                             </NotificationItem.Content>
                                         </NotificationItem>

@@ -3,19 +3,15 @@ import DateRangeSelect from './components/DateRangeSelect';
 import PostMenu from './components/PostMenu';
 import React, {useMemo, useState} from 'react';
 import SortButton from './components/SortButton';
+import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {calculateYAxisWidth, getPeriodText, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
-
-// TODO: Move to @tryghost/shade
-const centsToDollars = (value: number) => {
-    return Math.round(value / 100);
-};
 
 type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
 
@@ -260,12 +256,9 @@ const Growth: React.FC = () => {
 
     return (
         <StatsLayout>
-            <ViewHeader className='before:hidden'>
-                <H1>Growth</H1>
-                <ViewHeaderActions>
-                    <DateRangeSelect />
-                </ViewHeaderActions>
-            </ViewHeader>
+            <StatsHeader>
+                <DateRangeSelect />
+            </StatsHeader>
             <StatsView data={chartData} isLoading={isLoading}>
                 <Card>
                     <CardContent>
@@ -310,7 +303,7 @@ const Growth: React.FC = () => {
                                             <div className='group/link inline-flex items-center gap-2'>
                                                 {post.post_id ?
                                                     <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
-                                                        navigate(`/posts/analytics/${post.post_id}`, {crossApp: true});
+                                                        navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
                                                     }}>
                                                         {post.title}
                                                     </Button>

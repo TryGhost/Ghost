@@ -4,12 +4,13 @@ import Newsletters from './views/Stats/Newsletters';
 import Sources from './views/Stats/Sources';
 import Web from './views/Stats/Web';
 import {RouteObject} from '@tryghost/admin-x-framework';
-import {withFeatureFlag} from './hooks/withFeatureFlag';
+// import {withFeatureFlag} from './hooks/withFeatureFlag';
 
 export const APP_ROUTE_PREFIX = '/stats';
 
 // Wrap all components with feature flag protection
-const ProtectedNewsletters = withFeatureFlag(Newsletters, 'trafficAnalyticsAlpha', '/web/', 'Newsletters');
+//  e.g.
+// const ProtectedNewsletters = withFeatureFlag(Newsletters, 'trafficAnalyticsAlpha', '/web/', 'Newsletters');
 
 export const routes: RouteObject[] = [
     {
@@ -36,6 +37,6 @@ export const routes: RouteObject[] = [
     ,
     {
         path: '/newsletters/',
-        element: <ProtectedNewsletters />
+        element: <Newsletters />
     }
 ];
