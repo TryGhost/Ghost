@@ -89,12 +89,12 @@ function emailTemplate(nodeData, feature) {
                         <td class="kg-header-card-content" style="${nodeData.layout === 'split' && nodeData.backgroundSize === 'contain' ? 'padding-top: 0;' : ''}">
                             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                 <tr>
-                                    <td>
+                                    <td align="${nodeData.alignment}">
                                         <h2 class="kg-header-card-heading" style="color:${nodeData.textColor};">${nodeData.header}</h2>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="kg-header-card-subheading-wrapper">
+                                    <td class="kg-header-card-subheading-wrapper" align="${nodeData.alignment}">
                                         <p class="kg-header-card-subheading" style="color:${nodeData.textColor};">${nodeData.subheader}</p>
                                     </td>
                                 </tr>

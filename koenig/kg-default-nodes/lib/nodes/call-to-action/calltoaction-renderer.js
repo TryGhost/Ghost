@@ -157,10 +157,10 @@ function emailCTATemplate(dataset, options = {}) {
                             </tr>
                             ${showButton(dataset) ? `
                                 <tr>
-                                    <td class="kg-cta-button-container">
+                                    <td class="kg-cta-button-container" align="${dataset.alignment}">
                                         <table class="btn" border="0" cellpadding="0" cellspacing="0">
                                             <tr>
-                                                <td class="${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}" style="${buttonStyle}">
+                                                <td class="${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}" style="${buttonStyle}" align="${dataset.alignment}">
                                                     <a href="${dataset.buttonUrl}"
                                                        class="${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}"
                                                        style="${buttonStyle}"
