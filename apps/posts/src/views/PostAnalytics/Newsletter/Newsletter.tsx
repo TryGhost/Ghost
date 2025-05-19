@@ -85,6 +85,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                 <Recharts.RadialBar
                     cornerRadius={10}
                     dataKey="value"
+                    minPointSize={1}
                     background
                 >
                     <Recharts.LabelList
