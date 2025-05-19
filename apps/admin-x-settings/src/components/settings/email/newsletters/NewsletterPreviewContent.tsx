@@ -251,14 +251,14 @@ const NewsletterPreviewContent: React.FC<{
                                         <p className="mb-6" style={{color: textColor}}>If you enjoy this piece and want more deep dives like it, consider upgrading your membership. Paid subscribers get <a className={clsx(linkStyle === 'underline' && 'underline', linkStyle === 'bold' && 'font-bold')} href="#" style={{color: linkColor || accentColor}}>exclusive reports</a>, early access to new features, and a behind-the-scenes look at how we put these stories together. Your support helps us continue delivering thoughtful, in-depth journalism straight to you.</p>
                                         <button
                                             className={clsx(
-                                                'px-[18px] py-2 font-sans text-[15px]',
+                                                'border px-[18px] py-2 font-sans text-[15px]',
                                                 buttonCorners === 'rounded' && 'rounded-[6px]',
                                                 buttonCorners === 'pill' && 'rounded-full',
                                                 buttonCorners === 'square' && 'rounded-none',
                                                 buttonStyle === 'outline'
-                                                    ? 'border bg-transparent'
-                                                    : 'text-white',
-                                                linkStyle === 'bold' && 'font-bold'
+                                                    ? 'bg-transparent'
+                                                    : 'border-transparent text-white',
+                                                linkStyle === 'bold' ? 'font-bold' : 'font-semibold'
                                             )}
                                             style={
                                                 buttonStyle === 'outline'
