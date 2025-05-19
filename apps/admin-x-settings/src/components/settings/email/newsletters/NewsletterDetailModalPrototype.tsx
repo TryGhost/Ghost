@@ -446,9 +446,27 @@ const Sidebar: React.FC<{
                                 hex: siteData.accent_color
                             }
                         ]}
-                        title='Heading color'
+                        title='Post title color'
                         value={newsletter.title_color}
                         onChange={color => updateNewsletter({title_color: color})}
+                    />
+                    <ColorPickerField
+                        direction='rtl'
+                        swatches={[
+                            {
+                                value: null,
+                                title: 'Auto',
+                                hex: backgroundColorIsDark() ? '#ffffff' : '#000000'
+                            },
+                            {
+                                value: 'accent',
+                                title: 'Accent',
+                                hex: siteData.accent_color
+                            }
+                        ]}
+                        title='Section title color'
+                        value={newsletter.section_title_color}
+                        onChange={color => updateNewsletter({section_title_color: color})}
                     />
                     <ColorPickerField
                         direction='rtl'
