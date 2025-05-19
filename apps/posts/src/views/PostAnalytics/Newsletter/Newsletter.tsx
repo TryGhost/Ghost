@@ -40,8 +40,8 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
     const chartComponentConfig = {
         innerRadius: 72,
         outerRadius: 110,
-        startAngle: -90,
-        endAngle: 270
+        startAngle: 90,
+        endAngle: -270
     };
 
     return (
@@ -60,13 +60,28 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                 <Recharts.RadialBar
                     cornerRadius={10}
                     dataKey="value"
-                    minPointSize={1}
+                    minPointSize={-2}
                     background
                 >
                     <Recharts.LabelList
-                        className="fill-white capitalize mix-blend-luminosity"
+                        className="capitalize"
                         dataKey="datatype"
                         fontSize={11}
+                        formatter={(value: string) => {
+                            let className = '';
+
+                            if (value === 'average') {
+                                className = 'fill-muted-foreground';
+                            } else if (data[1].value < 17) {
+                                className = 'fill-[#515151] mix-blend-exclusion';
+                            } else {
+                                className = 'fill-white';
+                            }
+
+                            return (
+                                <tspan className={`font-medium capitalize ${className}`}>{value}</tspan>
+                            );
+                        }}
                         position="insideStart"
                     />
                 </Recharts.RadialBar>
@@ -82,7 +97,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                                         y={viewBox.cy}
                                     >
                                         <tspan
-                                            className="fill-foreground text-[2.6rem] font-semibold"
+                                            className="fill-foreground text-[2.6rem] font-semibold tracking-tight"
                                             x={viewBox.cx}
                                             y={viewBox.cy}
                                         >
@@ -102,7 +117,19 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                     />
                 </Recharts.PolarRadiusAxis>
                 <ChartTooltip
-                    content={<ChartTooltipContent nameKey="datatype" hideLabel />}
+                    content={<ChartTooltipContent
+                        formatter={(value, _, props) => {
+                            return (
+                                <div className='flex items-center gap-1'>
+                                    <div className='size-2.5 rounded-[2px]' style={{backgroundColor: props.payload?.fill}}></div>
+                                    <div className='text-xs capitalize text-muted-foreground'>{props.payload?.datatype}</div>
+                                    <div className='ml-3 font-mono text-xs'>{value}%</div>
+                                </div>
+                            );
+                        }}
+                        nameKey="datatype"
+                        hideLabel
+                    />}
                     cursor={false}
                 />
             </Recharts.RadialBarChart>
@@ -174,7 +201,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const barDomain = [0, 1];
     const barTicks = [0, 0.25, 0.5, 0.75, 1];
     const barChartData = [
-        {metric: 'Sent', current: 1, average: 1},
+        // {metric: 'Sent', current: 1, average: 1},
         {metric: 'Opened', current: stats.openedRate, average: averageStats.openedRate},
         {metric: 'Clicked', current: stats.clickedRate, average: averageStats.clickedRate}
     ];
@@ -217,26 +244,26 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     }, [topLinks]); // Only recalculate when topLinks changes
 
     // "Sent" Chart
-    const sentChartData: NewsletterRadialChartData[] = [
-        {datatype: 'average', value: 100, fill: 'hsl(var(--chart-darkgray))'},
-        {datatype: 'This newsletter', value: 100, fill: 'hsl(var(--chart-purple))'}
-    ];
+    // const sentChartData: NewsletterRadialChartData[] = [
+    //     {datatype: 'average', value: 100, fill: 'hsl(var(--chart-gray))'},
+    //     {datatype: 'This newsletter', value: 100, fill: 'hsl(var(--chart-purple))'}
+    // ];
 
-    const sentChartConfig = {
-        percentage: {
-            label: 'O'
-        },
-        average: {
-            label: 'Average'
-        },
-        'This newsletter': {
-            label: 'This newsletter'
-        }
-    } satisfies ChartConfig;
+    // const sentChartConfig = {
+    //     percentage: {
+    //         label: 'O'
+    //     },
+    //     average: {
+    //         label: 'Average'
+    //     },
+    //     'This newsletter': {
+    //         label: 'This newsletter'
+    //     }
+    // } satisfies ChartConfig;
 
     // "Opened" Chart
     const openedChartData: NewsletterRadialChartData[] = [
-        {datatype: 'average', value: averageStats.openedRate * 100, fill: 'hsl(var(--chart-darkgray))'},
+        {datatype: 'average', value: averageStats.openedRate * 100, fill: 'hsl(var(--chart-gray))'},
         {datatype: 'This newsletter', value: stats.openedRate * 100, fill: 'hsl(var(--chart-blue))'}
     ];
 
@@ -254,7 +281,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     // "Clicked" Chart
     const clickedChartData: NewsletterRadialChartData[] = [
-        {datatype: 'average', value: averageStats.clickedRate * 100, fill: 'hsl(var(--chart-darkgray))'},
+        {datatype: 'average', value: averageStats.clickedRate * 100, fill: 'hsl(var(--chart-gray))'},
         {datatype: 'This newsletter', value: stats.clickedRate * 100, fill: 'hsl(var(--chart-green))'}
     ];
 
@@ -289,8 +316,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                 <div className='grid grid-cols-3 items-stretch border-b'>
                                     <KpiCard className='relative grow'>
                                         <KpiCardLabel>
-                                            <div className='size-2.5 rounded-full bg-purple/30'></div>
-                                            {/* <LucideIcon.Send strokeWidth={1.5} /> */}
+                                            {/* <div className='size-2.5 rounded-full bg-purple/30'></div> */}
+                                            <LucideIcon.Send strokeWidth={1.5} />
                                             Sent
                                         </KpiCardLabel>
                                         <KpiCardContent>
@@ -300,8 +327,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     </KpiCard>
                                     <KpiCard className='relative grow'>
                                         <KpiCardLabel>
-                                            <div className='size-2.5 rounded-full bg-blue/30'></div>
-                                            {/* <LucideIcon.MailOpen strokeWidth={1.5} /> */}
+                                            {/* <div className='size-2.5 rounded-full bg-blue/30'></div> */}
+                                            <LucideIcon.MailOpen strokeWidth={1.5} />
                                             Opened
                                         </KpiCardLabel>
                                         <KpiCardContent>
@@ -311,8 +338,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     </KpiCard>
                                     <KpiCard className='grow'>
                                         <KpiCardLabel>
-                                            <div className='size-2.5 rounded-full bg-green/30'></div>
-                                            {/* <LucideIcon.MousePointerClick strokeWidth={1.5} /> */}
+                                            {/* <div className='size-2.5 rounded-full bg-green/30'></div> */}
+                                            <LucideIcon.MousePointerClick strokeWidth={1.5} />
                                             Clicked
                                         </KpiCardLabel>
                                         <KpiCardContent>
@@ -326,16 +353,16 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         <TabsTrigger value="bar"><LucideIcon.ChartNoAxesColumnDecreasing /></TabsTrigger>
                                     </TabsList>
                                     <TabsContent value="radial">
-                                        <div className='grid grid-cols-3 items-center justify-center'>
-                                            <div className='border-r px-6'>
+                                        <div className='mx-auto flex flex-wrap items-center justify-center lg:gap-[10vw]'>
+                                            {/* <div className='border-r px-6'>
                                                 <NewsletterRadialChart
                                                     config={sentChartConfig}
                                                     data={sentChartData}
                                                     percentageLabel='Sent'
                                                     percentageValue={1}
                                                 />
-                                            </div>
-                                            <div className='border-r px-6'>
+                                            </div> */}
+                                            <div className='min-w-[250px] px-6'>
                                                 <NewsletterRadialChart
                                                     config={openedChartConfig}
                                                     data={openedChartData}
@@ -343,7 +370,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                     percentageValue={stats.openedRate}
                                                 />
                                             </div>
-                                            <div className='px-6'>
+                                            <div className='min-w-[250px] px-6'>
                                                 <NewsletterRadialChart
                                                     config={clickedChartConfig}
                                                     data={clickedChartData}
@@ -352,6 +379,20 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                 />
                                             </div>
                                         </div>
+                                        {/* <div className='flex flex-wrap items-center justify-center gap-6 p-6 text-xs text-muted-foreground'>
+                                            <div className='flex items-center gap-1'>
+                                                <div className='size-2.5 rounded-sm bg-blue'></div>
+                                                <span>Opened this newsletter</span>
+                                            </div>
+                                            <div className='flex items-center gap-1'>
+                                                <div className='size-2.5 rounded-sm bg-green'></div>
+                                                <span>Clicked this newsletter</span>
+                                            </div>
+                                            <div className='flex items-center gap-1'>
+                                                <div className='size-2.5 rounded-[3px] bg-gray-500'></div>
+                                                <span>Average</span>
+                                            </div>
+                                        </div> */}
                                     </TabsContent>
                                     <TabsContent value="bar">
                                         <div>

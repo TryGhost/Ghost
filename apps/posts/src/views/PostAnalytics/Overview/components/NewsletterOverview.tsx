@@ -73,10 +73,10 @@ const NewsletterOverview:React.FC = () => {
                         >
                             <Recharts.RadialBarChart
                                 data={opensChartData}
-                                endAngle={380}
+                                endAngle={-270}
                                 innerRadius={72}
                                 outerRadius={110}
-                                startAngle={-90}
+                                startAngle={90}
                             >
                                 <Recharts.PolarGrid
                                     className="first:fill-muted last:fill-background"
@@ -85,7 +85,7 @@ const NewsletterOverview:React.FC = () => {
                                     radialLines={false}
                                     stroke="none"
                                 />
-                                <Recharts.RadialBar cornerRadius={10} dataKey="opens" background />
+                                <Recharts.RadialBar cornerRadius={10} dataKey="opens" minPointSize={-2} background />
                                 <Recharts.PolarRadiusAxis axisLine={false} tick={false} tickLine={false}>
                                     <Recharts.Label
                                         content={({viewBox}) => {
@@ -98,7 +98,7 @@ const NewsletterOverview:React.FC = () => {
                                                         y={viewBox.cy}
                                                     >
                                                         <tspan
-                                                            className="fill-foreground text-[2.6rem] font-semibold"
+                                                            className="fill-foreground text-[2.6rem] font-semibold tracking-tight"
                                                             x={viewBox.cx}
                                                             y={viewBox.cy}
                                                         >
@@ -126,10 +126,10 @@ const NewsletterOverview:React.FC = () => {
                         >
                             <Recharts.RadialBarChart
                                 data={clicksChartData}
-                                // endAngle={29}
+                                endAngle={270}
                                 innerRadius={72}
                                 outerRadius={110}
-                                // startAngle={90}
+                                startAngle={-90}
                             >
                                 <Recharts.PolarGrid
                                     className="first:fill-muted last:fill-background"
@@ -138,7 +138,7 @@ const NewsletterOverview:React.FC = () => {
                                     radialLines={false}
                                     stroke="none"
                                 />
-                                <Recharts.RadialBar cornerRadius={10} dataKey="clicks" background />
+                                <Recharts.RadialBar cornerRadius={10} dataKey="clicks" minPointSize={-2} background />
                                 <Recharts.PolarRadiusAxis axisLine={false} tick={false} tickLine={false}>
                                     <Recharts.Label
                                         content={({viewBox}) => {
@@ -151,7 +151,7 @@ const NewsletterOverview:React.FC = () => {
                                                         y={viewBox.cy}
                                                     >
                                                         <tspan
-                                                            className="fill-foreground text-[2.6rem] font-semibold"
+                                                            className="fill-foreground text-[2.6rem] font-semibold tracking-tight"
                                                             x={viewBox.cx}
                                                             y={viewBox.cy}
                                                         >
