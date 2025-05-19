@@ -305,11 +305,12 @@ const NewsletterPreviewContent: React.FC<{
                                     </>
                                 ) : (
                                     <>
-                                        <p className="mb-6" style={{color: textColor}}>This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.</p>
-                                        <p className="mb-6" style={{color: textColor}}>Over there on the right you&apos;ll see some settings that allow you to customize the look and feel of this template to make it perfectly suited to your brand. Email templates are exceptionally finnicky to make, but we&apos;ve spent a long time optimising this one to make it work beautifully across devices, email clients and content types.</p>
-                                        <p className="mb-6" style={{color: textColor}}>So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.</p>
-                                        {hasEmailCustomizationAlpha && (
+                                        {hasEmailCustomizationAlpha ? (
                                             <>
+                                                <p className="mb-6" style={{color: textColor}}>The promise of delivery apps is simple: tap a button, and your favorite meal arrives at your door within minutes. But behind the scenes, these platforms are <a className={clsx(linkStyle === 'underline' && 'underline', linkStyle === 'bold' && 'font-bold')} href="#" style={{color: linkColor || accentColor}}>reshaping local economies</a> in ways few people realize.</p>
+                                                <p className="mb-6" style={{color: textColor}}>Across the country, small restaurants are grappling with rising fees—sometimes up to 30% per order—cutting into already-thin profit margins. In some cases, beloved neighborhood spots have had to shut their doors, unable to keep up with the financial strain. Meanwhile, delivery workers, the backbone of these services, often face unpredictable wages and challenging working conditions.</p>
+                                                <hr className={clsx('my-6 border-[#e0e7eb]', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-t-0 border-dotted')} style={{borderColor: dividerColor}} />
+                                                <p className="mb-6" style={{color: textColor}}>If you enjoy this piece and want more deep dives like it, consider upgrading your membership. Paid subscribers get <a className={clsx(linkStyle === 'underline' && 'underline', linkStyle === 'bold' && 'font-bold')} href="#" style={{color: linkColor || accentColor}}>exclusive reports</a>, early access to new features, and a behind-the-scenes look at how we put these stories together. Your support helps us continue delivering thoughtful, in-depth journalism straight to you.</p>
                                                 <button
                                                     className={clsx(
                                                         'px-[18px] py-2 font-sans text-[15px]',
@@ -363,6 +364,12 @@ const NewsletterPreviewContent: React.FC<{
                                                     style={{color: sectionTitleColor}}>Reimagining How We Eat</h3>
                                                 <p className="mb-6" style={{color: textColor}}>Consumers are also starting to pay more attention. There&apos;s a growing movement toward mindful eating—not just in terms of ingredients, but in how we support the systems that bring food to our tables. Choosing to pick up instead of ordering in, tipping delivery drivers fairly, or subscribing to local restaurant coalitions can all make a difference.</p>
                                                 <p className="mb-6" style={{color: textColor}}>Ultimately, the story of delivery apps isn’t just about technology or convenience—it’s about the kind of communities we want to live in. And that future depends, in part, on the choices we make every day.</p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <p className="mb-6" style={{color: textColor}}>This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.</p>
+                                                <p className="mb-6" style={{color: textColor}}>Over there on the right you&apos;ll see some settings that allow you to customize the look and feel of this template to make it perfectly suited to your brand. Email templates are exceptionally finnicky to make, but we&apos;ve spent a long time optimising this one to make it work beautifully across devices, email clients and content types.</p>
+                                                <p className="mb-6" style={{color: textColor}}>So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.</p>
                                             </>
                                         )}
                                     </>
