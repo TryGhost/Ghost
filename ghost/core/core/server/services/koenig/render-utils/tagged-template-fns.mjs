@@ -1,4 +1,10 @@
 const oneline = function (strings, ...values) {
+    // Handle case where a plain string is passed
+    if (typeof strings === 'string') {
+        return strings.replace(/\n\s+/g, '').trim();
+    }
+
+    // Handle tagged template literal case
     const result = strings.reduce((acc, str, i) => {
         return acc + str + (values[i] || '');
     }, '');
