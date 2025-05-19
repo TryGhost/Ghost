@@ -50,6 +50,10 @@ WORKDIR /home/ghost
 
 COPY package.json yarn.lock ./
 
+# Calculate a hash of the yarn.lock file
+## See development.entrypoint.sh for more info
+RUN mkdir -p .yarnhash && md5sum yarn.lock | awk '{print $1}' > .yarnhash/yarn.lock.md5
+
 # Copy all package.json files
 COPY apps/stats/package.json apps/stats/package.json
 COPY apps/admin-x-activitypub/package.json apps/admin-x-activitypub/package.json
