@@ -43,6 +43,97 @@ export const cleanTrackedUrl = (url: string, showTitle = false): string => {
     return urlPart;
 };
 
+type NewsletterRadialChartData = {
+    datatype: string,
+    value: number,
+    fill: string
+}
+
+interface NewsletterRadialChartProps {
+    data: NewsletterRadialChartData[],
+    config: ChartConfig,
+    percentageValue: number,
+    percentageLabel: string
+}
+
+const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
+    config,
+    data,
+    percentageValue,
+    percentageLabel
+}) => {
+    const chartComponentConfig = {
+        innerRadius: 72,
+        outerRadius: 110,
+        startAngle: -90,
+        endAngle: 270
+    };
+
+    return (
+        <ChartContainer
+            className='mx-auto aspect-square max-h-[250px]'
+            config={config}
+        >
+            <Recharts.RadialBarChart
+                data={data}
+                endAngle={chartComponentConfig.endAngle}
+                innerRadius={chartComponentConfig.innerRadius}
+                outerRadius={chartComponentConfig.outerRadius}
+                startAngle={chartComponentConfig.startAngle}
+            >
+                <Recharts.PolarAngleAxis angleAxisId={0} domain={[0, 100]} tick={false} type="number" />
+                <Recharts.RadialBar
+                    cornerRadius={10}
+                    dataKey="value"
+                    background
+                >
+                    <Recharts.LabelList
+                        className="fill-white capitalize mix-blend-luminosity"
+                        dataKey="datatype"
+                        fontSize={11}
+                        position="insideStart"
+                    />
+                </Recharts.RadialBar>
+                <Recharts.PolarRadiusAxis axisLine={false} tick={false} tickLine={false}>
+                    <Recharts.Label
+                        content={({viewBox}) => {
+                            if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+                                return (
+                                    <text
+                                        dominantBaseline="middle"
+                                        textAnchor="middle"
+                                        x={viewBox.cx}
+                                        y={viewBox.cy}
+                                    >
+                                        <tspan
+                                            className="fill-foreground text-[2.6rem] font-semibold"
+                                            x={viewBox.cx}
+                                            y={viewBox.cy}
+                                        >
+                                            {formatPercentage(percentageValue)}
+                                        </tspan>
+                                        <tspan
+                                            className="fill-muted-foreground font-medium"
+                                            x={viewBox.cx}
+                                            y={(viewBox.cy || 0) + 24}
+                                        >
+                                            {percentageLabel}
+                                        </tspan>
+                                    </text>
+                                );
+                            }
+                        }}
+                    />
+                </Recharts.PolarRadiusAxis>
+                <ChartTooltip
+                    content={<ChartTooltipContent nameKey="datatype" hideLabel />}
+                    cursor={false}
+                />
+            </Recharts.RadialBarChart>
+        </ChartContainer>
+    );
+};
+
 const Newsletter: React.FC<postAnalyticsProps> = () => {
     const {postId} = useParams();
     const [editingUrl, setEditingUrl] = useState<string | null>(null);
@@ -123,9 +214,28 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         return Object.values(processedLinks).sort((a, b) => b.clicks - a.clicks);
     }, [topLinks]); // Only recalculate when topLinks changes
 
-    const openedChartData = [
-        {datatype: 'average', opens: averageStats.openedRate * 100, fill: 'var(--color-average)'},
-        {datatype: 'current', opens: stats.openedRate * 100, fill: 'var(--color-current)'}
+    // "Sent" Chart
+    const sentChartData: NewsletterRadialChartData[] = [
+        {datatype: 'average', value: 100, fill: 'hsl(var(--chart-darkgray))'},
+        {datatype: 'This newsletter', value: 100, fill: 'hsl(var(--chart-purple))'}
+    ];
+
+    const sentChartConfig = {
+        percentage: {
+            label: 'O'
+        },
+        average: {
+            label: 'Average'
+        },
+        'This newsletter': {
+            label: 'This newsletter'
+        }
+    } satisfies ChartConfig;
+
+    // "Opened" Chart
+    const openedChartData: NewsletterRadialChartData[] = [
+        {datatype: 'average', value: averageStats.openedRate * 100, fill: 'hsl(var(--chart-darkgray))'},
+        {datatype: 'This newsletter', value: stats.openedRate * 100, fill: 'hsl(var(--chart-blue))'}
     ];
 
     const openedChartConfig = {
@@ -133,21 +243,30 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
             label: 'O'
         },
         average: {
-            label: 'Average',
-            color: 'hsl(var(--chart-darkgray))'
+            label: 'Average'
         },
-        current: {
-            label: 'Current',
-            color: 'hsl(var(--chart-blue))'
+        'This newsletter': {
+            label: 'This newsletter'
         }
     } satisfies ChartConfig;
 
-    const chartComponentConfig = {
-        innerRadius: 72,
-        outerRadius: 110,
-        startAngle: -90,
-        endAngle: 270
-    };
+    // "Clicked" Chart
+    const clickedChartData: NewsletterRadialChartData[] = [
+        {datatype: 'average', value: averageStats.clickedRate * 100, fill: 'hsl(var(--chart-darkgray))'},
+        {datatype: 'This newsletter', value: stats.clickedRate * 100, fill: 'hsl(var(--chart-green))'}
+    ];
+
+    const clickedChartConfig = {
+        percentage: {
+            label: 'O'
+        },
+        average: {
+            label: 'Average'
+        },
+        'This newsletter': {
+            label: 'This newsletter'
+        }
+    } satisfies ChartConfig;
 
     return (
         <>
@@ -194,67 +313,32 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         </KpiCardContent>
                                     </KpiCard>
                                 </div>
-                                <ChartContainer
-                                    className="mx-auto aspect-square max-h-[250px]"
-                                    config={openedChartConfig}
-                                >
-                                    <Recharts.RadialBarChart
-                                        data={openedChartData}
-                                        endAngle={chartComponentConfig.endAngle}
-                                        innerRadius={chartComponentConfig.innerRadius}
-                                        outerRadius={chartComponentConfig.outerRadius}
-                                        startAngle={chartComponentConfig.startAngle}
-                                    >
-                                        <Recharts.PolarAngleAxis angleAxisId={0} domain={[0, 100]} tick={false} type="number" />
-                                        <Recharts.RadialBar
-                                            cornerRadius={10}
-                                            dataKey="opens"
-                                            background
-                                        >
-                                            <Recharts.LabelList
-                                                className="fill-white capitalize mix-blend-luminosity"
-                                                dataKey="datatype"
-                                                fontSize={11}
-                                                position="insideStart"
-                                            />
-                                        </Recharts.RadialBar>
-                                        <Recharts.PolarRadiusAxis axisLine={false} tick={false} tickLine={false}>
-                                            <Recharts.Label
-                                                content={({viewBox}) => {
-                                                    if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
-                                                        return (
-                                                            <text
-                                                                dominantBaseline="middle"
-                                                                textAnchor="middle"
-                                                                x={viewBox.cx}
-                                                                y={viewBox.cy}
-                                                            >
-                                                                <tspan
-                                                                    className="fill-foreground text-[2.6rem] font-semibold"
-                                                                    x={viewBox.cx}
-                                                                    y={viewBox.cy}
-                                                                >
-                                                                    {formatPercentage(stats.openedRate)}
-                                                                </tspan>
-                                                                <tspan
-                                                                    className="fill-muted-foreground font-medium"
-                                                                    x={viewBox.cx}
-                                                                    y={(viewBox.cy || 0) + 24}
-                                                                >
-                                                                Opens
-                                                                </tspan>
-                                                            </text>
-                                                        );
-                                                    }
-                                                }}
-                                            />
-                                        </Recharts.PolarRadiusAxis>
-                                        <ChartTooltip
-                                            content={<ChartTooltipContent nameKey="datatype" hideLabel />}
-                                            cursor={false}
+                                <div className='grid grid-cols-3 items-center justify-center'>
+                                    <div>
+                                        <NewsletterRadialChart
+                                            config={sentChartConfig}
+                                            data={sentChartData}
+                                            percentageLabel='Sent'
+                                            percentageValue={1}
                                         />
-                                    </Recharts.RadialBarChart>
-                                </ChartContainer>
+                                    </div>
+                                    <div>
+                                        <NewsletterRadialChart
+                                            config={openedChartConfig}
+                                            data={openedChartData}
+                                            percentageLabel='Opened'
+                                            percentageValue={stats.openedRate}
+                                        />
+                                    </div>
+                                    <div>
+                                        <NewsletterRadialChart
+                                            config={clickedChartConfig}
+                                            data={clickedChartData}
+                                            percentageLabel='Clicked'
+                                            percentageValue={stats.clickedRate}
+                                        />
+                                    </div>
+                                </div>
                                 {/* <ChartContainer className='mt-10 max-h-[320px] w-full' config={chartConfig}>
                                     <Recharts.BarChart barCategoryGap={24} data={chartData} accessibilityLayer>
                                         <Recharts.CartesianGrid vertical={false} />
