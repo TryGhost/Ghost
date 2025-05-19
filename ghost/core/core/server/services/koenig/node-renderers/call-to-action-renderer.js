@@ -59,9 +59,31 @@ function ctaCardTemplate(dataset) {
 }
 
 function emailCTATemplate(dataset, options = {}) {
-    const buttonStyle = dataset.buttonColor === 'accent'
+    // accent button color backgrounds are set in main template styles,
+    // for other button colors we need to set the background color explicitly
+    let buttonStyle = dataset.buttonColor === 'accent'
         ? `color: ${dataset.buttonTextColor};`
         : `background-color: ${dataset.buttonColor}; color: ${dataset.buttonTextColor};`;
+    // by default we duplicate style across the <td> and <a> tags, but
+    // we separate the variables to allow <a> tag style overrides for outline buttons
+    let buttonLinkStyle = buttonStyle;
+
+    if (
+        options?.feature?.emailCustomizationAlpha &&
+        options?.design?.buttonStyle === 'outline' &&
+        // accent buttons are fully handled by main template CSS
+        dataset.buttonColor !== 'accent'
+    ) {
+        buttonStyle = `
+            border: 1px solid ${dataset.buttonColor};
+            background-color: transparent;
+            color: ${dataset.buttonColor};
+        `;
+        buttonLinkStyle = `
+            background-color: transparent;
+            color: ${dataset.buttonColor};
+        `;
+    }
 
     let imageDimensions;
 
@@ -114,7 +136,7 @@ function emailCTATemplate(dataset, options = {}) {
                                                             <td class="${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}" style="${buttonStyle}">
                                                                 <a href="${dataset.buttonUrl}"
                                                                    class="${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}"
-                                                                   style="${buttonStyle}"
+                                                                   style="${buttonLinkStyle}"
                                                                 >
                                                                     ${dataset.buttonText}
                                                                 </a>
@@ -163,7 +185,7 @@ function emailCTATemplate(dataset, options = {}) {
                                                 <td class="${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}" style="${buttonStyle}" align="${dataset.alignment}">
                                                     <a href="${dataset.buttonUrl}"
                                                        class="${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}"
-                                                       style="${buttonStyle}"
+                                                       style="${buttonLinkStyle}"
                                                     >
                                                         ${dataset.buttonText}
                                                     </a>
