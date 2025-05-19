@@ -1146,17 +1146,34 @@ img.kg-cta-image {
 }
 
 .kg-cta-minimal table.btn td.kg-style-accent {
+    {{#if hasOutlineButtons}}
+    background-color: transparent !important;
+    color: {{adjustedAccentColor}} !important;
+    border: 1px solid {{adjustedAccentColor}} !important;
+    {{else}}
     background-color: {{accentColor}} !important;
+    {{/if}}
 }
 
 .kg-cta-immersive table.btn td.kg-style-accent {
+    {{#if hasOutlineButtons}}
+    background-color: transparent !important;
+    color: {{adjustedAccentColor}} !important;
+    border: 1px solid {{adjustedAccentColor}} !important;
+    {{else}}
     background-color: {{accentColor}} !important;
     color: #fff !important;
+    {{/if}}
 }
 
 .kg-cta-card .btn a.kg-style-accent {
+    {{#if hasOutlineButtons}}
+    background-color: transparent !important;
+    color: {{adjustedAccentColor}} !important;
+    {{else}}
     background-color: {{accentColor}} !important;
     color: #fff !important;
+    {{/if}}
 }
 
 .kg-cta-has-img.kg-cta-immersive table.btn {
@@ -1754,13 +1771,23 @@ table.btn a {
 }
 
 table.btn-accent td {
+    {{#if hasOutlineButtons}}
+    border: 1px solid {{adjustedAccentColor}};
+    {{else}}
     background-color: {{adjustedAccentColor}};
+    {{/if}}
 }
 
 table.btn-accent a {
+    {{#if hasOutlineButtons}}
+    background-color: transparent;
+    border-color: {{adjustedAccentColor}};
+    color: {{adjustedAccentColor}};
+    {{else}}
     background-color: {{adjustedAccentColor}};
     border-color: {{adjustedAccentColor}};
     color: {{adjustedAccentContrastColor}};
+    {{/if}}
 }
 {{else}}
 .btn {

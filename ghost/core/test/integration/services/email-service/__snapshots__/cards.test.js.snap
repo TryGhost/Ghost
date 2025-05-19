@@ -4638,12 +4638,12 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                         <td class=\\"kg-header-card-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 40px;\\" valign=\\"top\\">
                             <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                 <tbody><tr>
-                                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                    <td align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
                                         <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; font-size: 32px; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class=\\"kg-header-card-subheading-wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 16px 0 0;\\" valign=\\"top\\">
+                                    <td class=\\"kg-header-card-subheading-wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 16px 0 0;\\" valign=\\"top\\">
                                         <p class=\\"kg-header-card-subheading\\" style=\\"margin: 0; font-size: 17px; line-height: 1.5em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">This header renders properly in </span><i><em class=\\"italic\\" style=\\"white-space: pre-wrap;\\">all</em></i><span style=\\"white-space: pre-wrap;\\"> email clients!</span></p>
                                     </td>
                                 </tr>
@@ -5918,12 +5918,12 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                         <td class=\\"kg-header-card-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 40px;\\" valign=\\"top\\">
                             <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                 <tbody><tr>
-                                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                    <td align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
                                         <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; font-size: 32px; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class=\\"kg-header-card-subheading-wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 16px 0 0;\\" valign=\\"top\\">
+                                    <td class=\\"kg-header-card-subheading-wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 16px 0 0;\\" valign=\\"top\\">
                                         <p class=\\"kg-header-card-subheading\\" style=\\"margin: 0; font-size: 17px; line-height: 1.5em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">This header renders properly in </span><i><em class=\\"italic\\" style=\\"white-space: pre-wrap;\\">all</em></i><span style=\\"white-space: pre-wrap;\\"> email clients!</span></p>
                                     </td>
                                 </tr>
