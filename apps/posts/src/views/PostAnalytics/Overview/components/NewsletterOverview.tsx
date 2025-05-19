@@ -72,10 +72,10 @@ const NewsletterOverview:React.FC = () => {
                         >
                             <Recharts.RadialBarChart
                                 data={opensChartData}
-                                // endAngle={2}
+                                endAngle={380}
                                 innerRadius={72}
                                 outerRadius={110}
-                                // startAngle={90}
+                                startAngle={-90}
                             >
                                 <Recharts.PolarGrid
                                     className="first:fill-muted last:fill-background"

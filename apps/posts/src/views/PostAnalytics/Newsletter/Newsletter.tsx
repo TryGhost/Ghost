@@ -2,7 +2,7 @@
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, calculateYAxisWidth, formatNumber, formatPercentage} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {useParams} from '@tryghost/admin-x-framework';
@@ -98,23 +98,6 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     const isLoading = isNewsletterStatsLoading;
 
-    const barDomain = [0, 1];
-    const barTicks = [0, 0.25, 0.5, 0.75, 1];
-    const chartData = [
-        {metric: 'Opened', current: stats.openedRate, average: averageStats.openedRate},
-        {metric: 'Clicked', current: stats.clickedRate, average: averageStats.clickedRate}
-    ];
-    const chartConfig = {
-        current: {
-            label: 'This post',
-            color: 'hsl(var(--chart-1))'
-        },
-        average: {
-            label: 'Your average newsletter',
-            color: 'hsl(var(--chart-gray))'
-        }
-    } satisfies ChartConfig;
-
     // Memoize link processing to avoid unnecessary recomputation on renders
     const displayLinks = useMemo(() => {
         // Process links data to group by URL
@@ -139,6 +122,32 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         // Sort by click count
         return Object.values(processedLinks).sort((a, b) => b.clicks - a.clicks);
     }, [topLinks]); // Only recalculate when topLinks changes
+
+    const openedChartData = [
+        {datatype: 'average', opens: averageStats.openedRate * 100, fill: 'var(--color-average)'},
+        {datatype: 'current', opens: stats.openedRate * 100, fill: 'var(--color-current)'}
+    ];
+
+    const openedChartConfig = {
+        percentage: {
+            label: 'O'
+        },
+        average: {
+            label: 'Average',
+            color: 'hsl(var(--chart-darkgray))'
+        },
+        current: {
+            label: 'Current',
+            color: 'hsl(var(--chart-blue))'
+        }
+    } satisfies ChartConfig;
+
+    const chartComponentConfig = {
+        innerRadius: 72,
+        outerRadius: 110,
+        startAngle: -90,
+        endAngle: 270
+    };
 
     return (
         <>
@@ -185,7 +194,68 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         </KpiCardContent>
                                     </KpiCard>
                                 </div>
-                                <ChartContainer className='mt-10 max-h-[320px] w-full' config={chartConfig}>
+                                <ChartContainer
+                                    className="mx-auto aspect-square max-h-[250px]"
+                                    config={openedChartConfig}
+                                >
+                                    <Recharts.RadialBarChart
+                                        data={openedChartData}
+                                        endAngle={chartComponentConfig.endAngle}
+                                        innerRadius={chartComponentConfig.innerRadius}
+                                        outerRadius={chartComponentConfig.outerRadius}
+                                        startAngle={chartComponentConfig.startAngle}
+                                    >
+                                        <Recharts.PolarAngleAxis angleAxisId={0} domain={[0, 100]} tick={false} type="number" />
+                                        <Recharts.RadialBar
+                                            cornerRadius={10}
+                                            dataKey="opens"
+                                            background
+                                        >
+                                            <Recharts.LabelList
+                                                className="fill-white capitalize mix-blend-luminosity"
+                                                dataKey="datatype"
+                                                fontSize={11}
+                                                position="insideStart"
+                                            />
+                                        </Recharts.RadialBar>
+                                        <Recharts.PolarRadiusAxis axisLine={false} tick={false} tickLine={false}>
+                                            <Recharts.Label
+                                                content={({viewBox}) => {
+                                                    if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+                                                        return (
+                                                            <text
+                                                                dominantBaseline="middle"
+                                                                textAnchor="middle"
+                                                                x={viewBox.cx}
+                                                                y={viewBox.cy}
+                                                            >
+                                                                <tspan
+                                                                    className="fill-foreground text-[2.6rem] font-semibold"
+                                                                    x={viewBox.cx}
+                                                                    y={viewBox.cy}
+                                                                >
+                                                                    {formatPercentage(stats.openedRate)}
+                                                                </tspan>
+                                                                <tspan
+                                                                    className="fill-muted-foreground font-medium"
+                                                                    x={viewBox.cx}
+                                                                    y={(viewBox.cy || 0) + 24}
+                                                                >
+                                                                Opens
+                                                                </tspan>
+                                                            </text>
+                                                        );
+                                                    }
+                                                }}
+                                            />
+                                        </Recharts.PolarRadiusAxis>
+                                        <ChartTooltip
+                                            content={<ChartTooltipContent nameKey="datatype" hideLabel />}
+                                            cursor={false}
+                                        />
+                                    </Recharts.RadialBarChart>
+                                </ChartContainer>
+                                {/* <ChartContainer className='mt-10 max-h-[320px] w-full' config={chartConfig}>
                                     <Recharts.BarChart barCategoryGap={24} data={chartData} accessibilityLayer>
                                         <Recharts.CartesianGrid vertical={false} />
                                         <Recharts.YAxis
@@ -241,7 +311,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         />
                                         <ChartLegend content={<ChartLegendContent />} />
                                     </Recharts.BarChart>
-                                </ChartContainer>
+                                </ChartContainer> */}
                             </CardContent>
                         </Card>
                         <Card>
