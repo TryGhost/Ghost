@@ -5,6 +5,8 @@ const {dom, createDocument, html: htmlTemplate} = require('../test-utils');
 const {CallToActionNode, $isCallToActionNode, utils} = require('../../');
 const editorNodes = [CallToActionNode];
 
+const {taggedTemplateFns: {oneline}} = utils;
+
 describe('CallToActionNode', function () {
     let editor;
     let dataset;
@@ -46,7 +48,8 @@ describe('CallToActionNode', function () {
         exportOptions = {
             exportFormat: 'html',
             dom,
-            feature: {}
+            feature: {},
+            design: {}
         };
     });
 
@@ -490,6 +493,40 @@ describe('CallToActionNode', function () {
                 // check for an emailCustomizationAlpha specific change to make
                 // sure we're hitting the right code path
                 should.exist(element.querySelector('table.btn'), 'table.btn element should exist');
+            });
+        }));
+
+        it('can render outline accent buttons (emailCustomizationAlpha)', editorTest(function () {
+            exportOptions.target = 'email';
+            exportOptions.feature.emailCustomizationAlpha = true;
+            exportOptions.design.buttonStyle = 'outline';
+
+            dataset.buttonColor = 'accent';
+
+            testRender(({element}) => {
+                const expectedStyle = 'color: none;';
+                element.querySelector('table.btn td').getAttribute('style').should.equal(expectedStyle);
+                element.querySelector('table.btn a').getAttribute('style').should.equal(expectedStyle);
+            });
+        }));
+
+        it('can render outline custom buttons (emailCustomizationAlpha)', editorTest(function () {
+            exportOptions.target = 'email';
+            exportOptions.feature.emailCustomizationAlpha = true;
+            exportOptions.design.buttonStyle = 'outline';
+
+            dataset.buttonColor = '#F0F0F0';
+
+            testRender(({element}) => {
+                oneline(element.querySelector('table.btn td').getAttribute('style')).should.equal(oneline`
+                    border: 1px solid #F0F0F0;
+                    background-color: transparent;
+                    color: #F0F0F0;
+                `);
+                oneline(element.querySelector('table.btn a').getAttribute('style')).should.equal(oneline`
+                    background-color: transparent;
+                    color: #F0F0F0;
+                `);
             });
         }));
     });
