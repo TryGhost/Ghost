@@ -97,28 +97,28 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     </div>
                 </div>
             </header>
-            <Navbar className='sticky top-0 z-50 bg-white/70 pt-6 backdrop-blur-md dark:bg-black'>
-                <Tabs className="w-full" defaultValue={currentTab} variant='navbar'>
+            <Navbar className='sticky top-0 z-50 -mb-8 items-center border-none bg-white/70 py-8 backdrop-blur-md dark:bg-black'>
+                <Tabs className="flex h-9 w-full items-center" defaultValue={currentTab} variant='pill'>
                     <TabsList>
                         <TabsTrigger value="Overview" onClick={() => {
                             navigate(`/analytics/beta/${postId}`);
                         }}>
-            Overview
+                            Overview
                         </TabsTrigger>
                         <TabsTrigger value="Web" onClick={() => {
                             navigate(`/analytics/beta/${postId}/web`);
                         }}>
-            Web stats
+                            Web stats
                         </TabsTrigger>
                         <TabsTrigger value="Newsletter" onClick={() => {
                             navigate(`/analytics/beta/${postId}/newsletter`);
                         }}>
-            Newsletter
+                            Newsletter
                         </TabsTrigger>
                         <TabsTrigger value="Growth" onClick={() => {
                             navigate(`/analytics/beta/${postId}/growth`);
                         }}>
-            Growth
+                            Growth
                         </TabsTrigger>
                     </TabsList>
                 </Tabs>
