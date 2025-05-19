@@ -77,7 +77,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                         </div>
                         {!isPostLoading &&
                         <div className='flex items-center gap-6'>
-                            {post.feature_image &&
+                            {post?.feature_image &&
                                 <div className='h-[82px] w-[132px] rounded-md bg-cover' style={{
                                     backgroundImage: `url(${post.feature_image})`
                                 }}></div>
