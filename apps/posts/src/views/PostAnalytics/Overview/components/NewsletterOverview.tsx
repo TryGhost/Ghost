@@ -73,10 +73,10 @@ const NewsletterOverview:React.FC = () => {
                         >
                             <Recharts.RadialBarChart
                                 data={opensChartData}
-                                endAngle={-270}
+                                endAngle={stats?.opened > 0 ? -270 : 270}
                                 innerRadius={72}
                                 outerRadius={110}
-                                startAngle={90}
+                                startAngle={stats?.opened > 0 ? 90 : -90}
                             >
                                 <Recharts.PolarGrid
                                     className="first:fill-muted last:fill-background"
@@ -126,10 +126,10 @@ const NewsletterOverview:React.FC = () => {
                         >
                             <Recharts.RadialBarChart
                                 data={clicksChartData}
-                                endAngle={270}
+                                endAngle={stats?.clicked > 0 ? -270 : 270}
                                 innerRadius={72}
                                 outerRadius={110}
-                                startAngle={-90}
+                                startAngle={stats?.clicked > 0 ? 90 : -90}
                             >
                                 <Recharts.PolarGrid
                                     className="first:fill-muted last:fill-background"
@@ -174,22 +174,23 @@ const NewsletterOverview:React.FC = () => {
                         </ChartContainer>
                     </div>
                     <div>
-                        {topLinks.length > 0
-                            ?
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className='w-full' colSpan={2}>
-                                            <div className='flex items-center justify-between gap-6'>
-                                                <div className='flex items-center gap-1.5'>
-                                                    <LucideIcon.Link size={16} strokeWidth={1.25}/>
+
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className='w-full' colSpan={2}>
+                                        <div className='flex items-center justify-between gap-6'>
+                                            <div className='flex items-center gap-1.5'>
+                                                <LucideIcon.Link size={16} strokeWidth={1.25}/>
                                                     Top links
-                                                </div>
-                                                No. of members clicked
                                             </div>
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
+                                                No. of members clicked
+                                        </div>
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            {topLinks.length > 0
+                                ?
                                 <TableBody>
                                     {displayLinks.map((row) => {
                                         return (
@@ -210,12 +211,18 @@ const NewsletterOverview:React.FC = () => {
                                         );
                                     })}
                                 </TableBody>
-                            </Table>
-                            :
-                            <div className='py-20 text-center text-sm text-gray-700'>
-                                You have no links in your post.
-                            </div>
-                        }
+                                :
+                                <TableBody>
+                                    <TableRow>
+                                        <TableCell colSpan={2}>
+                                            <div className='py-20 text-center text-sm text-gray-700'>
+                                                You have no links in your post.
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            }
+                        </Table>
                     </div>
                 </div>
             }
