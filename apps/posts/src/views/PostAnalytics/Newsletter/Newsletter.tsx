@@ -207,11 +207,11 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     ];
     const barChartConfig = {
         current: {
-            label: 'This post',
+            label: 'This newsletter',
             color: 'hsl(var(--chart-1))'
         },
         average: {
-            label: 'Your average newsletter',
+            label: 'Average',
             color: 'hsl(var(--chart-gray))'
         }
     } satisfies ChartConfig;
@@ -353,7 +353,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         <TabsTrigger value="bar"><LucideIcon.ChartNoAxesColumnDecreasing /></TabsTrigger>
                                     </TabsList>
                                     <TabsContent value="radial">
-                                        <div className='mx-auto flex flex-wrap items-center justify-center lg:gap-[10vw]'>
+                                        <div className='mx-auto flex flex-wrap items-center justify-center lg:gap-[10vw] lg:py-[3vw]'>
                                             {/* <div className='border-r px-6'>
                                                 <NewsletterRadialChart
                                                     config={sentChartConfig}
