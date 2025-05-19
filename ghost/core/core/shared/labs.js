@@ -45,7 +45,7 @@ const PRIVATE_FEATURES = [
     'trafficAnalytics',
     'importMemberTier',
     'urlCache',
-    'emailCustomization',
+    'emailCustomizationPrototype',
     'emailCustomizationAlpha',
     'mailEvents',
     'collectionsCard',

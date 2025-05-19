@@ -99,7 +99,7 @@ const NewsletterPreviewContent: React.FC<{
 }) => {
     const showHeader = headerIcon || headerTitle;
     const {config} = useGlobalData();
-    const hasEmailCustomization = useFeatureFlag('emailCustomization');
+    const hasEmailCustomizationPrototype = useFeatureFlag('emailCustomizationPrototype');
     const hasEmailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
 
     const currentDate = new Date().toLocaleDateString('default', {
@@ -172,7 +172,7 @@ const NewsletterPreviewContent: React.FC<{
                             )}
                             {showPostTitleSection && (
                                 <div className={clsx('flex flex-col py-8', titleAlignment === 'center' ? 'items-center' : 'items-start')}>
-                                    {hasEmailCustomization ? (
+                                    {hasEmailCustomizationPrototype ? (
                                         <>
                                             <h2 className={clsx(
                                                 'text-4xl font-bold leading-supertight text-black',
@@ -207,11 +207,11 @@ const NewsletterPreviewContent: React.FC<{
                                         'flex w-full justify-between text-center text-md leading-none text-grey-700',
                                         titleAlignment === 'center' ? 'flex-col gap-1' : 'flex-row'
                                     )}>
-                                        <p className="pb-1 text-[1.3rem]" style={{color: hasEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}>
+                                        <p className="pb-1 text-[1.3rem]" style={{color: hasEmailCustomizationPrototype ? secondaryHeaderTextColor : secondaryTextColor}}>
                                             By {authorPlaceholder}
                                             <span className="before:pl-0.5 before:pr-1 before:content-['•']">{currentDate}</span>
                                         </p>
-                                        <p className="pb-1 text-[1.3rem] underline" style={{color: hasEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}><span>View in browser</span></p>
+                                        <p className="pb-1 text-[1.3rem] underline" style={{color: hasEmailCustomizationPrototype ? secondaryHeaderTextColor : secondaryTextColor}}><span>View in browser</span></p>
                                     </div>
                                 </div>
                             )}
@@ -222,15 +222,15 @@ const NewsletterPreviewContent: React.FC<{
                                     <div className={clsx(
                                         'w-full max-w-[600px] bg-cover bg-no-repeat',
                                         showPostTitleSection ? '' : 'pt-6',
-                                        hasEmailCustomization ? 'h-[unset]' : 'h-[300px]'
+                                        hasEmailCustomizationPrototype ? 'h-[unset]' : 'h-[300px]'
                                     )}>
                                         <img alt="Feature" className={clsx(
                                             'min-h-full min-w-full shrink-0',
                                             imageCorners === 'square' && 'rounded-none',
                                             imageCorners === 'squircle' && 'rounded-lg'
-                                        )} src={hasEmailCustomization ? 'https://images.unsplash.com/photo-1526367790999-0150786686a2?q=80&w=2942&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' : CoverImage} />
+                                        )} src={hasEmailCustomizationPrototype ? 'https://images.unsplash.com/photo-1526367790999-0150786686a2?q=80&w=2942&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' : CoverImage} />
                                     </div>
-                                    <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem] text-grey-700" style={{color: hasEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}>Feature image caption</div>
+                                    <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem] text-grey-700" style={{color: hasEmailCustomizationPrototype ? secondaryHeaderTextColor : secondaryTextColor}}>Feature image caption</div>
                                 </>
                             )}
                         </div>
@@ -243,7 +243,7 @@ const NewsletterPreviewContent: React.FC<{
                                 bodyFontCategory === 'serif' ? 'font-serif text-[1.8rem]' : 'text-[1.7rem] tracking-tight',
                                 (showFeatureImage || showPostTitleSection) ? '' : 'pt-8'
                             )} style={{borderColor: dividerColor}}>
-                                {hasEmailCustomization ? (
+                                {hasEmailCustomizationPrototype ? (
                                     <>
                                         <p className="mb-6" style={{color: textColor}}>The promise of delivery apps is simple: tap a button, and your favorite meal arrives at your door within minutes. But behind the scenes, these platforms are <a className={clsx(linkStyle === 'underline' && 'underline', linkStyle === 'bold' && 'font-bold')} href="#" style={{color: linkColor || accentColor}}>reshaping local economies</a> in ways few people realize.</p>
                                         <p className="mb-6" style={{color: textColor}}>Across the country, small restaurants are grappling with rising fees—sometimes up to 30% per order—cutting into already-thin profit margins. In some cases, beloved neighborhood spots have had to shut their doors, unable to keep up with the financial strain. Meanwhile, delivery workers, the backbone of these services, often face unpredictable wages and challenging working conditions.</p>
@@ -380,7 +380,7 @@ const NewsletterPreviewContent: React.FC<{
                                             <h4
                                                 className={clsx(
                                                     'mt-0.5 text-[1.9rem] text-black',
-                                                    hasEmailCustomization && titleFontCategory === 'serif' && 'font-serif',
+                                                    hasEmailCustomizationPrototype && titleFontCategory === 'serif' && 'font-serif',
                                                     titleFontWeight === 'normal' && 'font-normal',
                                                     titleFontWeight === 'medium' && 'font-medium',
                                                     titleFontWeight === 'semibold' && 'font-semibold',
@@ -401,7 +401,7 @@ const NewsletterPreviewContent: React.FC<{
                                             <h4
                                                 className={clsx(
                                                     'mt-0.5 text-[1.9rem] text-black',
-                                                    hasEmailCustomization && titleFontCategory === 'serif' && 'font-serif',
+                                                    hasEmailCustomizationPrototype && titleFontCategory === 'serif' && 'font-serif',
                                                     titleFontWeight === 'normal' && 'font-normal',
                                                     titleFontWeight === 'medium' && 'font-medium',
                                                     titleFontWeight === 'semibold' && 'font-semibold',
@@ -421,7 +421,7 @@ const NewsletterPreviewContent: React.FC<{
                                             <h4
                                                 className={clsx(
                                                     'mt-0.5 text-[1.9rem] text-black',
-                                                    hasEmailCustomization && titleFontCategory === 'serif' && 'font-serif',
+                                                    hasEmailCustomizationPrototype && titleFontCategory === 'serif' && 'font-serif',
                                                     titleFontWeight === 'normal' && 'font-normal',
                                                     titleFontWeight === 'medium' && 'font-medium',
                                                     titleFontWeight === 'semibold' && 'font-semibold',

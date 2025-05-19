@@ -12,9 +12,9 @@ const features = [{
     description: 'Enables traffic analytics',
     flag: 'trafficAnalytics'
 }, {
-    title: 'Email customization',
-    description: 'Adding more control over the newsletter template',
-    flag: 'emailCustomization'
+    title: 'Email customization (prototype)',
+    description: 'Show all email customization settings and updated email content as a prototype for future work',
+    flag: 'emailCustomizationPrototype'
 }, {
     title: 'Email customization (internal alpha)',
     description: 'Wired up settings and updated email content',
