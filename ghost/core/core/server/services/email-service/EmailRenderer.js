@@ -324,6 +324,7 @@ class EmailRenderer {
 
         if (this.getLabs()?.isSet('emailCustomizationAlpha')) {
             renderOptions.design = {
+                titleFontWeight: newsletter?.get('title_font_weight'),
                 buttonCorners: newsletter?.get('button_corners'),
                 buttonStyle: newsletter?.get('button_style')
             };
@@ -961,6 +962,41 @@ class EmailRenderer {
         return textColorForBackgroundColor(backgroundColor).hex();
     }
 
+    #getTitleWeight(newsletter) {
+        const weights = {
+            normal: '400',
+            medium: '500',
+            semibold: '600',
+            bold: '700'
+        };
+
+        const labs = this.getLabs();
+        if (!labs.isSet('emailCustomizationAlpha')) {
+            return weights.bold;
+        }
+
+        /** @type {'normal' | 'bold' | string | null} */
+        const settingValue = newsletter.get('title_font_weight');
+
+        return weights[settingValue] || weights.bold;
+    }
+
+    #getTitleStrongWeight(titleWeight) {
+        const numericWeight = parseInt(titleWeight, 10);
+
+        if (isNaN(numericWeight) || !this.#labs.isSet('emailCustomizationAlpha')) {
+            return '800';
+        }
+
+        // when titleWeight has been set to less than bold,
+        // reduce boldness of strong to match our other strong text
+        if (numericWeight < 700) {
+            return '700';
+        } else {
+            return '800';
+        }
+    }
+
     /**
      * @private
      */
@@ -983,6 +1019,8 @@ class EmailRenderer {
         const borderColor = this.#getBorderColor(newsletter, accentColor);
         const secondaryBorderColor = textColorForBackgroundColor(backgroundColor).alpha(0.12).toString();
         const titleColor = this.#getTitleColor(newsletter, accentColor);
+        const titleWeight = this.#getTitleWeight(newsletter);
+        const titleStrongWeight = this.#getTitleStrongWeight(titleWeight);
         const textColor = textColorForBackgroundColor(backgroundColor).hex();
         const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
         const linkColor = backgroundIsDark ? '#ffffff' : accentColor;
@@ -1136,14 +1174,16 @@ class EmailRenderer {
             adjustedAccentColor: adjustedAccentColor || '#3498db', // default to #3498db
             adjustedAccentContrastColor: adjustedAccentContrastColor || '#ffffff', // default to #ffffff
             showBadge: newsletter.get('show_badge'),
-            backgroundColor: backgroundColor,
-            backgroundIsDark: backgroundIsDark,
-            borderColor: borderColor,
-            secondaryBorderColor: secondaryBorderColor,
-            titleColor: titleColor,
-            textColor: textColor,
-            secondaryTextColor: secondaryTextColor,
-            linkColor: linkColor,
+            backgroundColor,
+            backgroundIsDark,
+            borderColor,
+            secondaryBorderColor,
+            titleColor,
+            titleWeight,
+            titleStrongWeight,
+            textColor,
+            secondaryTextColor,
+            linkColor,
             buttonBorderRadius,
 
             headerImage,

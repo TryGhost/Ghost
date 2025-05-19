@@ -172,7 +172,7 @@ const NewsletterPreviewContent: React.FC<{
                             )}
                             {showPostTitleSection && (
                                 <div className={clsx('flex flex-col py-8', titleAlignment === 'center' ? 'items-center' : 'items-start')}>
-                                    {hasEmailCustomizationPrototype ? (
+                                    {hasEmailCustomizationPrototype || hasEmailCustomizationAlpha ? (
                                         <>
                                             <h2 className={clsx(
                                                 'text-4xl font-bold leading-supertight text-black',
@@ -309,31 +309,61 @@ const NewsletterPreviewContent: React.FC<{
                                         <p className="mb-6" style={{color: textColor}}>Over there on the right you&apos;ll see some settings that allow you to customize the look and feel of this template to make it perfectly suited to your brand. Email templates are exceptionally finnicky to make, but we&apos;ve spent a long time optimising this one to make it work beautifully across devices, email clients and content types.</p>
                                         <p className="mb-6" style={{color: textColor}}>So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.</p>
                                         {hasEmailCustomizationAlpha && (
-                                            <button
-                                                className={clsx(
-                                                    'px-[18px] py-2 font-sans text-[15px]',
-                                                    buttonCorners === 'rounded' && 'rounded-[6px]',
-                                                    buttonCorners === 'pill' && 'rounded-full',
-                                                    buttonCorners === 'square' && 'rounded-none',
-                                                    buttonStyle === 'outline'
-                                                        ? 'border bg-transparent'
-                                                        : 'text-white',
-                                                    linkStyle === 'bold' && 'font-bold'
-                                                )}
-                                                style={
-                                                    buttonStyle === 'outline'
-                                                        ? {
-                                                            borderColor: buttonColor || accentColor,
-                                                            color: buttonColor || accentColor
-                                                        }
-                                                        : {
-                                                            backgroundColor: buttonColor || accentColor
-                                                        }
-                                                }
-                                                type="button"
-                                            >
-                                            Upgrade now
-                                            </button>
+                                            <>
+                                                <button
+                                                    className={clsx(
+                                                        'px-[18px] py-2 font-sans text-[15px]',
+                                                        buttonCorners === 'rounded' && 'rounded-[6px]',
+                                                        buttonCorners === 'pill' && 'rounded-full',
+                                                        buttonCorners === 'square' && 'rounded-none',
+                                                        buttonStyle === 'outline'
+                                                            ? 'border bg-transparent'
+                                                            : 'text-white',
+                                                        linkStyle === 'bold' && 'font-bold'
+                                                    )}
+                                                    style={
+                                                        buttonStyle === 'outline'
+                                                            ? {
+                                                                borderColor: buttonColor || accentColor,
+                                                                color: buttonColor || accentColor
+                                                            }
+                                                            : {
+                                                                backgroundColor: buttonColor || accentColor
+                                                            }
+                                                    }
+                                                    type="button"
+                                                >
+                                                    Upgrade now
+                                                </button>
+                                                <hr className={clsx('my-6 border-[#e0e7eb]', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-t-0 border-dotted')} style={{borderColor: dividerColor}} />
+                                                <p className="mb-6" style={{color: textColor}}>Yet, the convenience factor keeps us coming back. The ease of one-click ordering means fewer people are dining in, changing the social fabric of our communities. Restaurants designed for shared experiences are evolving into ghost kitchens, optimized for delivery rather than connection.</p>
+                                                <h3
+                                                    className={clsx(
+                                                        'mb-[13px] mt-[39px] text-[2.6rem] leading-supertight',
+                                                        titleFontCategory === 'serif' && 'font-serif',
+                                                        titleFontCategory === 'sans_serif' && 'font-sans',
+                                                        titleFontWeight === 'normal' && 'font-normal',
+                                                        titleFontWeight === 'medium' && 'font-medium',
+                                                        titleFontWeight === 'semibold' && 'font-semibold',
+                                                        titleFontWeight === 'bold' && 'font-bold'
+                                                    )}
+                                                    style={{color: sectionTitleColor}}>When Convenience Comes at a Cost</h3>
+                                                <p className="mb-6" style={{color: textColor}}>So, what’s the future of food culture in an on-demand world? Can these platforms adapt to better support small businesses and workers? Or will we wake up one day to find that the places we once loved have vanished?</p>
+                                                <p className="mb-6" style={{color: textColor}}>Some cities are beginning to push back. In San Francisco, legislation has been proposed to cap delivery app fees and ensure a fairer share of profits for restaurants. Other local governments are exploring ways to offer support to brick-and-mortar establishments, whether through grants, tax relief, or public campaigns that encourage residents to dine in more often.</p>
+                                                <h3
+                                                    className={clsx(
+                                                        'mb-[13px] mt-[39px] text-[2.6rem] leading-supertight',
+                                                        titleFontCategory === 'serif' && 'font-serif',
+                                                        titleFontCategory === 'sans_serif' && 'font-sans',
+                                                        titleFontWeight === 'normal' && 'font-normal',
+                                                        titleFontWeight === 'medium' && 'font-medium',
+                                                        titleFontWeight === 'semibold' && 'font-semibold',
+                                                        titleFontWeight === 'bold' && 'font-bold'
+                                                    )}
+                                                    style={{color: sectionTitleColor}}>Reimagining How We Eat</h3>
+                                                <p className="mb-6" style={{color: textColor}}>Consumers are also starting to pay more attention. There&apos;s a growing movement toward mindful eating—not just in terms of ingredients, but in how we support the systems that bring food to our tables. Choosing to pick up instead of ordering in, tipping delivery drivers fairly, or subscribing to local restaurant coalitions can all make a difference.</p>
+                                                <p className="mb-6" style={{color: textColor}}>Ultimately, the story of delivery apps isn’t just about technology or convenience—it’s about the kind of communities we want to live in. And that future depends, in part, on the choices we make every day.</p>
+                                            </>
                                         )}
                                     </>
                                 )}

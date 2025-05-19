@@ -391,7 +391,6 @@ const Sidebar: React.FC<{
                         onSelect={option => updateNewsletter({title_font_category: option?.value})}
                     />
                     <Select
-                        disabled={!newsletter.show_post_title_section}
                         options={fontWeightOptions}
                         selectedOption={fontWeightOptions.find(option => option.value === newsletter.title_font_weight)}
                         title='Heading weight'
