@@ -3,6 +3,7 @@ import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer,ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, calculateYAxisWidth, formatNumber, formatPercentage} from '@tryghost/shade';
+import {cleanTrackedUrl, sanitizeUrl} from '@src/utils/link-helpers';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {useParams} from '@tryghost/admin-x-framework';
@@ -16,32 +17,6 @@ export interface GroupedLinkData {
     clicks: number;
     edited: boolean;
 }
-
-export const sanitizeUrl = (url: string): string => {
-    return url.replace(/^https?:\/\//, '');
-};
-
-export const cleanTrackedUrl = (url: string, showTitle = false): string => {
-    // Extract the URL before the ? but keep the hash part
-    const [urlPart, queryPart] = url.split('?');
-
-    if (!queryPart) {
-        // Check if the urlPart itself has a hash
-        const hashIndex = urlPart.indexOf('#');
-        if (hashIndex > -1) {
-            return showTitle ? urlPart.substring(0, hashIndex) : urlPart;
-        }
-        return urlPart;
-    }
-
-    // If there's a hash in the query part, preserve it
-    const hashMatch = queryPart.match(/#(.+)$/);
-    if (hashMatch) {
-        return showTitle ? urlPart : `${urlPart}#${hashMatch[1]}`;
-    }
-
-    return urlPart;
-};
 
 type NewsletterRadialChartData = {
     datatype: string,

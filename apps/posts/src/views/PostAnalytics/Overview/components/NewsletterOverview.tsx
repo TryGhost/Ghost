@@ -1,6 +1,7 @@
 import React, {useMemo} from 'react';
 import {BarChartLoadingIndicator, ChartConfig, ChartContainer, LucideIcon, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
-import {GroupedLinkData, cleanTrackedUrl, sanitizeUrl} from '../../Newsletter/Newsletter';
+import {GroupedLinkData} from '../../Newsletter/Newsletter';
+import {cleanTrackedUrl, sanitizeUrl} from '@src/utils/link-helpers';
 import {useParams} from '@tryghost/admin-x-framework';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 
