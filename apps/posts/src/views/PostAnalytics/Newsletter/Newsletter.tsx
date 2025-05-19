@@ -3,9 +3,8 @@ import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer,ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, calculateYAxisWidth, formatNumber, formatPercentage} from '@tryghost/shade';
-import {cleanTrackedUrl, sanitizeUrl} from '@src/utils/link-helpers';
 import {useEditLinks} from '@src/hooks/useEditLinks';
-import {useEffect, useMemo, useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useParams} from '@tryghost/admin-x-framework';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 
@@ -147,46 +146,49 @@ const FunnelArrow: React.FC = () => {
 
 const Newsletter: React.FC<postAnalyticsProps> = () => {
     const {postId} = useParams();
-    const [editingUrl, setEditingUrl] = useState<string | null>(null);
+    const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
     const [editedUrl, setEditedUrl] = useState('');
-    const [originalUrl, setOriginalUrl] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
     const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId || '');
     const {editLinks} = useEditLinks();
 
-    const handleEdit = (url: string) => {
-        setEditingUrl(url);
-        setEditedUrl(url);
-        setOriginalUrl(url);
+    const handleEdit = (link_id: string) => {
+        const link = topLinks.find(link => link.link.link_id === link_id);
+        if (link) {
+            setEditingLinkId(link_id);
+            setEditedUrl(link.link.to);
+        }
     };
 
     const handleUpdate = () => {
-        editLinks({
-            originalUrl,
-            editedUrl,
-            postId: postId || ''
-        }, {
-            onSuccess: () => {
-                setEditingUrl(null);
-                setEditedUrl('');
-                setOriginalUrl('');
-                refetchTopLinks();
-            }
-        });
+        const link = topLinks.find(link => link.link.link_id === editingLinkId);
+        if (link) {
+            editLinks({
+                originalUrl: link.link.originalTo,
+                editedUrl: editedUrl,
+                postId: postId || ''
+            }, {
+                onSuccess: () => {
+                    setEditingLinkId(null);
+                    setEditedUrl('');
+                    refetchTopLinks();
+                }
+            });
+        }
     };
 
     useEffect(() => {
-        if (editingUrl && inputRef.current) {
+        if (editingLinkId && inputRef.current) {
             inputRef.current.focus();
+            const link = topLinks.find(link => link.link.link_id === editingLinkId);
 
             const handleClickOutside = (event: MouseEvent) => {
                 if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-                    if (editedUrl === originalUrl) {
-                        setEditingUrl(null);
+                    if (editedUrl === link?.link.to) {
+                        setEditingLinkId(null);
                         setEditedUrl('');
-                        setOriginalUrl('');
                     }
                 }
             };
@@ -196,7 +198,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                 document.removeEventListener('mousedown', handleClickOutside);
             };
         }
-    }, [editingUrl, originalUrl, editedUrl]);
+    }, [editingLinkId, editedUrl]);
 
     const barDomain = [0, 1];
     const barTicks = [0, 0.25, 0.5, 0.75, 1];
@@ -217,31 +219,6 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     } satisfies ChartConfig;
 
     const isLoading = isNewsletterStatsLoading;
-
-    // Memoize link processing to avoid unnecessary recomputation on renders
-    const displayLinks = useMemo(() => {
-        // Process links data to group by URL
-        const processedLinks = topLinks.reduce<Record<string, GroupedLinkData>>((acc, link) => {
-            // For grouping, we use the clean URL (path only with hash)
-            const cleanUrl = cleanTrackedUrl(link.url, false);
-
-            if (!acc[cleanUrl]) {
-                acc[cleanUrl] = {
-                    url: cleanUrl,
-                    clicks: 0,
-                    edited: false
-                };
-            }
-
-            acc[cleanUrl].clicks += link.clicks;
-            acc[cleanUrl].edited = acc[cleanUrl].edited || link.edited;
-
-            return acc;
-        }, {});
-
-        // Sort by click count
-        return Object.values(processedLinks).sort((a, b) => b.clicks - a.clicks);
-    }, [topLinks]); // Only recalculate when topLinks changes
 
     // "Sent" Chart
     // const sentChartData: NewsletterRadialChartData[] = [
@@ -498,15 +475,17 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {displayLinks.map((row) => {
-                                                const url = row.url;
+                                            {topLinks.map((row) => {
+                                                const link_id = row.link.link_id;
+                                                const title = row.link.title;
+                                                const url = row.link.to;
                                                 const edited = row.edited;
 
                                                 return (
-                                                    <TableRow key={url}>
+                                                    <TableRow key={link_id}>
                                                         <TableCell className='max-w-0'>
                                                             <div className='flex items-center gap-2'>
-                                                                {editingUrl === url ? (
+                                                                {editingLinkId === link_id ? (
                                                                     <div ref={containerRef} className='flex w-full items-center gap-2'>
                                                                         <Input
                                                                             ref={inputRef}
@@ -527,7 +506,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                             className='shrink-0 bg-background'
                                                                             size='sm'
                                                                             variant='outline'
-                                                                            onClick={() => handleEdit(url)}
+                                                                            onClick={() => handleEdit(link_id)}
                                                                         >
                                                                             <LucideIcon.Pen />
                                                                         </Button>
@@ -536,9 +515,9 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                             href={url}
                                                                             rel="noreferrer"
                                                                             target='_blank'
-                                                                            title={url}
+                                                                            title={title}
                                                                         >
-                                                                            {sanitizeUrl(url)}
+                                                                            {title}
                                                                         </a>
                                                                         {edited && (
                                                                             <span className='text-xs text-gray-500'>(edited)</span>
@@ -547,7 +526,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                 )}
                                                             </div>
                                                         </TableCell>
-                                                        <TableCell className='text-right font-mono text-sm'>{formatNumber(row.clicks)}</TableCell>
+                                                        <TableCell className='text-right font-mono text-sm'>{formatNumber(row.count)}</TableCell>
                                                     </TableRow>
                                                 );
                                             })}
