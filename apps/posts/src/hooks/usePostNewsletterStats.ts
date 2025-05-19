@@ -2,6 +2,7 @@ import {getPost} from '@tryghost/admin-x-framework/api/posts';
 import {useMemo} from 'react';
 import {useNewsletterStatsByNewsletterId} from '@tryghost/admin-x-framework/api/stats';
 import {useTopLinks} from '@tryghost/admin-x-framework/api/links';
+import {cleanTrackedUrl} from '@src/utils/link-helpers';
 
 // Extend the Post type to include newsletter property
 type PostWithNewsletter = {
@@ -91,16 +92,45 @@ export const usePostNewsletterStats = (postId: string) => {
         };
     }, [newsletterStatsResponse]);
 
-    // Map links to the format expected by tests
     const topLinks = useMemo(() => {
-        return links.map(link => ({
-            url: link.link?.to || '',
-            clicks: link.count || 0,
-            edited: link.link?.edited || false
-        })) || [];
+        let cleanedLinks = links.map((link) => {
+            return {
+                ...link,
+                link: {
+                    ...link.link,
+                    originalTo: link.link.to,
+                    to: cleanTrackedUrl(link.link.to, false),
+                    title: cleanTrackedUrl(link.link.to, true)
+                }
+            }
+        });
+
+        console.log('cleanedLinks',cleanedLinks);
+
+        const linksByTitle = cleanedLinks.reduce((acc: Record<string, any>, link: any) => {
+            if (!acc[link.link.title]) {
+                acc[link.link.title] = link;
+            } else {
+                if (!acc[link.link.title].count) {
+                    acc[link.link.title].count = {clicks: 0};
+                }
+                if (!acc[link.link.title].count.clicks) {
+                    acc[link.link.title].count.clicks = 0;
+                }
+                acc[link.link.title].count.clicks += (link.count?.clicks ?? 0);
+            }
+            return acc;
+        }, {});
+
+        console.log('linksByTitle',linksByTitle);
+
+        return Object.values(linksByTitle).sort((a, b) => {
+            const aClicks = a.count || 0;
+            const bClicks = b.count || 0;
+            return bClicks - aClicks;
+        });
     }, [links]);
 
-    // Map averages to the format expected by tests
     const averageStats = useMemo(() => {
         return {
             openedRate: averages.openRate,

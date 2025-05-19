@@ -114,11 +114,22 @@ describe('usePostNewsletterStats', () => {
                         link: {
                             link_id: 'link-1',
                             from: 'https://example.com/from',
-                            to: 'https://example.com/to',
+                            to: 'https://example.com/to?ref=test&attribution_id=test&attribution_type=test',
                             edited: false
                         },
                         count: {
                             clicks: 10
+                        }
+                    }, {
+                        post_id: 'post-id',
+                        link: {
+                            link_id: 'link-2',
+                            from: 'https://example.com/from',
+                            to: 'https://google.com/?ref=test&attribution_id=test&attribution_type=test',
+                            edited: false
+                        },
+                        count: {
+                            clicks: 20
                         }
                     }],
                     meta: {}
@@ -145,9 +156,25 @@ describe('usePostNewsletterStats', () => {
         });
 
         expect(result.current.topLinks).toEqual([{
-            url: 'https://example.com/to',
-            clicks: 10,
-            edited: false
+            "count": 20,
+            "link": {
+                "link_id": "link-2",
+                "from": "https://example.com/from",
+                "originalTo": "https://google.com/?ref=test&attribution_id=test&attribution_type=test",
+                "title": "google.com",
+                "to": "https://google.com/",
+                "edited": false
+            }
+        },{
+            "count": 10,
+            "link": {
+                "link_id": "link-1",
+                "from": "https://example.com/from",
+                "originalTo": "https://example.com/to?ref=test&attribution_id=test&attribution_type=test",
+                "title": "example.com/to",
+                "to": "https://example.com/to",
+                "edited": false
+            }
         }]);
 
         expect(linksRequestUrl?.searchParams.get('filter')).toBe('post_id:\'post-id\'');
