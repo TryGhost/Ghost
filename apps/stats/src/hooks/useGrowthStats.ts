@@ -18,6 +18,9 @@ export const getRangeDates = (rangeInDays: number) => {
     } else if (rangeInDays === 1000) {
         // All time - use a far past date
         dateFrom = '2010-01-01';
+    } else if (rangeInDays === -1) {
+        // Year to date - use January 1st of current year
+        dateFrom = moment.utc().startOf('year').format('YYYY-MM-DD');
     } else {
         // Specific range
         // Guard against invalid ranges
