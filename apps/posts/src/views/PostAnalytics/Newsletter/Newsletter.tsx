@@ -161,19 +161,26 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
             return;
         }
         const link = getLinkById(topLinks, editingLinkId);
-        if (link) {
-            editLinks({
-                originalUrl: link.link.originalTo,
-                editedUrl: editedUrl,
-                postId: postId || ''
-            }, {
-                onSuccess: () => {
-                    setEditingLinkId(null);
-                    setEditedUrl('');
-                    refetchTopLinks();
-                }
-            });
+        if (!link) {
+            return;
         }
+        const trimmedUrl = editedUrl.trim();
+        if (trimmedUrl === '' || trimmedUrl === link.link.to) {
+            setEditingLinkId(null);
+            setEditedUrl('');
+            return;
+        }
+        editLinks({
+            originalUrl: link.link.originalTo,
+            editedUrl: editedUrl,
+            postId: postId || ''
+        }, {
+            onSuccess: () => {
+                setEditingLinkId(null);
+                setEditedUrl('');
+                refetchTopLinks();
+            }
+        });
     };
 
     useEffect(() => {
