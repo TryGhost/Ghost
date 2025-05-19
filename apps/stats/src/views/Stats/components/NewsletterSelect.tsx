@@ -12,12 +12,19 @@ const NewsletterSelect: React.FC = () => {
         return newsletters?.filter(newsletter => newsletter.status === 'active') || [];
     }, [newsletters]);
 
-    // Default to the first active newsletter when the component loads or when activeNewsletters changes
+    // Default to the default newsletter (sort_order = 1) when the component loads
     useEffect(() => {
         if (activeNewsletters.length > 0 && !selectedNewsletterId) {
-            // You could look for a "primary" flag here if available
-            // For now, select the first active newsletter
-            setSelectedNewsletterId(activeNewsletters[0].id);
+            // First try to find the default newsletter (sort_order = 1)
+            const defaultNewsletter = activeNewsletters.find(newsletter => newsletter.sort_order === 1);
+            
+            // If we found a default newsletter, use it
+            if (defaultNewsletter) {
+                setSelectedNewsletterId(defaultNewsletter.id);
+            } else {
+                // Otherwise fall back to the first active newsletter
+                setSelectedNewsletterId(activeNewsletters[0].id);
+            }
         }
     }, [activeNewsletters, selectedNewsletterId, setSelectedNewsletterId]);
 
