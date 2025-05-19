@@ -2,7 +2,7 @@
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer,ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, calculateYAxisWidth, formatNumber, formatPercentage} from '@tryghost/shade';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {useParams} from '@tryghost/admin-x-framework';
@@ -71,7 +71,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
 
     return (
         <ChartContainer
-            className='mx-auto aspect-square max-h-[250px]'
+            className='mx-auto my-14 aspect-square max-h-[250px]'
             config={config}
         >
             <Recharts.RadialBarChart
@@ -134,6 +134,14 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
     );
 };
 
+const FunnelArrow: React.FC = () => {
+    return (
+        <div className='absolute right-[-13px] top-1/2 flex size-[25px] -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground'>
+            <LucideIcon.ChevronRight className='ml-0.5' size={16} strokeWidth={1.5}/>
+        </div>
+    );
+};
+
 const Newsletter: React.FC<postAnalyticsProps> = () => {
     const {postId} = useParams();
     const [editingUrl, setEditingUrl] = useState<string | null>(null);
@@ -186,6 +194,24 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
             };
         }
     }, [editingUrl, originalUrl, editedUrl]);
+
+    const barDomain = [0, 1];
+    const barTicks = [0, 0.25, 0.5, 0.75, 1];
+    const barChartData = [
+        {metric: 'Sent', current: 1, average: 1},
+        {metric: 'Opened', current: stats.openedRate, average: averageStats.openedRate},
+        {metric: 'Clicked', current: stats.clickedRate, average: averageStats.clickedRate}
+    ];
+    const barChartConfig = {
+        current: {
+            label: 'This post',
+            color: 'hsl(var(--chart-1))'
+        },
+        average: {
+            label: 'Your average newsletter',
+            color: 'hsl(var(--chart-gray))'
+        }
+    } satisfies ChartConfig;
 
     const isLoading = isNewsletterStatsLoading;
 
@@ -283,29 +309,34 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                 <CardTitle>Newsletters</CardTitle>
                                 <CardDescription>How did this post perform</CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                <div className='-mx-6 flex items-stretch border-b'>
-                                    <KpiCard className='grow'>
+                            <CardContent className='p-0'>
+                                <div className='grid grid-cols-3 items-stretch border-b'>
+                                    <KpiCard className='relative grow'>
                                         <KpiCardLabel>
-                                            <LucideIcon.Send strokeWidth={1.5} />
+                                            <div className='size-2.5 rounded-full bg-purple/30'></div>
+                                            {/* <LucideIcon.Send strokeWidth={1.5} /> */}
                                             Sent
                                         </KpiCardLabel>
                                         <KpiCardContent>
                                             <KpiCardValue>{formatNumber(stats.sent)}</KpiCardValue>
                                         </KpiCardContent>
+                                        <FunnelArrow />
                                     </KpiCard>
-                                    <KpiCard className='grow'>
+                                    <KpiCard className='relative grow'>
                                         <KpiCardLabel>
-                                            <LucideIcon.MailOpen strokeWidth={1.5} />
+                                            <div className='size-2.5 rounded-full bg-blue/30'></div>
+                                            {/* <LucideIcon.MailOpen strokeWidth={1.5} /> */}
                                             Opened
                                         </KpiCardLabel>
                                         <KpiCardContent>
                                             <KpiCardValue>{formatNumber(stats.opened)}</KpiCardValue>
                                         </KpiCardContent>
+                                        <FunnelArrow />
                                     </KpiCard>
                                     <KpiCard className='grow'>
                                         <KpiCardLabel>
-                                            <LucideIcon.MousePointerClick strokeWidth={1.5} />
+                                            <div className='size-2.5 rounded-full bg-green/30'></div>
+                                            {/* <LucideIcon.MousePointerClick strokeWidth={1.5} /> */}
                                             Clicked
                                         </KpiCardLabel>
                                         <KpiCardContent>
@@ -313,89 +344,124 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         </KpiCardContent>
                                     </KpiCard>
                                 </div>
-                                <div className='grid grid-cols-3 items-center justify-center'>
-                                    <div>
-                                        <NewsletterRadialChart
-                                            config={sentChartConfig}
-                                            data={sentChartData}
-                                            percentageLabel='Sent'
-                                            percentageValue={1}
-                                        />
-                                    </div>
-                                    <div>
-                                        <NewsletterRadialChart
-                                            config={openedChartConfig}
-                                            data={openedChartData}
-                                            percentageLabel='Opened'
-                                            percentageValue={stats.openedRate}
-                                        />
-                                    </div>
-                                    <div>
-                                        <NewsletterRadialChart
-                                            config={clickedChartConfig}
-                                            data={clickedChartData}
-                                            percentageLabel='Clicked'
-                                            percentageValue={stats.clickedRate}
-                                        />
-                                    </div>
-                                </div>
-                                {/* <ChartContainer className='mt-10 max-h-[320px] w-full' config={chartConfig}>
-                                    <Recharts.BarChart barCategoryGap={24} data={chartData} accessibilityLayer>
-                                        <Recharts.CartesianGrid vertical={false} />
-                                        <Recharts.YAxis
-                                            axisLine={false}
-                                            domain={barDomain}
-                                            tickFormatter={value => formatPercentage(value)}
-                                            tickLine={false}
-                                            ticks={barTicks}
-                                            width={calculateYAxisWidth(barTicks, (value: number) => formatPercentage(value))}
-                                        />
-                                        <Recharts.XAxis
-                                            axisLine={false}
-                                            dataKey="metric"
-                                            tickFormatter={value => (value)}
-                                            tickLine={false}
-                                            tickMargin={10}
-                                        />
-                                        <ChartTooltip
-                                            content={
-                                                <ChartTooltipContent
-                                                    className="text-muted-foreground"
-                                                    formatter={(value, name) => (
-                                                        <>
-                                                            <div
-                                                                className="size-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
-                                                                style={{'--color-bg': `var(--color-${name})`} as React.CSSProperties
+                                <Tabs className="relative" defaultValue="radial">
+                                    <TabsList className="absolute right-3 top-3 grid grid-cols-2">
+                                        <TabsTrigger value="radial"><LucideIcon.LoaderCircle /></TabsTrigger>
+                                        <TabsTrigger value="bar"><LucideIcon.ChartNoAxesColumnDecreasing /></TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent value="radial">
+                                        <div className='grid grid-cols-3 items-center justify-center'>
+                                            <div className='border-r px-6'>
+                                                <NewsletterRadialChart
+                                                    config={sentChartConfig}
+                                                    data={sentChartData}
+                                                    percentageLabel='Sent'
+                                                    percentageValue={1}
+                                                />
+                                            </div>
+                                            <div className='border-r px-6'>
+                                                <NewsletterRadialChart
+                                                    config={openedChartConfig}
+                                                    data={openedChartData}
+                                                    percentageLabel='Opened'
+                                                    percentageValue={stats.openedRate}
+                                                />
+                                            </div>
+                                            <div className='px-6'>
+                                                <NewsletterRadialChart
+                                                    config={clickedChartConfig}
+                                                    data={clickedChartData}
+                                                    percentageLabel='Clicked'
+                                                    percentageValue={stats.clickedRate}
+                                                />
+                                            </div>
+                                        </div>
+                                    </TabsContent>
+                                    <TabsContent value="bar">
+                                        <div>
+                                            <ChartContainer className='max-h-[380px] w-full pb-6 pt-14' config={barChartConfig}>
+                                                <Recharts.BarChart barCategoryGap={24} data={barChartData} accessibilityLayer>
+                                                    <Recharts.CartesianGrid vertical={false} />
+                                                    <Recharts.YAxis
+                                                        axisLine={false}
+                                                        domain={barDomain}
+                                                        tickFormatter={value => formatPercentage(value)}
+                                                        tickLine={false}
+                                                        ticks={barTicks}
+                                                        width={calculateYAxisWidth(barTicks, (value: number) => formatPercentage(value))}
+                                                    />
+                                                    <Recharts.XAxis
+                                                        axisLine={false}
+                                                        dataKey="metric"
+                                                        tickFormatter={value => (value)}
+                                                        tickLine={false}
+                                                        tickMargin={10}
+                                                    />
+                                                    <ChartTooltip
+                                                        content={
+                                                            <ChartTooltipContent
+                                                                className="text-muted-foreground"
+                                                                formatter={(value, name, props) => {
+                                                                    const metric = props.payload.metric;
+                                                                    const color = (name === 'average' ?
+                                                                        'hsl(var(--chart-gray))'
+                                                                        :
+                                                                        metric === 'Sent' ? 'hsl(var(--chart-purple))' :
+                                                                            metric === 'Opened' ? 'hsl(var(--chart-blue))' :
+                                                                                metric === 'Clicked' ? 'hsl(var(--chart-green))' :
+                                                                                    'hsl(var(--chart-1))'
+                                                                    );
+
+                                                                    return (
+                                                                        <>
+                                                                            <div
+                                                                                className="size-2.5 shrink-0 rounded-[2px]"
+                                                                                style={{backgroundColor: color}}
+                                                                            />
+                                                                            {barChartConfig[name as keyof typeof barChartConfig]?.label || name}
+                                                                            <div className="ml-auto flex items-baseline gap-0.5 pl-2 font-mono font-medium tabular-nums text-foreground">
+                                                                                {formatPercentage(value)}
+                                                                            </div>
+                                                                        </>
+                                                                    );
+                                                                }}
+                                                                hideLabel
+                                                            />
+                                                        }
+                                                        cursor={false}
+                                                    />
+                                                    <Recharts.Bar
+                                                        barSize={48}
+                                                        dataKey="current"
+                                                        fill="hsl(var(--chart-1))"
+                                                        minPointSize={2}
+                                                        radius={0}
+                                                    >
+                                                        {barChartData.map(entry => (
+                                                            <Recharts.Cell
+                                                                key={`cell-${entry.metric}`}
+                                                                fill={
+                                                                    entry.metric === 'Sent' ? 'hsl(var(--chart-purple))' :
+                                                                        entry.metric === 'Opened' ? 'hsl(var(--chart-blue))' :
+                                                                            entry.metric === 'Clicked' ? 'hsl(var(--chart-green))' :
+                                                                                'hsl(var(--chart-1))'
                                                                 }
                                                             />
-                                                            {chartConfig[name as keyof typeof chartConfig]?.label || name}
-                                                            <div className="ml-auto flex items-baseline gap-0.5 pl-2 font-mono font-medium tabular-nums text-foreground">
-                                                                {formatPercentage(value)}
-                                                            </div>
-                                                        </>
-                                                    )}
-                                                    hideLabel
-                                                />
-                                            }
-                                            cursor={false}
-                                        />
-                                        <Recharts.Bar
-                                            barSize={48}
-                                            dataKey="current"
-                                            fill="var(--color-current)"
-                                            minPointSize={2}
-                                            radius={0}
-                                        />
-                                        <Recharts.Bar
-                                            barSize={48}
-                                            dataKey="average"
-                                            fill="var(--color-average)"
-                                            minPointSize={2}
-                                            radius={0}
-                                        />
-                                        <ChartLegend content={<ChartLegendContent />} />
-                                    </Recharts.BarChart>
-                                </ChartContainer> */}
+                                                        ))}
+                                                    </Recharts.Bar>
+                                                    <Recharts.Bar
+                                                        barSize={48}
+                                                        dataKey="average"
+                                                        fill="var(--color-average)"
+                                                        minPointSize={2}
+                                                        radius={0}
+                                                    />
+                                                    {/* <ChartLegend content={<ChartLegendContent />} /> */}
+                                                </Recharts.BarChart>
+                                            </ChartContainer>
+                                        </div>
+                                    </TabsContent>
+                                </Tabs>
                             </CardContent>
                         </Card>
                         <Card>
