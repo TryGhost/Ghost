@@ -1,6 +1,7 @@
 // import AudienceSelect from './components/AudienceSelect';
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import DateRangeSelect from './components/DateRangeSelect';
+import NewsletterSelect from './components/NewsletterSelect';
 import React, {useMemo, useState} from 'react';
 import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
@@ -123,32 +124,26 @@ const NewsletterKPIs: React.FC<{
 
         // First sanitize the data based on range
         sanitizedData = sanitizeChartData(allSubscribersData, range, 'value', 'exact');
-
-        // Convert deltas to cumulative counts
+        
+        // Convert from deltas to running count (backwards from total)
         let runningTotal = totalSubscribers;
-
-        // Go backwards through the array to calculate cumulative values
-        // Starting from the current total and subtracting deltas
-        const cumulativeData = [...sanitizedData]
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-            .map((item) => {
-                runningTotal -= item.value;
-                return {
-                    date: item.date,
-                    value: runningTotal + item.value // Value for this specific day
-                };
-            })
-            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        const cumulativeData = [...sanitizedData].reverse().map((item) => {
+            runningTotal -= item.value;
+            return {
+                ...item,
+                value: runningTotal + item.value // Current day's value is before the day's change
+            };
+        }).reverse();
 
         // Map the data for display
         const processedData = cumulativeData.map(item => ({
             ...item,
             formattedValue: formatNumber(item.value),
-            label: 'Subscribers'
+            label: 'Total Subscribers'
         }));
 
         return processedData;
-    }, [allSubscribersData, totalSubscribers, range]);
+    }, [allSubscribersData, range, totalSubscribers]);
 
     const subscribersChartConfig = {
         value: {
@@ -167,7 +162,7 @@ const NewsletterKPIs: React.FC<{
 
     return (
         <Tabs defaultValue="total-subscribers" variant='kpis'>
-            <TabsList className="-mx-6 grid grid-cols-3">
+            <TabsList className="-mx-6 grid grid-cols-5">
                 <KpiTabTrigger value="total-subscribers" onClick={() => {
                     setCurrentTab('total-subscribers');
                 }}>
@@ -194,7 +189,7 @@ const NewsletterKPIs: React.FC<{
                 </KpiTabTrigger>
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
-                {currentTab === 'total-subscribers' &&
+                {(currentTab === 'total-subscribers') &&
                 <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] w-full' config={subscribersChartConfig}>
                     <Recharts.LineChart
                         data={subscribersData}
@@ -291,13 +286,20 @@ const NewsletterKPIs: React.FC<{
 };
 
 const Newsletters: React.FC = () => {
-    const {range} = useGlobalData();
+    const {range, selectedNewsletterId} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
     const navigate = useNavigate();
 
-    // Get stats from real data using the new hooks
-    const {data: newsletterStatsData, isLoading: isStatsLoading} = useNewsletterStatsWithRange(range);
-    const {data: subscriberStatsData, isLoading: isSubscriberStatsLoading} = useSubscriberCountWithRange(range);
+    // Get stats from real data using the new hooks with selected newsletter
+    const {data: newsletterStatsData, isLoading: isStatsLoading} = useNewsletterStatsWithRange(
+        range, 
+        sortBy, 
+        selectedNewsletterId || undefined
+    );
+    const {data: subscriberStatsData, isLoading: isSubscriberStatsLoading} = useSubscriberCountWithRange(
+        range, 
+        selectedNewsletterId || undefined
+    );
 
     // Prepare the data - wrap in useMemo to avoid dependency changes
     const newsletterStats = useMemo(() => {
@@ -378,7 +380,7 @@ const Newsletters: React.FC = () => {
     return (
         <StatsLayout>
             <StatsHeader>
-                {/* <AudienceSelect /> */}
+                <NewsletterSelect />
                 <DateRangeSelect />
             </StatsHeader>
             <StatsView data={subscribersData} isLoading={isLoading}>
@@ -389,8 +391,10 @@ const Newsletters: React.FC = () => {
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Top newsletters</CardTitle>
-                        <CardDescription>Performance of newsletters sent {getPeriodText(range)}</CardDescription>
+                        <CardTitle>Newsletter stats</CardTitle>
+                        <CardDescription>
+                            Performance of newsletter {getPeriodText(range)}
+                        </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Separator/>

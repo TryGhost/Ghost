@@ -1,7 +1,8 @@
 import {getPost} from '@tryghost/admin-x-framework/api/posts';
 import {useMemo} from 'react';
-import {useNewsletterStats} from '@tryghost/admin-x-framework/api/stats';
+import {useNewsletterStatsByNewsletterId} from '@tryghost/admin-x-framework/api/stats';
 import {useTopLinks} from '@tryghost/admin-x-framework/api/links';
+
 export const usePostNewsletterStats = (postId: string) => {
     const {data: postResponse, isLoading: isPostLoading} = getPost(postId);
 
@@ -27,56 +28,56 @@ export const usePostNewsletterStats = (postId: string) => {
         };
     }, [post]);
 
-    // Fetch the last 20 newsletters and calculate the average open and click rates
-    const {data: newsletterStatsResponse, isLoading: isNewsletterStatsLoading} = useNewsletterStats();
+    // Get the newsletter_id from the post
+    const newsletterId = useMemo(() => post?.newsletter?.id, [post]);
 
-    const averageStats = useMemo(() => {
-        if (!newsletterStatsResponse || !newsletterStatsResponse.stats || newsletterStatsResponse.stats.length === 0) {
+    // Fetch the last 20 newsletters and calculate the average open and click rates
+    const {data: newsletterStatsResponse, isLoading: isNewsletterStatsLoading} = useNewsletterStatsByNewsletterId(newsletterId);
+
+    // Get the top 5 link clicks from this post
+    const {data: clicksResponse, isLoading: isClicksLoading} = useTopLinks({
+        postId,
+        limit: 5,
+        filter: 'clicks:>0'
+    });
+
+    const links = useMemo(() => {
+        return clicksResponse?.links.map(link => ({
+            link: link.link,
+            count: link.count?.clicks || 0
+        })) || [];
+    }, [clicksResponse]);
+
+    // Calculate average open and click rates across newsletters
+    const averages = useMemo(() => {
+        if (!newsletterStatsResponse || !newsletterStatsResponse.stats) {
             return {
-                openedRate: 0,
-                clickedRate: 0
+                openRate: 0,
+                clickRate: 0
             };
         }
 
-        const newsletterStats = newsletterStatsResponse.stats;
+        const newsletters = newsletterStatsResponse.stats;
+        if (newsletters.length === 0) {
+            return {
+                openRate: 0,
+                clickRate: 0
+            };
+        }
 
-        const totalOpenedRate = newsletterStats.reduce((acc, curr) => acc + (curr.open_rate || 0), 0);
-        const totalClickedRate = newsletterStats.reduce((acc, curr) => acc + (curr.click_rate || 0), 0);
-
-        const averageOpenedRate = totalOpenedRate / newsletterStats.length;
-        const averageClickedRate = totalClickedRate / newsletterStats.length;
+        const totalOpenRate = newsletters.reduce((sum, newsletter) => sum + (newsletter.open_rate || 0), 0);
+        const totalClickRate = newsletters.reduce((sum, newsletter) => sum + (newsletter.click_rate || 0), 0);
 
         return {
-            openedRate: Math.round(averageOpenedRate * 100) / 100,
-            clickedRate: Math.round(averageClickedRate * 100) / 100
+            openRate: totalOpenRate / newsletters.length,
+            clickRate: totalClickRate / newsletters.length
         };
     }, [newsletterStatsResponse]);
 
-    // Fetch the top clicked links for the post
-    const {data: topLinksResponse, isLoading: isTopLinksLoading, refetch: refetchTopLinks} = useTopLinks({
-        searchParams: {
-            filter: `post_id:'${postId}'`
-        }
-    });
-
-    const topLinks = useMemo(() => {
-        if (!topLinksResponse || !topLinksResponse.links || topLinksResponse.links.length === 0) {
-            return [];
-        }
-
-        return topLinksResponse.links.sort((a, b) => b.count.clicks - a.count.clicks).map(link => ({
-            url: link.link.to,
-            clicks: link.count.clicks,
-            edited: link.link.edited
-        }));
-    }, [topLinksResponse]);
-
     return {
-        isLoading: isPostLoading || isNewsletterStatsLoading || isTopLinksLoading,
-        post,
         stats,
-        averageStats,
-        topLinks,
-        refetchTopLinks
+        links,
+        averages,
+        isLoading: isPostLoading || isNewsletterStatsLoading || isClicksLoading
     };
 };
