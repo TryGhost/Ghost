@@ -203,6 +203,11 @@ export const formatPercentage = (value: number) => {
     return `${Math.round(value * 100)}%`;
 };
 
+// Format cents to Dollars
+export const centsToDollars = (value: number) => {
+    return Math.round(value / 100);
+};
+
 /* Chart formatters
 /* -------------------------------------------------------------------------- */
 
