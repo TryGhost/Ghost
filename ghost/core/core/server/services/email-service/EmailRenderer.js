@@ -326,7 +326,8 @@ class EmailRenderer {
             renderOptions.design = {
                 titleFontWeight: newsletter?.get('title_font_weight'),
                 buttonCorners: newsletter?.get('button_corners'),
-                buttonStyle: newsletter?.get('button_style')
+                buttonStyle: newsletter?.get('button_style'),
+                linkStyle: newsletter?.get('link_style')
             };
         }
 
@@ -975,7 +976,7 @@ class EmailRenderer {
             return weights.bold;
         }
 
-        /** @type {'normal' | 'bold' | string | null} */
+        /** @type {'normal' | 'medium' | 'semibold' | 'bold' | string | null} */
         const settingValue = newsletter.get('title_font_weight');
 
         return weights[settingValue] || weights.bold;
@@ -994,6 +995,25 @@ class EmailRenderer {
             return '700';
         } else {
             return '800';
+        }
+    }
+
+    #getLinkStyles(newsletter) {
+        const labs = this.getLabs();
+
+        if (!labs.isSet('emailCustomizationAlpha')) {
+            return 'text-decoration: underline;';
+        }
+
+        /** @type {'underline' | 'regular' | 'bold' | string | null} */
+        const settingValue = newsletter.get('link_style');
+
+        if (settingValue === 'regular') {
+            return 'text-decoration: none;';
+        } else if (settingValue === 'bold') {
+            return 'text-decoration: none; font-weight: 700;';
+        } else {
+            return 'text-decoration: underline;';
         }
     }
 
@@ -1024,6 +1044,7 @@ class EmailRenderer {
         const textColor = textColorForBackgroundColor(backgroundColor).hex();
         const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
         const linkColor = backgroundIsDark ? '#ffffff' : accentColor;
+        const linkStyles = this.#getLinkStyles(newsletter);
 
         let buttonBorderRadius = '6px';
 
@@ -1184,6 +1205,7 @@ class EmailRenderer {
             textColor,
             secondaryTextColor,
             linkColor,
+            linkStyles,
             buttonBorderRadius,
 
             headerImage,

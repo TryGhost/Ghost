@@ -2638,6 +2638,31 @@ describe('Email renderer', function () {
                 assert.equal(data.titleStrongWeight, titleStrongWeight);
             });
         });
+
+        [
+            ['normal', 'text-decoration: underline;', {labsEnabled: false}],
+            ['underline', 'text-decoration: underline;', {labsEnabled: true}],
+            ['regular', 'text-decoration: none;', {labsEnabled: true}],
+            ['bold', 'text-decoration: none; font-weight: 700;', {labsEnabled: true}],
+            [null, 'text-decoration: underline;', {labsEnabled: true}]
+        ].forEach(([settingValue, linkStyles, options]) => {
+            it(`link styles for ${settingValue || '`null`'} are correct${options.labsEnabled ? ' (emailCustomizationAlpha)' : ''}`, async function () {
+                labsEnabled = options.labsEnabled ?? false;
+
+                const html = '';
+                const post = createModel({
+                    posts_meta: createModel({}),
+                    loaded: ['posts_meta'],
+                    published_at: new Date(0)
+                });
+                const newsletter = createModel({
+                    link_style: settingValue
+                });
+                const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+
+                assert.equal(data.linkStyles, linkStyles);
+            });
+        });
     });
 
     describe('createUnsubscribeUrl', function () {
