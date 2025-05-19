@@ -18,6 +18,7 @@ if [ -f "$yarn_lock_hash_file_path" ]; then
 else
     echo "WARNING: yarn.lock hash file ($yarn_lock_hash_file_path) not found. Running yarn install as a precaution."
     yarn install --frozen-lockfile
+    mkdir -p .yarnhash
     echo "$calculated_hash" > "$yarn_lock_hash_file_path"
 fi
 yarn nx reset
