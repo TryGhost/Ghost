@@ -51,7 +51,7 @@ export const usePostNewsletterStats = (postId: string) => {
     const {data: newsletterStatsResponse, isLoading: isNewsletterStatsLoading} = useNewsletterStatsByNewsletterId(newsletterId);
 
     // Get the top 5 link clicks from this post
-    const {data: clicksResponse, isLoading: isClicksLoading} = useTopLinks({
+    const {data: clicksResponse, isLoading: isClicksLoading, refetch: refetchTopLinks} = useTopLinks({
         searchParams: {
             post_id: postId,
             limit: '5',
@@ -114,6 +114,7 @@ export const usePostNewsletterStats = (postId: string) => {
         stats,
         averageStats,
         topLinks,
+        refetchTopLinks,
         isLoading: isPostLoading || isNewsletterStatsLoading || isClicksLoading
     };
 };
