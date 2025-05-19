@@ -1,3 +1,4 @@
+import {type CleanedLink, cleanTrackedUrl} from '@src/utils/link-helpers';
 import {getPost} from '@tryghost/admin-x-framework/api/posts';
 import {useMemo} from 'react';
 import {useNewsletterStatsByNewsletterId} from '@tryghost/admin-x-framework/api/stats';
@@ -91,16 +92,38 @@ export const usePostNewsletterStats = (postId: string) => {
         };
     }, [newsletterStatsResponse]);
 
-    // Map links to the format expected by tests
     const topLinks = useMemo(() => {
-        return links.map(link => ({
-            url: link.link?.to || '',
-            clicks: link.count || 0,
-            edited: link.link?.edited || false
-        })) || [];
+        const cleanedLinks = links.map((link) => {
+            return {
+                ...link,
+                link: {
+                    ...link.link,
+                    originalTo: link.link.to,
+                    to: cleanTrackedUrl(link.link.to, false),
+                    title: cleanTrackedUrl(link.link.to, true)
+                }
+            };
+        });
+
+        const linksByTitle = cleanedLinks.reduce((acc: Record<string, CleanedLink>, link: CleanedLink) => {
+            if (!acc[link.link.title]) {
+                acc[link.link.title] = link;
+            } else {
+                if (!acc[link.link.title].count) {
+                    acc[link.link.title].count = 0;
+                }
+                acc[link.link.title].count += (link.count ?? 0);
+            }
+            return acc;
+        }, {});
+
+        return Object.values(linksByTitle).sort((a, b) => {
+            const aClicks = a.count || 0;
+            const bClicks = b.count || 0;
+            return bClicks - aClicks;
+        });
     }, [links]);
 
-    // Map averages to the format expected by tests
     const averageStats = useMemo(() => {
         return {
             openedRate: averages.openRate,

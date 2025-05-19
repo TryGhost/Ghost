@@ -1,25 +1,36 @@
-export const sanitizeUrl = (url: string): string => {
-    return url.replace(/^https?:\/\//, '');
+export type CleanedLink = {
+    count: number;
+    link: {
+        link_id: string;
+        to: string;
+        title: string;
+        originalTo: string;
+        from: string;
+        edited: boolean;
+    }
+}
+
+export const cleanTrackedUrl = (url: string, display = false): string => {
+    try {
+        const removeParams = ['ref', 'attribution_id', 'attribution_type'];
+        const urlObj = new URL(url);
+        for (const param of removeParams) {
+            urlObj.searchParams.delete(param);
+        }
+
+        if (!display) {
+            return urlObj.toString();
+        }
+        // Return URL without protocol
+        const urlWithoutProtocol = urlObj.host + (urlObj.pathname === '/' && !urlObj.search ? '' : urlObj.pathname) + (urlObj.search ? urlObj.search : '') + (urlObj.hash ? urlObj.hash : '');
+        // remove www. from the start of the URL
+        return urlWithoutProtocol.replace(/^www\./, '');
+    } catch (error) {
+        // return the original url if there is an error
+        return url;
+    }
 };
 
-export const cleanTrackedUrl = (url: string, showTitle = false): string => {
-    // Extract the URL before the ? but keep the hash part
-    const [urlPart, queryPart] = url.split('?');
-
-    if (!queryPart) {
-        // Check if the urlPart itself has a hash
-        const hashIndex = urlPart.indexOf('#');
-        if (hashIndex > -1) {
-            return showTitle ? urlPart.substring(0, hashIndex) : urlPart;
-        }
-        return urlPart;
-    }
-
-    // If there's a hash in the query part, preserve it
-    const hashMatch = queryPart.match(/#(.+)$/);
-    if (hashMatch) {
-        return showTitle ? urlPart : `${urlPart}#${hashMatch[1]}`;
-    }
-
-    return urlPart;
+export const getLinkById = (links: CleanedLink[], linkId: string) => {
+    return links.find(link => link.link.link_id === linkId);
 };
