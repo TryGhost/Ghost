@@ -65,15 +65,38 @@ function cardTemplate(nodeData, options = {}) {
         `;
 }
 
-function emailTemplate(nodeData, feature) {
+function emailTemplate(nodeData, options) {
     const backgroundAccent = nodeData.backgroundColor === 'accent' ? `background-color: ${nodeData.accentColor};` : '';
-    const buttonAccent = nodeData.buttonColor === 'accent' ? `background-color: ${nodeData.accentColor};` : nodeData.buttonColor;
-    const buttonStyle = nodeData.buttonColor !== 'accent' ? `background-color: ${nodeData.buttonColor};` : '';
+    let buttonAccent = nodeData.buttonColor === 'accent' ? `background-color: ${nodeData.accentColor};` : nodeData.buttonColor;
+    let buttonStyle = nodeData.buttonColor !== 'accent' ? `background-color: ${nodeData.buttonColor};` : '';
+    let buttonTextColor = nodeData.buttonTextColor;
     const alignment = nodeData.alignment === 'center' ? 'text-align: center;' : '';
     const backgroundImageStyle = nodeData.backgroundImageSrc ? (nodeData.layout !== 'split' ? `background-image: url(${nodeData.backgroundImageSrc}); background-size: cover; background-position: center center;` : `background-color: ${nodeData.backgroundColor};`) : `background-color: ${nodeData.backgroundColor};`;
     const splitImageStyle = `background-image: url(${nodeData.backgroundImageSrc}); background-size: ${nodeData.backgroundSize !== 'contain' ? 'cover' : '50%'}; background-position: center`;
 
-    if (feature?.emailCustomizationAlpha) {
+    if (
+        options?.feature?.emailCustomizationAlpha &&
+        options?.design?.buttonStyle === 'outline'
+    ) {
+        if (nodeData.buttonColor === 'accent') {
+            buttonAccent = '';
+            buttonStyle = `
+                border: 1px solid ${nodeData.accentColor};
+                background-color: transparent;
+                color: ${nodeData.accentColor} !important;
+            `;
+            buttonTextColor = nodeData.accentColor;
+        } else {
+            buttonStyle = `
+                border: 1px solid ${nodeData.buttonColor};
+                background-color: transparent;
+                color: ${nodeData.buttonColor} !important;
+            `;
+            buttonTextColor = nodeData.buttonColor;
+        }
+    }
+
+    if (options?.feature?.emailCustomizationAlpha) {
         return (
             `
             <div class="kg-header-card kg-v2" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
@@ -104,7 +127,7 @@ function emailTemplate(nodeData, feature) {
                                             <table class="btn" border="0" cellspacing="0" cellpadding="0" align="${nodeData.alignment}">
                                                 <tr>
                                                     <td align="center" style="${buttonStyle} ${buttonAccent}">
-                                                        <a href="${nodeData.buttonUrl}" style="color: ${nodeData.buttonTextColor};">${nodeData.buttonText}</a>
+                                                        <a href="${nodeData.buttonUrl}" style="color: ${buttonTextColor};">${nodeData.buttonText}</a>
                                                     </td>
                                                 </tr>
                                             </table>
@@ -166,10 +189,9 @@ export function renderHeaderNodeV2(dataset, options = {}) {
         const emailDoc = options.createDocument();
         const emailDiv = emailDoc.createElement('div');
 
-        emailDiv.innerHTML = emailTemplate(node, options.feature)?.trim();
+        emailDiv.innerHTML = emailTemplate(node, options)?.trim();
 
         return {element: emailDiv.firstElementChild};
-        // return {element: document.createElement('div')}; // TODO
     }
 
     const htmlString = cardTemplate(node, options);
