@@ -16,6 +16,9 @@ export const getWebKpiValues = (data: KpiDataItem[] | null | undefined) => {
 
     // Sum total KPI value from the trend, ponderating using sessions
     const _ponderatedKPIsTotal = (kpi: keyof KpiDataItem) => {
+        if (totalVisits === 0) {
+            return 0;
+        }
         return data.reduce((prev, curr) => {
             const currValue = Number(curr[kpi] ?? 0);
             const currVisits = Number(curr.visits);
