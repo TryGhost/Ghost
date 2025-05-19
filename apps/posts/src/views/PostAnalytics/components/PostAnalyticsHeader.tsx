@@ -84,7 +84,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                             }
                             <div>
                                 <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
-                                    {post && post.title}
+                                    {post?.title}
                                 </H1>
                                 {typedPost && typedPost.published_at && (
                                     <div className='mt-0.5 flex items-center justify-start text-sm leading-[1.65em] text-muted-foreground'>
