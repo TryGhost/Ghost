@@ -8,9 +8,13 @@ import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
-    const hasEmailCustomization = useFeatureFlag('emailCustomization');
+    const hasEmailCustomizationFlag = useFeatureFlag('emailCustomization');
+    const hasEmailCustomizationAlphaFlag = useFeatureFlag('emailCustomizationAlpha');
+    const hasEmailCustomizationPrototypeFlag = useFeatureFlag('emailCustomizationPrototype');
     const {currentUser, settings, siteData, config} = useGlobalData();
     const [title, icon, commentsEnabled, supportEmailAddress, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'icon', 'comments_enabled', 'support_email_address', 'default_email_address']);
+
+    const hasEmailCustomization = hasEmailCustomizationFlag || hasEmailCustomizationAlphaFlag || hasEmailCustomizationPrototypeFlag;
 
     let headerTitle: string | null = null;
     if (newsletter.show_header_title) {
