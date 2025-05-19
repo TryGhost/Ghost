@@ -476,6 +476,41 @@ const Sidebar: React.FC<{
                             }
                         ]} clearBg={false} />
                     </div>
+                    <div className='flex w-full justify-between'>
+                        <div>Link style</div>
+                        <ButtonGroup activeKey={newsletter.link_style || 'underline'} buttons={[
+                            {
+                                key: 'underline',
+                                icon: 'text-underline',
+                                label: 'Underline',
+                                tooltip: 'Underline',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({link_style: 'underline'})
+                            },
+                            {
+                                key: 'regular',
+                                icon: 'text-regular',
+                                label: 'Regular',
+                                tooltip: 'Regular',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({link_style: 'regular'})
+                            },
+                            {
+                                key: 'bold',
+                                icon: 'text-bold',
+                                label: 'Bold',
+                                tooltip: 'Bold',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({link_style: 'bold'})
+                            }
+                        ]} clearBg={false} />
+                    </div>
                 </Form>
             </>
         }
