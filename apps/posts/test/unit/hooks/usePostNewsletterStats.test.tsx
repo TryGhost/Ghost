@@ -73,6 +73,8 @@ describe('usePostNewsletterStats', () => {
     });
 
     it('calculates stats correctly from post data', async () => {
+        let linksRequestUrl: URL | undefined;
+
         server.use(
             http.get('/ghost/api/admin/posts/:id/', () => {
                 return HttpResponse.json({
@@ -104,7 +106,8 @@ describe('usePostNewsletterStats', () => {
                     meta: {}
                 });
             }),
-            http.get('/ghost/api/admin/links/', () => {
+            http.get('/ghost/api/admin/links/', ({request}) => {
+                linksRequestUrl = new URL(request.url);
                 return HttpResponse.json({
                     links: [{
                         post_id: 'post-id',
@@ -146,6 +149,9 @@ describe('usePostNewsletterStats', () => {
             clicks: 10,
             edited: false
         }]);
+
+        expect(linksRequestUrl?.searchParams.get('filter')).toBe('post_id:\'post-id\'');
+        expect(linksRequestUrl?.searchParams.get('limit')).toBe('5');
     });
 
     it('handles missing email data', async () => {
