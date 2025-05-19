@@ -285,7 +285,7 @@ export const calculateYAxisWidth = (ticks: number[], formatter: (value: number) 
 
     // Approximate width based on character count (assuming monospace font)
     // Add padding for safety
-    const width = Math.max(20, maxFormattedLength * 8 + 8);
+    const width = Math.max(20, maxFormattedLength * 8 + 20);
     return width;
 };
 

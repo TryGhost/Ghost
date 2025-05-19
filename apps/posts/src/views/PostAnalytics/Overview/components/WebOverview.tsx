@@ -1,7 +1,8 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import React, {useMemo} from 'react';
-import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, Recharts, calculateYAxisWidth, formatDisplayDate, formatNumber, formatQueryDate, getRangeDates, getYTicks} from '@tryghost/shade';
+import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, Recharts, calculateYAxisWidth, formatDisplayDateWithRange, formatNumber, formatQueryDate, getRangeDates, getYTicks, sanitizeChartData} from '@tryghost/shade';
 import {KPI_METRICS} from '../../Web/components/Kpis';
+import {KpiDataItem} from '@src/utils/kpi-helpers';
 import {STATS_RANGES} from '@src/utils/constants';
 import {getStatEndpointUrl, getToken, useParams} from '@tryghost/admin-x-framework';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
@@ -53,10 +54,10 @@ const WebOverview:React.FC = () => {
         }
     } satisfies ChartConfig;
 
-    const chartData = data?.map((item) => {
+    const chartData = sanitizeChartData<KpiDataItem>(data as KpiDataItem[] || [], STATS_RANGES.ALL_TIME.value, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item: KpiDataItem) => {
         const value = Number(item[currentMetric.dataKey]);
         return {
-            date: item.date,
+            date: String(item.date),
             value,
             formattedValue: currentMetric.formatter(value),
             label: currentMetric.label
@@ -87,7 +88,9 @@ const WebOverview:React.FC = () => {
                             axisLine={false}
                             dataKey="date"
                             interval={0}
-                            tickFormatter={formatDisplayDate}
+                            tickFormatter={(value) => {
+                                return formatDisplayDateWithRange(value, STATS_RANGES.ALL_TIME.value);
+                            }}
                             tickLine={false}
                             tickMargin={8}
                             ticks={chartData && chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}

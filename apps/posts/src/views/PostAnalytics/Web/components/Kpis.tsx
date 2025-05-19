@@ -1,7 +1,7 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import EmptyStatView from '../../components/EmptyStatView';
 import React, {useState} from 'react';
-import {Card, CardContent, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatDuration, formatNumber, formatPercentage, getYTicks} from '@tryghost/shade';
+import {Card, CardContent, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatDuration, formatNumber, formatPercentage, getYTicks, sanitizeChartData} from '@tryghost/shade';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
@@ -41,7 +41,7 @@ interface KpisProps {
 }
 
 const Kpis:React.FC<KpisProps> = ({queryParams}) => {
-    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range} = useGlobalData();
     const [currentTab, setCurrentTab] = useState('visits');
 
     const {data, loading} = useQuery({
@@ -54,10 +54,10 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
 
     const currentMetric = KPI_METRICS[currentTab];
 
-    const chartData = data?.map((item) => {
+    const chartData = sanitizeChartData<KpiDataItem>(data as KpiDataItem[] || [], range, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item: KpiDataItem) => {
         const value = Number(item[currentMetric.dataKey]);
         return {
-            date: item.date,
+            date: String(item.date),
             value,
             formattedValue: currentMetric.formatter(value),
             label: currentMetric.label
