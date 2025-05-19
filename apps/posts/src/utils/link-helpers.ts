@@ -1,3 +1,15 @@
+export type CleanedLink = {
+    count: number;
+    link: {
+        link_id: string;
+        to: string;
+        title: string;
+        originalTo: string;
+        from: string;
+        edited: boolean;
+    }
+}
+
 export const cleanTrackedUrl = (url: string, display = false): string => {
     const removeParams = ['ref', 'attribution_id', 'attribution_type'];
     const urlObj = new URL(url);
@@ -12,4 +24,8 @@ export const cleanTrackedUrl = (url: string, display = false): string => {
     const urlWithoutProtocol = urlObj.host + (urlObj.pathname === '/' && !urlObj.search ? '' : urlObj.pathname) + (urlObj.search ? urlObj.search : '') + (urlObj.hash ? urlObj.hash : '');
     // remove www. from the start of the URL
     return urlWithoutProtocol.replace(/^www\./, '');
+};
+
+export const getLinkById = (links: CleanedLink[], linkId: string) => {
+    return links.find(link => link.link.link_id === linkId);
 };

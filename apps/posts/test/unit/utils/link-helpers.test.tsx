@@ -1,4 +1,6 @@
 import {cleanTrackedUrl} from '@src/utils/link-helpers';
+import {describe, expect, it} from 'vitest';
+
 describe('link-helpers', () => {
     it('should clean tracked url', () => {
         const url = 'https://example.com/to?ref=test&attribution_id=test&attribution_type=test';

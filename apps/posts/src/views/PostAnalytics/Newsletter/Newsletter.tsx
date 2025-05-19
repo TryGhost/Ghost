@@ -3,19 +3,13 @@ import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer,ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, calculateYAxisWidth, formatNumber, formatPercentage} from '@tryghost/shade';
+import {getLinkById} from '@src/utils/link-helpers';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useRef, useState} from 'react';
 import {useParams} from '@tryghost/admin-x-framework';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 
 interface postAnalyticsProps {}
-
-// Grouped link type after processing
-export interface GroupedLinkData {
-    url: string;
-    clicks: number;
-    edited: boolean;
-}
 
 type NewsletterRadialChartData = {
     datatype: string,
@@ -154,16 +148,19 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId || '');
     const {editLinks} = useEditLinks();
 
-    const handleEdit = (link_id: string) => {
-        const link = topLinks.find(link => link.link.link_id === link_id);
+    const handleEdit = (linkId: string) => {
+        const link = getLinkById(topLinks, linkId);
         if (link) {
-            setEditingLinkId(link_id);
+            setEditingLinkId(linkId);
             setEditedUrl(link.link.to);
         }
     };
 
     const handleUpdate = () => {
-        const link = topLinks.find(link => link.link.link_id === editingLinkId);
+        if (!editingLinkId) {
+            return;
+        }
+        const link = getLinkById(topLinks, editingLinkId);
         if (link) {
             editLinks({
                 originalUrl: link.link.originalTo,
@@ -182,7 +179,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     useEffect(() => {
         if (editingLinkId && inputRef.current) {
             inputRef.current.focus();
-            const link = topLinks.find(link => link.link.link_id === editingLinkId);
+            const link = getLinkById(topLinks, editingLinkId);
 
             const handleClickOutside = (event: MouseEvent) => {
                 if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -198,7 +195,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                 document.removeEventListener('mousedown', handleClickOutside);
             };
         }
-    }, [editingLinkId, editedUrl]);
+    }, [editingLinkId, editedUrl, topLinks]);
 
     const barDomain = [0, 1];
     const barTicks = [0, 0.25, 0.5, 0.75, 1];
@@ -476,16 +473,16 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         </TableHeader>
                                         <TableBody>
                                             {topLinks.map((row) => {
-                                                const link_id = row.link.link_id;
+                                                const linkId = row.link.link_id;
                                                 const title = row.link.title;
                                                 const url = row.link.to;
-                                                const edited = row.edited;
+                                                const edited = row.link.edited;
 
                                                 return (
-                                                    <TableRow key={link_id}>
+                                                    <TableRow key={linkId}>
                                                         <TableCell className='max-w-0'>
                                                             <div className='flex items-center gap-2'>
-                                                                {editingLinkId === link_id ? (
+                                                                {editingLinkId === linkId ? (
                                                                     <div ref={containerRef} className='flex w-full items-center gap-2'>
                                                                         <Input
                                                                             ref={inputRef}
@@ -506,7 +503,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                             className='shrink-0 bg-background'
                                                                             size='sm'
                                                                             variant='outline'
-                                                                            onClick={() => handleEdit(link_id)}
+                                                                            onClick={() => handleEdit(linkId)}
                                                                         >
                                                                             <LucideIcon.Pen />
                                                                         </Button>
