@@ -167,12 +167,12 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value, diffDirection, d
         diffDirection === 'same' && 'bg-gray-200 text-gray-700'
     );
     return (
-        <div className='flex w-full flex-col items-start gap-2'>
-            <div className='text-base font-medium tracking-tight text-gray-700'>
+        <div className='flex w-full flex-col items-start gap-4'>
+            <div className='h-[22px] text-base font-medium text-muted-foreground'>
                 {label}
             </div>
             <div className='flex flex-col items-start gap-1'>
-                <div className='text-[2.0rem] font-semibold tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>
+                <div className='text-[2.0rem] font-semibold leading-none tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>
                     {value}
                 </div>
                 {diffValue &&

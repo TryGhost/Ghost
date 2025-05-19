@@ -11,7 +11,7 @@ export const KpiCardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
 
 export const KpiCardLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (
-        <div className={cn('[&_svg]:size-4 flex items-center gap-1.5 text-base text-gray-700 font-medium', className)} {...props}>
+        <div className={cn('[&_svg]:size-4 flex items-center gap-1.5 text-base text-muted-foreground h-[22px] font-medium', className)} {...props}>
             {children}
         </div>
     );
@@ -30,7 +30,7 @@ const KpiCard: React.FC<React.HTMLAttributes<HTMLButtonElement>> = ({children, c
         <button
             className={
                 cn(
-                    'flex flex-col border-r border-border last:border-none items-start gap-6 px-6 py-5 transition-all',
+                    'flex flex-col border-r border-border last:border-none items-start gap-4 px-6 py-5 transition-all',
                     props.onClick ? 'hover:bg-accent' : 'cursor-auto',
                     className
                 )}
