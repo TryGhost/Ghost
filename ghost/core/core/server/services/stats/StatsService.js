@@ -108,15 +108,15 @@ class StatsService {
      */
     async getNewsletterStats(options = {}) {
         // Extract newsletter_id from options
-        const {newsletter_id, ...otherOptions} = options;
+        const {newsletter_id: newsletterId, ...otherOptions} = options;
         
-        // If no newsletter_id is provided, we can't get specific stats
-        if (!newsletter_id) {
+        // If no newsletterId is provided, we can't get specific stats
+        if (!newsletterId) {
             return {data: []};
         }
         
         // Return newsletter stats for the specific newsletter
-        const result = await this.posts.getNewsletterStats(newsletter_id, otherOptions);
+        const result = await this.posts.getNewsletterStats(newsletterId, otherOptions);
         return result;
     }
 
@@ -131,14 +131,14 @@ class StatsService {
      */
     async getNewsletterSubscriberStats(options = {}) {
         // Extract newsletter_id from options
-        const {newsletter_id, ...otherOptions} = options;
+        const {newsletter_id: newsletterId, ...otherOptions} = options;
         
-        // If no newsletter_id is provided, we can't get specific stats
-        if (!newsletter_id) {
+        // If no newsletterId is provided, we can't get specific stats
+        if (!newsletterId) {
             return {data: [{total: 0, deltas: []}]};
         }
         
-        const result = await this.posts.getNewsletterSubscriberStats(newsletter_id, otherOptions);
+        const result = await this.posts.getNewsletterSubscriberStats(newsletterId, otherOptions);
         return result;
     }
 
