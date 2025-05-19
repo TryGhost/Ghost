@@ -54,8 +54,7 @@ export const usePostNewsletterStats = (postId: string) => {
     const {data: clicksResponse, isLoading: isClicksLoading, refetch: refetchTopLinks} = useTopLinks({
         searchParams: {
             post_id: postId,
-            limit: '5',
-            filter: 'clicks:>0'
+            limit: '5'
         }
     });
 
