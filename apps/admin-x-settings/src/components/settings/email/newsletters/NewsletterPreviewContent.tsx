@@ -44,6 +44,7 @@ const NewsletterPreviewContent: React.FC<{
     headerTextColor?: string;
     secondaryHeaderTextColor?: string;
     titleColor?: string;
+    sectionTitleColor?: string;
     dividerColor?: string;
     buttonColor?: string;
     linkColor?: string;
@@ -86,6 +87,7 @@ const NewsletterPreviewContent: React.FC<{
     headerTextColor,
     secondaryHeaderTextColor,
     titleColor,
+    sectionTitleColor,
     dividerColor,
     buttonColor,
     linkColor,
@@ -284,7 +286,7 @@ const NewsletterPreviewContent: React.FC<{
                                                 titleFontWeight === 'semibold' && 'font-semibold',
                                                 titleFontWeight === 'bold' && 'font-bold'
                                             )}
-                                            style={{color: titleColor}}>When Convenience Comes at a Cost</h3>
+                                            style={{color: sectionTitleColor}}>When Convenience Comes at a Cost</h3>
                                         <p className="mb-6" style={{color: textColor}}>So, what’s the future of food culture in an on-demand world? Can these platforms adapt to better support small businesses and workers? Or will we wake up one day to find that the places we once loved have vanished?</p>
                                         <p className="mb-6" style={{color: textColor}}>Some cities are beginning to push back. In San Francisco, legislation has been proposed to cap delivery app fees and ensure a fairer share of profits for restaurants. Other local governments are exploring ways to offer support to brick-and-mortar establishments, whether through grants, tax relief, or public campaigns that encourage residents to dine in more often.</p>
                                         <h3
@@ -297,7 +299,7 @@ const NewsletterPreviewContent: React.FC<{
                                                 titleFontWeight === 'semibold' && 'font-semibold',
                                                 titleFontWeight === 'bold' && 'font-bold'
                                             )}
-                                            style={{color: titleColor}}>Reimagining How We Eat</h3>
+                                            style={{color: sectionTitleColor}}>Reimagining How We Eat</h3>
                                         <p className="mb-6" style={{color: textColor}}>Consumers are also starting to pay more attention. There&apos;s a growing movement toward mindful eating—not just in terms of ingredients, but in how we support the systems that bring food to our tables. Choosing to pick up instead of ordering in, tipping delivery drivers fairly, or subscribing to local restaurant coalitions can all make a difference.</p>
                                         <p className="mb-6" style={{color: textColor}}>Ultimately, the story of delivery apps isn’t just about technology or convenience—it’s about the kind of communities we want to live in. And that future depends, in part, on the choices we make every day.</p>
                                     </>
@@ -372,7 +374,7 @@ const NewsletterPreviewContent: React.FC<{
                             {/* Latest posts */}
                             {showLatestPosts && (
                                 <div className={clsx('border-b border-grey-200 py-6', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-dotted')} style={{borderColor: dividerColor}}>
-                                    <h3 className="mb-4 mt-2 pb-1 text-[1.2rem] font-semibold uppercase tracking-wide text-black" style={{color: titleColor}}>Keep reading</h3>
+                                    <h3 className="mb-4 mt-2 pb-1 text-[1.2rem] font-semibold uppercase tracking-wide text-black">Keep reading</h3>
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
                                             <h4
@@ -384,7 +386,7 @@ const NewsletterPreviewContent: React.FC<{
                                                     titleFontWeight === 'semibold' && 'font-semibold',
                                                     titleFontWeight === 'bold' && 'font-bold'
                                                 )}
-                                                style={{color: titleColor}}>The three latest posts published on your site</h4>
+                                                style={{color: sectionTitleColor}}>The three latest posts published on your site</h4>
                                             <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Posts sent as an email only will never be shown here.</p>
                                         </div>
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
@@ -404,7 +406,7 @@ const NewsletterPreviewContent: React.FC<{
                                                     titleFontWeight === 'medium' && 'font-medium',
                                                     titleFontWeight === 'semibold' && 'font-semibold',
                                                     titleFontWeight === 'bold' && 'font-bold'
-                                                )} style={{color: titleColor}}>Displayed at the bottom of each newsletter</h4>
+                                                )} style={{color: sectionTitleColor}}>Displayed at the bottom of each newsletter</h4>
                                             <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Giving your readers one more place to discover your stories.</p>
                                         </div>
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
@@ -424,7 +426,7 @@ const NewsletterPreviewContent: React.FC<{
                                                     titleFontWeight === 'medium' && 'font-medium',
                                                     titleFontWeight === 'semibold' && 'font-semibold',
                                                     titleFontWeight === 'bold' && 'font-bold'
-                                                )} style={{color: titleColor}}>To keep your work front and center</h4>
+                                                )} style={{color: sectionTitleColor}}>To keep your work front and center</h4>
                                             <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Making sure that your audience stays engaged.</p>
                                         </div>
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
@@ -440,7 +442,7 @@ const NewsletterPreviewContent: React.FC<{
                             {/* Subscription details */}
                             {showSubscriptionDetails && (
                                 <div className={clsx('border-b border-grey-200 py-8', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-dotted')} style={{borderColor: dividerColor}}>
-                                    <h4 className="mb-3 text-[1.2rem] uppercase tracking-wide text-black" style={{color: titleColor}}>Subscription details</h4>
+                                    <h4 className="mb-3 text-[1.2rem] uppercase tracking-wide text-black">Subscription details</h4>
                                     <p className="m-0 mb-4 text-base" style={{color: textColor}}>You are receiving this because you are a paid subscriber to {siteTitle}. Your subscription will renew on 17 Jul 2024.</p>
                                     <div className="flex">
                                         <div className="shrink-0 text-base">

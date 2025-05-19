@@ -131,6 +131,22 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         return textColorForBackgroundColor(backgroundColor()).hex();
     };
 
+    const sectionTitleColor = () => {
+        const value = newsletter.section_title_color;
+
+        const validHex = /#([0-9a-f]{3}){1,2}$/i;
+
+        if (validHex.test(value || '')) {
+            return value;
+        }
+
+        if (value === 'accent') {
+            return siteData.accent_color;
+        }
+
+        return textColorForBackgroundColor(backgroundColor()).hex();
+    };
+
     const dividerColor = () => {
         const value = newsletter.divider_color;
 
@@ -159,6 +175,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         borderColor: borderColor() || undefined,
         secondaryBorderColor,
         titleColor: titleColor() || undefined,
+        sectionTitleColor: sectionTitleColor() || undefined,
         buttonColor: buttonColor() || undefined,
         linkColor: linkColor() || undefined,
         dividerColor: dividerColor() || undefined,
