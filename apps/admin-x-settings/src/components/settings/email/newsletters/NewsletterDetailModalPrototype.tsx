@@ -367,7 +367,7 @@ const Sidebar: React.FC<{
                             label={
                                 <div className='flex flex-col gap-0.5'>
                                     <span className='text-sm md:text-base'>Promote independent publishing</span>
-                                    <span className='text-[11px] leading-tight text-grey-700 md:text-xs md:leading-tight'>Show you&apos;re a part of the indie publishing movement with a small badge in the footer</span>
+                                    <span className='text-grey-700 text-[11px] leading-tight md:text-xs md:leading-tight'>Show you&apos;re a part of the indie publishing movement with a small badge in the footer</span>
                                 </div>
                             }
                             labelStyle='value'
@@ -446,9 +446,27 @@ const Sidebar: React.FC<{
                                 hex: siteData.accent_color
                             }
                         ]}
-                        title='Heading color'
+                        title='Post title color'
                         value={newsletter.title_color}
                         onChange={color => updateNewsletter({title_color: color})}
+                    />
+                    <ColorPickerField
+                        direction='rtl'
+                        swatches={[
+                            {
+                                value: null,
+                                title: 'Auto',
+                                hex: backgroundColorIsDark() ? '#ffffff' : '#000000'
+                            },
+                            {
+                                value: 'accent',
+                                title: 'Accent',
+                                hex: siteData.accent_color
+                            }
+                        ]}
+                        title='Section title color'
+                        value={newsletter.section_title_color}
+                        onChange={color => updateNewsletter({section_title_color: color})}
                     />
                     <ColorPickerField
                         direction='rtl'
