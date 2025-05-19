@@ -1,13 +1,12 @@
-import KpiCard, {KpiCardContent, KpiCardIcon, KpiCardLabel, KpiCardValue} from './components/KpiCard';
-import PostAnalyticsContent from './components/PostAnalyticsContent';
-import PostAnalyticsHeader from './components/PostAnalyticsHeader';
-import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, formatNumber} from '@tryghost/shade';
-import {SourceRow} from './components/Web/Sources';
+import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
+import PostAnalyticsContent from '../components/PostAnalyticsContent';
+import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
+import {BarChartLoadingIndicator, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber} from '@tryghost/shade';
+import {SourceRow} from '../Web/components/Sources';
 import {useParams} from '@tryghost/admin-x-framework';
-import {usePostReferrers} from '../../hooks/usePostReferrers';
+import {usePostReferrers} from '@src/hooks/usePostReferrers';
 
-const centsToDollars = (value : number) => {
+export const centsToDollars = (value : number) => {
     return Math.round(value / 100);
 };
 
@@ -16,7 +15,7 @@ const hasLinkableUrl = (url: string | undefined): boolean => {
     if (!url) {
         return false;
     }
-    
+
     try {
         new URL(url);
         return true;
@@ -33,44 +32,46 @@ const Growth: React.FC<postAnalyticsProps> = () => {
     const {stats: postReferrers, totals, isLoading} = usePostReferrers(postId || '');
 
     return (
-        <PostAnalyticsLayout>
-            <ViewHeader className='items-end pb-4'>
-                <PostAnalyticsHeader currentTab='Growth' />
-            </ViewHeader>
+        <>
+            <PostAnalyticsHeader currentTab='Growth' />
             <PostAnalyticsContent>
-                {isLoading ? 'Loading' :
+                {isLoading ?
+                    <div className='flex size-full grow items-center justify-center'>
+                        <BarChartLoadingIndicator />
+                    </div>
+                    :
                     <div className='flex flex-col items-stretch gap-6'>
                         <Card>
                             <CardHeader className='hidden'>
                                 <CardTitle>Newsletters</CardTitle>
                                 <CardDescription>How did this post perform</CardDescription>
                             </CardHeader>
-                            <CardContent className='p-5'>
-                                <div className='grid grid-cols-3 gap-6'>
-                                    <KpiCard className='border-none p-0'>
-                                        <KpiCardIcon>
+                            <CardContent className='p-0'>
+                                <div className='flex items-stretch'>
+                                    <KpiCard className='grow'>
+                                        <KpiCardLabel>
                                             <LucideIcon.User strokeWidth={1.5} />
-                                        </KpiCardIcon>
+                                            Free members
+                                        </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardLabel>Free members</KpiCardLabel>
                                             <KpiCardValue>{formatNumber(totals?.free_members || 0)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
-                                    <KpiCard className='border-none p-0'>
-                                        <KpiCardIcon>
+                                    <KpiCard className='grow'>
+                                        <KpiCardLabel>
                                             <LucideIcon.WalletCards strokeWidth={1.5} />
-                                        </KpiCardIcon>
+                                            Paid members
+                                        </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardLabel>Paid members</KpiCardLabel>
                                             <KpiCardValue>{formatNumber(totals?.paid_members || 0)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
-                                    <KpiCard className='border-none p-0'>
-                                        <KpiCardIcon>
+                                    <KpiCard className='grow'>
+                                        <KpiCardLabel>
                                             <LucideIcon.CircleDollarSign strokeWidth={1.5} />
-                                        </KpiCardIcon>
+                                            MRR
+                                        </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardLabel>MRR</KpiCardLabel>
                                             <KpiCardValue>+${centsToDollars(totals?.mrr || 0)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
@@ -126,7 +127,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                     </div>
                 }
             </PostAnalyticsContent>
-        </PostAnalyticsLayout>
+        </>
     );
 };
 

@@ -1,4 +1,4 @@
-import GlobalDataProvider from '../../../src/providers/GlobalDataProvider';
+import GlobalDataProvider from '../../../src/providers/PostAnalyticsContext';
 import React from 'react';
 import {HttpResponse, http} from 'msw';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
@@ -264,4 +264,4 @@ describe('usePostNewsletterStats', () => {
         });
         expect(result.current.topLinks).toEqual([]);
     });
-}); 
+});
