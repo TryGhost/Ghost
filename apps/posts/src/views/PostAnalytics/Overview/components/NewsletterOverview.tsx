@@ -1,7 +1,5 @@
-import React, {useMemo} from 'react';
+import React from 'react';
 import {BarChartLoadingIndicator, ChartConfig, ChartContainer, LucideIcon, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
-import {GroupedLinkData} from '../../Newsletter/Newsletter';
-import {cleanTrackedUrl, sanitizeUrl} from '@src/utils/link-helpers';
 import {useParams} from '@tryghost/admin-x-framework';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 
@@ -28,33 +26,6 @@ const NewsletterOverview:React.FC = () => {
             color: 'hsl(var(--chart-green))'
         }
     } satisfies ChartConfig;
-
-    // Memoize link processing to avoid unnecessary recomputation on renders
-    const displayLinks = useMemo(() => {
-        // Process links data to group by URL
-        const processedLinks = topLinks.reduce<Record<string, GroupedLinkData>>((acc, link) => {
-            // For grouping, we use the clean URL (path only with hash)
-            const cleanUrl = cleanTrackedUrl(link.url, false);
-
-            if (!acc[cleanUrl]) {
-                acc[cleanUrl] = {
-                    url: cleanUrl,
-                    clicks: 0,
-                    edited: false
-                };
-            }
-
-            acc[cleanUrl].clicks += link.clicks;
-            acc[cleanUrl].edited = acc[cleanUrl].edited || link.edited;
-
-            return acc;
-        }, {});
-
-        // Sort by click count and take only top 5
-        return Object.values(processedLinks)
-            .sort((a, b) => b.clicks - a.clicks)
-            .slice(0, 5);
-    }, [topLinks]); // Only recalculate when topLinks changes
 
     const radialBarChartClassName = 'mx-auto aspect-square w-full min-h-[200px] max-w-[200px]';
 
@@ -192,21 +163,21 @@ const NewsletterOverview:React.FC = () => {
                             {topLinks.length > 0
                                 ?
                                 <TableBody>
-                                    {displayLinks.map((row) => {
+                                    {topLinks.map((row) => {
                                         return (
-                                            <TableRow key={row.url}>
+                                            <TableRow key={row.link.link_id}>
                                                 <TableCell className='max-w-0 group-hover:!bg-transparent'>
                                                     <a
                                                         className='block truncate font-medium hover:underline'
-                                                        href={row.url}
+                                                        href={row.link.to}
                                                         rel="noreferrer"
                                                         target='_blank'
-                                                        title={row.url}
+                                                        title={row.link.title}
                                                     >
-                                                        {sanitizeUrl(row.url)}
+                                                        {row.link.title}
                                                     </a>
                                                 </TableCell>
-                                                <TableCell className='w-[10%] text-right font-mono text-sm group-hover:!bg-transparent'>{formatNumber(row.clicks)}</TableCell>
+                                                <TableCell className='w-[10%] text-right font-mono text-sm group-hover:!bg-transparent'>{formatNumber(row.count)}</TableCell>
                                             </TableRow>
                                         );
                                     })}
