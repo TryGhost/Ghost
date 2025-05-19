@@ -11,7 +11,7 @@ export type Post = {
     slug: string;
     title: string;
     uuid: string;
-    feature_image: string;
+    feature_image?: string;
     count?: {
         clicks?: number;
     };
