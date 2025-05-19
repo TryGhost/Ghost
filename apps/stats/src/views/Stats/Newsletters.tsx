@@ -124,7 +124,7 @@ const NewsletterKPIs: React.FC<{
 
         // First sanitize the data based on range
         sanitizedData = sanitizeChartData(allSubscribersData, range, 'value', 'exact');
-        
+
         // Convert from deltas to running count (backwards from total)
         let runningTotal = totalSubscribers;
         const cumulativeData = [...sanitizedData].reverse().map((item) => {
@@ -162,7 +162,7 @@ const NewsletterKPIs: React.FC<{
 
     return (
         <Tabs defaultValue="total-subscribers" variant='kpis'>
-            <TabsList className="-mx-6 grid grid-cols-5">
+            <TabsList className="-mx-6 grid grid-cols-3">
                 <KpiTabTrigger value="total-subscribers" onClick={() => {
                     setCurrentTab('total-subscribers');
                 }}>
@@ -265,6 +265,7 @@ const NewsletterKPIs: React.FC<{
                                 fill="hsl(var(--chart-1))"
                                 isAnimationActive={false}
                                 maxBarSize={32}
+                                minPointSize={2}
                                 radius={0}>
                                 {avgsData.map(entry => (
                                     <Recharts.Cell
@@ -292,12 +293,12 @@ const Newsletters: React.FC = () => {
 
     // Get stats from real data using the new hooks with selected newsletter
     const {data: newsletterStatsData, isLoading: isStatsLoading} = useNewsletterStatsWithRange(
-        range, 
-        sortBy, 
+        range,
+        sortBy,
         selectedNewsletterId || undefined
     );
     const {data: subscriberStatsData, isLoading: isSubscriberStatsLoading} = useSubscriberCountWithRange(
-        range, 
+        range,
         selectedNewsletterId || undefined
     );
 

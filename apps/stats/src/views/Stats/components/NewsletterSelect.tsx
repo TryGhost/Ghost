@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo} from 'react';
-import {Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade';
+import {LucideIcon, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
@@ -17,7 +17,7 @@ const NewsletterSelect: React.FC = () => {
         if (activeNewsletters.length > 0 && !selectedNewsletterId) {
             // First try to find the default newsletter (sort_order = 1)
             const defaultNewsletter = activeNewsletters.find(newsletter => newsletter.sort_order === 1);
-            
+
             // If we found a default newsletter, use it
             if (defaultNewsletter) {
                 setSelectedNewsletterId(defaultNewsletter.id);
@@ -34,13 +34,14 @@ const NewsletterSelect: React.FC = () => {
     }
 
     return (
-        <Select 
-            value={selectedNewsletterId || ''} 
+        <Select
+            value={selectedNewsletterId || ''}
             onValueChange={(value) => {
                 setSelectedNewsletterId(value);
             }}
         >
             <SelectTrigger>
+                <LucideIcon.Mails className='mr-2' size={16} strokeWidth={1.5} />
                 <SelectValue placeholder="Select a newsletter" />
             </SelectTrigger>
             <SelectContent align='end'>
@@ -57,4 +58,4 @@ const NewsletterSelect: React.FC = () => {
     );
 };
 
-export default NewsletterSelect; 
+export default NewsletterSelect;
