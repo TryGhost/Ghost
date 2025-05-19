@@ -4,7 +4,7 @@ import {STATS_DEFAULT_RANGE_KEY, STATS_RANGE_OPTIONS} from '@src/utils/constants
 import {Setting, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {StatsConfig} from '@tryghost/admin-x-framework';
 
-type GlobalDataContextType = {
+interface GlobalData {
     data: Config | undefined;
     statsConfig: StatsConfig | undefined;
     isLoading: boolean;
@@ -12,14 +12,16 @@ type GlobalDataContextType = {
     audience: number;
     setAudience: (value: number) => void;
     setRange: (value: number) => void;
-    settings: Setting[]
+    settings: Setting[];
+    selectedNewsletterId: string | null;
+    setSelectedNewsletterId: (id: string | null) => void;
 }
 
-const GlobalDataContext = createContext<GlobalDataContextType | undefined>(undefined);
+const GlobalDataContext = createContext<GlobalData | undefined>(undefined);
 
 export const useGlobalData = () => {
     const context = useContext(GlobalDataContext);
-    if (!context) {
+    if (context === undefined) {
         throw new Error('useGlobalData must be used within a GlobalDataProvider');
     }
     return context;
@@ -31,6 +33,7 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const [range, setRange] = useState(STATS_RANGE_OPTIONS[STATS_DEFAULT_RANGE_KEY].value);
     // Initialize with all audiences selected (binary 111 = 7)
     const [audience, setAudience] = useState(7);
+    const [selectedNewsletterId, setSelectedNewsletterId] = useState<string | null>(null);
 
     const requests = [config, settings];
     const error = requests.map(request => request.error).find(Boolean);
@@ -48,7 +51,9 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
         setRange,
         audience,
         setAudience,
-        settings: settings.data?.settings || []
+        settings: settings.data?.settings || [],
+        selectedNewsletterId,
+        setSelectedNewsletterId
     }}>
         {children}
     </GlobalDataContext.Provider>;

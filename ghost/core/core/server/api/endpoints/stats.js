@@ -177,7 +177,8 @@ const controller = {
             'limit',
             'date_from',
             'date_to',
-            'timezone'
+            'timezone',
+            'newsletter_id'
         ],
         permissions: {
             docName: 'posts',
@@ -192,7 +193,8 @@ const controller = {
                     limit: frame.options.limit,
                     date_from: frame.options.date_from,
                     date_to: frame.options.date_to,
-                    timezone: frame.options.timezone
+                    timezone: frame.options.timezone,
+                    newsletter_id: frame.options.newsletter_id
                 }
             };
         },
@@ -206,7 +208,8 @@ const controller = {
         },
         options: [
             'date_from',
-            'date_to'
+            'date_to',
+            'newsletter_id'
         ],
         permissions: {
             docName: 'posts',
@@ -218,7 +221,8 @@ const controller = {
                 method: 'getNewsletterSubscriberStats',
                 options: {
                     date_from: frame.options.date_from,
-                    date_to: frame.options.date_to
+                    date_to: frame.options.date_to,
+                    newsletter_id: frame.options.newsletter_id
                 }
             };
         },
