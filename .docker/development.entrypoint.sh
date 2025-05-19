@@ -24,8 +24,9 @@ set -euo pipefail
         mkdir -p .yarnhash
         echo "$calculated_hash" > "$yarn_lock_hash_file_path"
     fi
-    yarn nx reset
 )
+
+yarn nx reset
 
 # Execute the CMD
 exec "$@"
