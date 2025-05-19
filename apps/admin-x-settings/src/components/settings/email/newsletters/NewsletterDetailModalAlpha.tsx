@@ -91,6 +91,13 @@ const Sidebar: React.FC<{
         {value: 'sans_serif', label: 'Clean sans-serif'}
     ];
 
+    const fontWeightOptions: SelectOption[] = [
+        {value: 'normal', label: 'Normal'},
+        {value: 'medium', label: 'Medium'},
+        {value: 'semibold', label: 'Semi-bold'},
+        {value: 'bold', label: 'Bold'}
+    ];
+
     const confirmStatusChange = async () => {
         if (newsletter.status === 'active') {
             NiceModal.show(ConfirmationModal, {
@@ -365,6 +372,12 @@ const Sidebar: React.FC<{
                         selectedOption={fontOptions.find(option => option.value === newsletter.title_font_category)}
                         title='Heading font'
                         onSelect={option => updateNewsletter({title_font_category: option?.value})}
+                    />
+                    <Select
+                        options={fontWeightOptions}
+                        selectedOption={fontWeightOptions.find(option => option.value === newsletter.title_font_weight)}
+                        title='Heading weight'
+                        onSelect={option => updateNewsletter({title_font_weight: option?.value})}
                     />
                     <Select
                         options={fontOptions}
