@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as RechartsPrimitive from 'recharts';
 
-import {cn} from '@/lib/utils';
+import {cn, formatDisplayDate, formatDisplayDateWithRange} from '@/lib/utils';
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = {light: '', dark: '.dark'} as const;
@@ -380,6 +380,45 @@ const AlignedAxisTick: React.FC<AlignedAxisTickProps> = ({x, y, payload, index, 
     );
 };
 
+interface DateTooltipPayload {
+    value: number;
+    payload: {
+        date?: string;
+        formattedValue?: string;
+        label?: string;
+    };
+}
+
+interface DateTooltipProps {
+    active?: boolean;
+    payload?: DateTooltipPayload[];
+    range?: number;
+}
+
+const DateTooltipContent = ({active, payload, range}: DateTooltipProps) => {
+    if (!active || !payload?.length) {
+        return null;
+    }
+
+    const {date, formattedValue, label} = payload[0].payload;
+    const displayValue = formattedValue || payload[0].value;
+
+    return (
+        <div className="min-w-[120px] rounded-lg border bg-background px-3 py-2 shadow-lg">
+            {date && <div className="text-sm text-foreground">{range ? formatDisplayDateWithRange(date, range) : formatDisplayDate(date)}</div>}
+            <div className='flex items-center gap-1'>
+                <span className='inline-block size-[10px] rounded-[2px]' style={{backgroundColor: 'hsl(var(--chart-1))'}}></span>
+                <div className='flex grow items-center justify-between gap-3'>
+                    {label && <div className="text-sm text-muted-foreground">{label}</div>}
+                    <div className="font-mono font-medium">{displayValue}</div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default DateTooltipContent;
+
 export {
     ChartContainer,
     ChartTooltip,
@@ -387,5 +426,6 @@ export {
     ChartLegend,
     ChartLegendContent,
     ChartStyle,
-    AlignedAxisTick
+    AlignedAxisTick,
+    DateTooltipContent
 };
