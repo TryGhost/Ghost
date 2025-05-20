@@ -1029,6 +1029,10 @@ class EmailRenderer {
             return 'border-radius: 6px;';
         }
 
+        if (value === 'square') {
+            return 'border-radius: 0;';
+        }
+
         return null;
     }
 
