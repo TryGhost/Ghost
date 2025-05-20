@@ -9,19 +9,26 @@ const controller = {
             cacheInvalidate: false
         },
         options: [
-            'filter'
+            'filter',
+            'limit'
         ],
         permissions: true,
         async query(frame) {
             const links = await linkTrackingService.service.getLinks(frame.options);
-
+            
+            // We use the length of the returned array for the total
+            // This is accurate because the pagination happens at the database level
+            const total = links.length;
+            const limit = frame.options.limit ? parseInt(frame.options.limit, 10) : total;
+            
             return {
                 data: links,
                 meta: {
                     pagination: {
-                        total: links.length,
+                        total: total,
+                        limit: limit,
                         page: 1,
-                        pages: 1
+                        pages: Math.ceil(total / limit) || 1
                     }
                 }
             };

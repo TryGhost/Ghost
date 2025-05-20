@@ -88,12 +88,14 @@ class LinkClickTrackingService {
 
     /**
      * @param {object} options
-     * @param {string} options.filter
+     * @param {string} [options.filter]
+     * @param {string} [options.limit]
      * @return {Promise<FullPostLink[]>}
      */
     async getLinks(options) {
         return await this.#postLinkRepository.getAll({
-            filter: options.filter
+            filter: options.filter || '',
+            limit: options.limit
         });
     }
 

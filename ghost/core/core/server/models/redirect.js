@@ -36,7 +36,7 @@ const Redirect = ghostBookshelf.Model.extend({
     permittedOptions(methodName) {
         let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
         const validOptions = {
-            findAll: ['filter', 'columns', 'withRelated'],
+            findAll: ['filter', 'columns', 'withRelated', 'limit'],
             edit: ['importing']
         };
 
@@ -45,6 +45,20 @@ const Redirect = ghostBookshelf.Model.extend({
         }
 
         return options;
+    },
+
+    getFilteredCollection(options) {
+        const collection = ghostBookshelf.Model.getFilteredCollection.apply(this, arguments);
+        
+        // Apply limit directly to the query
+        if (options.limit) {
+            const limitNumber = parseInt(options.limit, 10);
+            if (!isNaN(limitNumber) && limitNumber > 0) {
+                collection.query('limit', limitNumber);
+            }
+        }
+        
+        return collection;
     },
 
     countRelations() {
