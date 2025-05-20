@@ -2608,8 +2608,12 @@ describe('Email renderer', function () {
             await testImageCorners('square', null);
         });
 
-        it('sets null if unknown value', async function () {
+        it('sets imageCorners to null if unknown value', async function () {
             await testImageCorners('unknown', null);
+        });
+
+        it('sets imageCorners to null if null', async function () {
+            await testImageCorners(null, null);
         });
 
         async function testHasOutlineButtons(buttonStyle, expectedValue) {
