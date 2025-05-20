@@ -116,7 +116,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                             return (
                                 <div className='flex items-center gap-1'>
                                     <div className='size-2.5 rounded-[2px]' style={{backgroundColor: props.payload?.fill}}></div>
-                                    <div className='text-muted-foreground text-xs capitalize'>{props.payload?.datatype}</div>
+                                    <div className='text-xs capitalize text-muted-foreground'>{props.payload?.datatype}</div>
                                     <div className='ml-3 font-mono text-xs'>{value}%</div>
                                 </div>
                             );
@@ -133,7 +133,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
 
 const FunnelArrow: React.FC = () => {
     return (
-        <div className='bg-background text-muted-foreground absolute right-[-13px] top-1/2 flex size-[25px] -translate-y-1/2 items-center justify-center rounded-full border'>
+        <div className='absolute right-[-13px] top-1/2 flex size-[25px] -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground'>
             <LucideIcon.ChevronRight className='ml-0.5' size={16} strokeWidth={1.5}/>
         </div>
     );
@@ -334,7 +334,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         </KpiCardLabel>
                                         <KpiCardContent>
                                             <KpiCardValue>{formatNumber(stats.opened)}</KpiCardValue>
-                                            <span className='text-muted-foreground mt-0.5 text-sm'>{formatPercentage(stats.openedRate)} open rate</span>
+                                            <span className='mt-0.5 text-sm text-muted-foreground'>{formatPercentage(stats.openedRate)} open rate</span>
                                         </KpiCardContent>
                                         <FunnelArrow />
                                     </KpiCard>
@@ -346,7 +346,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         </KpiCardLabel>
                                         <KpiCardContent>
                                             <KpiCardValue>{formatNumber(stats.clicked)}</KpiCardValue>
-                                            <span className='text-muted-foreground mt-0.5 text-sm'>{formatPercentage(stats.clickedRate)} click rate</span>
+                                            <span className='mt-0.5 text-sm text-muted-foreground'>{formatPercentage(stats.clickedRate)} click rate</span>
                                         </KpiCardContent>
                                     </KpiCard>
                                 </div>
@@ -439,7 +439,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                                 style={{backgroundColor: color}}
                                                                             />
                                                                             {barChartConfig[name as keyof typeof barChartConfig]?.label || name}
-                                                                            <div className="text-foreground ml-auto flex items-baseline gap-0.5 pl-2 font-mono font-medium tabular-nums">
+                                                                            <div className="ml-auto flex items-baseline gap-0.5 pl-2 font-mono font-medium tabular-nums text-foreground">
                                                                                 {formatPercentage(value)}
                                                                             </div>
                                                                         </>
@@ -515,7 +515,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                     <div ref={containerRef} className='flex w-full items-center gap-2'>
                                                                         <Input
                                                                             ref={inputRef}
-                                                                            className="border-border bg-background h-7 w-full text-sm"
+                                                                            className="h-7 w-full border-border bg-background text-sm"
                                                                             value={editedUrl}
                                                                             onChange={e => setEditedUrl(e.target.value)}
                                                                         />
@@ -529,7 +529,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                 ) : (
                                                                     <>
                                                                         <Button
-                                                                            className='bg-background shrink-0'
+                                                                            className='shrink-0 bg-background'
                                                                             size='sm'
                                                                             variant='outline'
                                                                             onClick={() => handleEdit(linkId)}
@@ -560,7 +560,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         <TableFooter className='bg-transparent'>
                                             <TableRow>
                                                 <TableCell className='group-hover:bg-transparent' colSpan={2}>
-                                                    <div className='text-green ml-2 mt-1 flex items-center gap-2'>
+                                                    <div className='ml-2 mt-1 flex items-center gap-2 text-green'>
                                                         <LucideIcon.ArrowUp size={20} strokeWidth={1.5} />
                                                         Sent a broken link? You can update it!
                                                     </div>
