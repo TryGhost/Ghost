@@ -327,7 +327,8 @@ class EmailRenderer {
                 titleFontWeight: newsletter?.get('title_font_weight'),
                 buttonCorners: newsletter?.get('button_corners'),
                 buttonStyle: newsletter?.get('button_style'),
-                linkStyle: newsletter?.get('link_style')
+                linkStyle: newsletter?.get('link_style'),
+                imageCorners: newsletter?.get('image_corners')
             };
         }
 
@@ -1017,6 +1018,20 @@ class EmailRenderer {
         }
     }
 
+    #getImageCorners(newsletter) {
+        /** @type {'rounded' | 'squircle' | string | null} */
+        const value = newsletter.get('image_corners');
+
+        // we need to convert the value to plain css value
+        // eg border-radius: 10px;
+
+        if (value === 'rounded') {
+            return 'border-radius: 10px;';
+        }
+
+        return 'border-radius: 0;';
+    }
+
     /**
      * @private
      */
@@ -1045,6 +1060,7 @@ class EmailRenderer {
         const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
         const linkColor = backgroundIsDark ? '#ffffff' : accentColor;
         const linkStyles = this.#getLinkStyles(newsletter);
+        const imageCorners = this.#getImageCorners(newsletter);
 
         let buttonBorderRadius = '6px';
 
@@ -1206,6 +1222,7 @@ class EmailRenderer {
             secondaryTextColor,
             linkColor,
             linkStyles,
+            imageCorners,
             buttonBorderRadius,
 
             headerImage,
