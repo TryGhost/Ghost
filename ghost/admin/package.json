@@ -178,7 +178,7 @@
     "jose": "4.15.9",
     "lru-cache": "6.0.0",
     "path-browserify": "1.0.1",
-    "webpack": "5.99.8"
+    "webpack": "5.99.9"
   },
   "nx": {
     "targets": {
