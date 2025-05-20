@@ -1,6 +1,5 @@
 import moment from 'moment-timezone';
 import {STATS_RANGE_OPTIONS} from '@src/utils/constants';
-import {formatDisplayDate} from '@tryghost/shade';
 
 /**
  * Returns additional text for subheads
@@ -247,19 +246,4 @@ export const sanitizeChartData = <T extends {date: string}>(data: T[], range: nu
 
     // Return data as is for other ranges
     return detectBulkImports(data);
-};
-
-/**
- * Formats a date based on the range
- * - For ranges above 365 days: shows month and year (e.g. "Apr 2025")
- * - For ranges above 91 days: shows "Week of [date]"
- * - For other ranges: uses the default formatDisplayDate
- */
-export const formatDisplayDateWithRange = (date: string, range: number): string => {
-    if (range > 365) {
-        return moment(date).format('MMM YYYY');
-    } else if (range >= 91) {
-        return `Week of ${formatDisplayDate(date)}`;
-    }
-    return formatDisplayDate(date);
 };
