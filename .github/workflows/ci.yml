@@ -506,7 +506,8 @@ jobs:
 
       - name: Check Docker Hub Rate Limits
         run: |
-          curl --head -H "Authorization: Bearer ${{ secrets.DOCKERHUB_TOKEN }}" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest
+          TOKEN=$(curl --user '${{secrets.DOCKERHUB_USERNAME}}:${{secrets.DOCKERHUB_TOKEN}}' "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
+          curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest
 
       - uses: tryghost/mysql-action@main
         if: matrix.env.DB == 'mysql8'
