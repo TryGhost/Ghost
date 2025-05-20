@@ -203,6 +203,40 @@ describe('ToggleNode', function () {
             `);
         }));
 
+        it('renders for email target (emailCustomizationAlpha)', editorTest(function () {
+            const payload = {
+                heading: 'Heading',
+                content: 'Content'
+            };
+
+            const options = {
+                target: 'email',
+                postUrl: 'https://example.com/my-post',
+                feature: {
+                    emailCustomizationAlpha: true
+                }
+            };
+            const toggleNode = $createToggleNode(payload);
+            const {element} = toggleNode.exportDOM({...exportOptions, ...options});
+
+            element.outerHTML.should.prettifyTo(html`
+                <table cellspacing="0" cellpadding="0" border="0" width="100%" class="kg-toggle-card">
+                    <tbody>
+                        <tr>
+                            <td class="kg-toggle-heading">
+                                <h4>Heading</h4>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="kg-toggle-content">
+                                Content
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `);
+        }));
+
         it('renders heading', editorTest(function () {
             const payload = {
                 heading: 'Heading',

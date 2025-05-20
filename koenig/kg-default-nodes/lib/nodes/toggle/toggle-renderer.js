@@ -1,4 +1,5 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+import {html} from '../../utils/tagged-template-fns.mjs';
 
 function cardTemplate({node}) {
     return (
@@ -18,7 +19,28 @@ function cardTemplate({node}) {
     );
 }
 
-function emailCardTemplate({node}) {
+function emailCardTemplate({node}, options = {}) {
+    if (options.feature?.emailCustomizationAlpha) {
+        return (
+            html`
+            <table cellspacing="0" cellpadding="0" border="0" width="100%" class="kg-toggle-card">
+                <tbody>
+                    <tr>
+                        <td class="kg-toggle-heading">
+                            <h4>${node.heading}</h4>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="kg-toggle-content">
+                            ${node.content}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            `
+        );
+    }
+
     return (
         `
         <div style="background: transparent;
@@ -36,7 +58,7 @@ export function renderToggleNode(node, options = {}) {
     const document = options.createDocument();
 
     const htmlString = options.target === 'email'
-        ? emailCardTemplate({node})
+        ? emailCardTemplate({node}, options)
         : cardTemplate({node});
 
     const container = document.createElement('div');
