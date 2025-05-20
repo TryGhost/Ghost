@@ -6,9 +6,9 @@ import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {AlignedAxisTick, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, centsToDollars, formatDisplayDateWithRange, formatNumber, getYRange} from '@tryghost/shade';
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
-import {calculateYAxisWidth, getPeriodText, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
+import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
@@ -127,6 +127,23 @@ const GrowthKPIs: React.FC<{
         }
     } satisfies ChartConfig;
 
+    const yRange = [getYRange(chartData).min, getYRange(chartData).max];
+
+    const tabConfig = {
+        'total-members': {
+            color: 'hsl(var(--chart-blue))'
+        },
+        'free-members': {
+            color: 'hsl(var(--chart-green))'
+        },
+        'paid-members': {
+            color: 'hsl(var(--chart-purple))'
+        },
+        mrr: {
+            color: 'hsl(var(--chart-orange))'
+        }
+    };
+
     return (
         <Tabs defaultValue="total-members" variant='kpis'>
             <TabsList className="-mx-6 grid grid-cols-4">
@@ -134,6 +151,7 @@ const GrowthKPIs: React.FC<{
                     setCurrentTab('total-members');
                 }}>
                     <KpiTabValue
+                        color={tabConfig['total-members'].color}
                         diffDirection={directions.total}
                         diffValue={percentChanges.total}
                         label="Total members"
@@ -144,6 +162,7 @@ const GrowthKPIs: React.FC<{
                     setCurrentTab('free-members');
                 }}>
                     <KpiTabValue
+                        color={tabConfig['free-members'].color}
                         diffDirection={directions.free}
                         diffValue={percentChanges.free}
                         label="Free members"
@@ -154,6 +173,7 @@ const GrowthKPIs: React.FC<{
                     setCurrentTab('paid-members');
                 }}>
                     <KpiTabValue
+                        color={tabConfig['paid-members'].color}
                         diffDirection={directions.paid}
                         diffValue={percentChanges.paid}
                         label="Paid members"
@@ -164,6 +184,7 @@ const GrowthKPIs: React.FC<{
                     setCurrentTab('mrr');
                 }}>
                     <KpiTabValue
+                        color={tabConfig.mrr.color}
                         diffDirection={directions.mrr}
                         diffValue={percentChanges.mrr}
                         label="MRR"
@@ -173,11 +194,11 @@ const GrowthKPIs: React.FC<{
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] w-full' config={chartConfig}>
-                    <Recharts.LineChart
+                    <Recharts.AreaChart
                         data={chartData}
                         margin={{
-                            left: 0,
-                            right: 20,
+                            left: 4,
+                            right: 4,
                             top: 12
                         }}
                         accessibilityLayer
@@ -188,14 +209,15 @@ const GrowthKPIs: React.FC<{
                             dataKey="date"
                             interval={0}
                             stroke="hsl(var(--gray-300))"
-                            tickFormatter={formatDisplayDate}
+                            tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(value, range)} />}
+                            tickFormatter={value => formatDisplayDateWithRange(value, range)}
                             tickLine={false}
                             tickMargin={8}
                             ticks={chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}
                         />
                         <Recharts.YAxis
                             axisLine={false}
-                            domain={[getYRange(chartData).min, getYRange(chartData).max]}
+                            domain={yRange}
                             tickFormatter={(value) => {
                                 switch (currentTab) {
                                 case 'total-members':
@@ -209,8 +231,8 @@ const GrowthKPIs: React.FC<{
                                 }
                             }}
                             tickLine={false}
-                            ticks={getYTicks(chartData)}
-                            width={calculateYAxisWidth(getYTicks(chartData), (value) => {
+                            ticks={yRange}
+                            width={calculateYAxisWidth(yRange, (value: number) => {
                                 switch (currentTab) {
                                 case 'total-members':
                                 case 'free-members':
@@ -224,18 +246,36 @@ const GrowthKPIs: React.FC<{
                             })}
                         />
                         <ChartTooltip
-                            content={<CustomTooltipContent range={range} />}
+                            content={<CustomTooltipContent color={tabConfig[currentTab as keyof typeof tabConfig].color} range={range} />}
                             cursor={true}
-                        />
-                        <Recharts.Line
-                            dataKey="value"
-                            dot={false}
                             isAnimationActive={false}
-                            stroke="hsl(var(--chart-1))"
-                            strokeWidth={2}
-                            type='monotone'
+                            position={{y: 20}}
                         />
-                    </Recharts.LineChart>
+                        <defs>
+                            <linearGradient id="fillChart" x1="0" x2="0" y1="0" y2="1">
+                                <stop
+                                    offset="5%"
+                                    stopColor={tabConfig[currentTab as keyof typeof tabConfig].color}
+                                    stopOpacity={0.8}
+                                />
+                                <stop
+                                    offset="95%"
+                                    stopColor={tabConfig[currentTab as keyof typeof tabConfig].color}
+                                    stopOpacity={0.1}
+                                />
+                            </linearGradient>
+                        </defs>
+                        <Recharts.Area
+                            dataKey="value"
+                            fill="url(#fillChart)"
+                            fillOpacity={0.2}
+                            isAnimationActive={false}
+                            stackId="a"
+                            stroke={tabConfig[currentTab as keyof typeof tabConfig].color}
+                            strokeWidth={2}
+                            type="linear"
+                        />
+                    </Recharts.AreaChart>
                 </ChartContainer>
             </div>
         </Tabs>

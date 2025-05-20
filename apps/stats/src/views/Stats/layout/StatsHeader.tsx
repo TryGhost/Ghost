@@ -14,10 +14,10 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
 
     return (
         <>
-            <ViewHeader className='min-h-0 pb-6 pt-9 before:hidden'>
+            <ViewHeader className='before:hidden'>
                 <H1>Stats</H1>
             </ViewHeader>
-            <Navbar className='border-none'>
+            <Navbar className='border-none pt-0.5'>
                 <Tabs className="w-full" defaultValue={location.pathname} variant='pill'>
                     <TabsList>
                         <TabsTrigger value="/" onClick={() => {
