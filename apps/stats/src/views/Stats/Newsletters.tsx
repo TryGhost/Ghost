@@ -7,8 +7,8 @@ import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
-import {calculateYAxisWidth, getPeriodText, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatNumber, formatPercentage, getYRange, sanitizeChartData} from '@tryghost/shade';
+import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useNewsletterStatsWithRange, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
@@ -147,6 +147,8 @@ const NewsletterKPIs: React.FC<{
     const barDomain = [0, 1];
     const barTicks = [0, 0.25, 0.5, 0.75, 1];
 
+    const yRange = [getYRange(subscribersData).min, getYRange(subscribersData).max];
+
     return (
         <Tabs defaultValue="total-subscribers" variant='kpis'>
             <TabsList className="-mx-6 grid grid-cols-3">
@@ -201,12 +203,12 @@ const NewsletterKPIs: React.FC<{
                         <Recharts.YAxis
                             allowDataOverflow={true}
                             axisLine={false}
-                            domain={[getYRange(subscribersData).min, getYRange(subscribersData).max]}
+                            domain={yRange}
                             scale="linear"
                             tickFormatter={value => formatNumber(value)}
                             tickLine={false}
-                            ticks={getYTicks(subscribersData)}
-                            width={calculateYAxisWidth(getYTicks(subscribersData), value => formatNumber(value))}
+                            ticks={yRange}
+                            width={calculateYAxisWidth(yRange, (value: number) => formatNumber(value))}
                         />
                         <ChartTooltip
                             content={<CustomTooltipContent range={range} />}
@@ -253,7 +255,7 @@ const NewsletterKPIs: React.FC<{
                                 tickFormatter={value => formatPercentage(value)}
                                 tickLine={false}
                                 ticks={barTicks}
-                                width={calculateYAxisWidth(barTicks, value => formatPercentage(value))}
+                                width={calculateYAxisWidth(barTicks, (value: number) => formatPercentage(value))}
                             />
                             <Recharts.XAxis
                                 axisLine={false}

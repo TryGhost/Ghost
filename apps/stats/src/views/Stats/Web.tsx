@@ -6,9 +6,9 @@ import React, {useState} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange, sanitizeChartData} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
-import {calculateYAxisWidth, getPeriodText, getRangeDates, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
+import {getPeriodText} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -76,7 +76,7 @@ const WebKPIs:React.FC = ({}) => {
 
     const currentMetric = KPI_METRICS[currentTab];
 
-    const chartData = sanitizeChartData<KpiDataItem>(data as KpiDataItem[] || [], range, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item) => {
+    const chartData = sanitizeChartData<KpiDataItem>(data as KpiDataItem[] || [], range, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item: KpiDataItem) => {
         const value = Number(item[currentMetric.dataKey]);
         return {
             date: String(item.date),
@@ -122,6 +122,8 @@ const WebKPIs:React.FC = ({}) => {
         }
     } satisfies ChartConfig;
 
+    const yRange = [getYRange(chartData).min, getYRange(chartData).max];
+
     return (
         <Tabs defaultValue="visits" variant='kpis'>
             <TabsList className="-mx-6 grid grid-cols-2">
@@ -161,7 +163,7 @@ const WebKPIs:React.FC = ({}) => {
                             <Recharts.YAxis
                                 allowDataOverflow={true}
                                 axisLine={false}
-                                domain={[getYRange(chartData).min, getYRange(chartData).max]}
+                                domain={yRange}
                                 scale="linear"
                                 tickFormatter={(value) => {
                                     switch (currentTab) {
@@ -177,8 +179,8 @@ const WebKPIs:React.FC = ({}) => {
                                     }
                                 }}
                                 tickLine={false}
-                                ticks={getYTicks(chartData || [])}
-                                width={calculateYAxisWidth(getYTicks(chartData || []), currentMetric.formatter)}
+                                ticks={yRange}
+                                width={calculateYAxisWidth(yRange, currentMetric.formatter)}
                             />
                             <ChartTooltip
                                 content={<CustomTooltipContent range={range} />}

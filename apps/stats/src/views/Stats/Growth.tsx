@@ -6,9 +6,9 @@ import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, centsToDollars, formatDisplayDate, formatNumber, getYRange, sanitizeChartData} from '@tryghost/shade';
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
-import {calculateYAxisWidth, getPeriodText, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
+import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
@@ -127,6 +127,8 @@ const GrowthKPIs: React.FC<{
         }
     } satisfies ChartConfig;
 
+    const yRange = [getYRange(chartData).min, getYRange(chartData).max];
+
     return (
         <Tabs defaultValue="total-members" variant='kpis'>
             <TabsList className="-mx-6 grid grid-cols-4">
@@ -195,7 +197,7 @@ const GrowthKPIs: React.FC<{
                         />
                         <Recharts.YAxis
                             axisLine={false}
-                            domain={[getYRange(chartData).min, getYRange(chartData).max]}
+                            domain={yRange}
                             tickFormatter={(value) => {
                                 switch (currentTab) {
                                 case 'total-members':
@@ -209,8 +211,8 @@ const GrowthKPIs: React.FC<{
                                 }
                             }}
                             tickLine={false}
-                            ticks={getYTicks(chartData)}
-                            width={calculateYAxisWidth(getYTicks(chartData), (value) => {
+                            ticks={yRange}
+                            width={calculateYAxisWidth(yRange, (value: number) => {
                                 switch (currentTab) {
                                 case 'total-members':
                                 case 'free-members':

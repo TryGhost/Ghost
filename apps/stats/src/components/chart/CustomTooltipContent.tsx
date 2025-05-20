@@ -1,4 +1,4 @@
-import {formatDisplayDateWithRange} from '@src/utils/chart-helpers';
+import {formatDisplayDateWithRange} from '@tryghost/shade';
 
 interface TooltipPayload {
     value: number;
