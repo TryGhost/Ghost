@@ -177,7 +177,7 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({color, label, value, diffDirec
                 {color && <div className='ml-1 size-[9px] rounded-[2px] opacity-50' style={{backgroundColor: color}}></div>}
                 {label}
             </div>
-            <div className='flex flex-col items-start gap-2'>
+            <div className='flex flex-col items-start gap-1'>
                 <div className='text-[2.3rem] font-semibold leading-none tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>
                     {value}
                 </div>
