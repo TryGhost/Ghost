@@ -9,6 +9,7 @@ import {useQuery} from '@tinybirdco/charts';
 export type KpiMetric = {
     dataKey: string;
     label: string;
+    color?: string;
     formatter: (value: number) => string;
 };
 
@@ -16,21 +17,25 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
     visits: {
         dataKey: 'visits',
         label: 'Visitors',
+        color: 'hsl(var(--chart-blue))',
         formatter: formatNumber
     },
     views: {
         dataKey: 'pageviews',
         label: 'Pageviews',
+        color: 'hsl(var(--chart-green))',
         formatter: formatNumber
     },
     'bounce-rate': {
         dataKey: 'bounce_rate',
         label: 'Bounce rate',
+        color: 'hsl(var(--chart-purple))',
         formatter: formatPercentage
     },
     duration: {
         dataKey: 'avg_session_sec',
         label: 'Time on page',
+        color: 'hsl(var(--chart-orange))',
         formatter: formatDuration
     }
 };
@@ -85,12 +90,12 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
                                         <KpiTabTrigger value="visits" onClick={() => {
                                             setCurrentTab('visits');
                                         }}>
-                                            <KpiTabValue label="Unique visitors" value={kpiValues.visits} />
+                                            <KpiTabValue color={KPI_METRICS.visits.color} label="Unique visitors" value={kpiValues.visits} />
                                         </KpiTabTrigger>
                                         <KpiTabTrigger value="views" onClick={() => {
                                             setCurrentTab('views');
                                         }}>
-                                            <KpiTabValue label="Total views" value={kpiValues.views} />
+                                            <KpiTabValue color={KPI_METRICS.views.color} label="Total views" value={kpiValues.views} />
                                         </KpiTabTrigger>
                                     </TabsList>
                                     <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
@@ -137,7 +142,7 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
                                                     width={calculateYAxisWidth(yRange, currentMetric.formatter)}
                                                 />
                                                 <ChartTooltip
-                                                    content={<DateTooltipContent range={range} />}
+                                                    content={<DateTooltipContent color={currentMetric.color} range={range} />}
                                                     cursor={true}
                                                     isAnimationActive={false}
                                                     position={{y: 20}}
@@ -146,12 +151,12 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
                                                     <linearGradient id="fillChart" x1="0" x2="0" y1="0" y2="1">
                                                         <stop
                                                             offset="5%"
-                                                            stopColor="hsl(var(--chart-blue))"
+                                                            stopColor={currentMetric.color}
                                                             stopOpacity={0.8}
                                                         />
                                                         <stop
                                                             offset="95%"
-                                                            stopColor="hsl(var(--chart-blue))"
+                                                            stopColor={currentMetric.color}
                                                             stopOpacity={0.1}
                                                         />
                                                     </linearGradient>
@@ -162,7 +167,7 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
                                                     fillOpacity={0.2}
                                                     isAnimationActive={false}
                                                     stackId="a"
-                                                    stroke="hsl(var(--chart-blue))"
+                                                    stroke={currentMetric.color}
                                                     strokeWidth={2}
                                                     type="linear"
                                                 />
