@@ -287,7 +287,7 @@ const NewsletterPreviewContent: React.FC<{
                                                 titleFontWeight === 'semibold' && 'font-semibold',
                                                 titleFontWeight === 'bold' && 'font-bold'
                                             )}
-                                            style={{color: titleColor}}>When Convenience Comes at a Cost</h3>
+                                            style={{color: sectionTitleColor}}>When Convenience Comes at a Cost</h3>
                                         <p className="mb-6" style={{color: textColor}}>So, what&apos;s the future of food culture in an on-demand world? Can these platforms adapt to better support small businesses and workers? Or will we wake up one day to find that the places we once loved have vanished?</p>
                                         <p className="mb-6" style={{color: textColor}}>Some cities are beginning to push back. In San Francisco, legislation has been proposed to cap delivery app fees and ensure a fairer share of profits for restaurants. Other local governments are exploring ways to offer support to brick-and-mortar establishments, whether through grants, tax relief, or public campaigns that encourage residents to dine in more often.</p>
                                         <h3

@@ -2603,6 +2603,15 @@ describe('Email renderer', function () {
             await testImageCorners('rounded', 'border-radius: 6px;');
         });
 
+        it('sets imageCorners to correct square value which is null (emailCustomizationAlpha)', async function () {
+            // null because square has no border radius
+            await testImageCorners('square', null);
+        });
+
+        it('sets null if unknown value', async function () {
+            await testImageCorners('unknown', null);
+        });
+
         async function testHasOutlineButtons(buttonStyle, expectedValue) {
             return await testDataProperty({
                 button_style: buttonStyle

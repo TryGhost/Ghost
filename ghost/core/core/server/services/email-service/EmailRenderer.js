@@ -1019,7 +1019,7 @@ class EmailRenderer {
     }
 
     #getImageCorners(newsletter) {
-        /** @type {'rounded' | 'squircle' | string | null} */
+        /** @type {'rounded' | string | null} */
         const value = newsletter.get('image_corners');
 
         // we need to convert the value to plain css value
