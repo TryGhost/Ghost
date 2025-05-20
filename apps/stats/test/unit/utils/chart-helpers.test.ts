@@ -411,15 +411,20 @@ describe('Chart Helpers', function () {
             const result = sanitizeChartData(testData, 400, 'value', 'sum');
             
             // Check for _isOutlier flag on the Feb 15 data
+            interface OutlierItem {
+                date: string;
+                value: number;
+                _isOutlier?: boolean;
+            }
+            
             const outlierEntry = result.find(item => 
                 item.date.startsWith('2023-02-') && 
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (item as any)._isOutlier === true
+                (item as unknown as OutlierItem)._isOutlier === true
             );
             
             // The implementation might mark it as an outlier or exclude it 
             if (outlierEntry) {
-                expect((outlierEntry as any).value).toBeGreaterThan(1000); 
+                expect((outlierEntry as unknown as OutlierItem).value).toBeGreaterThan(1000);
             }
             
             // January total should be approximately 3000 (30 * 100)
