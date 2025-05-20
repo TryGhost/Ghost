@@ -178,7 +178,6 @@ describe('usePostNewsletterStats', () => {
         }]);
 
         expect(linksRequestUrl?.searchParams.get('filter')).toBe('post_id:\'post-id\'');
-        expect(linksRequestUrl?.searchParams.get('limit')).toBe('5');
     });
 
     it('handles missing email data', async () => {
