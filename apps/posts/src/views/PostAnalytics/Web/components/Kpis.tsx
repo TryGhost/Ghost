@@ -1,7 +1,7 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import EmptyStatView from '../../components/EmptyStatView';
 import React, {useState} from 'react';
-import {Card, CardContent, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatDuration, formatNumber, formatPercentage, getYRange, sanitizeChartData} from '@tryghost/shade';
+import {AlignedAxisTick, Card, CardContent, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatDuration, formatNumber, formatPercentage, getYRange, sanitizeChartData} from '@tryghost/shade';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
@@ -110,6 +110,7 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
                                                     axisLine={false}
                                                     dataKey="date"
                                                     interval={0}
+                                                    tick={props => <AlignedAxisTick {...props} formatter={formatDisplayDate} />}
                                                     tickFormatter={formatDisplayDate}
                                                     tickLine={false}
                                                     tickMargin={8}

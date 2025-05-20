@@ -6,7 +6,7 @@ import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, centsToDollars, formatDisplayDate, formatNumber, getYRange} from '@tryghost/shade';
+import {AlignedAxisTick, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, centsToDollars, formatDisplayDate, formatNumber, getYRange} from '@tryghost/shade';
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -178,8 +178,8 @@ const GrowthKPIs: React.FC<{
                     <Recharts.AreaChart
                         data={chartData}
                         margin={{
-                            left: 0,
-                            right: 20,
+                            left: 4,
+                            right: 4,
                             top: 12
                         }}
                         accessibilityLayer
@@ -190,6 +190,7 @@ const GrowthKPIs: React.FC<{
                             dataKey="date"
                             interval={0}
                             stroke="hsl(var(--gray-300))"
+                            tick={props => <AlignedAxisTick {...props} formatter={formatDisplayDate} />}
                             tickFormatter={formatDisplayDate}
                             tickLine={false}
                             tickMargin={8}

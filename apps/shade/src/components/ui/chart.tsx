@@ -298,7 +298,7 @@ React.ComponentProps<'div'> &
                                 <itemConfig.icon />
                             ) : (
                                 <div
-                                    className="h-2 w-2 shrink-0 rounded-[2px]"
+                                    className="size-2 shrink-0 rounded-[2px]"
                                     style={{
                                         backgroundColor: item.color
                                     }}
@@ -353,11 +353,39 @@ function getPayloadConfigFromPayload(
         : config[key as keyof typeof config];
 }
 
+interface AlignedAxisTickProps {
+    x: number;
+    y: number;
+    payload: {
+        value: string | number;
+    };
+    index: number;
+    formatter?: (value: string | number) => string;
+}
+
+const AlignedAxisTick: React.FC<AlignedAxisTickProps> = ({x, y, payload, index, formatter = v => String(v)}) => {
+    const textAnchor = index === 0 ? 'start' : 'end';
+    return (
+        <g transform={`translate(${x},${y})`}>
+            <text
+                dy={16}
+                fill="hsl(var(--gray-500))"
+                textAnchor={textAnchor}
+                x={0}
+                y={-12}
+            >
+                {formatter(payload.value)}
+            </text>
+        </g>
+    );
+};
+
 export {
     ChartContainer,
     ChartTooltip,
     ChartTooltipContent,
     ChartLegend,
     ChartLegendContent,
-    ChartStyle
+    ChartStyle,
+    AlignedAxisTick
 };

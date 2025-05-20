@@ -1,6 +1,6 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import React, {useMemo} from 'react';
-import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, Recharts, calculateYAxisWidth, formatDisplayDateWithRange, formatNumber, formatQueryDate, getRangeDates, getYRange, sanitizeChartData} from '@tryghost/shade';
+import {AlignedAxisTick, BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, Recharts, calculateYAxisWidth, formatDisplayDateWithRange, formatNumber, formatQueryDate, getRangeDates, getYRange, sanitizeChartData} from '@tryghost/shade';
 import {KPI_METRICS} from '../../Web/components/Kpis';
 import {KpiDataItem} from '@src/utils/kpi-helpers';
 import {STATS_RANGES} from '@src/utils/constants';
@@ -90,6 +90,7 @@ const WebOverview:React.FC = () => {
                             axisLine={false}
                             dataKey="date"
                             interval={0}
+                            tick={props => <AlignedAxisTick {...props} formatter={formatDisplayDateWithRange} />}
                             tickFormatter={(value) => {
                                 return formatDisplayDateWithRange(value, STATS_RANGES.ALL_TIME.value);
                             }}
