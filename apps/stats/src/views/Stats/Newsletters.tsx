@@ -149,6 +149,21 @@ const NewsletterKPIs: React.FC<{
 
     const yRange = [getYRange(subscribersData).min, getYRange(subscribersData).max];
 
+    const tabConfig = {
+        'total-subscribers': {
+            color: 'hsl(var(--chart-purple))',
+            datakey: 'value'
+        },
+        'avg-open-rate': {
+            color: 'hsl(var(--chart-blue))',
+            datakey: 'open_rate'
+        },
+        'avg-click-rate': {
+            color: 'hsl(var(--chart-green))',
+            datakey: 'click_rate'
+        }
+    };
+
     return (
         <Tabs defaultValue="total-subscribers" variant='kpis'>
             <TabsList className="-mx-6 grid grid-cols-3">
@@ -156,6 +171,7 @@ const NewsletterKPIs: React.FC<{
                     setCurrentTab('total-subscribers');
                 }}>
                     <KpiTabValue
+                        color={tabConfig['total-subscribers'].color}
                         label="Total subscribers"
                         value={formatNumber(totalSubscribers)}
                     />
@@ -164,6 +180,7 @@ const NewsletterKPIs: React.FC<{
                     setCurrentTab('avg-open-rate');
                 }}>
                     <KpiTabValue
+                        color={tabConfig['avg-open-rate'].color}
                         label="Avg. open rate"
                         value={formatPercentage(avgOpenRate)}
                     />
@@ -172,6 +189,7 @@ const NewsletterKPIs: React.FC<{
                     setCurrentTab('avg-click-rate');
                 }}>
                     <KpiTabValue
+                        color={tabConfig['avg-click-rate'].color}
                         label="Avg. click rate"
                         value={formatPercentage(avgClickRate)}
                     />
@@ -211,7 +229,7 @@ const NewsletterKPIs: React.FC<{
                             width={calculateYAxisWidth(yRange, (value: number) => formatNumber(value))}
                         />
                         <ChartTooltip
-                            content={<CustomTooltipContent range={range} />}
+                            content={<CustomTooltipContent color={tabConfig['total-subscribers'].color} range={range} />}
                             cursor={true}
                             isAnimationActive={false}
                             position={{y: 20}}
@@ -220,23 +238,23 @@ const NewsletterKPIs: React.FC<{
                             <linearGradient id="fillChart" x1="0" x2="0" y1="0" y2="1">
                                 <stop
                                     offset="5%"
-                                    stopColor="hsl(var(--chart-blue))"
+                                    stopColor={tabConfig['total-subscribers'].color}
                                     stopOpacity={0.8}
                                 />
                                 <stop
                                     offset="95%"
-                                    stopColor="hsl(var(--chart-blue))"
+                                    stopColor={tabConfig['total-subscribers'].color}
                                     stopOpacity={0.1}
                                 />
                             </linearGradient>
                         </defs>
                         <Recharts.Area
-                            dataKey="value"
+                            dataKey={tabConfig['total-subscribers'].datakey}
                             fill="url(#fillChart)"
                             fillOpacity={0.2}
                             isAnimationActive={false}
                             stackId="a"
-                            stroke="hsl(var(--chart-blue))"
+                            stroke={tabConfig['total-subscribers'].color}
                             strokeWidth={2}
                             type="linear"
                         />
@@ -271,9 +289,10 @@ const NewsletterKPIs: React.FC<{
                                 position={{y: 20}}
                             />
                             <Recharts.Bar
-                                activeBar={{fill: 'hsl(var(--chart-1) / 0.8)'}}
-                                dataKey={currentTab === 'avg-open-rate' ? 'open_rate' : 'click_rate'}
-                                fill="hsl(var(--chart-1))"
+                                activeBar={{fillOpacity: 1}}
+                                dataKey={tabConfig[currentTab].datakey}
+                                fill={tabConfig[currentTab].color}
+                                fillOpacity={0.6}
                                 isAnimationActive={false}
                                 maxBarSize={32}
                                 minPointSize={2}

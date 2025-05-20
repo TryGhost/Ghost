@@ -33,21 +33,25 @@ const KPI_METRICS: Record<string, KpiMetric> = {
     visits: {
         dataKey: 'visits',
         label: 'Visitors',
+        chartColor: 'hsl(var(--chart-blue))',
         formatter: formatNumber
     },
     views: {
         dataKey: 'pageviews',
         label: 'Pageviews',
+        chartColor: 'hsl(var(--chart-green))',
         formatter: formatNumber
     },
     'bounce-rate': {
         dataKey: 'bounce_rate',
         label: 'Bounce rate',
+        chartColor: 'hsl(var(--chart-green))',
         formatter: formatPercentage
     },
     'visit-duration': {
         dataKey: 'avg_session_sec',
         label: 'Visit duration',
+        chartColor: 'hsl(var(--chart-green))',
         formatter: formatDuration
     }
 };
@@ -130,12 +134,12 @@ const WebKPIs:React.FC = ({}) => {
                 <KpiTabTrigger value="visits" onClick={() => {
                     setCurrentTab('visits');
                 }}>
-                    <KpiTabValue label="Unique visitors" value={kpiValues.visits} />
+                    <KpiTabValue color={KPI_METRICS.visits.chartColor} label="Unique visitors" value={kpiValues.visits} />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="views" onClick={() => {
                     setCurrentTab('views');
                 }}>
-                    <KpiTabValue label="Total views" value={kpiValues.views} />
+                    <KpiTabValue color={KPI_METRICS.views.chartColor} label="Total views" value={kpiValues.views} />
                 </KpiTabTrigger>
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
@@ -183,7 +187,7 @@ const WebKPIs:React.FC = ({}) => {
                                 width={calculateYAxisWidth(yRange, currentMetric.formatter)}
                             />
                             <ChartTooltip
-                                content={<CustomTooltipContent range={range} />}
+                                content={<CustomTooltipContent color={currentMetric.chartColor} range={range} />}
                                 cursor={true}
                                 isAnimationActive={false}
                                 position={{y: 20}}
@@ -192,12 +196,12 @@ const WebKPIs:React.FC = ({}) => {
                                 <linearGradient id="fillChart" x1="0" x2="0" y1="0" y2="1">
                                     <stop
                                         offset="5%"
-                                        stopColor="hsl(var(--chart-blue))"
+                                        stopColor={currentMetric.chartColor}
                                         stopOpacity={0.8}
                                     />
                                     <stop
                                         offset="95%"
-                                        stopColor="hsl(var(--chart-blue))"
+                                        stopColor={currentMetric.chartColor}
                                         stopOpacity={0.1}
                                     />
                                 </linearGradient>
@@ -208,7 +212,7 @@ const WebKPIs:React.FC = ({}) => {
                                 fillOpacity={0.2}
                                 isAnimationActive={false}
                                 stackId="a"
-                                stroke="hsl(var(--chart-blue))"
+                                stroke={currentMetric.chartColor}
                                 strokeWidth={2}
                                 type="linear"
                             />

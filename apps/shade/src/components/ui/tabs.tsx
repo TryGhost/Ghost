@@ -157,13 +157,14 @@ const KpiTabTrigger: React.FC<KpiTabTriggerProps> = ({children, ...props}) => {
 };
 
 interface KpiTabValueProps {
+    color?: string;
     label: string;
     value: string | number;
     diffDirection?: 'up' | 'down' | 'same';
     diffValue?: string | number;
 }
 
-const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value, diffDirection, diffValue}) => {
+const KpiTabValue: React.FC<KpiTabValueProps> = ({color, label, value, diffDirection, diffValue}) => {
     const diffContainerClassName = cn(
         'hidden xl:!flex xl:!visible items-center gap-1 rounded-full px-1.5 text-[1.1rem] -mb-1 h-[18px]',
         diffDirection === 'up' && 'bg-green/15 text-green-600',
@@ -172,11 +173,12 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value, diffDirection, d
     );
     return (
         <div className='flex w-full flex-col items-start gap-4'>
-            <div className='h-[22px] text-base font-medium text-muted-foreground'>
+            <div className='flex h-[22px] items-center gap-2 text-base font-medium text-muted-foreground'>
+                {color && <div className='ml-1 size-[9px] rounded-[2px] opacity-50' style={{backgroundColor: color}}></div>}
                 {label}
             </div>
             <div className='flex flex-col items-start gap-2'>
-                <div className='text-[2.0rem] font-semibold leading-none tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>
+                <div className='text-[2.3rem] font-semibold leading-none tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>
                     {value}
                 </div>
                 {diffValue &&
