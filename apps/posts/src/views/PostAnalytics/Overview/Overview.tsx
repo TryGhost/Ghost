@@ -14,27 +14,6 @@ import {useMemo} from 'react';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
 import {useQuery} from '@tinybirdco/charts';
 
-// Extended Email type to include status field
-interface ExtendedEmail {
-    opened_count: number;
-    email_count: number;
-    status?: string;
-}
-
-// Extended Post type with the ExtendedEmail and additional fields
-interface PostWithEmail {
-    uuid?: string;
-    email?: ExtendedEmail;
-    newsletter_id?: string;
-    newsletter?: object;
-    status?: string;
-    email_only?: boolean;
-    email_segment?: string;
-    email_recipient_filter?: string;
-    send_email_when_published?: boolean;
-    email_stats?: object;
-}
-
 const Overview: React.FC = () => {
     const {postId} = useParams();
     const navigate = useNavigate();
@@ -78,10 +57,10 @@ const Overview: React.FC = () => {
     const kpiValues = getWebKpiValues(data as unknown as KpiDataItem[] | null);
 
     const kpiIsLoading = isLoading || isConfigLoading || loading;
-    const typedPost = post as PostWithEmail;
+    const typedPost = post as Post;
     
     // Use the utility function from admin-x-framework
-    const showNewsletterSection = hasBeenEmailed(typedPost as Post);
+    const showNewsletterSection = hasBeenEmailed(typedPost);
 
     return (
         <>

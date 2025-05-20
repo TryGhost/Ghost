@@ -8,26 +8,6 @@ interface PostWithPublishedAt extends Post {
     published_at?: string;
 }
 
-// Extended Email type to include status field
-interface ExtendedEmail {
-    opened_count: number;
-    email_count: number;
-    status?: string;
-}
-
-// Extended Post type with the ExtendedEmail and additional fields
-interface PostWithEmail extends PostWithPublishedAt {
-    email?: ExtendedEmail;
-    newsletter_id?: string;
-    newsletter?: object;
-    status?: string;
-    email_only?: boolean;
-    email_segment?: string;
-    email_recipient_filter?: string;
-    send_email_when_published?: boolean;
-    email_stats?: object;
-}
-
 interface PostAnalyticsHeaderProps {
     currentTab?: string;
     children?: React.ReactNode;
@@ -48,9 +28,9 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
         }
     });
 
-    const typedPost = post as PostWithEmail;
+    const typedPost = post as PostWithPublishedAt;
     // Use the utility function from admin-x-framework
-    const showNewsletterTab = hasBeenEmailed(typedPost as Post);
+    const showNewsletterTab = hasBeenEmailed(typedPost);
 
     return (
         <>

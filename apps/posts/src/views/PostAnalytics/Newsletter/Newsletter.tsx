@@ -3,18 +3,14 @@ import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, calculateYAxisWidth, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {getLinkById} from '@src/utils/link-helpers';
+import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useRef, useState} from 'react';
-import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
-import {useBrowsePosts, Post} from '@tryghost/admin-x-framework/api/posts';
 
 interface postAnalyticsProps {}
-
-interface PostWithEmail extends Post {
-    // Email already defined in Post type
-}
 
 type NewsletterRadialChartData = {
     datatype: string,
@@ -120,7 +116,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                             return (
                                 <div className='flex items-center gap-1'>
                                     <div className='size-2.5 rounded-[2px]' style={{backgroundColor: props.payload?.fill}}></div>
-                                    <div className='text-xs capitalize text-muted-foreground'>{props.payload?.datatype}</div>
+                                    <div className='text-muted-foreground text-xs capitalize'>{props.payload?.datatype}</div>
                                     <div className='ml-3 font-mono text-xs'>{value}%</div>
                                 </div>
                             );
@@ -137,7 +133,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
 
 const FunnelArrow: React.FC = () => {
     return (
-        <div className='absolute right-[-13px] top-1/2 flex size-[25px] -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground'>
+        <div className='bg-background text-muted-foreground absolute right-[-13px] top-1/2 flex size-[25px] -translate-y-1/2 items-center justify-center rounded-full border'>
             <LucideIcon.ChevronRight className='ml-0.5' size={16} strokeWidth={1.5}/>
         </div>
     );
@@ -158,7 +154,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         }
     });
 
-    const typedPost = post as PostWithEmail;
+    const typedPost = post as Post;
     // Use the utility function from admin-x-framework
     const showNewsletterSection = hasBeenEmailed(typedPost);
 
@@ -338,7 +334,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         </KpiCardLabel>
                                         <KpiCardContent>
                                             <KpiCardValue>{formatNumber(stats.opened)}</KpiCardValue>
-                                            <span className='mt-0.5 text-sm text-muted-foreground'>{formatPercentage(stats.openedRate)} open rate</span>
+                                            <span className='text-muted-foreground mt-0.5 text-sm'>{formatPercentage(stats.openedRate)} open rate</span>
                                         </KpiCardContent>
                                         <FunnelArrow />
                                     </KpiCard>
@@ -350,7 +346,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         </KpiCardLabel>
                                         <KpiCardContent>
                                             <KpiCardValue>{formatNumber(stats.clicked)}</KpiCardValue>
-                                            <span className='mt-0.5 text-sm text-muted-foreground'>{formatPercentage(stats.clickedRate)} click rate</span>
+                                            <span className='text-muted-foreground mt-0.5 text-sm'>{formatPercentage(stats.clickedRate)} click rate</span>
                                         </KpiCardContent>
                                     </KpiCard>
                                 </div>
@@ -443,7 +439,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                                 style={{backgroundColor: color}}
                                                                             />
                                                                             {barChartConfig[name as keyof typeof barChartConfig]?.label || name}
-                                                                            <div className="ml-auto flex items-baseline gap-0.5 pl-2 font-mono font-medium tabular-nums text-foreground">
+                                                                            <div className="text-foreground ml-auto flex items-baseline gap-0.5 pl-2 font-mono font-medium tabular-nums">
                                                                                 {formatPercentage(value)}
                                                                             </div>
                                                                         </>
@@ -519,7 +515,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                     <div ref={containerRef} className='flex w-full items-center gap-2'>
                                                                         <Input
                                                                             ref={inputRef}
-                                                                            className="h-7 w-full border-border bg-background text-sm"
+                                                                            className="border-border bg-background h-7 w-full text-sm"
                                                                             value={editedUrl}
                                                                             onChange={e => setEditedUrl(e.target.value)}
                                                                         />
@@ -533,7 +529,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                 ) : (
                                                                     <>
                                                                         <Button
-                                                                            className='shrink-0 bg-background'
+                                                                            className='bg-background shrink-0'
                                                                             size='sm'
                                                                             variant='outline'
                                                                             onClick={() => handleEdit(linkId)}
@@ -564,7 +560,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         <TableFooter className='bg-transparent'>
                                             <TableRow>
                                                 <TableCell className='group-hover:bg-transparent' colSpan={2}>
-                                                    <div className='ml-2 mt-1 flex items-center gap-2 text-green'>
+                                                    <div className='text-green ml-2 mt-1 flex items-center gap-2'>
                                                         <LucideIcon.ArrowUp size={20} strokeWidth={1.5} />
                                                         Sent a broken link? You can update it!
                                                     </div>
