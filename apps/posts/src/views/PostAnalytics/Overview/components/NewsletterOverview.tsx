@@ -5,7 +5,7 @@ import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 
 const NewsletterOverview:React.FC = () => {
     const {postId} = useParams();
-    const {stats, topLinks, isLoading: isNewsletterStatsLoading} = usePostNewsletterStats(postId || '', '5');
+    const {stats, topLinks, isLoading: isNewsletterStatsLoading} = usePostNewsletterStats(postId || '');
 
     const opensChartData = [
         {opens: Number((stats?.opened && stats?.sent ? (stats.opened / stats.sent) : 0).toFixed(2)), fill: 'var(--color-opens)'}
@@ -163,7 +163,7 @@ const NewsletterOverview:React.FC = () => {
                             {topLinks.length > 0
                                 ?
                                 <TableBody>
-                                    {topLinks.map((row) => {
+                                    {topLinks.slice(0, 5).map((row) => {
                                         return (
                                             <TableRow key={row.link.link_id}>
                                                 <TableCell className='max-w-0 group-hover:!bg-transparent'>

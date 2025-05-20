@@ -20,7 +20,7 @@ type PostWithNewsletter = {
     [key: string]: unknown;
 };
 
-export const usePostNewsletterStats = (postId: string, linksLimit?: string) => {
+export const usePostNewsletterStats = (postId: string) => {
     const {data: postResponse, isLoading: isPostLoading} = getPost(postId);
 
     // Fetch the post to get top level stats
@@ -51,17 +51,11 @@ export const usePostNewsletterStats = (postId: string, linksLimit?: string) => {
     // Fetch the last 20 newsletters and calculate the average open and click rates
     const {data: newsletterStatsResponse, isLoading: isNewsletterStatsLoading} = useNewsletterStatsByNewsletterId(newsletterId);
 
-    // Get link clicks from this post, with optional limit
-    const searchParams: Record<string, string> = {
-        filter: `post_id:'${postId}'`
-    };
-    
-    if (linksLimit) {
-        searchParams.limit = linksLimit;
-    }
-    
+    // Get the top links from this post
     const {data: clicksResponse, isLoading: isClicksLoading, refetch: refetchTopLinks} = useTopLinks({
-        searchParams
+        searchParams: {
+            filter: `post_id:'${postId}'`
+        }
     });
 
     const links = useMemo(() => {
