@@ -7,7 +7,7 @@ import getUsername from '@src/utils/get-username';
 import {Actor} from '@src/api/activitypub';
 import {Button, LoadingIndicator} from '@tryghost/shade';
 import {List, NoValueLabel} from '@tryghost/admin-x-design-system';
-import {handleProfileClickRR} from '@src/utils/handle-profile-click';
+import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 type ActorListProps = {
@@ -68,7 +68,7 @@ const ActorList: React.FC<ActorListProps> = ({
                                 <React.Fragment key={actor.id}>
                                     <ActivityItem key={actor.id}
                                         onClick={() => {
-                                            handleProfileClickRR(actor, navigate);
+                                            handleProfileClick(actor, navigate);
                                         }}
                                     >
                                         <APAvatar author={actor} />
