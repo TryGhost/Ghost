@@ -6,10 +6,24 @@ import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, Ca
 import {getLinkById} from '@src/utils/link-helpers';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useRef, useState} from 'react';
-import {useParams} from '@tryghost/admin-x-framework';
+import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
+import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 
 interface postAnalyticsProps {}
+
+// Extended Email type to include status field
+interface ExtendedEmail {
+    opened_count: number;
+    email_count: number;
+    status?: string;
+}
+
+// Extended Post type with the ExtendedEmail
+interface PostWithEmail {
+    uuid?: string;
+    email?: ExtendedEmail;
+}
 
 type NewsletterRadialChartData = {
     datatype: string,
@@ -140,10 +154,28 @@ const FunnelArrow: React.FC = () => {
 
 const Newsletter: React.FC<postAnalyticsProps> = () => {
     const {postId} = useParams();
+    const navigate = useNavigate();
     const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
     const [editedUrl, setEditedUrl] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+
+    const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
+        searchParams: {
+            filter: `id:${postId}`,
+            fields: 'email'
+        }
+    });
+
+    const typedPost = post as PostWithEmail;
+    const hasBeenEmailed = typedPost?.email && typedPost.email.status !== 'failed';
+
+    useEffect(() => {
+        // Redirect to overview if the post wasn't sent as a newsletter
+        if (!isPostLoading && !hasBeenEmailed) {
+            navigate(`/analytics/beta/${postId}`);
+        }
+    }, [navigate, postId, isPostLoading, hasBeenEmailed]);
 
     const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId || '');
     const {editLinks} = useEditLinks();
@@ -222,7 +254,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         }
     } satisfies ChartConfig;
 
-    const isLoading = isNewsletterStatsLoading;
+    const isLoading = isNewsletterStatsLoading || isPostLoading;
 
     // "Sent" Chart
     // const sentChartData: NewsletterRadialChartData[] = [
@@ -250,7 +282,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     const openedChartConfig = {
         percentage: {
-            label: 'O'
+            label: 'Opened'
         },
         average: {
             label: 'Average'
@@ -268,7 +300,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     const clickedChartConfig = {
         percentage: {
-            label: 'O'
+            label: 'Clicked'
         },
         average: {
             label: 'Average'
@@ -309,22 +341,24 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     <KpiCard className='relative grow'>
                                         <KpiCardLabel>
                                             {/* <div className='size-2.5 rounded-full bg-blue/30'></div> */}
-                                            <LucideIcon.MailOpen strokeWidth={1.5} />
+                                            <LucideIcon.Eye strokeWidth={1.5} />
                                             Opened
                                         </KpiCardLabel>
                                         <KpiCardContent>
                                             <KpiCardValue>{formatNumber(stats.opened)}</KpiCardValue>
+                                            <span className='mt-0.5 text-sm text-muted-foreground'>{formatPercentage(stats.openedRate)} open rate</span>
                                         </KpiCardContent>
                                         <FunnelArrow />
                                     </KpiCard>
                                     <KpiCard className='grow'>
                                         <KpiCardLabel>
                                             {/* <div className='size-2.5 rounded-full bg-green/30'></div> */}
-                                            <LucideIcon.MousePointerClick strokeWidth={1.5} />
+                                            <LucideIcon.MousePointer strokeWidth={1.5} />
                                             Clicked
                                         </KpiCardLabel>
                                         <KpiCardContent>
                                             <KpiCardValue>{formatNumber(stats.clicked)}</KpiCardValue>
+                                            <span className='mt-0.5 text-sm text-muted-foreground'>{formatPercentage(stats.clickedRate)} click rate</span>
                                         </KpiCardContent>
                                     </KpiCard>
                                 </div>

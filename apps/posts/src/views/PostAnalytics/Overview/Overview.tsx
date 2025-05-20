@@ -14,6 +14,19 @@ import {useMemo} from 'react';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
 import {useQuery} from '@tinybirdco/charts';
 
+// Extended Email type to include status field
+interface ExtendedEmail {
+    opened_count: number;
+    email_count: number;
+    status?: string;
+}
+
+// Extended Post type with the ExtendedEmail
+interface PostWithEmail {
+    uuid?: string;
+    email?: ExtendedEmail;
+}
+
 const Overview: React.FC = () => {
     const {postId} = useParams();
     const navigate = useNavigate();
@@ -24,7 +37,7 @@ const Overview: React.FC = () => {
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid'
+            fields: 'title,slug,published_at,uuid,email'
         }
     });
 
@@ -56,11 +69,13 @@ const Overview: React.FC = () => {
     const kpiValues = getWebKpiValues(data as unknown as KpiDataItem[] | null);
 
     const kpiIsLoading = isLoading || isConfigLoading || loading;
+    const typedPost = post as PostWithEmail;
+    const hasBeenEmailed = typedPost?.email && typedPost.email.status !== 'failed';
 
     return (
         <>
             <PostAnalyticsHeader currentTab='Overview'>
-                <div className='flex items-center gap-1 text-nowrap rounded-full bg-green/10 px-3 py-px pr-4 text-xs text-green-600'>
+                <div className='flex items-center gap-1 rounded-full bg-green/10 px-3 py-px pr-4 text-nowrap text-xs text-green-600'>
                     <LucideIcon.FlaskConical size={16} strokeWidth={1.5} />
                     Viewing Analytics (beta)
                     <Button className='pl-1 pr-0 text-green-600 !underline' size='sm' variant='link' onClick={() => {
@@ -126,24 +141,26 @@ const Overview: React.FC = () => {
                         }
                     </CardContent>
                 </Card>
-                <Card className='group/card'>
-                    <div className='flex items-center justify-between gap-6'>
-                        <CardHeader>
-                            <CardTitle>Newsletter performance</CardTitle>
-                            <CardDescription>How members interacted with this email</CardDescription>
-                        </CardHeader>
-                        <Button className='mr-6 opacity-0 transition-all group-hover/card:opacity-100' variant='outline' onClick={() => {
-                            navigate(`/analytics/beta/${postId}/newsletter`);
-                        }}>
-                                View more
-                            <LucideIcon.ArrowRight />
-                        </Button>
-                    </div>
-                    <CardContent>
-                        <Separator />
-                        <NewsletterOverview />
-                    </CardContent>
-                </Card>
+                {hasBeenEmailed && (
+                    <Card className='group/card'>
+                        <div className='flex items-center justify-between gap-6'>
+                            <CardHeader>
+                                <CardTitle>Newsletter performance</CardTitle>
+                                <CardDescription>How members interacted with this email</CardDescription>
+                            </CardHeader>
+                            <Button className='mr-6 opacity-0 transition-all group-hover/card:opacity-100' variant='outline' onClick={() => {
+                                navigate(`/analytics/beta/${postId}/newsletter`);
+                            }}>
+                                    View more
+                                <LucideIcon.ArrowRight />
+                            </Button>
+                        </div>
+                        <CardContent>
+                            <Separator />
+                            <NewsletterOverview />
+                        </CardContent>
+                    </Card>
+                )}
                 <Card className='group/card'>
                     <div className='flex items-center justify-between gap-6'>
                         <CardHeader>

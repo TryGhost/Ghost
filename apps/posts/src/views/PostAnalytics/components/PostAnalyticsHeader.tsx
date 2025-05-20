@@ -8,6 +8,18 @@ interface PostWithPublishedAt extends Post {
     published_at?: string;
 }
 
+// Extended Email type to include status field
+interface ExtendedEmail {
+    opened_count: number;
+    email_count: number;
+    status?: string;
+}
+
+// Extended Post type with the ExtendedEmail
+interface PostWithEmail extends PostWithPublishedAt {
+    email?: ExtendedEmail;
+}
+
 interface PostAnalyticsHeaderProps {
     currentTab?: string;
     children?: React.ReactNode;
@@ -23,11 +35,12 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid,feature_image,url'
+            fields: 'title,slug,published_at,uuid,feature_image,url,email'
         }
     });
 
-    const typedPost = post as PostWithPublishedAt;
+    const typedPost = post as PostWithEmail;
+    const hasBeenEmailed = typedPost?.email && typedPost.email.status !== 'failed';
 
     return (
         <>
@@ -110,11 +123,13 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                         }}>
                             Web stats
                         </TabsTrigger>
-                        <TabsTrigger value="Newsletter" onClick={() => {
-                            navigate(`/analytics/beta/${postId}/newsletter`);
-                        }}>
-                            Newsletter
-                        </TabsTrigger>
+                        {hasBeenEmailed && (
+                            <TabsTrigger value="Newsletter" onClick={() => {
+                                navigate(`/analytics/beta/${postId}/newsletter`);
+                            }}>
+                                Newsletter
+                            </TabsTrigger>
+                        )}
                         <TabsTrigger value="Growth" onClick={() => {
                             navigate(`/analytics/beta/${postId}/growth`);
                         }}>
