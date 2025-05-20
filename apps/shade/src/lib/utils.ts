@@ -299,7 +299,16 @@ export const calculateYAxisWidth = (ticks: number[], formatter: (value: number) 
 export const getRangeDates = (range: number) => {
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const endDate = moment().tz(timezone).endOf('day');
-    const startDate = moment().tz(timezone).subtract(range - 1, 'days').startOf('day');
+    let startDate;
+
+    if (range === -1) {
+        // Year to date - use January 1st of current year
+        startDate = moment().tz(timezone).startOf('year');
+    } else {
+        // Regular range calculation
+        startDate = moment().tz(timezone).subtract(range - 1, 'days').startOf('day');
+    }
+
     return {startDate, endDate, timezone};
 };
 
