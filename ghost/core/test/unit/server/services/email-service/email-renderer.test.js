@@ -2610,6 +2610,59 @@ describe('Email renderer', function () {
         it('sets hasOutlineButtons to correct outline value (emailCustomizationAlpha)', async function () {
             await testHasOutlineButtons('outline', true);
         });
+
+        [
+            // setting, titleWeight, titleStrongWeight, featureOptions
+            ['normal', '700', '800', {labsEnabled: false}],
+            ['bold', '700', '800', {labsEnabled: false}],
+            ['normal', '400', '700', {labsEnabled: true}],
+            ['medium', '500', '700', {labsEnabled: true}],
+            ['semibold', '600', '700', {labsEnabled: true}],
+            ['bold', '700', '800', {labsEnabled: true}]
+        ].forEach(([settingValue, titleWeight, titleStrongWeight, options]) => {
+            it(`font weights for ${settingValue} are ${titleWeight} and ${titleStrongWeight}${options.labsEnabled ? ' (emailCustomizationAlpha)' : ''}`, async function () {
+                labsEnabled = options.labsEnabled ?? false;
+
+                const html = '';
+                const post = createModel({
+                    posts_meta: createModel({}),
+                    loaded: ['posts_meta'],
+                    published_at: new Date(0)
+                });
+                const newsletter = createModel({
+                    title_font_weight: settingValue
+                });
+                const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+
+                assert.equal(data.titleWeight, titleWeight);
+                assert.equal(data.titleStrongWeight, titleStrongWeight);
+            });
+        });
+
+        [
+            ['normal', 'text-decoration: underline;', {labsEnabled: false}],
+            ['underline', 'text-decoration: underline;', {labsEnabled: true}],
+            ['regular', 'text-decoration: none;', {labsEnabled: true}],
+            ['bold', 'text-decoration: none; font-weight: 700;', {labsEnabled: true}],
+            [null, 'text-decoration: underline;', {labsEnabled: true}]
+        ].forEach(([settingValue, linkStyles, options]) => {
+            it(`link styles for ${settingValue || '`null`'} are correct${options.labsEnabled ? ' (emailCustomizationAlpha)' : ''}`, async function () {
+                labsEnabled = options.labsEnabled ?? false;
+
+                const html = '';
+                const post = createModel({
+                    posts_meta: createModel({}),
+                    loaded: ['posts_meta'],
+                    published_at: new Date(0)
+                });
+                const newsletter = createModel({
+                    link_style: settingValue
+                });
+                const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+
+                assert.equal(data.linkStyles, linkStyles);
+            });
+        });
     });
 
     describe('createUnsubscribeUrl', function () {

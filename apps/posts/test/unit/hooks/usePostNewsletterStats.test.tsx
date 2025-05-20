@@ -1,4 +1,4 @@
-import GlobalDataProvider from '../../../src/providers/GlobalDataProvider';
+import GlobalDataProvider from '../../../src/providers/PostAnalyticsContext';
 import React from 'react';
 import {HttpResponse, http} from 'msw';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
@@ -73,6 +73,8 @@ describe('usePostNewsletterStats', () => {
     });
 
     it('calculates stats correctly from post data', async () => {
+        let linksRequestUrl: URL | undefined;
+
         server.use(
             http.get('/ghost/api/admin/posts/:id/', () => {
                 return HttpResponse.json({
@@ -104,18 +106,30 @@ describe('usePostNewsletterStats', () => {
                     meta: {}
                 });
             }),
-            http.get('/ghost/api/admin/links/', () => {
+            http.get('/ghost/api/admin/links/', ({request}) => {
+                linksRequestUrl = new URL(request.url);
                 return HttpResponse.json({
                     links: [{
                         post_id: 'post-id',
                         link: {
                             link_id: 'link-1',
                             from: 'https://example.com/from',
-                            to: 'https://example.com/to',
+                            to: 'https://example.com/to?ref=test&attribution_id=test&attribution_type=test',
                             edited: false
                         },
                         count: {
                             clicks: 10
+                        }
+                    }, {
+                        post_id: 'post-id',
+                        link: {
+                            link_id: 'link-2',
+                            from: 'https://example.com/from',
+                            to: 'https://google.com/?ref=test&attribution_id=test&attribution_type=test',
+                            edited: false
+                        },
+                        count: {
+                            clicks: 20
                         }
                     }],
                     meta: {}
@@ -142,10 +156,29 @@ describe('usePostNewsletterStats', () => {
         });
 
         expect(result.current.topLinks).toEqual([{
-            url: 'https://example.com/to',
-            clicks: 10,
-            edited: false
+            count: 20,
+            link: {
+                link_id: 'link-2',
+                from: 'https://example.com/from',
+                originalTo: 'https://google.com/?ref=test&attribution_id=test&attribution_type=test',
+                title: 'google.com',
+                to: 'https://google.com/',
+                edited: false
+            }
+        }, {
+            count: 10,
+            link: {
+                link_id: 'link-1',
+                from: 'https://example.com/from',
+                originalTo: 'https://example.com/to?ref=test&attribution_id=test&attribution_type=test',
+                title: 'example.com/to',
+                to: 'https://example.com/to',
+                edited: false
+            }
         }]);
+
+        expect(linksRequestUrl?.searchParams.get('filter')).toBe('post_id:\'post-id\'');
+        expect(linksRequestUrl?.searchParams.get('limit')).toBe('5');
     });
 
     it('handles missing email data', async () => {
@@ -264,4 +297,4 @@ describe('usePostNewsletterStats', () => {
         });
         expect(result.current.topLinks).toEqual([]);
     });
-}); 
+});

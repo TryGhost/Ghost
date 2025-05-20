@@ -50,6 +50,10 @@ WORKDIR /home/ghost
 
 COPY package.json yarn.lock ./
 
+# Calculate a hash of the yarn.lock file
+## See development.entrypoint.sh for more info
+RUN mkdir -p .yarnhash && md5sum yarn.lock | awk '{print $1}' > .yarnhash/yarn.lock.md5
+
 # Copy all package.json files
 COPY apps/stats/package.json apps/stats/package.json
 COPY apps/admin-x-activitypub/package.json apps/admin-x-activitypub/package.json
@@ -70,13 +74,12 @@ COPY ghost/admin/package.json ghost/admin/package.json
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
 
-RUN --mount=type=cache,target=/home/ghost/.yarn-cache \
-    yarn config set cache-folder /home/ghost/.yarn-cache && \
-    yarn install --frozen-lockfile --prefer-offline
+RUN yarn install --frozen-lockfile --prefer-offline
 
 # --------------------
 # Development
 # --------------------
 FROM development-base AS development
 COPY . .
+RUN yarn build
 CMD ["yarn", "dev"]

@@ -1,8 +1,11 @@
-import Growth from './views/PostAnalytics/Growth';
-import Newsletter from './views/PostAnalytics/Newsletter';
-import Web from './views/PostAnalytics/Web';
+import Growth from './views/PostAnalytics/Growth/Growth';
+import Newsletter from './views/PostAnalytics/Newsletter/Newsletter';
+import Overview from './views/PostAnalytics/Overview/Overview';
+import PostAnalytics from './views/PostAnalytics/PostAnalytics';
+import PostAnalyticsProvider from './providers/PostAnalyticsContext';
+import Web from './views/PostAnalytics/Web/Web';
 import {ErrorPage} from '@tryghost/shade';
-import {Navigate, RouteObject} from '@tryghost/admin-x-framework';
+import {RouteObject} from '@tryghost/admin-x-framework';
 // import {withFeatureFlag} from '@src/hooks/withFeatureFlag';
 
 export const APP_ROUTE_PREFIX = '/posts';
@@ -18,25 +21,35 @@ export const routes: RouteObject[] = [
         errorElement: <ErrorPage onBackToDashboard={() => {}} />, // @TODO: add back to dashboard click handle
         children: [
             {
-                path: 'analytics/:postId',
-                index: true,
-                element: <Navigate crossApp={true} to='/posts/analytics/:postId' />
+
+                // Post Analytics
+                path: 'analytics/beta/:postId',
+                element: (
+                    <PostAnalyticsProvider>
+                        <PostAnalytics />
+                    </PostAnalyticsProvider>
+                ),
+                children: [
+                    {
+                        path: '',
+                        element: <Overview />
+                    },
+                    {
+                        path: 'web',
+                        element: <Web />
+                    },
+                    {
+                        path: 'growth',
+                        element: <Growth />
+                    },
+                    {
+                        path: 'newsletter',
+                        element: <Newsletter />
+                    }
+                ]
             },
-            {
-                path: 'analytics/:postId/web',
-                index: true,
-                element: <Web />
-            },
-            {
-                path: 'analytics/:postId/growth',
-                index: true,
-                element: <Growth />
-            },
-            {
-                path: 'analytics/:postId/newsletter',
-                index: true,
-                element: <Newsletter />
-            },
+
+            // Error handling
             {
                 path: '*',
                 element: <ErrorPage onBackToDashboard={() => {}} /> // @TODO: add back to dashboard click handle

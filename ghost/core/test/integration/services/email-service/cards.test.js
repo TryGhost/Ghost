@@ -162,21 +162,23 @@ describe('Can send cards via email', function () {
             await matchEmailSnapshot();
         });
 
-        it(`renders the golden post correctly (labs flag: contentVisibility) (${status})`, async function () {
-            sinon.stub(labs, 'isSet').callsFake((key) => {
-                if (key === 'contentVisibility') {
-                    return true;
-                }
-                return false;
+        ['contentVisibility', 'emailCustomizationAlpha'].forEach(function (flag) {
+            it(`renders the golden post correctly (labs flag: ${flag}) (${status})`, async function () {
+                sinon.stub(labs, 'isSet').callsFake((key) => {
+                    if (key === flag) {
+                        return true;
+                    }
+                    return false;
+                });
+
+                const data = await sendEmail(agent, {
+                    lexical: JSON.stringify(goldenPost)
+                }, status);
+
+                splitPreheader(data);
+
+                await matchEmailSnapshot();
             });
-
-            const data = await sendEmail(agent, {
-                lexical: JSON.stringify(goldenPost)
-            }, status);
-
-            splitPreheader(data);
-
-            await matchEmailSnapshot();
         });
     });
 
