@@ -2599,12 +2599,8 @@ describe('Email renderer', function () {
             await testButtonBorderRadius('pill', '9999px');
         });
 
-        it('sets imageCorners to correct default (emailCustomizationAlpha)', async function () {
-            await testImageCorners(null, 'border-radius: 0;');
-        });
-
         it('sets imageCorners to correct rounded value (emailCustomizationAlpha)', async function () {
-            await testImageCorners('rounded', 'border-radius: 10px;');
+            await testImageCorners('rounded', 'border-radius: 6px;');
         });
 
         async function testHasOutlineButtons(buttonStyle, expectedValue) {

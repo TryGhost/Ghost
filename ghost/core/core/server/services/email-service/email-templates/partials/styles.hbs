@@ -695,7 +695,9 @@ a[data-flickr-embed] img {
     margin: 0 auto;
     height: auto;
     width: auto;
+    {{#hasFeature "emailCustomizationAlpha"}}
     {{imageCorners}};
+    {{/hasFeature}}
 }
 
 .kg-image-card span {

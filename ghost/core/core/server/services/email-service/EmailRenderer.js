@@ -1026,10 +1026,10 @@ class EmailRenderer {
         // eg border-radius: 10px;
 
         if (value === 'rounded') {
-            return 'border-radius: 10px;';
+            return 'border-radius: 6px;';
         }
 
-        return 'border-radius: 0;';
+        return null;
     }
 
     /**

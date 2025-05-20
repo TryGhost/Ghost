@@ -97,7 +97,6 @@ const NewsletterPreviewContent: React.FC<{
     linkStyle,
     dividerStyle
 }) => {
-    console.log(imageCorners);
     const showHeader = headerIcon || headerTitle;
     const {config} = useGlobalData();
     const hasEmailCustomizationPrototype = useFeatureFlag('emailCustomizationPrototype');
@@ -289,7 +288,7 @@ const NewsletterPreviewContent: React.FC<{
                                                 titleFontWeight === 'bold' && 'font-bold'
                                             )}
                                             style={{color: titleColor}}>When Convenience Comes at a Cost</h3>
-                                        <p className="mb-6" style={{color: textColor}}>So, what’s the future of food culture in an on-demand world? Can these platforms adapt to better support small businesses and workers? Or will we wake up one day to find that the places we once loved have vanished?</p>
+                                        <p className="mb-6" style={{color: textColor}}>So, what&apos;s the future of food culture in an on-demand world? Can these platforms adapt to better support small businesses and workers? Or will we wake up one day to find that the places we once loved have vanished?</p>
                                         <p className="mb-6" style={{color: textColor}}>Some cities are beginning to push back. In San Francisco, legislation has been proposed to cap delivery app fees and ensure a fairer share of profits for restaurants. Other local governments are exploring ways to offer support to brick-and-mortar establishments, whether through grants, tax relief, or public campaigns that encourage residents to dine in more often.</p>
                                         <h3
                                             className={clsx(
@@ -303,7 +302,7 @@ const NewsletterPreviewContent: React.FC<{
                                             )}
                                             style={{color: sectionTitleColor}}>Reimagining How We Eat</h3>
                                         <p className="mb-6" style={{color: textColor}}>Consumers are also starting to pay more attention. There&apos;s a growing movement toward mindful eating—not just in terms of ingredients, but in how we support the systems that bring food to our tables. Choosing to pick up instead of ordering in, tipping delivery drivers fairly, or subscribing to local restaurant coalitions can all make a difference.</p>
-                                        <p className="mb-6" style={{color: textColor}}>Ultimately, the story of delivery apps isn't just about technology or convenience—it's about the kind of communities we want to live in. And that future depends, in part, on the choices we make every day.</p>
+                                        <p className="mb-6" style={{color: textColor}}>Ultimately, the story of delivery apps isn&apos;t just about technology or convenience—it&apos;s about the kind of communities we want to live in. And that future depends, in part, on the choices we make every day.</p>
                                     </>
                                 ) : (
                                     <>
