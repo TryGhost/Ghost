@@ -227,7 +227,6 @@ const NewsletterPreviewContent: React.FC<{
                                         <img alt="Feature" className={clsx(
                                             'min-h-full min-w-full shrink-0',
                                             imageCorners === 'square' && 'rounded-none',
-                                            imageCorners === 'squircle' && 'rounded-lg', // TODO: we dont have a squircle option in the settings modal - is this needed?
                                             imageCorners === 'rounded' && 'rounded-lg'
                                         )} src={hasEmailCustomizationPrototype ? 'https://images.unsplash.com/photo-1526367790999-0150786686a2?q=80&w=2942&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' : CoverImage} />
                                     </div>
