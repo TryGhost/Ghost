@@ -3,7 +3,8 @@ import {Meta, createQuery, createQueryWithId} from '../utils/api/hooks';
 export type Email = {
     opened_count: number;
     email_count: number;
-}
+    status?: string;
+};
 
 export type Post = {
     id: string;
@@ -16,6 +17,15 @@ export type Post = {
         clicks?: number;
     };
     email?: Email;
+    status?: string;
+    published_at?: string;
+    newsletter_id?: string;
+    newsletter?: object;
+    email_only?: boolean;
+    email_segment?: string;
+    email_recipient_filter?: string;
+    send_email_when_published?: boolean;
+    email_stats?: object;
 };
 
 export interface PostsResponseType {

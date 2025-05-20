@@ -36,6 +36,11 @@
             "require": "./dist/api/*.cjs",
             "types": "./types/api/*.d.ts"
         },
+        "./utils/post-utils": {
+            "import": "./dist/utils/post-utils.js",
+            "require": "./dist/utils/post-utils.cjs",
+            "types": "./types/utils/post-utils.d.ts"
+        },
         "./vite": {
             "import": "./dist/vite.js",
             "require": "./dist/vite.cjs",

@@ -2,7 +2,7 @@ import React from 'react';
 import moment from 'moment-timezone';
 import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
-import {useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
 
 interface PostWithPublishedAt extends Post {
     published_at?: string;
@@ -23,11 +23,14 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid,feature_image,url'
+            fields: 'title,slug,published_at,uuid,feature_image,url,email,status',
+            include: 'email'
         }
     });
 
     const typedPost = post as PostWithPublishedAt;
+    // Use the utility function from admin-x-framework
+    const showNewsletterTab = hasBeenEmailed(typedPost);
 
     return (
         <>
@@ -110,11 +113,13 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                         }}>
                             Web stats
                         </TabsTrigger>
-                        <TabsTrigger value="Newsletter" onClick={() => {
-                            navigate(`/analytics/beta/${postId}/newsletter`);
-                        }}>
-                            Newsletter
-                        </TabsTrigger>
+                        {showNewsletterTab && (
+                            <TabsTrigger value="Newsletter" onClick={() => {
+                                navigate(`/analytics/beta/${postId}/newsletter`);
+                            }}>
+                                Newsletter
+                            </TabsTrigger>
+                        )}
                         <TabsTrigger value="Growth" onClick={() => {
                             navigate(`/analytics/beta/${postId}/growth`);
                         }}>
