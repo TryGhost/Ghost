@@ -5,10 +5,10 @@ import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import WebOverview from './components/WebOverview';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, formatNumber, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
+import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars} from '../Growth/Growth';
-import {getStatEndpointUrl, getToken, useNavigate, useParams} from '@tryghost/admin-x-framework';
-import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
+import {getStatEndpointUrl, getToken, hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useMemo} from 'react';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
@@ -21,10 +21,18 @@ interface ExtendedEmail {
     status?: string;
 }
 
-// Extended Post type with the ExtendedEmail
+// Extended Post type with the ExtendedEmail and additional fields
 interface PostWithEmail {
     uuid?: string;
     email?: ExtendedEmail;
+    newsletter_id?: string;
+    newsletter?: object;
+    status?: string;
+    email_only?: boolean;
+    email_segment?: string;
+    email_recipient_filter?: string;
+    send_email_when_published?: boolean;
+    email_stats?: object;
 }
 
 const Overview: React.FC = () => {
@@ -37,7 +45,8 @@ const Overview: React.FC = () => {
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid,email'
+            fields: 'title,slug,published_at,uuid,email,status,count,feature_image',
+            include: 'email,authors,tags,tiers,count.clicks,count.signups,count.paid_conversions'
         }
     });
 
@@ -70,7 +79,9 @@ const Overview: React.FC = () => {
 
     const kpiIsLoading = isLoading || isConfigLoading || loading;
     const typedPost = post as PostWithEmail;
-    const hasBeenEmailed = typedPost?.email && typedPost.email.status !== 'failed';
+    
+    // Use the utility function from admin-x-framework
+    const showNewsletterSection = hasBeenEmailed(typedPost as Post);
 
     return (
         <>
@@ -141,7 +152,7 @@ const Overview: React.FC = () => {
                         }
                     </CardContent>
                 </Card>
-                {hasBeenEmailed && (
+                {showNewsletterSection && (
                     <Card className='group/card'>
                         <div className='flex items-center justify-between gap-6'>
                             <CardHeader>

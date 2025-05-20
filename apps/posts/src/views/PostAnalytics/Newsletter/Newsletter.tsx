@@ -2,27 +2,18 @@
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer,ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, calculateYAxisWidth, formatNumber, formatPercentage} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, calculateYAxisWidth, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getLinkById} from '@src/utils/link-helpers';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useRef, useState} from 'react';
-import {useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
-import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
+import {useBrowsePosts, Post} from '@tryghost/admin-x-framework/api/posts';
 
 interface postAnalyticsProps {}
 
-// Extended Email type to include status field
-interface ExtendedEmail {
-    opened_count: number;
-    email_count: number;
-    status?: string;
-}
-
-// Extended Post type with the ExtendedEmail
-interface PostWithEmail {
-    uuid?: string;
-    email?: ExtendedEmail;
+interface PostWithEmail extends Post {
+    // Email already defined in Post type
 }
 
 type NewsletterRadialChartData = {
@@ -163,19 +154,20 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'email'
+            fields: 'title,slug,published_at,uuid,email,status'
         }
     });
 
     const typedPost = post as PostWithEmail;
-    const hasBeenEmailed = typedPost?.email && typedPost.email.status !== 'failed';
+    // Use the utility function from admin-x-framework
+    const showNewsletterSection = hasBeenEmailed(typedPost);
 
     useEffect(() => {
         // Redirect to overview if the post wasn't sent as a newsletter
-        if (!isPostLoading && !hasBeenEmailed) {
+        if (!isPostLoading && !showNewsletterSection) {
             navigate(`/analytics/beta/${postId}`);
         }
-    }, [navigate, postId, isPostLoading, hasBeenEmailed]);
+    }, [navigate, postId, isPostLoading, showNewsletterSection]);
 
     const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId || '');
     const {editLinks} = useEditLinks();

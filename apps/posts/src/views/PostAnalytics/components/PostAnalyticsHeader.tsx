@@ -2,7 +2,7 @@ import React from 'react';
 import moment from 'moment-timezone';
 import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
-import {useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
 
 interface PostWithPublishedAt extends Post {
     published_at?: string;
@@ -15,9 +15,17 @@ interface ExtendedEmail {
     status?: string;
 }
 
-// Extended Post type with the ExtendedEmail
+// Extended Post type with the ExtendedEmail and additional fields
 interface PostWithEmail extends PostWithPublishedAt {
     email?: ExtendedEmail;
+    newsletter_id?: string;
+    newsletter?: object;
+    status?: string;
+    email_only?: boolean;
+    email_segment?: string;
+    email_recipient_filter?: string;
+    send_email_when_published?: boolean;
+    email_stats?: object;
 }
 
 interface PostAnalyticsHeaderProps {
@@ -35,12 +43,13 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid,feature_image,url,email'
+            fields: 'title,slug,published_at,uuid,feature_image,url,email,status'
         }
     });
 
     const typedPost = post as PostWithEmail;
-    const hasBeenEmailed = typedPost?.email && typedPost.email.status !== 'failed';
+    // Use the utility function from admin-x-framework
+    const showNewsletterTab = hasBeenEmailed(typedPost as Post);
 
     return (
         <>
@@ -123,7 +132,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                         }}>
                             Web stats
                         </TabsTrigger>
-                        {hasBeenEmailed && (
+                        {showNewsletterTab && (
                             <TabsTrigger value="Newsletter" onClick={() => {
                                 navigate(`/analytics/beta/${postId}/newsletter`);
                             }}>
