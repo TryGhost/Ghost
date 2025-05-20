@@ -74,7 +74,7 @@ const WebOverview:React.FC = () => {
                 </div>
                 :
                 <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] w-full' config={chartConfig}>
-                    <Recharts.LineChart
+                    <Recharts.AreaChart
                         data={chartData}
                         margin={{
                             left: 0,
@@ -107,16 +107,34 @@ const WebOverview:React.FC = () => {
                         <ChartTooltip
                             content={<CustomTooltipContent />}
                             cursor={true}
-                        />
-                        <Recharts.Line
-                            dataKey="value"
-                            dot={false}
                             isAnimationActive={false}
-                            stroke="hsl(var(--chart-1))"
-                            strokeWidth={2}
-                            type='bump'
+                            position={{y: 20}}
                         />
-                    </Recharts.LineChart>
+                        <defs>
+                            <linearGradient id="fillChart" x1="0" x2="0" y1="0" y2="1">
+                                <stop
+                                    offset="5%"
+                                    stopColor="hsl(var(--chart-blue))"
+                                    stopOpacity={0.8}
+                                />
+                                <stop
+                                    offset="95%"
+                                    stopColor="hsl(var(--chart-blue))"
+                                    stopOpacity={0.1}
+                                />
+                            </linearGradient>
+                        </defs>
+                        <Recharts.Area
+                            dataKey="value"
+                            fill="url(#fillChart)"
+                            fillOpacity={0.2}
+                            isAnimationActive={false}
+                            stackId="a"
+                            stroke="hsl(var(--chart-blue))"
+                            strokeWidth={2}
+                            type="linear"
+                        />
+                    </Recharts.AreaChart>
                 </ChartContainer>
             }
         </div>
