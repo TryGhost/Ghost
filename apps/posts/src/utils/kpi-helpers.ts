@@ -11,7 +11,7 @@ export type KpiDataItem = {
 
 export const getWebKpiValues = (data: KpiDataItem[] | null | undefined) => {
     if (!data?.length) {
-        return {visits: 0, views: 0, bounceRate: 0, duration: 0};
+        return {visits: '0', views: '0', bounceRate: '0%', duration: '0s'};
     }
 
     // Convert data values to numbers and handle NaN values safely
