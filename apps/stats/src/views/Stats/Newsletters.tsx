@@ -201,7 +201,6 @@ const NewsletterKPIs: React.FC<{
                             ticks={subscribersData.length > 0 ? [subscribersData[0].date, subscribersData[subscribersData.length - 1].date] : []}
                         />
                         <Recharts.YAxis
-                            allowDataOverflow={true}
                             axisLine={false}
                             domain={yRange}
                             scale="linear"

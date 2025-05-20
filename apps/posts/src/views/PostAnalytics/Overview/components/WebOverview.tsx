@@ -98,7 +98,6 @@ const WebOverview:React.FC = () => {
                             ticks={chartData && chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}
                         />
                         <Recharts.YAxis
-                            allowDataOverflow={true}
                             axisLine={false}
                             domain={yRange}
                             scale="linear"
