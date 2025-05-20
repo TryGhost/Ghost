@@ -166,10 +166,10 @@ interface KpiTabValueProps {
 
 const KpiTabValue: React.FC<KpiTabValueProps> = ({color, label, value, diffDirection, diffValue}) => {
     const diffContainerClassName = cn(
-        'hidden xl:!flex xl:!visible items-center gap-1 rounded-full px-1.5 text-[1.1rem] -mb-1 h-[18px]',
-        diffDirection === 'up' && 'bg-green/15 text-green-600',
-        diffDirection === 'down' && 'bg-red/10 text-red-600',
-        diffDirection === 'same' && 'bg-gray-200 text-gray-700'
+        'hidden xl:!flex xl:!visible items-center gap-1 text-[1.1rem] -mb-1 h-[18px]',
+        diffDirection === 'up' && 'text-green-600',
+        diffDirection === 'down' && 'text-red-600',
+        diffDirection === 'same' && 'text-gray-700'
     );
     return (
         <div className='flex w-full flex-col items-start gap-4'>

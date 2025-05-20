@@ -129,6 +129,21 @@ const GrowthKPIs: React.FC<{
 
     const yRange = [getYRange(chartData).min, getYRange(chartData).max];
 
+    const tabConfig = {
+        'total-members': {
+            color: 'hsl(var(--chart-blue))'
+        },
+        'free-members': {
+            color: 'hsl(var(--chart-green))'
+        },
+        'paid-members': {
+            color: 'hsl(var(--chart-purple))'
+        },
+        mrr: {
+            color: 'hsl(var(--chart-orange))'
+        }
+    };
+
     return (
         <Tabs defaultValue="total-members" variant='kpis'>
             <TabsList className="-mx-6 grid grid-cols-4">
@@ -136,6 +151,7 @@ const GrowthKPIs: React.FC<{
                     setCurrentTab('total-members');
                 }}>
                     <KpiTabValue
+                        color={tabConfig['total-members'].color}
                         diffDirection={directions.total}
                         diffValue={percentChanges.total}
                         label="Total members"
@@ -146,6 +162,7 @@ const GrowthKPIs: React.FC<{
                     setCurrentTab('free-members');
                 }}>
                     <KpiTabValue
+                        color={tabConfig['free-members'].color}
                         diffDirection={directions.free}
                         diffValue={percentChanges.free}
                         label="Free members"
@@ -156,6 +173,7 @@ const GrowthKPIs: React.FC<{
                     setCurrentTab('paid-members');
                 }}>
                     <KpiTabValue
+                        color={tabConfig['paid-members'].color}
                         diffDirection={directions.paid}
                         diffValue={percentChanges.paid}
                         label="Paid members"
@@ -166,6 +184,7 @@ const GrowthKPIs: React.FC<{
                     setCurrentTab('mrr');
                 }}>
                     <KpiTabValue
+                        color={tabConfig.mrr.color}
                         diffDirection={directions.mrr}
                         diffValue={percentChanges.mrr}
                         label="MRR"
@@ -227,7 +246,7 @@ const GrowthKPIs: React.FC<{
                             })}
                         />
                         <ChartTooltip
-                            content={<CustomTooltipContent range={range} />}
+                            content={<CustomTooltipContent color={tabConfig[currentTab as keyof typeof tabConfig].color} range={range} />}
                             cursor={true}
                             isAnimationActive={false}
                             position={{y: 20}}
@@ -236,12 +255,12 @@ const GrowthKPIs: React.FC<{
                             <linearGradient id="fillChart" x1="0" x2="0" y1="0" y2="1">
                                 <stop
                                     offset="5%"
-                                    stopColor="hsl(var(--chart-blue))"
+                                    stopColor={tabConfig[currentTab as keyof typeof tabConfig].color}
                                     stopOpacity={0.8}
                                 />
                                 <stop
                                     offset="95%"
-                                    stopColor="hsl(var(--chart-blue))"
+                                    stopColor={tabConfig[currentTab as keyof typeof tabConfig].color}
                                     stopOpacity={0.1}
                                 />
                             </linearGradient>
@@ -252,7 +271,7 @@ const GrowthKPIs: React.FC<{
                             fillOpacity={0.2}
                             isAnimationActive={false}
                             stackId="a"
-                            stroke="hsl(var(--chart-blue))"
+                            stroke={tabConfig[currentTab as keyof typeof tabConfig].color}
                             strokeWidth={2}
                             type="linear"
                         />
