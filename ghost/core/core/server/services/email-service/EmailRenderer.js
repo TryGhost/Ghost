@@ -322,10 +322,23 @@ class EmailRenderer {
             postUrl
         };
 
-        if (this.getLabs()?.isSet('emailCustomizationAlpha')) {
+        const labs = this.getLabs();
+
+        if (labs && (labs.isSet('emailCustomization') || labs.isSet('emailCustomizationAlpha'))) {
+            renderOptions.design = {};
+        }
+
+        if (labs && labs.isSet('emailCustomization')) {
             renderOptions.design = {
+                ...renderOptions.design,
+                buttonCorners: newsletter?.get('button_corners')
+            };
+        }
+
+        if (labs && labs.isSet('emailCustomizationAlpha')) {
+            renderOptions.design = {
+                ...renderOptions.design,
                 titleFontWeight: newsletter?.get('title_font_weight'),
-                buttonCorners: newsletter?.get('button_corners'),
                 buttonStyle: newsletter?.get('button_style'),
                 linkStyle: newsletter?.get('link_style'),
                 imageCorners: newsletter?.get('image_corners')
@@ -1068,7 +1081,7 @@ class EmailRenderer {
 
         let buttonBorderRadius = '6px';
 
-        if (labs.isSet('emailCustomizationAlpha')) {
+        if (labs.isSet('emailCustomization')) {
             if (newsletter.get('button_corners') === 'square') {
                 buttonBorderRadius = '0';
             } else if (newsletter.get('button_corners') === 'pill') {

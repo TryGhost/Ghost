@@ -17,8 +17,12 @@ const features = [{
     flag: 'emailCustomizationPrototype'
 }, {
     title: 'Email customization (internal alpha)',
-    description: 'Wired up settings and updated email content',
+    description: 'Adds customization settings to newsletter design screen. NB: must have beta flag enabled too.',
     flag: 'emailCustomizationAlpha'
+}, {
+    title: 'Email customization (internal beta)',
+    description: 'Newsletter customization settings that have been released to Ghost\'s own production sites',
+    flag: 'emailCustomization'
 }, {
     title: 'Import Member Tier',
     description: 'Enables tier to be specified when importing members',
