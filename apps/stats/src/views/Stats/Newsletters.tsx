@@ -87,19 +87,6 @@ const BarTooltipContent = ({active, payload}: BarTooltipProps) => {
     );
 };
 
-const getBarColor = (value: number) => {
-    let opacity;
-    if (value <= 0.25) {
-        opacity = 0.6;
-    } else if (value >= 0.75) {
-        opacity = 1.0;
-    } else {
-        // Interpolate between 0.6 and 1.0 for values between 0.25 and 0.75
-        opacity = 0.6 + ((value - 0.25) * (0.4 / 0.5));
-    }
-    return `hsl(var(--chart-1) / ${opacity})`;
-};
-
 const NewsletterKPIs: React.FC<{
     subscribersData: SubscribersDataItem[]
     avgsData: AvgsDataItem[];
@@ -160,6 +147,8 @@ const NewsletterKPIs: React.FC<{
     const barDomain = [0, 1];
     const barTicks = [0, 0.25, 0.5, 0.75, 1];
 
+    console.log(getYRange(subscribersData));
+
     return (
         <Tabs defaultValue="total-subscribers" variant='kpis'>
             <TabsList className="-mx-6 grid grid-cols-3">
@@ -191,7 +180,7 @@ const NewsletterKPIs: React.FC<{
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 {(currentTab === 'total-subscribers') &&
                 <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] w-full' config={subscribersChartConfig}>
-                    <Recharts.LineChart
+                    <Recharts.AreaChart
                         data={subscribersData}
                         margin={{
                             left: 0,
@@ -212,8 +201,10 @@ const NewsletterKPIs: React.FC<{
                             ticks={subscribersData.length > 0 ? [subscribersData[0].date, subscribersData[subscribersData.length - 1].date] : []}
                         />
                         <Recharts.YAxis
+                            allowDataOverflow={true}
                             axisLine={false}
                             domain={[getYRange(subscribersData).min, getYRange(subscribersData).max]}
+                            scale="linear"
                             tickFormatter={value => formatNumber(value)}
                             tickLine={false}
                             ticks={getYTicks(subscribersData)}
@@ -222,16 +213,34 @@ const NewsletterKPIs: React.FC<{
                         <ChartTooltip
                             content={<CustomTooltipContent range={range} />}
                             cursor={true}
-                        />
-                        <Recharts.Line
-                            dataKey="value"
-                            dot={false}
                             isAnimationActive={false}
-                            stroke="hsl(var(--chart-1))"
-                            strokeWidth={2}
-                            type='monotone'
+                            position={{y: 20}}
                         />
-                    </Recharts.LineChart>
+                        <defs>
+                            <linearGradient id="fillChart" x1="0" x2="0" y1="0" y2="1">
+                                <stop
+                                    offset="5%"
+                                    stopColor="hsl(var(--chart-blue))"
+                                    stopOpacity={0.8}
+                                />
+                                <stop
+                                    offset="95%"
+                                    stopColor="hsl(var(--chart-blue))"
+                                    stopOpacity={0.1}
+                                />
+                            </linearGradient>
+                        </defs>
+                        <Recharts.Area
+                            dataKey="value"
+                            fill="url(#fillChart)"
+                            fillOpacity={0.2}
+                            isAnimationActive={false}
+                            stackId="a"
+                            stroke="hsl(var(--chart-blue))"
+                            strokeWidth={2}
+                            type="linear"
+                        />
+                    </Recharts.AreaChart>
                 </ChartContainer>
                 }
 
@@ -258,6 +267,8 @@ const NewsletterKPIs: React.FC<{
                             <ChartTooltip
                                 content={<BarTooltipContent />}
                                 cursor={false}
+                                isAnimationActive={false}
+                                position={{y: 20}}
                             />
                             <Recharts.Bar
                                 activeBar={{fill: 'hsl(var(--chart-1) / 0.8)'}}
@@ -266,14 +277,7 @@ const NewsletterKPIs: React.FC<{
                                 isAnimationActive={false}
                                 maxBarSize={32}
                                 minPointSize={2}
-                                radius={0}>
-                                {avgsData.map(entry => (
-                                    <Recharts.Cell
-                                        key={`cell-${entry.post_id}`}
-                                        fill={getBarColor(entry[currentTab === 'avg-open-rate' ? 'open_rate' : 'click_rate'])}
-                                    />
-                                ))}
-                            </Recharts.Bar>
+                                radius={0} />
                         </Recharts.BarChart>
                     </ChartContainer>
                     <div className="-mt-6 text-center text-sm text-muted-foreground">
