@@ -249,7 +249,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         const handleProfileLinkClick = (e: MouseEvent) => {
             const target = e.target as HTMLElement;
             const link = target.closest('a[data-profile]');
-            
+
             if (link) {
                 const handle = link.getAttribute('data-profile')?.trim();
                 const isValidHandle = /^@([\w.-]+)@([\w-]+\.[\w.-]+[a-zA-Z])$/.test(handle || '');
@@ -257,7 +257,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                 if (isValidHandle && handle) {
                     e.preventDefault();
                     e.stopPropagation();
-                    handleProfileClickRR(handle, navigate);
+                    handleProfileClick(handle, navigate);
                 }
             }
         };
