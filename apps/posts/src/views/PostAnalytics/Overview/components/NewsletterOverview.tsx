@@ -5,7 +5,7 @@ import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 
 const NewsletterOverview:React.FC = () => {
     const {postId} = useParams();
-    const {stats, topLinks, isLoading: isNewsletterStatsLoading} = usePostNewsletterStats(postId || '');
+    const {stats, topLinks, isLoading: isNewsletterStatsLoading} = usePostNewsletterStats(postId || '', '5');
 
     const opensChartData = [
         {opens: Number((stats?.opened && stats?.sent ? (stats.opened / stats.sent) : 0).toFixed(2)), fill: 'var(--color-opens)'}
