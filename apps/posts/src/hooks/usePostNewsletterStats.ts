@@ -59,8 +59,6 @@ export const usePostNewsletterStats = (postId: string) => {
         }
     });
 
-    console.log('clicksResponse', clicksResponse);
-
     const links = useMemo(() => {
         return clicksResponse?.links.map(link => ({
             link: link.link,
