@@ -534,7 +534,7 @@ figure blockquote p {
     padding: 8px 0 8px;
     color: #15212A;
     font-size: 13px;
-    font-weight: {{titleWeight}};
+    font-weight: 600;
     text-transform: uppercase;
 }
 
@@ -602,7 +602,7 @@ figure blockquote p {
 
 .subscription-box h3 {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
     margin: 0 0 18px;
 }
@@ -1696,6 +1696,35 @@ img.kg-cta-image {
     border: 1px solid #e0e7eb;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.kg-toggle-card {
+    border: 1px solid #E5ECF0;
+    border-radius: 4px;
+    margin-bottom: 24px;
+    width: 100%;
+}
+
+.kg-toggle-heading {
+    margin: 0;
+    padding: 24px 24px 12px;
+}
+
+.kg-toggle-heading h4 {
+    margin: 0;
+    font-weight: {{titleWeight}};
+}
+
+.kg-toggle-content {
+    color: #394047;
+    font-size: 16px;
+    line-height: 1.5;
+    padding: 0 24px 24px;
+}
+
+.kg-toggle-content > *:last-of-type {
+    margin-bottom: 0;
+}
+{{else}}
 .kg-toggle-card {
     background: transparent;
     padding: 20px;
@@ -1703,7 +1732,7 @@ img.kg-cta-image {
     border-radius: 4px;
     border: 1px solid #73818c;
 }
-
+{{/hasFeature}}
 
 /* -------------------------------------
     HEADER, FOOTER, MAIN
