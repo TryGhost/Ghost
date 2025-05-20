@@ -42,6 +42,7 @@ Object {
   ],
   "meta": Object {
     "pagination": Object {
+      "limit": 3,
       "page": 1,
       "pages": 1,
       "total": 3,
@@ -101,7 +102,7 @@ exports[`Links API Can browse all links 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "930",
+  "content-length": "940",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -194,6 +195,7 @@ Object {
   ],
   "meta": Object {
     "pagination": Object {
+      "limit": 3,
       "page": 1,
       "pages": 1,
       "total": 3,
@@ -253,7 +255,7 @@ exports[`Links API Can bulk update links with external redirect 4: [headers] 1`]
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "929",
+  "content-length": "939",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -346,6 +348,7 @@ Object {
   ],
   "meta": Object {
     "pagination": Object {
+      "limit": 3,
       "page": 1,
       "pages": 1,
       "total": 3,
@@ -405,7 +408,7 @@ exports[`Links API Can bulk update multiple links with same site redirect 4: [he
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "884",
+  "content-length": "894",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -498,6 +501,7 @@ Object {
   ],
   "meta": Object {
     "pagination": Object {
+      "limit": 3,
       "page": 1,
       "pages": 1,
       "total": 3,
@@ -557,7 +561,7 @@ exports[`Links API Can call bulk update link with 0 matches 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "930",
+  "content-length": "940",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
