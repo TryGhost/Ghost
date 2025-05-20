@@ -51,11 +51,10 @@ export const usePostNewsletterStats = (postId: string) => {
     // Fetch the last 20 newsletters and calculate the average open and click rates
     const {data: newsletterStatsResponse, isLoading: isNewsletterStatsLoading} = useNewsletterStatsByNewsletterId(newsletterId);
 
-    // Get the top 5 link clicks from this post
+    // Get the top links from this post
     const {data: clicksResponse, isLoading: isClicksLoading, refetch: refetchTopLinks} = useTopLinks({
         searchParams: {
-            filter: `post_id:'${postId}'`,
-            limit: '5'
+            filter: `post_id:'${postId}'`
         }
     });
 

@@ -41,14 +41,6 @@ module.exports = class PostLinkRepository {
             qb.orderByRaw('`count__clicks` DESC, `to` DESC');
         });
         
-        // Apply limit directly to the query if provided
-        if (options.limit) {
-            const limitNumber = parseInt(options.limit, 10);
-            if (!isNaN(limitNumber) && limitNumber > 0) {
-                itemCollection.query('limit', limitNumber);
-            }
-        }
-        
         // Fetch the collection with the applied query modifications
         const collection = await itemCollection.fetchAll({withRelated: ['count.clicks']});
 
@@ -56,7 +48,7 @@ module.exports = class PostLinkRepository {
 
         for (const model of collection.models) {
             const link = this.#linkRedirectRepository.fromModel(model);
-
+            
             result.push(
                 new FullPostLink({
                     post_id: model.get('post_id'),
@@ -67,7 +59,7 @@ module.exports = class PostLinkRepository {
                 })
             );
         }
-
+        
         return result;
     }
 
