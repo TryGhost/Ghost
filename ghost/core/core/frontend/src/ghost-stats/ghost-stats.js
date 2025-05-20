@@ -147,7 +147,7 @@ import { processPayload } from '../utils/privacy';
             const locale = navigator.languages?.[0] || navigator.language || 'en';
             
             return { 
-                country: countryData ? countryData.name : null,  // Returns full country name like "United States of America"
+                country: countryData ? countryData.id : null,  // Returns country code
                 locale 
             };
         } catch (error) {
