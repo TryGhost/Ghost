@@ -1,7 +1,7 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import EmptyStatView from '../../components/EmptyStatView';
 import React, {useState} from 'react';
-import {AlignedAxisTick, Card, CardContent, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatDuration, formatNumber, formatPercentage, getYRange, sanitizeChartData} from '@tryghost/shade';
+import {AlignedAxisTick, Card, CardContent, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsList, calculateYAxisWidth, formatDisplayDateWithRange, formatDuration, formatNumber, formatPercentage, getYRange, sanitizeChartData} from '@tryghost/shade';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
@@ -110,8 +110,8 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
                                                     axisLine={false}
                                                     dataKey="date"
                                                     interval={0}
-                                                    tick={props => <AlignedAxisTick {...props} formatter={formatDisplayDate} />}
-                                                    tickFormatter={formatDisplayDate}
+                                                    tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(value, range)} />}
+                                                    tickFormatter={value => formatDisplayDateWithRange(value, range)}
                                                     tickLine={false}
                                                     tickMargin={8}
                                                     ticks={chartData && chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}
@@ -138,7 +138,7 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
                                                     width={calculateYAxisWidth(yRange, currentMetric.formatter)}
                                                 />
                                                 <ChartTooltip
-                                                    content={<CustomTooltipContent />}
+                                                    content={<CustomTooltipContent range={range} />}
                                                     cursor={true}
                                                     isAnimationActive={false}
                                                     position={{y: 20}}

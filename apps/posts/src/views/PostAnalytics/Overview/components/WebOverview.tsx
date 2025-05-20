@@ -13,6 +13,7 @@ const WebOverview:React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const currentMetric = KPI_METRICS.visits;
     const {postId} = useParams();
+    const range = STATS_RANGES.ALL_TIME.value;
 
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
@@ -21,7 +22,7 @@ const WebOverview:React.FC = () => {
         }
     });
 
-    const {startDate, endDate, timezone} = getRangeDates(STATS_RANGES.ALL_TIME.value);
+    const {startDate, endDate, timezone} = getRangeDates(range);
 
     const params = useMemo(() => {
         const baseParams = {
@@ -54,7 +55,7 @@ const WebOverview:React.FC = () => {
         }
     } satisfies ChartConfig;
 
-    const chartData = sanitizeChartData<KpiDataItem>(data as KpiDataItem[] || [], STATS_RANGES.ALL_TIME.value, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item: KpiDataItem) => {
+    const chartData = sanitizeChartData<KpiDataItem>(data as KpiDataItem[] || [], range, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item: KpiDataItem) => {
         const value = Number(item[currentMetric.dataKey]);
         return {
             date: String(item.date),
@@ -90,9 +91,9 @@ const WebOverview:React.FC = () => {
                             axisLine={false}
                             dataKey="date"
                             interval={0}
-                            tick={props => <AlignedAxisTick {...props} formatter={formatDisplayDateWithRange} />}
+                            tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(value, range)} />}
                             tickFormatter={(value) => {
-                                return formatDisplayDateWithRange(value, STATS_RANGES.ALL_TIME.value);
+                                return formatDisplayDateWithRange(value, range);
                             }}
                             tickLine={false}
                             tickMargin={8}
@@ -110,7 +111,7 @@ const WebOverview:React.FC = () => {
                             width={calculateYAxisWidth(yRange, currentMetric.formatter)}
                         />
                         <ChartTooltip
-                            content={<CustomTooltipContent />}
+                            content={<CustomTooltipContent range={range} />}
                             cursor={true}
                             isAnimationActive={false}
                             position={{y: 20}}
