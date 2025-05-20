@@ -6,9 +6,9 @@ import React, {useState} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
+import {AlignedAxisTick, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, formatDisplayDateWithRange, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
-import {calculateYAxisWidth, getPeriodText, getRangeDates, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
+import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -33,21 +33,25 @@ const KPI_METRICS: Record<string, KpiMetric> = {
     visits: {
         dataKey: 'visits',
         label: 'Visitors',
+        chartColor: 'hsl(var(--chart-blue))',
         formatter: formatNumber
     },
     views: {
         dataKey: 'pageviews',
         label: 'Pageviews',
+        chartColor: 'hsl(var(--chart-green))',
         formatter: formatNumber
     },
     'bounce-rate': {
         dataKey: 'bounce_rate',
         label: 'Bounce rate',
+        chartColor: 'hsl(var(--chart-green))',
         formatter: formatPercentage
     },
     'visit-duration': {
         dataKey: 'avg_session_sec',
         label: 'Visit duration',
+        chartColor: 'hsl(var(--chart-green))',
         formatter: formatDuration
     }
 };
@@ -76,7 +80,7 @@ const WebKPIs:React.FC = ({}) => {
 
     const currentMetric = KPI_METRICS[currentTab];
 
-    const chartData = sanitizeChartData<KpiDataItem>(data as KpiDataItem[] || [], range, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item) => {
+    const chartData = sanitizeChartData<KpiDataItem>(data as KpiDataItem[] || [], range, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item: KpiDataItem) => {
         const value = Number(item[currentMetric.dataKey]);
         return {
             date: String(item.date),
@@ -122,28 +126,30 @@ const WebKPIs:React.FC = ({}) => {
         }
     } satisfies ChartConfig;
 
+    const yRange = [getYRange(chartData).min, getYRange(chartData).max];
+
     return (
         <Tabs defaultValue="visits" variant='kpis'>
             <TabsList className="-mx-6 grid grid-cols-2">
                 <KpiTabTrigger value="visits" onClick={() => {
                     setCurrentTab('visits');
                 }}>
-                    <KpiTabValue label="Unique visitors" value={kpiValues.visits} />
+                    <KpiTabValue color={KPI_METRICS.visits.chartColor} label="Unique visitors" value={kpiValues.visits} />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="views" onClick={() => {
                     setCurrentTab('views');
                 }}>
-                    <KpiTabValue label="Total views" value={kpiValues.views} />
+                    <KpiTabValue color={KPI_METRICS.views.chartColor} label="Total views" value={kpiValues.views} />
                 </KpiTabTrigger>
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 {isLoading ? 'Loading' :
                     <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] w-full' config={chartConfig}>
-                        <Recharts.LineChart
+                        <Recharts.AreaChart
                             data={chartData}
                             margin={{
-                                left: 0,
-                                right: 20,
+                                left: 4,
+                                right: 4,
                                 top: 12
                             }}
                             accessibilityLayer
@@ -153,13 +159,16 @@ const WebKPIs:React.FC = ({}) => {
                                 axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
                                 dataKey="date"
                                 interval={0}
-                                tickFormatter={formatDisplayDate}
+                                tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(value, range)} />}
+                                tickFormatter={value => formatDisplayDateWithRange(value, range)}
                                 tickLine={false}
-                                tickMargin={8}
+                                tickMargin={10}
                                 ticks={chartData && chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}
                             />
                             <Recharts.YAxis
                                 axisLine={false}
+                                domain={yRange}
+                                scale="linear"
                                 tickFormatter={(value) => {
                                     switch (currentTab) {
                                     case 'bounce-rate':
@@ -174,22 +183,40 @@ const WebKPIs:React.FC = ({}) => {
                                     }
                                 }}
                                 tickLine={false}
-                                ticks={getYTicks(chartData || [])}
-                                width={calculateYAxisWidth(getYTicks(chartData || []), currentMetric.formatter)}
+                                ticks={yRange}
+                                width={calculateYAxisWidth(yRange, currentMetric.formatter)}
                             />
                             <ChartTooltip
-                                content={<CustomTooltipContent range={range} />}
+                                content={<CustomTooltipContent color={currentMetric.chartColor} range={range} />}
                                 cursor={true}
-                            />
-                            <Recharts.Line
-                                dataKey="value"
-                                dot={false}
                                 isAnimationActive={false}
-                                stroke="hsl(var(--chart-1))"
-                                strokeWidth={2}
-                                type='bump'
+                                position={{y: 20}}
                             />
-                        </Recharts.LineChart>
+                            <defs>
+                                <linearGradient id="fillChart" x1="0" x2="0" y1="0" y2="1">
+                                    <stop
+                                        offset="5%"
+                                        stopColor={currentMetric.chartColor}
+                                        stopOpacity={0.8}
+                                    />
+                                    <stop
+                                        offset="95%"
+                                        stopColor={currentMetric.chartColor}
+                                        stopOpacity={0.1}
+                                    />
+                                </linearGradient>
+                            </defs>
+                            <Recharts.Area
+                                dataKey="value"
+                                fill="url(#fillChart)"
+                                fillOpacity={0.2}
+                                isAnimationActive={false}
+                                stackId="a"
+                                stroke={currentMetric.chartColor}
+                                strokeWidth={2}
+                                type="linear"
+                            />
+                        </Recharts.AreaChart>
                     </ChartContainer>
                 }
             </div>

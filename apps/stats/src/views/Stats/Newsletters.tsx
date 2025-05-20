@@ -7,8 +7,8 @@ import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
-import {calculateYAxisWidth, getPeriodText, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
+import {AlignedAxisTick, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatDisplayDateWithRange, formatNumber, formatPercentage, getYRange} from '@tryghost/shade';
+import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useNewsletterStatsWithRange, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
@@ -87,19 +87,6 @@ const BarTooltipContent = ({active, payload}: BarTooltipProps) => {
     );
 };
 
-const getBarColor = (value: number) => {
-    let opacity;
-    if (value <= 0.25) {
-        opacity = 0.6;
-    } else if (value >= 0.75) {
-        opacity = 1.0;
-    } else {
-        // Interpolate between 0.6 and 1.0 for values between 0.25 and 0.75
-        opacity = 0.6 + ((value - 0.25) * (0.4 / 0.5));
-    }
-    return `hsl(var(--chart-1) / ${opacity})`;
-};
-
 const NewsletterKPIs: React.FC<{
     subscribersData: SubscribersDataItem[]
     avgsData: AvgsDataItem[];
@@ -160,6 +147,23 @@ const NewsletterKPIs: React.FC<{
     const barDomain = [0, 1];
     const barTicks = [0, 0.25, 0.5, 0.75, 1];
 
+    const yRange = [getYRange(subscribersData).min, getYRange(subscribersData).max];
+
+    const tabConfig = {
+        'total-subscribers': {
+            color: 'hsl(var(--chart-purple))',
+            datakey: 'value'
+        },
+        'avg-open-rate': {
+            color: 'hsl(var(--chart-blue))',
+            datakey: 'open_rate'
+        },
+        'avg-click-rate': {
+            color: 'hsl(var(--chart-green))',
+            datakey: 'click_rate'
+        }
+    };
+
     return (
         <Tabs defaultValue="total-subscribers" variant='kpis'>
             <TabsList className="-mx-6 grid grid-cols-3">
@@ -167,6 +171,7 @@ const NewsletterKPIs: React.FC<{
                     setCurrentTab('total-subscribers');
                 }}>
                     <KpiTabValue
+                        color={tabConfig['total-subscribers'].color}
                         label="Total subscribers"
                         value={formatNumber(totalSubscribers)}
                     />
@@ -175,6 +180,7 @@ const NewsletterKPIs: React.FC<{
                     setCurrentTab('avg-open-rate');
                 }}>
                     <KpiTabValue
+                        color={tabConfig['avg-open-rate'].color}
                         label="Avg. open rate"
                         value={formatPercentage(avgOpenRate)}
                     />
@@ -183,6 +189,7 @@ const NewsletterKPIs: React.FC<{
                     setCurrentTab('avg-click-rate');
                 }}>
                     <KpiTabValue
+                        color={tabConfig['avg-click-rate'].color}
                         label="Avg. click rate"
                         value={formatPercentage(avgClickRate)}
                     />
@@ -191,11 +198,11 @@ const NewsletterKPIs: React.FC<{
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 {(currentTab === 'total-subscribers') &&
                 <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] w-full' config={subscribersChartConfig}>
-                    <Recharts.LineChart
+                    <Recharts.AreaChart
                         data={subscribersData}
                         margin={{
-                            left: 0,
-                            right: 20,
+                            left: 4,
+                            right: 4,
                             top: 12
                         }}
                         accessibilityLayer
@@ -206,32 +213,52 @@ const NewsletterKPIs: React.FC<{
                             dataKey="date"
                             interval={0}
                             stroke="hsl(var(--gray-300))"
-                            tickFormatter={formatDisplayDate}
+                            tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(value, range)} />}
+                            tickFormatter={value => formatDisplayDateWithRange(value, range)}
                             tickLine={false}
                             tickMargin={8}
                             ticks={subscribersData.length > 0 ? [subscribersData[0].date, subscribersData[subscribersData.length - 1].date] : []}
                         />
                         <Recharts.YAxis
                             axisLine={false}
-                            domain={[getYRange(subscribersData).min, getYRange(subscribersData).max]}
+                            domain={yRange}
+                            scale="linear"
                             tickFormatter={value => formatNumber(value)}
                             tickLine={false}
-                            ticks={getYTicks(subscribersData)}
-                            width={calculateYAxisWidth(getYTicks(subscribersData), value => formatNumber(value))}
+                            ticks={yRange}
+                            width={calculateYAxisWidth(yRange, (value: number) => formatNumber(value))}
                         />
                         <ChartTooltip
-                            content={<CustomTooltipContent range={range} />}
+                            content={<CustomTooltipContent color={tabConfig['total-subscribers'].color} range={range} />}
                             cursor={true}
-                        />
-                        <Recharts.Line
-                            dataKey="value"
-                            dot={false}
                             isAnimationActive={false}
-                            stroke="hsl(var(--chart-1))"
-                            strokeWidth={2}
-                            type='monotone'
+                            position={{y: 20}}
                         />
-                    </Recharts.LineChart>
+                        <defs>
+                            <linearGradient id="fillChart" x1="0" x2="0" y1="0" y2="1">
+                                <stop
+                                    offset="5%"
+                                    stopColor={tabConfig['total-subscribers'].color}
+                                    stopOpacity={0.8}
+                                />
+                                <stop
+                                    offset="95%"
+                                    stopColor={tabConfig['total-subscribers'].color}
+                                    stopOpacity={0.1}
+                                />
+                            </linearGradient>
+                        </defs>
+                        <Recharts.Area
+                            dataKey={tabConfig['total-subscribers'].datakey}
+                            fill="url(#fillChart)"
+                            fillOpacity={0.2}
+                            isAnimationActive={false}
+                            stackId="a"
+                            stroke={tabConfig['total-subscribers'].color}
+                            strokeWidth={2}
+                            type="linear"
+                        />
+                    </Recharts.AreaChart>
                 </ChartContainer>
                 }
 
@@ -246,7 +273,7 @@ const NewsletterKPIs: React.FC<{
                                 tickFormatter={value => formatPercentage(value)}
                                 tickLine={false}
                                 ticks={barTicks}
-                                width={calculateYAxisWidth(barTicks, value => formatPercentage(value))}
+                                width={calculateYAxisWidth(barTicks, (value: number) => formatPercentage(value))}
                             />
                             <Recharts.XAxis
                                 axisLine={false}
@@ -258,22 +285,18 @@ const NewsletterKPIs: React.FC<{
                             <ChartTooltip
                                 content={<BarTooltipContent />}
                                 cursor={false}
+                                isAnimationActive={false}
+                                position={{y: 20}}
                             />
                             <Recharts.Bar
-                                activeBar={{fill: 'hsl(var(--chart-1) / 0.8)'}}
-                                dataKey={currentTab === 'avg-open-rate' ? 'open_rate' : 'click_rate'}
-                                fill="hsl(var(--chart-1))"
+                                activeBar={{fillOpacity: 1}}
+                                dataKey={tabConfig[currentTab].datakey}
+                                fill={tabConfig[currentTab].color}
+                                fillOpacity={0.6}
                                 isAnimationActive={false}
                                 maxBarSize={32}
                                 minPointSize={2}
-                                radius={0}>
-                                {avgsData.map(entry => (
-                                    <Recharts.Cell
-                                        key={`cell-${entry.post_id}`}
-                                        fill={getBarColor(entry[currentTab === 'avg-open-rate' ? 'open_rate' : 'click_rate'])}
-                                    />
-                                ))}
-                            </Recharts.Bar>
+                                radius={0} />
                         </Recharts.BarChart>
                     </ChartContainer>
                     <div className="-mt-6 text-center text-sm text-muted-foreground">

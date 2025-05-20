@@ -1,6 +1,5 @@
-import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import React, {useMemo} from 'react';
-import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, Recharts, calculateYAxisWidth, formatDisplayDateWithRange, formatNumber, formatQueryDate, getRangeDates, getYTicks, sanitizeChartData} from '@tryghost/shade';
+import {AlignedAxisTick, BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, DateTooltipContent, Recharts, calculateYAxisWidth, formatDisplayDateWithRange, formatNumber, formatQueryDate, getRangeDates, getYRange, sanitizeChartData} from '@tryghost/shade';
 import {KPI_METRICS} from '../../Web/components/Kpis';
 import {KpiDataItem} from '@src/utils/kpi-helpers';
 import {STATS_RANGES} from '@src/utils/constants';
@@ -13,6 +12,7 @@ const WebOverview:React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const currentMetric = KPI_METRICS.visits;
     const {postId} = useParams();
+    const range = STATS_RANGES.ALL_TIME.value;
 
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
@@ -21,7 +21,7 @@ const WebOverview:React.FC = () => {
         }
     });
 
-    const {startDate, endDate, timezone} = getRangeDates(STATS_RANGES.ALL_TIME.value);
+    const {startDate, endDate, timezone} = getRangeDates(range);
 
     const params = useMemo(() => {
         const baseParams = {
@@ -54,7 +54,7 @@ const WebOverview:React.FC = () => {
         }
     } satisfies ChartConfig;
 
-    const chartData = sanitizeChartData<KpiDataItem>(data as KpiDataItem[] || [], STATS_RANGES.ALL_TIME.value, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item: KpiDataItem) => {
+    const chartData = sanitizeChartData<KpiDataItem>(data as KpiDataItem[] || [], range, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item: KpiDataItem) => {
         const value = Number(item[currentMetric.dataKey]);
         return {
             date: String(item.date),
@@ -66,6 +66,8 @@ const WebOverview:React.FC = () => {
 
     const isLoading = isConfigLoading || loading;
 
+    const yRange = [getYRange(chartData).min, getYRange(chartData).max];
+
     return (
         <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
             {isLoading ?
@@ -74,7 +76,7 @@ const WebOverview:React.FC = () => {
                 </div>
                 :
                 <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] w-full' config={chartConfig}>
-                    <Recharts.LineChart
+                    <Recharts.AreaChart
                         data={chartData}
                         margin={{
                             left: 0,
@@ -88,8 +90,9 @@ const WebOverview:React.FC = () => {
                             axisLine={false}
                             dataKey="date"
                             interval={0}
+                            tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(value, range)} />}
                             tickFormatter={(value) => {
-                                return formatDisplayDateWithRange(value, STATS_RANGES.ALL_TIME.value);
+                                return formatDisplayDateWithRange(value, range);
                             }}
                             tickLine={false}
                             tickMargin={8}
@@ -97,26 +100,46 @@ const WebOverview:React.FC = () => {
                         />
                         <Recharts.YAxis
                             axisLine={false}
+                            domain={yRange}
+                            scale="linear"
                             tickFormatter={(value) => {
                                 return formatNumber(value);
                             }}
                             tickLine={false}
-                            ticks={getYTicks(chartData || [])}
-                            width={calculateYAxisWidth(getYTicks(chartData || []), currentMetric.formatter)}
+                            ticks={yRange}
+                            width={calculateYAxisWidth(yRange, currentMetric.formatter)}
                         />
                         <ChartTooltip
-                            content={<CustomTooltipContent />}
+                            content={<DateTooltipContent range={range} />}
                             cursor={true}
-                        />
-                        <Recharts.Line
-                            dataKey="value"
-                            dot={false}
                             isAnimationActive={false}
-                            stroke="hsl(var(--chart-1))"
-                            strokeWidth={2}
-                            type='bump'
+                            position={{y: 20}}
                         />
-                    </Recharts.LineChart>
+                        <defs>
+                            <linearGradient id="fillChart" x1="0" x2="0" y1="0" y2="1">
+                                <stop
+                                    offset="5%"
+                                    stopColor="hsl(var(--chart-blue))"
+                                    stopOpacity={0.8}
+                                />
+                                <stop
+                                    offset="95%"
+                                    stopColor="hsl(var(--chart-blue))"
+                                    stopOpacity={0.1}
+                                />
+                            </linearGradient>
+                        </defs>
+                        <Recharts.Area
+                            dataKey="value"
+                            fill="url(#fillChart)"
+                            fillOpacity={0.2}
+                            isAnimationActive={false}
+                            stackId="a"
+                            stroke="hsl(var(--chart-blue))"
+                            strokeWidth={2}
+                            type="linear"
+                        />
+                    </Recharts.AreaChart>
                 </ChartContainer>
             }
         </div>
