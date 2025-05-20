@@ -65,7 +65,8 @@ const expectedProperties = {
         'tiktok',
         'youtube',
         'instagram',
-        'linkedin'
+        'linkedin',
+        'x'
     ],
     tag: [
         'id',
