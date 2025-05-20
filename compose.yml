@@ -35,8 +35,51 @@ x-service-template: &service-template
     - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
 
 services:
+  server:
+    <<: *service-template
+    image: ghost-monorepo:latest
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+    working_dir: /home/ghost/ghost/core
+    command: [ "yarn", "dev" ]
+    ports:
+      - "2368:2368"
+    profiles: [ split ]
+    tty: true
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - DEBUG=${DEBUG:-}
+      - SSH_AUTH_SOCK=/ssh-agent
+      - NX_DAEMON=false
+      - GHOST_DEV_IS_DOCKER=true
+      - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
+      - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+      - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
+
+  admin:
+    <<: *service-template
+    image: ghost-monorepo:latest
+    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+    working_dir: /home/ghost/ghost/admin
+    command: [ "yarn", "dev" ]
+    ports:
+      - "4200:4200"
+      - "4201:4201"
+    profiles: [ split ]
+    tty: true
+
   ghost:
     <<: *service-template
+    image: ghost-monorepo:latest
     build:
       context: .
       dockerfile: ./.docker/Dockerfile
