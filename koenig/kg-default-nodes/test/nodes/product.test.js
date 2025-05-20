@@ -342,7 +342,7 @@ describe('ProductNode', function () {
             `);
         }));
 
-        it('renders email (emailCustomizationAlpha)', editorTest(function () {
+        it('renders email (emailCustomization)', editorTest(function () {
             const payload = {
                 productButton: 'Click me',
                 productButtonEnabled: true,
@@ -357,7 +357,7 @@ describe('ProductNode', function () {
             const options = {
                 target: 'email',
                 feature: {
-                    emailCustomizationAlpha: true
+                    emailCustomization: true
                 }
             };
 

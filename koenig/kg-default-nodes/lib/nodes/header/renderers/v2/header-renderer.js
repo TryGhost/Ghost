@@ -96,7 +96,7 @@ function emailTemplate(nodeData, options) {
         }
     }
 
-    if (options?.feature?.emailCustomizationAlpha) {
+    if (options?.feature?.emailCustomization || options?.feature?.emailCustomizationAlpha) {
         return (
             `
             <div class="kg-header-card kg-v2" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">

@@ -106,7 +106,7 @@ function emailCTATemplate(dataset, options = {}) {
         }
     }
 
-    if (options.feature?.emailCustomizationAlpha) {
+    if (options.feature?.emailCustomization || options.feature?.emailCustomizationAlpha) {
         const renderContent = () => {
             if (dataset.layout === 'minimal') {
                 return `
