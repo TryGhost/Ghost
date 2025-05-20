@@ -5,8 +5,8 @@ import React, {useEffect, useRef} from 'react';
 import getName from '@src/utils/get-name';
 import getUsername from '@src/utils/get-username';
 import {Actor} from '@src/api/activitypub';
-import {Button} from '@tryghost/shade';
-import {List, LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
+import {Button, LoadingIndicator} from '@tryghost/shade';
+import {List, NoValueLabel} from '@tryghost/admin-x-design-system';
 import {handleProfileClickRR} from '@src/utils/handle-profile-click';
 import {useNavigate} from '@tryghost/admin-x-framework';
 

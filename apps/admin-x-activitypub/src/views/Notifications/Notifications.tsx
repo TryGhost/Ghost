@@ -1,8 +1,7 @@
 import React, {useEffect, useRef} from 'react';
-import {Button, LucideIcon, Skeleton} from '@tryghost/shade';
+import {Button, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {LoadingIndicator} from '@tryghost/admin-x-design-system';
 
 import APAvatar from '@components/global/APAvatar';
 import FeedItemStats from '@components/feed/FeedItemStats';

@@ -1,8 +1,8 @@
 import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {Account} from '@src/api/activitypub';
-import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, LucideIcon, Textarea} from '@tryghost/shade';
+import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, LoadingIndicator, LucideIcon, Textarea} from '@tryghost/shade';
 import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE, SQUARE_IMAGE_ERROR_MESSAGE, isSquareImage} from '@utils/image';
-import {LoadingIndicator, showToast} from '@tryghost/admin-x-design-system';
+import {showToast} from '@tryghost/admin-x-design-system';
 import {uploadFile} from '@hooks/use-activity-pub-queries';
 import {useForm} from 'react-hook-form';
 import {useNavigate} from '@tryghost/admin-x-framework';
