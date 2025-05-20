@@ -2089,14 +2089,17 @@ describe('Email renderer', function () {
             );
         });
 
-        it('passes expected data through to lexical renderer (emailCustomizationAlpha)', async function () {
-            labsEnabled = {emailCustomizationAlpha: true};
+        const testLexicalRenderDesignOptions = async function ({expectedObject, labs}) {
+            labsEnabled = labs || false;
 
             const post = createModel(basePost);
             const newsletter = createModel({
                 ...baseNewsletter,
+                title_font_weight: 'semibold',
                 button_corners: 'square',
-                button_style: 'outline'
+                button_style: 'outline',
+                link_style: 'normal',
+                image_corners: 'rounded'
             });
             const segment = null;
             const options = {};
@@ -2109,12 +2112,30 @@ describe('Email renderer', function () {
                 {
                     target: 'email',
                     postUrl: 'http://example.com',
-                    design: {
-                        buttonCorners: 'square',
-                        buttonStyle: 'outline'
-                    }
+                    design: expectedObject
                 }
             );
+        };
+
+        it('passes expected data through to lexical renderer (emailCustomization)', async function () {
+            await testLexicalRenderDesignOptions({
+                expectedObject: {
+                    buttonCorners: 'square'
+                },
+                labs: {emailCustomization: true}
+            });
+        });
+
+        it('passes expected data through to lexical renderer (emailCustomizationAlpha)', async function () {
+            await testLexicalRenderDesignOptions({
+                expectedObject: {
+                    titleFontWeight: 'semibold',
+                    buttonStyle: 'outline',
+                    linkStyle: 'normal',
+                    imageCorners: 'rounded'
+                },
+                labs: {emailCustomizationAlpha: true}
+            });
         });
     });
 
