@@ -86,7 +86,7 @@ const Overview: React.FC = () => {
                                     Unique visitors
                                     </KpiCardLabel>
                                     <KpiCardContent>
-                                        <KpiCardValue>{formatNumber(kpiValues.visits)}</KpiCardValue>
+                                        <KpiCardValue>{kpiValues.visits}</KpiCardValue>
                                     </KpiCardContent>
                                 </KpiCard>
                                 <KpiCard className='grow' onClick={() => {
@@ -97,7 +97,7 @@ const Overview: React.FC = () => {
                                     Pageviews
                                     </KpiCardLabel>
                                     <KpiCardContent>
-                                        <KpiCardValue>{formatNumber(kpiValues.views)}</KpiCardValue>
+                                        <KpiCardValue>{kpiValues.views}</KpiCardValue>
                                     </KpiCardContent>
                                 </KpiCard>
                                 <KpiCard className='grow' onClick={() => {
