@@ -1,6 +1,6 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import React, {useMemo} from 'react';
-import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, Recharts, calculateYAxisWidth, formatDisplayDateWithRange, formatNumber, formatQueryDate, getRangeDates, getYTicks, sanitizeChartData} from '@tryghost/shade';
+import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, Recharts, calculateYAxisWidth, formatDisplayDateWithRange, formatNumber, formatQueryDate, getRangeDates, getYRange, sanitizeChartData} from '@tryghost/shade';
 import {KPI_METRICS} from '../../Web/components/Kpis';
 import {KpiDataItem} from '@src/utils/kpi-helpers';
 import {STATS_RANGES} from '@src/utils/constants';
@@ -66,6 +66,8 @@ const WebOverview:React.FC = () => {
 
     const isLoading = isConfigLoading || loading;
 
+    const yRange = [getYRange(chartData).min, getYRange(chartData).max];
+
     return (
         <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
             {isLoading ?
@@ -96,13 +98,16 @@ const WebOverview:React.FC = () => {
                             ticks={chartData && chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}
                         />
                         <Recharts.YAxis
+                            allowDataOverflow={true}
                             axisLine={false}
+                            domain={yRange}
+                            scale="linear"
                             tickFormatter={(value) => {
                                 return formatNumber(value);
                             }}
                             tickLine={false}
-                            ticks={getYTicks(chartData || [])}
-                            width={calculateYAxisWidth(getYTicks(chartData || []), currentMetric.formatter)}
+                            ticks={yRange}
+                            width={calculateYAxisWidth(yRange, currentMetric.formatter)}
                         />
                         <ChartTooltip
                             content={<CustomTooltipContent />}

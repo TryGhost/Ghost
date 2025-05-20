@@ -221,6 +221,34 @@ export const getYRange = (data: { value: number }[]): {min: number; max: number}
     let min = Math.min(...values);
     let max = Math.max(...values);
 
+    // Helper function to round to nice numbers
+    const roundToNiceNumber = (num: number, roundUp: boolean = false): number => {
+        if (num === 0) {
+            return 0;
+        }
+
+        const magnitude = Math.floor(Math.log10(Math.abs(num)));
+        const scale = Math.pow(10, magnitude);
+
+        // For numbers less than 1, use smaller steps
+        if (magnitude < 0) {
+            const steps = [0.1, 0.2, 0.25, 0.5, 1];
+            const scaledNum = num * Math.pow(10, -magnitude);
+            const step = steps.find(s => s >= scaledNum) || 1;
+            return roundUp ?
+                Math.ceil(num * Math.pow(10, -magnitude) / step) * step * scale :
+                Math.floor(num * Math.pow(10, -magnitude) / step) * step * scale;
+        }
+
+        // For numbers >= 1, use standard steps
+        const steps = [1, 2, 2.5, 5, 10];
+        const scaledNum = num / scale;
+        const step = steps.find(s => s >= scaledNum) || 10;
+        return roundUp ?
+            Math.ceil(num / (step * scale)) * step * scale :
+            Math.floor(num / (step * scale)) * step * scale;
+    };
+
     // If min and max are equal, create a range around the value
     if (min === max) {
         const value = min;
@@ -231,52 +259,25 @@ export const getYRange = (data: { value: number }[]): {min: number; max: number}
         } else {
             // For non-zero values, create a 10% range around the value
             const range = Math.abs(value) * 0.1;
-            min = Math.max(0, value - range);
-            max = value + range;
+            min = roundToNiceNumber(Math.max(0, value - range));
+            max = roundToNiceNumber(value + range, true);
         }
     } else {
+        // First round min and max to nice numbers
+        min = roundToNiceNumber(min);
+        max = roundToNiceNumber(max, true);
+
         // Ensure minimum 10% range between min and max
         const range = max - min;
         const minRange = Math.max(Math.abs(max), Math.abs(min)) * 0.1;
         if (range < minRange) {
             const padding = (minRange - range) / 2;
-            min = Math.max(0, min - padding);
-            max += padding;
+            min = roundToNiceNumber(Math.max(0, min - padding));
+            max = roundToNiceNumber(max + padding, true);
         }
     }
 
     return {min, max};
-};
-
-// Calculates Y-axis ticks based on the data values
-export const getYTicks = (data: { value: number }[]): number[] => {
-    if (!data.length) {
-        return [];
-    }
-
-    const {min, max} = getYRange(data);
-
-    // Calculate the range and initial step
-    const range = max - min;
-    const initialStep = Math.pow(10, Math.floor(Math.log10(range)));
-
-    // Try different step sizes until we get 6 or fewer ticks
-    let step = initialStep;
-    let numTicks = Math.ceil(range / step) + 1;
-
-    // If we have too many ticks, increase the step size
-    while (numTicks > 6) {
-        step *= 2;
-        numTicks = Math.ceil(range / step) + 1;
-    }
-
-    // Generate the ticks
-    const ticks = [];
-    for (let i = Math.floor(min / step) * step; i <= Math.ceil(max / step) * step; i += step) {
-        ticks.push(i);
-    }
-
-    return ticks;
 };
 
 // Calculates the width needed for the Y-axis based on the formatted tick values

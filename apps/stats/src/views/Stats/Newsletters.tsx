@@ -147,8 +147,6 @@ const NewsletterKPIs: React.FC<{
     const barDomain = [0, 1];
     const barTicks = [0, 0.25, 0.5, 0.75, 1];
 
-    console.log(getYRange(subscribersData));
-
     return (
         <Tabs defaultValue="total-subscribers" variant='kpis'>
             <TabsList className="-mx-6 grid grid-cols-3">
