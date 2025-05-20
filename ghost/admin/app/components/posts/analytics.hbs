@@ -73,9 +73,9 @@
                             <li>
                                 <a class="view-browser" href="{{this.post.url}}" target="_blank" rel="noopener noreferrer">View in browser</a>
                             </li>
-                            {{#if (and (gh-user-can-admin this.session.user) this.config.stats (feature "trafficAnalyticsAlpha"))}}
+                            {{#if (and (gh-user-can-admin this.session.user) this.config.stats)}}
                                 <li>
-                                    <LinkTo class="edit-post" @route="posts-x" @model={{this.post.id}}>Switch to Ghost Analytics (beta)</LinkTo>
+                                    <LinkTo class="edit-post" @route="posts-x" @model={{this.post.id}}>Switch to Analytics (beta)</LinkTo>
                                 </li>
                             {{/if}}
                             <li>
