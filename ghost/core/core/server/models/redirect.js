@@ -36,7 +36,7 @@ const Redirect = ghostBookshelf.Model.extend({
     permittedOptions(methodName) {
         let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
         const validOptions = {
-            findAll: ['filter', 'columns', 'withRelated', 'limit'],
+            findAll: ['filter', 'columns', 'withRelated'],
             edit: ['importing']
         };
 

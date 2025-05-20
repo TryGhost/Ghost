@@ -163,7 +163,7 @@ const NewsletterOverview:React.FC = () => {
                             {topLinks.length > 0
                                 ?
                                 <TableBody>
-                                    {topLinks.map((row) => {
+                                    {topLinks.slice(0, 5).map((row) => {
                                         return (
                                             <TableRow key={row.link.link_id}>
                                                 <TableCell className='max-w-0 group-hover:!bg-transparent'>

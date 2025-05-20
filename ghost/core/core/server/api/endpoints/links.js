@@ -9,8 +9,7 @@ const controller = {
             cacheInvalidate: false
         },
         options: [
-            'filter',
-            'limit'
+            'filter'
         ],
         permissions: true,
         async query(frame) {
