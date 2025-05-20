@@ -504,6 +504,10 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Check Docker Hub Rate Limits
+        run: |
+          curl --head -H "Authorization: Bearer ${{ secrets.DOCKERHUB_TOKEN }}" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest
+
       - uses: tryghost/mysql-action@main
         if: matrix.env.DB == 'mysql8'
         timeout-minutes: 3
