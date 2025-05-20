@@ -1,9 +1,8 @@
 import Customizer, {COLOR_OPTIONS, type ColorOption, type FontSize, useCustomizerSettings} from './Customizer';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import getUsername from '../../../utils/get-username';
-import {Skeleton} from '@tryghost/shade';
+import {LoadingIndicator, Skeleton} from '@tryghost/shade';
 
-import {LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../../utils/render-timestamp';
 import {usePostForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
 

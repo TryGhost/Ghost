@@ -1,8 +1,7 @@
 import APAvatar from '@src/components/global/APAvatar';
 import Layout from '@src/components/layout';
 import React, {useState} from 'react';
-import {Button, H2, H3, LucideIcon} from '@tryghost/shade';
-import {LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {Button, H2, H3, LoadingIndicator, LucideIcon} from '@tryghost/shade';
 import {useFollowMutationForUser, useSearchForUser} from '@hooks/use-activity-pub-queries';
 import {useLocation} from '@tryghost/admin-x-framework';
 

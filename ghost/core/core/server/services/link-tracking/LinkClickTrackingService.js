@@ -36,7 +36,7 @@ const moment = require('moment');
 /**
  * @typedef {object} IPostLinkRepository
  * @prop {(postLink: PostLink) => Promise<void>} save
- * @prop {({filter: string}) => Promise<FullPostLink[]>} getAll
+ * @prop {(options: {filter: string}) => Promise<FullPostLink[]>} getAll
  * @prop {(linkIds: array, data, options) => Promise<FullPostLink[]>} updateLinks
  */
 
@@ -88,12 +88,12 @@ class LinkClickTrackingService {
 
     /**
      * @param {object} options
-     * @param {string} options.filter
+     * @param {string} [options.filter]
      * @return {Promise<FullPostLink[]>}
      */
-    async getLinks(options) {
+    async getLinks(options = {}) {
         return await this.#postLinkRepository.getAll({
-            filter: options.filter
+            filter: options.filter || ''
         });
     }
 

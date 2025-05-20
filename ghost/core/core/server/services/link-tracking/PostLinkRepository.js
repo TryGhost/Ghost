@@ -28,13 +28,27 @@ module.exports = class PostLinkRepository {
      * @returns {Promise<InstanceType<FullPostLink>[]>}
      */
     async getAll(options) {
-        const collection = await this.#LinkRedirect.findAll({...options, withRelated: ['count.clicks']});
+        // Create a collection with applied filters
+        const itemCollection = this.#LinkRedirect.forge();
+        
+        // Apply default and custom filters from the options
+        if (options.filter) {
+            itemCollection.applyDefaultAndCustomFilters({filter: options.filter});
+        }
+        
+        // Apply ordering
+        itemCollection.query((qb) => {
+            qb.orderByRaw('`count__clicks` DESC, `to` DESC');
+        });
+        
+        // Fetch the collection with the applied query modifications
+        const collection = await itemCollection.fetchAll({withRelated: ['count.clicks']});
 
         const result = [];
 
         for (const model of collection.models) {
             const link = this.#linkRedirectRepository.fromModel(model);
-
+            
             result.push(
                 new FullPostLink({
                     post_id: model.get('post_id'),
@@ -45,7 +59,7 @@ module.exports = class PostLinkRepository {
                 })
             );
         }
-
+        
         return result;
     }
 

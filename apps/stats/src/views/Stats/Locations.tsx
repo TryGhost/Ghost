@@ -7,10 +7,10 @@ import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn, formatNumber, formatQueryDate} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn, formatNumber, formatQueryDate, getCountryFlag, getRangeDates} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
-import {getCountryFlag, getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
+import {getPeriodText} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
@@ -18,6 +18,28 @@ import {useQuery} from '@tinybirdco/charts';
 countries.registerLocale(enLocale);
 const getCountryName = (label: string) => {
     return STATS_LABEL_MAPPINGS[label as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(label, 'en') || 'Unknown';
+};
+
+// Normalize country code for flag display
+const normalizeCountryCode = (code: string): string => {
+    // Common mappings for countries that might come through with full names
+    const mappings: Record<string, string> = {
+        'UNITED STATES': 'US',
+        'UNITED STATES OF AMERICA': 'US',
+        USA: 'US',
+        'UNITED KINGDOM': 'GB',
+        UK: 'GB',
+        'GREAT BRITAIN': 'GB',
+        NETHERLANDS: 'NL'
+    };
+    
+    const upperCode = code.toUpperCase();
+    return mappings[upperCode] || (code.length > 2 ? code.substring(0, 2) : code);
+};
+
+// Wrapper for getCountryFlag that normalizes the country code first
+const getSafeCountryFlag = (code: string): string => {
+    return getCountryFlag(normalizeCountryCode(code));
 };
 
 interface TooltipData {
@@ -137,14 +159,13 @@ const Locations:React.FC = () => {
     const handleLocationMouseOver = (e: React.MouseEvent<SVGPathElement>) => {
         const target = e.target as SVGPathElement;
         const countryCode = target.getAttribute('id')?.toUpperCase() || '';
-        const countryName = target.getAttribute('name') || '';
         const countryData = transformedData[countryCode];
 
         target.style.opacity = '0.75';
 
         setTooltipData({
             countryCode,
-            countryName,
+            countryName: getCountryName(countryCode),
             visits: countryData ? Number(countryData.visits) : 0,
             x: e.clientX,
             y: e.clientY
@@ -187,7 +208,7 @@ const Locations:React.FC = () => {
                                     }}
                                 >
                                     <div className="flex gap-1">
-                                        <span>{getCountryFlag(tooltipData.countryCode)}</span>
+                                        <span>{getSafeCountryFlag(tooltipData.countryCode)}</span>
                                         <span className="font-medium">{tooltipData.countryName}</span>
                                     </div>
                                     <div className='flex grow items-center justify-between gap-3'>
@@ -212,7 +233,7 @@ const Locations:React.FC = () => {
                                             return (
                                                 <TableRow key={row.location || 'unknown'}>
                                                     <TableCell className="font-medium">
-                                                        <span title={countryName || 'Unknown'}>{getCountryFlag(`${row.location}`)} {countryName}</span>
+                                                        <span title={countryName || 'Unknown'}>{getSafeCountryFlag(`${row.location}`)} {countryName}</span>
                                                     </TableCell>
                                                     <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
                                                 </TableRow>

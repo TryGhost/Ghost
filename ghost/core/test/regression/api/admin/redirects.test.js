@@ -31,8 +31,7 @@ describe('Redirects API', function () {
                 return startGhost({
                     frontend: true,
                     redirectsFile: false,
-                    contentFolder: contentFolder,
-                    forceStart: true
+                    contentFolder: contentFolder
                 })
                     .then(() => {
                         return request

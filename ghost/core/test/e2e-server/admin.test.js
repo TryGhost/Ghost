@@ -84,7 +84,7 @@ describe('Admin Routing', function () {
             configUtils.set('url', 'https://localhost:2390');
             urlUtils.stubUrlUtilsFromConfig();
 
-            await testUtils.startGhost({forceStart: true});
+            await testUtils.startGhost();
             request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
         });
 

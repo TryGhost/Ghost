@@ -8,9 +8,13 @@ import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
-    const hasEmailCustomization = useFeatureFlag('emailCustomization');
+    const hasEmailCustomizationFlag = useFeatureFlag('emailCustomization');
+    const hasEmailCustomizationAlphaFlag = useFeatureFlag('emailCustomizationAlpha');
+    const hasEmailCustomizationPrototypeFlag = useFeatureFlag('emailCustomizationPrototype');
     const {currentUser, settings, siteData, config} = useGlobalData();
     const [title, icon, commentsEnabled, supportEmailAddress, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'icon', 'comments_enabled', 'support_email_address', 'default_email_address']);
+
+    const hasEmailCustomization = hasEmailCustomizationFlag || hasEmailCustomizationAlphaFlag || hasEmailCustomizationPrototypeFlag;
 
     let headerTitle: string | null = null;
     if (newsletter.show_header_title) {
@@ -131,6 +135,22 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         return textColorForBackgroundColor(backgroundColor()).hex();
     };
 
+    const sectionTitleColor = () => {
+        const value = newsletter.section_title_color;
+
+        const validHex = /#([0-9a-f]{3}){1,2}$/i;
+
+        if (validHex.test(value || '')) {
+            return value;
+        }
+
+        if (value === 'accent') {
+            return siteData.accent_color;
+        }
+
+        return textColorForBackgroundColor(backgroundColor()).hex();
+    };
+
     const dividerColor = () => {
         const value = newsletter.divider_color;
 
@@ -159,6 +179,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         borderColor: borderColor() || undefined,
         secondaryBorderColor,
         titleColor: titleColor() || undefined,
+        sectionTitleColor: sectionTitleColor() || undefined,
         buttonColor: buttonColor() || undefined,
         linkColor: linkColor() || undefined,
         dividerColor: dividerColor() || undefined,

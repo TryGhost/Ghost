@@ -5,6 +5,9 @@ export {FrameworkProvider, useFramework} from './providers/FrameworkProvider';
 // Stats utilities
 export {getStatEndpointUrl, getToken} from './utils/stats-config';
 
+// Post utilities
+export {hasBeenEmailed} from './utils/post-utils';
+
 // Routing
 export type {RouteObject} from 'react-router';
 export type {RouterProviderProps} from './providers/RouterProvider';

@@ -322,9 +322,26 @@ class EmailRenderer {
             postUrl
         };
 
-        if (this.getLabs()?.isSet('emailCustomizationAlpha')) {
+        const labs = this.getLabs();
+
+        if (labs && (labs.isSet('emailCustomization') || labs.isSet('emailCustomizationAlpha'))) {
+            renderOptions.design = {};
+        }
+
+        if (labs && labs.isSet('emailCustomization')) {
             renderOptions.design = {
+                ...renderOptions.design,
                 buttonCorners: newsletter?.get('button_corners')
+            };
+        }
+
+        if (labs && labs.isSet('emailCustomizationAlpha')) {
+            renderOptions.design = {
+                ...renderOptions.design,
+                titleFontWeight: newsletter?.get('title_font_weight'),
+                buttonStyle: newsletter?.get('button_style'),
+                linkStyle: newsletter?.get('link_style'),
+                imageCorners: newsletter?.get('image_corners')
             };
         }
 
@@ -960,6 +977,78 @@ class EmailRenderer {
         return textColorForBackgroundColor(backgroundColor).hex();
     }
 
+    #getTitleWeight(newsletter) {
+        const weights = {
+            normal: '400',
+            medium: '500',
+            semibold: '600',
+            bold: '700'
+        };
+
+        const labs = this.getLabs();
+        if (!labs.isSet('emailCustomizationAlpha')) {
+            return weights.bold;
+        }
+
+        /** @type {'normal' | 'medium' | 'semibold' | 'bold' | string | null} */
+        const settingValue = newsletter.get('title_font_weight');
+
+        return weights[settingValue] || weights.bold;
+    }
+
+    #getTitleStrongWeight(titleWeight) {
+        const numericWeight = parseInt(titleWeight, 10);
+
+        if (isNaN(numericWeight) || !this.#labs.isSet('emailCustomizationAlpha')) {
+            return '800';
+        }
+
+        // when titleWeight has been set to less than bold,
+        // reduce boldness of strong to match our other strong text
+        if (numericWeight < 700) {
+            return '700';
+        } else {
+            return '800';
+        }
+    }
+
+    #getLinkStyles(newsletter) {
+        const labs = this.getLabs();
+
+        if (!labs.isSet('emailCustomizationAlpha')) {
+            return 'text-decoration: underline;';
+        }
+
+        /** @type {'underline' | 'regular' | 'bold' | string | null} */
+        const settingValue = newsletter.get('link_style');
+
+        if (settingValue === 'regular') {
+            return 'text-decoration: none;';
+        } else if (settingValue === 'bold') {
+            return 'text-decoration: none; font-weight: 700;';
+        } else {
+            return 'text-decoration: underline;';
+        }
+    }
+
+    #getImageCorners(newsletter) {
+        /** @type {'rounded' | string | null} */
+        const value = newsletter.get('image_corners');
+
+        // we need to convert the value to plain css value
+        // eg border-radius: 10px;
+
+        if (value === 'rounded') {
+            return 'border-radius: 6px;';
+        }
+
+        if (value === 'square') {
+            return 'border-radius: 0;';
+        }
+
+        return null;
+    }
+
     /**
      * @private
      */
@@ -982,18 +1071,27 @@ class EmailRenderer {
         const borderColor = this.#getBorderColor(newsletter, accentColor);
         const secondaryBorderColor = textColorForBackgroundColor(backgroundColor).alpha(0.12).toString();
         const titleColor = this.#getTitleColor(newsletter, accentColor);
+        const titleWeight = this.#getTitleWeight(newsletter);
+        const titleStrongWeight = this.#getTitleStrongWeight(titleWeight);
         const textColor = textColorForBackgroundColor(backgroundColor).hex();
         const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
         const linkColor = backgroundIsDark ? '#ffffff' : accentColor;
+        const linkStyles = this.#getLinkStyles(newsletter);
+        const imageCorners = this.#getImageCorners(newsletter);
 
         let buttonBorderRadius = '6px';
 
-        if (labs.isSet('emailCustomizationAlpha')) {
+        if (labs.isSet('emailCustomization')) {
             if (newsletter.get('button_corners') === 'square') {
                 buttonBorderRadius = '0';
             } else if (newsletter.get('button_corners') === 'pill') {
                 buttonBorderRadius = '9999px';
             }
+        }
+
+        let hasOutlineButtons = false;
+        if (labs.isSet('emailCustomizationAlpha') && newsletter.get('button_style') === 'outline') {
+            hasOutlineButtons = true;
         }
 
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
@@ -1130,14 +1228,18 @@ class EmailRenderer {
             adjustedAccentColor: adjustedAccentColor || '#3498db', // default to #3498db
             adjustedAccentContrastColor: adjustedAccentContrastColor || '#ffffff', // default to #ffffff
             showBadge: newsletter.get('show_badge'),
-            backgroundColor: backgroundColor,
-            backgroundIsDark: backgroundIsDark,
-            borderColor: borderColor,
-            secondaryBorderColor: secondaryBorderColor,
-            titleColor: titleColor,
-            textColor: textColor,
-            secondaryTextColor: secondaryTextColor,
-            linkColor: linkColor,
+            backgroundColor,
+            backgroundIsDark,
+            borderColor,
+            secondaryBorderColor,
+            titleColor,
+            titleWeight,
+            titleStrongWeight,
+            textColor,
+            secondaryTextColor,
+            linkColor,
+            linkStyles,
+            imageCorners,
             buttonBorderRadius,
 
             headerImage,
@@ -1149,6 +1251,7 @@ class EmailRenderer {
             showHeaderName: newsletter.get('show_header_name'),
             showFeatureImage: newsletter.get('show_feature_image') && !!postFeatureImage,
             footerContent: newsletter.get('footer_content'),
+            hasOutlineButtons,
 
             classes: {
                 title: 'post-title' + ` ` + (post.get('custom_excerpt') ? 'post-title-with-excerpt' : 'post-title-no-excerpt') + (newsletter.get('title_font_category') === 'serif' ? ` post-title-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-title-left` : ``),

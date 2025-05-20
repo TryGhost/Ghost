@@ -111,7 +111,7 @@ describe('Unit - apps/amp/lib/router', function () {
 
             urlServiceGetPermalinkByUrlStub.withArgs('/welcome/').returns('/:slug/');
 
-            dataService.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}})
+            entryLookupStub.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}})
                 .resolves({
                     entry: post
                 });
@@ -128,7 +128,7 @@ describe('Unit - apps/amp/lib/router', function () {
 
             urlServiceGetPermalinkByUrlStub.withArgs('/welcome/').returns('/:slug/');
 
-            dataService.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}}).resolves({
+            entryLookupStub.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}}).resolves({
                 entry: post
             });
 
@@ -143,7 +143,7 @@ describe('Unit - apps/amp/lib/router', function () {
 
             urlServiceGetPermalinkByUrlStub.withArgs('/welcome/').returns('/:slug/');
 
-            dataService.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}})
+            entryLookupStub.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}})
                 .rejects(new errors.NotFoundError());
 
             ampController.getPostData(req, res, function (err) {

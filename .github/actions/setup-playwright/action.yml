@@ -1,0 +1,33 @@
+name: "Setup Playwright"
+description: "Setup Playwright."
+
+runs:
+  using: "composite"
+  steps:
+    - name: Disable man-db trigger refreshes (https://github.com/actions/runner-images/issues/10977)
+      shell: bash
+      run: |
+        echo 'set man-db/auto-update false' | sudo debconf-communicate >/dev/null
+        sudo dpkg-reconfigure man-db
+
+    - name: Get Playwright version
+      id: playwright-version
+      shell: bash
+      run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
+
+    - uses: actions/cache@v4
+      name: Check if Playwright browser is cached
+      id: playwright-cache
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
+
+    - name: Install Playwright browser if not cached
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: npx playwright install --with-deps
+
+    - name: Install OS dependencies of Playwright if cache hit
+      if: steps.playwright-cache.outputs.cache-hit == 'true'
+      shell: bash
+      run: npx playwright install-deps

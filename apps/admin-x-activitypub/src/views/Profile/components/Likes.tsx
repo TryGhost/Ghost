@@ -1,7 +1,7 @@
 import FeedItem from '@src/components/feed/FeedItem';
 import {Activity} from '@src/api/activitypub';
-import {LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
-import {Separator} from '@tryghost/shade';
+import {LoadingIndicator, Separator} from '@tryghost/shade';
+import {NoValueLabel} from '@tryghost/admin-x-design-system';
 import {useEffect, useRef} from 'react';
 import {useNavigate} from '@tryghost/admin-x-framework';
 

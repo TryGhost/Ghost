@@ -15,6 +15,7 @@ describe('StripeAPI', function () {
     const api = new StripeAPI({labs: mockLabs});
 
     let mockStripe;
+    let mockLabsIsSet;
 
     describe('createCheckoutSession', function () {
         beforeEach(function () {
@@ -25,7 +26,7 @@ describe('StripeAPI', function () {
                     }
                 }
             };
-            sinon.stub(mockLabs, 'isSet');
+            mockLabsIsSet = sinon.stub(mockLabs, 'isSet');
             const mockStripeConstructor = sinon.stub().returns(mockStripe);
             StripeAPI.__set__('Stripe', mockStripeConstructor);
             api.configure({
@@ -48,7 +49,7 @@ describe('StripeAPI', function () {
         });
 
         it('Sends no payment methods if labs flag is enabled', async function () {
-            mockLabs.isSet.withArgs('additionalPaymentMethods').returns(true);
+            mockLabsIsSet.withArgs('additionalPaymentMethods').returns(true);
             await api.createCheckoutSession('priceId', null, {});
 
             should.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.payment_method_types, undefined);
@@ -192,7 +193,7 @@ describe('StripeAPI', function () {
                     }
                 }
             };
-            sinon.stub(mockLabs, 'isSet');
+            mockLabsIsSet = sinon.stub(mockLabs, 'isSet');
             const mockStripeConstructor = sinon.stub().returns(mockStripe);
             StripeAPI.__set__('Stripe', mockStripeConstructor);
             api.configure({
@@ -216,14 +217,14 @@ describe('StripeAPI', function () {
         });
 
         it('createCheckoutSetupSession does not send currency if additionalPaymentMethods flag is off', async function () {
-            mockLabs.isSet.withArgs('additionalPaymentMethods').returns(false);
+            mockLabsIsSet.withArgs('additionalPaymentMethods').returns(false);
             await api.createCheckoutSetupSession('priceId', {currency: 'usd'});
 
             should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.currency);
         });
 
         it('createCheckoutSetupSession sends currency if additionalPaymentMethods flag is on', async function () {
-            mockLabs.isSet.withArgs('additionalPaymentMethods').returns(true);
+            mockLabsIsSet.withArgs('additionalPaymentMethods').returns(true);
             await api.createCheckoutSetupSession('priceId', {currency: 'usd'});
 
             should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.currency, 'usd');
@@ -382,8 +383,8 @@ describe('StripeAPI', function () {
                         create: sinon.stub().resolves()
                     }
                 };
-                sinon.stub(mockLabs, 'isSet');
-                mockLabs.isSet.withArgs('stripeAutomaticTax').returns(true);
+                mockLabsIsSet = sinon.stub(mockLabs, 'isSet');
+                mockLabsIsSet.withArgs('stripeAutomaticTax').returns(true);
                 const mockStripeConstructor = sinon.stub().returns(mockStripe);
                 StripeAPI.__set__('Stripe', mockStripeConstructor);
                 api.configure({
@@ -475,7 +476,7 @@ describe('StripeAPI', function () {
             });
 
             it('createDonationCheckoutSession does not send currency if additionalPaymentMethods flag is off', async function () {
-                mockLabs.isSet.withArgs('additionalPaymentMethods').returns(false);
+                mockLabsIsSet.withArgs('additionalPaymentMethods').returns(false);
                 await api.createDonationCheckoutSession('priceId', {currency: 'usd'});
 
                 should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.currency);

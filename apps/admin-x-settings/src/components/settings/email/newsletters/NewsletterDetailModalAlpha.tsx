@@ -91,6 +91,13 @@ const Sidebar: React.FC<{
         {value: 'sans_serif', label: 'Clean sans-serif'}
     ];
 
+    const fontWeightOptions: SelectOption[] = [
+        {value: 'normal', label: 'Normal'},
+        {value: 'medium', label: 'Medium'},
+        {value: 'semibold', label: 'Semi-bold'},
+        {value: 'bold', label: 'Bold'}
+    ];
+
     const confirmStatusChange = async () => {
         if (newsletter.status === 'active') {
             NiceModal.show(ConfirmationModal, {
@@ -367,6 +374,12 @@ const Sidebar: React.FC<{
                         onSelect={option => updateNewsletter({title_font_category: option?.value})}
                     />
                     <Select
+                        options={fontWeightOptions}
+                        selectedOption={fontWeightOptions.find(option => option.value === newsletter.title_font_weight)}
+                        title='Heading weight'
+                        onSelect={option => updateNewsletter({title_font_weight: option?.value})}
+                    />
+                    <Select
                         options={fontOptions}
                         selectedOption={fontOptions.find(option => option.value === newsletter.body_font_category)}
                         testId='body-font-select'
@@ -404,6 +417,31 @@ const Sidebar: React.FC<{
                         ]} clearBg={false} />
                     </div>
                     <div className='flex w-full justify-between'>
+                        <div>Button style</div>
+                        <ButtonGroup activeKey={newsletter.button_style || 'fill'} buttons={[
+                            {
+                                key: 'fill',
+                                icon: 'squircle-fill',
+                                label: 'Fill',
+                                tooltip: 'Fill',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({button_style: 'fill'})
+                            },
+                            {
+                                key: 'outline',
+                                icon: 'squircle',
+                                label: 'Outline',
+                                tooltip: 'Outline',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({button_style: 'outline'})
+                            }
+                        ]} clearBg={false} />
+                    </div>
+                    <div className='flex w-full justify-between'>
                         <div>Button corners</div>
                         <ButtonGroup activeKey={newsletter.button_corners || 'rounded'} buttons={[
                             {
@@ -435,6 +473,66 @@ const Sidebar: React.FC<{
                                 link: false,
                                 size: 'sm',
                                 onClick: () => updateNewsletter({button_corners: 'pill'})
+                            }
+                        ]} clearBg={false} />
+                    </div>
+                    <div className='flex w-full justify-between'>
+                        <div>Image corners</div>
+                        <ButtonGroup activeKey={newsletter.image_corners || 'square'} buttons={[
+                            {
+                                key: 'square',
+                                icon: 'square',
+                                label: 'Square',
+                                tooltip: 'Squared',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({image_corners: 'square'})
+                            },
+                            {
+                                key: 'rounded',
+                                icon: 'squircle',
+                                label: 'Rounded',
+                                tooltip: 'Rounded',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({image_corners: 'rounded'})
+                            }
+                        ]} clearBg={false} />
+                    </div>
+                    <div className='flex w-full justify-between'>
+                        <div>Link style</div>
+                        <ButtonGroup activeKey={newsletter.link_style || 'underline'} buttons={[
+                            {
+                                key: 'underline',
+                                icon: 'text-underline',
+                                label: 'Underline',
+                                tooltip: 'Underline',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({link_style: 'underline'})
+                            },
+                            {
+                                key: 'regular',
+                                icon: 'text-regular',
+                                label: 'Regular',
+                                tooltip: 'Regular',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({link_style: 'regular'})
+                            },
+                            {
+                                key: 'bold',
+                                icon: 'text-bold',
+                                label: 'Bold',
+                                tooltip: 'Bold',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({link_style: 'bold'})
                             }
                         ]} clearBg={false} />
                     </div>

@@ -4,11 +4,11 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import articleBodyStyles from '../articleBodyStyles';
 import getUsername from '../../utils/get-username';
+import {LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Skeleton} from '@tryghost/shade';
 import {OptionProps, SingleValueProps, components} from 'react-select';
-import {Popover, PopoverContent, PopoverTrigger, Skeleton} from '@tryghost/shade';
 
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Icon, LoadingIndicator, Modal, Select, SelectOption} from '@tryghost/admin-x-design-system';
+import {Button, Icon, Modal, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useFocusedState} from '@components/global/APReplyBox';
 import {useModal} from '@ebay/nice-modal-react';

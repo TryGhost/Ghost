@@ -11,7 +11,7 @@ describe('Site id middleware execution', function () {
             configUtils.set('hostSettings:siteId', '123123');
 
             // Ensure we do a forced start so that spy is in place when the server starts
-            await testUtils.startGhost({forceStart: true});
+            await testUtils.startGhost();
 
             request = supertest.agent(configUtils.config.get('url'));
         });
@@ -82,7 +82,7 @@ describe('Site id middleware execution', function () {
             configUtils.set('hostSettings:siteId', undefined);
 
             // Ensure we do a forced start so that spy is in place when the server starts
-            await testUtils.startGhost({forceStart: true});
+            await testUtils.startGhost();
 
             request = supertest.agent(configUtils.config.get('url'));
         });

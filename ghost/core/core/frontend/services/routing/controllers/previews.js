@@ -27,7 +27,6 @@ module.exports = function previewController(req, res, next) {
         .read(params)
         .then(function then(result) {
             const post = result[res.routerOptions.query.resource][0];
-
             if (!post) {
                 return next();
             }
@@ -59,8 +58,6 @@ module.exports = function previewController(req, res, next) {
             if (post.status === 'sent') {
                 return urlUtils.redirect301(res, urlUtils.urlJoin('/email', post.uuid, '/'));
             }
-
-            post.access = !!post.html;
 
             return renderer.renderEntry(req, res)(post);
         })

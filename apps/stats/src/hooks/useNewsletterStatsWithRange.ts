@@ -1,6 +1,6 @@
 import {getRangeDates} from './useGrowthStats';
 import {useMemo} from 'react';
-import {useNewsletterStats, useSubscriberCount} from '@tryghost/admin-x-framework/api/stats';
+import {useNewsletterStatsByNewsletterId, useSubscriberCountByNewsletterId} from '@tryghost/admin-x-framework/api/stats';
 
 /**
  * Represents the possible fields to order top newsletters by.
@@ -13,29 +13,22 @@ export type TopNewslettersOrder = 'date desc' | 'open_rate desc' | 'click_rate d
  *
  * @param range - The number of days for the date range (e.g., 7, 30, 90). Defaults to 30.
  * @param order - The field and direction to order by (e.g., 'open_rate desc'). Defaults to 'date desc'.
+ * @param newsletterId - Optional ID of the specific newsletter to get stats for
  */
-export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslettersOrder) => {
+export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslettersOrder, newsletterId?: string) => {
     // Default range and order
     const currentRange = range ?? 30;
     const currentOrder = order ?? 'date desc'; // Default to date descending
 
     // Calculate date strings using the helper, memoize for stability
     const {dateFrom, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
-
-    // Construct searchParams including the order parameter
-    const searchParams = {
+    
+    // Call the hook with the parameters
+    return useNewsletterStatsByNewsletterId(newsletterId, {
         date_from: dateFrom,
         date_to: endDate,
         order: currentOrder
-    };
-
-    // Filter out undefined values
-    const filteredSearchParams = Object.fromEntries(
-        Object.entries(searchParams).filter(([, value]) => value !== undefined)
-    );
-    
-    // Call the hook with the filtered parameters
-    return useNewsletterStats({searchParams: filteredSearchParams});
+    });
 };
 
 /**
@@ -43,25 +36,18 @@ export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslette
  * to API query parameters.
  * 
  * @param range - The number of days for the date range (e.g., 7, 30, 90). Defaults to 30.
+ * @param newsletterId - Optional ID of the specific newsletter to get stats for
  */
-export const useSubscriberCountWithRange = (range?: number) => {
+export const useSubscriberCountWithRange = (range?: number, newsletterId?: string) => {
     // Default range
     const currentRange = range ?? 30;
 
     // Calculate date strings using the helper, memoize for stability
     const {dateFrom, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
-
-    // Construct searchParams for date range
-    const searchParams = {
+    
+    // Call the hook with the parameters
+    return useSubscriberCountByNewsletterId(newsletterId, {
         date_from: dateFrom,
         date_to: endDate
-    };
-
-    // Filter out undefined values
-    const filteredSearchParams = Object.fromEntries(
-        Object.entries(searchParams).filter(([, value]) => value !== undefined)
-    );
-    
-    // Call the hook with the filtered parameters
-    return useSubscriberCount({searchParams: filteredSearchParams});
+    });
 }; 
