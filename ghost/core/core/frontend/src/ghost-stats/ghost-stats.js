@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import timezoneData from '@tryghost/timezone-data';
+import { getCountryForTimezone } from 'countries-and-timezones';
 import { getReferrer, parseReferrer } from '../utils/url-attribution';
 import { getSessionId, setSessionId, getStorageObject } from '../utils/session-storage';
 import { processPayload } from '../utils/privacy';
@@ -137,14 +137,19 @@ import { processPayload } from '../utils/privacy';
      */
     function _getLocationInfo() {
         try {
-            // Get timezone and map to country
+            // Get timezone from browser
             const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            const country = timezone ? timezoneData[timezone] : null;
+            
+            // Get country from timezone using countries-and-timezones
+            const countryData = timezone ? getCountryForTimezone(timezone) : null;
             
             // Get locale, falling back gracefully
             const locale = navigator.languages?.[0] || navigator.language || 'en';
             
-            return { country, locale };
+            return { 
+                country: countryData ? countryData.name : null,  // Returns full country name like "United States of America"
+                locale 
+            };
         } catch (error) {
             return { country: null, locale: 'en' };
         }
