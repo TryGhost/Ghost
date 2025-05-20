@@ -1,9 +1,8 @@
 import EditProfile from './EditProfile';
 import React, {useState} from 'react';
 import {Account} from '@src/api/activitypub';
-import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LucideIcon, cn} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
 import {Link, useNavigate} from '@tryghost/admin-x-framework';
-import {LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {useSearchForUser} from '@hooks/use-activity-pub-queries';
 
 interface SettingsProps {

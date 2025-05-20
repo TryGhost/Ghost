@@ -2,7 +2,8 @@ import React, {useEffect, useRef, useState} from 'react';
 
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 
-import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView, useDesignSystem} from '@tryghost/admin-x-design-system';
+import {Button, Heading, Icon, List, Modal, NoValueLabel, Tab,TabView, useDesignSystem} from '@tryghost/admin-x-design-system';
+import {LoadingIndicator} from '@tryghost/shade';
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
 import {useAccountFollowsForUser, useAccountForUser, usePostsByAccount} from '@hooks/use-activity-pub-queries';
 
@@ -208,7 +209,7 @@ const useAccountFollowsQuery = (handle: string, type: AccountFollowsType) => {
 
 const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
     const queryFn = useAccountFollowsQuery(handle, 'following');
-    
+
     return (
         <ActorList
             handle={handle}
@@ -221,7 +222,7 @@ const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
 
 const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
     const queryFn = useAccountFollowsQuery(handle, 'followers');
-    
+
     return (
         <ActorList
             handle={handle}
@@ -248,7 +249,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
     const modal = useModal();
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
     const {darkMode} = useDesignSystem();
-    
+
     const {data: profile, isLoading} = useAccountForUser('index', handle);
 
     const attachments = profile?.attachment || [];
