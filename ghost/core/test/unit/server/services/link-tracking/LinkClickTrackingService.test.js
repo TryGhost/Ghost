@@ -37,8 +37,8 @@ describe('LinkClickTrackingService', function () {
             });
             const links = await service.getLinks({filter: 'post_id:1'});
 
-            // Check called with filter
-            assert.ok(getAll.calledOnceWithExactly({filter: 'post_id:1'}));
+            // Check called with filter and empty limit
+            assert.ok(getAll.calledOnceWithExactly({filter: 'post_id:1', limit: undefined}));
 
             // Check returned value
             assert.deepEqual(links, ['test']);

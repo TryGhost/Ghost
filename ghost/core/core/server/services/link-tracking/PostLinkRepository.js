@@ -28,7 +28,29 @@ module.exports = class PostLinkRepository {
      * @returns {Promise<InstanceType<FullPostLink>[]>}
      */
     async getAll(options) {
-        const collection = await this.#LinkRedirect.findAll({...options, withRelated: ['count.clicks']});
+        // Create a collection with applied filters
+        const itemCollection = this.#LinkRedirect.forge();
+        
+        // Apply default and custom filters from the options
+        if (options.filter) {
+            itemCollection.applyDefaultAndCustomFilters({filter: options.filter});
+        }
+        
+        // Apply ordering
+        itemCollection.query((qb) => {
+            qb.orderByRaw('`count__clicks` DESC, `to` DESC');
+        });
+        
+        // Apply limit directly to the query if provided
+        if (options.limit) {
+            const limitNumber = parseInt(options.limit, 10);
+            if (!isNaN(limitNumber) && limitNumber > 0) {
+                itemCollection.query('limit', limitNumber);
+            }
+        }
+        
+        // Fetch the collection with the applied query modifications
+        const collection = await itemCollection.fetchAll({withRelated: ['count.clicks']});
 
         const result = [];
 

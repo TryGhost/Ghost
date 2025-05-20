@@ -150,14 +150,15 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid,email,status'
+            fields: 'title,slug,published_at,uuid,status',
+            include: 'email'
         }
     });
 
     const typedPost = post as Post;
     // Use the utility function from admin-x-framework
     const showNewsletterSection = hasBeenEmailed(typedPost);
-
+    
     useEffect(() => {
         // Redirect to overview if the post wasn't sent as a newsletter
         if (!isPostLoading && !showNewsletterSection) {
