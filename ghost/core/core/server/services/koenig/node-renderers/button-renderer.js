@@ -36,7 +36,7 @@ function emailTemplate(node, options, document) {
     const {buttonUrl, buttonText} = node;
 
     let cardHtml;
-    if (options.feature?.emailCustomizationAlpha) {
+    if (options.feature?.emailCustomization) {
         cardHtml = html`
         <table border="0" cellpadding="0" cellspacing="0">
             <tr>

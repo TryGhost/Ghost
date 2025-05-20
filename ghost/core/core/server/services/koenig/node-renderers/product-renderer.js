@@ -89,7 +89,7 @@ export function emailCardTemplate({data, feature}) {
         }
     }
 
-    if (feature?.emailCustomizationAlpha) {
+    if (feature?.emailCustomization || feature?.emailCustomizationAlpha) {
         return (
             `
             <table class="kg-product-card" cellspacing="0" cellpadding="0" border="0">
