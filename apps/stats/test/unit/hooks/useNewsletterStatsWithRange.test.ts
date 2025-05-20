@@ -2,10 +2,12 @@ import {type MockedFunction, vi} from 'vitest';
 
 // Setup mocks with vi.mock calls to ensure proper hoisting
 vi.mock('@tryghost/admin-x-framework/api/stats', () => ({
-    useNewsletterStats: vi.fn().mockReturnValue({isLoading: false, data: []}),
-    useSubscriberCount: vi.fn().mockReturnValue({isLoading: false, data: []}),
     useMemberCountHistory: vi.fn().mockReturnValue({isLoading: false, data: []}),
     useMrrHistory: vi.fn().mockReturnValue({isLoading: false, data: []}),
+    useNewsletterStats: vi.fn().mockReturnValue({isLoading: false, data: []}),
+    useNewsletterStatsByNewsletterId: vi.fn().mockReturnValue({isLoading: false, data: []}),
+    useSubscriberCount: vi.fn().mockReturnValue({isLoading: false, data: []}),
+    useSubscriberCountByNewsletterId: vi.fn().mockReturnValue({isLoading: false, data: []}),
     useTopPostsStats: vi.fn().mockReturnValue({isLoading: false, data: []})
 }));
 
@@ -40,7 +42,10 @@ vi.mock('react', () => {
 
 // Now import the actual modules being tested
 import {getRangeDates} from '../../../src/hooks/useGrowthStats';
-import {useNewsletterStats, useSubscriberCount} from '@tryghost/admin-x-framework/api/stats';
+import {
+    useNewsletterStatsByNewsletterId,
+    useSubscriberCountByNewsletterId
+} from '@tryghost/admin-x-framework/api/stats';
 import {useNewsletterStatsWithRange, useSubscriberCountWithRange} from '../../../src/hooks/useNewsletterStatsWithRange';
 
 // Define TypeScript interface for mocked function return values
@@ -51,9 +56,9 @@ interface DateRange {
 
 describe('Newsletter Stats Hooks with Range', function () {
     // Setup type for mocked functions
-    const mockUseNewsletterStats = useNewsletterStats as MockedFunction<typeof useNewsletterStats>;
-    const mockUseSubscriberCount = useSubscriberCount as MockedFunction<typeof useSubscriberCount>;
     const mockGetRangeDates = getRangeDates as MockedFunction<typeof getRangeDates>;
+    const mockUseNewsletterStatsByNewsletterId = useNewsletterStatsByNewsletterId as MockedFunction<typeof useNewsletterStatsByNewsletterId>;
+    const mockUseSubscriberCountByNewsletterId = useSubscriberCountByNewsletterId as MockedFunction<typeof useSubscriberCountByNewsletterId>;
 
     beforeEach(function () {
         vi.resetAllMocks();
@@ -83,12 +88,10 @@ describe('Newsletter Stats Hooks with Range', function () {
             useNewsletterStatsWithRange();
 
             expect(mockGetRangeDates).toHaveBeenCalledWith(30);
-            expect(mockUseNewsletterStats).toHaveBeenCalledWith({
-                searchParams: {
-                    date_from: '2023-01-01',
-                    date_to: '2023-01-30',
-                    order: 'date desc'
-                }
+            expect(mockUseNewsletterStatsByNewsletterId).toHaveBeenCalledWith(undefined, {
+                date_from: '2023-01-01',
+                date_to: '2023-01-30',
+                order: 'date desc'
             });
         });
 
@@ -96,12 +99,10 @@ describe('Newsletter Stats Hooks with Range', function () {
             useNewsletterStatsWithRange(7);
 
             expect(mockGetRangeDates).toHaveBeenCalledWith(7);
-            expect(mockUseNewsletterStats).toHaveBeenCalledWith({
-                searchParams: {
-                    date_from: '2023-01-01',
-                    date_to: '2023-01-07',
-                    order: 'date desc'
-                }
+            expect(mockUseNewsletterStatsByNewsletterId).toHaveBeenCalledWith(undefined, {
+                date_from: '2023-01-01',
+                date_to: '2023-01-07',
+                order: 'date desc'
             });
         });
 
@@ -109,12 +110,10 @@ describe('Newsletter Stats Hooks with Range', function () {
             useNewsletterStatsWithRange(undefined, 'open_rate desc');
 
             expect(mockGetRangeDates).toHaveBeenCalledWith(30);
-            expect(mockUseNewsletterStats).toHaveBeenCalledWith({
-                searchParams: {
-                    date_from: '2023-01-01',
-                    date_to: '2023-01-30',
-                    order: 'open_rate desc'
-                }
+            expect(mockUseNewsletterStatsByNewsletterId).toHaveBeenCalledWith(undefined, {
+                date_from: '2023-01-01',
+                date_to: '2023-01-30',
+                order: 'open_rate desc'
             });
         });
 
@@ -122,12 +121,10 @@ describe('Newsletter Stats Hooks with Range', function () {
             useNewsletterStatsWithRange(90, 'click_rate desc');
 
             expect(mockGetRangeDates).toHaveBeenCalledWith(90);
-            expect(mockUseNewsletterStats).toHaveBeenCalledWith({
-                searchParams: {
-                    date_from: '2023-01-01',
-                    date_to: '2023-04-01',
-                    order: 'click_rate desc'
-                }
+            expect(mockUseNewsletterStatsByNewsletterId).toHaveBeenCalledWith(undefined, {
+                date_from: '2023-01-01',
+                date_to: '2023-04-01',
+                order: 'click_rate desc'
             });
         });
     });
@@ -137,11 +134,9 @@ describe('Newsletter Stats Hooks with Range', function () {
             useSubscriberCountWithRange();
 
             expect(mockGetRangeDates).toHaveBeenCalledWith(30);
-            expect(mockUseSubscriberCount).toHaveBeenCalledWith({
-                searchParams: {
-                    date_from: '2023-01-01',
-                    date_to: '2023-01-30'
-                }
+            expect(mockUseSubscriberCountByNewsletterId).toHaveBeenCalledWith(undefined, {
+                date_from: '2023-01-01',
+                date_to: '2023-01-30'
             });
         });
 
@@ -149,11 +144,9 @@ describe('Newsletter Stats Hooks with Range', function () {
             useSubscriberCountWithRange(7);
 
             expect(mockGetRangeDates).toHaveBeenCalledWith(7);
-            expect(mockUseSubscriberCount).toHaveBeenCalledWith({
-                searchParams: {
-                    date_from: '2023-01-01',
-                    date_to: '2023-01-07'
-                }
+            expect(mockUseSubscriberCountByNewsletterId).toHaveBeenCalledWith(undefined, {
+                date_from: '2023-01-01',
+                date_to: '2023-01-07'
             });
         });
 
@@ -161,11 +154,9 @@ describe('Newsletter Stats Hooks with Range', function () {
             useSubscriberCountWithRange(90);
 
             expect(mockGetRangeDates).toHaveBeenCalledWith(90);
-            expect(mockUseSubscriberCount).toHaveBeenCalledWith({
-                searchParams: {
-                    date_from: '2023-01-01',
-                    date_to: '2023-04-01'
-                }
+            expect(mockUseSubscriberCountByNewsletterId).toHaveBeenCalledWith(undefined, {
+                date_from: '2023-01-01',
+                date_to: '2023-04-01'
             });
         });
     });

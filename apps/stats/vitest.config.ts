@@ -14,7 +14,20 @@ export default defineConfig({
         ],
         // Use default reporter for cleaner output
         silent: false,
-        reporters: 'default'
+        reporters: 'default',
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'json', 'html'],
+            reportsDirectory: './coverage',
+            include: [
+                'src/hooks/**/*.{js,jsx,ts,tsx}',
+                'src/utils/**/*.{js,jsx,ts,tsx}'
+            ],
+            exclude: [
+                'src/**/*.d.ts'
+            ],
+            all: true
+        }
     },
     resolve: {
         alias: {
