@@ -162,7 +162,7 @@ class AdminAPITestAgent extends TestAgent {
         return this.useToken(apiKeyId, apiKeySecret);
     }
 
-    async useZapierAdminApiKey() {
+    async useZapierAdminAPIKey() {
         const {apiKeyId ,apiKeySecret} = await findIntegrationKey('zapier');
         return this.useToken(apiKeyId, apiKeySecret);
     }
