@@ -39,7 +39,7 @@ export const setupGrowthStatsMocks = (
     getRangeDatesImpl = (range: number): DateRange => ({
         dateFrom: '2023-01-01',
         endDate: range === 7 ? '2023-01-07' : 
-                range === 90 ? '2023-04-01' : 
+            range === 90 ? '2023-04-01' : 
                 '2023-01-30'
     })
 ) => {
