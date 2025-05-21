@@ -68,13 +68,17 @@ function calculateAggregatedValue(total: number, count: number, lastValue: numbe
  * Calculates outlier threshold using standard deviation
  */
 function calculateOutlierThreshold(values: number[]): {threshold: number; average: number} {
-    const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
-    const stdDev = Math.sqrt(
-        values.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / values.length
-    );
+    // Calculate median instead of mean to be more robust against extreme outliers
+    const sortedValues = [...values].sort((a, b) => a - b);
+    const median = sortedValues[Math.floor(sortedValues.length / 2)];
+    
+    // Calculate MAD (Median Absolute Deviation) which is more robust than standard deviation
+    const deviations = values.map(val => Math.abs(val - median));
+    const mad = deviations.reduce((sum, val) => sum + val, 0) / values.length;
+    
     return {
-        threshold: avg + (3 * stdDev),
-        average: avg
+        threshold: median + (5 * mad), // Using 5 times MAD as threshold
+        average: median
     };
 }
 
@@ -124,7 +128,7 @@ function detectBulkImports<T extends {date: string}>(items: T[], fieldName: keyo
         const value = Number(item[fieldName]);
         return {
             ...item,
-            _isOutlier: value > threshold && value > average * 5
+            _isOutlier: value > threshold || value > average * 10
         };
     });
 }

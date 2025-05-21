@@ -1,13 +1,15 @@
 import moment from 'moment-timezone';
-import {describe, expect, it} from 'vitest';
+import {STATS_RANGE_OPTIONS} from '@src/utils/constants';
 import {
     aggregateByMonthExact,
+    aggregateByWeek,
+    detectBulkImports,
     determineAggregationStrategy,
     getMonthKey,
     getPeriodText,
     sanitizeChartData
 } from '@src/utils/chart-helpers';
-import {STATS_RANGE_OPTIONS} from '@src/utils/constants';
+import {describe, expect, it} from 'vitest';
 
 type ChartDataItem = {
     date: string;
@@ -456,6 +458,67 @@ describe('chart-helpers', () => {
                 expect(result.length).toBe(1);
                 expect(result[0].date).toBe('2024-01-01');
                 expect(result[0].value).toBe(100);
+            });
+
+            it('handles single data point in detectBulkImports', () => {
+                const data = [{date: '2024-01-01', value: 100}];
+                const result = detectBulkImports(data, 'value');
+                expect(result).toEqual(data);
+            });
+
+            it('handles non-outlier values in detectBulkImports', () => {
+                const data = [
+                    {date: '2024-01-01', value: 100},
+                    {date: '2024-01-02', value: 110},
+                    {date: '2024-01-03', value: 120}
+                ];
+                const result = detectBulkImports(data, 'value');
+                expect(result.every(item => !item._isOutlier)).toBe(true);
+            });
+
+            it('handles single data point in aggregateByWeek', () => {
+                const data = [{date: '2024-01-01', value: 100}];
+                const result = aggregateByWeek(data, 'value', 'avg');
+                expect(result.length).toBe(1);
+                expect(result[0].date).toBe('2023-12-31'); // Week start
+                expect(result[0].value).toBe(100);
+            });
+
+            it('handles YTD range with long date span', () => {
+                const strategy = determineAggregationStrategy(-1, 180, 'exact');
+                expect(strategy).toBe('monthly');
+            });
+
+            it('handles YTD range with medium date span', () => {
+                const strategy = determineAggregationStrategy(-1, 100, 'exact');
+                expect(strategy).toBe('weekly');
+            });
+
+            it('handles YTD range with short date span', () => {
+                const strategy = determineAggregationStrategy(-1, 30, 'exact');
+                expect(strategy).toBe('none');
+            });
+
+            it('handles YTD range edge case with exact aggregation', () => {
+                const strategy = determineAggregationStrategy(-1, 151, 'exact');
+                expect(strategy).toBe('monthly');
+            });
+
+            it('handles YTD range with long span and non-exact aggregation', () => {
+                const strategy = determineAggregationStrategy(-1, 151, 'avg');
+                expect(strategy).toBe('monthly');
+            });
+
+            it('handles extreme outliers in bulk import detection', () => {
+                const data = [
+                    {date: '2024-01-01', value: 100},
+                    {date: '2024-01-02', value: 1000000},
+                    {date: '2024-01-03', value: 100}
+                ];
+                const result = detectBulkImports(data, 'value');
+                expect(result[1]._isOutlier).toBe(true);
+                expect(result[0]._isOutlier).toBe(false);
+                expect(result[2]._isOutlier).toBe(false);
             });
         });
 

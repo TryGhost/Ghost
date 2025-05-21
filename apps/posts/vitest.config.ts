@@ -17,7 +17,13 @@ export default defineConfig({
         coverage: {
             include: ['src/utils/**/*.ts'],
             reporter: ['text', 'lcov'],
-            all: true
+            all: true,
+            provider: 'v8',
+            thresholds: {
+                lines: 100,
+                functions: 100,
+                statements: 100
+            }
         }
     },
     resolve: {
