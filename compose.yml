@@ -184,7 +184,7 @@ services:
   mailhog:
     image: mailhog/mailhog:latest
     container_name: ghost-mailhog
-    profiles: [ ghost ]
+    profiles: [ ghost, split ]
     ports:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web interface
