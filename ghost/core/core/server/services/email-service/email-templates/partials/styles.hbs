@@ -5,6 +5,14 @@
 
 /*All the styling goes here*/
 
+:root {
+  --font-serif: Georgia, serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --text-primary: #15212A;
+  --text-secondary: #73818c;
+  --border-color: #e0e7eb;
+}
+
 img {
     border: none;
     -ms-interpolation-mode: bicubic;
@@ -18,7 +26,7 @@ img.is-dark-background {
 
 body {
     background-color: #fff;
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     font-size: 18px;
     line-height: 1.4;
@@ -26,7 +34,7 @@ body {
     padding: 0;
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
-    color: #15212A;
+    color: var(--text-primary);
 }
 
 table {
@@ -37,10 +45,10 @@ table {
 }
 
 table td {
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--font-sans);
     font-size: 18px;
     vertical-align: top;
-    color: #15212A;
+    color: var(--text-primary);
 }
 
 /* -------------------------------------
@@ -147,7 +155,7 @@ dt {
     float: left;
     margin: 0 20px 0 0;
     width: 120px;
-    color: #15212A;
+    color: var(--text-primary);
     font-weight: 500;
     text-align: right;
 }
@@ -212,10 +220,20 @@ h4,
 h5,
 h6 {
     margin-top: 0;
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--font-sans);
     line-height: 1.11em;
     font-weight: {{titleWeight}};
     text-rendering: optimizeLegibility;
+}
+
+.title-serif h1,
+.title-serif h2,
+.title-serif h3,
+.title-serif h4,
+.title-serif h5,
+.title-serif h6 {
+    font-family: var(--font-serif);
+    letter-spacing: -0.01em;
 }
 
 h1 {
@@ -271,12 +289,12 @@ figure {
 
 figcaption {
     text-align: center;
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--font-sans);
     font-size: 13px;
     padding-top: 10px;
     padding-bottom: 10px;
     line-height: 1.5em;
-    color: #73818c;
+    color: var(--text-secondary);
 }
 
 figcaption a {
@@ -333,7 +351,7 @@ figure blockquote p {
 }
 
 .site-url {
-    color: #15212A;
+    color: var(--text-primary);
     font-size: 16px;
     letter-spacing: -0.1px;
     font-weight: 700;
@@ -346,11 +364,11 @@ figure blockquote p {
 }
 
 .site-title {
-    color: #15212A;
+    color: var(--text-primary);
 }
 
 .site-subtitle {
-    color: #73818c;
+    color: var(--text-secondary);
     font-size: 13px;
     font-weight: 400;
     text-transform: none;
@@ -372,7 +390,7 @@ figure blockquote p {
 }
 
 .post-title-serif {
-    font-family: Georgia, serif;
+    font-family: var(--font-serif);
     letter-spacing: -0.01em;
 }
 .post-title-left {
@@ -382,7 +400,7 @@ figure blockquote p {
 .post-title-link {
     display: block;
     margin-top: 32px;
-    color: #15212A;
+    color: var(--text-primary);
     text-align: center;
     line-height: 1.1em;
 }
@@ -398,7 +416,7 @@ figure blockquote p {
 
 .post-excerpt {
     margin: 0;
-    color: #15212A;
+    color: var(--text-primary);
     font-size: 19px;
     line-height: 1.4em;
     text-align: center;
@@ -413,13 +431,13 @@ figure blockquote p {
 }
 
 .post-excerpt-serif-serif {
-    font-family: Georgia, serif;
+    font-family: var(--font-serif);
     font-size: 20px;
 }
 
 .post-excerpt-serif-sans {
     font-size: 20px;
-    font-family: Georgia, serif;
+    font-family: var(--font-serif);
 }
 
 .post-excerpt-left {
@@ -428,7 +446,7 @@ figure blockquote p {
 
 .post-meta,
 .view-online {
-    color: #73818c;
+    color: var(--text-secondary);
     font-size: 13px;
     font-weight: 400;
     text-align: center;
@@ -462,7 +480,7 @@ figure blockquote p {
 .view-online-link {
     word-wrap: none;
     white-space: nowrap;
-    color: #73818c;
+    color: var(--text-secondary);
     text-decoration: underline !important;
 }
 
@@ -490,7 +508,7 @@ figure blockquote p {
     padding-bottom: 32px;
     text-align: center;
     font-size: 13px !important;
-    color: #73818c;
+    color: var(--text-secondary);
     line-height: 1.5em;
 }
 
@@ -522,8 +540,8 @@ figure blockquote p {
 
 .feedback-button-text {
     display: inline-block;
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-    color: #15212A;
+    font-family: var(--font-sans);
+    color: var(--text-primary);
     font-size: 13px !important;
     font-weight: 500;
     margin: 1em 0 0 0;
@@ -535,10 +553,11 @@ figure blockquote p {
     LATEST POSTS TABLE
 ------------------------------------- */
 
-.latest-posts-header {
+h3.latest-posts-header {
     margin: 0;
     padding: 8px 0 8px;
-    color: #15212A;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
     font-size: 13px;
     font-weight: 600;
     text-transform: uppercase;
@@ -581,19 +600,19 @@ figure blockquote p {
 }
 
 .latest-post h4 a {
-    color: #15212A !important;
+    color: var(--text-primary) !important;
 }
 
 .latest-post p {
     margin: 0;
     padding: 0;
-    color: #73818c;
+    color: var(--text-secondary);
     font-size: 15px;
     font-weight: 400;
 }
 
 .latest-post p a {
-    color: #73818c !important;
+    color: var(--text-secondary) !important;
 }
 
 /* -------------------------------------
@@ -602,11 +621,12 @@ figure blockquote p {
 
 .subscription-box {
     padding: 32px 0;
-    border-bottom: 1px solid #e0e7eb;
-    color: #15212A;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
 }
 
 .subscription-box h3 {
+    font-family: var(--font-sans);
     font-size: 14px;
     font-weight: 600;
     text-transform: uppercase;
@@ -615,7 +635,7 @@ figure blockquote p {
 
 .subscription-box p {
     margin-bottom: 0;
-    color: #15212A !important;
+    color: var(--text-primary) !important;
     font-size: 15px;
     font-weight: 400;
     line-height: 1.45em;
@@ -623,7 +643,7 @@ figure blockquote p {
 }
 
 .subscription-box p a {
-    color: #15212A !important;
+    color: var(--text-primary) !important;
     text-decoration: none;
 }
 
@@ -643,21 +663,21 @@ figure blockquote p {
 
 .post-content {
     max-width: 600px !important;
-    font-family: Georgia, serif;
+    font-family: var(--font-serif);
     font-size: 18px;
     line-height: 1.5em;
-    color: #15212A;
+    color: var(--text-primary);
     padding-bottom: 20px;
-    border-bottom: 1px solid #e0e7eb;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .post-content-sans-serif {
     max-width: 600px !important;
     font-size: 17px;
     line-height: 1.5em;
-    color: #15212A;
+    color: var(--text-primary);
     padding-bottom: 20px;
-    border-bottom: 1px solid #e0e7eb;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .post-content-row:first-child > td, .header-image-row + .post-content-row > td {
@@ -713,11 +733,11 @@ a[data-flickr-embed] img {
 .kg-bookmark-container {
     display: flex;
     min-height: 148px;
-    color: #15212A;
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
     text-decoration: none;
     border-radius: 3px;
-    border: 1px solid #e0e7eb;
+    border: 1px solid var(--border-color);
 }
 
 .kg-bookmark-content {
@@ -727,7 +747,7 @@ a[data-flickr-embed] img {
 }
 
 .kg-bookmark-title {
-    color: #15212A;
+    color: var(--text-primary);
     font-size: 15px;
     line-height: 1.5em;
     font-weight: 600;
@@ -738,7 +758,7 @@ a[data-flickr-embed] img {
     overflow-y: hidden;
     margin-top: 12px;
     max-height: 40px;
-    color: #73818c;
+    color: var(--text-secondary);
     font-size: 13px;
     line-height: 1.5em;
     font-weight: 400;
@@ -765,7 +785,7 @@ a[data-flickr-embed] img {
     flex-wrap: wrap;
     align-items: center;
     margin-top: 14px;
-    color: #15212A;
+    color: var(--text-primary);
     font-size: 13px;
     font-weight: 400;
 }
@@ -857,7 +877,7 @@ a[data-flickr-embed] img {
 .kg-nft-link {
     display: block;
     text-decoration: none !important;
-    color: #15212A !important;
+    color: var(--text-primary) !important;
     font-family: inherit !important;
     font-size: 14px;
     line-height: 1.3em;
@@ -870,7 +890,7 @@ a[data-flickr-embed] img {
 .kg-twitter-link {
     display: block;
     text-decoration: none !important;
-    color: #15212A !important;
+    color: var(--text-primary) !important;
     font-family: inherit !important;
     font-size: 15px;
     padding: 8px;
@@ -955,16 +975,16 @@ a[data-flickr-embed] img {
 }
 
 .kg-cta-card.kg-cta-bg-none:not(.kg-cta-no-dividers) {
-    border-bottom: 1px solid #e0e7eb;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .kg-cta-bg-none.kg-cta-no-label:not(.kg-cta-no-dividers) {
-    border-top: 1px solid #e0e7eb;
+    border-top: 1px solid var(--border-color);
 }
 
 .kg-cta-bg-white {
     background: #fff;
-    border: 1px solid #e0e7eb;
+    border: 1px solid var(--border-color);
 }
 
 .kg-cta-bg-grey {
@@ -997,7 +1017,7 @@ a[data-flickr-embed] img {
 
 .kg-cta-sponsor-label {
     padding: 12px 0;
-    border-bottom: 1px solid #e0e7eb;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .kg-cta-bg-none .kg-cta-sponsor-label {
@@ -1011,7 +1031,7 @@ a[data-flickr-embed] img {
 
 .kg-cta-bg-none .kg-cta-sponsor-label,
 .kg-cta-bg-white .kg-cta-sponsor-label {
-    border-color: #e0e7eb;
+    border-color: var(--border-color);
 }
 
 .kg-cta-bg-grey .kg-cta-sponsor-label {
@@ -1045,7 +1065,7 @@ a[data-flickr-embed] img {
 .kg-cta-sponsor-label p {
     margin: 0;
     color: #89959f;
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--font-sans);
     font-size: 12px;
     font-weight: 500;
     text-transform: uppercase;
@@ -1076,7 +1096,7 @@ a[data-flickr-embed] img {
 }
 
 .kg-cta-sponsor-label a {
-    color: #15212A;
+    color: var(--text-primary);
 }
 
 .kg-cta-link-accent .kg-cta-sponsor-label a {
@@ -1134,11 +1154,11 @@ img.kg-cta-image {
 }
 
 .post-content .kg-cta-text {
-    font-family: Georgia, serif;
+    font-family: var(--font-serif);
 }
 
 .kg-cta-text a {
-    color: #15212A;
+    color: var(--text-primary);
 }
 
 .kg-cta-link-accent .kg-cta-text a {
@@ -1146,7 +1166,7 @@ img.kg-cta-image {
 }
 
 .post-content-sans-serif .kg-cta-text {
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--font-sans);
     font-size: 17px;
 }
 
@@ -1248,7 +1268,7 @@ img.kg-cta-image {
 
 .kg-cta-minimal a.kg-cta-button {
     display: inline-block;
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--font-sans);
     font-size: 0.85em;
     font-weight: 600;
     font-weight: 500;
@@ -1638,7 +1658,7 @@ img.kg-cta-image {
     width: 100%;
     margin: 0 auto 1.5em;
     border-radius: 3px;
-    border: 1px solid #e0e7eb;
+    border: 1px solid var(--border-color);
 }
 .kg-audio-title {
     display: block;
@@ -1649,14 +1669,14 @@ img.kg-cta-image {
     font-weight: 600;
     line-height: 18px;
     text-decoration: none !important;
-    color: #15212A !important;
+    color: var(--text-primary) !important;
 }
 .kg-audio-play-button {
     display: block;
     box-sizing: border-box;
     width: 16px;
     height: 16px;
-    color: #15212A !important;
+    color: var(--text-primary) !important;
     border-style: solid;
     border-width: 8px 0px 8px 16px;
     border-color: transparent transparent transparent currentColor;
@@ -1665,17 +1685,17 @@ img.kg-cta-image {
     display: block;
     text-decoration: none !important;
     font-size: 13px;
-    color: #15171A !important;
+    color: var(--text-primary) !important;
 }
 .kg-audio-link {
-    color: #73818c !important;
+    color: var(--text-secondary) !important;
 }
 .kg-file-card {
     width: auto;
     width: 100%;
     margin: 0 0 1.5em 0;
     border-radius: 3px;
-    border: 1px solid #e0e7eb;
+    border: 1px solid var(--border-color);
 }
 .kg-file-title {
     display: block;
@@ -1686,7 +1706,7 @@ img.kg-cta-image {
     font-weight: bold;
     line-height: 1.3em;
     text-decoration: none !important;
-    color: #15212A !important;
+    color: var(--text-primary) !important;
 }
 .kg-file-description {
     display: block;
@@ -1696,7 +1716,7 @@ img.kg-cta-image {
     font-size: 15px;
     line-height: 1.4em;
     text-decoration: none !important;
-    color: #73818c !important;
+    color: var(--text-secondary) !important;
 }
 .kg-file-meta {
     display: block;
@@ -1707,11 +1727,11 @@ img.kg-cta-image {
     font-size: 13px;
     line-height: 1.4em;
     text-decoration: none !important;
-    color: #73818c !important;
+    color: var(--text-secondary) !important;
 }
 .kg-file-name {
     font-weight: 500;
-    color: #15212A !important;
+    color: var(--text-primary) !important;
 }
 .kg-file-thumbnail {
     position: relative;
@@ -1725,7 +1745,7 @@ img.kg-cta-image {
     width: 100%;
     margin: 0 auto;
     border-radius: 12px;
-    border: 1px solid #e0e7eb;
+    border: 1px solid var(--border-color);
 }
 
 {{#hasFeature "emailCustomizationAlpha"}}
@@ -1786,10 +1806,10 @@ img.kg-cta-image {
 }
 
 .footer {
-    color: #73818c;
+    color: var(--text-secondary);
     margin-top: 20px;
     text-align: center;
-    font-size: 13px!important;
+    font-size: 13px !important;
     padding-bottom: 10px;
     padding-top: 10px;
     padding-left: 30px;
@@ -1798,7 +1818,7 @@ img.kg-cta-image {
 }
 
 .footer a {
-    color: #73818c;
+    color: var(--text-secondary);
     text-decoration: underline;
     font-size: 13px;
 }
@@ -1817,13 +1837,13 @@ table.btn td {
     background-color: #ffffff;
     border-radius: {{buttonBorderRadius}};
     text-align: center;
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--font-sans);
 }
 
 table.btn a {
     border-radius: {{buttonBorderRadius}};
     box-sizing: border-box;
-    color: #15212A;
+    color: var(--text-primary);
     cursor: pointer;
     display: inline-block;
     font-size: 15px;
@@ -1873,7 +1893,7 @@ table.btn-accent a {
     border-radius: {{buttonBorderRadius}};
     {{/hasFeature}}
     text-align: center;
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--font-sans);
 }
 
 .btn a {
