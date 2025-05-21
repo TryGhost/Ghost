@@ -7,7 +7,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import getUsername from '@src/utils/get-username';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {LucideIcon, Skeleton} from '@tryghost/shade';
-import {handleProfileClickRR} from '@src/utils/handle-profile-click';
+import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {useLocation, useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
@@ -91,7 +91,7 @@ const Note = () => {
                                                 <APAvatar author={post.actor}/>
                                             </div>
                                             <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
-                                                handleProfileClickRR(post.actor, navigate, e);
+                                                handleProfileClick(post.actor, navigate, e);
                                             }}>
                                                 <div className='flex w-full'>
                                                     <span className='min-w-0 truncate whitespace-nowrap font-semibold hover:underline'>{post.actor.name}</span>

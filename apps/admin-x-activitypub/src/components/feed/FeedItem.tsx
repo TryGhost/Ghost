@@ -11,7 +11,7 @@ import FeedItemStats from './FeedItemStats';
 import clsx from 'clsx';
 import getReadingTime from '../../utils/get-reading-time';
 import getUsername from '../../utils/get-username';
-import {handleProfileClickRR} from '../../utils/handle-profile-click';
+import {handleProfileClick} from '../../utils/handle-profile-click';
 import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useDeleteMutationForUser} from '../../hooks/use-activity-pub-queries';
@@ -249,7 +249,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         const handleProfileLinkClick = (e: MouseEvent) => {
             const target = e.target as HTMLElement;
             const link = target.closest('a[data-profile]');
-            
+
             if (link) {
                 const handle = link.getAttribute('data-profile')?.trim();
                 const isValidHandle = /^@([\w.-]+)@([\w-]+\.[\w.-]+[a-zA-Z])$/.test(handle || '');
@@ -257,7 +257,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                 if (isValidHandle && handle) {
                     e.preventDefault();
                     e.stopPropagation();
-                    handleProfileClickRR(handle, navigate);
+                    handleProfileClick(handle, navigate);
                 }
             }
         };
@@ -326,7 +326,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             <Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'} />
                             <div className='flex min-w-0 items-center gap-1 text-sm'>
                                 <span className='truncate break-anywhere hover:underline' title={getUsername(actor)} onClick={(e) => {
-                                    handleProfileClickRR(actor, navigate, e);
+                                    handleProfileClick(actor, navigate, e);
                                 }}>{actor.name}</span>
                                 reposted
                             </div>
@@ -336,7 +336,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 <APAvatar author={author} disabled={isPending} />
                                 <div className='flex min-w-0 grow flex-col gap-0.5' onClick={(e) => {
                                     if (!isPending) {
-                                        handleProfileClickRR(author, navigate, e);
+                                        handleProfileClick(author, navigate, e);
                                     }
                                 }}>
                                     <span className={`min-w-0 truncate font-semibold leading-[normal] break-anywhere ${!isPending ? 'hover-underline' : ''} dark:text-white`}
@@ -438,7 +438,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 {(type === 'Announce') && <div className='z-10 col-span-2 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
                                     <div><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon></div>
                                     <span className='flex min-w-0 items-center gap-1'><span className='truncate break-anywhere hover:underline' title={getUsername(actor)} onClick={(e) => {
-                                        handleProfileClickRR(actor, navigate, e);
+                                        handleProfileClick(actor, navigate, e);
                                     }}>{actor.name}</span> reposted</span>
                                 </div>}
                                 {(showHeader) && <>
@@ -447,7 +447,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     </div>
                                     <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
                                         if (!isPending) {
-                                            handleProfileClickRR(author, navigate, e);
+                                            handleProfileClick(author, navigate, e);
                                         }
                                     }}>
                                         <div className='flex w-full'>
@@ -506,7 +506,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 <div className='flex w-full items-center justify-between'>
                                     <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible' onClick={(e) => {
                                         if (!isPending) {
-                                            handleProfileClickRR(author, navigate, e);
+                                            handleProfileClick(author, navigate, e);
                                         }
                                     }}>
                                         <div className='flex'>
@@ -583,12 +583,12 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             title={getUsername(author)}
                                             data-test-activity-heading
                                             onClick={(e) => {
-                                                handleProfileClickRR(author, navigate, e);
+                                                handleProfileClick(author, navigate, e);
                                             }}
                                         >{author.name}
                                         </span>
                                         {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600'><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon><span className='line-clamp-1 hover:underline' title={getUsername(actor)} onClick={(e) => {
-                                            handleProfileClickRR(actor, navigate, e);
+                                            handleProfileClick(actor, navigate, e);
                                         }}>{actor.name}</span> reposted</span>}
                                         <span className='shrink-0 whitespace-nowrap text-gray-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object, !object.authored)}</span>
                                     </> :

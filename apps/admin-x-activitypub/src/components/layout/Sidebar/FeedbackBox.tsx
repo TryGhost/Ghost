@@ -1,38 +1,13 @@
-import ArticleModal from '@src/components/feed/ArticleModal';
-import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
-import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, H4, LucideIcon} from '@tryghost/shade';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 const FeedbackBox: React.FC = () => {
+    const navigate = useNavigate();
+
     function showFeedbackReply() {
         const targetPostId = 'https://activitypub.ghost.org/.ghost/activitypub/note/84eb47c6-4e5d-4d1a-bb6e-089a5890cc2';
-
-        NiceModal.show(ArticleModal, {
-            activityId: targetPostId,
-            object: {
-                content: `<p>Welcome to the Ghost social web beta!</p><p>We’d love to hear your thoughts and feedback. Reply to this note to let us know what’s working well, and what isn’t.</p>`,
-                id: targetPostId,
-                published: '2025-03-17T09:45:00Z',
-                type: 'Note',
-                url: targetPostId,
-                '@context': '',
-                name: ''
-            } as ObjectProperties,
-            actor: {
-                id: 'https://activitypub.ghost.org/.ghost/activitypub/users/index',
-                icon: {
-                    url: 'https://activitypub.ghost.org/content/images/2024/09/ghost-orb-white-squircle-07.png'
-                },
-                name: 'Building ActivityPub',
-                preferredUsername: 'index',
-                summary: 'Ghost is federating over ActivityPub to become part of the world’s largest publishing network',
-                url: 'https://activitypub.ghost.org/'
-            } as ActorProperties,
-            focusReply: true,
-            width: 'narrow',
-            disableStats: true
-        });
+        navigate(`/feed/${encodeURIComponent(targetPostId)}?focusReply=true`);
     }
 
     return (
