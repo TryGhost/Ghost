@@ -1,5 +1,6 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
 import {renderEmptyContainer} from '../../utils/render-empty-container';
+import {renderEmailButton} from '../../utils/render-helpers/email-button';
 import {html} from '../../utils/tagged-template-fns.mjs';
 
 export function renderButtonNode(node, options = {}) {
@@ -50,8 +51,34 @@ function emailTemplate(node, options, document) {
                     </table>
                 </td>
             </tr>
+        </table>`;
+
+        const element = document.createElement('p');
+        element.innerHTML = cardHtml;
+        return {element};
+    } else if (options.feature?.emailCustomizationAlpha) {
+        const buttonHtml = renderEmailButton({
+            alignment: node.alignment,
+            color: 'accent',
+            url: buttonUrl,
+            text: buttonText
+        });
+
+        cardHtml = html`
+        <table border="0" cellpadding="0" cellspacing="0">
+            <tbody>
+                <tr>
+                    <td>
+                        ${buttonHtml}
+                    </td>
+                </tr>
+            </tbody>
         </table>
         `;
+
+        const element = document.createElement('div');
+        element.innerHTML = cardHtml;
+        return {element, type: 'inner'};
     } else {
         cardHtml = html`
         <div class="btn btn-accent">
@@ -64,11 +91,11 @@ function emailTemplate(node, options, document) {
             </table>
         </div>
         `;
-    }
 
-    const element = document.createElement('p');
-    element.innerHTML = cardHtml;
-    return {element};
+        const element = document.createElement('p');
+        element.innerHTML = cardHtml;
+        return {element};
+    }
 }
 
 function getCardClasses(node) {
