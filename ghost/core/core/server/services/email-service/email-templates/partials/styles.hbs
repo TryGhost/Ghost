@@ -494,6 +494,12 @@ figure blockquote p {
     line-height: 1.5em;
 }
 
+.feature-image img {
+    {{#hasFeature "emailCustomizationAlpha"}}
+    {{imageCorners}};
+    {{/hasFeature}}
+}
+
 .kg-card-figcaption {
     font-size: 13px;
 }
@@ -799,6 +805,13 @@ a[data-flickr-embed] img {
     width: 100% !important;
     height: auto !important;
     padding-top: 20px;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#if imageCorners}}
+    {{imageCorners}};
+    padding-top: 0 !important;
+    margin-top: 20px !important;
+    {{/if}}
+    {{/hasFeature}}
 }
 
 .kg-video-preview {
@@ -806,11 +819,18 @@ a[data-flickr-embed] img {
     background-image: radial-gradient(circle at center, #5b5f66, #1d1f21);
     display: block;
     text-decoration: none !important;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    {{imageCorners}};
+    {{/hasFeature}}
 }
 
 .kg-video-preview table {
     background-size: cover;
     min-height: 200px; /* for when images aren't loaded */
+    {{#hasFeature "emailCustomizationAlpha"}}
+    {{imageCorners}};
+    {{/hasFeature}}
+    overflow: hidden;
 }
 
 .kg-video-play-button {
@@ -1485,6 +1505,7 @@ img.kg-cta-image {
     height: auto;
     padding: 0;
     border: none;
+    {{imageCorners}};
 }
 
 .kg-product-title {

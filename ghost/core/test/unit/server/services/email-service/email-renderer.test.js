@@ -2626,7 +2626,7 @@ describe('Email renderer', function () {
 
         it('sets imageCorners to correct square value which is null (emailCustomizationAlpha)', async function () {
             // null because square has no border radius
-            await testImageCorners('square', 'border-radius: 0;');
+            await testImageCorners('square', null);
         });
 
         it('sets imageCorners to null if unknown value', async function () {
