@@ -158,7 +158,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const typedPost = post as Post;
     // Use the utility function from admin-x-framework
     const showNewsletterSection = hasBeenEmailed(typedPost);
-    
+
     useEffect(() => {
         // Redirect to overview if the post wasn't sent as a newsletter
         if (!isPostLoading && !showNewsletterSection) {
@@ -335,7 +335,6 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         </KpiCardLabel>
                                         <KpiCardContent>
                                             <KpiCardValue>{formatNumber(stats.opened)}</KpiCardValue>
-                                            <span className='mt-0.5 text-sm text-muted-foreground'>{formatPercentage(stats.openedRate)} open rate</span>
                                         </KpiCardContent>
                                         <FunnelArrow />
                                     </KpiCard>
@@ -347,7 +346,6 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         </KpiCardLabel>
                                         <KpiCardContent>
                                             <KpiCardValue>{formatNumber(stats.clicked)}</KpiCardValue>
-                                            <span className='mt-0.5 text-sm text-muted-foreground'>{formatPercentage(stats.clickedRate)} click rate</span>
                                         </KpiCardContent>
                                     </KpiCard>
                                 </div>

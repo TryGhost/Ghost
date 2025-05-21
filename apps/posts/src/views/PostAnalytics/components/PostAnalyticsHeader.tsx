@@ -111,7 +111,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                         <TabsTrigger value="Web" onClick={() => {
                             navigate(`/analytics/beta/${postId}/web`);
                         }}>
-                            Web stats
+                            Web traffic
                         </TabsTrigger>
                         {showNewsletterTab && (
                             <TabsTrigger value="Newsletter" onClick={() => {

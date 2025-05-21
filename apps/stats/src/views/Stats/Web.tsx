@@ -143,7 +143,7 @@ const WebKPIs:React.FC = ({}) => {
                 </KpiTabTrigger>
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
-                {isLoading ? 'Loading' :
+                {isLoading ? '' :
                     <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] w-full' config={chartConfig}>
                         <Recharts.AreaChart
                             data={chartData}
