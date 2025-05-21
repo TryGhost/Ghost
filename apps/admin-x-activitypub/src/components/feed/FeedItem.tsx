@@ -2,7 +2,7 @@ import FeedItemMenu from './FeedItemMenu';
 import React, {useEffect, useRef, useState} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
-import {Icon, showToast} from '@tryghost/admin-x-design-system';
+import {showToast} from '@tryghost/admin-x-design-system';
 
 import APAvatar from '../global/APAvatar';
 import ImageLightbox, {useLightboxImages} from '../global/ImageLightbox';
@@ -160,7 +160,7 @@ function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | un
                 <video className='h-[80px] w-full rounded object-cover' src={attachment.url} />
                 <div className='absolute inset-0 rounded bg-gray-900 opacity-50'></div>
                 <div className='absolute inset-0 flex items-center justify-center'>
-                    <Icon className='text-white' name='play-fill' size='lg' />
+                    <LucideIcon.Play color='white' fill='white' size={40} />
                 </div>
             </div>
         );
@@ -202,6 +202,8 @@ interface FeedItemProps {
 }
 
 const noop = () => {};
+
+const repostIcon = <LucideIcon.RefreshCw className='shrink-0 text-gray-700 dark:text-gray-600' size={16} strokeWidth={1.5} />;
 
 const FeedItem: React.FC<FeedItemProps> = ({
     actor,
@@ -322,8 +324,8 @@ const FeedItem: React.FC<FeedItemProps> = ({
             <>
                 {object && (
                     <div className={`group/article relative -mx-4 ${!isPending ? 'cursor-pointer' : 'pointer-events-none'} rounded-lg p-6 px-4 pb-[18px]`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
-                        {(type === 'Announce') && <div className='z-10 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
-                            <Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'} />
+                        {(type === 'Announce') && <div className='z-10 mb-2 flex items-center gap-1.5 text-gray-700 dark:text-gray-600'>
+                            {repostIcon}
                             <div className='flex min-w-0 items-center gap-1 text-sm'>
                                 <span className='truncate break-anywhere hover:underline' title={getUsername(actor)} onClick={(e) => {
                                     handleProfileClick(actor, navigate, e);
@@ -436,7 +438,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                         <div className={`group/article relative`} data-layout='modal' onClick={onClick}>
                             <div className={`z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 pb-3 pt-4`} data-test-activity>
                                 {(type === 'Announce') && <div className='z-10 col-span-2 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
-                                    <div><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon></div>
+                                    <div>{repostIcon}</div>
                                     <span className='flex min-w-0 items-center gap-1'><span className='truncate break-anywhere hover:underline' title={getUsername(actor)} onClick={(e) => {
                                         handleProfileClick(actor, navigate, e);
                                     }}>{actor.name}</span> reposted</span>
@@ -584,7 +586,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             }}
                                         >{author.name}
                                         </span>
-                                        {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600'><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon><span className='line-clamp-1 hover:underline' title={getUsername(actor)} onClick={(e) => {
+                                        {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600'>{repostIcon}<span className='line-clamp-1 hover:underline' title={getUsername(actor)} onClick={(e) => {
                                             handleProfileClick(actor, navigate, e);
                                         }}>{actor.name}</span> reposted</span>}
                                         <span className='shrink-0 whitespace-nowrap text-gray-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object, !object.authored)}</span>
