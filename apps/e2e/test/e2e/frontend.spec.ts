@@ -1,10 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../test-fixtures'; // Use our custom test and expect
 
-test('has correct title', async ({ page }) => {
-  const baseURL = process.env.BASE_URL || 'https://chris-raible.ghost.is'; // Default for safety
-  if (!process.env.BASE_URL) {
-    console.warn('BASE_URL environment variable not set, using default for frontend test.');
-  }
-  await page.goto(baseURL);
+test('has correct title', async ({ page, appUrls }) => {
+  await page.goto(appUrls.baseURL);
   await expect(page).toHaveTitle('[DEV]');
 });
