@@ -1,8 +1,8 @@
 import FeedItemMenu from './FeedItemMenu';
 import React, {useEffect, useRef, useState} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, LucideIcon, Skeleton} from '@tryghost/shade';
-import {Heading, Icon, showToast} from '@tryghost/admin-x-design-system';
+import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
+import {Icon, showToast} from '@tryghost/admin-x-design-system';
 
 import APAvatar from '../global/APAvatar';
 import ImageLightbox, {useLightboxImages} from '../global/ImageLightbox';
@@ -461,7 +461,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </>}
                                 <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
-                                        {object.name && <Heading className='mb-1 leading-tight break-anywhere' level={4} data-test-activity-heading>{object.name}</Heading>}
+                                        {object.name && <H4 className='mb-1 leading-tight break-anywhere' data-test-activity-heading>{object.name}</H4>}
                                         <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content-large text-pretty text-[1.6rem] tracking-[-0.011em] text-gray-900 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'></div>
                                         {renderFeedAttachment(object, openLightbox)}
                                         <div className='space-between ml-[-8px] mt-3 flex'>
@@ -529,7 +529,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
                                         {(object.type === 'Article') && renderFeedAttachment(object, openLightbox)}
-                                        {object.name && <Heading className='mt-2.5 text-pretty leading-tight break-anywhere' level={5} data-test-activity-heading>{object.name}</Heading>}
+                                        {object.name && <H4 className='mt-2.5 text-pretty leading-tight break-anywhere' data-test-activity-heading>{object.name}</H4>}
                                         {(object.preview && object.type === 'Article') ? <div className='mt-1 line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'></div>}
                                         {(object.type === 'Note') && renderFeedAttachment(object, openLightbox)}
                                         {(object.type === 'Article') && <Button
@@ -594,13 +594,13 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             </div>
                             <div className='flex'>
                                 <div className='flex min-h-[73px] w-full min-w-0 flex-col items-start justify-start gap-1'>
-                                    <Heading className='line-clamp-2 w-full max-w-[600px] text-pretty text-[1.6rem] font-semibold leading-tight break-anywhere' level={5} data-test-activity-heading>
+                                    <H4 className='line-clamp-2 w-full max-w-[600px] text-pretty leading-tight break-anywhere' data-test-activity-heading>
                                         {isLoading ? <Skeleton className='w-full max-w-96' /> : (object.name ? object.name : (
                                             <span dangerouslySetInnerHTML={{
                                                 __html: stripHtml(object.content || '')
                                             }}></span>
                                         ))}
-                                    </Heading>
+                                    </H4>
                                     <div className='ap-note-content line-clamp-2 w-full max-w-[600px] text-pretty text-base leading-normal text-gray-800 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'>
                                         {!isLoading ?
                                             <div dangerouslySetInnerHTML={{
