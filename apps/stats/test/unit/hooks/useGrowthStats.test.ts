@@ -84,6 +84,42 @@ describe('Growth Stats', function () {
             expect(result.dateFrom).toBe('2023-01-17');
             expect(result.endDate).toBe('2023-01-30');
         });
+
+        it('handles today range correctly (range=1)', function () {
+            // Test for lines 16-17
+            const result = getRangeDates(1);
+            
+            // Should return same date for both start and end
+            expect(result.dateFrom).toBe('2023-01-30');
+            expect(result.endDate).toBe('2023-01-30');
+        });
+        
+        it('handles all time range correctly (range=1000)', function () {
+            // Test for lines 19-20
+            const result = getRangeDates(1000);
+            
+            // Should use a far past date for start
+            expect(result.dateFrom).toBe('2010-01-01');
+            expect(result.endDate).toBe('2023-01-30');
+        });
+        
+        it('handles year to date range correctly (range=-1)', function () {
+            // Test for lines 22-23
+            const result = getRangeDates(-1);
+            
+            // Should use January 1st of current year
+            expect(result.dateFrom).toBe('2023-01-01');
+            expect(result.endDate).toBe('2023-01-30');
+        });
+        
+        it('handles invalid negative ranges safely', function () {
+            // Edge case where range is negative but not -1
+            const result = getRangeDates(-5);
+            
+            // Should treat as 1 day (safety guard)
+            expect(result.dateFrom).toBe('2023-01-30');
+            expect(result.endDate).toBe('2023-01-30');
+        });
     });
 
     describe('useGrowthStats', function () {
@@ -423,6 +459,79 @@ describe('Growth Stats', function () {
             expect(result.current.chartData[1].date).toBe('2023-01-30');
             expect(result.current.chartData[1].value).toBe(170); // 120 + 40 + 10
             expect(result.current.chartData[1].mrr).toBe(6000);
+        });
+
+        it('filters MRR data to match the date range', function () {
+            // Test for line 207 - date filtering in MRR data
+            mockUseMemberCountHistory.mockReturnValue({
+                isLoading: false,
+                data: {
+                    stats: [
+                        {date: '2023-01-01', free: 8, paid: 4, comped: 1},
+                        {date: '2023-01-30', free: 12, paid: 6, comped: 2}
+                    ]
+                }
+            });
+            
+            // Create MRR data with dates both inside and outside our range
+            mockUseMrrHistory.mockReturnValue({
+                isLoading: false,
+                data: {
+                    stats: [
+                        {date: '2022-12-15', mrr: 100}, // Before our range
+                        {date: '2022-12-31', mrr: 150}, // Before our range
+                        {date: '2023-01-15', mrr: 200}, // In our range
+                        {date: '2023-01-30', mrr: 250}  // In our range
+                    ]
+                }
+            });
+            
+            const {result} = renderHook(() => useGrowthStats(30)); // 30 day range from Jan 1 to Jan 30
+            
+            // The hook should filter the MRR data to only dates in our range
+            const resultData = result.current.chartData;
+            
+            // At least one data point should have MRR=200 (Jan 15)
+            const jan15Data = resultData.find(item => item.mrr === 200);
+            expect(jan15Data).toBeDefined();
+            
+            // At least one data point should have MRR=250 (Jan 30)
+            const jan30Data = resultData.find(item => item.mrr === 250);
+            expect(jan30Data).toBeDefined();
+            
+            // Since we're doing date-based filtering, very early dates should be excluded
+            const earliestDate = new Date(resultData[0].date);
+            // The earliest date should be after or equal to Dec 31 (due to the "subtract 1 day" in the filtering)
+            expect(earliestDate.getTime()).toBeGreaterThanOrEqual(new Date('2022-12-31').getTime());
+        });
+
+        it('handles missing MRR data gracefully', function () {
+            // Test for line 207 - undefined stats in MRR data
+            mockUseMemberCountHistory.mockReturnValue({
+                isLoading: false,
+                data: {
+                    stats: [
+                        {date: '2023-01-01', free: 8, paid: 4, comped: 1},
+                        {date: '2023-01-30', free: 12, paid: 6, comped: 2}
+                    ]
+                }
+            });
+            
+            // Mock MRR history with undefined stats
+            mockUseMrrHistory.mockReturnValue({
+                isLoading: false,
+                data: undefined // Explicitly undefined instead of having a stats property
+            });
+            
+            const {result} = renderHook(() => useGrowthStats(30));
+            
+            // Should handle the missing MRR data
+            expect(result.current.mrrData).toEqual([]);
+            expect(result.current.totals.mrr).toBe(0);
+            
+            // Chart data should still exist but have zero MRR values
+            expect(result.current.chartData.length).toBeGreaterThan(0);
+            expect(result.current.chartData[0].mrr).toBe(0);
         });
     });
 }); 
