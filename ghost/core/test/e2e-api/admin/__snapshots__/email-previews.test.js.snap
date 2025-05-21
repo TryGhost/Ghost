@@ -157,6 +157,10 @@ Object {
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
 }
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
+}
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
 }
@@ -800,7 +804,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "23569",
+  "content-length": "23680",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -870,6 +874,10 @@ Object {
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
+}
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
 }
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
@@ -1536,7 +1544,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "27941",
+  "content-length": "28052",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1637,6 +1645,10 @@ Object {
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
+}
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
 }
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
@@ -2288,7 +2300,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "23323",
+  "content-length": "23434",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2718,6 +2730,10 @@ Object {
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
+}
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
 }
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
@@ -3383,7 +3399,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24208",
+  "content-length": "24319",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3839,6 +3855,10 @@ Object {
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
+}
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
 }
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
@@ -4504,7 +4524,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24208",
+  "content-length": "24319",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
