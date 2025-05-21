@@ -1,6 +1,5 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import DateRangeSelect from './components/DateRangeSelect';
-import PostMenu from './components/PostMenu';
 import React, {useMemo, useState} from 'react';
 import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
@@ -330,10 +329,9 @@ const Growth: React.FC = () => {
                                     </TableHead>
                                     <TableHead className='text-right'>
                                         <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
-                                            MRR
+                                            MRR impact
                                         </SortButton>
                                     </TableHead>
-                                    <TableHead className='w-[32px] text-right'></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -357,18 +355,15 @@ const Growth: React.FC = () => {
                                                 </a> */}
                                             </div>
                                         </TableCell>
-                                        <TableCell className={`text-right font-mono text-sm ${post.free_members === 0 && 'text-gray-700'}`}>
+                                        <TableCell className='text-right font-mono text-sm'>
                                             {(post.free_members > 0 && '+')}{formatNumber(post.free_members)}
                                         </TableCell>
-                                        <TableCell className={`text-right font-mono text-sm ${post.paid_members === 0 && 'text-gray-700'}`}>
+                                        <TableCell className='text-right font-mono text-sm'>
                                             {(post.paid_members > 0 && '+')}{formatNumber(post.paid_members)}
                                         </TableCell>
-                                        <TableCell className={`text-right font-mono text-sm ${post.mrr === 0 && 'text-gray-700'}`}>
+                                        <TableCell className='text-right font-mono text-sm'>
                                             {/* TODO: Update to use actual currency */}
                                             {(post.mrr > 0 && '+')}${(post.mrr / 100).toFixed(0)}
-                                        </TableCell>
-                                        <TableCell className='text-right text-gray-700 hover:text-black'>
-                                            <PostMenu pathName='' postId={post.post_id} />
                                         </TableCell>
                                     </TableRow>
                                 ))}

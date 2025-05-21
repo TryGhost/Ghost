@@ -16,7 +16,7 @@ interface SourceRowProps {
     source?: string | number;
 }
 
-const SourceRow: React.FC<SourceRowProps> = ({className, source}) => {
+export const SourceRow: React.FC<SourceRowProps> = ({className, source}) => {
     return (
         <>
             <img
