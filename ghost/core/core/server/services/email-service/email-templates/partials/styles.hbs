@@ -1103,10 +1103,21 @@ table.kg-cta-content-wrapper:not(.kg-cta-bg-none.kg-cta-no-dividers table.kg-cta
     padding-bottom: 0;
 }
 
+/* -------------------------------------
+    When removing emailCustomizationAlpha,
+    also remove border-radius: 6px;
+------------------------------------- */
 img.kg-cta-image {
     display: block;
     border-radius: 6px;
     border: 0;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#if imageCorners}}
+    {{imageCorners}};
+    {{else}}
+    border-radius: 0 !important;
+    {{/if}}
+    {{/hasFeature}}
 }
 
 .kg-cta-minimal img.kg-cta-image {
