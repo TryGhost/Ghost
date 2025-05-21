@@ -5,8 +5,8 @@ import Layout from '@src/components/layout';
 import ProfileMenu from './ProfileMenu';
 import UnblockButton from './UnblockButton';
 import {Account} from '@src/api/activitypub';
-import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LucideIcon, Skeleton} from '@tryghost/shade';
-import {Heading, Icon, NoValueLabel, Tab, TabView, showToast} from '@tryghost/admin-x-design-system';
+import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LucideIcon, NoValueLabel, NoValueLabelIcon, Skeleton} from '@tryghost/shade';
+import {Heading, Icon, Tab, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {ProfileTab} from '../Profile';
 import {SettingAction} from '@src/views/Preferences/components/Settings';
 import {useAccountForUser, useBlockDomainMutationForUser, useBlockMutationForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@src/hooks/use-activity-pub-queries';
@@ -97,7 +97,8 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
             id: 'posts',
             title: 'Posts',
             contents: ((isBlocked || isDomainBlocked) && !viewBlockedPosts) ?
-                <NoValueLabel icon='block'>
+                <NoValueLabel>
+                    <NoValueLabelIcon><LucideIcon.Ban /></NoValueLabelIcon>
                     <div className='mt-2 flex flex-col items-center gap-0.5'>
                         <H4>{account.name} is blocked</H4>
                         <p>You can view the posts, but it won&apos;t unblock the user.</p>
@@ -147,8 +148,9 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
             <div className='z-0 -mx-8 -mt-9 flex flex-col items-center pb-16'>
                 <div className='mx-auto w-full'>
                     {!isLoadingAccount && !account && (
-                        <NoValueLabel icon='user-add'>
-                        Profile not found
+                        <NoValueLabel>
+                            <NoValueLabelIcon><LucideIcon.UserRoundPlus /></NoValueLabelIcon>
+                            Profile not found
                         </NoValueLabel>
                     )}
                     <>

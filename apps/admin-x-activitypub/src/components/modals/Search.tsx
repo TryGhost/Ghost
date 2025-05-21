@@ -2,9 +2,9 @@ import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
 import FollowButton from '@components/global/FollowButton';
 import React, {useEffect, useRef} from 'react';
-import {Button, H4, LoadingIndicator, LucideIcon} from '@tryghost/shade';
-import {NoValueLabel, TextField} from '@tryghost/admin-x-design-system';
+import {Button, H4, LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade';
 import {SuggestedProfiles} from '../global/SuggestedProfiles';
+import {TextField} from '@tryghost/admin-x-design-system';
 import {useDebounce} from 'use-debounce';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useSearchForUser} from '@hooks/use-activity-pub-queries';
@@ -156,7 +156,8 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                 )}
                 {showNoResults && (
                     <div className='flex h-full items-center justify-center pb-8'>
-                        <NoValueLabel icon='user'>
+                        <NoValueLabel>
+                            <NoValueLabelIcon><LucideIcon.UserRound /></NoValueLabelIcon>
                             No users matching this handle or account URL
                         </NoValueLabel>
                     </div>

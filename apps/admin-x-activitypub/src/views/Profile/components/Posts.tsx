@@ -1,7 +1,6 @@
 import FeedItem from '@src/components/feed/FeedItem';
 import {Activity} from '@src/api/activitypub';
-import {LoadingIndicator, Separator} from '@tryghost/shade';
-import {NoValueLabel} from '@tryghost/admin-x-design-system';
+import {LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon, Separator} from '@tryghost/shade';
 import {useEffect, useRef} from 'react';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
@@ -59,7 +58,8 @@ const Posts: React.FC<PostsProps> = ({
     return (
         <>
             {hasNextPage === false && posts.length === 0 && (
-                <NoValueLabel icon='pen'>
+                <NoValueLabel>
+                    <NoValueLabelIcon><LucideIcon.Pencil /></NoValueLabelIcon>
                     {noResultsMessage}
                 </NoValueLabel>
             )}
