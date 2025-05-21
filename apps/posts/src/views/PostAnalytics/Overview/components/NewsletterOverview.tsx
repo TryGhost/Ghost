@@ -8,7 +8,7 @@ const NewsletterOverview:React.FC = () => {
     const {stats, topLinks, isLoading: isNewsletterStatsLoading} = usePostNewsletterStats(postId || '');
 
     const opensChartData = [
-        {opens: Number((stats?.opened && stats?.sent ? (stats.opened / stats.sent) : 0).toFixed(2)), fill: 'var(--color-opens)'}
+        {opens: stats.openedRate, fill: 'var(--color-opens)'}
     ];
     const opensChartConfig = {
         opens: {
@@ -18,7 +18,7 @@ const NewsletterOverview:React.FC = () => {
     } satisfies ChartConfig;
 
     const clicksChartData = [
-        {clicks: Number((stats?.clicked && stats?.sent ? (stats.clicked / stats.sent) : 0).toFixed(2)), fill: 'var(--color-clicks)'}
+        {clicks: stats.clickedRate, fill: 'var(--color-clicks)'}
     ];
     const clickschartConfig = {
         clicks: {
@@ -44,10 +44,10 @@ const NewsletterOverview:React.FC = () => {
                         >
                             <Recharts.RadialBarChart
                                 data={opensChartData}
-                                endAngle={stats?.opened > 0 ? -270 : 270}
+                                endAngle={-270}
                                 innerRadius={72}
                                 outerRadius={110}
-                                startAngle={stats?.opened > 0 ? 90 : -90}
+                                startAngle={90}
                             >
                                 <Recharts.PolarGrid
                                     className="first:fill-muted last:fill-background"
@@ -56,8 +56,13 @@ const NewsletterOverview:React.FC = () => {
                                     radialLines={false}
                                     stroke="none"
                                 />
-                                <Recharts.RadialBar cornerRadius={10} dataKey="opens" minPointSize={-2} background />
-                                <Recharts.PolarRadiusAxis axisLine={false} tick={false} tickLine={false}>
+                                <Recharts.RadialBar
+                                    cornerRadius={10}
+                                    dataKey="opens"
+                                    minPointSize={-2}
+                                    background />
+                                <Recharts.PolarAngleAxis angleAxisId={0} domain={[0, 1]} tick={false} type="number" />
+                                <Recharts.PolarRadiusAxis axisLine={false} domain={[0, 1]} tick={false} tickLine={false} type="number">
                                     <Recharts.Label
                                         content={({viewBox}) => {
                                             if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
@@ -97,10 +102,10 @@ const NewsletterOverview:React.FC = () => {
                         >
                             <Recharts.RadialBarChart
                                 data={clicksChartData}
-                                endAngle={stats?.clicked > 0 ? -270 : 270}
+                                endAngle={-270}
                                 innerRadius={72}
                                 outerRadius={110}
-                                startAngle={stats?.clicked > 0 ? 90 : -90}
+                                startAngle={90}
                             >
                                 <Recharts.PolarGrid
                                     className="first:fill-muted last:fill-background"
@@ -110,7 +115,8 @@ const NewsletterOverview:React.FC = () => {
                                     stroke="none"
                                 />
                                 <Recharts.RadialBar cornerRadius={10} dataKey="clicks" minPointSize={-2} background />
-                                <Recharts.PolarRadiusAxis axisLine={false} tick={false} tickLine={false}>
+                                <Recharts.PolarAngleAxis angleAxisId={0} domain={[0, 1]} tick={false} type="number" />
+                                <Recharts.PolarRadiusAxis axisLine={false} domain={[0, 1]} tick={false} tickLine={false}>
                                     <Recharts.Label
                                         content={({viewBox}) => {
                                             if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
