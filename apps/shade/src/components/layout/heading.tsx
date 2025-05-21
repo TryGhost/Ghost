@@ -21,7 +21,7 @@ const H2 = React.forwardRef<HTMLHeadingElement, HeadingProps>(
         return (
             <h2
                 ref={ref}
-                className={cn('scroll-m-20 text-2xl font-bold tracking-tight first:mt-0', className)}
+                className={cn('scroll-m-20 text-2xl font-bold tracking-tighter first:mt-0', className)}
                 {...props} />
         );
     }
