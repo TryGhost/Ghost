@@ -6,6 +6,36 @@ This package contains the full end-to-end (E2E) test suite for Ghost, built usin
 
 The primary goal of these tests is to simulate real user scenarios and verify that critical user flows within Ghost are functioning correctly. This includes frontend interactions, admin panel operations, and integrations where applicable.
 
+## Principles
+- Tests should be able to run against your local Ghost site or a live site on the internet (i.e. in staging/production)
+- Tests should use Ghost like a real user would
+- Tests should be able to run against all live external dependencies (i.e. Stripe) and _also_ be able to run against mocked versions of these dependencies
+- Tests should be expressive, succinct and easy to write
+- Tests should make as few assumptions as possible
+- Tests should be fast and stable (re: not flaky)
+
+## Architecture
+
+### Playwright
+This e2e test suite uses Playwright to automate a web browser and use the app as a real user would. The tests run independently from the system under test (Ghost), rather than hooking into Ghost to e.g. start and stop a development server. We should always be able to run this test suite by passing in a few configuration parameters via environment variables, like the base URL for the site we want to test.
+
+### Managing State
+One of the key considerations in building a test suite such as this is how we manage state, which includes the MySQL database state and increasingly state that is kept in other services, i.e. Tinybird for analytics data. One approach we could use here is to hook into Ghost itself to i.e. truncate database tables and load new fixtures. As much as possible, we should avoid doing this, because it couples our tests too closely with the application code. Another, IMO better approach is to directly manage the state in whatever system it is stored in from the test suite itself. For example, rather than hooking into Ghost to truncate tables and load fixtures, we should build the infrastructure to allow the test suite to talk directly to MySQL and change the state itself.
+
+### Dealing with external services
+Our current e2e test suites were designed in a world where Ghost was mostly just a blog — a simple node application with a MySQL database. In that world, it's fairly easy to write end-to-end tests, because we control the whole stack. Increasingly Ghost needs to communicate with external services — Stripe, Tinybird, Email APIs — which we do not have complete control over. As such, we likely need a more robust strategy for testing against these external services and/or mocking them.
+
+Wherever possible, I think we should aim to support two modes for external services:
+- Live mode: run against the real thing, i.e. in production test against the real Stripe API
+- Mocked mode: run against a mock of the real thing, i.e. test against a mock Stripe API server
+
+A good example of this that is currently implemented is email:
+- In the `admin.spec.ts` file, we login to Ghost Admin and go through the 2FA flow. To successfully operate this just as a user would, we need to be able to receive and inspect emails that are sent from Ghost. The `EmailService` in test/services supports two different modes for this:
+1. Live mode with MailSlurp: when testing against a live site on Pro, we need to use a real email address that Ghost can actually send an email to. MailSlurp allows us to create live, ephemeral inboxes where we can receive emails, then query for the received emails via API and inspect the messages. In the example of 2FA, we login with a Staff user whose email in Ghost is set to the address of one of these ephemeral inboxes. Ghost sends the OTP code to this email address over the actual internet, and the tests inspect the received email to extract the code, then input it into Ghost, exactly as a real user would do.
+2. Mock mode with MailHog: Operating in live mode gives us more confidence because we're making fewer assumptions in our tests, but that confidence comes at a cost: speed and stability. Sending emails from Ghost(Pro) to a real address on the open internet incurs additional network latency and consequently has more potential for flaky behavior. For that reason, we also support running with a mocked email service, MailHog. We run MailHog locally (via docker compose), point Ghost's email configuration to the MailHog service so the emails are sent from Ghost > MailHog over the local network, then we retrieve the emails MailHog receives by an API call over the local network.
+
+An important distinction is that we aren't changing any behavior within Ghost — we're not injecting code into the application to handle things differently when in live vs mocked mode. We are simply pointing Ghost to either the real thing, or a mocked version of the real thing that we control. Put another way, Ghost shouldn't have to know or care that the external service has been mocked — it makes requests to the external service as usual, using the exact same code paths whether the tests are running in live or mocked mode.
+
 ## Prerequisites
 
 Before running these tests, ensure you have:
@@ -17,7 +47,7 @@ Before running these tests, ensure you have:
     yarn playwright install --with-deps chromium # Installs Chromium and its OS dependencies
     # or to install all default browsers (Chromium, Firefox, WebKit)
     # yarn playwright install --with-deps
-    ```
+
 
 ## Configuration
 
@@ -43,9 +73,7 @@ Then, populate `apps/e2e/.env` with the necessary values:
 *   `MAILSLURP_API_KEY` (required if `EMAIL_PROVIDER` is `mailslurp`): Your MailSlurp API key.
 *   `MAILSLURP_INBOX_ID` (required if `EMAIL_PROVIDER` is `mailslurp`): The ID of the MailSlurp inbox to use.
 
-**Important for 2FA:**
-*   When using `mailhog`, ensure the `ADMIN_USERNAME` is the email address your local Ghost instance is configured to send emails to (which MailHog will capture).
-*   When using `mailslurp`, ensure the Ghost user account associated with `ADMIN_USERNAME` has its email address set to the email address of the specified MailSlurp inbox.
+
 
 ### Playwright Configuration (`playwright.config.ts`)
 
