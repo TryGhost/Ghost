@@ -78,6 +78,17 @@ services:
     profiles: [ split ]
     tty: true
 
+  caddy:
+    image: caddy:latest
+    profiles: [ split ]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./.docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    restart: always
+
   ghost:
     <<: *service-template
     image: ghost-monorepo:latest
@@ -172,7 +183,7 @@ services:
   mailhog:
     image: mailhog/mailhog:latest
     container_name: ghost-mailhog
-    profiles: [ ghost ]
+    profiles: [ ghost, split ]
     ports:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web interface
@@ -180,6 +191,7 @@ services:
 volumes:
   mysql-data: {}
   redis-data: {}
+  caddy_data: {}
   node_modules_yarn_lock_hash: {}
   node_modules_ghost_root: {}
   node_modules_ghost_admin: {}
