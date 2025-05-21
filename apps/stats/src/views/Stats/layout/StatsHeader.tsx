@@ -30,15 +30,15 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                         }}>
                         Newsletters
                         </TabsTrigger>
-                        <TabsTrigger value="/locations/" onClick={() => {
-                            navigate('/locations/');
-                        }}>
-                        Locations
-                        </TabsTrigger>
                         <TabsTrigger value="/growth/" onClick={() => {
                             navigate('/growth/');
                         }}>
                         Growth
+                        </TabsTrigger>
+                        <TabsTrigger value="/locations/" onClick={() => {
+                            navigate('/locations/');
+                        }}>
+                        Locations
                         </TabsTrigger>
                     </TabsList>
                 </Tabs>
