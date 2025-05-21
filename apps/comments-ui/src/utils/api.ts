@@ -27,8 +27,12 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
         return fetch(url, options);
     }
 
-    // To fix pagination when we create new comments (or people post comments
-    // after you loaded the page), we need to only load comments created AFTER the page load
+    // Stores the timestamp of the newest comment loaded initially.
+    // This is used as a cursor for pagination to avoid loading comments
+    // that were already displayed, especially when new comments are added
+    // after the initial load or between page navigations.
+    // By fetching comments created at or before this timestamp,
+    // we prevent duplicates and ensure a smoother pagination experience.
     let firstCommentCreatedAt: null | string = null;
 
     const api = {

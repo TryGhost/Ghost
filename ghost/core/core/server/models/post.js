@@ -990,14 +990,18 @@ Post = ghostBookshelf.Model.extend({
             });
         }
 
-        // CASE: Convert post to lexical on the fly
+        // CASE: Convert post from Mobiledoc to Lexical editor format.
+        // This conversion is typically triggered during specific upgrade paths or administrative actions
+        // where existing content needs to be migrated to the Lexical editor format.
+        // The `convert_to_lexical` option signals that this conversion should be performed.
+        // It only proceeds if there is existing Mobiledoc content to convert.
         if (options.convert_to_lexical) {
             ops.push(async function convertToLexical() {
                 const mobiledoc = model.get('mobiledoc');
                 if (mobiledoc !== null) { // only run conversion when there is a mobiledoc string
                     const lexical = mobiledocToLexical(mobiledoc);
                     model.set('lexical', lexical);
-                    model.set('mobiledoc', null);
+                    model.set('mobiledoc', null); // Clear the old Mobiledoc content after successful conversion
                 }
             });
         }

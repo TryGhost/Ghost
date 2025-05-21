@@ -256,6 +256,7 @@
     "sinon": "15.2.0",
     "supertest": "6.3.4",
     "tmp": "0.2.3",
+    "node-sql-parser": "^4.10.0",
     "toml": "3.0.0",
     "tsx": "4.19.4",
     "typescript": "5.8.3"

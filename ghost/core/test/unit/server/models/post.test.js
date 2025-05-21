@@ -2,6 +2,7 @@
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
+const { Parser } = require('node-sql-parser');
 const testUtils = require('../../../utils');
 const knex = require('../../../../core/server/data/db').knex;
 const urlService = require('../../../../core/server/services/url');
@@ -42,7 +43,10 @@ describe('Unit: models/post', function () {
                 withRelated: ['tags']
             }).then(() => {
                 queries.length.should.eql(2);
-                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` != ? and `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                const parser = new Parser();
+                const ast1 = parser.astify(queries[0].sql);
+                const expectedAst1 = parser.astify('select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` != ? and `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                should(ast1).deep.equal(expectedAst1);
                 queries[0].bindings.should.eql([
                     testUtils.filterData.data.posts[3].id,
                     'photo',
@@ -51,7 +55,9 @@ describe('Unit: models/post', function () {
                     'published'
                 ]);
 
-                queries[1].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`id` != ? and `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by (SELECT count(*) FROM posts_tags WHERE post_id = posts.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                const ast2 = parser.astify(queries[1].sql);
+                const expectedAst2 = parser.astify('select `posts`.* from `posts` where ((`posts`.`id` != ? and `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by (SELECT count(*) FROM posts_tags WHERE post_id = posts.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                should(ast2).deep.equal(expectedAst2);
                 queries[1].bindings.should.eql([
                     testUtils.filterData.data.posts[3].id,
                     'photo',
@@ -77,7 +83,10 @@ describe('Unit: models/post', function () {
                 withRelated: ['authors', 'tags']
             }).then(() => {
                 queries.length.should.eql(2);
-                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where (((`posts`.`feature_image` is not null or `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` = ?)) and `posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` where `authors`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                const parser = new Parser();
+                const ast1 = parser.astify(queries[0].sql);
+                const expectedAst1 = parser.astify('select count(distinct posts.id) as aggregate from `posts` where (((`posts`.`feature_image` is not null or `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` = ?)) and `posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` where `authors`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                should(ast1).deep.equal(expectedAst1);
                 queries[0].bindings.should.eql([
                     'hash-audio',
                     'leslie',
@@ -86,7 +95,9 @@ describe('Unit: models/post', function () {
                     'published'
                 ]);
 
-                queries[1].sql.should.eql('select `posts`.* from `posts` where (((`posts`.`feature_image` is not null or `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` = ?)) and `posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` where `authors`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by (SELECT count(*) FROM posts_authors WHERE post_id = posts.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                const ast2 = parser.astify(queries[1].sql);
+                const expectedAst2 = parser.astify('select `posts`.* from `posts` where (((`posts`.`feature_image` is not null or `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` = ?)) and `posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` where `authors`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by (SELECT count(*) FROM posts_authors WHERE post_id = posts.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                should(ast2).deep.equal(expectedAst2);
                 queries[1].bindings.should.eql([
                     'hash-audio',
                     'leslie',
@@ -113,14 +124,19 @@ describe('Unit: models/post', function () {
                 withRelated: ['tags']
             }).then(() => {
                 queries.length.should.eql(2);
-                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                const parser = new Parser();
+                const ast1 = parser.astify(queries[0].sql);
+                const expectedAst1 = parser.astify('select count(distinct posts.id) as aggregate from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                should(ast1).deep.equal(expectedAst1);
                 queries[0].bindings.should.eql([
                     '2015-07-20',
                     'post',
                     'published'
                 ]);
 
-                queries[1].sql.should.eql('select `posts`.* from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                const ast2 = parser.astify(queries[1].sql);
+                const expectedAst2 = parser.astify('select `posts`.* from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                should(ast2).deep.equal(expectedAst2);
                 queries[1].bindings.should.eql([
                     '2015-07-20',
                     'post',
@@ -145,7 +161,10 @@ describe('Unit: models/post', function () {
                     withRelated: ['tags']
                 }).then(() => {
                     queries.length.should.eql(2);
-                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` and `posts_tags`.`sort_order` = 0 where `tags`.`slug` = ? and `tags`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                        const parser = new Parser();
+                        const ast1 = parser.astify(queries[0].sql);
+                        const expectedAst1 = parser.astify('select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` and `posts_tags`.`sort_order` = 0 where `tags`.`slug` = ? and `tags`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                        should(ast1).deep.equal(expectedAst1);
                     queries[0].bindings.should.eql([
                         'photo',
                         'public',
@@ -153,7 +172,9 @@ describe('Unit: models/post', function () {
                         'published'
                     ]);
 
-                    queries[1].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` and `posts_tags`.`sort_order` = 0 where `tags`.`slug` = ? and `tags`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                        const ast2 = parser.astify(queries[1].sql);
+                        const expectedAst2 = parser.astify('select `posts`.* from `posts` where ((`posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` and `posts_tags`.`sort_order` = 0 where `tags`.`slug` = ? and `tags`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                        should(ast2).deep.equal(expectedAst2);
                     queries[1].bindings.should.eql([
                         'photo',
                         'public',
@@ -178,7 +199,10 @@ describe('Unit: models/post', function () {
                     withRelated: ['authors']
                 }).then(() => {
                     queries.length.should.eql(2);
-                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` and `posts_authors`.`sort_order` = 0 where `authors`.`slug` = ? and `authors`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                        const parser = new Parser();
+                        const ast1 = parser.astify(queries[0].sql);
+                        const expectedAst1 = parser.astify('select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` and `posts_authors`.`sort_order` = 0 where `authors`.`slug` = ? and `authors`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                        should(ast1).deep.equal(expectedAst1);
                     queries[0].bindings.should.eql([
                         'leslie',
                         'public',
@@ -186,7 +210,9 @@ describe('Unit: models/post', function () {
                         'published'
                     ]);
 
-                    queries[1].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` and `posts_authors`.`sort_order` = 0 where `authors`.`slug` = ? and `authors`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                        const ast2 = parser.astify(queries[1].sql);
+                        const expectedAst2 = parser.astify('select `posts`.* from `posts` where ((`posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` and `posts_authors`.`sort_order` = 0 where `authors`.`slug` = ? and `authors`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                        should(ast2).deep.equal(expectedAst2);
                     queries[1].bindings.should.eql([
                         'leslie',
                         'public',
@@ -222,7 +248,10 @@ describe('Unit: models/post', function () {
                 }).then(() => {
                     queries.length.should.eql(1);
 
-                    queries[0].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`status` in (?, ?) and `posts`.`status` = ?) and (`posts`.`type` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC');
+                    const parser = new Parser();
+                    const ast = parser.astify(queries[0].sql);
+                    const expectedAst = parser.astify('select `posts`.* from `posts` where ((`posts`.`status` in (?, ?) and `posts`.`status` = ?) and (`posts`.`type` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC');
+                    should(ast).deep.equal(expectedAst);
                     queries[0].bindings.should.eql([
                         'published',
                         'draft',
