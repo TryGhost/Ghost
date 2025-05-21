@@ -103,7 +103,7 @@ function ActionButton({
     }
     const loaderClassName = isPrimary ? 'gh-portal-loadingicon' : 'gh-portal-loadingicon dark';
     return (
-        <button className={className} style={Style.button} onClick={onClick ? e => onClick(e) : undefined} disabled={disabled} type='submit' tabIndex={tabindex} data-test-button={dataTestId}>
+        <button className={className} style={Style.button} onClick={e => onClick(e)} disabled={disabled} type='submit' tabIndex={tabindex} data-test-button={dataTestId}>
             {isRunning ? <LoaderIcon className={loaderClassName} /> : label}
         </button>
     );
