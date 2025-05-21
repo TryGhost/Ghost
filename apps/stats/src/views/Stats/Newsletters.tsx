@@ -428,17 +428,22 @@ const Newsletters: React.FC = () => {
                                     <TableHead>
                                         Title
                                     </TableHead>
-                                    <TableHead>
+                                    <TableHead className='w-[60px]'>
                                         <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='date desc'>
                                             Date
                                         </SortButton>
                                     </TableHead>
-                                    <TableHead className='w-[10%] text-right'>
-                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='open_rate desc'>
-                                            Open rate
+                                    <TableHead className='w-[90px] text-right'>
+                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='sent_to desc'>
+                                            Sent
                                         </SortButton>
                                     </TableHead>
-                                    <TableHead className='w-[10%] text-right'>
+                                    <TableHead className='w-[90px] text-right'>
+                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='open_rate desc'>
+                                            Opens
+                                        </SortButton>
+                                    </TableHead>
+                                    <TableHead className='w-[90px] text-right'>
                                         <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='click_rate desc'>
                                             Clicks
                                         </SortButton>
@@ -463,14 +468,17 @@ const Newsletters: React.FC = () => {
                                                 }
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-sm text-muted-foreground">
+                                        <TableCell className="whitespace-nowrap text-sm">
                                             {formatDisplayDate(new Date(post.send_date))}
                                         </TableCell>
-                                        <TableCell className={`text-right font-mono text-sm ${post.total_opens === 0 && 'text-gray-700'}`}>
+                                        <TableCell className='text-right font-mono text-sm'>
+                                            {formatNumber(post.sent_to)}
+                                        </TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>
                                             <span className="group-hover:hidden">{formatPercentage(post.open_rate)}</span>
                                             <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_opens)}</span>
                                         </TableCell>
-                                        <TableCell className={`text-right font-mono text-sm ${post.total_clicks === 0 && 'text-gray-700'}`}>
+                                        <TableCell className='text-right font-mono text-sm'>
                                             <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
                                             <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_clicks)}</span>
                                         </TableCell>

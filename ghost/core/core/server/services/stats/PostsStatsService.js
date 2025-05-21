@@ -41,7 +41,7 @@ const errors = require('@tryghost/errors');
 
 /**
  * @typedef {Object} NewsletterSubscriberStats
- * @property {number} total - Total current subscriber count 
+ * @property {number} total - Total current subscriber count
  * @property {Array<{date: string, value: number}>} deltas - Daily subscription deltas
  */
 
@@ -442,31 +442,32 @@ class PostsStatsService {
             const order = options.order || 'date desc';
             const limitRaw = Number.parseInt(String(options.limit ?? 20), 10);
             const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 20;
-            
+
             // Parse order field and direction
             let [orderField, orderDirection = 'desc'] = order.split(' ');
-            
+
             // Map frontend order fields to database fields (simplified for ORDER BY)
             const orderFieldMap = {
                 date: 'send_date',
                 open_rate: 'open_rate',
-                click_rate: 'click_rate'
+                click_rate: 'click_rate',
+                sent_to: 'sent_to'
             };
-            
+
             // Validate order field
             if (!Object.keys(orderFieldMap).includes(orderField)) {
                 throw new errors.BadRequestError({
                     message: `Invalid order field: ${orderField}. Must be one of: date, open_rate, click_rate`
                 });
             }
-            
+
             // Validate order direction
             if (!['asc', 'desc'].includes(orderDirection.toLowerCase())) {
                 throw new errors.BadRequestError({
                     message: `Invalid order direction: ${orderDirection}`
                 });
             }
-            
+
             // Build date filters if provided
             let dateFilter = this.knex.raw('1=1');
             if (options.date_from) {
@@ -477,7 +478,7 @@ class PostsStatsService {
                     ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, options.date_to])
                     : this.knex.raw(`p.published_at <= ?`, [options.date_to]);
             }
-            
+
             // Subquery to count clicks from members_click_events
             const clicksSubquery = this.knex
                 .select('r.post_id')
@@ -487,7 +488,7 @@ class PostsStatsService {
                 .whereNotNull('r.post_id')
                 .groupBy('r.post_id')
                 .as('clicks');
-            
+
             // Build the query to get newsletter stats
             const query = this.knex
                 .select(
@@ -509,9 +510,9 @@ class PostsStatsService {
                 .whereRaw(dateFilter)
                 .orderBy(orderFieldMap[orderField], orderDirection)
                 .limit(limit);
-            
+
             const results = await query;
-            
+
             return {data: results};
         } catch (error) {
             logging.error(`Error fetching newsletter stats for newsletter ${newsletterId}:`, error);
@@ -521,7 +522,7 @@ class PostsStatsService {
 
     /**
      * Get newsletter subscriber statistics including total count and daily deltas for a specific newsletter
-     * 
+     *
      * @param {string} newsletterId - ID of the newsletter to get subscriber stats for
      * @param {Object} options - Query options
      * @param {string} [options.date_from] - Optional start date filter (YYYY-MM-DD)
@@ -561,7 +562,7 @@ class PostsStatsService {
             }
 
             const rawDeltas = await deltasQuery;
-            
+
             // Transform raw database results to properly typed objects
             const deltas = [];
             for (const row of rawDeltas) {
