@@ -3,6 +3,7 @@ import {afterEach, vi} from 'vitest';
 import {cleanup} from '@testing-library/react';
 
 // Automatically clean up after each test
+// eslint-disable-next-line
 afterEach(() => {
     cleanup();
 });
