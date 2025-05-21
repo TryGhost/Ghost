@@ -195,6 +195,7 @@
     "sendWelcomeEmail": true,
     "stripeDirect": false,
     "enableStripePromoCodes": false,
+    "enableTipsAndDonations": true,
     "emailAnalytics": true,
     "linkClickTrackingCacheMemberUuid": false,
     "backgroundJobs": {

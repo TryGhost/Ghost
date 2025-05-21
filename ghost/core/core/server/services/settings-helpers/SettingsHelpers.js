@@ -168,7 +168,7 @@ class SettingsHelpers {
     }
 
     areDonationsEnabled() {
-        return this.isStripeConnected();
+        return this.isStripeConnected() && this.config.get('enableTipsAndDonations');
     }
 
     createUnsubscribeUrl(uuid, options = {}) {
