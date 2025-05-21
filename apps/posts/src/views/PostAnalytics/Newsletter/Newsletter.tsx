@@ -58,24 +58,9 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                     background
                 >
                     <Recharts.LabelList
-                        className="capitalize"
+                        className="fill-black capitalize opacity-60"
                         dataKey="datatype"
                         fontSize={11}
-                        formatter={(value: string) => {
-                            let className = '';
-
-                            if (value === 'average') {
-                                className = 'fill-muted-foreground';
-                            } else if (data[1].value < 17) {
-                                className = 'fill-[#515151] mix-blend-exclusion';
-                            } else {
-                                className = 'fill-white';
-                            }
-
-                            return (
-                                <tspan className={`font-medium capitalize ${className}`}>{value}</tspan>
-                            );
-                        }}
                         position="insideStart"
                     />
                 </Recharts.RadialBar>
