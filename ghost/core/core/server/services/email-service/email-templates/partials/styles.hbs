@@ -218,6 +218,16 @@ h6 {
     text-rendering: optimizeLegibility;
 }
 
+.title-serif h1,
+.title-serif h2,
+.title-serif h3,
+.title-serif h4,
+.title-serif h5,
+.title-serif h6 {
+    font-family: Georgia, serif;
+    letter-spacing: -0.01em;
+}
+
 h1 {
     margin: 1.5em 0 0.5em 0;
     font-size: 42px;
@@ -535,10 +545,11 @@ figure blockquote p {
     LATEST POSTS TABLE
 ------------------------------------- */
 
-.latest-posts-header {
+h3.latest-posts-header {
     margin: 0;
     padding: 8px 0 8px;
     color: #15212A;
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 13px;
     font-weight: 600;
     text-transform: uppercase;
@@ -607,6 +618,7 @@ figure blockquote p {
 }
 
 .subscription-box h3 {
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 14px;
     font-weight: 600;
     text-transform: uppercase;
@@ -1384,6 +1396,7 @@ img.kg-cta-image {
 .kg-header-card.kg-v2 .kg-header-card-heading a,
 .kg-header-card.kg-v2 .kg-header-card-subheading a {
     color: inherit;
+    text-decoration: underline;
 }
 {{else}}
 .kg-header-card h2 {

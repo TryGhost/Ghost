@@ -2368,6 +2368,7 @@ describe('Email renderer', function () {
             });
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
             assert.deepEqual(data.classes, {
+                container: 'container title-serif',
                 title: 'post-title post-title-no-excerpt post-title-serif post-title-left',
                 titleLink: 'post-title-link post-title-link-left',
                 meta: 'post-meta post-meta-left',
