@@ -2,7 +2,7 @@ import FeedItemMenu from './FeedItemMenu';
 import React, {useEffect, useRef, useState} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LucideIcon, Skeleton} from '@tryghost/shade';
-import {Button as ButtonX, Heading, Icon, showToast} from '@tryghost/admin-x-design-system';
+import {Heading, Icon, showToast} from '@tryghost/admin-x-design-system';
 
 import APAvatar from '../global/APAvatar';
 import ImageLightbox, {useLightboxImages} from '../global/ImageLightbox';
@@ -399,7 +399,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             </div>
                                         }
                                     </div>
-                                    <div className='space-between relative z-[30] ml-[-7px] mt-1 flex'>
+                                    <div className='space-between relative z-[30] ml-[-8px] mt-1 flex'>
                                         {!isLoading ?
                                             showStats && <FeedItemStats
                                                 commentCount={commentCount}
@@ -464,7 +464,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         {object.name && <Heading className='mb-1 leading-tight break-anywhere' level={4} data-test-activity-heading>{object.name}</Heading>}
                                         <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content-large text-pretty text-[1.6rem] tracking-[-0.011em] text-gray-900 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'></div>
                                         {renderFeedAttachment(object, openLightbox)}
-                                        <div className='space-between ml-[-7px] mt-3 flex'>
+                                        <div className='space-between ml-[-8px] mt-3 flex'>
                                             {showStats && <FeedItemStats
                                                 commentCount={commentCount}
                                                 layout={layout}
@@ -529,18 +529,15 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
                                         {(object.type === 'Article') && renderFeedAttachment(object, openLightbox)}
-                                        {object.name && <Heading className='my-1 text-pretty leading-tight break-anywhere' level={5} data-test-activity-heading>{object.name}</Heading>}
-                                        {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'></div>}
+                                        {object.name && <Heading className='mt-2.5 text-pretty leading-tight break-anywhere' level={5} data-test-activity-heading>{object.name}</Heading>}
+                                        {(object.preview && object.type === 'Article') ? <div className='mt-1 line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'></div>}
                                         {(object.type === 'Note') && renderFeedAttachment(object, openLightbox)}
-                                        {(object.type === 'Article') && <ButtonX
-                                            className={`mt-3 self-start text-gray-900 transition-all hover:opacity-60`}
-                                            color='grey'
-                                            fullWidth={true}
+                                        {(object.type === 'Article') && <Button
+                                            className='mt-3 w-full'
                                             id='read-more'
-                                            label='Read more'
-                                            size='md'
-                                        />}
-                                        <div className='space-between ml-[-7px] mt-2 flex'>
+                                            variant='secondary'
+                                        >Read more</Button>}
+                                        <div className='space-between ml-[-8px] mt-2 flex'>
                                             {showStats && <FeedItemStats
                                                 commentCount={commentCount}
                                                 disabled={isPending}

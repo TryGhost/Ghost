@@ -119,10 +119,10 @@ const Note = () => {
                                                         repostCount={item.object.repostCount ?? 0}
                                                         type='Note'
                                                         onClick={() => {
-                                                            navigate(`/feed/${encodeURIComponent(item.object.id)}`);
+                                                            navigate(`/${item.object.type === 'Article' ? 'inbox' : 'feed'}/${encodeURIComponent(item.object.id)}`);
                                                         }}
                                                         onCommentClick={() => {
-                                                            navigate(`/feed/${encodeURIComponent(item.object.id)}?focusReply=true`);
+                                                            navigate(`/${item.object.type === 'Article' ? 'inbox' : 'feed'}/${encodeURIComponent(item.object.id)}?focusReply=true`);
                                                         }}
                                                     />
                                                 )
