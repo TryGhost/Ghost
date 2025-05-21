@@ -320,4 +320,45 @@ describe('ghost-stats.js', function () {
                 .to.equal(firstVisibilityListenerCount);
         });
     });
+
+    describe('GhostStats Initialization', function () {
+        it('should initialize successfully with proper configuration', function () {
+            mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
+            mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
+
+            expect(ghostStats.init()).to.be.true;
+            expect(mockWindow.Tinybird).to.exist;
+            expect(typeof mockWindow.Tinybird.trackEvent).to.equal('function');
+        });
+
+        it('should skip initialization in test environments', function () {
+            // Make it a test environment
+            Object.defineProperty(mockWindow, 'Cypress', {
+                value: {},
+                configurable: true
+            });
+
+            expect(ghostStats.init()).to.be.false;
+            mockWindow.Cypress = undefined;
+        });
+
+        it('should handle missing configuration gracefully', function () {
+            expect(ghostStats.init()).to.be.false;
+        });
+
+        it('should set up global Tinybird API when initialized', function () {
+            mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
+            mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
+
+            ghostStats.init();
+
+            expect(mockWindow.Tinybird).to.exist;
+            expect(typeof mockWindow.Tinybird.trackEvent).to.equal('function');
+            expect(typeof mockWindow.Tinybird._trackPageHit).to.equal('function');
+
+            // Test the global API works
+            mockWindow.Tinybird.trackEvent('test', {data: 'value'});
+            expect(mockFetch.calledOnce).to.be.true;
+        });
+    });
 });
