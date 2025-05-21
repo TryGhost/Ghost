@@ -309,6 +309,10 @@
             "value": true
         },
         {
+            "key": "donations_enabled",
+            "value": true
+        },
+        {
             "key": "members_invite_only",
             "value": false
         },
