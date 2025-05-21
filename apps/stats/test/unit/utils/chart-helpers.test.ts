@@ -1,3 +1,4 @@
+import moment from 'moment-timezone';
 import {STATS_RANGE_OPTIONS} from '@src/utils/constants';
 import {
     calculateYAxisWidth,
@@ -10,7 +11,6 @@ import {
     sanitizeChartData
 } from '@src/utils/chart-helpers';
 import {formatDisplayDate} from '@tryghost/shade';
-import moment from 'moment-timezone';
 import {vi} from 'vitest';
 
 // Mock the formatDisplayDate from @tryghost/shade
@@ -461,8 +461,7 @@ describe('Chart Helpers', function () {
                 _isOutlier?: boolean;
             }
             
-            const outlierEntry = result.find(item => 
-                item.date.startsWith('2023-02-') && 
+            const outlierEntry = result.find(item => item.date.startsWith('2023-02-') && 
                 (item as unknown as OutlierItem)._isOutlier === true
             );
             
@@ -556,7 +555,7 @@ describe('Chart Helpers', function () {
             // Test for last item handling in weekly aggregation
             const testData = [
                 {date: '2023-01-01', value: 10}, // Sunday
-                {date: '2023-01-08', value: 20}  // Next Sunday (new week)
+                {date: '2023-01-08', value: 20} // Next Sunday (new week)
             ];
             
             // This should trigger weekly aggregation
@@ -671,29 +670,29 @@ describe('Chart Helpers', function () {
             expect('_isOutlier' in result[0]).toBe(false);
         });
     
-    describe('formatDisplayDateWithRange', function () {
-        test('formats date as month and year for long ranges', function () {
-            const date = '2023-04-15';
-            const result = formatDisplayDateWithRange(date, 400); // Range > 365
+        describe('formatDisplayDateWithRange', function () {
+            test('formats date as month and year for long ranges', function () {
+                const date = '2023-04-15';
+                const result = formatDisplayDateWithRange(date, 400); // Range > 365
             
-            expect(result).toBe('Apr 2023');
-        });
+                expect(result).toBe('Apr 2023');
+            });
         
-        test('formats date with "Week of" prefix for medium ranges', function () {
-            const date = '2023-04-15';
-            const result = formatDisplayDateWithRange(date, 100); // Range >= 91 but <= 365
+            test('formats date with "Week of" prefix for medium ranges', function () {
+                const date = '2023-04-15';
+                const result = formatDisplayDateWithRange(date, 100); // Range >= 91 but <= 365
             
-            expect(result).toBe('Week of Apr 15, 2023');
-            expect(formatDisplayDate).toHaveBeenCalledWith(date);
-        });
+                expect(result).toBe('Week of Apr 15, 2023');
+                expect(formatDisplayDate).toHaveBeenCalledWith(date);
+            });
         
-        test('uses standard date format for short ranges', function () {
-            const date = '2023-04-15';
-            const result = formatDisplayDateWithRange(date, 30); // Range < 91
+            test('uses standard date format for short ranges', function () {
+                const date = '2023-04-15';
+                const result = formatDisplayDateWithRange(date, 30); // Range < 91
             
-            expect(result).toBe('Apr 15, 2023');
-            expect(formatDisplayDate).toHaveBeenCalledWith(date);
+                expect(result).toBe('Apr 15, 2023');
+                expect(formatDisplayDate).toHaveBeenCalledWith(date);
+            });
         });
-    });
     });
 });

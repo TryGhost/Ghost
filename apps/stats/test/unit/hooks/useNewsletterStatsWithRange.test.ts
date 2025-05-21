@@ -89,9 +89,9 @@ describe('Newsletter Stats Hooks with Range', function () {
 
             expect(mockGetRangeDates).toHaveBeenCalledWith(30);
             expect(mockUseNewsletterStatsByNewsletterId).toHaveBeenCalledWith(undefined, {
-                    date_from: '2023-01-01',
-                    date_to: '2023-01-30',
-                    order: 'date desc'
+                date_from: '2023-01-01',
+                date_to: '2023-01-30',
+                order: 'date desc'
             });
         });
 
@@ -100,9 +100,9 @@ describe('Newsletter Stats Hooks with Range', function () {
 
             expect(mockGetRangeDates).toHaveBeenCalledWith(7);
             expect(mockUseNewsletterStatsByNewsletterId).toHaveBeenCalledWith(undefined, {
-                    date_from: '2023-01-01',
-                    date_to: '2023-01-07',
-                    order: 'date desc'
+                date_from: '2023-01-01',
+                date_to: '2023-01-07',
+                order: 'date desc'
             });
         });
 
@@ -111,9 +111,9 @@ describe('Newsletter Stats Hooks with Range', function () {
 
             expect(mockGetRangeDates).toHaveBeenCalledWith(30);
             expect(mockUseNewsletterStatsByNewsletterId).toHaveBeenCalledWith(undefined, {
-                    date_from: '2023-01-01',
-                    date_to: '2023-01-30',
-                    order: 'open_rate desc'
+                date_from: '2023-01-01',
+                date_to: '2023-01-30',
+                order: 'open_rate desc'
             });
         });
 
@@ -122,9 +122,9 @@ describe('Newsletter Stats Hooks with Range', function () {
 
             expect(mockGetRangeDates).toHaveBeenCalledWith(90);
             expect(mockUseNewsletterStatsByNewsletterId).toHaveBeenCalledWith(undefined, {
-                    date_from: '2023-01-01',
-                    date_to: '2023-04-01',
-                    order: 'click_rate desc'
+                date_from: '2023-01-01',
+                date_to: '2023-04-01',
+                order: 'click_rate desc'
             });
         });
     });
@@ -135,8 +135,8 @@ describe('Newsletter Stats Hooks with Range', function () {
 
             expect(mockGetRangeDates).toHaveBeenCalledWith(30);
             expect(mockUseSubscriberCountByNewsletterId).toHaveBeenCalledWith(undefined, {
-                    date_from: '2023-01-01',
-                    date_to: '2023-01-30'
+                date_from: '2023-01-01',
+                date_to: '2023-01-30'
             });
         });
 
@@ -145,8 +145,8 @@ describe('Newsletter Stats Hooks with Range', function () {
 
             expect(mockGetRangeDates).toHaveBeenCalledWith(7);
             expect(mockUseSubscriberCountByNewsletterId).toHaveBeenCalledWith(undefined, {
-                    date_from: '2023-01-01',
-                    date_to: '2023-01-07'
+                date_from: '2023-01-01',
+                date_to: '2023-01-07'
             });
         });
 
@@ -155,8 +155,8 @@ describe('Newsletter Stats Hooks with Range', function () {
 
             expect(mockGetRangeDates).toHaveBeenCalledWith(90);
             expect(mockUseSubscriberCountByNewsletterId).toHaveBeenCalledWith(undefined, {
-                    date_from: '2023-01-01',
-                    date_to: '2023-04-01'
+                date_from: '2023-01-01',
+                date_to: '2023-04-01'
             });
         });
     });

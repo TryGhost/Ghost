@@ -12,8 +12,8 @@ vi.mock('@tryghost/admin-x-framework/api/stats', () => ({
         data: {
             stats: [],
             meta: {
-                totals: { paid: 0, free: 0, comped: 0 },
-                pagination: { page: 1, pages: 1, total: 0, limit: 15, next: null, prev: null }
+                totals: {paid: 0, free: 0, comped: 0},
+                pagination: {page: 1, pages: 1, total: 0, limit: 15, next: null, prev: null}
             }
         }
     }),
@@ -22,7 +22,7 @@ vi.mock('@tryghost/admin-x-framework/api/stats', () => ({
         data: {
             stats: [],
             meta: {
-                pagination: { page: 1, pages: 1, total: 0, limit: 15, next: null, prev: null }
+                pagination: {page: 1, pages: 1, total: 0, limit: 15, next: null, prev: null}
             }
         }
     }),
@@ -142,8 +142,8 @@ describe('Growth Stats', function () {
                 data: {
                     stats: [],
                     meta: {
-                        totals: { paid: 0, free: 0, comped: 0 },
-                        pagination: { page: 1, pages: 1, total: 0, limit: 15, next: null, prev: null }
+                        totals: {paid: 0, free: 0, comped: 0},
+                        pagination: {page: 1, pages: 1, total: 0, limit: 15, next: null, prev: null}
                     }
                 },
                 status: 'success',
@@ -164,7 +164,7 @@ describe('Growth Stats', function () {
                 data: {
                     stats: [],
                     meta: {
-                        pagination: { page: 1, pages: 1, total: 0, limit: 15, next: null, prev: null }
+                        pagination: {page: 1, pages: 1, total: 0, limit: 15, next: null, prev: null}
                     }
                 },
                 status: 'success',
@@ -238,8 +238,8 @@ describe('Growth Stats', function () {
                         {date: '2023-01-30', free: 12, paid: 6, comped: 2, paid_subscribed: 5, paid_canceled: 1}
                     ],
                     meta: {
-                        totals: { paid: 6, free: 12, comped: 2 },
-                        pagination: { page: 1, pages: 1, total: 2, limit: 15, next: null, prev: null }
+                        totals: {paid: 6, free: 12, comped: 2},
+                        pagination: {page: 1, pages: 1, total: 2, limit: 15, next: null, prev: null}
                     }
                 },
                 status: 'success',
@@ -295,7 +295,7 @@ describe('Growth Stats', function () {
                 {date: '2022-12-15', mrr: 500},
                 {date: '2022-12-30', mrr: 550},
                 {date: '2023-01-15', mrr: 600}, // Should be included
-                {date: '2023-01-30', mrr: 650}  // Should be included
+                {date: '2023-01-30', mrr: 650} // Should be included
             ];
             
             mockUseMrrHistory.mockReturnValue({
@@ -481,7 +481,7 @@ describe('Growth Stats', function () {
                         {date: '2022-12-15', mrr: 100}, // Before our range
                         {date: '2022-12-31', mrr: 150}, // Before our range
                         {date: '2023-01-15', mrr: 200}, // In our range
-                        {date: '2023-01-30', mrr: 250}  // In our range
+                        {date: '2023-01-30', mrr: 250} // In our range
                     ]
                 }
             });
