@@ -494,6 +494,12 @@ figure blockquote p {
     line-height: 1.5em;
 }
 
+.feature-image img {
+    {{#hasFeature "emailCustomizationAlpha"}}
+    {{imageCorners}};
+    {{/hasFeature}}
+}
+
 .kg-card-figcaption {
     font-size: 13px;
 }
