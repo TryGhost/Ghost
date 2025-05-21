@@ -77,6 +77,19 @@ services:
     profiles: [ split ]
     tty: true
 
+  nginx:
+    image: nginx:latest
+    profiles: [ split ]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./.docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: always
+    depends_on:
+      - server
+      - admin
+
   ghost:
     <<: *service-template
     image: ghost-monorepo:latest
