@@ -3,8 +3,8 @@ import ActivityItem from '@src/components/activities/ActivityItem';
 import Layout from '@src/components/layout';
 import React, {useState} from 'react';
 import {Account} from '@src/api/activitypub';
-import {Button, H2, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade';
-import {NoValueLabel, showToast} from '@tryghost/admin-x-design-system';
+import {Button, H2, LucideIcon, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade';
+import {showToast} from '@tryghost/admin-x-design-system';
 import {useBlockDomainMutationForUser, useBlockMutationForUser, useBlockedAccountsForUser, useBlockedDomainsForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@hooks/use-activity-pub-queries';
 
 const Moderation: React.FC = () => {
@@ -102,7 +102,8 @@ const Moderation: React.FC = () => {
                         </TabsList>
                         <TabsContent className='mt-2' value="blocked_users">
                             {!blockedAccountsLoading && blockedAccounts.length === 0 ? (
-                                <NoValueLabel icon='block'>
+                                <NoValueLabel>
+                                    <NoValueLabelIcon><LucideIcon.Ban /></NoValueLabelIcon>
                                     <div className='mt-2 flex max-w-[400px] flex-col items-center gap-1 text-center'>
                                         <p>When you block someone, they won&apos;t be able to follow you or interact with your content on the social web.</p>
                                     </div>
@@ -153,7 +154,8 @@ const Moderation: React.FC = () => {
                         </TabsContent>
                         <TabsContent className='mt-[11px]' value="blocked_domains">
                             {!blockedDomainsLoading && blockedDomains.length === 0 ? (
-                                <NoValueLabel icon='block'>
+                                <NoValueLabel>
+                                    <NoValueLabelIcon><LucideIcon.Ban /></NoValueLabelIcon>
                                     <div className='mt-2 flex max-w-[400px] flex-col items-center gap-1 text-center'>
                                         <p>When you block a domain, all users from that domain won&apos;t be able to follow you or interact with your content.</p>
                                     </div>

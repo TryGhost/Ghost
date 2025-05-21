@@ -5,8 +5,8 @@ import React, {useEffect, useRef} from 'react';
 import getName from '@src/utils/get-name';
 import getUsername from '@src/utils/get-username';
 import {Actor} from '@src/api/activitypub';
-import {Button, LoadingIndicator} from '@tryghost/shade';
-import {List, NoValueLabel} from '@tryghost/admin-x-design-system';
+import {Button, LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade';
+import {List} from '@tryghost/admin-x-design-system';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
@@ -58,7 +58,8 @@ const ActorList: React.FC<ActorListProps> = ({
         <div className='pt-3'>
             {
                 hasNextPage === false && actors.length === 0 ? (
-                    <NoValueLabel icon='user-add'>
+                    <NoValueLabel>
+                        <NoValueLabelIcon><LucideIcon.UserRoundPlus /></NoValueLabelIcon>
                         {noResultsMessage}
                     </NoValueLabel>
                 ) : (
