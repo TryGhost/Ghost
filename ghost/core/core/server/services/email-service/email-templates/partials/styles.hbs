@@ -812,11 +812,18 @@ a[data-flickr-embed] img {
     background-image: radial-gradient(circle at center, #5b5f66, #1d1f21);
     display: block;
     text-decoration: none !important;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    {{imageCorners}};
+    {{/hasFeature}}
 }
 
 .kg-video-preview table {
     background-size: cover;
     min-height: 200px; /* for when images aren't loaded */
+    {{#hasFeature "emailCustomizationAlpha"}}
+    {{imageCorners}};
+    {{/hasFeature}}
+    overflow: hidden;
 }
 
 .kg-video-play-button {
