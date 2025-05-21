@@ -1,0 +1,21 @@
+{
+	local_certs
+}
+
+localhost {
+    reverse_proxy server:2368
+}
+
+site.ghost {
+	reverse_proxy server:2368
+}
+
+admin.ghost {
+    handle /ember-cli-live-reload.js {
+        reverse_proxy admin:4200
+    }
+
+    handle {
+        reverse_proxy server:2368
+    }
+}
