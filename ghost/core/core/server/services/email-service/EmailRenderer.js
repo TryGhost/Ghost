@@ -1043,7 +1043,7 @@ class EmailRenderer {
         }
 
         if (value === 'square') {
-            return 'border-radius: 0;';
+            return null;
         }
 
         return null;

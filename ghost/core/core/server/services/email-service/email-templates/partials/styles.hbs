@@ -805,6 +805,13 @@ a[data-flickr-embed] img {
     width: 100% !important;
     height: auto !important;
     padding-top: 20px;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#if imageCorners}}
+    {{imageCorners}};
+    padding-top: 0 !important;
+    margin-top: 20px !important;
+    {{/if}}
+    {{/hasFeature}}
 }
 
 .kg-video-preview {
