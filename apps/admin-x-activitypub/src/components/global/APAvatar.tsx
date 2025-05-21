@@ -2,8 +2,7 @@ import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Icon} from '@tryghost/admin-x-design-system';
-import {Skeleton} from '@tryghost/shade';
+import {LucideIcon, Skeleton} from '@tryghost/shade';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 type AvatarSize = '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'notification';
@@ -24,7 +23,7 @@ interface APAvatarProps {
 }
 
 const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, disabled = false, className = ''}) => {
-    let iconSize = 18;
+    let iconSize = 20;
     let containerClass = `shrink-0 items-center justify-center rounded-full overflow-hidden relative z-10 flex bg-black/5 dark:bg-gray-900 ${size === 'lg' || disabled ? '' : 'cursor-pointer'} ${className}`;
     let imageClass = 'z-10 object-cover';
     const [iconUrl, setIconUrl] = useState(author?.icon?.url);
@@ -103,11 +102,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
             title={title}
             onClick={disabled ? undefined : handleClick}
         >
-            <Icon
-                colorClass='text-gray-600'
-                name='user'
-                size={iconSize}
-            />
+            <LucideIcon.UserRound className='text-gray-600' size={iconSize} strokeWidth={1.5} />
         </div>
     );
 };

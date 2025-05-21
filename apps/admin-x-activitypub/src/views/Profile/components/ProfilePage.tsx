@@ -6,8 +6,8 @@ import ProfileMenu from './ProfileMenu';
 import UnblockButton from './UnblockButton';
 import {Account} from '@src/api/activitypub';
 import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H2, H4, LucideIcon, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from '@tryghost/shade';
-import {Icon, showToast} from '@tryghost/admin-x-design-system';
 import {SettingAction} from '@src/views/Preferences/components/Settings';
+import {showToast} from '@tryghost/admin-x-design-system';
 import {useAccountForUser, useBlockDomainMutationForUser, useBlockMutationForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@src/hooks/use-activity-pub-queries';
 import {useEffect, useRef, useState} from 'react';
 import {useNavigationStack, useParams} from '@tryghost/admin-x-framework';
@@ -189,7 +189,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                             <H2 className='mt-4 truncate break-anywhere'>{!isLoadingAccount ? account?.name : <Skeleton className='w-32' />}</H2>
                             <a className='group/handle mb-4 inline-flex max-w-full items-center gap-1 text-[1.5rem] text-gray-800 break-anywhere hover:text-gray-900' href={account?.url} rel='noopener noreferrer' target='_blank'>
                                 <span className='truncate'>{!isLoadingAccount ? account?.handle : <Skeleton className='w-full max-w-56' />}</span>
-                                <Icon className='opacity-0 transition-opacity group-hover/handle:opacity-100' name='arrow-top-right' size='xs'/>
+                                <LucideIcon.ArrowUpRight className='opacity-0 transition-opacity will-change-[opacity] group-hover/handle:opacity-100' size={16} strokeWidth={1.5} />
                             </a>
                             {(account?.bio || customFields?.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out break-anywhere [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
                                 {!isLoadingAccount ?
