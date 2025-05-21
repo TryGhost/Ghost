@@ -186,3 +186,8 @@ temp*.sql
 # yalc — for linking local packages in a docker compatible way
 yalc.lock
 .yalc
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
