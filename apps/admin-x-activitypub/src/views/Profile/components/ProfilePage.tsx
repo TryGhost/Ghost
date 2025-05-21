@@ -5,9 +5,8 @@ import Layout from '@src/components/layout';
 import ProfileMenu from './ProfileMenu';
 import UnblockButton from './UnblockButton';
 import {Account} from '@src/api/activitypub';
-import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H2, H4, LucideIcon, NoValueLabel, NoValueLabelIcon, Skeleton} from '@tryghost/shade';
-import {Icon, Tab, TabView, showToast} from '@tryghost/admin-x-design-system';
-import {ProfileTab} from '../Profile';
+import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H2, H4, LucideIcon, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from '@tryghost/shade';
+import {Icon, showToast} from '@tryghost/admin-x-design-system';
 import {SettingAction} from '@src/views/Preferences/components/Settings';
 import {useAccountForUser, useBlockDomainMutationForUser, useBlockMutationForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@src/hooks/use-activity-pub-queries';
 import {useEffect, useRef, useState} from 'react';
@@ -37,13 +36,8 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
     followingTab,
     followersTab
 }) => {
-    const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
     const params = useParams();
     const {canGoBack} = useNavigationStack();
-
-    useEffect(() => {
-        setSelectedTab('posts');
-    }, [params.handle]);
 
     const blockMutation = useBlockMutationForUser('index');
     const unblockMutation = useUnblockMutationForUser('index');
@@ -91,41 +85,6 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
             type: 'success'
         });
     };
-
-    const tabs = [
-        {
-            id: 'posts',
-            title: 'Posts',
-            contents: ((isBlocked || isDomainBlocked) && !viewBlockedPosts) ?
-                <NoValueLabel>
-                    <NoValueLabelIcon><LucideIcon.Ban /></NoValueLabelIcon>
-                    <div className='mt-2 flex flex-col items-center gap-0.5'>
-                        <H4>{account.name} is blocked</H4>
-                        <p>You can view the posts, but it won&apos;t unblock the user.</p>
-                        <Button className='mt-4' variant='secondary' onClick={() => setViewBlockedPosts(true)}>View posts</Button>
-                    </div>
-                </NoValueLabel> :
-                postsTab
-        },
-        !params.handle && {
-            id: 'likes',
-            title: 'Likes',
-            contents: likesTab,
-            counter: account?.likedCount || 0
-        },
-        {
-            id: 'following',
-            title: 'Following',
-            contents: followingTab,
-            counter: account?.followingCount || '0'
-        },
-        {
-            id: 'followers',
-            title: 'Followers',
-            contents: followersTab,
-            counter: account?.followerCount || '0'
-        }
-    ].filter(Boolean) as Tab<ProfileTab>[];
 
     const [isExpanded, setisExpanded] = useState(false);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -255,12 +214,45 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                     onClick={toggleExpand}
                                 >{isExpanded ? 'Show less' : 'Show all'}</Button>}
                             </div>)}
-                            <TabView<ProfileTab>
-                                containerClassName='mt-6'
-                                selectedTab={selectedTab}
-                                tabs={tabs}
-                                onTabChange={setSelectedTab}
-                            />
+                            <Tabs className='mt-5' defaultValue='posts' variant='underline'>
+                                <TabsList>
+                                    <TabsTrigger value="posts">Posts</TabsTrigger>
+                                    {!params.handle && <TabsTrigger value="likes">
+                                        Likes
+                                        <TabsTriggerCount>{account?.likedCount || 0}</TabsTriggerCount>
+                                    </TabsTrigger>}
+                                    <TabsTrigger value="following">
+                                        Following
+                                        <TabsTriggerCount>{account?.followingCount || 0}</TabsTriggerCount>
+                                    </TabsTrigger>
+                                    <TabsTrigger value="followers">
+                                        Followers
+                                        <TabsTriggerCount>{account?.followerCount || 0}</TabsTriggerCount>
+                                    </TabsTrigger>
+                                </TabsList>
+                                <TabsContent value='posts'>
+                                    {((isBlocked || isDomainBlocked) && !viewBlockedPosts) ?
+                                        <NoValueLabel>
+                                            <NoValueLabelIcon><LucideIcon.Ban /></NoValueLabelIcon>
+                                            <div className='mt-2 flex flex-col items-center gap-0.5'>
+                                                <H4>{account.name} is blocked</H4>
+                                                <p>You can view the posts, but it won&apos;t unblock the user.</p>
+                                                <Button className='mt-4' variant='secondary' onClick={() => setViewBlockedPosts(true)}>View posts</Button>
+                                            </div>
+                                        </NoValueLabel> :
+                                        postsTab
+                                    }
+                                </TabsContent>
+                                {!params.handle && <TabsContent value='likes'>
+                                    {likesTab}
+                                </TabsContent>}
+                                <TabsContent value='following'>
+                                    {followingTab}
+                                </TabsContent>
+                                <TabsContent value='followers'>
+                                    {followersTab}
+                                </TabsContent>
+                            </Tabs>
                         </div>
                     </>
                 </div>

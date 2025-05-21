@@ -6,7 +6,6 @@ import getName from '@src/utils/get-name';
 import getUsername from '@src/utils/get-username';
 import {Actor} from '@src/api/activitypub';
 import {Button, LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade';
-import {List} from '@tryghost/admin-x-design-system';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
@@ -63,7 +62,7 @@ const ActorList: React.FC<ActorListProps> = ({
                         {noResultsMessage}
                     </NoValueLabel>
                 ) : (
-                    <List>
+                    <div className='flex flex-col'>
                         {actors.map(({actor, isFollowing, blockedByMe, domainBlockedByMe}) => {
                             return (
                                 <React.Fragment key={actor.id}>
@@ -92,7 +91,7 @@ const ActorList: React.FC<ActorListProps> = ({
                                 </React.Fragment>
                             );
                         })}
-                    </List>
+                    </div>
                 )
             }
             <div ref={loadMoreRef} className='h-1'></div>
