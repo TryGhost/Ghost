@@ -19,6 +19,10 @@ type ChartDataItem = {
     extra?: string;
 };
 
+type ChartDataItemWithOutlier = ChartDataItem & {
+    _isOutlier: boolean;
+};
+
 describe('chart-helpers', () => {
     describe('getPeriodText', () => {
         it('returns correct text for known ranges', () => {
@@ -472,7 +476,7 @@ describe('chart-helpers', () => {
                     {date: '2024-01-02', value: 110},
                     {date: '2024-01-03', value: 120}
                 ];
-                const result = detectBulkImports(data, 'value');
+                const result = detectBulkImports(data, 'value') as ChartDataItemWithOutlier[];
                 expect(result.every(item => !item._isOutlier)).toBe(true);
             });
 
@@ -515,7 +519,7 @@ describe('chart-helpers', () => {
                     {date: '2024-01-02', value: 1000000},
                     {date: '2024-01-03', value: 100}
                 ];
-                const result = detectBulkImports(data, 'value');
+                const result = detectBulkImports(data, 'value') as ChartDataItemWithOutlier[];
                 expect(result[1]._isOutlier).toBe(true);
                 expect(result[0]._isOutlier).toBe(false);
                 expect(result[2]._isOutlier).toBe(false);
