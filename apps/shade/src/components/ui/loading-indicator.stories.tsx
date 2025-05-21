@@ -2,7 +2,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 import {LoadingIndicator} from './loading-indicator';
 
 const meta = {
-    title: 'Components / LoadingIndicator',
+    title: 'Components / Loading indicator',
     component: LoadingIndicator,
     tags: ['autodocs']
 } satisfies Meta<typeof LoadingIndicator>;
