@@ -8305,10 +8305,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/node@*", "@types/node@22.15.19", "@types/node@>=10.0.0", "@types/node@>=18.0.0", "@types/node@>=8.1.0":
-  version "22.15.19"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.15.19.tgz#ba9f321675243af0456d607fa82a4865931e0cef"
-  integrity sha512-3vMNr4TzNQyjHcRZadojpRaD9Ofr6LsonZAoQ+HMUa/9ORTPoxVIw0e0mpqWpdjj8xybyCM+oKOUH2vwFu/oEw==
+"@types/node@*", "@types/node@22.15.21", "@types/node@>=10.0.0", "@types/node@>=18.0.0", "@types/node@>=8.1.0":
+  version "22.15.21"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.15.21.tgz#196ef14fe20d87f7caf1e7b39832767f9a995b77"
+  integrity sha512-EV/37Td6c+MgKAbkcLG6vqZ2zEYHD7bvSrzqqs2RIhbA6w3x+Dqz8MZM3sP6kGTeLrdoOgKZe+Xja7tUB2DNkQ==
   dependencies:
     undici-types "~6.21.0"
 
@@ -8529,10 +8529,10 @@
   resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-9.0.7.tgz#b14cebc75455eeeb160d5fe23c2fcc0c64f724d8"
   integrity sha512-WUtIVRUZ9i5dYXefDEAI7sh9/O7jGvHg7Df/5O/gtH3Yabe5odI3UWopVR1qbPXQtvOxWu3mM4XxlYeZtMWF4g==
 
-"@types/validator@13.15.0":
-  version "13.15.0"
-  resolved "https://registry.yarnpkg.com/@types/validator/-/validator-13.15.0.tgz#d4643730536900190bb476a1dda0a4897c8881e2"
-  integrity sha512-nh7nrWhLr6CBq9ldtw0wx+z9wKnnv/uTVLA9g/3/TcOYxbpOSZE+MhKPmWqU+K0NvThjhv12uD8MuqijB0WzEA==
+"@types/validator@13.15.1":
+  version "13.15.1"
+  resolved "https://registry.yarnpkg.com/@types/validator/-/validator-13.15.1.tgz#52f3617eb5ba30dd0018380c64568440d0b4de0a"
+  integrity sha512-9gG6ogYcoI2mCMLdcO0NYI0AYrbxIjv0MDmy/5Ywo6CpWWrqYayc+mmgxRsCgtcGJm9BSbXkMsmxGah1iGHAAQ==
 
 "@types/yargs-parser@*":
   version "21.0.0"
@@ -32009,10 +32009,10 @@ zip-stream@^4.1.0:
     compress-commons "^4.1.0"
     readable-stream "^3.6.0"
 
-zod@3.25.7:
-  version "3.25.7"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.7.tgz#74184ecfe03ef8c67a62393008117b3b8d9cc48c"
-  integrity sha512-YGdT1cVRmKkOg6Sq7vY7IkxdphySKnXhaUmFI4r4FcuFVNgpCb9tZfNwXbT6BPjD5oz0nubFsoo9pIqKrDcCvg==
+zod@3.25.9:
+  version "3.25.9"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.9.tgz#4c774effd561420b717de8b2b123196db2fd266a"
+  integrity sha512-ho97WAF12mhTHd6/1lBbAPJP0cWKvWra6Stl2Tw93EBsIMoHME3bhGUGBXT0AaVmIWtOB1cFh98T+wb9RClo7g==
 
 zrender@5.6.0:
   version "5.6.0"

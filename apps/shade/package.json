@@ -40,7 +40,7 @@
         "@testing-library/react": "14.3.1",
         "@testing-library/react-hooks": "8.0.1",
         "@types/lodash-es": "4.17.12",
-        "@types/node": "22.15.19",
+        "@types/node": "22.15.21",
         "@vitejs/plugin-react": "4.4.1",
         "c8": "8.0.1",
         "chai": "4.5.0",
@@ -100,7 +100,7 @@
         "tailwind-merge": "2.6.0",
         "tailwindcss": "3.4.17",
         "tailwindcss-animate": "1.0.7",
-        "zod": "3.25.7"
+        "zod": "3.25.9"
     },
     "peerDependencies": {
         "react": "^18.2.0",

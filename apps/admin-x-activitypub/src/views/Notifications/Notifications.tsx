@@ -12,7 +12,7 @@ import Layout from '@components/layout';
 import NotificationIcon from './components/NotificationIcon';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {Notification} from '@src/api/activitypub';
-import {handleProfileClickRR} from '@utils/handle-profile-click';
+import {handleProfileClick} from '@utils/handle-profile-click';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {stripHtml} from '@src/utils/content-formatters';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -100,7 +100,7 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
                 className={actorClass}
                 onClick={(e) => {
                     e?.stopPropagation();
-                    handleProfileClickRR(firstActor.handle, navigate);
+                    handleProfileClick(firstActor.handle, navigate);
                 }}
             >
                 {firstActor.name}
@@ -207,7 +207,7 @@ const Notifications: React.FC = () => {
             if (group.actors.length > 1) {
                 toggleOpen(group.id || `${group.type}_${index}`);
             } else {
-                handleProfileClickRR(group.actors[0].handle, navigate);
+                handleProfileClick(group.actors[0].handle, navigate);
             }
             break;
         case 'mention':
@@ -303,7 +303,7 @@ const Notifications: React.FC = () => {
                                                                         className='flex items-center break-anywhere hover:opacity-80'
                                                                         onClick={(e) => {
                                                                             e?.stopPropagation();
-                                                                            handleProfileClickRR(actor.handle, navigate);
+                                                                            handleProfileClick(actor.handle, navigate);
                                                                         }}
                                                                     >
                                                                         <APAvatar author={{
