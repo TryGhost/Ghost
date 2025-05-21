@@ -97,7 +97,7 @@ const Sidebar: React.FC = () => {
     }, [filter]);
 
     const {settings, config} = useGlobalData();
-    const [hasTipsAndDonations] = getSettingValues(settings, ['enable_donations']) as [string];
+    const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [string];
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
 
