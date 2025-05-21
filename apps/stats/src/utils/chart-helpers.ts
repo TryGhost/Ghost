@@ -93,7 +93,7 @@ function determineAggregationStrategy(range: number, dateSpan: number, aggregati
 
     // For 'exact' aggregation type with long ranges
     if (aggregationType === 'exact' && (range > 356 || (range === -1 && dateSpan > 150))) {
-        return 'monthly-exact';
+        return 'monthly';
     }
 
     // For weekly aggregation
@@ -107,27 +107,6 @@ function determineAggregationStrategy(range: number, dateSpan: number, aggregati
     }
 
     return 'none';
-}
-
-/**
- * Aggregates monthly data for exact values using simple month-end approach
- */
-function aggregateByMonthSimple<T extends {date: string}>(data: T[]): T[] {
-    const monthMap = new Map<string, {date: string; item: T}>();
-
-    data.forEach((item) => {
-        const monthKey = getMonthKey(item.date);
-        const currentDate = item.date;
-        const existingEntry = monthMap.get(monthKey);
-
-        if (!existingEntry || moment(currentDate).isAfter(moment(existingEntry.date))) {
-            monthMap.set(monthKey, {date: currentDate, item: {...item}});
-        }
-    });
-
-    return Array.from(monthMap.values())
-        .sort((a, b) => moment(a.date).diff(moment(b.date)))
-        .map(({item}) => item);
 }
 
 /**
@@ -200,37 +179,54 @@ function aggregateByMonth<T extends {date: string}>(data: T[], fieldName: keyof 
     let monthTotal = 0;
     let monthCount = 0;
     let lastValue = 0;
+    let lastItem: T | null = null;
 
     data.forEach((item, index) => {
         const itemDate = moment(item.date);
         const value = Number(item[fieldName]);
+        const isLikelyOutlier = aggregationType === 'sum' && value > 10000;
 
         if (isInSameMonth(itemDate.format('YYYY-MM-DD'), currentMonth.format('YYYY-MM-DD'))) {
-            const isLikelyOutlier = aggregationType === 'sum' && value > 10000;
             if (!isLikelyOutlier) {
                 monthTotal += value;
                 monthCount += 1;
             }
             lastValue = value;
+            lastItem = item;
         } else {
-            monthlyData.push({
-                ...data[index - 1],
-                date: currentMonth.format('YYYY-MM-DD'),
-                [fieldName]: calculateAggregatedValue(monthTotal, monthCount, lastValue, aggregationType)
-            } as T);
+            if (aggregationType === 'exact' && lastItem) {
+                monthlyData.push({
+                    ...lastItem,
+                    [fieldName]: lastValue
+                } as T);
+            } else {
+                monthlyData.push({
+                    ...data[index - 1],
+                    date: currentMonth.format('YYYY-MM-DD'),
+                    [fieldName]: calculateAggregatedValue(monthTotal, monthCount, lastValue, aggregationType)
+                } as T);
+            }
 
             currentMonth = itemDate.startOf('month');
-            monthTotal = value;
-            monthCount = 1;
+            monthTotal = isLikelyOutlier ? 0 : value;
+            monthCount = isLikelyOutlier ? 0 : 1;
             lastValue = value;
+            lastItem = item;
         }
 
         if (index === data.length - 1) {
-            monthlyData.push({
-                ...item,
-                date: currentMonth.format('YYYY-MM-DD'),
-                [fieldName]: calculateAggregatedValue(monthTotal, monthCount, lastValue, aggregationType)
-            } as T);
+            if (aggregationType === 'exact' && lastItem) {
+                monthlyData.push({
+                    ...lastItem,
+                    [fieldName]: lastValue
+                } as T);
+            } else {
+                monthlyData.push({
+                    ...item,
+                    date: currentMonth.format('YYYY-MM-DD'),
+                    [fieldName]: calculateAggregatedValue(monthTotal, monthCount, lastValue, aggregationType)
+                } as T);
+            }
         }
     });
 
@@ -303,9 +299,7 @@ export const sanitizeChartData = <T extends {date: string}>(
         result = aggregateByWeek(data, fieldName, aggregationType);
         break;
     case 'monthly':
-        result = aggregationType === 'exact' ?
-            aggregateByMonthSimple(data) :
-            aggregateByMonth(data, fieldName, aggregationType);
+        result = aggregateByMonth(data, fieldName, aggregationType);
         break;
     default:
         result = data;
@@ -327,6 +321,5 @@ export {
     aggregateByWeek,
     aggregateByMonth,
     aggregateByMonthExact,
-    aggregateByMonthSimple,
     determineAggregationStrategy
 };

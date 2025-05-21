@@ -1,12 +1,11 @@
+import moment from 'moment-timezone';
+import {STATS_RANGE_OPTIONS} from '@src/utils/constants';
+import {describe, expect, it} from 'vitest';
 import {
-    aggregateByMonthSimple,
     determineAggregationStrategy,
     getPeriodText,
     sanitizeChartData
 } from '@src/utils/chart-helpers';
-import {STATS_RANGE_OPTIONS} from '@src/utils/constants';
-import {describe, expect, it} from 'vitest';
-import moment from 'moment-timezone';
 
 type ChartDataItem = {
     date: string;
@@ -148,9 +147,12 @@ describe('chart-helpers', () => {
 
                 const result = sanitizeChartData(data, 400, 'value', 'exact');
                 
-                // Should include month boundaries and significant changes
-                expect(result.length).toBeGreaterThan(4); // Should include first/last days of months and significant changes
-                expect(result.some(item => item.value === 250)).toBe(true); // Should include significant change point
+                // Should keep only end-of-month values
+                expect(result.length).toBe(2);
+                expect(result[0].date).toBe('2024-01-31');
+                expect(result[0].value).toBe(155);
+                expect(result[1].date).toBe('2024-02-28');
+                expect(result[1].value).toBe(255);
             });
 
             it('handles exact aggregation type for monthly data', () => {
@@ -165,17 +167,12 @@ describe('chart-helpers', () => {
 
                 const result = sanitizeChartData(data, 400, 'value', 'exact');
                 
-                // Should include first and last day of each month
-                expect(result.some(item => item.date === '2024-01-01')).toBe(true);
-                expect(result.some(item => item.date === '2024-01-31')).toBe(true);
-                expect(result.some(item => item.date === '2024-02-01')).toBe(true);
-                expect(result.some(item => item.date === '2024-02-28')).toBe(true);
-
-                // Values should be preserved
-                const jan31 = result.find(item => item.date === '2024-01-31');
-                const feb28 = result.find(item => item.date === '2024-02-28');
-                expect(jan31?.value).toBe(20);
-                expect(feb28?.value).toBe(35);
+                // Should keep only end-of-month values
+                expect(result.length).toBe(2);
+                expect(result[0].date).toBe('2024-01-31');
+                expect(result[0].value).toBe(20);
+                expect(result[1].date).toBe('2024-02-28');
+                expect(result[1].value).toBe(35);
             });
 
             it('handles simple month-end aggregation', () => {
@@ -191,7 +188,7 @@ describe('chart-helpers', () => {
                     {date: '2024-03-31', value: 160} // Last day of Mar
                 ];
 
-                const result = aggregateByMonthSimple(data);
+                const result = sanitizeChartData(data, 400, 'value', 'exact');
 
                 // Should keep only the last day of each month
                 expect(result.length).toBe(3);
@@ -210,7 +207,7 @@ describe('chart-helpers', () => {
                     {date: '2024-05-31', value: 140} // Last day of May (Apr missing)
                 ];
 
-                const result = aggregateByMonthSimple(data);
+                const result = sanitizeChartData(data, 400, 'value', 'exact');
 
                 // Should preserve the data as is since they're already month-end values
                 expect(result.length).toBe(3);
@@ -229,7 +226,7 @@ describe('chart-helpers', () => {
                     {date: '2024-03-31', value: 120, extra: 'info3'}
                 ];
 
-                const result = aggregateByMonthSimple(data);
+                const result = sanitizeChartData(data, 400, 'value', 'exact');
 
                 expect(result.length).toBe(3);
                 expect(result[0].extra).toBe('info1');
@@ -240,37 +237,118 @@ describe('chart-helpers', () => {
             it('integrates correctly with sanitizeChartData', () => {
                 const data = [
                     {date: '2024-01-01', value: 100},
-                    {date: '2024-01-15', value: 120}, // Mid-month significant change
-                    {date: '2024-01-31', value: 125},
-                    {date: '2024-02-15', value: 145}, // Mid-month significant change
-                    {date: '2024-02-28', value: 150},
-                    {date: '2024-03-15', value: 170}, // Mid-month significant change
-                    {date: '2024-03-31', value: 175}
+                    {date: '2024-01-15', value: 150}, // 50% increase
+                    {date: '2024-01-31', value: 155},
+                    {date: '2024-02-15', value: 200}, // ~29% increase
+                    {date: '2024-02-28', value: 205},
+                    {date: '2024-03-15', value: 250}, // ~22% increase
+                    {date: '2024-03-31', value: 255}
                 ];
 
                 // First verify the strategy is correct
                 const strategy = determineAggregationStrategy(400, 90, 'exact');
-                expect(strategy).toBe('monthly-exact');
+                expect(strategy).toBe('monthly');
 
                 // Then verify the full sanitization
                 const result = sanitizeChartData(data, 400, 'value', 'exact');
 
-                // Verify all points are included with correct values
+                // Verify only end-of-month values are included
                 const points = new Map(result.map(item => [item.date, item.value]));
                 
                 // Check month boundaries
-                expect(points.get('2024-01-01')).toBe(100);
-                expect(points.get('2024-01-31')).toBe(125);
-                expect(points.get('2024-02-28')).toBe(150);
-                expect(points.get('2024-03-31')).toBe(175);
+                expect(points.get('2024-01-31')).toBe(155);
+                expect(points.get('2024-02-28')).toBe(205);
+                expect(points.get('2024-03-31')).toBe(255);
 
-                // Mid-month significant changes should be included
-                expect(points.get('2024-01-15')).toBe(120);
-                expect(points.get('2024-02-15')).toBe(145);
-                expect(points.get('2024-03-15')).toBe(170);
+                // Mid-month significant changes should not be included
+                expect(points.has('2024-01-15')).toBe(false);
+                expect(points.has('2024-02-15')).toBe(false);
+                expect(points.has('2024-03-15')).toBe(false);
 
-                // Total points should include boundaries and significant changes
-                expect(points.size).toBe(7);
+                // Total points should be just the end-of-month values
+                expect(points.size).toBe(3);
+            });
+
+            it('integrates correctly with sanitizeChartData for non-exact aggregation', () => {
+                const data = [
+                    {date: '2024-01-01', value: 100},
+                    {date: '2024-01-15', value: 150},
+                    {date: '2024-01-31', value: 200},
+                    {date: '2024-02-15', value: 250},
+                    {date: '2024-02-28', value: 300}
+                ];
+
+                // First verify the strategy is correct
+                const strategy = determineAggregationStrategy(400, 60, 'avg');
+                expect(strategy).toBe('monthly');
+
+                // Then verify the full sanitization
+                const result = sanitizeChartData(data, 400, 'value', 'avg');
+
+                // Should have one point per month with average values
+                expect(result.length).toBe(2);
+                expect(result[0].date.startsWith('2024-01')).toBe(true);
+                expect(result[0].value).toBe(150); // Average of 100, 150, 200
+                expect(result[1].date.startsWith('2024-02')).toBe(true);
+                expect(result[1].value).toBe(275); // Average of 250, 300
+            });
+
+            it('handles sum aggregation with outliers', () => {
+                const data = [
+                    {date: '2024-01-01', value: 100},
+                    {date: '2024-01-15', value: 15000}, // Outlier - excluded from sum
+                    {date: '2024-01-31', value: 200},
+                    {date: '2024-02-15', value: 20000}, // Outlier - excluded from sum
+                    {date: '2024-02-28', value: 300}
+                ];
+
+                // First verify the strategy is correct
+                const strategy = determineAggregationStrategy(400, 60, 'sum');
+                expect(strategy).toBe('monthly');
+
+                // Then verify the full sanitization
+                const result = sanitizeChartData(data, 400, 'value', 'sum') as (ChartDataItem & {_isOutlier: boolean})[];
+
+                // Should have one point per month with sums (excluding outliers)
+                expect(result.length).toBe(2);
+                expect(result[0].date.startsWith('2024-01')).toBe(true);
+                expect(result[0].value).toBe(300); // Sum of 100, 200 (15000 excluded)
+                expect(result[1].date.startsWith('2024-02')).toBe(true);
+                expect(result[1].value).toBe(300); // Just 300 (20000 excluded)
+
+                // The final points aren't marked as outliers since the outliers were excluded from sums
+                expect(result[0]._isOutlier).toBe(false);
+                expect(result[1]._isOutlier).toBe(false);
+            });
+
+            it('uses aggregateByMonthSimple for exact monthly aggregation', () => {
+                const data = [
+                    {date: '2024-01-01', value: 100},
+                    {date: '2024-01-15', value: 150},
+                    {date: '2024-01-31', value: 200},
+                    {date: '2024-02-15', value: 250},
+                    {date: '2024-02-28', value: 300}
+                ];
+
+                // First verify the strategy is correct
+                const strategy = determineAggregationStrategy(200, 150, 'exact');
+                expect(strategy).toBe('weekly'); // Range 91-356 uses weekly
+
+                // Then verify the full sanitization with monthly range
+                const result = sanitizeChartData(data, 200, 'value', 'exact');
+
+                // Should have weekly points aligned to start of week
+                expect(result.length).toBe(5); // One point per week
+                expect(result[0].date).toBe('2023-12-31'); // Week containing Jan 1
+                expect(result[0].value).toBe(100);
+                expect(result[1].date).toBe('2024-01-14'); // Week containing Jan 15
+                expect(result[1].value).toBe(150);
+                expect(result[2].date).toBe('2024-01-28'); // Week containing Jan 31
+                expect(result[2].value).toBe(200);
+                expect(result[3].date).toBe('2024-02-11'); // Week containing Feb 15
+                expect(result[3].value).toBe(250);
+                expect(result[4].date).toBe('2024-02-25'); // Week containing Feb 28
+                expect(result[4].value).toBe(300);
             });
         });
 
