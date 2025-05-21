@@ -6,7 +6,7 @@ import ProfileMenu from './ProfileMenu';
 import UnblockButton from './UnblockButton';
 import {Account} from '@src/api/activitypub';
 import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LucideIcon, Skeleton} from '@tryghost/shade';
-import {Heading, Icon, NoValueLabel, Button as OldButton, Tab, TabView, showToast} from '@tryghost/admin-x-design-system';
+import {Heading, Icon, NoValueLabel, Tab, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {ProfileTab} from '../Profile';
 import {SettingAction} from '@src/views/Preferences/components/Settings';
 import {useAccountForUser, useBlockDomainMutationForUser, useBlockMutationForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@src/hooks/use-activity-pub-queries';
@@ -247,13 +247,11 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                 {!isExpanded && isOverflowing && (
                                     <div className='absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/90 via-60% to-transparent' />
                                 )}
-                                {isOverflowing && <OldButton
-                                    className='absolute bottom-0'
-                                    label={isExpanded ? 'Show less' : 'Show all'}
-                                    link={true}
-                                    size='sm'
+                                {isOverflowing && <Button
+                                    className='absolute bottom-0 h-auto p-0'
+                                    variant='link'
                                     onClick={toggleExpand}
-                                />}
+                                >{isExpanded ? 'Show less' : 'Show all'}</Button>}
                             </div>)}
                             <TabView<ProfileTab>
                                 containerClassName='mt-6'
