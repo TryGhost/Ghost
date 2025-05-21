@@ -33,6 +33,7 @@ let config = {
 export class GhostStats {
     constructor(browserService = new BrowserService()) {
         this.browser = browserService;
+        this.isListenersAttached = false;
     }
 
     get isTestEnv() {
@@ -165,6 +166,10 @@ export class GhostStats {
     }
 
     setupEventListeners() {
+        if (this.isListenersAttached) {
+            return;
+        }
+
         // Track history navigation
         this.browser.addEventListener('window', 'hashchange', () => this.trackPageHit());
         
@@ -186,6 +191,8 @@ export class GhostStats {
             };
             this.browser.addEventListener('document', 'visibilitychange', onVisibilityChange);
         }
+
+        this.isListenersAttached = true;
     }
 
     init() {

@@ -272,21 +272,52 @@ describe('ghost-stats.js', function () {
             expect(mockWindow.addEventListener.calledWith('popstate')).to.be.true;
         });
 
-        it('should handle visibility changes', function () {
+        it('should handle visibility changes', async function () {
             mockDocument.visibilityState = 'hidden';
             ghostStats.setupEventListeners();
             expect(mockDocument.addEventListener.calledWith('visibilitychange')).to.be.true;
 
             const visibilityCallback = mockDocument.addEventListener.firstCall.args[1];
             mockDocument.visibilityState = 'visible';
-            visibilityCallback();
+            await visibilityCallback();
             
             const timeoutCallback = mockWindow.setTimeout.firstCall.args[0];
-            timeoutCallback();
+            await timeoutCallback();
             
             expect(mockFetch.calledOnce).to.be.true;
             const payload = JSON.parse(mockFetch.firstCall.args[1].body);
             expect(payload.action).to.equal('page_hit');
+        });
+
+        it('should not attach listeners multiple times', function () {
+            ghostStats.setupEventListeners();
+            const firstCallCounts = {
+                hashchange: mockWindow.addEventListener.withArgs('hashchange').callCount,
+                popstate: mockWindow.addEventListener.withArgs('popstate').callCount,
+                pushState: mockWindow.history.pushState.callCount
+            };
+
+            // Call setupEventListeners multiple times
+            ghostStats.setupEventListeners();
+            ghostStats.setupEventListeners();
+
+            // Verify no additional listeners were attached
+            expect(mockWindow.addEventListener.withArgs('hashchange').callCount).to.equal(firstCallCounts.hashchange);
+            expect(mockWindow.addEventListener.withArgs('popstate').callCount).to.equal(firstCallCounts.popstate);
+            expect(mockWindow.history.pushState.callCount).to.equal(firstCallCounts.pushState);
+        });
+
+        it('should maintain single visibility change listener when called multiple times', function () {
+            mockDocument.visibilityState = 'hidden';
+            
+            ghostStats.setupEventListeners();
+            const firstVisibilityListenerCount = mockDocument.addEventListener.withArgs('visibilitychange').callCount;
+
+            // Call setupEventListeners again
+            ghostStats.setupEventListeners();
+
+            expect(mockDocument.addEventListener.withArgs('visibilitychange').callCount)
+                .to.equal(firstVisibilityListenerCount);
         });
     });
 });
