@@ -50,6 +50,10 @@ Object {
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
 }
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
+}
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
 }
@@ -729,6 +733,10 @@ Object {
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
 }
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
+}
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
 }
@@ -1407,6 +1415,10 @@ Object {
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
+}
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
 }
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
@@ -2673,6 +2685,10 @@ Object {
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
+}
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
 }
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
@@ -3957,6 +3973,10 @@ Object {
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
+}
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
 }
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
@@ -5277,6 +5297,10 @@ Object {
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
+}
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
 }
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
@@ -6616,6 +6640,10 @@ Object {
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
 }
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
+}
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
 }
@@ -7876,6 +7904,10 @@ Object {
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
+}
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
 }
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
@@ -9156,6 +9188,10 @@ Object {
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
 }
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
+}
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
 }
@@ -10421,6 +10457,10 @@ Object {
 }
 .kg-cta-link-accent .kg-cta-sponsor-label a {
   color: #FF1A75 !important;
+}
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
+  color: #15212A;
+  text-decoration: underline;
 }
 .kg-cta-link-accent .kg-cta-text a {
   color: #FF1A75 !important;
