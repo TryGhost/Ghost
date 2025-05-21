@@ -5,14 +5,6 @@
 
 /*All the styling goes here*/
 
-:root {
-  --font-serif: Georgia, serif;
-  --font-sans: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-  --text-primary: #15212A;
-  --text-secondary: #73818c;
-  --border-color: #e0e7eb;
-}
-
 img {
     border: none;
     -ms-interpolation-mode: bicubic;
@@ -26,7 +18,7 @@ img.is-dark-background {
 
 body {
     background-color: #fff;
-    font-family: var(--font-sans);
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     font-size: 18px;
     line-height: 1.4;
@@ -34,7 +26,7 @@ body {
     padding: 0;
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
-    color: var(--text-primary);
+    color: #15212A;
 }
 
 table {
@@ -45,10 +37,10 @@ table {
 }
 
 table td {
-    font-family: var(--font-sans);
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 18px;
     vertical-align: top;
-    color: var(--text-primary);
+    color: #15212A;
 }
 
 /* -------------------------------------
@@ -155,7 +147,7 @@ dt {
     float: left;
     margin: 0 20px 0 0;
     width: 120px;
-    color: var(--text-primary);
+    color: #15212A;
     font-weight: 500;
     text-align: right;
 }
@@ -220,7 +212,7 @@ h4,
 h5,
 h6 {
     margin-top: 0;
-    font-family: var(--font-sans);
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     line-height: 1.11em;
     font-weight: {{titleWeight}};
     text-rendering: optimizeLegibility;
@@ -232,7 +224,7 @@ h6 {
 .title-serif h4,
 .title-serif h5,
 .title-serif h6 {
-    font-family: var(--font-serif);
+    font-family: Georgia, serif;
     letter-spacing: -0.01em;
 }
 
@@ -289,12 +281,12 @@ figure {
 
 figcaption {
     text-align: center;
-    font-family: var(--font-sans);
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 13px;
     padding-top: 10px;
     padding-bottom: 10px;
     line-height: 1.5em;
-    color: var(--text-secondary);
+    color: #73818c;
 }
 
 figcaption a {
@@ -351,7 +343,7 @@ figure blockquote p {
 }
 
 .site-url {
-    color: var(--text-primary);
+    color: #15212A;
     font-size: 16px;
     letter-spacing: -0.1px;
     font-weight: 700;
@@ -364,11 +356,11 @@ figure blockquote p {
 }
 
 .site-title {
-    color: var(--text-primary);
+    color: #15212A;
 }
 
 .site-subtitle {
-    color: var(--text-secondary);
+    color: #73818c;
     font-size: 13px;
     font-weight: 400;
     text-transform: none;
@@ -390,7 +382,7 @@ figure blockquote p {
 }
 
 .post-title-serif {
-    font-family: var(--font-serif);
+    font-family: Georgia, serif;
     letter-spacing: -0.01em;
 }
 .post-title-left {
@@ -400,7 +392,7 @@ figure blockquote p {
 .post-title-link {
     display: block;
     margin-top: 32px;
-    color: var(--text-primary);
+    color: #15212A;
     text-align: center;
     line-height: 1.1em;
 }
@@ -416,7 +408,7 @@ figure blockquote p {
 
 .post-excerpt {
     margin: 0;
-    color: var(--text-primary);
+    color: #15212A;
     font-size: 19px;
     line-height: 1.4em;
     text-align: center;
@@ -431,13 +423,13 @@ figure blockquote p {
 }
 
 .post-excerpt-serif-serif {
-    font-family: var(--font-serif);
+    font-family: Georgia, serif;
     font-size: 20px;
 }
 
 .post-excerpt-serif-sans {
     font-size: 20px;
-    font-family: var(--font-serif);
+    font-family: Georgia, serif;
 }
 
 .post-excerpt-left {
@@ -446,7 +438,7 @@ figure blockquote p {
 
 .post-meta,
 .view-online {
-    color: var(--text-secondary);
+    color: #73818c;
     font-size: 13px;
     font-weight: 400;
     text-align: center;
@@ -480,7 +472,7 @@ figure blockquote p {
 .view-online-link {
     word-wrap: none;
     white-space: nowrap;
-    color: var(--text-secondary);
+    color: #73818c;
     text-decoration: underline !important;
 }
 
@@ -508,7 +500,7 @@ figure blockquote p {
     padding-bottom: 32px;
     text-align: center;
     font-size: 13px !important;
-    color: var(--text-secondary);
+    color: #73818c;
     line-height: 1.5em;
 }
 
@@ -540,8 +532,8 @@ figure blockquote p {
 
 .feedback-button-text {
     display: inline-block;
-    font-family: var(--font-sans);
-    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    color: #15212A;
     font-size: 13px !important;
     font-weight: 500;
     margin: 1em 0 0 0;
@@ -556,8 +548,8 @@ figure blockquote p {
 h3.latest-posts-header {
     margin: 0;
     padding: 8px 0 8px;
-    color: var(--text-primary);
-    font-family: var(--font-sans);
+    color: #15212A;
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 13px;
     font-weight: 600;
     text-transform: uppercase;
@@ -600,19 +592,19 @@ h3.latest-posts-header {
 }
 
 .latest-post h4 a {
-    color: var(--text-primary) !important;
+    color: #15212A !important;
 }
 
 .latest-post p {
     margin: 0;
     padding: 0;
-    color: var(--text-secondary);
+    color: #73818c;
     font-size: 15px;
     font-weight: 400;
 }
 
 .latest-post p a {
-    color: var(--text-secondary) !important;
+    color: #73818c !important;
 }
 
 /* -------------------------------------
@@ -621,12 +613,12 @@ h3.latest-posts-header {
 
 .subscription-box {
     padding: 32px 0;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-primary);
+    border-bottom: 1px solid #e0e7eb;
+    color: #15212A;
 }
 
 .subscription-box h3 {
-    font-family: var(--font-sans);
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 14px;
     font-weight: 600;
     text-transform: uppercase;
@@ -635,7 +627,7 @@ h3.latest-posts-header {
 
 .subscription-box p {
     margin-bottom: 0;
-    color: var(--text-primary) !important;
+    color: #15212A !important;
     font-size: 15px;
     font-weight: 400;
     line-height: 1.45em;
@@ -643,7 +635,7 @@ h3.latest-posts-header {
 }
 
 .subscription-box p a {
-    color: var(--text-primary) !important;
+    color: #15212A !important;
     text-decoration: none;
 }
 
@@ -663,21 +655,21 @@ h3.latest-posts-header {
 
 .post-content {
     max-width: 600px !important;
-    font-family: var(--font-serif);
+    font-family: Georgia, serif;
     font-size: 18px;
     line-height: 1.5em;
-    color: var(--text-primary);
+    color: #15212A;
     padding-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid #e0e7eb;
 }
 
 .post-content-sans-serif {
     max-width: 600px !important;
     font-size: 17px;
     line-height: 1.5em;
-    color: var(--text-primary);
+    color: #15212A;
     padding-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid #e0e7eb;
 }
 
 .post-content-row:first-child > td, .header-image-row + .post-content-row > td {
@@ -733,11 +725,11 @@ a[data-flickr-embed] img {
 .kg-bookmark-container {
     display: flex;
     min-height: 148px;
-    color: var(--text-primary);
-    font-family: var(--font-sans);
+    color: #15212A;
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     text-decoration: none;
     border-radius: 3px;
-    border: 1px solid var(--border-color);
+    border: 1px solid #e0e7eb;
 }
 
 .kg-bookmark-content {
@@ -747,7 +739,7 @@ a[data-flickr-embed] img {
 }
 
 .kg-bookmark-title {
-    color: var(--text-primary);
+    color: #15212A;
     font-size: 15px;
     line-height: 1.5em;
     font-weight: 600;
@@ -758,7 +750,7 @@ a[data-flickr-embed] img {
     overflow-y: hidden;
     margin-top: 12px;
     max-height: 40px;
-    color: var(--text-secondary);
+    color: #73818c;
     font-size: 13px;
     line-height: 1.5em;
     font-weight: 400;
@@ -785,7 +777,7 @@ a[data-flickr-embed] img {
     flex-wrap: wrap;
     align-items: center;
     margin-top: 14px;
-    color: var(--text-primary);
+    color: #15212A;
     font-size: 13px;
     font-weight: 400;
 }
@@ -877,7 +869,7 @@ a[data-flickr-embed] img {
 .kg-nft-link {
     display: block;
     text-decoration: none !important;
-    color: var(--text-primary) !important;
+    color: #15212A !important;
     font-family: inherit !important;
     font-size: 14px;
     line-height: 1.3em;
@@ -890,7 +882,7 @@ a[data-flickr-embed] img {
 .kg-twitter-link {
     display: block;
     text-decoration: none !important;
-    color: var(--text-primary) !important;
+    color: #15212A !important;
     font-family: inherit !important;
     font-size: 15px;
     padding: 8px;
@@ -975,16 +967,16 @@ a[data-flickr-embed] img {
 }
 
 .kg-cta-card.kg-cta-bg-none:not(.kg-cta-no-dividers) {
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid #e0e7eb;
 }
 
 .kg-cta-bg-none.kg-cta-no-label:not(.kg-cta-no-dividers) {
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid #e0e7eb;
 }
 
 .kg-cta-bg-white {
     background: #fff;
-    border: 1px solid var(--border-color);
+    border: 1px solid #e0e7eb;
 }
 
 .kg-cta-bg-grey {
@@ -1017,7 +1009,7 @@ a[data-flickr-embed] img {
 
 .kg-cta-sponsor-label {
     padding: 12px 0;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid #e0e7eb;
 }
 
 .kg-cta-bg-none .kg-cta-sponsor-label {
@@ -1031,7 +1023,7 @@ a[data-flickr-embed] img {
 
 .kg-cta-bg-none .kg-cta-sponsor-label,
 .kg-cta-bg-white .kg-cta-sponsor-label {
-    border-color: var(--border-color);
+    border-color: #e0e7eb;
 }
 
 .kg-cta-bg-grey .kg-cta-sponsor-label {
@@ -1065,7 +1057,7 @@ a[data-flickr-embed] img {
 .kg-cta-sponsor-label p {
     margin: 0;
     color: #89959f;
-    font-family: var(--font-sans);
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 12px;
     font-weight: 500;
     text-transform: uppercase;
@@ -1096,7 +1088,7 @@ a[data-flickr-embed] img {
 }
 
 .kg-cta-sponsor-label a {
-    color: var(--text-primary);
+    color: #15212A;
 }
 
 .kg-cta-link-accent .kg-cta-sponsor-label a {
@@ -1154,11 +1146,11 @@ img.kg-cta-image {
 }
 
 .post-content .kg-cta-text {
-    font-family: var(--font-serif);
+    font-family: Georgia, serif;
 }
 
 .kg-cta-text a {
-    color: var(--text-primary);
+    color: #15212A;
 }
 
 .kg-cta-link-accent .kg-cta-text a {
@@ -1166,7 +1158,7 @@ img.kg-cta-image {
 }
 
 .post-content-sans-serif .kg-cta-text {
-    font-family: var(--font-sans);
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 17px;
 }
 
@@ -1268,7 +1260,7 @@ img.kg-cta-image {
 
 .kg-cta-minimal a.kg-cta-button {
     display: inline-block;
-    font-family: var(--font-sans);
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 0.85em;
     font-weight: 600;
     font-weight: 500;
@@ -1658,7 +1650,7 @@ img.kg-cta-image {
     width: 100%;
     margin: 0 auto 1.5em;
     border-radius: 3px;
-    border: 1px solid var(--border-color);
+    border: 1px solid #e0e7eb;
 }
 .kg-audio-title {
     display: block;
@@ -1669,14 +1661,14 @@ img.kg-cta-image {
     font-weight: 600;
     line-height: 18px;
     text-decoration: none !important;
-    color: var(--text-primary) !important;
+    color: #15212A !important;
 }
 .kg-audio-play-button {
     display: block;
     box-sizing: border-box;
     width: 16px;
     height: 16px;
-    color: var(--text-primary) !important;
+    color: #15212A !important;
     border-style: solid;
     border-width: 8px 0px 8px 16px;
     border-color: transparent transparent transparent currentColor;
@@ -1685,17 +1677,17 @@ img.kg-cta-image {
     display: block;
     text-decoration: none !important;
     font-size: 13px;
-    color: var(--text-primary) !important;
+    color: #15171A !important;
 }
 .kg-audio-link {
-    color: var(--text-secondary) !important;
+    color: #73818c !important;
 }
 .kg-file-card {
     width: auto;
     width: 100%;
     margin: 0 0 1.5em 0;
     border-radius: 3px;
-    border: 1px solid var(--border-color);
+    border: 1px solid #e0e7eb;
 }
 .kg-file-title {
     display: block;
@@ -1706,7 +1698,7 @@ img.kg-cta-image {
     font-weight: bold;
     line-height: 1.3em;
     text-decoration: none !important;
-    color: var(--text-primary) !important;
+    color: #15212A !important;
 }
 .kg-file-description {
     display: block;
@@ -1716,7 +1708,7 @@ img.kg-cta-image {
     font-size: 15px;
     line-height: 1.4em;
     text-decoration: none !important;
-    color: var(--text-secondary) !important;
+    color: #73818c !important;
 }
 .kg-file-meta {
     display: block;
@@ -1727,11 +1719,11 @@ img.kg-cta-image {
     font-size: 13px;
     line-height: 1.4em;
     text-decoration: none !important;
-    color: var(--text-secondary) !important;
+    color: #73818c !important;
 }
 .kg-file-name {
     font-weight: 500;
-    color: var(--text-primary) !important;
+    color: #15212A !important;
 }
 .kg-file-thumbnail {
     position: relative;
@@ -1745,7 +1737,7 @@ img.kg-cta-image {
     width: 100%;
     margin: 0 auto;
     border-radius: 12px;
-    border: 1px solid var(--border-color);
+    border: 1px solid #e0e7eb;
 }
 
 {{#hasFeature "emailCustomizationAlpha"}}
@@ -1806,10 +1798,10 @@ img.kg-cta-image {
 }
 
 .footer {
-    color: var(--text-secondary);
+    color: #73818c;
     margin-top: 20px;
     text-align: center;
-    font-size: 13px !important;
+    font-size: 13px!important;
     padding-bottom: 10px;
     padding-top: 10px;
     padding-left: 30px;
@@ -1818,7 +1810,7 @@ img.kg-cta-image {
 }
 
 .footer a {
-    color: var(--text-secondary);
+    color: #73818c;
     text-decoration: underline;
     font-size: 13px;
 }
@@ -1837,13 +1829,13 @@ table.btn td {
     background-color: #ffffff;
     border-radius: {{buttonBorderRadius}};
     text-align: center;
-    font-family: var(--font-sans);
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
 }
 
 table.btn a {
     border-radius: {{buttonBorderRadius}};
     box-sizing: border-box;
-    color: var(--text-primary);
+    color: #15212A;
     cursor: pointer;
     display: inline-block;
     font-size: 15px;
@@ -1893,7 +1885,7 @@ table.btn-accent a {
     border-radius: {{buttonBorderRadius}};
     {{/hasFeature}}
     text-align: center;
-    font-family: var(--font-sans);
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
 }
 
 .btn a {
