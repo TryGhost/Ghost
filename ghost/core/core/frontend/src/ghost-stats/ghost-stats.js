@@ -225,13 +225,14 @@ export class GhostStats {
 const ghostStats = new GhostStats();
 ghostStats.init();
 
-// Export the class and instance methods for testing
-export const {
-    isTestEnv,
-    initConfig,
-    trackEvent,
-    getLocationInfo,
-    trackPageHit,
-    setupEventListeners,
-    init
-} = ghostStats; 
+// Export bound methods to maintain this context
+export const isTestEnv = () => ghostStats.isTestEnv;
+export const initConfig = ghostStats.initConfig.bind(ghostStats);
+export const trackEvent = ghostStats.trackEvent.bind(ghostStats);
+export const getLocationInfo = ghostStats.getLocationInfo.bind(ghostStats);
+export const trackPageHit = ghostStats.trackPageHit.bind(ghostStats);
+export const setupEventListeners = ghostStats.setupEventListeners.bind(ghostStats);
+export const init = ghostStats.init.bind(ghostStats);
+
+// Also export the instance for testing
+export const ghostStatsInstance = ghostStats; 

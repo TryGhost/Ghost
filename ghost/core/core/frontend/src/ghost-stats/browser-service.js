@@ -48,6 +48,15 @@ export class BrowserService {
     }
 
     addEventListener(target, event, callback) {
+        const validTargets = ['window', 'document'];
+        if (!validTargets.includes(target)) {
+            /* istanbul ignore next */
+            throw new TypeError(
+                `BrowserService.addEventListener: unknown target "${target}". ` +
+                'Expected "window" or "document".'
+            );
+        }
+
         if (target === 'window') {
             this.window?.addEventListener(event, callback);
         } else if (target === 'document') {
@@ -56,6 +65,15 @@ export class BrowserService {
     }
 
     removeEventListener(target, event, callback) {
+        const validTargets = ['window', 'document'];
+        if (!validTargets.includes(target)) {
+            /* istanbul ignore next */
+            throw new TypeError(
+                `BrowserService.removeEventListener: unknown target "${target}". ` +
+                'Expected "window" or "document".'
+            );
+        }
+
         if (target === 'window') {
             this.window?.removeEventListener(event, callback);
         } else if (target === 'document') {
@@ -78,12 +96,20 @@ export class BrowserService {
     }
 
     wrapHistoryMethod(method, callback) {
+        // Skip if already wrapped
+        if (this.window?.history?.[method]?.__ghostWrapped) {
+            return;
+        }
+
         const original = this.window?.history?.[method];
         if (original) {
             this.window.history[method] = (...args) => {
-                original.apply(this.window.history, args);
+                const result = original.apply(this.window.history, args);
                 callback();
+                return result;
             };
+            // Mark as wrapped to prevent double-wrapping
+            this.window.history[method].__ghostWrapped = true;
         }
     }
 } 
