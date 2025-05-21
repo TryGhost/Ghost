@@ -24,7 +24,8 @@
         "lint:code": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
         "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx --cache test",
         "lint:fix": "eslint --ext .js,.ts,.cjs,.tsx --cache src --fix",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "test": "yarn test:unit --coverage"
     },
     "devDependencies": {
         "@tanstack/react-query": "4.36.1",
