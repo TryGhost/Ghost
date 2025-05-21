@@ -74,7 +74,7 @@ function calculateOutlierThreshold(values: number[]): {threshold: number; averag
     
     // Calculate MAD (Median Absolute Deviation) which is more robust than standard deviation
     const deviations = values.map(val => Math.abs(val - median));
-    const mad = deviations.reduce((sum, val) => sum + val, 0) / values.length;
+    const mad = deviations.sort((a, b) => a - b)[Math.floor(deviations.length / 2)];
     
     return {
         threshold: median + (5 * mad), // Using 5 times MAD as threshold
@@ -258,7 +258,7 @@ function aggregateByMonthExact<T extends {date: string}>(data: T[], fieldName: k
         const currentValue = Number(item[fieldName]);
         const isMonthStart = itemDate.date() === 1;
         const isMonthEnd = itemDate.clone().endOf('month').format('YYYY-MM-DD') === item.date;
-        const isSignificantChange = currentValue > prevValue * 1.02;
+        const isSignificantChange = currentValue > prevValue * 1.02 || currentValue < prevValue * 0.98;
 
         if (isMonthStart || isMonthEnd || isSignificantChange) {
             importantPoints.set(item.date, {...item});
