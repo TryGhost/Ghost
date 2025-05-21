@@ -415,9 +415,9 @@ const Newsletters: React.FC = () => {
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Newsletter stats</CardTitle>
+                        <CardTitle>Top newsletters</CardTitle>
                         <CardDescription>
-                            Performance of newsletter {getPeriodText(range)}
+                            Your best performing newsletters {getPeriodText(range)}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
