@@ -450,7 +450,7 @@ table.body h2 span {
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
+                <td class=\\"container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
@@ -1129,7 +1129,7 @@ table.body h2 span {
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
+                <td class=\\"container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
@@ -1888,7 +1888,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
+                <td class=\\"container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
@@ -1947,7 +1947,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                         <tr class=\\"post-content-row\\">
                                             <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
                                                 <!-- POST CONTENT START -->
-                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #73818c;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px;\\">A heading</h1>
+                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #73818c;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">A heading</h1>
 <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">and a paragraph (in markdown!)</p>
 
 <!--kg-card-begin: html-->
@@ -2023,7 +2023,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
             <div class=\\"kg-bookmark-spacer--outlook\\" style=\\"height: 1.5em;\\">&nbsp;</div>
         <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>Vinz</span><span style=\\"white-space: pre-wrap;\\">,</span></p><!--members-only--><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"btn btn-accent\\" style=\\"box-sizing: border-box; width: 100%; display: table;\\"><table border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; border-radius: 5px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 25px; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\">I had an idea...</div></div><div style=\\"background: transparent;
         border: 1px solid rgba(124, 139, 154, 0.25); border-radius: 4px; padding: 20px; margin-bottom: 1.5em;\\">
-            <h4 style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top: 0px;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4>
+            <h4 style=\\"text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top: 0px;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4>
             <div style=\\"font-size: 1rem; line-height: 1.5; margin-bottom: -1.5em;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Just kidding</span></p></div>
         </div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" class=\\"kg-audio-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 auto 1.5em; border-radius: 3px; border: 1px solid #e0e7eb;\\" width=\\"100%\\">
                 <tbody><tr>
@@ -2101,7 +2101,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
             
             <tr>
                 <td valign=\\"top\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\">
-                    <h4 style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-weight: 700; font-size: 22px; margin-top: 0; margin-bottom: 0;\\"><span style=\\"white-space: pre-wrap;\\">Make a blog!</span></h4>
+                    <h4 style=\\"text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-family: Georgia, serif; letter-spacing: -0.01em; font-weight: 700; font-size: 22px; margin-top: 0; margin-bottom: 0;\\"><span style=\\"white-space: pre-wrap;\\">Make a blog!</span></h4>
                 </td>
             </tr>
             
@@ -2128,7 +2128,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
         </tbody></table><div class=\\"kg-header-card kg-v2\\" style=\\"margin: 0 0 1.5em 0; padding: 0; color: #FFFFFF; text-align: center; background-color: #000000;\\">
             
             <div class=\\"kg-header-card-content\\" style=\\"padding: 80px 48px;\\">
-                <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; font-size: 3em; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
+                <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; text-rendering: optimizeLegibility; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 3em; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
                 <p class=\\"kg-header-card-subheading\\" style=\\"line-height: 1.6em; margin: 0.75em 0 0; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">This header renders properly in </span><i><em class=\\"italic\\" style=\\"white-space: pre-wrap;\\">all</em></i><span style=\\"white-space: pre-wrap;\\"> email clients!</span></p>
                 
             </div>
@@ -3166,7 +3166,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
+                <td class=\\"container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
@@ -3225,7 +3225,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                         <tr class=\\"post-content-row\\">
                                             <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
                                                 <!-- POST CONTENT START -->
-                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #73818c;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px;\\">A heading</h1>
+                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #73818c;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">A heading</h1>
 <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">and a paragraph (in markdown!)</p>
 
 <!--kg-card-begin: html-->
@@ -3301,7 +3301,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
             <div class=\\"kg-bookmark-spacer--outlook\\" style=\\"height: 1.5em;\\">&nbsp;</div>
         <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>there</span><span style=\\"white-space: pre-wrap;\\">,</span></p><div><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hello there, fellow users of electronic mail.</span></p><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"></div><!--members-only--><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"btn btn-accent\\" style=\\"box-sizing: border-box; width: 100%; display: table;\\"><table border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; border-radius: 5px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 25px; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\">I had an idea...</div></div><div style=\\"background: transparent;
         border: 1px solid rgba(124, 139, 154, 0.25); border-radius: 4px; padding: 20px; margin-bottom: 1.5em;\\">
-            <h4 style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top: 0px;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4>
+            <h4 style=\\"text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top: 0px;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4>
             <div style=\\"font-size: 1rem; line-height: 1.5; margin-bottom: -1.5em;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Just kidding</span></p></div>
         </div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" class=\\"kg-audio-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 auto 1.5em; border-radius: 3px; border: 1px solid #e0e7eb;\\" width=\\"100%\\">
                 <tbody><tr>
@@ -3379,7 +3379,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
             
             <tr>
                 <td valign=\\"top\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\">
-                    <h4 style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-weight: 700; font-size: 22px; margin-top: 0; margin-bottom: 0;\\"><span style=\\"white-space: pre-wrap;\\">Make a blog!</span></h4>
+                    <h4 style=\\"text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-family: Georgia, serif; letter-spacing: -0.01em; font-weight: 700; font-size: 22px; margin-top: 0; margin-bottom: 0;\\"><span style=\\"white-space: pre-wrap;\\">Make a blog!</span></h4>
                 </td>
             </tr>
             
@@ -3406,7 +3406,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
         </tbody></table><div class=\\"kg-header-card kg-v2\\" style=\\"margin: 0 0 1.5em 0; padding: 0; color: #FFFFFF; text-align: center; background-color: #000000;\\">
             
             <div class=\\"kg-header-card-content\\" style=\\"padding: 80px 48px;\\">
-                <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; font-size: 3em; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
+                <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; text-rendering: optimizeLegibility; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 3em; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
                 <p class=\\"kg-header-card-subheading\\" style=\\"line-height: 1.6em; margin: 0.75em 0 0; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">This header renders properly in </span><i><em class=\\"italic\\" style=\\"white-space: pre-wrap;\\">all</em></i><span style=\\"white-space: pre-wrap;\\"> email clients!</span></p>
                 
             </div>
@@ -4438,7 +4438,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
+                <td class=\\"container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
@@ -4497,7 +4497,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                         <tr class=\\"post-content-row\\">
                                             <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
                                                 <!-- POST CONTENT START -->
-                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #73818c;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px;\\">A heading</h1>
+                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #73818c;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">A heading</h1>
 <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">and a paragraph (in markdown!)</p>
 
 <!--kg-card-begin: html-->
@@ -4571,9 +4571,9 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                 </tr>
             </table>
             <div class=\\"kg-bookmark-spacer--outlook\\" style=\\"height: 1.5em;\\">&nbsp;</div>
-        <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>Vinz</span><span style=\\"white-space: pre-wrap;\\">,</span></p><!--members-only--><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\"><table class=\\"btn btn-accent\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: 100%; display: table;\\" width=\\"100%\\"><tbody><tr><td align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-bottom: 15px;\\" valign=\\"top\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 25px; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></td></tr></tbody></table><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\">I had an idea...</div></div><div style=\\"background: transparent;
+        <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>Vinz</span><span style=\\"white-space: pre-wrap;\\">,</span></p><!--members-only--><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"btn btn-accent\\" style=\\"box-sizing: border-box; width: 100%; display: table;\\"><table border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; border-radius: 5px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 25px; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\">I had an idea...</div></div><div style=\\"background: transparent;
         border: 1px solid rgba(124, 139, 154, 0.25); border-radius: 4px; padding: 20px; margin-bottom: 1.5em;\\">
-            <h4 style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top: 0px;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4>
+            <h4 style=\\"text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top: 0px;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4>
             <div style=\\"font-size: 1rem; line-height: 1.5; margin-bottom: -1.5em;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Just kidding</span></p></div>
         </div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" class=\\"kg-audio-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 auto 1.5em; border-radius: 3px; border: 1px solid #e0e7eb;\\" width=\\"100%\\">
                 <tbody><tr>
@@ -4641,72 +4641,48 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
             <![endif]-->
 
             <div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">A lovely video of a woman on the beach doing nothing.</span></p></div>
-        </div><table class=\\"kg-product-card\\" cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; margin: 0 0 1.5em; padding: 20px; border-radius: 5px; border: 1px solid #e9e9e9;\\" width=\\"100%\\">
+        </div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding: 20px; border: 1px solid #E9E9E9; border-radius: 5px; margin: 0 0 1.5em; width: 100%;\\" width=\\"100%\\">
+            
                 <tbody><tr>
-                    <td class=\\"kg-product-card-container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                        <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
-                            
-                                <tbody><tr>
-                                    <td class=\\"kg-product-image\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; margin-bottom: 0; padding-top: 0; padding-bottom: 0;\\" valign=\\"top\\">
-                                        <img src=\\"https://main.ghost.org/content/images/2023/12/ghost-logo.png\\" width=\\"560\\" height=\\"180\\" border=\\"0\\" style=\\"-ms-interpolation-mode: bicubic; max-width: 100%; width: 100%; height: auto; padding-bottom: 16px; border: none;\\">
-                                    </td>
-                                </tr>
-                            
-                            <tr>
-                                <td valign=\\"top\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\">
-                                    <h4 class=\\"kg-product-title\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-weight: 700; margin-top: 0; margin-bottom: 0; font-size: 22px;\\"><span style=\\"white-space: pre-wrap;\\">Make a blog!</span></h4>
-                                </td>
-                            </tr>
-                            
-                                <tr class=\\"kg-product-rating\\" style=\\"margin-bottom: 0; padding-top: 0; padding-bottom: 0;\\">
-                                    <td valign=\\"top\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\">
-                                        <img src=\\"https://static.ghost.org/v4.0.0/images/star-rating-5.png\\" border=\\"0\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 96px;\\" width=\\"96\\">
-                                    </td>
-                                </tr>
-                            
-                            <tr>
-                                <td class=\\"kg-product-description-wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; margin-bottom: 0; padding-top: 0; padding-bottom: 0;\\" valign=\\"top\\"><p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">with Ghost</span></p></td>
-                            </tr>
-                            
-                                <tr>
-                                    <td class=\\"kg-product-button-wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; margin-top: 0; padding-top: 0; padding-bottom: 0;\\" valign=\\"top\\">
-                                        <table class=\\"btn btn-accent\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: 100%; display: table; padding-top: 16px;\\" width=\\"100%\\">
-                                            <tbody><tr>
-                                                <td align=\\"center\\" width=\\"100%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-bottom: 15px;\\" valign=\\"top\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; width: 100%; padding: 0; text-align: center; color: #ffffff;\\" target=\\"_blank\\">Click here</a>
-                                                </td>
-                                            </tr>
-                                        </tbody></table>
-                                    </td>
-                                </tr>
-                            
-                        </tbody></table>
+                    <td align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 0; padding-bottom: 0; margin-bottom: 0; padding-bottom: 0;\\" valign=\\"top\\">
+                        <img src=\\"https://main.ghost.org/content/images/2023/12/ghost-logo.png\\" width=\\"560\\" height=\\"180\\" style=\\"-ms-interpolation-mode: bicubic; display: block; width: 100%; height: auto; max-width: 100%; border: none; padding-bottom: 16px;\\" border=\\"0\\">
                     </td>
                 </tr>
-            </tbody></table><div class=\\"kg-header-card kg-v2\\" style=\\"margin: 0 0 1.5em 0; padding: 0; color: #FFFFFF; text-align: center; background-color: #000000;\\">
+            
+            <tr>
+                <td valign=\\"top\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\">
+                    <h4 style=\\"text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-family: Georgia, serif; letter-spacing: -0.01em; font-weight: 700; font-size: 22px; margin-top: 0; margin-bottom: 0;\\"><span style=\\"white-space: pre-wrap;\\">Make a blog!</span></h4>
+                </td>
+            </tr>
+            
+                <tr style=\\"padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;\\">
+                    <td valign=\\"top\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\">
+                        <img src=\\"https://static.ghost.org/v4.0.0/images/star-rating-5.png\\" style=\\"-ms-interpolation-mode: bicubic; max-width: 100%; border: none; width: 96px;\\" border=\\"0\\" width=\\"96\\">
+                    </td>
+                </tr>
+            
+            <tr>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 0; padding-bottom: 0; margin-bottom: 0; padding-bottom: 0;\\" valign=\\"top\\">
+                    <div style=\\"padding-top: 8px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;\\"><p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">with Ghost</span></p></div>
+                </td>
+            </tr>
+            
+                <tr>
+                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 0; padding-bottom: 0; margin-bottom: 0; padding-bottom: 0;\\" valign=\\"top\\">
+                        <div class=\\"btn btn-accent\\" style=\\"box-sizing: border-box; display: table; width: 100%; padding-top: 16px;\\">
+                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"background-color: #FF1A75; border-color: #FF1A75; overflow-wrap: anywhere; border: solid 1px; border-radius: 6px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 0; text-decoration: none; color: #FFFFFF; width: 100%; text-align: center;\\" target=\\"_blank\\"><span style=\\"display: block;padding: 12px 25px;\\">Click here</span></a>
+                        </div>
+                    </td>
+                </tr>
+            
+        </tbody></table><div class=\\"kg-header-card kg-v2\\" style=\\"margin: 0 0 1.5em 0; padding: 0; color: #FFFFFF; text-align: center; background-color: #000000;\\">
+            
+            <div class=\\"kg-header-card-content\\" style=\\"padding: 80px 48px;\\">
+                <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; text-rendering: optimizeLegibility; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 3em; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
+                <p class=\\"kg-header-card-subheading\\" style=\\"line-height: 1.6em; margin: 0.75em 0 0; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">This header renders properly in </span><i><em class=\\"italic\\" style=\\"white-space: pre-wrap;\\">all</em></i><span style=\\"white-space: pre-wrap;\\"> email clients!</span></p>
                 
-                <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; color: #FFFFFF; text-align: center; background-color: #000000;\\" align=\\"center\\" bgcolor=\\"#000000\\">
-                    <tbody><tr>
-                        <td class=\\"kg-header-card-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 80px 48px;\\" valign=\\"top\\">
-                            <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
-                                <tbody><tr>
-                                    <td align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                        <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; font-size: 3em; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class=\\"kg-header-card-subheading-wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                        <p class=\\"kg-header-card-subheading\\" style=\\"line-height: 1.6em; margin: 0.75em 0 0; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">This header renders properly in </span><i><em class=\\"italic\\" style=\\"white-space: pre-wrap;\\">all</em></i><span style=\\"white-space: pre-wrap;\\"> email clients!</span></p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    
-                                </tr>
-                            </tbody></table>
-                        </td>
-                    </tr>
-                </tbody></table>
-            </div><div class=\\"kg-card kg-embed-card\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><!--[if !mso !vml]-->
+            </div>
+        </div><div class=\\"kg-card kg-embed-card\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><!--[if !mso !vml]-->
             <a class=\\"kg-video-preview\\" href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" aria-label=\\"Play video\\" style=\\"background-color: #1d1f21; background-image: radial-gradient(circle at center, #5b5f66, #1d1f21); display: block; overflow-wrap: anywhere; color: #FF1A75; mso-hide: all; text-decoration: none;\\" target=\\"_blank\\">
                 <table cellpadding=\\"0\\" cellspacing=\\"0\\" border=\\"0\\" width=\\"100%\\" background=\\"https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg\\" role=\\"presentation\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-size: cover; min-height: 200px; overflow: hidden; background: url(&#39;https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg&#39;) left top / cover; mso-hide: all;\\">
                     <tbody><tr style=\\"mso-hide: all\\">
@@ -5042,12 +5018,8 @@ A lovely video of a woman on the beach doing nothing.
 
 
 
-
-
-
-
-
 Make a blog!
+
 
 
 
@@ -5069,22 +5041,7 @@ with Ghost
 
 
 
-
 Click here [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -5098,18 +5055,7 @@ Click here [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 Good news everyone!
 
 
-
-
-
-
 This header renders properly in all email clients!
-
-
-
-
-
-
-
 
 
 
@@ -5770,7 +5716,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
+                <td class=\\"container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
@@ -5829,7 +5775,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                         <tr class=\\"post-content-row\\">
                                             <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
                                                 <!-- POST CONTENT START -->
-                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #73818c;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px;\\">A heading</h1>
+                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #73818c;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">A heading</h1>
 <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">and a paragraph (in markdown!)</p>
 
 <!--kg-card-begin: html-->
@@ -5903,9 +5849,9 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                 </tr>
             </table>
             <div class=\\"kg-bookmark-spacer--outlook\\" style=\\"height: 1.5em;\\">&nbsp;</div>
-        <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>there</span><span style=\\"white-space: pre-wrap;\\">,</span></p><div><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hello there, fellow users of electronic mail.</span></p><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"></div><!--members-only--><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\"><table class=\\"btn btn-accent\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: 100%; display: table;\\" width=\\"100%\\"><tbody><tr><td align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-bottom: 15px;\\" valign=\\"top\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 25px; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></td></tr></tbody></table><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\">I had an idea...</div></div><div style=\\"background: transparent;
+        <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>there</span><span style=\\"white-space: pre-wrap;\\">,</span></p><div><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hello there, fellow users of electronic mail.</span></p><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"></div><!--members-only--><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"btn btn-accent\\" style=\\"box-sizing: border-box; width: 100%; display: table;\\"><table border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; border-radius: 5px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 25px; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\">I had an idea...</div></div><div style=\\"background: transparent;
         border: 1px solid rgba(124, 139, 154, 0.25); border-radius: 4px; padding: 20px; margin-bottom: 1.5em;\\">
-            <h4 style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top: 0px;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4>
+            <h4 style=\\"text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top: 0px;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4>
             <div style=\\"font-size: 1rem; line-height: 1.5; margin-bottom: -1.5em;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Just kidding</span></p></div>
         </div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" class=\\"kg-audio-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 auto 1.5em; border-radius: 3px; border: 1px solid #e0e7eb;\\" width=\\"100%\\">
                 <tbody><tr>
@@ -5973,72 +5919,48 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
             <![endif]-->
 
             <div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">A lovely video of a woman on the beach doing nothing.</span></p></div>
-        </div><table class=\\"kg-product-card\\" cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; margin: 0 0 1.5em; padding: 20px; border-radius: 5px; border: 1px solid #e9e9e9;\\" width=\\"100%\\">
+        </div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding: 20px; border: 1px solid #E9E9E9; border-radius: 5px; margin: 0 0 1.5em; width: 100%;\\" width=\\"100%\\">
+            
                 <tbody><tr>
-                    <td class=\\"kg-product-card-container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                        <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
-                            
-                                <tbody><tr>
-                                    <td class=\\"kg-product-image\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; margin-bottom: 0; padding-top: 0; padding-bottom: 0;\\" valign=\\"top\\">
-                                        <img src=\\"https://main.ghost.org/content/images/2023/12/ghost-logo.png\\" width=\\"560\\" height=\\"180\\" border=\\"0\\" style=\\"-ms-interpolation-mode: bicubic; max-width: 100%; width: 100%; height: auto; padding-bottom: 16px; border: none;\\">
-                                    </td>
-                                </tr>
-                            
-                            <tr>
-                                <td valign=\\"top\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\">
-                                    <h4 class=\\"kg-product-title\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-weight: 700; margin-top: 0; margin-bottom: 0; font-size: 22px;\\"><span style=\\"white-space: pre-wrap;\\">Make a blog!</span></h4>
-                                </td>
-                            </tr>
-                            
-                                <tr class=\\"kg-product-rating\\" style=\\"margin-bottom: 0; padding-top: 0; padding-bottom: 0;\\">
-                                    <td valign=\\"top\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\">
-                                        <img src=\\"https://static.ghost.org/v4.0.0/images/star-rating-5.png\\" border=\\"0\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 96px;\\" width=\\"96\\">
-                                    </td>
-                                </tr>
-                            
-                            <tr>
-                                <td class=\\"kg-product-description-wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; margin-bottom: 0; padding-top: 0; padding-bottom: 0;\\" valign=\\"top\\"><p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">with Ghost</span></p></td>
-                            </tr>
-                            
-                                <tr>
-                                    <td class=\\"kg-product-button-wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; margin-top: 0; padding-top: 0; padding-bottom: 0;\\" valign=\\"top\\">
-                                        <table class=\\"btn btn-accent\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: 100%; display: table; padding-top: 16px;\\" width=\\"100%\\">
-                                            <tbody><tr>
-                                                <td align=\\"center\\" width=\\"100%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-bottom: 15px;\\" valign=\\"top\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; width: 100%; padding: 0; text-align: center; color: #ffffff;\\" target=\\"_blank\\">Click here</a>
-                                                </td>
-                                            </tr>
-                                        </tbody></table>
-                                    </td>
-                                </tr>
-                            
-                        </tbody></table>
+                    <td align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 0; padding-bottom: 0; margin-bottom: 0; padding-bottom: 0;\\" valign=\\"top\\">
+                        <img src=\\"https://main.ghost.org/content/images/2023/12/ghost-logo.png\\" width=\\"560\\" height=\\"180\\" style=\\"-ms-interpolation-mode: bicubic; display: block; width: 100%; height: auto; max-width: 100%; border: none; padding-bottom: 16px;\\" border=\\"0\\">
                     </td>
                 </tr>
-            </tbody></table><div class=\\"kg-header-card kg-v2\\" style=\\"margin: 0 0 1.5em 0; padding: 0; color: #FFFFFF; text-align: center; background-color: #000000;\\">
+            
+            <tr>
+                <td valign=\\"top\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\">
+                    <h4 style=\\"text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-family: Georgia, serif; letter-spacing: -0.01em; font-weight: 700; font-size: 22px; margin-top: 0; margin-bottom: 0;\\"><span style=\\"white-space: pre-wrap;\\">Make a blog!</span></h4>
+                </td>
+            </tr>
+            
+                <tr style=\\"padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;\\">
+                    <td valign=\\"top\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\">
+                        <img src=\\"https://static.ghost.org/v4.0.0/images/star-rating-5.png\\" style=\\"-ms-interpolation-mode: bicubic; max-width: 100%; border: none; width: 96px;\\" border=\\"0\\" width=\\"96\\">
+                    </td>
+                </tr>
+            
+            <tr>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 0; padding-bottom: 0; margin-bottom: 0; padding-bottom: 0;\\" valign=\\"top\\">
+                    <div style=\\"padding-top: 8px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;\\"><p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">with Ghost</span></p></div>
+                </td>
+            </tr>
+            
+                <tr>
+                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 0; padding-bottom: 0; margin-bottom: 0; padding-bottom: 0;\\" valign=\\"top\\">
+                        <div class=\\"btn btn-accent\\" style=\\"box-sizing: border-box; display: table; width: 100%; padding-top: 16px;\\">
+                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"background-color: #FF1A75; border-color: #FF1A75; overflow-wrap: anywhere; border: solid 1px; border-radius: 6px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 0; text-decoration: none; color: #FFFFFF; width: 100%; text-align: center;\\" target=\\"_blank\\"><span style=\\"display: block;padding: 12px 25px;\\">Click here</span></a>
+                        </div>
+                    </td>
+                </tr>
+            
+        </tbody></table><div class=\\"kg-header-card kg-v2\\" style=\\"margin: 0 0 1.5em 0; padding: 0; color: #FFFFFF; text-align: center; background-color: #000000;\\">
+            
+            <div class=\\"kg-header-card-content\\" style=\\"padding: 80px 48px;\\">
+                <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; text-rendering: optimizeLegibility; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 3em; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
+                <p class=\\"kg-header-card-subheading\\" style=\\"line-height: 1.6em; margin: 0.75em 0 0; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">This header renders properly in </span><i><em class=\\"italic\\" style=\\"white-space: pre-wrap;\\">all</em></i><span style=\\"white-space: pre-wrap;\\"> email clients!</span></p>
                 
-                <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; color: #FFFFFF; text-align: center; background-color: #000000;\\" align=\\"center\\" bgcolor=\\"#000000\\">
-                    <tbody><tr>
-                        <td class=\\"kg-header-card-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 80px 48px;\\" valign=\\"top\\">
-                            <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
-                                <tbody><tr>
-                                    <td align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                        <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; font-size: 3em; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class=\\"kg-header-card-subheading-wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                        <p class=\\"kg-header-card-subheading\\" style=\\"line-height: 1.6em; margin: 0.75em 0 0; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">This header renders properly in </span><i><em class=\\"italic\\" style=\\"white-space: pre-wrap;\\">all</em></i><span style=\\"white-space: pre-wrap;\\"> email clients!</span></p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    
-                                </tr>
-                            </tbody></table>
-                        </td>
-                    </tr>
-                </tbody></table>
-            </div><div class=\\"kg-card kg-embed-card\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><!--[if !mso !vml]-->
+            </div>
+        </div><div class=\\"kg-card kg-embed-card\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><!--[if !mso !vml]-->
             <a class=\\"kg-video-preview\\" href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" aria-label=\\"Play video\\" style=\\"background-color: #1d1f21; background-image: radial-gradient(circle at center, #5b5f66, #1d1f21); display: block; overflow-wrap: anywhere; color: #FF1A75; mso-hide: all; text-decoration: none;\\" target=\\"_blank\\">
                 <table cellpadding=\\"0\\" cellspacing=\\"0\\" border=\\"0\\" width=\\"100%\\" background=\\"https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg\\" role=\\"presentation\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-size: cover; min-height: 200px; overflow: hidden; background: url(&#39;https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg&#39;) left top / cover; mso-hide: all;\\">
                     <tbody><tr style=\\"mso-hide: all\\">
@@ -6380,12 +6302,8 @@ A lovely video of a woman on the beach doing nothing.
 
 
 
-
-
-
-
-
 Make a blog!
+
 
 
 
@@ -6407,22 +6325,7 @@ with Ghost
 
 
 
-
 Click here [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -6436,18 +6339,7 @@ Click here [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 Good news everyone!
 
 
-
-
-
-
 This header renders properly in all email clients!
-
-
-
-
-
-
-
 
 
 
@@ -7044,7 +6936,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
+                <td class=\\"container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
@@ -7103,7 +6995,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                         <tr class=\\"post-content-row\\">
                                             <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
                                                 <!-- POST CONTENT START -->
-                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #73818c;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px;\\">A heading</h1>
+                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #73818c;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">A heading</h1>
 <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">and a paragraph (in markdown!)</p>
 
 <!--kg-card-begin: html-->
@@ -7177,7 +7069,18 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                 </tr>
             </table>
             <div class=\\"kg-bookmark-spacer--outlook\\" style=\\"height: 1.5em;\\">&nbsp;</div>
-        <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>Vinz</span><span style=\\"white-space: pre-wrap;\\">,</span></p><!--members-only--><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\"><table class=\\"btn btn-accent\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border-radius: 6px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></td></tr></tbody></table><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\">I had an idea...</div></div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" class=\\"kg-toggle-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border: 1px solid #E5ECF0; border-radius: 4px; margin-bottom: 24px; width: 100%;\\"><tbody><tr><td class=\\"kg-toggle-heading\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; margin: 0; padding: 24px 24px 12px;\\" valign=\\"top\\"><h4 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; font-size: 21px; line-height: 1.2em; margin: 0; font-weight: 700;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4></td></tr><tr><td class=\\"kg-toggle-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #394047; font-size: 16px; line-height: 1.5; padding: 0 24px 24px;\\" valign=\\"top\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; margin-bottom: 0;\\"><span style=\\"white-space: pre-wrap;\\">Just kidding</span></p></td></tr></tbody></table><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" class=\\"kg-audio-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 auto 1.5em; border-radius: 3px; border: 1px solid #e0e7eb;\\" width=\\"100%\\">
+        <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>Vinz</span><span style=\\"white-space: pre-wrap;\\">,</span></p><!--members-only--><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\"><table class=\\"btn btn-accent\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border-radius: 6px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></td></tr></tbody></table><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\">I had an idea...</div></div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" class=\\"kg-toggle-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border: 1px solid #E5ECF0; border-radius: 4px; margin-bottom: 24px; width: 100%;\\">
+                <tbody><tr>
+                    <td class=\\"kg-toggle-heading\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; margin: 0; padding: 24px 24px 12px;\\" valign=\\"top\\">
+                        <h4 style=\\"margin-top: 0; text-rendering: optimizeLegibility; font-size: 21px; line-height: 1.2em; font-family: Georgia, serif; letter-spacing: -0.01em; margin: 0; font-weight: 700;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4>
+                    </td>
+                </tr>
+                <tr>
+                    <td class=\\"kg-toggle-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #394047; font-size: 16px; line-height: 1.5; padding: 0 24px 24px;\\" valign=\\"top\\">
+                        <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; margin-bottom: 0;\\"><span style=\\"white-space: pre-wrap;\\">Just kidding</span></p>
+                    </td>
+                </tr>
+            </tbody></table><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" class=\\"kg-audio-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 auto 1.5em; border-radius: 3px; border: 1px solid #e0e7eb;\\" width=\\"100%\\">
                 <tbody><tr>
                     <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
                         <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
@@ -7256,7 +7159,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                             
                             <tr>
                                 <td valign=\\"top\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\">
-                                    <h4 class=\\"kg-product-title\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-weight: 700; margin-top: 0; margin-bottom: 0; font-size: 22px;\\"><span style=\\"white-space: pre-wrap;\\">Make a blog!</span></h4>
+                                    <h4 class=\\"kg-product-title\\" style=\\"text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-weight: 700; font-family: Georgia, serif; letter-spacing: -0.01em; margin-top: 0; margin-bottom: 0; font-size: 22px;\\"><span style=\\"white-space: pre-wrap;\\">Make a blog!</span></h4>
                                 </td>
                             </tr>
                             
@@ -7293,7 +7196,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                             <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                 <tbody><tr>
                                     <td align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                        <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; font-size: 32px; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
+                                        <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; text-rendering: optimizeLegibility; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 32px; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
                                     </td>
                                 </tr>
                                 <tr>
@@ -7551,9 +7454,22 @@ Click me, I'm a button! [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 💡I had an idea...
 
+
+
+
+
+
 Spoiler alert!
 
+
+
+
+
+
 Just kidding
+
+
+
 
 
 
@@ -8317,7 +8233,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
+                <td class=\\"container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
@@ -8376,7 +8292,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                         <tr class=\\"post-content-row\\">
                                             <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
                                                 <!-- POST CONTENT START -->
-                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #73818c;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px;\\">A heading</h1>
+                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #73818c;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">A heading</h1>
 <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">and a paragraph (in markdown!)</p>
 
 <!--kg-card-begin: html-->
@@ -8450,7 +8366,18 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                 </tr>
             </table>
             <div class=\\"kg-bookmark-spacer--outlook\\" style=\\"height: 1.5em;\\">&nbsp;</div>
-        <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>there</span><span style=\\"white-space: pre-wrap;\\">,</span></p><div><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hello there, fellow users of electronic mail.</span></p><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"></div><!--members-only--><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\"><table class=\\"btn btn-accent\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border-radius: 6px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></td></tr></tbody></table><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\">I had an idea...</div></div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" class=\\"kg-toggle-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border: 1px solid #E5ECF0; border-radius: 4px; margin-bottom: 24px; width: 100%;\\"><tbody><tr><td class=\\"kg-toggle-heading\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; margin: 0; padding: 24px 24px 12px;\\" valign=\\"top\\"><h4 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; font-size: 21px; line-height: 1.2em; margin: 0; font-weight: 700;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4></td></tr><tr><td class=\\"kg-toggle-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #394047; font-size: 16px; line-height: 1.5; padding: 0 24px 24px;\\" valign=\\"top\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; margin-bottom: 0;\\"><span style=\\"white-space: pre-wrap;\\">Just kidding</span></p></td></tr></tbody></table><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" class=\\"kg-audio-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 auto 1.5em; border-radius: 3px; border: 1px solid #e0e7eb;\\" width=\\"100%\\">
+        <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>there</span><span style=\\"white-space: pre-wrap;\\">,</span></p><div><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hello there, fellow users of electronic mail.</span></p><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"></div><!--members-only--><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\"><table class=\\"btn btn-accent\\" border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; padding: 8px 20px 9px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border-radius: 6px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></td></tr></tbody></table><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\">I had an idea...</div></div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" class=\\"kg-toggle-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border: 1px solid #E5ECF0; border-radius: 4px; margin-bottom: 24px; width: 100%;\\">
+                <tbody><tr>
+                    <td class=\\"kg-toggle-heading\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; margin: 0; padding: 24px 24px 12px;\\" valign=\\"top\\">
+                        <h4 style=\\"margin-top: 0; text-rendering: optimizeLegibility; font-size: 21px; line-height: 1.2em; font-family: Georgia, serif; letter-spacing: -0.01em; margin: 0; font-weight: 700;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4>
+                    </td>
+                </tr>
+                <tr>
+                    <td class=\\"kg-toggle-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #394047; font-size: 16px; line-height: 1.5; padding: 0 24px 24px;\\" valign=\\"top\\">
+                        <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; margin-bottom: 0;\\"><span style=\\"white-space: pre-wrap;\\">Just kidding</span></p>
+                    </td>
+                </tr>
+            </tbody></table><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" class=\\"kg-audio-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 auto 1.5em; border-radius: 3px; border: 1px solid #e0e7eb;\\" width=\\"100%\\">
                 <tbody><tr>
                     <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
                         <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
@@ -8529,7 +8456,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                             
                             <tr>
                                 <td valign=\\"top\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\">
-                                    <h4 class=\\"kg-product-title\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-weight: 700; margin-top: 0; margin-bottom: 0; font-size: 22px;\\"><span style=\\"white-space: pre-wrap;\\">Make a blog!</span></h4>
+                                    <h4 class=\\"kg-product-title\\" style=\\"text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-weight: 700; font-family: Georgia, serif; letter-spacing: -0.01em; margin-top: 0; margin-bottom: 0; font-size: 22px;\\"><span style=\\"white-space: pre-wrap;\\">Make a blog!</span></h4>
                                 </td>
                             </tr>
                             
@@ -8566,7 +8493,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                             <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                 <tbody><tr>
                                     <td align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                        <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; font-size: 32px; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
+                                        <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; text-rendering: optimizeLegibility; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 32px; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
                                     </td>
                                 </tr>
                                 <tr>
@@ -8830,9 +8757,22 @@ Click me, I'm a button! [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 💡I had an idea...
 
+
+
+
+
+
 Spoiler alert!
 
+
+
+
+
+
 Just kidding
+
+
+
 
 
 
@@ -9636,7 +9576,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
+                <td class=\\"container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
@@ -9695,7 +9635,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                         <tr class=\\"post-content-row\\">
                                             <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
                                                 <!-- POST CONTENT START -->
-                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #73818c;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px;\\">A heading</h1>
+                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #73818c;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">A heading</h1>
 <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">and a paragraph (in markdown!)</p>
 
 <!--kg-card-begin: html-->
@@ -9771,7 +9711,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
             <div class=\\"kg-bookmark-spacer--outlook\\" style=\\"height: 1.5em;\\">&nbsp;</div>
         <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>Vinz</span><span style=\\"white-space: pre-wrap;\\">,</span></p><!--members-only--><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"btn btn-accent\\" style=\\"box-sizing: border-box; width: 100%; display: table;\\"><table border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; border-radius: 5px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 25px; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\">I had an idea...</div></div><div style=\\"background: transparent;
         border: 1px solid rgba(124, 139, 154, 0.25); border-radius: 4px; padding: 20px; margin-bottom: 1.5em;\\">
-            <h4 style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top: 0px;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4>
+            <h4 style=\\"text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top: 0px;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4>
             <div style=\\"font-size: 1rem; line-height: 1.5; margin-bottom: -1.5em;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Just kidding</span></p></div>
         </div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" class=\\"kg-audio-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 auto 1.5em; border-radius: 3px; border: 1px solid #e0e7eb;\\" width=\\"100%\\">
                 <tbody><tr>
@@ -9849,7 +9789,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
             
             <tr>
                 <td valign=\\"top\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\">
-                    <h4 style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-weight: 700; font-size: 22px; margin-top: 0; margin-bottom: 0;\\"><span style=\\"white-space: pre-wrap;\\">Make a blog!</span></h4>
+                    <h4 style=\\"text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-family: Georgia, serif; letter-spacing: -0.01em; font-weight: 700; font-size: 22px; margin-top: 0; margin-bottom: 0;\\"><span style=\\"white-space: pre-wrap;\\">Make a blog!</span></h4>
                 </td>
             </tr>
             
@@ -9876,7 +9816,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
         </tbody></table><div class=\\"kg-header-card kg-v2\\" style=\\"margin: 0 0 1.5em 0; padding: 0; color: #FFFFFF; text-align: center; background-color: #000000;\\">
             
             <div class=\\"kg-header-card-content\\" style=\\"padding: 80px 48px;\\">
-                <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; font-size: 3em; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
+                <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; text-rendering: optimizeLegibility; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 3em; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
                 <p class=\\"kg-header-card-subheading\\" style=\\"line-height: 1.6em; margin: 0.75em 0 0; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">This header renders properly in </span><i><em class=\\"italic\\" style=\\"white-space: pre-wrap;\\">all</em></i><span style=\\"white-space: pre-wrap;\\"> email clients!</span></p>
                 
             </div>
@@ -10914,7 +10854,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
             <![endif]-->
             <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
-                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
+                <td class=\\"container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
@@ -10973,7 +10913,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                         <tr class=\\"post-content-row\\">
                                             <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
                                                 <!-- POST CONTENT START -->
-                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #73818c;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px;\\">A heading</h1>
+                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #73818c;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">A heading</h1>
 <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">and a paragraph (in markdown!)</p>
 
 <!--kg-card-begin: html-->
@@ -11049,7 +10989,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
             <div class=\\"kg-bookmark-spacer--outlook\\" style=\\"height: 1.5em;\\">&nbsp;</div>
         <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>there</span><span style=\\"white-space: pre-wrap;\\">,</span></p><div><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hello there, fellow users of electronic mail.</span></p><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"></div><!--members-only--><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"btn btn-accent\\" style=\\"box-sizing: border-box; width: 100%; display: table;\\"><table border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\" width=\\"auto\\"><tbody><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; border-radius: 5px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 25px; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></tbody></table></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 24px; border-radius: 8px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\">I had an idea...</div></div><div style=\\"background: transparent;
         border: 1px solid rgba(124, 139, 154, 0.25); border-radius: 4px; padding: 20px; margin-bottom: 1.5em;\\">
-            <h4 style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top: 0px;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4>
+            <h4 style=\\"text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top: 0px;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4>
             <div style=\\"font-size: 1rem; line-height: 1.5; margin-bottom: -1.5em;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Just kidding</span></p></div>
         </div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" class=\\"kg-audio-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 auto 1.5em; border-radius: 3px; border: 1px solid #e0e7eb;\\" width=\\"100%\\">
                 <tbody><tr>
@@ -11127,7 +11067,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
             
             <tr>
                 <td valign=\\"top\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\">
-                    <h4 style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-weight: 700; font-size: 22px; margin-top: 0; margin-bottom: 0;\\"><span style=\\"white-space: pre-wrap;\\">Make a blog!</span></h4>
+                    <h4 style=\\"text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-family: Georgia, serif; letter-spacing: -0.01em; font-weight: 700; font-size: 22px; margin-top: 0; margin-bottom: 0;\\"><span style=\\"white-space: pre-wrap;\\">Make a blog!</span></h4>
                 </td>
             </tr>
             
@@ -11154,7 +11094,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
         </tbody></table><div class=\\"kg-header-card kg-v2\\" style=\\"margin: 0 0 1.5em 0; padding: 0; color: #FFFFFF; text-align: center; background-color: #000000;\\">
             
             <div class=\\"kg-header-card-content\\" style=\\"padding: 80px 48px;\\">
-                <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; text-rendering: optimizeLegibility; font-size: 3em; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
+                <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; text-rendering: optimizeLegibility; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 3em; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
                 <p class=\\"kg-header-card-subheading\\" style=\\"line-height: 1.6em; margin: 0.75em 0 0; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">This header renders properly in </span><i><em class=\\"italic\\" style=\\"white-space: pre-wrap;\\">all</em></i><span style=\\"white-space: pre-wrap;\\"> email clients!</span></p>
                 
             </div>
