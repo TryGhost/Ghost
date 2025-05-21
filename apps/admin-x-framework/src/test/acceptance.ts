@@ -17,7 +17,7 @@ import themesFixture from './responses/themes.json';
 import tiersFixture from './responses/tiers.json';
 import usersFixture from './responses/users.json';
 import activitypubInboxFixture from './responses/activitypub/inbox.json';
-import activitypubFollowingFixture from './responses/activitypub/following.json';
+import activitypubFeedFixture from './responses/activitypub/feed.json';
 
 import {ActionsResponseType} from '../api/actions';
 import {ConfigResponseType} from '../api/config';
@@ -67,7 +67,7 @@ export const responseFixtures = {
     actions: actionsFixture as ActionsResponseType,
     latestPost: {posts: [{id: '1', url: `${siteFixture.site.url}/test-post/`}]},
     activitypubInbox: activitypubInboxFixture,
-    activitypubFollowing: activitypubFollowingFixture
+    activitypubFeed: activitypubFeedFixture
 };
 
 const defaultLabFlags = {
