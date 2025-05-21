@@ -52,6 +52,7 @@
     "@lexical/utils": "0.13.1",
     "@tryghost/kg-clean-basic-html": "4.2.4",
     "@tryghost/kg-markdown-html-renderer": "7.1.2",
+    "clsx": "2.1.1",
     "html-minifier": "^4.0.0",
     "jsdom": "^24.1.1",
     "lexical": "0.13.1",

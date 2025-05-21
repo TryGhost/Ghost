@@ -132,6 +132,70 @@ describe('ButtonNode', function () {
             output.should.containEql('<td align="center">');
         }));
 
+        it('renders for email target (emailCustomization)', editorTest(function () {
+            const buttonNode = $createButtonNode(dataset);
+            const options = {
+                target: 'email',
+                feature: {
+                    emailCustomization: true
+                }
+            };
+            const {element} = buttonNode.exportDOM({...exportOptions, ...options});
+            const output = element.innerHTML;
+
+            output.should.prettifyTo(html`
+                <table border="0" cellpadding="0" cellspacing="0">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0" align="center">
+                                    <tbody>
+                                        <tr>
+                                            <td align="center">
+                                                <a href="http://blog.com/post1">click me</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `);
+        }));
+
+        it('renders for email target (emailCustomizationAlpha)', editorTest(function () {
+            const buttonNode = $createButtonNode(dataset);
+            const options = {
+                target: 'email',
+                feature: {
+                    emailCustomizationAlpha: true
+                }
+            };
+            const {element} = buttonNode.exportDOM({...exportOptions, ...options});
+            const output = element.innerHTML;
+
+            output.should.prettifyTo(html`
+                <table border="0" cellpadding="0" cellspacing="0">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0" align="center">
+                                    <tbody>
+                                        <tr>
+                                            <td align="center">
+                                                <a href="http://blog.com/post1">click me</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `);
+        }));
+
         it('renders an empty span with a missing buttonUrl', editorTest(function () {
             const buttonNode = $createButtonNode();
             const {element} = buttonNode.exportDOM(exportOptions);
