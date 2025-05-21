@@ -18,7 +18,7 @@
     "scripts": {
         "dev": "vite build --watch",
         "dev:start": "vite",
-        "test": "vitest run",
+        "test": "yarn test:unit --coverage",
         "test:unit": "vitest run test/unit",
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",
