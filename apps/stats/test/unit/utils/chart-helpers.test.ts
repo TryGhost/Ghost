@@ -1,11 +1,13 @@
 import moment from 'moment-timezone';
-import {STATS_RANGE_OPTIONS} from '@src/utils/constants';
 import {describe, expect, it} from 'vitest';
 import {
+    aggregateByMonthExact,
     determineAggregationStrategy,
+    getMonthKey,
     getPeriodText,
     sanitizeChartData
 } from '@src/utils/chart-helpers';
+import {STATS_RANGE_OPTIONS} from '@src/utils/constants';
 
 type ChartDataItem = {
     date: string;
@@ -349,6 +351,111 @@ describe('chart-helpers', () => {
                 expect(result[3].value).toBe(250);
                 expect(result[4].date).toBe('2024-02-25'); // Week containing Feb 28
                 expect(result[4].value).toBe(300);
+            });
+
+            it('handles significant changes in monthly exact aggregation', () => {
+                const data = [
+                    {date: '2024-01-01', value: 100}, // Start of Jan
+                    {date: '2024-01-15', value: 103}, // Mid Jan (3% increase - not significant)
+                    {date: '2024-01-20', value: 110}, // Mid Jan (6.8% increase - significant)
+                    {date: '2024-01-31', value: 112}, // End of Jan
+                    {date: '2024-02-01', value: 112}, // Start of Feb
+                    {date: '2024-02-15', value: 115}, // Mid Feb (2.7% increase - not significant)
+                    {date: '2024-02-28', value: 118} // End of Feb
+                ];
+
+                const result = sanitizeChartData(data, 400, 'value', 'exact');
+
+                // Should include start/end of months
+                expect(result.length).toBe(2);
+                expect(result[0].date).toBe('2024-01-31'); // End of Jan
+                expect(result[0].value).toBe(112);
+                expect(result[1].date).toBe('2024-02-28'); // End of Feb
+                expect(result[1].value).toBe(118);
+            });
+
+            it('handles monthly exact aggregation with significant changes', () => {
+                const data = [
+                    {date: '2024-01-01', value: 100}, // Start of Jan
+                    {date: '2024-01-15', value: 103}, // Mid Jan (3% increase - not significant)
+                    {date: '2024-01-20', value: 110}, // Mid Jan (6.8% increase - significant)
+                    {date: '2024-01-31', value: 112}, // End of Jan
+                    {date: '2024-02-01', value: 112}, // Start of Feb
+                    {date: '2024-02-15', value: 115}, // Mid Feb (2.7% increase - not significant)
+                    {date: '2024-02-28', value: 118} // End of Feb
+                ];
+
+                // Force monthly strategy by using a range that triggers it
+                const result = sanitizeChartData(data, 400, 'value', 'exact');
+
+                // Should include only end-of-month values
+                expect(result.length).toBe(2);
+                expect(result[0].date).toBe('2024-01-31'); // End of Jan
+                expect(result[0].value).toBe(112);
+                expect(result[1].date).toBe('2024-02-28'); // End of Feb
+                expect(result[1].value).toBe(118);
+            });
+
+            it('calculates date span correctly for single data point', () => {
+                const data = [{date: '2024-01-01', value: 100}];
+                const result = sanitizeChartData(data, 400, 'value', 'exact');
+
+                // Should return the single point as is
+                expect(result.length).toBe(1);
+                expect(result[0].date).toBe('2024-01-01');
+                expect(result[0].value).toBe(100);
+            });
+
+            it('uses getMonthKey for consistent month formatting', () => {
+                // Test the getMonthKey function directly
+                expect(getMonthKey('2024-01-01')).toBe('2024-01');
+                expect(getMonthKey('2024-01-15')).toBe('2024-01');
+                expect(getMonthKey('2024-01-31')).toBe('2024-01');
+            });
+
+            it('handles empty data array', () => {
+                const result = sanitizeChartData([], 400, 'value', 'exact');
+                expect(result).toEqual([]);
+            });
+
+            it('handles single data point with monthly exact aggregation', () => {
+                const data = [{date: '2024-01-01', value: 100}];
+                const result = sanitizeChartData(data, 400, 'value', 'exact');
+                expect(result.length).toBe(1);
+                expect(result[0].date).toBe('2024-01-01');
+                expect(result[0].value).toBe(100);
+            });
+
+            it('aggregates by month exact with significant changes', () => {
+                const data = [
+                    {date: '2024-01-01', value: 100}, // Start of Jan
+                    {date: '2024-01-15', value: 103}, // Mid Jan (3% increase - not significant)
+                    {date: '2024-01-20', value: 110}, // Mid Jan (6.8% increase - significant)
+                    {date: '2024-01-31', value: 112}, // End of Jan
+                    {date: '2024-02-01', value: 112}, // Start of Feb
+                    {date: '2024-02-15', value: 115}, // Mid Feb (2.7% increase - not significant)
+                    {date: '2024-02-28', value: 118} // End of Feb
+                ];
+
+                const result = aggregateByMonthExact(data, 'value');
+
+                // Should include first/last points, month boundaries, and significant changes
+                expect(result.length).toBe(7);
+                expect(result[0].date).toBe('2024-01-01'); // First point
+                expect(result[1].date).toBe('2024-01-15'); // Mid Jan
+                expect(result[2].date).toBe('2024-01-20'); // Mid Jan (significant change)
+                expect(result[3].date).toBe('2024-01-31'); // End of Jan
+                expect(result[4].date).toBe('2024-02-01'); // Start of Feb
+                expect(result[5].date).toBe('2024-02-15'); // Mid Feb
+                expect(result[6].date).toBe('2024-02-28'); // End of Feb/Last point
+            });
+
+            it('handles single data point in aggregateByMonthExact', () => {
+                const data = [{date: '2024-01-01', value: 100}];
+                const result = aggregateByMonthExact(data, 'value');
+                expect(result.length).toBe(1);
+                expect(result[0].date).toBe('2024-01-01');
+                expect(result[0].value).toBe(100);
             });
         });
 

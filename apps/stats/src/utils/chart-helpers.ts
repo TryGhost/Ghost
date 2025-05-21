@@ -292,9 +292,6 @@ export const sanitizeChartData = <T extends {date: string}>(
     // Apply the appropriate aggregation
     let result: T[];
     switch (strategy) {
-    case 'monthly-exact':
-        result = aggregateByMonthExact(data, fieldName);
-        break;
     case 'weekly':
         result = aggregateByWeek(data, fieldName, aggregationType);
         break;
