@@ -11,7 +11,7 @@ The primary goal of these tests is to simulate real user scenarios and verify th
 - Tests should use Ghost like a real user would
 - Tests should be able to run against all live external dependencies (i.e. Stripe) and _also_ be able to run against mocked versions of these dependencies
 - Tests should be expressive, succinct and easy to write
-- Tests should make as few assumptions as possible
+- Tests should make as few assumptions as possible — assumptions are for unit tests, e2e tests are for testing assumptions
 - Tests should be fast and stable (re: not flaky)
 
 ## Architecture
@@ -20,7 +20,7 @@ The primary goal of these tests is to simulate real user scenarios and verify th
 This e2e test suite uses Playwright to automate a web browser and use the app as a real user would. The tests run independently from the system under test (Ghost), rather than hooking into Ghost to e.g. start and stop a development server. We should always be able to run this test suite by passing in a few configuration parameters via environment variables, like the base URL for the site we want to test.
 
 ### Managing State
-One of the key considerations in building a test suite such as this is how we manage state, which includes the MySQL database state and increasingly state that is kept in other services, i.e. Tinybird for analytics data. One approach we could use here is to hook into Ghost itself to i.e. truncate database tables and load new fixtures. As much as possible, we should avoid doing this, because it couples our tests too closely with the application code. Another, IMO better approach is to directly manage the state in whatever system it is stored in from the test suite itself. For example, rather than hooking into Ghost to truncate tables and load fixtures, we should build the infrastructure to allow the test suite to talk directly to MySQL and change the state itself.
+One of the key considerations in building a test suite such as this is how we manage state, which includes the MySQL database state and increasingly state that is kept in other services, i.e. Tinybird for analytics data. One approach we could use here is to hook into Ghost itself to i.e. truncate database tables and load new fixtures. As much as possible, we should avoid doing this, because it couples our tests too closely with the application code. Another, IMO better approach is to directly manage the state in whatever system it is stored in from the test suite itself. For example, rather than hooking into Ghost to truncate tables and load fixtures, we should build the infrastructure to allow the test suite to talk directly to MySQL and change the state itself. 
 
 ### Dealing with external services
 Our current e2e test suites were designed in a world where Ghost was mostly just a blog — a simple node application with a MySQL database. In that world, it's fairly easy to write end-to-end tests, because we control the whole stack. Increasingly Ghost needs to communicate with external services — Stripe, Tinybird, Email APIs — which we do not have complete control over. As such, we likely need a more robust strategy for testing against these external services and/or mocking them.
@@ -35,6 +35,14 @@ A good example of this that is currently implemented is email:
 2. Mock mode with MailHog: Operating in live mode gives us more confidence because we're making fewer assumptions in our tests, but that confidence comes at a cost: speed and stability. Sending emails from Ghost(Pro) to a real address on the open internet incurs additional network latency and consequently has more potential for flaky behavior. For that reason, we also support running with a mocked email service, MailHog. We run MailHog locally (via docker compose), point Ghost's email configuration to the MailHog service so the emails are sent from Ghost > MailHog over the local network, then we retrieve the emails MailHog receives by an API call over the local network.
 
 An important distinction is that we aren't changing any behavior within Ghost — we're not injecting code into the application to handle things differently when in live vs mocked mode. We are simply pointing Ghost to either the real thing, or a mocked version of the real thing that we control. Put another way, Ghost shouldn't have to know or care that the external service has been mocked — it makes requests to the external service as usual, using the exact same code paths whether the tests are running in live or mocked mode.
+
+## Structure
+We can and should iterate on the structure of this package to keep it as intuitive as possible, while making it easy to extend and improve to cover additional use-cases. This section provides a mile-high, aerial view of the directory structure, which will hopefully help to understand the scope of what all is included in this package.
+
+```
+
+
+```
 
 ## Prerequisites
 
