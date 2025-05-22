@@ -510,39 +510,42 @@ describe('CallToActionNode', function () {
             });
         }));
 
-        it('can render outline accent buttons (emailCustomizationAlpha)', editorTest(function () {
-            exportOptions.target = 'email';
-            exportOptions.feature.emailCustomizationAlpha = true;
-            exportOptions.design.buttonStyle = 'outline';
+        // eslint-disable-next-line ghost/mocha/no-setup-in-describe
+        ['emailCustomization', 'emailCustomizationAlpha'].forEach((flag) => {
+            it(`can render outline accent buttons (${flag})`, editorTest(function () {
+                exportOptions.target = 'email';
+                exportOptions.feature[flag] = true;
+                exportOptions.design.buttonStyle = 'outline';
 
-            dataset.buttonColor = 'accent';
+                dataset.buttonColor = 'accent';
 
-            testRender(({element}) => {
-                const expectedStyle = 'color: none;';
-                element.querySelector('table.btn td').getAttribute('style').should.equal(expectedStyle);
-                element.querySelector('table.btn a').getAttribute('style').should.equal(expectedStyle);
-            });
-        }));
+                testRender(({element}) => {
+                    const expectedStyle = 'color: none;';
+                    element.querySelector('table.btn td').getAttribute('style').should.equal(expectedStyle);
+                    element.querySelector('table.btn a').getAttribute('style').should.equal(expectedStyle);
+                });
+            }));
 
-        it('can render outline custom buttons (emailCustomizationAlpha)', editorTest(function () {
-            exportOptions.target = 'email';
-            exportOptions.feature.emailCustomizationAlpha = true;
-            exportOptions.design.buttonStyle = 'outline';
+            it(`can render outline custom buttons (${flag})`, editorTest(function () {
+                exportOptions.target = 'email';
+                exportOptions.feature[flag] = true;
+                exportOptions.design.buttonStyle = 'outline';
 
-            dataset.buttonColor = '#F0F0F0';
+                dataset.buttonColor = '#F0F0F0';
 
-            testRender(({element}) => {
-                oneline(element.querySelector('table.btn td').getAttribute('style')).should.equal(oneline`
-                    border: 1px solid #F0F0F0;
-                    background-color: transparent;
-                    color: #F0F0F0;
-                `);
-                oneline(element.querySelector('table.btn a').getAttribute('style')).should.equal(oneline`
-                    background-color: transparent;
-                    color: #F0F0F0;
-                `);
-            });
-        }));
+                testRender(({element}) => {
+                    oneline(element.querySelector('table.btn td').getAttribute('style')).should.equal(oneline`
+                        border: 1px solid #F0F0F0;
+                        background-color: transparent;
+                        color: #F0F0F0;
+                    `);
+                    oneline(element.querySelector('table.btn a').getAttribute('style')).should.equal(oneline`
+                        background-color: transparent;
+                        color: #F0F0F0;
+                    `);
+                });
+            }));
+        });
 
         it('accepts valid hex color for buttonColor', editorTest(function () {
             dataset.buttonColor = '#F0F0F0';
@@ -568,26 +571,6 @@ describe('CallToActionNode', function () {
             dataset.alignment = 'center';
             testRender(({html}) => {
                 html.should.containEql('kg-cta-centered');
-            });
-        }));
-
-        it('renders email with outline button style and custom color (emailCustomizationAlpha)', editorTest(function () {
-            exportOptions.target = 'email';
-            exportOptions.feature.emailCustomizationAlpha = true;
-            exportOptions.design.buttonStyle = 'outline';
-            dataset.buttonColor = '#123456';
-            dataset.buttonTextColor = '#ffffff';
-
-            testRender(({element}) => {
-                const tdStyle = element.querySelector('table.btn td').getAttribute('style');
-                const aStyle = element.querySelector('table.btn a').getAttribute('style');
-
-                tdStyle.should.containEql('border: 1px solid #123456');
-                tdStyle.should.containEql('background-color: transparent');
-                tdStyle.should.containEql('color: #123456');
-
-                aStyle.should.containEql('background-color: transparent');
-                aStyle.should.containEql('color: #123456');
             });
         }));
 
