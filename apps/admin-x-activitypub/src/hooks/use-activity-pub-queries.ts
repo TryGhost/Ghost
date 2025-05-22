@@ -22,7 +22,7 @@ import {
 import {exploreSites} from '@src/lib/explore-sites';
 import {formatPendingActivityContent, generatePendingActivity, generatePendingActivityId} from '../utils/pending-activity';
 import {mapPostToActivity} from '../utils/posts';
-import {showToast} from '@tryghost/admin-x-design-system';
+import {toast} from 'sonner';
 import {useCallback} from 'react';
 
 export type ActivityPubCollectionQueryResult<TData> = UseInfiniteQueryResult<ActivityPubCollectionResponse<TData>>;
@@ -389,10 +389,8 @@ export function useLikeMutationForUser(handle: string) {
             });
 
             if (error.statusCode === 403) {
-                showToast({
-                    title: 'Action failed',
-                    message: 'This user has restricted who can interact with their account.',
-                    type: 'error'
+                toast.error('Action failed', {
+                    description: 'This user has restricted who can interact with their account.'
                 });
             }
         }
@@ -601,10 +599,8 @@ export function useRepostMutationForUser(handle: string) {
             updateRepostCache(queryClient, QUERY_KEYS.inbox, id, false);
             updateNotificationsRepostCache(queryClient, handle, id, false);
             if (error.statusCode === 403) {
-                showToast({
-                    title: 'Action failed',
-                    message: 'This user has restricted who can interact with their account.',
-                    type: 'error'
+                toast.error('Action failed', {
+                    description: 'This user has restricted who can interact with their account.'
                 });
             }
         }
@@ -869,10 +865,8 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
             onError();
 
             if (error.statusCode === 403) {
-                showToast({
-                    title: 'Action failed',
-                    message: 'This user has restricted who can interact with their account.',
-                    type: 'error'
+                toast.error('Action failed', {
+                    description: 'This user has restricted who can interact with their account.'
                 });
             }
         }
@@ -1351,16 +1345,11 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
             // in the thread as this is handled locally in the ArticleModal component
 
             if (error.statusCode === 403) {
-                return showToast({
-                    title: 'Action failed',
-                    message: 'This user has restricted who can interact with their account.',
-                    type: 'error'
+                return toast.error('Action failed', {
+                    description: 'This user has restricted who can interact with their account.'
                 });
             }
-            showToast({
-                message: 'An error occurred while sending your reply.',
-                type: 'error'
-            });
+            toast.error('An error occurred while sending your reply.');
         }
     });
 }
@@ -1414,10 +1403,7 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
             removeActivityFromPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '');
             removeActivityFromPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '');
 
-            showToast({
-                message: 'An error occurred while posting your note.',
-                type: 'error'
-            });
+            toast.error('An error occurred while posting your note.');
         }
     });
 }

@@ -7,7 +7,7 @@ import UnblockButton from './UnblockButton';
 import {Account} from '@src/api/activitypub';
 import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H2, H4, LucideIcon, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from '@tryghost/shade';
 import {SettingAction} from '@src/views/Preferences/components/Settings';
-import {showToast} from '@tryghost/admin-x-design-system';
+import {toast} from 'sonner';
 import {useAccountForUser, useBlockDomainMutationForUser, useBlockMutationForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@src/hooks/use-activity-pub-queries';
 import {useEffect, useRef, useState} from 'react';
 import {useNavigationStack, useParams} from '@tryghost/admin-x-framework';
@@ -57,10 +57,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
             unblockMutation.mutate(account);
         } else {
             blockMutation.mutate(account);
-            showToast({
-                title: 'User blocked',
-                type: 'success'
-            });
+            toast.success('User blocked');
         }
         setViewBlockedPosts(false);
     };
@@ -70,20 +67,14 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
             unblockDomainMutation.mutate({url: account.apId, handle: account.handle});
         } else {
             blockDomainMutation.mutate({url: account.apId, handle: account.handle});
-            showToast({
-                title: 'Domain blocked',
-                type: 'success'
-            });
+            toast.success('Domain blocked');
         }
         setViewBlockedPosts(false);
     };
 
     const handleCopy = async () => {
         await navigator.clipboard.writeText(account.handle);
-        showToast({
-            title: 'Handle copied',
-            type: 'success'
-        });
+        toast.success('Handle copied');
     };
 
     const [isExpanded, setisExpanded] = useState(false);

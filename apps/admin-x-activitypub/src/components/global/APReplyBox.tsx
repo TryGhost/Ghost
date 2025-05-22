@@ -7,7 +7,7 @@ import getUsername from '../../utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LoadingIndicator, LucideIcon} from '@tryghost/shade';
 import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE} from '@utils/image';
-import {showToast} from '@tryghost/admin-x-design-system';
+import {toast} from 'sonner';
 import {uploadFile, useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 
 export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
@@ -143,10 +143,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                     // Use the default error message
                 }
             }
-            showToast({
-                message: errorMessage,
-                type: 'error'
-            });
+            toast.error(errorMessage);
         } finally {
             setIsImageUploading(false);
         }
@@ -159,10 +156,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
             const file = files[0];
 
             if (file.size > MAX_FILE_SIZE) {
-                showToast({
-                    message: FILE_SIZE_ERROR_MESSAGE,
-                    type: 'error'
-                });
+                toast.error(FILE_SIZE_ERROR_MESSAGE);
                 e.target.value = '';
                 return;
             }

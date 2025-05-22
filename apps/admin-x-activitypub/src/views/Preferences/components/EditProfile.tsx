@@ -2,7 +2,7 @@ import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, LoadingIndicator, LucideIcon, Textarea} from '@tryghost/shade';
 import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE, SQUARE_IMAGE_ERROR_MESSAGE, isSquareImage} from '@utils/image';
-import {showToast} from '@tryghost/admin-x-design-system';
+import {toast} from 'sonner';
 import {uploadFile} from '@hooks/use-activity-pub-queries';
 import {useForm} from 'react-hook-form';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -111,10 +111,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                     // Use the default error message
                 }
             }
-            showToast({
-                message: errorMessage,
-                type: 'error'
-            });
+            toast.error(errorMessage);
         } finally {
             setIsProfileImageUploading(false);
         }
@@ -127,20 +124,14 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
             const file = files[0];
 
             if (file.size > MAX_FILE_SIZE) {
-                showToast({
-                    message: FILE_SIZE_ERROR_MESSAGE,
-                    type: 'error'
-                });
+                toast.error(FILE_SIZE_ERROR_MESSAGE);
                 e.target.value = '';
                 return;
             }
 
             const isSquare = await isSquareImage(file);
             if (!isSquare) {
-                showToast({
-                    message: SQUARE_IMAGE_ERROR_MESSAGE,
-                    type: 'error'
-                });
+                toast.error(SQUARE_IMAGE_ERROR_MESSAGE);
                 e.target.value = '';
                 return;
             }
@@ -180,10 +171,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                     // Use the default error message
                 }
             }
-            showToast({
-                message: errorMessage,
-                type: 'error'
-            });
+            toast.error(errorMessage);
         } finally {
             setIsCoverImageUploading(false);
         }
@@ -196,10 +184,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
             const file = files[0];
 
             if (file.size > MAX_FILE_SIZE) {
-                showToast({
-                    message: FILE_SIZE_ERROR_MESSAGE,
-                    type: 'error'
-                });
+                toast.error(FILE_SIZE_ERROR_MESSAGE);
                 e.target.value = '';
                 return;
             }
