@@ -128,6 +128,51 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
     return <></>;
 };
 
+const ProfileLinkedContent: React.FC<{
+    content: string;
+    className?: string;
+    stripTags?: string[];
+}> = ({content, className, stripTags = []}) => {
+    const contentRef = useRef<HTMLDivElement>(null);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const element = contentRef.current;
+        if (!element) {
+            return;
+        }
+
+        const handleProfileLinkClick = (e: Event) => {
+            const target = (e as MouseEvent).target as HTMLElement;
+            const link = target.closest('a[data-profile]');
+
+            if (link) {
+                const handle = link.getAttribute('data-profile')?.trim();
+                const isValidHandle = /^@([\w.-]+)@([\w-]+\.[\w.-]+[a-zA-Z])$/.test(handle || '');
+
+                if (isValidHandle && handle) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleProfileClick(handle, navigate);
+                }
+            }
+        };
+
+        element.addEventListener('click', handleProfileLinkClick);
+        return () => {
+            element.removeEventListener('click', handleProfileLinkClick);
+        };
+    }, [navigate, content]);
+
+    return (
+        <div
+            dangerouslySetInnerHTML={{__html: stripHtml(content || '', stripTags)}}
+            ref={contentRef}
+            className={className}
+        />
+    );
+};
+
 const Notifications: React.FC = () => {
     const [openStates, setOpenStates] = React.useState<{[key: string]: boolean}>({});
     const navigate = useNavigate();
@@ -352,9 +397,10 @@ const Notifications: React.FC = () => {
                                                         /> :
                                                         <>
                                                             <div className='mt-2.5 rounded-md bg-gray-100 px-5 py-[14px] group-hover:bg-gray-200 dark:bg-gray-925/30 group-hover:dark:bg-black/40'>
-                                                                <div
-                                                                    dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '', ['a'])}}
+                                                                <ProfileLinkedContent
                                                                     className='ap-note-content text-pretty'
+                                                                    content={group.post?.content || ''}
+                                                                    stripTags={['a']}
                                                                 />
                                                             </div>
                                                         </>
