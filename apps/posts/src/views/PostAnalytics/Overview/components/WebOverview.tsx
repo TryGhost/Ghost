@@ -83,7 +83,6 @@ const WebOverview:React.FC = () => {
                             right: 20,
                             top: 12
                         }}
-                        accessibilityLayer
                     >
                         <Recharts.CartesianGrid horizontal={false} vertical={false} />
                         <Recharts.XAxis

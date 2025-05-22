@@ -97,7 +97,9 @@ const NewsletterKPIs: React.FC<{
     totals
 }) => {
     const [currentTab, setCurrentTab] = useState('total-subscribers');
+    const [isHoveringClickable, setIsHoveringClickable] = useState(false);
     const {range} = useGlobalData();
+    const navigate = useNavigate();
 
     const {totalSubscribers, avgOpenRate, avgClickRate} = totals;
 
@@ -145,7 +147,7 @@ const NewsletterKPIs: React.FC<{
     } satisfies ChartConfig;
 
     const barDomain = [0, 1];
-    const barTicks = [0, 0.25, 0.5, 0.75, 1];
+    const barTicks = [0, 1];
 
     const yRange = [getYRange(subscribersData).min, getYRange(subscribersData).max];
     const yRangeWithMinPadding = getYRangeWithMinPadding({min: yRange[0], max: yRange[1]});
@@ -198,7 +200,7 @@ const NewsletterKPIs: React.FC<{
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 {(currentTab === 'total-subscribers') &&
-                <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] w-full' config={subscribersChartConfig}>
+                <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] min-h-[280px] w-full' config={subscribersChartConfig}>
                     <Recharts.AreaChart
                         data={subscribersData}
                         margin={{
@@ -206,7 +208,6 @@ const NewsletterKPIs: React.FC<{
                             right: 4,
                             top: 12
                         }}
-                        accessibilityLayer
                     >
                         <Recharts.CartesianGrid horizontal={false} vertical={false} />
                         <Recharts.XAxis
@@ -267,8 +268,32 @@ const NewsletterKPIs: React.FC<{
                 {(currentTab === 'avg-open-rate' || currentTab === 'avg-click-rate') &&
                 <>
                     <ChartContainer className='max-h-[320px] w-full' config={barChartConfig}>
-                        <Recharts.BarChart data={avgsData} accessibilityLayer>
-                            <Recharts.CartesianGrid vertical={false} />
+                        <Recharts.BarChart
+                            className={isHoveringClickable ? '!cursor-pointer' : ''}
+                            data={avgsData}
+                            margin={{
+                                top: 20
+                            }}
+                            onClick={(e) => {
+                                if (e.activePayload && e.activePayload![0].payload.post_id) {
+                                    navigate(`/posts/analytics/beta/${e.activePayload![0].payload.post_id}`, {crossApp: true});
+                                }
+                            }}
+                            onMouseLeave={() => setIsHoveringClickable(false)}
+                            onMouseMove={(e) => {
+                                setIsHoveringClickable(!!(e.activePayload && e.activePayload[0].payload.post_id));
+                            }}
+                        >
+                            <Recharts.CartesianGrid horizontal={false} vertical={false} />
+                            <Recharts.XAxis
+                                axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
+                                dataKey="post_id"
+                                interval={0}
+                                stroke="hsl(var(--gray-300))"
+                                tickFormatter={() => ('')}
+                                tickLine={false}
+                                tickMargin={10}
+                            />
                             <Recharts.YAxis
                                 axisLine={false}
                                 domain={barDomain}
@@ -277,18 +302,10 @@ const NewsletterKPIs: React.FC<{
                                 ticks={barTicks}
                                 width={calculateYAxisWidth(barTicks, (value: number) => formatPercentage(value))}
                             />
-                            <Recharts.XAxis
-                                axisLine={false}
-                                dataKey="post_id"
-                                tickFormatter={() => ('')}
-                                tickLine={false}
-                                tickMargin={10}
-                            />
                             <ChartTooltip
                                 content={<BarTooltipContent />}
-                                cursor={false}
                                 isAnimationActive={false}
-                                position={{y: 20}}
+                                position={{y: 10}}
                             />
                             <Recharts.Bar
                                 activeBar={{fillOpacity: 1}}
@@ -298,7 +315,8 @@ const NewsletterKPIs: React.FC<{
                                 isAnimationActive={false}
                                 maxBarSize={32}
                                 minPointSize={2}
-                                radius={0} />
+                                radius={0}
+                            />
                         </Recharts.BarChart>
                     </ChartContainer>
                     <div className="-mt-6 text-center text-sm text-muted-foreground">
