@@ -85,7 +85,7 @@
     "@tryghost/kg-markdown-html-renderer": "7.1.2",
     "@tryghost/kg-simplemde": "3.0.6",
     "@tryghost/kg-unsplash-selector": "0.3.3",
-    "@types/react": "18.3.21",
+    "@types/react": "18.3.22",
     "@types/react-dom": "18.3.7",
     "@uiw/react-codemirror": "^4.23.0",
     "@vitejs/plugin-react": "4.4.1",
