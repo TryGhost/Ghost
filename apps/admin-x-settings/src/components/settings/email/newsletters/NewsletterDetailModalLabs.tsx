@@ -1,7 +1,6 @@
 import NewsletterPreview from './NewsletterPreview';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
-import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
 import {Button, ButtonGroup, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, SelectOption, Separator, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
@@ -66,7 +65,7 @@ const Sidebar: React.FC<{
     errors: ErrorMessages;
     clearError: (field: string) => void;
 }> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
-    const hasEmailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
+    // const hasEmailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
 
     const {updateRoute} = useRouting();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
@@ -479,7 +478,6 @@ const Sidebar: React.FC<{
                             }
                         ]} clearBg={false} />
                     </div>
-                    {hasEmailCustomizationAlpha &&
                     <div className='flex w-full justify-between'>
                         <div>Image corners</div>
                         <ButtonGroup activeKey={newsletter.image_corners || 'square'} buttons={[
@@ -505,7 +503,6 @@ const Sidebar: React.FC<{
                             }
                         ]} clearBg={false} />
                     </div>
-                    }
                     <div className='flex w-full justify-between'>
                         <div>Link style</div>
                         <ButtonGroup activeKey={newsletter.link_style || 'underline'} buttons={[

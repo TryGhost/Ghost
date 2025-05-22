@@ -2123,7 +2123,8 @@ describe('Email renderer', function () {
                     buttonCorners: 'square',
                     buttonStyle: 'outline',
                     titleFontWeight: 'semibold',
-                    linkStyle: 'normal'
+                    linkStyle: 'normal',
+                    imageCorners: 'rounded'
                 },
                 labs: {emailCustomization: true}
             });
