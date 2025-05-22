@@ -204,7 +204,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         headerSubtitle={headerSubtitle}
         headerTitle={headerTitle}
         imageCorners={(hasEmailCustomizationPrototype || hasEmailCustomizationAlpha) ? (newsletter.image_corners || 'square') : 'square'}
-        linkStyle={(hasEmailCustomizationPrototype || hasEmailCustomizationAlpha) && newsletter.link_style || 'underline'}
+        linkStyle={(hasAnyEmailCustomization) && newsletter.link_style || 'underline'}
         senderEmail={renderSenderEmail(newsletter, config, defaultEmailAddress)}
         senderName={newsletter.sender_name || title}
         senderReplyTo={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress)}
