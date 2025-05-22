@@ -26,7 +26,9 @@ export function createHandler<T = DefaultBodyType>(
     return http[method](path, async () => {
         // Apply delay if specified
         if (options.delay !== undefined && options.delay > 0) {
-            await new Promise(resolve => setTimeout(resolve, options.delay));
+            await new Promise((resolve) => {
+                setTimeout(resolve, options.delay); 
+            });
         }
         
         // Create the response with appropriate status code
@@ -82,7 +84,9 @@ export function createDynamicHandler<T = DefaultBodyType, P extends PathParams =
     return http[method]<P>(path, async ({request, params}) => {
         // Apply delay if specified
         if (options.delay !== undefined && options.delay > 0) {
-            await new Promise(resolve => setTimeout(resolve, options.delay));
+            await new Promise((resolve) => {
+                setTimeout(resolve, options.delay); 
+            });
         }
         
         const responseData = await handler({request, params});

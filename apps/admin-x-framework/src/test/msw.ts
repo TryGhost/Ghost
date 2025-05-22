@@ -236,8 +236,8 @@ export function setupMSW() {
             server.use(...handlers);
         },
         
-        use(...handlers: Parameters<typeof server.use>) {
-            server.use(...handlers);
+        use(...requestHandlers: Parameters<typeof server.use>) {
+            server.use(...requestHandlers);
         }
     };
 }

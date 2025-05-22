@@ -60,7 +60,9 @@ export function createResponseResolver(
     return async () => {
         // Apply delay if specified
         if (delay !== undefined && delay > 0) {
-            await new Promise(resolve => setTimeout(resolve, delay));
+            await new Promise((resolve) => {
+                setTimeout(resolve, delay); 
+            });
         }
         
         // Create the response
