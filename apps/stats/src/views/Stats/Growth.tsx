@@ -226,7 +226,7 @@ const GrowthKPIs: React.FC<{
                                 case 'paid-members':
                                     return formatNumber(value);
                                 case 'mrr':
-                                    return `$${value}`;
+                                    return `$${formatNumber(value)}`;
                                 default:
                                     return value.toLocaleString();
                                 }
