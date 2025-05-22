@@ -51,6 +51,16 @@
             "require": "./dist/playwright.cjs",
             "types": "./types/playwright.d.ts"
         },
+        "./test": {
+            "import": "./dist/test.js",
+            "require": "./dist/test.cjs",
+            "types": "./types/test.d.ts"
+        },
+        "./browser": {
+            "import": "./dist/browser.js",
+            "require": "./dist/browser.cjs",
+            "types": "./types/browser.d.ts"
+        },
         "./test/*": {
             "import": "./dist/test/*.js",
             "require": "./dist/test/*.cjs",
@@ -80,6 +90,7 @@
         "eslint-plugin-react-refresh": "0.4.20",
         "jsdom": "24.1.3",
         "mocha": "10.8.2",
+        "msw": "^2.8.4",
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "sinon": "17.0.1",
