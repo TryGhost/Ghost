@@ -62,7 +62,7 @@ COPY apps/admin-x-framework/package.json apps/admin-x-framework/package.json
 COPY apps/admin-x-settings/package.json apps/admin-x-settings/package.json
 COPY apps/announcement-bar/package.json apps/announcement-bar/package.json
 COPY apps/comments-ui/package.json apps/comments-ui/package.json
-COPY apps/e2e/package.json apps/e2e/package.json
+COPY e2e/package.json e2e/package.json
 COPY apps/portal/package.json apps/portal/package.json
 COPY apps/posts/package.json apps/posts/package.json
 COPY apps/shade/package.json apps/shade/package.json
