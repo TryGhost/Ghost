@@ -419,7 +419,6 @@ const Sidebar: React.FC<{
                             }
                         ]} clearBg={false} />
                     </div>
-                    {hasEmailCustomizationAlpha &&
                     <div className='flex w-full justify-between'>
                         <div>Button style</div>
                         <ButtonGroup activeKey={newsletter.button_style || 'fill'} buttons={[
@@ -445,7 +444,6 @@ const Sidebar: React.FC<{
                             }
                         ]} clearBg={false} />
                     </div>
-                    }
                     <div className='flex w-full justify-between'>
                         <div>Button corners</div>
                         <ButtonGroup activeKey={newsletter.button_corners || 'rounded'} buttons={[

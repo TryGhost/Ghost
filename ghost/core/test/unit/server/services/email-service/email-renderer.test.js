@@ -2121,6 +2121,7 @@ describe('Email renderer', function () {
             await testLexicalRenderDesignOptions({
                 expectedObject: {
                     buttonCorners: 'square',
+                    buttonStyle: 'outline',
                     titleFontWeight: 'semibold',
                     linkStyle: 'normal'
                 },
@@ -2131,8 +2132,9 @@ describe('Email renderer', function () {
         it('passes expected data through to lexical renderer (emailCustomizationAlpha)', async function () {
             await testLexicalRenderDesignOptions({
                 expectedObject: {
-                    titleFontWeight: 'semibold',
+                    buttonCorners: 'square',
                     buttonStyle: 'outline',
+                    titleFontWeight: 'semibold',
                     linkStyle: 'normal',
                     imageCorners: 'rounded'
                 },
