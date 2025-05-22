@@ -47,7 +47,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                 <CardDescription>How did this post perform</CardDescription>
                             </CardHeader>
                             <CardContent className='p-0'>
-                                <div className='flex items-stretch'>
+                                <div className='grid grid-cols-3 items-stretch'>
                                     <KpiCard className='grow'>
                                         <KpiCardLabel>
                                             <LucideIcon.User strokeWidth={1.5} />
@@ -93,7 +93,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                                 <TableHead>Source</TableHead>
                                                 <TableHead className='w-[110px] text-right'>Free members</TableHead>
                                                 <TableHead className='w-[110px] text-right'>Paid members</TableHead>
-                                                <TableHead className='w-[110px] text-right'>MRR</TableHead>
+                                                <TableHead className='w-[110px] text-right'>MRR impact</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>

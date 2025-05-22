@@ -102,7 +102,7 @@
         "validator": "13.12.0",
         "vite": "4.5.14",
         "vite-plugin-svgr": "3.3.0",
-        "zod": "3.25.16"
+        "zod": "3.25.17"
     },
     "peerDependencies": {
         "react": "^18.2.0",

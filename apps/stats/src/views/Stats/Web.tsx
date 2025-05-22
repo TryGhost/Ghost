@@ -1,13 +1,13 @@
 import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import DateRangeSelect from './components/DateRangeSelect';
-import PostMenu from './components/PostMenu';
 import React, {useState} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {AlignedAxisTick, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, formatDisplayDateWithRange, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange} from '@tryghost/shade';
+import {AlignedAxisTick, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, formatDisplayDateWithRange, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange, isValidDomain} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
+import {SourceRow} from './Sources';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -224,6 +224,63 @@ const WebKPIs:React.FC = ({}) => {
     );
 };
 
+const SourcesTable:React.FC = () => {
+    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
+    const {range, audience} = useGlobalData();
+    const {startDate, endDate, timezone} = getRangeDates(range);
+
+    const params = {
+        site_uuid: statsConfig?.id || '',
+        date_from: formatQueryDate(startDate),
+        date_to: formatQueryDate(endDate),
+        timezone: timezone,
+        member_status: getAudienceQueryParam(audience)
+    };
+
+    const {data, loading} = useQuery({
+        endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
+        token: getToken(statsConfig),
+        params
+    });
+
+    const isLoading = isConfigLoading || loading;
+
+    return (
+        <>
+            {isLoading ? 'Loading' :
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Source</TableHead>
+                            <TableHead className='text-right'>Visitors</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {data?.map((row) => {
+                            return (
+                                <TableRow key={row.source || 'direct'}>
+                                    <TableCell className="font-medium">
+                                        {row.source && typeof row.source === 'string' && isValidDomain(row.source) ?
+                                            <a className='group flex items-center gap-1' href={`https://${row.source}`} rel="noreferrer" target="_blank">
+                                                <SourceRow className='group-hover:underline' source={row.source} />
+                                            </a>
+                                            :
+                                            <span className='flex items-center gap-1'>
+                                                <SourceRow source={row.source} />
+                                            </span>
+                                        }
+                                    </TableCell>
+                                    <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
+                                </TableRow>
+                            );
+                        })}
+                    </TableBody>
+                </Table>
+            }
+        </>
+    );
+};
+
 const Web:React.FC = () => {
     const {isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
@@ -265,54 +322,62 @@ const Web:React.FC = () => {
                         <WebKPIs />
                     </CardContent>
                 </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Top content</CardTitle>
-                        <CardDescription>Your highest viewed posts or pages {getPeriodText(range)}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Separator />
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className='w-[75%]'>Content</TableHead>
-                                    <TableHead className='w-[20%] text-right'>Visitors</TableHead>
-                                    <TableHead className='w-[32px]'></TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {topContent?.map((row: TopContentData) => {
-                                    return (
-                                        <TableRow key={row.pathname}>
-                                            <TableCell className="font-medium">
-                                                <div className='group/link inline-flex items-center gap-2'>
-                                                    {row.post_id ?
-                                                        <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
-                                                            navigate(`/posts/analytics/beta/${row.post_id}`, {crossApp: true});
-                                                        }}>
-                                                            {row.title || row.pathname}
-                                                        </Button>
-                                                        :
-                                                        <>
-                                                            {row.title || row.pathname}
-                                                        </>
-                                                    }
-                                                    <a className='-mx-2 inline-flex min-h-6 items-center gap-1 rounded-sm px-2 opacity-0 hover:underline group-hover/link:opacity-75' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
-                                                        <LucideIcon.SquareArrowOutUpRight size={12} strokeWidth={2.5} />
-                                                    </a>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
-                                            <TableCell className='text-center text-gray-700 hover:text-black'>
-                                                <PostMenu pathName={row.pathname} postId={row.post_id} />
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
+                <div className='grid grid-cols-2 gap-8'>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Top content</CardTitle>
+                            <CardDescription>Your highest viewed posts or pages {getPeriodText(range)}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Separator />
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Content</TableHead>
+                                        <TableHead className='text-right'>Visitors</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {topContent?.map((row: TopContentData) => {
+                                        return (
+                                            <TableRow key={row.pathname}>
+                                                <TableCell className="font-medium">
+                                                    <div className='group/link inline-flex items-center gap-2'>
+                                                        {row.post_id ?
+                                                            <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
+                                                                navigate(`/posts/analytics/beta/${row.post_id}`, {crossApp: true});
+                                                            }}>
+                                                                {row.title || row.pathname}
+                                                            </Button>
+                                                            :
+                                                            <>
+                                                                {row.title || row.pathname}
+                                                            </>
+                                                        }
+                                                        <a className='-mx-2 inline-flex min-h-6 items-center gap-1 rounded-sm px-2 opacity-0 hover:underline group-hover/link:opacity-75' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
+                                                            <LucideIcon.SquareArrowOutUpRight size={12} strokeWidth={2.5} />
+                                                        </a>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Top Sources</CardTitle>
+                            <CardDescription>How readers found your site {getPeriodText(range)}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Separator />
+                            <SourcesTable />
+                        </CardContent>
+                    </Card>
+                </div>
             </StatsView>
         </StatsLayout>
     );
