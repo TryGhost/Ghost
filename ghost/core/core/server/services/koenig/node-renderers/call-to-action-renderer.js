@@ -69,7 +69,7 @@ function emailCTATemplate(dataset, options = {}) {
     let buttonLinkStyle = buttonStyle;
 
     if (
-        options?.feature?.emailCustomizationAlpha &&
+        (options?.feature?.emailCustomization || options?.feature?.emailCustomizationAlpha) &&
         options?.design?.buttonStyle === 'outline' &&
         // accent buttons are fully handled by main template CSS
         dataset.buttonColor !== 'accent'
