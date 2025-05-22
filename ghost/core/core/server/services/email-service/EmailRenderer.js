@@ -328,17 +328,22 @@ class EmailRenderer {
             renderOptions.design = {};
         }
 
+        const betaDesignOptions = {
+            buttonCorners: newsletter?.get('button_corners'),
+            titleFontWeight: newsletter?.get('title_font_weight')
+        };
+
         if (labs && labs.isSet('emailCustomization')) {
             renderOptions.design = {
                 ...renderOptions.design,
-                buttonCorners: newsletter?.get('button_corners')
+                ...betaDesignOptions
             };
         }
 
         if (labs && labs.isSet('emailCustomizationAlpha')) {
             renderOptions.design = {
                 ...renderOptions.design,
-                titleFontWeight: newsletter?.get('title_font_weight'),
+                ...betaDesignOptions,
                 buttonStyle: newsletter?.get('button_style'),
                 linkStyle: newsletter?.get('link_style'),
                 imageCorners: newsletter?.get('image_corners')
@@ -986,7 +991,7 @@ class EmailRenderer {
         };
 
         const labs = this.getLabs();
-        if (!labs.isSet('emailCustomizationAlpha')) {
+        if (!labs.isSet('emailCustomizationAlpha') && !labs.isSet('emailCustomization')) {
             return weights.bold;
         }
 
