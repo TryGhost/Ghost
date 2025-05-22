@@ -44,6 +44,10 @@ module.exports = {
             return false;
         });
 
+        handlebars.registerHelper('eq', function (a, b) {
+            return a === b;
+        });
+
         handlebars.registerHelper('hasFeature', function (flag, options) {
             if (labs.isSet(flag)) {
                 return options.fn(this);
@@ -51,6 +55,7 @@ module.exports = {
                 return options.inverse(this);
             }
         });
+
         handlebars.registerHelper('t', function (key, options) {
             let hash = options?.hash;
             return thist(key, hash || options || {});

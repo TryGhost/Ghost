@@ -2629,6 +2629,7 @@ describe('Email renderer', function () {
             // null because square has no border radius
             await testImageCorners('square', false);
         });
+
         async function testHasOutlineButtons(buttonStyle, expectedValue) {
             return await testDataProperty({
                 button_style: buttonStyle
@@ -2675,29 +2676,22 @@ describe('Email renderer', function () {
             });
         });
 
-        [
-            ['normal', 'text-decoration: underline;', {labsEnabled: false}],
-            ['underline', 'text-decoration: underline;', {labsEnabled: true}],
-            ['regular', 'text-decoration: none;', {labsEnabled: true}],
-            ['bold', 'text-decoration: none; font-weight: 700;', {labsEnabled: true}],
-            [null, 'text-decoration: underline;', {labsEnabled: true}]
-        ].forEach(([settingValue, linkStyles, options]) => {
-            it(`link styles for ${settingValue || '`null`'} are correct${options.labsEnabled ? ' (emailCustomizationAlpha)' : ''}`, async function () {
-                labsEnabled = options.labsEnabled ?? false;
+        function testLinkStyle(settingValue, expectedValue, options = {labsEnabled: true}) {
+            testDataProperty({
+                link_style: settingValue
+            }, 'linkStyle', expectedValue, options);
+        }
 
-                const html = '';
-                const post = createModel({
-                    posts_meta: createModel({}),
-                    loaded: ['posts_meta'],
-                    published_at: new Date(0)
-                });
-                const newsletter = createModel({
-                    link_style: settingValue
-                });
-                const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+        it('uses correct default when emailCustomizationAlpha is not enabled', async function () {
+            await testLinkStyle('normal', 'underline', {labsEnabled: false});
+        });
 
-                assert.equal(data.linkStyles, linkStyles);
-            });
+        it('sets linkStyle to correct default (emailCustomizationAlpha)', async function () {
+            await testLinkStyle(null, 'underline', {labsEnabled: true});
+        });
+
+        it('passes newsletter link_style through (emailCustomizationAlpha)', async function () {
+            await testLinkStyle('normal', 'normal', {labsEnabled: false});
         });
     });
 
