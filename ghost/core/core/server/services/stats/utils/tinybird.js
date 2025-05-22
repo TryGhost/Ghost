@@ -22,14 +22,19 @@ const create = ({config, request}) => {
     const buildRequest = (pipeName, options = {}) => {
         const statsConfig = config.get('tinybird:stats');
         const localEnabled = statsConfig?.local?.enabled ?? false;
-        const endpoint = localEnabled ? statsConfig.local.endpoint : statsConfig.endpoint;
+        let endpoint;
+        if (localEnabled) {
+            endpoint = process.env.GHOST_DEV_IS_DOCKER ? `http://tinybird:7181` : statsConfig.local.endpoint;
+        } else {
+            endpoint = statsConfig.endpoint;
+        }
         const token = localEnabled ? statsConfig.local.token : statsConfig.token;
 
         // Use tbVersion if provided for constructing the URL
-        const pipeUrl = (options.tbVersion && !localEnabled) ? 
-            `/v0/pipes/${pipeName}__v${options.tbVersion}.json` : 
+        const pipeUrl = (options.tbVersion && !localEnabled) ?
+            `/v0/pipes/${pipeName}__v${options.tbVersion}.json` :
             `/v0/pipes/${pipeName}.json`;
-        
+
         const tinybirdUrl = `${endpoint}${pipeUrl}`;
 
         // Use snake_case for query parameters as expected by Tinybird API
@@ -40,11 +45,11 @@ const create = ({config, request}) => {
             timezone: options.timezone || config.get('timezone'),
             member_status: options.memberStatus || 'all'
         };
-        
+
         // Convert searchParams to query string and append to URL
         const queryString = new URLSearchParams(searchParams).toString();
         const fullUrl = `${tinybirdUrl}?${queryString}`;
-        
+
         const requestOptions = {
             headers: {
                 Authorization: `Bearer ${token}`
@@ -53,7 +58,7 @@ const create = ({config, request}) => {
                 request: 10000
             }
         };
-        
+
         return {url: fullUrl, options: requestOptions};
     };
 
@@ -64,7 +69,7 @@ const create = ({config, request}) => {
      */
     const parseResponse = (response) => {
         let responseData;
-        
+
         if (response.body) {
             if (typeof response.body === 'string') {
                 try {
@@ -90,7 +95,7 @@ const create = ({config, request}) => {
         if (!responseData || !responseData.data) {
             return null;
         }
-        
+
         return responseData.data;
     };
 
@@ -102,7 +107,7 @@ const create = ({config, request}) => {
      */
     const fetch = async (pipeName, options = {}) => {
         const {url, options: requestOptions} = buildRequest(pipeName, options);
-        
+
         try {
             const response = await request.get(url, requestOptions);
             return parseResponse(response);
@@ -121,4 +126,4 @@ const create = ({config, request}) => {
 
 module.exports = {
     create
-}; 
+};

@@ -57,7 +57,6 @@
     "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main\"",
     "prepare": "husky install .github/hooks",
     "tb": "tb local start && cd ghost/core/core/server/data/tinybird && tb dev",
-    "tb:update": "docker pull tinybirdco/tinybird-cli-docker",
     "tb:local": "tb local start",
     "tb:local:stop": "docker stop tinybird-local && docker rm tinybird-local",
     "tb:install": "curl https://tinybird.co | sh"

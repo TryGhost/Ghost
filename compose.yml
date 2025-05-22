@@ -47,8 +47,13 @@ services:
     command: [ "yarn", "dev" ]
     ports:
       - "2368:2368"
+    network_mode: "host"
     profiles: [ split ]
     tty: true
+    develop:
+      watch:
+        - path: ./ghost/core/config.local.jsonc
+          action: restart
     depends_on:
       mysql:
         condition: service_healthy
@@ -76,6 +81,14 @@ services:
       - "4201:4201"
     profiles: [ split ]
     tty: true
+
+  tinybird:
+    image: tinybirdco/tinybird-local:latest
+    ports:
+      - 7181:7181
+    restart: always
+    stop_grace_period: 1s
+    profiles: [ tinybird ]
 
   ghost:
     <<: *service-template
@@ -171,7 +184,7 @@ services:
   mailhog:
     image: mailhog/mailhog:latest
     container_name: ghost-mailhog
-    profiles: [ ghost ]
+    profiles: [ ghost, split ]
     ports:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web interface
@@ -179,6 +192,7 @@ services:
 volumes:
   mysql-data: {}
   redis-data: {}
+  tinybird-data: {}
   node_modules_yarn_lock_hash: {}
   node_modules_ghost_root: {}
   node_modules_ghost_admin: {}
