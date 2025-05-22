@@ -332,7 +332,8 @@ class EmailRenderer {
             buttonCorners: newsletter?.get('button_corners'),
             buttonStyle: newsletter?.get('button_style'),
             titleFontWeight: newsletter?.get('title_font_weight'),
-            linkStyle: newsletter?.get('link_style')
+            linkStyle: newsletter?.get('link_style'),
+            imageCorners: newsletter?.get('image_corners')
         };
 
         if (labs && labs.isSet('emailCustomization')) {
@@ -345,8 +346,7 @@ class EmailRenderer {
         if (labs && labs.isSet('emailCustomizationAlpha')) {
             renderOptions.design = {
                 ...renderOptions.design,
-                ...betaDesignOptions,
-                imageCorners: newsletter?.get('image_corners')
+                ...betaDesignOptions
             };
         }
 
@@ -1052,7 +1052,7 @@ class EmailRenderer {
         const textColor = textColorForBackgroundColor(backgroundColor).hex();
         const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
         const linkColor = backgroundIsDark ? '#ffffff' : accentColor;
-        const hasRoundedImageCorners = labs.isSet('emailCustomizationAlpha') ? this.#getImageCorners(newsletter) : false;
+        const hasRoundedImageCorners = (labs.isSet('emailCustomization') || labs.isSet('emailCustomizationAlpha')) ? this.#getImageCorners(newsletter) : false;
 
         let buttonBorderRadius = '6px';
 
