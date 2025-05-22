@@ -1,7 +1,7 @@
 import {Integration, IntegrationsResponseType} from '@tryghost/admin-x-framework/api/integrations';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../../utils/acceptance';
-import {mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi, responseFixtures} from '@tryghost/admin-x-framework/test';
 
 test.describe('Zapier integration settings', async () => {
     test('Showing and regenerating API keys', async ({page}) => {

@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {expectExternalNavigate, mockApi} from '@tryghost/admin-x-framework/test/acceptance';
+import {expectExternalNavigate, mockApi} from '@tryghost/admin-x-framework/test';
 import {globalDataRequests} from '../../utils/acceptance';
 
 test.describe('Migration tools', async () => {

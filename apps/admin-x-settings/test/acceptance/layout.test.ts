@@ -1,6 +1,6 @@
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../utils/acceptance';
-import {mockApi} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi} from '@tryghost/admin-x-framework/test';
 
 test.describe('Layout', async () => {
     test('Confirms when leaving if a section is dirty', async ({page}) => {
