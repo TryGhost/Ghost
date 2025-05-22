@@ -2599,10 +2599,10 @@ describe('Email renderer', function () {
             }, 'buttonBorderRadius', expectedRadius, {labsEnabled: true});
         }
 
-        async function testImageCorners(imageCorners, expectedRadius) {
+        async function testImageCorners(imageCorners, expectedBoolean) {
             return await testDataProperty({
                 image_corners: imageCorners
-            }, 'imageCorners', expectedRadius, {labsEnabled: true});
+            }, 'hasRoundedImageCorners', expectedBoolean, {labsEnabled: true});
         }
 
         it('sets buttonBorderRadius to correct default (emailCustomizationAlpha)', async function () {
@@ -2622,14 +2622,13 @@ describe('Email renderer', function () {
         });
 
         it('sets imageCorners to correct rounded value (emailCustomizationAlpha)', async function () {
-            await testImageCorners('rounded', 'rounded');
+            await testImageCorners('rounded', true);
         });
 
-        it('sets imageCorners to correct square value which is null (emailCustomizationAlpha)', async function () {
+        it('sets imageCorners to correct square value which is false (emailCustomizationAlpha)', async function () {
             // null because square has no border radius
-            await testImageCorners('square', 'square');
+            await testImageCorners('square', false);
         });
-
         async function testHasOutlineButtons(buttonStyle, expectedValue) {
             return await testDataProperty({
                 button_style: buttonStyle
