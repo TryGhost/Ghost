@@ -1012,25 +1012,6 @@ class EmailRenderer {
         }
     }
 
-    #getLinkStyles(newsletter) {
-        const labs = this.getLabs();
-
-        if (!labs.isSet('emailCustomizationAlpha')) {
-            return 'text-decoration: underline;';
-        }
-
-        /** @type {'underline' | 'regular' | 'bold' | string | null} */
-        const settingValue = newsletter.get('link_style');
-
-        if (settingValue === 'regular') {
-            return 'text-decoration: none;';
-        } else if (settingValue === 'bold') {
-            return 'text-decoration: none; font-weight: 700;';
-        } else {
-            return 'text-decoration: underline;';
-        }
-    }
-
     #getImageCorners(newsletter) {
         const value = newsletter.get('image_corners');
         if (value === 'rounded') {
@@ -1066,7 +1047,6 @@ class EmailRenderer {
         const textColor = textColorForBackgroundColor(backgroundColor).hex();
         const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
         const linkColor = backgroundIsDark ? '#ffffff' : accentColor;
-        const linkStyles = this.#getLinkStyles(newsletter);
         const hasRoundedImageCorners = this.#getImageCorners(newsletter);
 
         let buttonBorderRadius = '6px';
@@ -1177,6 +1157,11 @@ class EmailRenderer {
             excerptFontClass = 'post-excerpt-serif-sans';
         }
 
+        let linkStyle = 'underline';
+        if (labs.isSet('emailCustomizationAlpha')) {
+            linkStyle = newsletter.get('link_style') || 'underline';
+        }
+
         const data = {
             site: {
                 title: this.#settingsCache.get('title'),
@@ -1228,7 +1213,6 @@ class EmailRenderer {
             textColor,
             secondaryTextColor,
             linkColor,
-            linkStyles,
             hasRoundedImageCorners,
             buttonBorderRadius,
 
@@ -1241,6 +1225,7 @@ class EmailRenderer {
             showHeaderName: newsletter.get('show_header_name'),
             showFeatureImage: newsletter.get('show_feature_image') && !!postFeatureImage,
             footerContent: newsletter.get('footer_content'),
+            linkStyle,
             hasOutlineButtons,
 
             classes: {
