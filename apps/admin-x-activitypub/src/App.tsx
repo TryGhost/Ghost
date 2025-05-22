@@ -17,7 +17,7 @@ const App: React.FC<AppProps> = ({framework, activityPubEnabled}) => {
         <FrameworkProvider {...framework}>
             <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
                 <FeatureFlagsProvider>
-                    <ShadeApp fetchKoenigLexical={null}>
+                    <ShadeApp darkMode={false} fetchKoenigLexical={null}>
                         <Outlet />
                     </ShadeApp>
                 </FeatureFlagsProvider>

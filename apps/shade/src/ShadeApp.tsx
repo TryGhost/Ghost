@@ -4,11 +4,12 @@ import React from 'react';
 import ShadeProvider from './providers/ShadeProvider';
 
 export interface ShadeAppProps extends React.HTMLProps<HTMLDivElement> {
+    darkMode: boolean;
     fetchKoenigLexical: null;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ShadeApp: React.FC<ShadeAppProps> = ({fetchKoenigLexical, className, children, ...props}) => {
+const ShadeApp: React.FC<ShadeAppProps> = ({darkMode, fetchKoenigLexical, className, children, ...props}) => {
     const appClassName = clsx(
         'shade',
         className
@@ -16,7 +17,7 @@ const ShadeApp: React.FC<ShadeAppProps> = ({fetchKoenigLexical, className, child
 
     return (
         <div className={appClassName} {...props}>
-            <ShadeProvider>
+            <ShadeProvider darkMode={darkMode}>
                 {children}
             </ShadeProvider>
         </div>
