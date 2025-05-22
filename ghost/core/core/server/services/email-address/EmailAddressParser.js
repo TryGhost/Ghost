@@ -47,6 +47,24 @@ module.exports = class EmailAddressParser {
         }
 
         const escapedName = email.name.replace(/"/g, '\\"');
-        return `"${escapedName}" <${email.address}>`;
+
+        /**
+         * https://linear.app/ghost/issue/ONC-969
+         *
+         * Gmail will reject emails that contain certain Unicode characters.
+         * There isn't a documented list of which characters, and the error
+         * messages points us to https://support.google.com/mail/?p=BlockedMessage
+         *
+         * We've found that the following characters are problematic:
+         * - ✅ WHITE HEAVY CHECK MARK (U+2705)
+         * - ✓ CHECK MARK (U+2713)
+         * - ✔ HEAVY CHECK MARK (U+2714)
+         * - ☑ BALLOT BOX WITH CHECK (U+2611)
+         * - 🗸 LIGHT CHECK MARK (U+1F5F8)
+         *
+         * We remove these characters from the name.
+         */
+        const nameCleanedForGmail = escapedName.replace(/[\u2705\u2713\u2714\u2611\u{1F5F8}]/gu, '').trim();
+        return `"${nameCleanedForGmail}" <${email.address}>`;
     }
 };

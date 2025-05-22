@@ -92,5 +92,13 @@ describe('EmailAddressParser', function () {
             });
             assert.equal(email, 'test@example.com');
         });
+
+        it('it should remove unsupported characters from the name', function () {
+            const email = EmailAddressParser.stringify({
+                address: 'test@example.com',
+                name: 'This is my awesome name ✅ ✓ ✔ ☑ 🗸'
+            });
+            assert.equal(email, '"This is my awesome name" <test@example.com>');
+        });
     });
 });
