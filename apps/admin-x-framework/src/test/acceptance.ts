@@ -81,6 +81,19 @@ export async function expectExternalNavigate(page: Page, link: Partial<ExternalL
         };
     });
 
+    // Ensure the override is also applied to the already-loaded page
+    await page.evaluate(() => {
+        window.open = function (url?: string | URL, target?: string, features?: string) {
+            const urlStr = url?.toString() || '';
+            document.body.setAttribute('data-external-navigate', JSON.stringify({
+                url: urlStr,
+                target: target || '',
+                features: features || ''
+            }));
+            return null;
+        };
+    });
+
     await page.locator(`[data-testid="external-navigate-${link.title}"]`).click();
 
     // Ensure the navigate event was triggered
