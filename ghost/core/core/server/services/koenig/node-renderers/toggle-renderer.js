@@ -20,7 +20,7 @@ function cardTemplate({node}) {
 }
 
 function emailCardTemplate({node}, options = {}) {
-    if (options.feature?.emailCustomizationAlpha) {
+    if (options.feature?.emailCustomization || options.feature?.emailCustomizationAlpha) {
         return (
             html`
             <table cellspacing="0" cellpadding="0" border="0" width="100%" class="kg-toggle-card">
