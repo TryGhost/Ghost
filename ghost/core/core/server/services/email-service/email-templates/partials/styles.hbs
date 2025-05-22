@@ -9,6 +9,11 @@ img {
     border: none;
     -ms-interpolation-mode: bicubic;
     max-width: 100%;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#if hasRoundedImageCorners}}
+    border-radius: 6px;
+    {{/if}}
+    {{/hasFeature}}
 }
 
 img.is-dark-background {
@@ -504,14 +509,6 @@ figure blockquote p {
     line-height: 1.5em;
 }
 
-.feature-image img {
-    {{#hasFeature "emailCustomizationAlpha"}}
-    {{#if hasRoundedImageCorners}}
-        border-radius: 6px;
-    {{/if}}
-    {{/hasFeature}}
-}
-
 .kg-card-figcaption {
     font-size: 13px;
 }
@@ -955,11 +952,23 @@ a[data-flickr-embed] img {
     font-size: 20px;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.kg-cta-card {
+    margin: 0 0 1.5em 0;
+    padding: 0 24px;
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{else}}
+        border-radius: 0;
+    {{/if}}
+}
+{{else}}
 .kg-cta-card {
     margin: 0 0 1.5em 0;
     padding: 0 24px;
     border-radius: 8px;
 }
+{{/hasFeature}}
 
 .kg-cta-card + * {
     margin-top: 1.5em !important;
@@ -1123,22 +1132,31 @@ table.kg-cta-content-wrapper:not(.kg-cta-bg-none.kg-cta-no-dividers table.kg-cta
     padding-bottom: 0;
 }
 
-/* -------------------------------------
-    When removing emailCustomizationAlpha,
-    also remove border-radius: 6px;
-------------------------------------- */
+{{#hasFeature "emailCustomizationAlpha"}}
+img.kg-cta-image {
+    display: block;
+    border: 0;
+    {{#if hasRoundedImageCorners}}
+        border-radius: 4px;
+    {{else}}
+        border-radius: 0;
+    {{/if}}
+}
+
+.kg-cta-bg-none img.kg-cta-image {
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{else}}
+        border-radius: 0;
+    {{/if}}
+}
+{{else}}
 img.kg-cta-image {
     display: block;
     border-radius: 6px;
     border: 0;
-    {{#hasFeature "emailCustomizationAlpha"}}
-    {{#if hasRoundedImageCorners}}
-        border-radius: 6px;
-    {{else}}
-        border-radius: 0 !important;
-    {{/if}}
-    {{/hasFeature}}
 }
+{{/hasFeature}}
 
 .kg-cta-minimal img.kg-cta-image {
     width: 64px;
@@ -1519,7 +1537,11 @@ img.kg-cta-image {
 {{#hasFeature "emailCustomizationAlpha"}}
 .kg-product-card {
     margin: 0 0 1.5em;
-    border-radius: 6px;
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{else}}
+        border-radius: 0;
+    {{/if}}
     border: 1px solid #e9e9e9;
 }
 
@@ -1539,7 +1561,7 @@ img.kg-cta-image {
     padding: 0;
     border: none;
     {{#if hasRoundedImageCorners}}
-        border-radius: 6px;
+        border-radius: 4px;
     {{/if}}
 }
 
