@@ -7,8 +7,9 @@
   "author": "Ghost Foundation",
   "license": "MIT",
   "workspaces": [
-    "ghost/*",
-    "apps/*"
+    "apps/*",
+    "e2e",
+    "ghost/*"
   ],
   "monorepo": {
     "public": false,

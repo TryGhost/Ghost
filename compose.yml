@@ -18,7 +18,7 @@ x-service-template: &service-template
     - node_modules_apps_admin-x-settings:/home/ghost/apps/admin-x-settings/node_modules:delegated
     - node_modules_apps_announcement-bar:/home/ghost/apps/announcement-bar/node_modules:delegated
     - node_modules_apps_comments-ui:/home/ghost/apps/comments-ui/node_modules:delegated
-    - node_modules_apps_e2e:/home/ghost/apps/e2e/node_modules:delegated
+    - node_modules_e2e:/home/ghost/e2e/node_modules:delegated
     - node_modules_apps_portal:/home/ghost/apps/portal/node_modules:delegated
     - node_modules_apps_posts:/home/ghost/apps/posts/node_modules:delegated
     - node_modules_apps_shade:/home/ghost/apps/shade/node_modules:delegated
@@ -128,13 +128,11 @@ services:
   e2e:
     <<: *service-template
     image: ghost-monorepo:latest
-    working_dir: /home/ghost/apps/e2e
+    working_dir: /home/ghost/e2e
     command: [ "yarn", "test:e2e" ]
     profiles: [ "e2e-tests" ]
     ports:
-      - "9323:9323"  # Port for HTML report
-    environment:
-      - PLAYWRIGHT_HTML_REPORT_HOST=0.0.0.0
+      - "9323:9323"
     tty: true
     depends_on:
       server:
@@ -143,8 +141,12 @@ services:
         condition: service_started
       mailhog:
         condition: service_started
-    env_file:
-      - ./apps/e2e/.env
+    environment:
+      - BASE_URL=http://server:2368
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - EMAIL_PROVIDER=mailhog
+      - PLAYWRIGHT_HTML_REPORT_HOST=0.0.0.0
 
   mysql:
     image: mysql:8.4.5
@@ -238,4 +240,4 @@ volumes:
   node_modules_apps_signup-form: {}
   node_modules_apps_sodo-search: {}
   node_modules_apps_stats: {}
-  node_modules_apps_e2e: {}
+  node_modules_e2e: {}
