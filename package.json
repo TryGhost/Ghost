@@ -45,6 +45,7 @@
     "docker:test:unit": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} NX_DAEMON=false docker compose run --rm --no-deps ghost yarn test:unit",
     "docker:test:browser": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run --rm ghost yarn test:browser",
     "docker:test:all": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} NX_DAEMON=false docker compose run --rm ghost yarn nx run ghost:test:all",
+    "docker:test:e2e": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-split,e2e-tests} docker compose up --exit-code-from e2e --abort-on-container-exit --attach=e2e",
     "docker:reset": "docker compose down -v && docker compose up -d --wait",
     "docker:restart": "docker compose down && docker compose up -d --wait",
     "docker:down": "docker compose down",
