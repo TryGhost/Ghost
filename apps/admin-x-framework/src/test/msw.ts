@@ -4,6 +4,7 @@
 
 import {HttpResponse, PathParams, http} from 'msw';
 import {setupServer} from 'msw/node';
+import {createMethodHandler, createResponseResolver, getDefaultStatus} from './msw/core';
 
 // Re-export MSW types and functions
 export {http, HttpResponse};
@@ -130,15 +131,30 @@ export const limitRequests = {
 /**
  * Helper functions for creating handlers
  */
-export const get = (path: string, response: unknown, status = 200) => http.get(path, () => HttpResponse.json(response as Record<string, unknown>, {status}));
+export const get = (path: string, response: unknown, status = 200) => {
+    const responseResolver = createResponseResolver(response, {status});
+    return createMethodHandler('GET', path, responseResolver);
+};
 
-export const post = (path: string, response: unknown, status = 201) => http.post(path, () => HttpResponse.json(response as Record<string, unknown>, {status}));
+export const post = (path: string, response: unknown, status = 201) => {
+    const responseResolver = createResponseResolver(response, {status});
+    return createMethodHandler('POST', path, responseResolver);
+};
 
-export const put = (path: string, response: unknown, status = 200) => http.put(path, () => HttpResponse.json(response as Record<string, unknown>, {status}));
+export const put = (path: string, response: unknown, status = 200) => {
+    const responseResolver = createResponseResolver(response, {status});
+    return createMethodHandler('PUT', path, responseResolver);
+};
 
-export const del = (path: string, response: unknown, status = 204) => http.delete(path, () => HttpResponse.json(response as Record<string, unknown>, {status}));
+export const del = (path: string, response: unknown, status = 204) => {
+    const responseResolver = createResponseResolver(response, {status});
+    return createMethodHandler('DELETE', path, responseResolver);
+};
 
-export const patch = (path: string, response: unknown, status = 200) => http.patch(path, () => HttpResponse.json(response as Record<string, unknown>, {status}));
+export const patch = (path: string, response: unknown, status = 200) => {
+    const responseResolver = createResponseResolver(response, {status});
+    return createMethodHandler('PATCH', path, responseResolver);
+};
 
 /**
  * Create a dynamic handler that processes request data
@@ -170,17 +186,22 @@ export function createHandlersFromConfig(
 ) {
     return Object.entries(requests).map(([, config]) => {
         const {method, path, response, status} = config;
-        const httpMethod = method.toLowerCase() as 'get' | 'post' | 'put' | 'delete' | 'patch';
         
+        // Determine API path based on options
         const apiPath = options?.useActivityPub 
             ? new RegExp(`/activitypub${typeof path === 'string' ? path : path.source}`)
             : new RegExp(`/ghost/api/admin${typeof path === 'string' ? path : path.source}`);
-            
-        return http[httpMethod](apiPath, () => {
-            return HttpResponse.json(response as Record<string, unknown>, {
-                status: status || (httpMethod === 'post' ? 201 : 200)
-            });
+        
+        // Use default status based on method if not specified
+        const responseStatus = status || getDefaultStatus(method);
+        
+        // Create response resolver using shared function
+        const responseResolver = createResponseResolver(response, {
+            status: responseStatus
         });
+        
+        // Create handler using shared function
+        return createMethodHandler(method, apiPath, responseResolver);
     });
 }
 

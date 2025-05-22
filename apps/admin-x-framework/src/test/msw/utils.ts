@@ -1,4 +1,4 @@
-import {HttpResponse, HttpResponseResolver, PathParams, http} from 'msw';
+import {createMethodHandler, createResponseResolver} from './core';
 
 // Types from acceptance.ts
 interface MockRequestConfig {
@@ -25,32 +25,14 @@ export function createHandlerFromMockConfig(requestConfig: MockRequestConfig & {
         pathPattern = path.startsWith('/ghost/api/admin') ? path : `/ghost/api/admin${path}`;
     }
     
-    // Function to generate the response resolver
-    const responseResolver: HttpResponseResolver<PathParams> = async () => {
-        return HttpResponse.json(
-            response as Record<string, unknown>,
-            {
-                status: responseStatus,
-                headers: responseHeaders
-            }
-        );
-    };
+    // Create response resolver using the shared function
+    const responseResolver = createResponseResolver(response, {
+        status: responseStatus,
+        headers: responseHeaders
+    });
     
-    // Create the appropriate HTTP method handler
-    switch (method.toUpperCase()) {
-    case 'GET':
-        return http.get(pathPattern, responseResolver);
-    case 'POST':
-        return http.post(pathPattern, responseResolver);
-    case 'PUT':
-        return http.put(pathPattern, responseResolver);
-    case 'DELETE':
-        return http.delete(pathPattern, responseResolver);
-    case 'PATCH':
-        return http.patch(pathPattern, responseResolver);
-    default:
-        throw new Error(`Unsupported HTTP method: ${method}`);
-    }
+    // Create the handler using the shared method handler function
+    return createMethodHandler(method, pathPattern, responseResolver);
 }
 
 /**

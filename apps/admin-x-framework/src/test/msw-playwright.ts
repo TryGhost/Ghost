@@ -6,7 +6,8 @@
  */
 
 import {Page} from '@playwright/test';
-import {http} from './msw';
+import {DefaultBodyType, HttpResponse, PathParams} from 'msw';
+import {createMethodHandler} from './msw/core';
 
 // Create a server instance for Playwright tests
 import {setupServer} from 'msw/node';
@@ -52,14 +53,14 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
     // Convert legacy request configs to MSW handlers
     const handlers = Object.entries(requests).map(([key, config]) => {
         const {method, path, response, responseStatus = 200} = config;
-        const httpMethod = method.toLowerCase() as keyof typeof http;
         
+        // Determine API path based on options
         const apiPath = options?.useActivityPub 
             ? new RegExp(`/activitypub${typeof path === 'string' ? path : path.source}`)
             : new RegExp(`/ghost/api/admin${typeof path === 'string' ? path : path.source}`);
             
-        // Create handler with request capture
-        return http[httpMethod](apiPath, async ({request}) => {
+        // Create a custom response resolver with request capture
+        const responseResolver = async ({request}: {request: Request, params: PathParams}) => {
             try {
                 // Capture request data
                 const requestData: RequestRecord = {
@@ -86,8 +87,8 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
             }
             
             // Return the mock response
-            return new Response(
-                typeof response === 'string' ? response : JSON.stringify(response),
+            return HttpResponse.json(
+                response as DefaultBodyType,
                 {
                     status: responseStatus,
                     headers: {
@@ -95,7 +96,10 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
                     }
                 }
             );
-        });
+        };
+        
+        // Use shared createMethodHandler function
+        return createMethodHandler(method, apiPath, responseResolver);
     });
     
     // Add the handlers to the server
