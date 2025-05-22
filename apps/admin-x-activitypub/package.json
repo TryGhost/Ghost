@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-x-activitypub",
-  "version": "0.7.42",
+  "version": "0.7.43",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -67,7 +67,6 @@
   },
   "dependencies": {
     "@radix-ui/react-form": "0.1.6",
-    "@tryghost/admin-x-design-system": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",
     "@tryghost/shade": "0.0.0",
     "clsx": "2.1.1",
