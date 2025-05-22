@@ -7,7 +7,7 @@ import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {AlignedAxisTick, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatDisplayDateWithRange, formatNumber, formatPercentage, getYRange} from '@tryghost/shade';
+import {AlignedAxisTick, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatDisplayDateWithRange, formatNumber, formatPercentage, getYRange, getYRangeWithMinPadding} from '@tryghost/shade';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -148,6 +148,7 @@ const NewsletterKPIs: React.FC<{
     const barTicks = [0, 0.25, 0.5, 0.75, 1];
 
     const yRange = [getYRange(subscribersData).min, getYRange(subscribersData).max];
+    const yRangeWithMinPadding = getYRangeWithMinPadding({min: yRange[0], max: yRange[1]});
 
     const tabConfig = {
         'total-subscribers': {
@@ -220,8 +221,9 @@ const NewsletterKPIs: React.FC<{
                             ticks={subscribersData.length > 0 ? [subscribersData[0].date, subscribersData[subscribersData.length - 1].date] : []}
                         />
                         <Recharts.YAxis
+                            allowDataOverflow={true}
                             axisLine={false}
-                            domain={yRange}
+                            domain={yRangeWithMinPadding}
                             scale="linear"
                             tickFormatter={value => formatNumber(value)}
                             tickLine={false}
