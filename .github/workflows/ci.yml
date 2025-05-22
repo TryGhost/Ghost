@@ -540,9 +540,9 @@ jobs:
       - uses: tryghost/mysql-action@docker-login-debugging
         if: matrix.env.DB == 'mysql8'
         timeout-minutes: 3
-        env:
-          DOCKER_CONFIG: /etc/mounted_docker_config
         with:
+          docker_username: ${{ secrets.DOCKERHUB_USERNAME }}
+          docker_password_or_token: ${{ secrets.DOCKERHUB_TOKEN }}
           authentication plugin: 'caching_sha2_password'
           mysql version: '8.0'
           mysql database: 'ghost_testing'
