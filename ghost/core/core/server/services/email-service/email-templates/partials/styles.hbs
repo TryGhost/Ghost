@@ -506,7 +506,11 @@ figure blockquote p {
 
 .feature-image img {
     {{#hasFeature "emailCustomizationAlpha"}}
-    {{imageCorners}};
+    {{#if (eq imageCorners 'rounded')}}
+        border-radius: 6px;
+    {{else}}
+        border-radius: 0;
+    {{/if}}
     {{/hasFeature}}
 }
 
@@ -714,7 +718,11 @@ a[data-flickr-embed] img {
     height: auto;
     width: auto;
     {{#hasFeature "emailCustomizationAlpha"}}
-    {{imageCorners}};
+    {{#if (eq imageCorners 'rounded')}}
+        border-radius: 6px;
+    {{else}}
+        border-radius: 0;
+    {{/if}}
     {{/hasFeature}}
 }
 
@@ -818,8 +826,8 @@ a[data-flickr-embed] img {
     height: auto !important;
     padding-top: 20px;
     {{#hasFeature "emailCustomizationAlpha"}}
-    {{#if imageCorners}}
-    {{imageCorners}};
+    {{#if (eq imageCorners 'rounded')}}
+    border-radius: 6px;
     padding-top: 0 !important;
     margin-top: 20px !important;
     {{/if}}
@@ -832,7 +840,11 @@ a[data-flickr-embed] img {
     display: block;
     text-decoration: none !important;
     {{#hasFeature "emailCustomizationAlpha"}}
-    {{imageCorners}};
+    {{#if (eq imageCorners 'rounded')}}
+        border-radius: 6px;
+    {{else}}
+        border-radius: 0;
+    {{/if}}
     {{/hasFeature}}
 }
 
@@ -840,7 +852,9 @@ a[data-flickr-embed] img {
     background-size: cover;
     min-height: 200px; /* for when images aren't loaded */
     {{#hasFeature "emailCustomizationAlpha"}}
-    {{imageCorners}};
+    {{#if (eq imageCorners 'rounded')}}
+        border-radius: 6px;
+    {{/if}}
     {{/hasFeature}}
     overflow: hidden;
 }
@@ -1117,17 +1131,17 @@ table.kg-cta-content-wrapper:not(.kg-cta-bg-none.kg-cta-no-dividers table.kg-cta
 
 /* -------------------------------------
     When removing emailCustomizationAlpha,
-    also remove border-radius: 6px;
+    also remove border-radius: 6px and border-radius: 0 !important;
 ------------------------------------- */
 img.kg-cta-image {
     display: block;
     border-radius: 6px;
     border: 0;
     {{#hasFeature "emailCustomizationAlpha"}}
-    {{#if imageCorners}}
-    {{imageCorners}};
+    {{#if (eq imageCorners 'rounded')}}
+        border-radius: 6px;
     {{else}}
-    border-radius: 0 !important;
+        border-radius: 0 !important;
     {{/if}}
     {{/hasFeature}}
 }
@@ -1530,7 +1544,9 @@ img.kg-cta-image {
     height: auto;
     padding: 0;
     border: none;
-    {{imageCorners}};
+    {{#if (eq imageCorners 'rounded')}}
+        border-radius: 6px;
+    {{/if}}
 }
 
 .kg-product-title {

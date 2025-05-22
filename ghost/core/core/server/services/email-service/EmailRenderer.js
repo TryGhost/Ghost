@@ -1032,21 +1032,8 @@ class EmailRenderer {
     }
 
     #getImageCorners(newsletter) {
-        /** @type {'rounded' | string | null} */
         const value = newsletter.get('image_corners');
-
-        // we need to convert the value to plain css value
-        // eg border-radius: 10px;
-
-        if (value === 'rounded') {
-            return 'border-radius: 6px;';
-        }
-
-        if (value === 'square') {
-            return null;
-        }
-
-        return null;
+        return value;
     }
 
     /**

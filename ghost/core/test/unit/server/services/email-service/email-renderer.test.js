@@ -2622,20 +2622,12 @@ describe('Email renderer', function () {
         });
 
         it('sets imageCorners to correct rounded value (emailCustomizationAlpha)', async function () {
-            await testImageCorners('rounded', 'border-radius: 6px;');
+            await testImageCorners('rounded', 'rounded');
         });
 
         it('sets imageCorners to correct square value which is null (emailCustomizationAlpha)', async function () {
             // null because square has no border radius
-            await testImageCorners('square', null);
-        });
-
-        it('sets imageCorners to null if unknown value', async function () {
-            await testImageCorners('unknown', null);
-        });
-
-        it('sets imageCorners to null if null', async function () {
-            await testImageCorners(null, null);
+            await testImageCorners('square', 'square');
         });
 
         async function testHasOutlineButtons(buttonStyle, expectedValue) {
