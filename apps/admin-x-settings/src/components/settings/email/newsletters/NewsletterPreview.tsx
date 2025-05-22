@@ -219,7 +219,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         siteTitle={title}
         titleAlignment={newsletter.title_alignment}
         titleFontCategory={newsletter.title_font_category}
-        titleFontWeight={(hasEmailCustomizationPrototype || hasEmailCustomizationAlpha) && newsletter.title_font_weight || 'bold'}
+        titleFontWeight={hasAnyEmailCustomization && newsletter.title_font_weight || 'bold'}
         {...colors}
     />;
 };

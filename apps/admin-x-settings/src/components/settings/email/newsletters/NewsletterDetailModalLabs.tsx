@@ -377,7 +377,7 @@ const Sidebar: React.FC<{
                         title='Heading font'
                         onSelect={option => updateNewsletter({title_font_category: option?.value})}
                     />
-                    {hasEmailCustomizationAlpha &&
+                    {(hasEmailCustomizationAlpha || hasEmailCustomizationBeta) &&
                     <Select
                         options={fontWeightOptions}
                         selectedOption={fontWeightOptions.find(option => option.value === newsletter.title_font_weight)}
