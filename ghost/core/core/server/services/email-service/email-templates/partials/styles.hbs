@@ -9,11 +9,9 @@ img {
     border: none;
     -ms-interpolation-mode: bicubic;
     max-width: 100%;
-    {{#hasFeature "emailCustomizationAlpha"}}
     {{#if hasRoundedImageCorners}}
     border-radius: 6px;
     {{/if}}
-    {{/hasFeature}}
 }
 
 img.is-dark-background {
@@ -719,11 +717,9 @@ a[data-flickr-embed] img {
     margin: 0 auto;
     height: auto;
     width: auto;
-    {{#hasFeature "emailCustomizationAlpha"}}
     {{#if hasRoundedImageCorners}}
         border-radius: 6px;
     {{/if}}
-    {{/hasFeature}}
 }
 
 .kg-image-card span {
@@ -825,13 +821,11 @@ a[data-flickr-embed] img {
     width: 100% !important;
     height: auto !important;
     padding-top: 20px;
-    {{#hasFeature "emailCustomizationAlpha"}}
     {{#if hasRoundedImageCorners}}
     border-radius: 6px;
     padding-top: 0 !important;
     margin-top: 20px !important;
     {{/if}}
-    {{/hasFeature}}
 }
 
 .kg-video-preview {
@@ -839,21 +833,17 @@ a[data-flickr-embed] img {
     background-image: radial-gradient(circle at center, #5b5f66, #1d1f21);
     display: block;
     text-decoration: none !important;
-    {{#hasFeature "emailCustomizationAlpha"}}
     {{#if hasRoundedImageCorners}}
         border-radius: 6px;
     {{/if}}
-    {{/hasFeature}}
 }
 
 .kg-video-preview table {
     background-size: cover;
     min-height: 200px; /* for when images aren't loaded */
-    {{#hasFeature "emailCustomizationAlpha"}}
     {{#if hasRoundedImageCorners}}
         border-radius: 6px;
     {{/if}}
-    {{/hasFeature}}
     overflow: hidden;
 }
 
@@ -959,7 +949,7 @@ a[data-flickr-embed] img {
     font-size: 20px;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .kg-cta-card {
     margin: 0 0 1.5em 0;
     padding: 0 24px;
@@ -1139,7 +1129,7 @@ table.kg-cta-content-wrapper:not(.kg-cta-bg-none.kg-cta-no-dividers table.kg-cta
     padding-bottom: 0;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 img.kg-cta-image {
     display: block;
     border: 0;
@@ -1213,7 +1203,7 @@ img.kg-cta-image {
     text-align: center;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .kg-cta-button-container {
     padding-top: 20px;
 }
@@ -1364,7 +1354,7 @@ img.kg-cta-image {
     color: #ffffff;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .kg-header-card h2 {
     font-size: 32px;
     font-weight: {{titleWeight}};
@@ -1541,7 +1531,7 @@ img.kg-cta-image {
 }
 {{/hasFeature}}
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .kg-product-card {
     margin: 0 0 1.5em;
     {{#if hasRoundedImageCorners}}
@@ -1781,7 +1771,7 @@ img.kg-cta-image {
     border: 1px solid #e0e7eb;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .kg-toggle-card {
     border: 1px solid #E5ECF0;
     border-radius: 4px;
@@ -1860,7 +1850,7 @@ img.kg-cta-image {
     BUTTONS
 ------------------------------------- */
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 table.btn {
     box-sizing: border-box;
     width: auto;
@@ -1922,7 +1912,7 @@ table.btn-accent a {
 .btn table td {
     background-color: #ffffff;
     border-radius: 5px;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     border-radius: {{buttonBorderRadius}};
     {{/hasFeature}}
     text-align: center;
@@ -1933,7 +1923,7 @@ table.btn-accent a {
     background-color: #ffffff;
     border: solid 1px #3498db;
     border-radius: 5px;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     border-radius: {{buttonBorderRadius}};
     {{/hasFeature}}
     box-sizing: border-box;
@@ -2090,7 +2080,7 @@ table.btn-accent a {
         border-right-width: 0 !important;
     }
 
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     {{else}}
     table.body .btn table {
         width: 100% !important;
@@ -2313,7 +2303,7 @@ table.btn-accent a {
         margin: 2em 0 !important;
     }
 
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     {{else}}
         table.body .kg-header-card.kg-v2 span {
         font-size: inherit !important;
@@ -2406,7 +2396,7 @@ table.btn-accent a {
         height: 52px !important;
     }
 
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     {{else}}
     table.body .kg-cta-minimal a.kg-cta-button {
         display: inline-block !important;
@@ -2461,7 +2451,7 @@ table.btn-accent a {
         line-height: inherit;
     }
 
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     {{else}}
     .btn-primary table td:hover {
         background-color: #34495e !important;
