@@ -543,6 +543,82 @@ describe('CallToActionNode', function () {
                 `);
             });
         }));
+
+        it('accepts valid hex color for buttonColor', editorTest(function () {
+            dataset.buttonColor = '#F0F0F0';
+            testRender(({html}) => {
+                html.should.containEql('background-color: #F0F0F0');
+            });
+        }));
+
+        it('accepts valid named color for buttonColor', editorTest(function () {
+            dataset.buttonColor = 'blue';
+            testRender(({html}) => {
+                html.should.containEql('background-color: blue');
+            });
+        }));
+
+        it('renders with left alignment by default', editorTest(function () {
+            testRender(({html}) => {
+                html.should.not.containEql('kg-cta-centered');
+            });
+        }));
+
+        it('renders with center alignment when specified', editorTest(function () {
+            dataset.alignment = 'center';
+            testRender(({html}) => {
+                html.should.containEql('kg-cta-centered');
+            });
+        }));
+
+        it('renders email with outline button style and custom color (emailCustomizationAlpha)', editorTest(function () {
+            exportOptions.target = 'email';
+            exportOptions.feature.emailCustomizationAlpha = true;
+            exportOptions.design.buttonStyle = 'outline';
+            dataset.buttonColor = '#123456';
+            dataset.buttonTextColor = '#ffffff';
+
+            testRender(({element}) => {
+                const tdStyle = element.querySelector('table.btn td').getAttribute('style');
+                const aStyle = element.querySelector('table.btn a').getAttribute('style');
+
+                tdStyle.should.containEql('border: 1px solid #123456');
+                tdStyle.should.containEql('background-color: transparent');
+                tdStyle.should.containEql('color: #123456');
+
+                aStyle.should.containEql('background-color: transparent');
+                aStyle.should.containEql('color: #123456');
+            });
+        }));
+
+        it('renders email with minimal layout and proper image dimensions', editorTest(function () {
+            exportOptions.target = 'email';
+            dataset.layout = 'minimal';
+            dataset.imageUrl = '/content/images/2022/11/test.jpg';
+            dataset.imageWidth = 1200;
+            dataset.imageHeight = 800;
+
+            testRender(({element}) => {
+                const img = element.querySelector('.kg-cta-image');
+                img.should.exist;
+                img.getAttribute('width').should.equal('64');
+                img.getAttribute('height').should.equal('64');
+            });
+        }));
+
+        it('renders with accent link color', editorTest(function () {
+            dataset.linkColor = 'accent';
+            testRender(({html}) => {
+                html.should.containEql('kg-cta-link-accent');
+            });
+        }));
+
+        it('renders with text link color by default', editorTest(function () {
+            dataset.linkColor = 'text';
+            testRender(({html}) => {
+                html.should.not.containEql('kg-cta-link-accent');
+            });
+        }));
     });
 
     describe('exportJSON', function () {
