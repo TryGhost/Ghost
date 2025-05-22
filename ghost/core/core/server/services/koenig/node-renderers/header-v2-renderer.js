@@ -75,7 +75,7 @@ function emailTemplate(nodeData, options) {
     const splitImageStyle = `background-image: url(${nodeData.backgroundImageSrc}); background-size: ${nodeData.backgroundSize !== 'contain' ? 'cover' : '50%'}; background-position: center`;
 
     if (
-        options?.feature?.emailCustomizationAlpha &&
+        (options?.feature?.emailCustomization || options?.feature?.emailCustomizationAlpha) &&
         options?.design?.buttonStyle === 'outline'
     ) {
         if (nodeData.buttonColor === 'accent') {
