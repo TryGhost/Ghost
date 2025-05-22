@@ -66,7 +66,6 @@ const Sidebar: React.FC<{
     errors: ErrorMessages;
     clearError: (field: string) => void;
 }> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
-    const hasEmailCustomizationBeta = useFeatureFlag('emailCustomization');
     const hasEmailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
 
     const {updateRoute} = useRouting();
@@ -377,14 +376,12 @@ const Sidebar: React.FC<{
                         title='Heading font'
                         onSelect={option => updateNewsletter({title_font_category: option?.value})}
                     />
-                    {(hasEmailCustomizationAlpha || hasEmailCustomizationBeta) &&
                     <Select
                         options={fontWeightOptions}
                         selectedOption={fontWeightOptions.find(option => option.value === newsletter.title_font_weight)}
                         title='Heading weight'
                         onSelect={option => updateNewsletter({title_font_weight: option?.value})}
                     />
-                    }
                     <Select
                         options={fontOptions}
                         selectedOption={fontOptions.find(option => option.value === newsletter.body_font_category)}
@@ -449,7 +446,6 @@ const Sidebar: React.FC<{
                         ]} clearBg={false} />
                     </div>
                     }
-                    {(hasEmailCustomizationAlpha || hasEmailCustomizationBeta) &&
                     <div className='flex w-full justify-between'>
                         <div>Button corners</div>
                         <ButtonGroup activeKey={newsletter.button_corners || 'rounded'} buttons={[
@@ -485,7 +481,6 @@ const Sidebar: React.FC<{
                             }
                         ]} clearBg={false} />
                     </div>
-                    }
                     {hasEmailCustomizationAlpha &&
                     <div className='flex w-full justify-between'>
                         <div>Image corners</div>
@@ -513,7 +508,6 @@ const Sidebar: React.FC<{
                         ]} clearBg={false} />
                     </div>
                     }
-                    {hasEmailCustomizationAlpha &&
                     <div className='flex w-full justify-between'>
                         <div>Link style</div>
                         <ButtonGroup activeKey={newsletter.link_style || 'underline'} buttons={[
@@ -549,7 +543,6 @@ const Sidebar: React.FC<{
                             }
                         ]} clearBg={false} />
                     </div>
-                    }
                 </Form>
             </>
         }

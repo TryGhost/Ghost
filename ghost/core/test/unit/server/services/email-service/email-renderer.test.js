@@ -2121,7 +2121,8 @@ describe('Email renderer', function () {
             await testLexicalRenderDesignOptions({
                 expectedObject: {
                     buttonCorners: 'square',
-                    titleFontWeight: 'semibold'
+                    titleFontWeight: 'semibold',
+                    linkStyle: 'normal'
                 },
                 labs: {emailCustomization: true}
             });
