@@ -678,7 +678,14 @@ h3.latest-posts-header {
 .post-content a,
 .post-content-sans-serif a {
     color: {{accentColor}};
-    {{linkStyles}}
+    {{#if (eq linkStyle "regular")}}
+    text-decoration: none;
+    {{else if (eq linkStyle "bold")}}
+    text-decoration: none;
+    font-weight: 700;
+    {{else}}
+    text-decoration: underline;
+    {{/if}}
 }
 
 a[data-flickr-embed] img {
