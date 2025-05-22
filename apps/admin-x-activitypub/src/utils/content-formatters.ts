@@ -1,12 +1,54 @@
-export function stripHtml(html: string): string {
+export function stripHtml(html: string, exclude: string[] = []): string {
+    // If no exclusions, use the original logic
+    if (exclude.length === 0) {
+        // Replace <br> tags with spaces
+        const withLineBreaks = html.replace(/<br\s*\/?>/gi, ' ');
+
+        // Replace tags that should have a space after them
+        const withSpaces = withLineBreaks.replace(/<\/p>\s*<p>|<\/div>\s*<div>|<\/h[1-6]>\s*<|<\/li>\s*<li>|<\/a>/gi, ' ');
+
+        // Remove all HTML tags
+        return withSpaces.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    }
+
+    // Convert exclusions to lowercase for case-insensitive matching
+    const excludeTags = exclude.map(tag => tag.toLowerCase());
+
+    // Create a temporary placeholder for excluded tags
+    const placeholders: {[key: string]: string} = {};
+    let placeholderCount = 0;
+
+    // Replace excluded tags with placeholders
+    let processedHtml = html;
+
+    // Process each excluded tag type
+    for (const tag of excludeTags) {
+        // Match both opening and closing tags, and self-closing tags
+        const regex = new RegExp(`<${tag}[^>]*>.*?<\\/${tag}>|<${tag}[^>]*\\/?>`, 'gis');
+
+        processedHtml = processedHtml.replace(regex, (match) => {
+            const placeholder = `__EXCLUDED_TAG_${placeholderCount += 1}__`;
+            placeholders[placeholder] = match;
+            return placeholder;
+        });
+    }
+
+    // Apply the original HTML stripping logic to the modified HTML
     // Replace <br> tags with spaces
-    const withLineBreaks = html.replace(/<br\s*\/?>/gi, ' ');
+    const withLineBreaks = processedHtml.replace(/<br\s*\/?>/gi, ' ');
 
     // Replace tags that should have a space after them
     const withSpaces = withLineBreaks.replace(/<\/p>\s*<p>|<\/div>\s*<div>|<\/h[1-6]>\s*<|<\/li>\s*<li>|<\/a>/gi, ' ');
 
     // Remove all remaining HTML tags
-    return withSpaces.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    let result = withSpaces.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+
+    // Restore the excluded tags
+    for (const [placeholder, originalTag] of Object.entries(placeholders)) {
+        result = result.replace(placeholder, originalTag);
+    }
+
+    return result;
 }
 
 export const formatArticle = (content: string, postUrl?: string) => {
