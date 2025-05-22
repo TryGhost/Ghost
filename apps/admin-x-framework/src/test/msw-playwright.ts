@@ -54,10 +54,19 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
     const handlers = Object.entries(requests).map(([key, config]) => {
         const {method, path, response, responseStatus = 200} = config;
         
-        // Determine API path based on options
-        const apiPath = options?.useActivityPub 
-            ? new RegExp(`/activitypub${typeof path === 'string' ? path : path.source}`)
-            : new RegExp(`/ghost/api/admin${typeof path === 'string' ? path : path.source}`);
+        // Determine the base API path prefix
+        const base = options?.useActivityPub ? '/activitypub' : '/ghost/api/admin';
+        
+        // Handle paths differently based on type
+        let apiPath: string | RegExp;
+        
+        if (typeof path === 'string') {
+            // For string paths, use literal string (no RegExp) to preserve query parameters
+            apiPath = `${base}${path}`;
+        } else {
+            // For RegExp paths, preserve the regex pattern
+            apiPath = new RegExp(`${base}${path.source}`);
+        }
             
         // Create a custom response resolver with request capture
         const responseResolver = async ({request}: {request: Request, params: PathParams}) => {

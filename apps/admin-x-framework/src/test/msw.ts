@@ -187,10 +187,19 @@ export function createHandlersFromConfig(
     return Object.entries(requests).map(([, config]) => {
         const {method, path, response, status} = config;
         
-        // Determine API path based on options
-        const apiPath = options?.useActivityPub 
-            ? new RegExp(`/activitypub${typeof path === 'string' ? path : path.source}`)
-            : new RegExp(`/ghost/api/admin${typeof path === 'string' ? path : path.source}`);
+        // Determine the base API path prefix
+        const base = options?.useActivityPub ? '/activitypub' : '/ghost/api/admin';
+        
+        // Handle paths differently based on type
+        let apiPath: string | RegExp;
+        
+        if (typeof path === 'string') {
+            // For string paths, use literal string matching (no RegExp)
+            apiPath = `${base}${path}`;
+        } else {
+            // For RegExp paths, preserve the regex pattern
+            apiPath = new RegExp(`${base}${path.source}`);
+        }
         
         // Use default status based on method if not specified
         const responseStatus = status || getDefaultStatus(method);

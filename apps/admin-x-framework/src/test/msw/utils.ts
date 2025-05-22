@@ -16,13 +16,16 @@ export function createHandlerFromMockConfig(requestConfig: MockRequestConfig & {
     const {method, path, response, responseStatus = 200, responseHeaders = {}} = requestConfig;
     
     // For path patterns, we need to convert the string or regex to the appropriate format for MSW
-    let pathPattern: string | RegExp = path;
+    let pathPattern: string | RegExp;
     
-    // If path is a RegExp, use it directly
-    // If path is a string, use it directly but remove leading API path if needed
+    // Handle paths differently based on type
     if (typeof path === 'string') {
         // MSW doesn't need the API path prefix when hosted on the same origin
+        // Use literal string (not RegExp) to preserve query parameters
         pathPattern = path.startsWith('/ghost/api/admin') ? path : `/ghost/api/admin${path}`;
+    } else {
+        // For RegExp paths, preserve the pattern
+        pathPattern = path;
     }
     
     // Create response resolver using the shared function
