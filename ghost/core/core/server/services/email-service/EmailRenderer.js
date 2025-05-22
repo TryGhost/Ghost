@@ -1032,21 +1032,11 @@ class EmailRenderer {
     }
 
     #getImageCorners(newsletter) {
-        /** @type {'rounded' | string | null} */
         const value = newsletter.get('image_corners');
-
-        // we need to convert the value to plain css value
-        // eg border-radius: 10px;
-
         if (value === 'rounded') {
-            return 'border-radius: 6px;';
+            return true;
         }
-
-        if (value === 'square') {
-            return null;
-        }
-
-        return null;
+        return false;
     }
 
     /**
@@ -1077,7 +1067,7 @@ class EmailRenderer {
         const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
         const linkColor = backgroundIsDark ? '#ffffff' : accentColor;
         const linkStyles = this.#getLinkStyles(newsletter);
-        const imageCorners = this.#getImageCorners(newsletter);
+        const hasRoundedImageCorners = this.#getImageCorners(newsletter);
 
         let buttonBorderRadius = '6px';
 
@@ -1239,7 +1229,7 @@ class EmailRenderer {
             secondaryTextColor,
             linkColor,
             linkStyles,
-            imageCorners,
+            hasRoundedImageCorners,
             buttonBorderRadius,
 
             headerImage,
