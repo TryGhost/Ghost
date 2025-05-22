@@ -52,11 +52,18 @@ export function createResponseResolver(
     options: {
         status?: number;
         headers?: Record<string, string>;
+        delay?: number;
     } = {}
 ): HttpResponseResolver<PathParams> {
-    const {status = 200, headers = {}} = options;
+    const {status = 200, headers = {}, delay} = options;
     
     return async () => {
+        // Apply delay if specified
+        if (delay !== undefined && delay > 0) {
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+        
+        // Create the response
         return HttpResponse.json(
             response as Record<string, unknown>,
             {

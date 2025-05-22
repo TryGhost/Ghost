@@ -5,6 +5,7 @@
 import {HttpResponse, PathParams, http} from 'msw';
 import {setupServer} from 'msw/node';
 import {createMethodHandler, createResponseResolver, getDefaultStatus} from './msw/core';
+import {handlers} from './msw/handlers';
 
 // Re-export MSW types and functions
 export {http, HttpResponse};
@@ -215,36 +216,9 @@ export function createHandlersFromConfig(
 }
 
 /**
- * Default Ghost API handlers 
- */
-function createDefaultHandlers() {
-    return [
-        // Settings
-        get('/ghost/api/admin/settings/', responseFixtures.settings),
-        get('/ghost/api/admin/users/', responseFixtures.users),
-        get('/ghost/api/admin/users/me/', responseFixtures.me),
-        get('/ghost/api/admin/roles/', responseFixtures.roles),
-        get('/ghost/api/admin/site/', responseFixtures.site),
-        get('/ghost/api/admin/config/', responseFixtures.config),
-        get('/ghost/api/admin/invites/', responseFixtures.invites),
-        get('/ghost/api/admin/custom_theme_settings/', responseFixtures.customThemeSettings),
-        get('/ghost/api/admin/tiers/', responseFixtures.tiers),
-        get('/ghost/api/admin/labels/', responseFixtures.labels),
-        get('/ghost/api/admin/offers/', responseFixtures.offers),
-        get('/ghost/api/admin/themes/', responseFixtures.themes),
-        get('/ghost/api/admin/newsletters/', responseFixtures.newsletters),
-        get('/ghost/api/admin/actions/', responseFixtures.actions),
-        get('/ghost/api/admin/recommendations/', responseFixtures.recommendations),
-        get('/ghost/api/admin/recommendations/incoming/', responseFixtures.incomingRecommendations),
-        get('/activitypub/inbox/', responseFixtures.activitypubInbox),
-        get('/activitypub/feed/', responseFixtures.activitypubFeed)
-    ];
-}
-
-/**
  * Create a server instance with default handlers
  */
-export const server = setupServer(...createDefaultHandlers());
+export const server = setupServer(...handlers);
 
 /**
  * Setup function to init MSW for tests
@@ -259,7 +233,7 @@ export function setupMSW() {
         
         resetHandlers() {
             server.resetHandlers();
-            server.use(...createDefaultHandlers());
+            server.use(...handlers);
         },
         
         use(...handlers: Parameters<typeof server.use>) {

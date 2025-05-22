@@ -41,17 +41,8 @@ export async function chooseOptionInSelect(select: Locator, optionText: string |
 
 export async function getOptionsFromSelect(select: Locator): Promise<string[]> {
     await select.click();
-    const options = select.page().getByRole('option');
-    const count = await options.count();
-    const optionTexts: string[] = [];
-
-    for (let i = 0; i < count; i++) {
-        const optionText = await options.nth(i).textContent();
-        if (optionText) {
-            optionTexts.push(optionText);
-        }
-    }
-
+    const optionTexts = await select.page().getByRole('option').allTextContents();
+    
     // Close the select dropdown
     await select.click();
     return optionTexts;

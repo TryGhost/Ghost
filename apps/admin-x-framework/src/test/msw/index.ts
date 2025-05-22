@@ -1,4 +1,4 @@
-import {DefaultBodyType, HttpResponse, PathParams, RestHandler, http} from 'msw';
+import {DefaultBodyType, HttpResponse, PathParams, RequestHandler, http} from 'msw';
 import {setupServer} from 'msw/node';
 import {responseFixtures} from '../acceptance';
 
@@ -23,7 +23,13 @@ export function createHandler<T = DefaultBodyType>(
     responseData: T,
     options: HandlerOptions = {}
 ) {
-    return http[method](path, () => {
+    return http[method](path, async () => {
+        // Apply delay if specified
+        if (options.delay !== undefined && options.delay > 0) {
+            await new Promise(resolve => setTimeout(resolve, options.delay));
+        }
+        
+        // Create the response with appropriate status code
         return HttpResponse.json(responseData as DefaultBodyType, {
             status: options.status || (method === 'post' ? 201 : 200)
         });
@@ -74,8 +80,14 @@ export function createDynamicHandler<T = DefaultBodyType, P extends PathParams =
     options: HandlerOptions = {}
 ) {
     return http[method]<P>(path, async ({request, params}) => {
+        // Apply delay if specified
+        if (options.delay !== undefined && options.delay > 0) {
+            await new Promise(resolve => setTimeout(resolve, options.delay));
+        }
+        
         const responseData = await handler({request, params});
         
+        // Create the response with appropriate status code
         return HttpResponse.json(responseData as DefaultBodyType, {
             status: options.status || (method === 'post' ? 201 : 200)
         });
@@ -150,7 +162,7 @@ export function createActivityPubHandlers() {
 /**
  * Create a MSW server with preset handlers
  */
-export function createServer(handlers: RestHandler[]) {
+export function createServer(handlers: RequestHandler[]) {
     return setupServer(...handlers);
 }
 
