@@ -1,6 +1,7 @@
 import NewsletterPreview from './NewsletterPreview';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
+import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
 import {Button, ButtonGroup, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, SelectOption, Separator, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
@@ -65,6 +66,9 @@ const Sidebar: React.FC<{
     errors: ErrorMessages;
     clearError: (field: string) => void;
 }> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
+    const hasEmailCustomizationBeta = useFeatureFlag('emailCustomization');
+    const hasEmailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
+
     const {updateRoute} = useRouting();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const limiter = useLimiter();
@@ -373,12 +377,14 @@ const Sidebar: React.FC<{
                         title='Heading font'
                         onSelect={option => updateNewsletter({title_font_category: option?.value})}
                     />
+                    {hasEmailCustomizationAlpha &&
                     <Select
                         options={fontWeightOptions}
                         selectedOption={fontWeightOptions.find(option => option.value === newsletter.title_font_weight)}
                         title='Heading weight'
                         onSelect={option => updateNewsletter({title_font_weight: option?.value})}
                     />
+                    }
                     <Select
                         options={fontOptions}
                         selectedOption={fontOptions.find(option => option.value === newsletter.body_font_category)}
@@ -416,6 +422,7 @@ const Sidebar: React.FC<{
                             }
                         ]} clearBg={false} />
                     </div>
+                    {hasEmailCustomizationAlpha &&
                     <div className='flex w-full justify-between'>
                         <div>Button style</div>
                         <ButtonGroup activeKey={newsletter.button_style || 'fill'} buttons={[
@@ -441,6 +448,8 @@ const Sidebar: React.FC<{
                             }
                         ]} clearBg={false} />
                     </div>
+                    }
+                    {(hasEmailCustomizationAlpha || hasEmailCustomizationBeta) &&
                     <div className='flex w-full justify-between'>
                         <div>Button corners</div>
                         <ButtonGroup activeKey={newsletter.button_corners || 'rounded'} buttons={[
@@ -476,6 +485,8 @@ const Sidebar: React.FC<{
                             }
                         ]} clearBg={false} />
                     </div>
+                    }
+                    {hasEmailCustomizationAlpha &&
                     <div className='flex w-full justify-between'>
                         <div>Image corners</div>
                         <ButtonGroup activeKey={newsletter.image_corners || 'square'} buttons={[
@@ -501,6 +512,8 @@ const Sidebar: React.FC<{
                             }
                         ]} clearBg={false} />
                     </div>
+                    }
+                    {hasEmailCustomizationAlpha &&
                     <div className='flex w-full justify-between'>
                         <div>Link style</div>
                         <ButtonGroup activeKey={newsletter.link_style || 'underline'} buttons={[
@@ -536,6 +549,7 @@ const Sidebar: React.FC<{
                             }
                         ]} clearBg={false} />
                     </div>
+                    }
                 </Form>
             </>
         }
