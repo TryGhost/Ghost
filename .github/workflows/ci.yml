@@ -504,6 +504,39 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Show DOCKER_CONFIG on runner
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository # Use the same condition as your login step
+        run: |
+          echo "Runner DOCKER_CONFIG_PATH is: '$DOCKER_CONFIG'"
+          echo "Listing contents of Runner DOCKER_CONFIG_PATH (if set):"
+          if [ -n "$DOCKER_CONFIG" ]; then
+            ls -la "$DOCKER_CONFIG"
+            echo "Checking for config.json in Runner DOCKER_CONFIG_PATH:"
+            if [ -f "$DOCKER_CONFIG/config.json" ]; then
+              echo "Runner $DOCKER_CONFIG/config.json exists."
+              if grep -q '\"auths\":' "$DOCKER_CONFIG/config.json"; then
+                echo "Runner $DOCKER_CONFIG/config.json appears to contain an 'auths' section."
+              else
+                echo "Runner $DOCKER_CONFIG/config.json does NOT appear to contain an 'auths' section."
+              fi
+            else
+              echo "Runner $DOCKER_CONFIG/config.json NOT found."
+            fi
+          else
+            echo "Runner DOCKER_CONFIG is not set. Checking default ~/.docker"
+            ls -la ~/.docker
+            if [ -f ~/.docker/config.json ]; then
+                echo "Runner ~/.docker/config.json exists."
+                if grep -q '\"auths\":' ~/.docker/config.json; then
+                echo "Runner ~/.docker/config.json appears to contain an 'auths' section."
+              else
+                echo "Runner ~/.docker/config.json does NOT appear to contain an 'auths' section."
+              fi
+            else
+              echo "Runner ~/.docker/config.json NOT found."
+            fi
+          fi
+
       - uses: tryghost/mysql-action@docker-login-debugging
         if: matrix.env.DB == 'mysql8'
         timeout-minutes: 3
