@@ -30,14 +30,14 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
     data,
     percentageValue
 }) => {
-    const barWidth = 38;
+    const barWidth = 42;
     const innerRadiusStart = data.length > 1 ? 72 : 89;
 
     const chartComponentConfig = {
         innerRadius: innerRadiusStart,
         outerRadius: innerRadiusStart + barWidth,
         startAngle: 90,
-        endAngle: -269
+        endAngle: -270
     };
 
     return (
