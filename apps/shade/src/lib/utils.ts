@@ -221,63 +221,46 @@ export const getYRange = (data: { value: number }[]): {min: number; max: number}
     let min = Math.min(...values);
     let max = Math.max(...values);
 
-    // Helper function to round to nice numbers
-    const roundToNiceNumber = (num: number, roundUp: boolean = false): number => {
+    // Helper function to round to nearest multiple of 10^n
+    const roundToNearestMultiple = (num: number): number => {
         if (num === 0) {
             return 0;
         }
 
-        const magnitude = Math.floor(Math.log10(Math.abs(num)));
-        const scale = Math.pow(10, magnitude);
+        // Determine the order of magnitude (10^n)
+        const magnitude = Math.floor(Math.log10(num));
+        const multiple = Math.pow(10, magnitude);
 
-        // For numbers less than 1, use smaller steps
-        if (magnitude < 0) {
-            const steps = [0.1, 0.2, 0.25, 0.5, 1];
-            const scaledNum = num * Math.pow(10, -magnitude);
-            const step = steps.find(s => s >= scaledNum) || 1;
-            return roundUp ?
-                Math.ceil(num * Math.pow(10, -magnitude) / step) * step * scale :
-                Math.floor(num * Math.pow(10, -magnitude) / step) * step * scale;
-        }
-
-        // For numbers >= 1, use standard steps
-        const steps = [1, 2, 2.5, 5, 10];
-        const scaledNum = num / scale;
-        const step = steps.find(s => s >= scaledNum) || 10;
-        return roundUp ?
-            Math.ceil(num / (step * scale)) * step * scale :
-            Math.floor(num / (step * scale)) * step * scale;
+        // Round to nearest multiple
+        return Math.round(num / multiple) * multiple;
     };
 
-    // If min and max are equal, create a range around the value
-    if (min === max) {
-        const value = min;
-        // For zero, use a range of 0 to 1
-        if (value === 0) {
-            min = 0;
-            max = 1;
-        } else {
-            // For non-zero values, create a 10% range around the value
-            const range = Math.abs(value) * 0.1;
-            min = roundToNiceNumber(Math.max(0, value - range));
-            max = roundToNiceNumber(value + range, true);
-        }
-    } else {
-        // First round min and max to nice numbers
-        min = roundToNiceNumber(min);
-        max = roundToNiceNumber(max, true);
+    // Add padding based on magnitude before rounding
+    const magnitude = Math.floor(Math.log10(Math.max(max, 1)));
+    const padding = Math.pow(10, magnitude);
 
-        // Ensure minimum 10% range between min and max
-        const range = max - min;
-        const minRange = Math.max(Math.abs(max), Math.abs(min)) * 0.1;
-        if (range < minRange) {
-            const padding = (minRange - range) / 2;
-            min = roundToNiceNumber(Math.max(0, min - padding));
-            max = roundToNiceNumber(max + padding, true);
-        }
-    }
+    // Add padding and ensure min is not negative
+    min = Math.max(0, min - padding);
+    max = max + padding;
+
+    // Round to nearest multiple of 10^n
+    min = roundToNearestMultiple(min);
+    max = roundToNearestMultiple(max);
 
     return {min, max};
+};
+
+// Unfortunately in order to force Recharts area charts to start at a certain value
+// we need to use allowDataOverflow = true on the yAxis. This however clips the min
+// value if it reaches 0. In order to prevent this happening we add a bit of padding
+// to the min value.
+export const getYRangeWithMinPadding = (range: {min: number; max: number}) => {
+    if (range.min !== 0) {
+        return [range.min, range.max];
+    }
+    const padding = 0.005;
+    const minPadding = -2;
+    return [Math.min(range.min - (range.max * padding), minPadding), range.max];
 };
 
 // Calculates the width needed for the Y-axis based on the formatted tick values
