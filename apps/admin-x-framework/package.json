@@ -74,6 +74,7 @@
         "test": "yarn test:types && yarn test:unit",
         "test:types": "tsc --noEmit",
         "test:unit": "vitest run --coverage",
+        "msw:init": "msw init public --save",
         "lint:code": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
         "lint": "yarn lint:code && yarn lint:test",
         "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache"
