@@ -227,7 +227,7 @@ const NewsletterPreviewContent: React.FC<{
                                         <img alt="Feature" className={clsx(
                                             'min-h-full min-w-full shrink-0',
                                             imageCorners === 'square' && 'rounded-none',
-                                            imageCorners === 'rounded' && 'rounded-lg'
+                                            imageCorners === 'rounded' && 'rounded-md'
                                         )} src={hasEmailCustomizationPrototype ? 'https://images.unsplash.com/photo-1526367790999-0150786686a2?q=80&w=2942&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' : CoverImage} />
                                     </div>
                                     <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem] text-grey-700" style={{color: hasEmailCustomizationPrototype ? secondaryHeaderTextColor : secondaryTextColor}}>Feature image caption</div>
@@ -429,7 +429,7 @@ const NewsletterPreviewContent: React.FC<{
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
                                             <img alt="Latest post" className={clsx(
                                                 imageCorners === 'square' && 'rounded-none',
-                                                imageCorners === 'squircle' && 'rounded-lg'
+                                                imageCorners === 'rounded' && 'rounded-md'
                                             )} src={LatestPosts1} />
                                         </div>
                                     </div>
@@ -449,7 +449,7 @@ const NewsletterPreviewContent: React.FC<{
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
                                             <img alt="Latest post" className={clsx(
                                                 imageCorners === 'square' && 'rounded-none',
-                                                imageCorners === 'squircle' && 'rounded-lg'
+                                                imageCorners === 'rounded' && 'rounded-md'
                                             )} src={LatestPosts2} />
                                         </div>
                                     </div>
@@ -469,7 +469,7 @@ const NewsletterPreviewContent: React.FC<{
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
                                             <img alt="Latest post" className={clsx(
                                                 imageCorners === 'square' && 'rounded-none',
-                                                imageCorners === 'squircle' && 'rounded-lg'
+                                                imageCorners === 'rounded' && 'rounded-md'
                                             )} src={LatestPosts3} />
                                         </div>
                                     </div>
