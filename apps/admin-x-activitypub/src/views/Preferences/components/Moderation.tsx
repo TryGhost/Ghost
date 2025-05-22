@@ -4,7 +4,7 @@ import Layout from '@src/components/layout';
 import React, {useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, H2, LucideIcon, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade';
-import {showToast} from '@tryghost/admin-x-design-system';
+import {toast} from 'sonner';
 import {useBlockDomainMutationForUser, useBlockMutationForUser, useBlockedAccountsForUser, useBlockedDomainsForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@hooks/use-activity-pub-queries';
 
 const Moderation: React.FC = () => {
@@ -37,10 +37,7 @@ const Moderation: React.FC = () => {
 
         unblockMutation.mutate(account);
 
-        showToast({
-            title: 'User unblocked',
-            type: 'success'
-        });
+        toast.success('User unblocked');
     };
 
     const handleBlock = (account: Account) => {
@@ -52,10 +49,7 @@ const Moderation: React.FC = () => {
 
         blockMutation.mutate(account);
 
-        showToast({
-            title: 'User blocked',
-            type: 'success'
-        });
+        toast.success('User blocked');
     };
 
     const handleDomainUnblock = (domain: {url: string}) => {
@@ -67,10 +61,7 @@ const Moderation: React.FC = () => {
 
         unblockDomainMutation.mutate({url: domain.url});
 
-        showToast({
-            title: 'Domain unblocked',
-            type: 'success'
-        });
+        toast.success('Domain unblocked');
     };
 
     const handleDomainBlock = (domain: {url: string}) => {
@@ -82,10 +73,7 @@ const Moderation: React.FC = () => {
 
         blockDomainMutation.mutate({url: domain.url});
 
-        showToast({
-            title: 'Domain blocked',
-            type: 'success'
-        });
+        toast.success('Domain blocked');
     };
 
     return (
