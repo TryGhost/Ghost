@@ -5,7 +5,7 @@ import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {AlignedAxisTick, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, centsToDollars, formatDisplayDateWithRange, formatNumber, getYRange} from '@tryghost/shade';
+import {AlignedAxisTick, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, centsToDollars, formatDisplayDateWithRange, formatNumber, getYRange, getYRangeWithMinPadding} from '@tryghost/shade';
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -127,6 +127,7 @@ const GrowthKPIs: React.FC<{
     } satisfies ChartConfig;
 
     const yRange = [getYRange(chartData).min, getYRange(chartData).max];
+    const yRangeWithMinPadding = getYRangeWithMinPadding({min: yRange[0], max: yRange[1]});
 
     const tabConfig = {
         'total-members': {
@@ -215,8 +216,9 @@ const GrowthKPIs: React.FC<{
                             ticks={chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}
                         />
                         <Recharts.YAxis
+                            allowDataOverflow={true}
                             axisLine={false}
-                            domain={yRange}
+                            domain={yRangeWithMinPadding}
                             tickFormatter={(value) => {
                                 switch (currentTab) {
                                 case 'total-members':
