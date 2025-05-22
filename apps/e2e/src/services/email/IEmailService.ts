@@ -5,7 +5,7 @@ export interface Email {
   // Add other relevant email properties if needed
 }
 
-export interface EmailService {
+export interface IEmailService {
   /**
    * Waits for the latest email to arrive in a specific context (e.g., inboxId for MailSlurp, or for a recipient in MailHog).
    * @param context - Identifier for the email source (e.g., inboxId, recipient email address).
