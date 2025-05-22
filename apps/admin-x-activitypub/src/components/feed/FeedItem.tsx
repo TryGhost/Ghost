@@ -2,7 +2,7 @@ import FeedItemMenu from './FeedItemMenu';
 import React, {useEffect, useRef, useState} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
-import {showToast} from '@tryghost/admin-x-design-system';
+import {toast} from 'sonner';
 
 import APAvatar from '../global/APAvatar';
 import ImageLightbox, {useLightboxImages} from '../global/ImageLightbox';
@@ -293,10 +293,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         if (object?.url) {
             await navigator.clipboard.writeText(object.url);
             setIsCopied(true);
-            showToast({
-                title: 'Link copied',
-                type: 'success'
-            });
+            toast.success('Link copied');
             setTimeout(() => setIsCopied(false), 2000);
         }
     };
