@@ -1,4 +1,4 @@
-import {DefaultBodyType, HttpResponse, PathParams, http} from 'msw';
+import {DefaultBodyType, HttpResponse, PathParams, RestHandler, http} from 'msw';
 import {setupServer} from 'msw/node';
 import {responseFixtures} from '../acceptance';
 
@@ -150,7 +150,7 @@ export function createActivityPubHandlers() {
 /**
  * Create a MSW server with preset handlers
  */
-export function createServer(handlers: ReturnType<typeof http[keyof typeof http]>[]) {
+export function createServer(handlers: RestHandler[]) {
     return setupServer(...handlers);
 }
 
