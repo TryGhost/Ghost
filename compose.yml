@@ -51,6 +51,12 @@ services:
       - "2368:2368"
     profiles: [ split ]
     tty: true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:2368/ghost/api/admin/site/" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
     depends_on:
       mysql:
         condition: service_healthy
@@ -125,22 +131,20 @@ services:
     working_dir: /home/ghost/apps/e2e
     command: [ "yarn", "test:e2e" ]
     profiles: [ "e2e-tests" ]
+    ports:
+      - "9323:9323"  # Port for HTML report
+    environment:
+      - PLAYWRIGHT_HTML_REPORT_HOST=0.0.0.0
+    tty: true
     depends_on:
       server:
-        condition: service_started
+        condition: service_healthy
       admin:
         condition: service_started
       mailhog:
         condition: service_started
-    environment:
-      - BASE_URL=http://ghost:2368
-      - ADMIN_USERNAME=${ADMIN_USERNAME}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - EMAIL_PROVIDER=${EMAIL_PROVIDER:-mailhog}
-      - MAILHOG_API_URL=http://mailhog:8025
-      - MAILSLURP_API_KEY=${MAILSLURP_API_KEY}
-      - MAILSLURP_INBOX_ID=${MAILSLURP_INBOX_ID}
-      - PLAYWRIGHT_BROWSERS_PATH=/home/ghost/.cache/ms-playwright
+    env_file:
+      - ./apps/e2e/.env
 
   mysql:
     image: mysql:8.4.5
