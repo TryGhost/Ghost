@@ -388,7 +388,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     <TabsContent value="bar">
                                         <div>
                                             <ChartContainer className='max-h-[380px] w-full pb-6 pt-14' config={barChartConfig}>
-                                                <Recharts.BarChart barCategoryGap={24} data={barChartData} accessibilityLayer>
+                                                <Recharts.BarChart barCategoryGap={24} data={barChartData}>
                                                     <Recharts.CartesianGrid vertical={false} />
                                                     <Recharts.YAxis
                                                         axisLine={false}

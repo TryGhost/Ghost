@@ -152,7 +152,6 @@ const WebKPIs:React.FC = ({}) => {
                                 right: 4,
                                 top: 12
                             }}
-                            accessibilityLayer
                         >
                             <Recharts.CartesianGrid horizontal={false} vertical={false} />
                             <Recharts.XAxis
