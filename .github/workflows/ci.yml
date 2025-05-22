@@ -504,7 +504,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - uses: tryghost/mysql-action@main
+      - uses: tryghost/mysql-action@docker-login-debugging
         if: matrix.env.DB == 'mysql8'
         timeout-minutes: 3
         with:
@@ -633,7 +633,7 @@ jobs:
         run: sudo service mysql stop
         if: matrix.env.DB == 'mysql8'
 
-      - uses: tryghost/mysql-action@main
+      - uses: tryghost/mysql-action@docker-login-debugging
         if: matrix.env.DB == 'mysql8'
         timeout-minutes: 3
         with:
