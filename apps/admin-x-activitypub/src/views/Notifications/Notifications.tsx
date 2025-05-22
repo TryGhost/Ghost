@@ -353,7 +353,7 @@ const Notifications: React.FC = () => {
                                                         <>
                                                             <div className='mt-2.5 rounded-md bg-gray-100 px-5 py-[14px] group-hover:bg-gray-200 dark:bg-gray-925/30 group-hover:dark:bg-black/40'>
                                                                 <div
-                                                                    dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '')}}
+                                                                    dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '', ['a'])}}
                                                                     className='ap-note-content text-pretty'
                                                                 />
                                                             </div>
