@@ -2120,7 +2120,8 @@ describe('Email renderer', function () {
         it('passes expected data through to lexical renderer (emailCustomization)', async function () {
             await testLexicalRenderDesignOptions({
                 expectedObject: {
-                    buttonCorners: 'square'
+                    buttonCorners: 'square',
+                    titleFontWeight: 'semibold'
                 },
                 labs: {emailCustomization: true}
             });
