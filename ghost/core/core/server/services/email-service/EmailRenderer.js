@@ -330,6 +330,7 @@ class EmailRenderer {
 
         const betaDesignOptions = {
             buttonCorners: newsletter?.get('button_corners'),
+            buttonStyle: newsletter?.get('button_style'),
             titleFontWeight: newsletter?.get('title_font_weight'),
             linkStyle: newsletter?.get('link_style')
         };
@@ -345,7 +346,6 @@ class EmailRenderer {
             renderOptions.design = {
                 ...renderOptions.design,
                 ...betaDesignOptions,
-                buttonStyle: newsletter?.get('button_style'),
                 imageCorners: newsletter?.get('image_corners')
             };
         }
@@ -1052,11 +1052,11 @@ class EmailRenderer {
         const textColor = textColorForBackgroundColor(backgroundColor).hex();
         const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
         const linkColor = backgroundIsDark ? '#ffffff' : accentColor;
-        const hasRoundedImageCorners = this.#getImageCorners(newsletter);
+        const hasRoundedImageCorners = labs.isSet('emailCustomizationAlpha') ? this.#getImageCorners(newsletter) : false;
 
         let buttonBorderRadius = '6px';
 
-        if (labs.isSet('emailCustomization')) {
+        if (labs.isSet('emailCustomization') || labs.isSet('emailCustomizationAlpha')) {
             if (newsletter.get('button_corners') === 'square') {
                 buttonBorderRadius = '0';
             } else if (newsletter.get('button_corners') === 'pill') {
@@ -1065,7 +1065,10 @@ class EmailRenderer {
         }
 
         let hasOutlineButtons = false;
-        if (labs.isSet('emailCustomizationAlpha') && newsletter.get('button_style') === 'outline') {
+        if (
+            (labs.isSet('emailCustomization') || labs.isSet('emailCustomizationAlpha')) &&
+            newsletter.get('button_style') === 'outline'
+        ) {
             hasOutlineButtons = true;
         }
 

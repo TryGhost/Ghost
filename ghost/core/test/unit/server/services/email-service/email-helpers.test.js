@@ -148,6 +148,61 @@ describe('registerHelpers', function () {
 
         assert.equal(result, false);
     });
+
+    it('hasFeature helper returns true when any flag is set', function () {
+        const handlebars = {
+            registerHelper: function (name, fn) {
+                this[name] = fn;
+            }
+        };
+        const labs = {
+            isSet: function (flag) {
+                return flag === 'flag2'; // Only flag2 is set
+            }
+        };
+        registerHelpers(handlebars, labs);
+
+        const options = {
+            fn: function () {
+                return true;
+            },
+            inverse: function () {
+                return false;
+            }
+        };
+
+        const result = handlebars.hasFeature('flag1', 'flag2', 'flag3', options);
+
+        assert.equal(result, true);
+    });
+
+    it('hasFeature helper returns false when no flags are set', function () {
+        const handlebars = {
+            registerHelper: function (name, fn) {
+                this[name] = fn;
+            }
+        };
+        const labs = {
+            isSet: function () {
+                return false;
+            }
+        };
+        registerHelpers(handlebars, labs);
+
+        const options = {
+            fn: function () {
+                return true;
+            },
+            inverse: function () {
+                return false;
+            }
+        };
+
+        const result = handlebars.hasFeature('flag1', 'flag2', 'flag3', options);
+
+        assert.equal(result, false);
+    });
+
     it('t helper returns key', function () {
         const labs = {
             isSet: function () {
