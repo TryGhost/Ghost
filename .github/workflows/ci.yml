@@ -541,7 +541,7 @@ jobs:
         if: matrix.env.DB == 'mysql8'
         timeout-minutes: 3
         env:
-          DOCKER_CONFIG: /home/runner/.docker
+          DOCKER_CONFIG: /etc/mounted_docker_config
         with:
           authentication plugin: 'caching_sha2_password'
           mysql version: '8.0'
