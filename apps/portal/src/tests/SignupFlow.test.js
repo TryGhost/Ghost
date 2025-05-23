@@ -3,12 +3,15 @@ import {fireEvent, appRender, within, waitFor} from '../utils/test-utils';
 import {offer as FixtureOffer, site as FixtureSite} from '../utils/test-fixtures';
 import setupGhostApi from '../utils/api.js';
 
+// Simple deep clone function
+const deepClone = obj => JSON.parse(JSON.stringify(obj));
+
 const offerSetup = async ({site, member = null, offer}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
     ghostApi.init = jest.fn(() => {
         return Promise.resolve({
-            site,
-            member
+            site: deepClone(site),
+            member: member ? deepClone(member) : null
         });
     });
 
@@ -81,8 +84,8 @@ const setup = async ({site, member = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
     ghostApi.init = jest.fn(() => {
         return Promise.resolve({
-            site,
-            member
+            site: deepClone(site),
+            member: member ? deepClone(member) : null
         });
     });
 
@@ -140,8 +143,8 @@ const multiTierSetup = async ({site, member = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
     ghostApi.init = jest.fn(() => {
         return Promise.resolve({
-            site,
-            member
+            site: deepClone(site),
+            member: member ? deepClone(member) : null
         });
     });
 
