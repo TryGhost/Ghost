@@ -4,7 +4,7 @@ import {
     mockSitePreview,
     responseFixtures,
     updatedSettingsResponse
-} from '@tryghost/admin-x-framework/test/acceptance';
+} from '@tryghost/admin-x-framework/test';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
 

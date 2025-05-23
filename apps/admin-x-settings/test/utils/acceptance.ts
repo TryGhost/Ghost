@@ -1,4 +1,4 @@
-import {responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {responseFixtures} from '@tryghost/admin-x-framework/test';
 
 export const globalDataRequests = {
     browseSettings: {method: 'GET', path: /^\/settings\/\?group=/, response: responseFixtures.settings},

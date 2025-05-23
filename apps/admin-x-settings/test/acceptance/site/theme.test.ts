@@ -1,6 +1,6 @@
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
-import {limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test';
 
 test.describe('Theme settings', async () => {
     test('Browsing and installing default themes', async ({page}) => {

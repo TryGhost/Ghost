@@ -1,4 +1,4 @@
-import {chooseOptionInSelect, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {chooseOptionInSelect, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
 

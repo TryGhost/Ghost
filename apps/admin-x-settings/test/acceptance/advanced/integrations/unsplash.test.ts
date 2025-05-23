@@ -1,6 +1,6 @@
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../../utils/acceptance';
-import {mockApi, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi, updatedSettingsResponse} from '@tryghost/admin-x-framework/test';
 
 test.describe('Unsplash integration', async () => {
     test('Supports toggling unsplash integration', async ({page}) => {

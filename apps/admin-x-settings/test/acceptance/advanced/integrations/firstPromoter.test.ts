@@ -1,6 +1,6 @@
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../../utils/acceptance';
-import {mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test';
 
 test.describe('First Promoter integration', async () => {
     test('Supports toggling and filling in First Promoter integration', async ({page}) => {

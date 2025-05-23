@@ -1,6 +1,6 @@
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../../utils/acceptance';
-import {mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi, responseFixtures} from '@tryghost/admin-x-framework/test';
 
 test.describe('Integrations List', async () => {
     // This is a test for the integrations list, which is a list of integrations that can be toggled on and off

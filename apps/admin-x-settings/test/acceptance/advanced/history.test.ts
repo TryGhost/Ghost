@@ -1,6 +1,6 @@
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
-import {mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi, responseFixtures} from '@tryghost/admin-x-framework/test';
 
 test.describe('History', async () => {
     test('Browsing history', async ({page}) => {
