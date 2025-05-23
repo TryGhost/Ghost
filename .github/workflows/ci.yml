@@ -504,10 +504,19 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - uses: tryghost/mysql-action@main
+      - name: Show DOCKER_CONFIG on runner
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository # Use the same condition as your login step
+        run: |
+          echo "DOCKER_CONFIG: $DOCKER_CONFIG"
+          echo "$(pwd)"
+          echo "$(la -la)"
+
+      - uses: tryghost/mysql-action@docker-login-debugging
         if: matrix.env.DB == 'mysql8'
         timeout-minutes: 3
         with:
+          docker_username: ${{ secrets.DOCKERHUB_USERNAME }}
+          docker_password_or_token: ${{ secrets.DOCKERHUB_TOKEN }}
           authentication plugin: 'caching_sha2_password'
           mysql version: '8.0'
           mysql database: 'ghost_testing'
@@ -633,7 +642,7 @@ jobs:
         run: sudo service mysql stop
         if: matrix.env.DB == 'mysql8'
 
-      - uses: tryghost/mysql-action@main
+      - uses: tryghost/mysql-action@docker-login-debugging
         if: matrix.env.DB == 'mysql8'
         timeout-minutes: 3
         with:

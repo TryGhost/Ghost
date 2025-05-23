@@ -1,0 +1,63 @@
+# Template to share volumes and environment variable between all services running the same base image
+x-service-template: &service-template
+  volumes:
+    - .:/home/ghost
+    - ${SSH_AUTH_SOCK}:/ssh-agent
+    - ${HOME}/.gitconfig:/root/.gitconfig:ro
+    - node_modules_ghost_root:/home/ghost/node_modules:delegated
+    - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
+    - node_modules_ghost_core:/home/ghost/ghost/core/node_modules:delegated
+    - node_modules_ghost_i18n:/home/ghost/ghost/i18n/node_modules:delegated
+    - node_modules_apps_admin-x-activitypub:/home/ghost/apps/admin-x-activitypub/node_modules:delegated
+    - node_modules_apps_admin-x-design-system:/home/ghost/apps/admin-x-design-system/node_modules:delegated
+    - node_modules_apps_admin-x-framework:/home/ghost/apps/admin-x-framework/node_modules:delegated
+    - node_modules_apps_admin-x-settings:/home/ghost/apps/admin-x-settings/node_modules:delegated
+    - node_modules_apps_announcement-bar:/home/ghost/apps/announcement-bar/node_modules:delegated
+    - node_modules_apps_comments-ui:/home/ghost/apps/comments-ui/node_modules:delegated
+    - node_modules_apps_portal:/home/ghost/apps/portal/node_modules:delegated
+    - node_modules_apps_posts:/home/ghost/apps/posts/node_modules:delegated
+    - node_modules_apps_shade:/home/ghost/apps/shade/node_modules:delegated
+    - node_modules_apps_signup-form:/home/ghost/apps/signup-form/node_modules:delegated
+    - node_modules_apps_sodo-search:/home/ghost/apps/sodo-search/node_modules:delegated
+    - node_modules_apps_stats:/home/ghost/apps/stats/node_modules:delegated
+  environment:
+    - DEBUG=${DEBUG:-}
+    - SSH_AUTH_SOCK=/ssh-agent
+    - NX_DAEMON=${NX_DAEMON:-true}
+    - GHOST_DEV_IS_DOCKER=true
+    - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
+    - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
+    - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+    - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+    - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
+
+services:
+  unit-tests:
+    <<: *service-template
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+    command: [ "yarn", "test:unit" ]
+    tty: true
+
+volumes:
+  mysql-data: {}
+  redis-data: {}
+  node_modules_ghost_root: {}
+  node_modules_ghost_admin: {}
+  node_modules_ghost_core: {}
+  node_modules_ghost_i18n: {}
+  node_modules_apps_admin-x-activitypub: {}
+  node_modules_apps_admin-x-design-system: {}
+  node_modules_apps_admin-x-framework: {}
+  node_modules_apps_admin-x-settings: {}
+  node_modules_apps_announcement-bar: {}
+  node_modules_apps_comments-ui: {}
+  node_modules_apps_portal: {}
+  node_modules_apps_posts: {}
+  node_modules_apps_shade: {}
+  node_modules_apps_signup-form: {}
+  node_modules_apps_sodo-search: {}
+  node_modules_apps_stats: {}
