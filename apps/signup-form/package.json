@@ -52,7 +52,7 @@
         "@tryghost/i18n": "0.0.0",
         "@types/react": "18.3.22",
         "@types/react-dom": "18.3.7",
-        "@vitejs/plugin-react": "4.4.1",
+        "@vitejs/plugin-react": "4.5.0",
         "autoprefixer": "10.4.19",
         "concurrently": "8.2.2",
         "eslint-plugin-react-hooks": "4.6.2",
