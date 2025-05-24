@@ -1,4 +1,5 @@
 const Agent = require('@tryghost/express-test');
+let defaultOptions;
 
 /**
  * @constructor
@@ -9,14 +10,21 @@ const Agent = require('@tryghost/express-test');
  */
 class TestAgent extends Agent {
     constructor(app, options) {
-        super(app, {
+        defaultOptions = {
             baseUrl: options.apiURL,
             headers: {
                 host: options.originURL.replace(/http:\/\//, ''),
                 origin: options.originURL
             },
             queryParams: options.queryParams
-        });
+        };
+        super(app, {...defaultOptions});
+    }
+
+    restoreDefaults() {
+        console.log('this.defaults before', this.defaults);
+        this.defaults = defaultOptions;
+        console.log('this.defaults after', this.defaults);
     }
 }
 

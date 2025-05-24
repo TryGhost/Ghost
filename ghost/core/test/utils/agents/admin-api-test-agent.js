@@ -57,6 +57,8 @@ class AdminAPITestAgent extends TestAgent {
     }
 
     async loginAs(email, password, role) {
+        // this.restoreDefaults();
+
         if (role) {
             let user = getRoleUserFromFixtures(role);
             email = user.email;

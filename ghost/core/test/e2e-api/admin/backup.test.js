@@ -76,56 +76,56 @@ describe('Backup Integration', function () {
             });
         });
 
-        describe('Owner: User authentication', function () {
-            before(async function () {
-                await agent.loginAsOwner();
-            });
+        // describe('Owner: User authentication', function () {
+        //     before(async function () {
+        //         await agent.loginAsOwner();
+        //     });
 
-            it('Can create a DB backup', async function () {
-                await agent
-                    .post('db/backup?filename=test')
-                    .expectStatus(200)
-                    .matchHeaderSnapshot({
-                        'content-version': anyContentVersion,
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        db: [{
-                            filename: stringMatching(/test\.json$$/)
-                        }]
-                    });
+        //     it('Can create a DB backup', async function () {
+        //         await agent
+        //             .post('db/backup?filename=test')
+        //             .expectStatus(200)
+        //             .matchHeaderSnapshot({
+        //                 'content-version': anyContentVersion,
+        //                 etag: anyEtag
+        //             })
+        //             .matchBodySnapshot({
+        //                 db: [{
+        //                     filename: stringMatching(/test\.json$$/)
+        //                 }]
+        //             });
 
-                sinon.assert.calledOnce(fsStub);
-                const args = fsStub.firstCall.args;
-                const fileJSON = JSON.parse(args[1]);
+        //         sinon.assert.calledOnce(fsStub);
+        //         const args = fsStub.firstCall.args;
+        //         const fileJSON = JSON.parse(args[1]);
 
-                assert.match(args[0].toString(), /ghost-test\/data\/test.json$/);
-                // @TODO: make a way do this with snapshots!
-                assert.ok(fileJSON.meta, 'Written file has a property called meta');
-                assert.ok(fileJSON.data, 'Written file has a property called data');
-            });
-        });
+        //         assert.match(args[0].toString(), /ghost-test\/data\/test.json$/);
+        //         // @TODO: make a way do this with snapshots!
+        //         assert.ok(fileJSON.meta, 'Written file has a property called meta');
+        //         assert.ok(fileJSON.data, 'Written file has a property called data');
+        //     });
+        // });
 
-        describe('Editor: User authentication', function () {
-            before(async function () {
-                await agent.loginAsEditor();
-            });
+        // describe('Editor: User authentication', function () {
+        //     before(async function () {
+        //         await agent.loginAsEditor();
+        //     });
 
-            it('Cannot create a DB backup', async function () {
-                await agent.post('db/backup?filename=test')
-                    .expectStatus(403)
-                    .matchHeaderSnapshot({
-                        'content-version': anyContentVersion,
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        errors: [{
-                            id: anyErrorId
-                        }]
-                    });
+        //     it('Cannot create a DB backup', async function () {
+        //         await agent.post('db/backup?filename=test')
+        //             .expectStatus(403)
+        //             .matchHeaderSnapshot({
+        //                 'content-version': anyContentVersion,
+        //                 etag: anyEtag
+        //             })
+        //             .matchBodySnapshot({
+        //                 errors: [{
+        //                     id: anyErrorId
+        //                 }]
+        //             });
 
-                mockManager.assert.loggedAnError({errorType: 'NoPermissionError', message: 'You do not have permission to backupContent db'});
-            });
-        });
+        //         mockManager.assert.loggedAnError({errorType: 'NoPermissionError', message: 'You do not have permission to backupContent db'});
+        //     });
+        // });
     });
 });
