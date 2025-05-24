@@ -57,13 +57,7 @@ class AdminAPITestAgent extends TestAgent {
     }
 
     async loginAs(email, password, role) {
-<<<<<<< Updated upstream
-        // this.restoreDefaults();
-=======
-        // if (this.defaults.headers.Authorization) {
-        //     delete this.defaults.headers.Authorization;
-        // }
->>>>>>> Stashed changes
+        this.restoreDefaults();
 
         if (role) {
             let user = getRoleUserFromFixtures(role);
