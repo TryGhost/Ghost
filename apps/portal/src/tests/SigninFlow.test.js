@@ -154,7 +154,8 @@ describe('Signin', () => {
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signin',
-                integrityToken: 'testtoken'
+                integrityToken: 'testtoken',
+                locale: expect.any(String)
             });
         });
 
@@ -182,7 +183,8 @@ describe('Signin', () => {
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signin',
-                integrityToken: 'testtoken'
+                integrityToken: 'testtoken',
+                locale: expect.any(String)
             });
         });
 
@@ -210,7 +212,8 @@ describe('Signin', () => {
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signin',
-                integrityToken: 'testtoken'
+                integrityToken: 'testtoken',
+                locale: expect.any(String)
             });
         });
     });
@@ -252,7 +255,8 @@ describe('Signin', () => {
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signin',
-                integrityToken: 'testtoken'
+                integrityToken: 'testtoken',
+                locale: expect.any(String)
             });
         });
 
@@ -280,7 +284,8 @@ describe('Signin', () => {
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signin',
-                integrityToken: 'testtoken'
+                integrityToken: 'testtoken',
+                locale: expect.any(String)
             });
         });
 
@@ -308,7 +313,8 @@ describe('Signin', () => {
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signin',
-                integrityToken: 'testtoken'
+                integrityToken: 'testtoken',
+                locale: expect.any(String)
             });
         });
     });
