@@ -181,3 +181,8 @@ temp*.sql
 .yarncache
 .yarncachecopy
 .yarnhash
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
