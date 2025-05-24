@@ -11,7 +11,9 @@ const mockManager = require('./e2e-framework-mock-manager');
 
 const originalBeforeAll = mochaHooks.beforeAll;
 mochaHooks.beforeAll = async function () {
+    console.log('std-overrides beforeAll test');
     if (originalBeforeAll) {
+        console.log('std-overrides calling OG beforeAll');
         await originalBeforeAll();
     }
 

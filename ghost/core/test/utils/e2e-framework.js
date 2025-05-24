@@ -64,11 +64,9 @@ const startGhost = async (options = {}) => {
      * We never use the root content folder for testing!
      * We use a tmp folder.
      */
-    const contentFolder = path.join(os.tmpdir(), crypto.randomUUID(), 'ghost-test');
+    const contentFolder = configUtils.config.get('paths:contentPath');
+    console.log('startGhost contentFolder', contentFolder);
     await prepareContentFolder({contentFolder});
-
-    // NOTE: need to pass this config to the server instance
-    configUtils.set('paths:contentPath', contentFolder);
 
     // Adapter cache has to be cleared to avoid reusing cached adapter instances between restarts
     adapterManager.clearCache();

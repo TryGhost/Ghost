@@ -66,6 +66,7 @@ describe('Admin API', function () {
         });
 
         it('Contributor', async function () {
+            console.log('WHAT agent 1', agent);
             await agent.useStaffTokenForContributor();
             await agent
                 .get('users/me')
@@ -79,7 +80,12 @@ describe('Admin API', function () {
     describe('Integration Tokens', function () {
         describe('Zapier', function () {
             before(async function () {
+<<<<<<< Updated upstream
                 await agent.useZapierAdminAPIKey();
+=======
+                console.log('WHAT agent 2', agent);
+                await agent.useZapierAdminApiKey();
+>>>>>>> Stashed changes
             });
 
             it('Request to user/me will 404 as there is no user associated with the token', async function () {

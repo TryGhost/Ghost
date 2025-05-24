@@ -14,6 +14,7 @@ const exporter = require('../exporter');
  * @param {object} exportResult.data
  */
 const writeExportFile = async (exportResult) => {
+    console.log('AAAAAA contentPath', config.get('paths').contentPath);
     const filename = path.resolve(urlUtils.urlJoin(config.get('paths').contentPath, 'data', exportResult.filename));
 
     await fs.writeFile(filename, JSON.stringify(exportResult.data));
@@ -54,12 +55,15 @@ const backup = async function backup(options = {}) {
     logging.info('Creating database backup');
 
     const filename = await exporter.fileName(options);
+    console.log('AAASSS filename', filename);
     const data = await exporter.doExport(options);
 
     const filePath = await writeExportFile({
         data,
         filename
     });
+
+    console.log('BBBAAASSS filePath', filePath);
 
     logging.info(`Database backup written to ${filePath}`);
     return filePath;

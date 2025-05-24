@@ -4,11 +4,13 @@ const supertest = require('supertest');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
+const configUtils = require('../../utils/configUtils');
 
 describe('Actions API', function () {
     let request;
 
     before(async function () {
+        console.log('before action test', config.get('paths:contentPath'), configUtils.config.get('paths:contentPath'));
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request, 'integrations', 'api_keys');

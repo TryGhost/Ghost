@@ -35,7 +35,7 @@
     "test:unit": "c8 yarn test:unit:base",
     "test:unit:base": "yarn test:base './test/unit' --timeout=2000",
     "test:integration": "yarn test:base './test/integration' --timeout=10000",
-    "test:e2e": "yarn test:base ./test/e2e-* --timeout=15000",
+    "test:e2e": "yarn test:base --require=./test/utils/e2e-overrides.js ./test/e2e-* --timeout=15000",
     "test:regression": "yarn test:base './test/regression' --timeout=60000",
     "test:browser": "NODE_ENV=testing-browser playwright test",
     "test:browser:admin": "NODE_ENV=testing-browser  playwright test test/e2e-browser --project=admin",

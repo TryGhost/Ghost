@@ -4,6 +4,15 @@ const configUtils = {};
 
 configUtils.config = config;
 configUtils.defaultConfig = _.cloneDeep(config.get());
+configUtils.suiteConfig = _.cloneDeep(config.get());
+
+/**
+ * Set a config value for the whole test suite.
+ */
+configUtils.setForSuite = function (key, value) {
+    configUtils.suiteConfig[key] = value;
+    config.set(key, value);
+};
 
 /**
  * configUtils.set({});
@@ -37,6 +46,12 @@ configUtils.restore = async function () {
         });
     });
 
+    _.each(configUtils.suiteConfig, function (value, key) {
+        config.set(key, _.cloneDeep(value));
+    });
+};
+
+configUtils.fullRestore = async function () {
     _.each(configUtils.defaultConfig, function (value, key) {
         config.set(key, _.cloneDeep(value));
     });
