@@ -79,7 +79,7 @@ describe('Admin API', function () {
     describe('Integration Tokens', function () {
         describe('Zapier', function () {
             before(async function () {
-                await agent.useZapierAdminApiKey();
+                await agent.useZapierAdminAPIKey();
             });
 
             it('Request to user/me will 404 as there is no user associated with the token', async function () {
