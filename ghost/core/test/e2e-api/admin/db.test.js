@@ -1,5 +1,6 @@
-const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, matchers, assertions, mockManager} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyErrorId, anyEtag, anyContentLength, stringMatching} = matchers;
+const {cacheInvalidateHeaderNotSet, cacheInvalidateHeaderSetToWildcard} = assertions;
 const {exportedBodyLatest} = require('../../utils/fixtures/export/body-generator');
 const FormData = require('form-data');
 const fs = require('fs').promises;
@@ -18,23 +19,6 @@ const attachFile = async (name, filePath) => {
     });
 
     return formData;
-};
-
-// Helper function for x-cache-invalidate header assertions
-const assertCacheInvalidation = (pattern) => {
-    return ({headers}) => {
-        if (pattern === false) {
-            // Assert header should not exist
-            assert.equal(headers['x-cache-invalidate'], undefined,
-                'x-cache-invalidate header should not be present');
-        } else if (pattern) {
-            // Assert header matches pattern
-            assert.ok(headers['x-cache-invalidate'],
-                'x-cache-invalidate header should be present');
-            assert.equal(headers['x-cache-invalidate'], pattern,
-                `x-cache-invalidate should be "${pattern}"`);
-        }
-    };
 };
 
 describe('DB API', function () {
@@ -64,7 +48,7 @@ describe('DB API', function () {
                 'content-disposition': stringMatching(/^Attachment; filename="[A-Za-z0-9._-]+\.json"$/),
                 etag: anyEtag
             })
-            .expect(assertCacheInvalidation(false))
+            .expect(cacheInvalidateHeaderNotSet())
             .expect(({body}) => {
                 assert.equal(body.db.length, 1);
                 assert.ok(body.db[0].data);
@@ -90,11 +74,11 @@ describe('DB API', function () {
             .delete('db/')
             .expectStatus(204)
             .expectEmptyBody()
+            .expect(cacheInvalidateHeaderSetToWildcard())
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
                 etag: anyEtag
-            })
-            .expect(assertCacheInvalidation('/*'));
+            });
 
         // Check posts are gone
         await agent
