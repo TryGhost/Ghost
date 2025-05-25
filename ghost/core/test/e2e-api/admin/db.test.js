@@ -1,9 +1,27 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyContentLength} = matchers;
+const {anyContentVersion, anyErrorId, anyEtag, anyContentLength, stringMatching} = matchers;
 const {exportedBodyLatest} = require('../../utils/fixtures/export/body-generator');
 const FormData = require('form-data');
 const fs = require('fs').promises;
 const path = require('path');
+const assert = require('assert/strict');
+
+// Helper function for x-cache-invalidate header assertions
+const assertCacheInvalidation = (pattern) => {
+    return ({headers}) => {
+        if (pattern === false) {
+            // Assert header should not exist
+            assert.equal(headers['x-cache-invalidate'], undefined,
+                'x-cache-invalidate header should not be present');
+        } else if (pattern) {
+            // Assert header matches pattern
+            assert.ok(headers['x-cache-invalidate'],
+                'x-cache-invalidate header should be present');
+            assert.equal(headers['x-cache-invalidate'], pattern,
+                `x-cache-invalidate should be "${pattern}"`);
+        }
+    };
+};
 
 describe('DB API', function () {
     let agent;
@@ -23,53 +41,57 @@ describe('DB API', function () {
     });
 
     it('Can export a JSON database', async function () {
-        const {body, headers} = await agent
+        await agent
             .get('db/')
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
                 'content-length': anyContentLength,
+                'content-disposition': stringMatching(/^Attachment; filename="[A-Za-z0-9._-]+\.json"$/),
                 etag: anyEtag
+            })
+            .expect(assertCacheInvalidation(false))
+            .expect(({body}) => {
+                assert.equal(body.db.length, 1);
+                assert.ok(body.db[0].data);
+                const dataKeys = Object.keys(exportedBodyLatest().db[0].data).sort();
+
+                // NOTE: using `Object.keys` here instead of `should.have.only.keys` assertion
+                //       because when `have.only.keys` fails there's no useful diff
+                assert.deepEqual(Object.keys(body.db[0].data).sort(), dataKeys);
             });
-
-        // Check content-disposition header separately
-        headers['content-disposition'].should.match(/^Attachment; filename="[A-Za-z0-9._-]+\.json"$/);
-
-        // Validate the response body
-        body.db.should.have.length(1);
-
-        const dataKeys = Object.keys(exportedBodyLatest().db[0].data).sort();
-
-        // NOTE: using `Object.keys` here instead of `should.have.only.keys` assertion
-        //       because when `have.only.keys` fails there's no useful diff
-        Object.keys(body.db[0].data).sort().should.be.eql(dataKeys);
     });
 
     it('Can delete all content', async function () {
         // First check we have posts
-        const {body: initialBody} = await agent
+        await agent
             .get('posts/')
-            .expectStatus(200);
-
-        initialBody.posts.should.have.length(7);
+            .expectStatus(200)
+            .expect(({body}) => {
+                assert.equal(body.posts.length, 7);
+            });
 
         // Delete all content
         await agent
             .delete('db/')
             .expectStatus(204)
+            .expectEmptyBody()
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
                 etag: anyEtag
-            });
+            })
+            .expect(assertCacheInvalidation('/*'));
 
         // Check posts are gone
-        const {body: finalBody} = await agent
+        await agent
             .get('posts/')
-            .expectStatus(200);
-
-        finalBody.posts.should.have.length(0);
+            .expectStatus(200)
+            .expect(({body}) => {
+                assert.equal(body.posts.length, 0);
+            });
 
         // Check events were triggered
+        // Note: The new framework only supports basic event assertion without counts
         mockManager.assert.emittedEvent('post.unpublished');
         mockManager.assert.emittedEvent('post.deleted');
         mockManager.assert.emittedEvent('tag.deleted');
@@ -82,6 +104,10 @@ describe('DB API', function () {
                 domains: ['https://example.com']
             })
             .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
             .matchBodySnapshot({
                 db: [{
                     status: 'success'
@@ -102,10 +128,13 @@ describe('DB API', function () {
             .post('db/')
             .body(formData)
             .expectStatus(415)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
             .matchBodySnapshot({
                 errors: [{
-                    id: matchers.anyErrorId,
-                    message: 'The uploaded zip could not be read'
+                    id: anyErrorId
                 }]
             });
     });
@@ -123,10 +152,13 @@ describe('DB API', function () {
             .post('db/')
             .body(formData)
             .expectStatus(415)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
             .matchBodySnapshot({
                 errors: [{
-                    id: matchers.anyErrorId,
-                    message: 'The uploaded zip could not be read'
+                    id: anyErrorId
                 }]
             });
     });
