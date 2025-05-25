@@ -12,7 +12,7 @@ const {
 test.describe('i18n', () => {
     test.describe('Newsletter', () => {
         test('Changing the site language immediately translates strings in newsletters', async ({sharedPage}) => {
-            const postData = {title: 'TITLE OF MY POST.', body: 'BODY OF MY POST.'};
+            const postToCreate = {title: 'TITLE OF MY POST.', body: 'BODY OF MY POST.'};
 
             const adminPublicationPage = new AdminPublicationPage(sharedPage);
             await adminPublicationPage.visit();
@@ -20,7 +20,7 @@ test.describe('i18n', () => {
             await expect(adminPublicationPage.languageField).toHaveValue('fr');
 
             await new AdminDashboardPage(sharedPage).visit();
-            await createPostDraft(sharedPage, postData);
+            await createPostDraft(sharedPage, postToCreate);
 
             const adminPostsPage = new AdminPostsPage(sharedPage);
             await adminPostsPage.previewPost();
