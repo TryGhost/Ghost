@@ -5,6 +5,20 @@ const FormData = require('form-data');
 const fs = require('fs').promises;
 const path = require('path');
 const assert = require('assert/strict');
+const mime = require('mime-types');
+
+const attachFile = async (name, filePath) => {
+    const formData = new FormData();
+    const fullFilePath = path.join(__dirname, filePath);
+    const fileContent = await fs.readFile(fullFilePath);
+
+    formData.append(name, fileContent, {
+        filename: path.basename(fullFilePath),
+        contentType: mime.lookup(fullFilePath) || 'application/octet-stream'
+    });
+
+    return formData;
+};
 
 // Helper function for x-cache-invalidate header assertions
 const assertCacheInvalidation = (pattern) => {
@@ -108,6 +122,9 @@ describe('DB API', function () {
                 'content-version': anyContentVersion,
                 etag: anyEtag
             })
+            // @NOTE: the response format is temporary for test purposes
+            //        before feature graduates to GA, it should become
+            //        a more consistent format
             .matchBodySnapshot({
                 db: [{
                     status: 'success'
@@ -116,17 +133,9 @@ describe('DB API', function () {
     });
 
     it('Handles invalid zip file uploads (central directory)', async function () {
-        const formData = new FormData();
-        const filePath = path.join(__dirname, '../../utils/fixtures/import/zips/empty.zip');
-        const fileContent = await fs.readFile(filePath);
-        formData.append('importfile', fileContent, {
-            filename: 'empty.zip',
-            contentType: 'application/zip'
-        });
-
         await agent
             .post('db/')
-            .body(formData)
+            .body(await attachFile('importfile', '../../utils/fixtures/import/zips/empty.zip'))
             .expectStatus(415)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -140,17 +149,9 @@ describe('DB API', function () {
     });
 
     it('Handles invalid zip file uploads (malformed comments)', async function () {
-        const formData = new FormData();
-        const filePath = path.join(__dirname, '../../utils/fixtures/import/zips/malformed-comments.zip');
-        const fileContent = await fs.readFile(filePath);
-        formData.append('importfile', fileContent, {
-            filename: 'malformed-comments.zip',
-            contentType: 'application/zip'
-        });
-
         await agent
             .post('db/')
-            .body(formData)
+            .body(await attachFile('importfile', '../../utils/fixtures/import/zips/malformed-comments.zip'))
             .expectStatus(415)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
