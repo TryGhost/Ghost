@@ -22,6 +22,28 @@ const getUserApiKeyForRole = (role) => {
     return {apiKeyId, apiKeySecret};
 };
 
+const findIntegrationKey = async (slug) => {
+    const models = require('../../../core/server/models');
+    const integration = await models.Integration.findOne({slug}, {withRelated: 'api_keys'});
+    const key = integration.related('api_keys').first();
+    return {apiKeyId: key.get('id'), apiKeySecret: key.get('secret')};
+};
+
+const createValidAPIToken = (apiKeyId, apiKeySecret) => {
+    // Create a JWT token with the user's personal token
+    return jwt.sign(
+        {},
+        Buffer.from(apiKeySecret, 'hex'),
+        {
+            keyid: apiKeyId,
+            algorithm: 'HS256',
+            expiresIn: '5m',
+            audience: '/admin/',
+            issuer: apiKeyId
+        }
+    );
+};
+
 /**
  * @constructor
  * @param {Object} app  Ghost express app instance
@@ -35,6 +57,8 @@ class AdminAPITestAgent extends TestAgent {
     }
 
     async loginAs(email, password, role) {
+        this.resetAuth();
+
         if (role) {
             let user = getRoleUserFromFixtures(role);
             email = user.email;
@@ -87,31 +111,28 @@ class AdminAPITestAgent extends TestAgent {
     }
 
     /**
-     * Gets a staff token for the specified role and sets it as the Authorization header
-     * @param {String} role - The role to get a token for (owner, admin, editor, etc.)
-     * @returns {Promise<void>}
+     * Use
+     * @param {String} apiKeyId
+     * @param {String} apiKeySecret
      */
-    async useStaffTokenFor(role) {
-        const {apiKeyId, apiKeySecret} = getUserApiKeyForRole(role);
-
-        // Create a JWT token with the user's personal token
-        const token = jwt.sign(
-            {},
-            Buffer.from(apiKeySecret, 'hex'),
-            {
-                keyid: apiKeyId,
-                algorithm: 'HS256',
-                expiresIn: '5m',
-                audience: '/admin/',
-                issuer: apiKeyId
-            }
-        );
+    async useToken(apiKeyId, apiKeySecret) {
+        const token = createValidAPIToken(apiKeyId, apiKeySecret);
 
         // Set the Authorization header for subsequent requests
         this.defaults.headers = {
             ...this.defaults.headers,
             Authorization: `Ghost ${token}`
         };
+    }
+
+    /**
+     * Gets a staff token for the specified role and sets it as the Authorization header
+     * @param {String} role - The role to get a token for (owner, admin, editor, etc.)
+     * @returns {Promise<void>}
+     */
+    async useStaffTokenFor(role) {
+        const {apiKeyId, apiKeySecret} = getUserApiKeyForRole(role);
+        return this.useToken(apiKeyId, apiKeySecret);
     }
 
     /**
@@ -136,6 +157,16 @@ class AdminAPITestAgent extends TestAgent {
 
     async useStaffTokenForContributor() {
         await this.useStaffTokenFor('contributor');
+    }
+
+    async useBackupAdminAPIKey() {
+        const {apiKeyId ,apiKeySecret} = await findIntegrationKey('ghost-backup');
+        return this.useToken(apiKeyId, apiKeySecret);
+    }
+
+    async useZapierAdminAPIKey() {
+        const {apiKeyId ,apiKeySecret} = await findIntegrationKey('zapier');
+        return this.useToken(apiKeyId, apiKeySecret);
     }
 }
 
