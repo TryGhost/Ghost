@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/domain-events",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publishConfig": {
     "access": "public"
   },
@@ -21,7 +21,7 @@
     "lib"
   ],
   "devDependencies": {
-    "@tryghost/logging": "2.4.21",
+    "@tryghost/logging": "^2.4.22",
     "c8": "8.0.1",
     "mocha": "10.8.2",
     "should": "13.2.3"
