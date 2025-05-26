@@ -97,8 +97,8 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         return textColorForBackgroundColor(backgroundColor()).hex();
     };
 
-    const titleColor = () => {
-        const value = newsletter.title_color;
+    const postTitleColor = () => {
+        const value = newsletter.post_title_color;
 
         const validHex = /#([0-9a-f]{3}){1,2}$/i;
 
@@ -154,7 +154,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
     const colors = hasEmailCustomizationPrototype ? {
         backgroundColor: backgroundColor(),
         headerColor: headerColor(),
-        titleColor: titleColor() || undefined,
+        postTitleColor: postTitleColor() || undefined,
         sectionTitleColor: sectionTitleColor() || undefined,
         buttonColor: buttonColor() || undefined,
         linkColor: linkColor() || undefined,

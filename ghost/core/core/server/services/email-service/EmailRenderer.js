@@ -940,9 +940,9 @@ class EmailRenderer {
         return '#ffffff';
     }
 
-    #getTitleColor(newsletter, accentColor) {
+    #getPostTitleColor(newsletter, accentColor) {
         /** @type {'accent' | 'auto' | string | null} */
-        const value = newsletter.get('title_color');
+        const value = newsletter.get('post_title_color');
 
         const validHex = /#([0-9a-f]{3}){1,2}$/i;
 
@@ -1021,7 +1021,7 @@ class EmailRenderer {
 
         const backgroundColor = this.#getBackgroundColor(newsletter);
         const backgroundIsDark = textColorForBackgroundColor(backgroundColor).hex().toLowerCase() === '#ffffff';
-        const titleColor = this.#getTitleColor(newsletter, accentColor);
+        const postTitleColor = this.#getPostTitleColor(newsletter, accentColor);
         const titleWeight = this.#getTitleWeight(newsletter);
         const titleStrongWeight = this.#getTitleStrongWeight(titleWeight);
         const textColor = textColorForBackgroundColor(backgroundColor).hex();
@@ -1188,7 +1188,7 @@ class EmailRenderer {
             showBadge: newsletter.get('show_badge'),
             backgroundColor,
             backgroundIsDark,
-            titleColor,
+            postTitleColor,
             titleWeight,
             titleStrongWeight,
             textColor,

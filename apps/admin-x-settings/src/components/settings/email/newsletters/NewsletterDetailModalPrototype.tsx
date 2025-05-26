@@ -446,8 +446,8 @@ const Sidebar: React.FC<{
                             }
                         ]}
                         title='Post title color'
-                        value={newsletter.title_color}
-                        onChange={color => updateNewsletter({title_color: color})}
+                        value={newsletter.post_title_color}
+                        onChange={color => updateNewsletter({post_title_color: color})}
                     />
                     <ColorPickerField
                         direction='rtl'

@@ -42,7 +42,7 @@ const NewsletterPreviewContent: React.FC<{
     secondaryTextColor?: string;
     headerTextColor?: string;
     secondaryHeaderTextColor?: string;
-    titleColor?: string;
+    postTitleColor?: string;
     sectionTitleColor?: string;
     dividerColor?: string;
     buttonColor?: string;
@@ -85,7 +85,7 @@ const NewsletterPreviewContent: React.FC<{
     secondaryTextColor,
     headerTextColor,
     secondaryHeaderTextColor,
-    titleColor,
+    postTitleColor,
     sectionTitleColor,
     dividerColor,
     buttonColor,
@@ -185,7 +185,7 @@ const NewsletterPreviewContent: React.FC<{
                                                 titleFontWeight === 'bold' && 'font-bold',
                                                 titleAlignment === 'center' ? 'text-center' : 'text-left',
                                                 showExcerpt ? 'mb-2' : 'mb-8'
-                                            )} style={{color: titleColor}}>Delivery Apps Are Changing Your Neighbourhood</h2>
+                                            )} style={{color: postTitleColor}}>Delivery Apps Are Changing Your Neighbourhood</h2>
                                             {showExcerpt && (
                                                 <p className={excerptClasses} style={{color: headerTextColor}}>Delivery apps are thriving—local restaurants and workers are paying the price.</p>
                                             )}
@@ -197,7 +197,7 @@ const NewsletterPreviewContent: React.FC<{
                                                 titleFontCategory === 'serif' && 'font-serif',
                                                 titleAlignment === 'center' ? 'text-center' : 'text-left',
                                                 showExcerpt ? 'mb-2' : 'mb-8'
-                                            )} style={{color: titleColor}}>
+                                            )} style={{color: postTitleColor}}>
                                                 Your email newsletter
                                             </h2>
                                             {showExcerpt && (

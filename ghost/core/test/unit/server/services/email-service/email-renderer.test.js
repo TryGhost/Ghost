@@ -2241,7 +2241,7 @@ describe('Email renderer', function () {
             }
         });
 
-        it('Uses the correct title colors based on settings and background color', async function () {
+        it('Uses the correct post title colors based on settings and background color', async function () {
             settings.accent_color = '#DEF456';
             const tests = [
                 {input: '#BADA55', expected: '#BADA55'},
@@ -2252,10 +2252,10 @@ describe('Email renderer', function () {
 
             for (const test of tests) {
                 const data = await templateDataWithSettings({
-                    title_color: test.input,
+                    post_title_color: test.input,
                     background_color: test.background_color
                 });
-                assert.equal(data.titleColor, test.expected);
+                assert.equal(data.postTitleColor, test.expected);
             }
         });
 
