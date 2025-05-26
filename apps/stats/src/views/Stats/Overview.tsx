@@ -11,6 +11,8 @@ interface OverviewKPICardProps {
     title: string;
     iconName: keyof typeof LucideIcon;
     description: string;
+    diffDirection?: 'up' | 'down' | 'same';
+    diffValue?: string;
     color?: string;
     formattedValue: string;
     children?: React.ReactNode;
@@ -22,6 +24,8 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     iconName,
     description,
     // color,
+    diffDirection,
+    diffValue,
     formattedValue,
     children
 }) => {
@@ -42,7 +46,11 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
                     {title}
                 </KpiCardHeaderLabel>
                 <KpiCardHeaderContent>
-                    <KpiCardHeaderValue>{formattedValue}</KpiCardHeaderValue>
+                    <KpiCardHeaderValue
+                        diffDirection={diffDirection}
+                        diffValue={diffValue}
+                        value={formattedValue}
+                    />
                 </KpiCardHeaderContent>
             </KpiCardHeader>
             <CardContent>
@@ -132,6 +140,8 @@ const Overview: React.FC = () => {
                 <div className='grid grid-cols-1 gap-8 lg:grid-cols-3'>
                     <OverviewKPICard
                         description='Number of individual people who visited your website'
+                        diffDirection='down'
+                        diffValue='-2.4%'
                         formattedValue='2,456'
                         iconName='MousePointer'
                         linkto='/web/'
@@ -142,6 +152,8 @@ const Overview: React.FC = () => {
 
                     <OverviewKPICard
                         description='How number of members of your publication changed over time'
+                        diffDirection='up'
+                        diffValue='1.1%'
                         formattedValue='31,329'
                         iconName='User'
                         linkto='/growth/'
@@ -152,6 +164,8 @@ const Overview: React.FC = () => {
 
                     <OverviewKPICard
                         description='Monthly recurring revenue changes over time'
+                        diffDirection='up'
+                        diffValue='1.2%'
                         formattedValue='$2,456'
                         iconName='DollarSign'
                         linkto='/growth/'
