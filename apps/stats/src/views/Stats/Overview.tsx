@@ -3,11 +3,56 @@ import React from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, KpiCardHeader, KpiCardHeaderContent, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, KpiCardHeader, KpiCardHeaderContent, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon} from '@tryghost/shade';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
-const Overview: React.FC = () => {
+interface OverviewKPICardProps {
+    linkto: string;
+    title: string;
+    iconName: keyof typeof LucideIcon;
+    description: string;
+    color?: string;
+    formattedValue: string;
+    children?: React.ReactNode;
+}
+
+const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
+    linkto,
+    title,
+    iconName,
+    description,
+    // color,
+    formattedValue,
+    children
+}) => {
     const navigate = useNavigate();
+    const IconComponent = LucideIcon[iconName] as LucideIcon.LucideIcon;
+
+    return (
+        <Card className='hover:cursor-pointer hover:bg-accent' onClick={() => {
+            navigate(linkto);
+        }}>
+            <CardHeader className='hidden'>
+                <CardTitle>{title}</CardTitle>
+                <CardDescription>{description}</CardDescription>
+            </CardHeader>
+            <KpiCardHeader className='grow border-none'>
+                <KpiCardHeaderLabel>
+                    {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
+                    {title}
+                </KpiCardHeaderLabel>
+                <KpiCardHeaderContent>
+                    <KpiCardHeaderValue>{formattedValue}</KpiCardHeaderValue>
+                </KpiCardHeaderContent>
+            </KpiCardHeader>
+            <CardContent>
+                {children}
+            </CardContent>
+        </Card>
+    );
+};
+
+const Overview: React.FC = () => {
     // const tabConfig = {
     //     visitors: {
     //         color: 'hsl(var(--chart-blue))'
@@ -30,66 +75,35 @@ const Overview: React.FC = () => {
             </StatsHeader>
             <StatsView isLoading={false}>
                 <div className='grid grid-cols-1 gap-8 lg:grid-cols-3'>
-                    <Card className='hover:cursor-pointer hover:bg-accent' onClick={() => {
-                        navigate('/web/');
-                    }}>
-                        <CardHeader className='hidden'>
-                            <CardTitle>Unique visitors</CardTitle>
-                            <CardDescription>Number of individual people who visited your website</CardDescription>
-                        </CardHeader>
-                        <KpiCardHeader className='grow border-none'>
-                            <KpiCardHeaderLabel>
-                                <LucideIcon.MousePointer size={16} strokeWidth={1.5} />
-                                    Unique visitors
-                            </KpiCardHeaderLabel>
-                            <KpiCardHeaderContent>
-                                <KpiCardHeaderValue>3,784</KpiCardHeaderValue>
-                            </KpiCardHeaderContent>
-                        </KpiCardHeader>
-                        <CardContent>
-                            Unique visitors chart
-                        </CardContent>
-                    </Card>
-                    <Card className='hover:cursor-pointer hover:bg-accent' onClick={() => {
-                        navigate('/growth/');
-                    }}>
-                        <CardHeader className='hidden'>
-                            <CardTitle>Members</CardTitle>
-                            <CardDescription>How number of members of your publication changed over time</CardDescription>
-                        </CardHeader>
-                        <KpiCardHeader className='grow border-none'>
-                            <KpiCardHeaderLabel>
-                                <LucideIcon.User size={16} strokeWidth={1.5} />
-                                    Members
-                            </KpiCardHeaderLabel>
-                            <KpiCardHeaderContent>
-                                <KpiCardHeaderValue>1,834</KpiCardHeaderValue>
-                            </KpiCardHeaderContent>
-                        </KpiCardHeader>
-                        <CardContent>
-                            Members chart
-                        </CardContent>
-                    </Card>
-                    <Card className='hover:cursor-pointer hover:bg-accent' onClick={() => {
-                        navigate('/growth/');
-                    }}>
-                        <CardHeader className='hidden'>
-                            <CardTitle>MRR</CardTitle>
-                            <CardDescription>Monthly recurring revenue changes over time</CardDescription>
-                        </CardHeader>
-                        <KpiCardHeader className='grow border-none'>
-                            <KpiCardHeaderLabel>
-                                <LucideIcon.DollarSign size={16} strokeWidth={1.5} />
-                                    MRR
-                            </KpiCardHeaderLabel>
-                            <KpiCardHeaderContent>
-                                <KpiCardHeaderValue>$2,789</KpiCardHeaderValue>
-                            </KpiCardHeaderContent>
-                        </KpiCardHeader>
-                        <CardContent>
-                            MRR chart
-                        </CardContent>
-                    </Card>
+                    <OverviewKPICard
+                        description='Number of individual people who visited your website'
+                        formattedValue='2,456'
+                        iconName='MousePointer'
+                        linkto='/web/'
+                        title='Unique visitors'
+                    >
+                        Chart
+                    </OverviewKPICard>
+
+                    <OverviewKPICard
+                        description='How number of members of your publication changed over time'
+                        formattedValue='1,456'
+                        iconName='User'
+                        linkto='/growth/'
+                        title='Members'
+                    >
+                        Chart
+                    </OverviewKPICard>
+
+                    <OverviewKPICard
+                        description='Monthly recurring revenue changes over time'
+                        formattedValue='1,456'
+                        iconName='DollarSign'
+                        linkto='/growth/'
+                        title='MRR'
+                    >
+                        Chart
+                    </OverviewKPICard>
                 </div>
                 <div className='grid grid-cols-1 gap-8 lg:grid-cols-3'>
                     <Card>
@@ -97,9 +111,40 @@ const Overview: React.FC = () => {
                             <CardTitle>Latest post performance</CardTitle>
                             <CardDescription className='hidden'>How your last post did</CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            Post performance
+                        <CardContent className='flex flex-col items-stretch gap-6'>
+                            <div className='flex flex-col items-stretch gap-3'>
+                                <div className='aspect-video w-full rounded-md bg-cover' style={{
+                                    backgroundImage: 'url(https://picsum.photos/1920/1080?random)'
+                                }}></div>
+                            </div>
+                            <div className='flex flex-col items-stretch gap-2 text-sm'>
+                                <div className='flex items-center justify-between'>
+                                    <div className='flex items-center gap-1 font-medium text-muted-foreground'>
+                                        <LucideIcon.Eye size={16} strokeWidth={1.5} />
+                                        Views
+                                    </div>
+                                    <div className='font-mono'>1,234</div>
+                                </div>
+                                <div className='flex items-center justify-between'>
+                                    <div className='flex items-center gap-1 font-medium text-muted-foreground'>
+                                        <LucideIcon.MailOpen size={16} strokeWidth={1.5} />
+                                        Open rate
+                                    </div>
+                                    <div className='font-mono'>1,234</div>
+                                </div>
+                                <div className='flex items-center justify-between'>
+                                    <div className='flex items-center gap-1 font-medium text-muted-foreground'>
+                                        <LucideIcon.User size={16} strokeWidth={1.5} />
+                                        Members
+                                    </div>
+                                    <div className='font-mono'>1,234</div>
+                                </div>
+                            </div>
                         </CardContent>
+                        <CardFooter className='flex items-center justify-between gap-3'>
+                            <Button><LucideIcon.Share /> Share post</Button>
+                            <Button variant='outline'><LucideIcon.BarChart />Post analytics</Button>
+                        </CardFooter>
                     </Card>
                     <Card className='lg:col-span-2'>
                         <CardHeader className='hidden'>
