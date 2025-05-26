@@ -6,7 +6,6 @@ class AdminPostsPage extends AdminPage {
 
     /** @private {import('@playwright/test').Locator} Locator for email preview buttons */
     #emailPreviewPostButtons = null;
-    #emailPreviewPostButtonsSelector = '[data-test-button="email-preview"]';
 
     /**
      * @param {import('@playwright/test').Page} page - playwright page object
@@ -15,7 +14,7 @@ class AdminPostsPage extends AdminPage {
         super(page, '/ghost/#/posts');
 
         this.#previewPostButtons = page.locator('[data-test-button="publish-preview"]');
-        this.#emailPreviewPostButtons = page.locator(this.#emailPreviewPostButtonsSelector);
+        this.#emailPreviewPostButtons = page.locator('[data-test-button="email-preview"]');
     }
 
     async previewPost() {
@@ -23,7 +22,7 @@ class AdminPostsPage extends AdminPage {
     }
 
     async emailPreviewForPost() {
-        await this.page.waitForSelector(this.#emailPreviewPostButtonsSelector);
+        await this.#emailPreviewPostButtons.waitFor({state: 'visible'});
         await this.#emailPreviewPostButtons.first().click();
     }
 }
