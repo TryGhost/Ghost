@@ -18,6 +18,7 @@ Object {
       "contentVisibilityAlpha": true,
       "customFonts": true,
       "editorExcerpt": true,
+      "emailCustomization": true,
       "emailCustomizationAlpha": true,
       "emailCustomizationPrototype": true,
       "explore": true,

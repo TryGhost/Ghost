@@ -1,125 +1,5 @@
 import moment from 'moment-timezone';
 import {STATS_RANGE_OPTIONS} from '@src/utils/constants';
-import {formatDisplayDate} from '@tryghost/shade';
-
-/**
- * Calculates the Y-axis range with appropriate padding
- */
-export const getYRange = (data: { value: number }[]): {min: number; max: number} => {
-    if (!data.length) {
-        return {min: 0, max: 1};
-    }
-
-    const values = data.map(d => Number(d.value));
-    let min = Math.min(...values);
-    let max = Math.max(...values);
-
-    // If min and max are equal, create a range around the value
-    if (min === max) {
-        const value = min;
-        // For zero, use a range of 0 to 1
-        if (value === 0) {
-            min = 0;
-            max = 1;
-        } else {
-            // For non-zero values, create a 10% range around the value
-            const range = Math.abs(value) * 0.1;
-            min = Math.max(0, value - range);
-            max = value + range;
-        }
-    } else {
-        // Ensure minimum 10% range between min and max
-        const range = max - min;
-        const minRange = Math.max(Math.abs(max), Math.abs(min)) * 0.1;
-        if (range < minRange) {
-            const padding = (minRange - range) / 2;
-            min = Math.max(0, min - padding);
-            max += padding;
-        }
-    }
-
-    return {min, max};
-};
-
-/**
- * Calculates Y-axis ticks based on the data values
- */
-export const getYTicks = (data: { value: number }[]): number[] => {
-    if (!data.length) {
-        return [];
-    }
-
-    const {min, max} = getYRange(data);
-
-    // Calculate the range and initial step
-    const range = max - min;
-    const initialStep = Math.pow(10, Math.floor(Math.log10(range)));
-
-    // Try different step sizes until we get 6 or fewer ticks
-    let step = initialStep;
-    let numTicks = Math.ceil(range / step) + 1;
-
-    // If we have too many ticks, increase the step size
-    while (numTicks > 6) {
-        step *= 2;
-        numTicks = Math.ceil(range / step) + 1;
-    }
-
-    // Generate the ticks
-    const ticks = [];
-    for (let i = Math.floor(min / step) * step; i <= Math.ceil(max / step) * step; i += step) {
-        ticks.push(i);
-    }
-
-    return ticks;
-};
-
-/**
- * Calculates the width needed for the Y-axis based on the formatted tick values
- */
-export const calculateYAxisWidth = (ticks: number[], formatter: (value: number) => string): number => {
-    if (!ticks.length) {
-        return 40;
-    }
-
-    // Get the longest formatted tick value
-    const maxFormattedLength = Math.max(...ticks.map(tick => formatter(tick).length));
-
-    // Approximate width based on character count (assuming monospace font)
-    // Add padding for safety
-    const width = Math.max(20, maxFormattedLength * 8 + 8);
-    return width;
-};
-
-/**
- * Return today and startdate for charts
- */
-export const getRangeDates = (range: number) => {
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const endDate = moment().tz(timezone).endOf('day');
-    let startDate;
-    
-    if (range === -1) {
-        // Year to date - use January 1st of current year
-        startDate = moment().tz(timezone).startOf('year');
-    } else {
-        // Regular range calculation
-        startDate = moment().tz(timezone).subtract(range - 1, 'days').startOf('day');
-    }
-    
-    return {startDate, endDate, timezone};
-};
-
-/**
- * Converts a country code to corresponding flag emoji
- */
-export function getCountryFlag(countryCode:string) {
-    if (!countryCode || countryCode === null || countryCode.toUpperCase() === 'NULL' || countryCode === 'ᴺᵁᴸᴸ') {
-        return '🏳️';
-    }
-    return countryCode.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)
-    );
-}
 
 /**
  * Returns additional text for subheads
@@ -138,52 +18,75 @@ export const getPeriodText = (range: number): string => {
     return '';
 };
 
+type AggregationType = 'sum' | 'avg' | 'exact';
+
+type AggregationStrategy = 'none' | 'weekly' | 'monthly' | 'monthly-exact';
+
 /**
- * Sanitizes chart data based on the date range
- * - For ranges between 91-356 days: shows weekly changes
- * - For ranges above 356 days or YTD: shows monthly changes  
- * - For other ranges: keeps data as is
- * @param data The chart data to sanitize
- * @param range The date range in days
- * @param fieldName The name of the field to use for calculations
- * @param aggregationType The type of aggregation to use: 'sum', 'avg', or 'exact'
+ * Calculates the span between two dates in days
  */
-export const sanitizeChartData = <T extends {date: string}>(data: T[], range: number, fieldName: keyof T = 'value' as keyof T, aggregationType: 'sum' | 'avg' | 'exact' = 'avg'): T[] => {
-    if (!data.length) {
-        return [];
+function calculateDateSpan(startDate: string, endDate: string): number {
+    return moment(endDate).diff(moment(startDate), 'days');
+}
+
+/**
+ * Gets a standardized month key for grouping
+ */
+function getMonthKey(date: string): string {
+    return moment(date).format('YYYY-MM');
+}
+
+/**
+ * Checks if a date is in the same month as a reference date
+ */
+function isInSameMonth(date: string, referenceDate: string): boolean {
+    return moment(date).isSame(moment(referenceDate), 'month');
+}
+
+/**
+ * Checks if a date is in the same week as a reference date
+ */
+function isInSameWeek(date: string, referenceDate: string): boolean {
+    return moment(date).isSame(moment(referenceDate), 'week');
+}
+
+/**
+ * Calculates the aggregated value based on aggregation type
+ */
+function calculateAggregatedValue(total: number, count: number, lastValue: number, type: AggregationType): number {
+    switch (type) {
+    case 'sum':
+        return total;
+    case 'avg':
+        return count > 0 ? total / count : 0;
+    case 'exact':
+        return lastValue;
     }
+}
 
-    // Helper function to detect potential bulk import events
-    const detectBulkImports = (items: Array<T>) => {
-        if (items.length <= 1) {
-            return items;
-        }
-
-        // Calculate average and standard deviation
-        const values = items.map(item => Number(item[fieldName]));
-        const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
-        const stdDev = Math.sqrt(
-            values.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / values.length
-        );
-
-        // Consider values that are more than 3 standard deviations from mean as outliers
-        const threshold = avg + (3 * stdDev);
-        
-        return items.map((item) => {
-            const value = Number(item[fieldName]);
-            // If value is an outlier, mark it with a flag
-            return {
-                ...item,
-                _isOutlier: value > threshold && value > avg * 5 // Ensure it's both statistically significant and at least 5x average
-            };
-        });
+/**
+ * Calculates outlier threshold using standard deviation
+ */
+function calculateOutlierThreshold(values: number[]): {threshold: number; average: number} {
+    // Calculate median instead of mean to be more robust against extreme outliers
+    const sortedValues = [...values].sort((a, b) => a - b);
+    const median = sortedValues[Math.floor(sortedValues.length / 2)];
+    
+    // Calculate MAD (Median Absolute Deviation) which is more robust than standard deviation
+    const deviations = values.map(val => Math.abs(val - median));
+    const mad = deviations.sort((a, b) => a - b)[Math.floor(deviations.length / 2)];
+    
+    return {
+        threshold: median + (5 * mad), // Using 5 times MAD as threshold
+        average: median
     };
+}
 
-    // Calculate the actual date span to determine appropriate aggregation
-    const dateSpan = data.length > 1 ? 
-        moment(data[data.length - 1].date).diff(moment(data[0].date), 'days') : 0;
-
-    // For YTD, use weekly aggregation if more than 60 days, or monthly if more than 150 days
+/**
+ * Determines the appropriate aggregation strategy based on range and date span
+ */
+function determineAggregationStrategy(range: number, dateSpan: number, aggregationType: AggregationType): AggregationStrategy {
+    // Normalize YTD range
     if (range === -1) {
         if (dateSpan > 150) {
             range = 400; // Force monthly aggregation
@@ -192,193 +95,232 @@ export const sanitizeChartData = <T extends {date: string}>(data: T[], range: nu
         }
     }
 
-    // For 'exact' aggregation type (like subscriber counts), always use month-end or key points approach
+    // For 'exact' aggregation type with long ranges
     if (aggregationType === 'exact' && (range > 356 || (range === -1 && dateSpan > 150))) {
-        // For long ranges with cumulative data, we'll use a smarter approach
-        // that preserves important data points while reducing noise
-        
-        const importantPoints = new Map<string, T>();
-        
-        // First, identify month boundaries (first/last day of each month)
-        data.forEach((item) => {
-            const itemDate = moment(item.date);
-            const monthKey = itemDate.format('YYYY-MM');
-            
-            // Keep the first day of each month
-            const firstDayKey = `${monthKey}-first`;
-            if (!importantPoints.has(firstDayKey) || 
-                moment(item.date).isBefore(moment(importantPoints.get(firstDayKey)!.date))) {
-                importantPoints.set(firstDayKey, {...item});
-            }
-            
-            // Keep the last day of each month
-            const lastDayKey = `${monthKey}-last`;
-            if (!importantPoints.has(lastDayKey) || 
-                moment(item.date).isAfter(moment(importantPoints.get(lastDayKey)!.date))) {
-                importantPoints.set(lastDayKey, {...item});
-            }
-        });
-        
-        // Also identify significant changes (>2% increase from previous)
-        let lastValue = Number(data[0][fieldName]);
-        data.forEach((item) => {
-            const currentValue = Number(item[fieldName]);
-            // If there's a significant increase from the last captured value
-            if (currentValue > lastValue * 1.02) { // 2% threshold
-                importantPoints.set(`significant-${item.date}`, {...item});
-                lastValue = currentValue;
-            }
-        });
-        
-        // Always include first and last points in the dataset
-        importantPoints.set('first', {...data[0]});
-        importantPoints.set('last', {...data[data.length - 1]});
-        
-        // Convert to sorted array
-        const result = Array.from(importantPoints.values())
-            .sort((a, b) => moment(a.date).diff(moment(b.date)));
-            
-        return detectBulkImports(result);
+        return 'monthly';
     }
-    
+
+    // For weekly aggregation
     if ((range >= 91 && range <= 356) || (range === -1 && dateSpan > 60 && dateSpan <= 150)) {
-        // Weekly changes
-        const weeklyData: T[] = [];
-        let currentWeek = moment(data[0].date).startOf('week');
-        let weekTotal = 0;
-        let weekCount = 0;
-        let lastValue = 0;
-
-        data.forEach((item, index) => {
-            const itemDate = moment(item.date);
-            if (itemDate.isSame(currentWeek, 'week')) {
-                weekTotal += Number(item[fieldName]);
-                weekCount += 1;
-                lastValue = Number(item[fieldName]);
-            } else {
-                // Add the value for the previous week
-                weeklyData.push({
-                    ...data[index - 1],
-                    date: currentWeek.format('YYYY-MM-DD'),
-                    [fieldName]: aggregationType === 'sum' ? weekTotal :
-                        aggregationType === 'avg' ? (weekCount > 0 ? weekTotal / weekCount : 0) :
-                            lastValue
-                } as T);
-
-                // Start new week
-                currentWeek = itemDate.startOf('week');
-                weekTotal = Number(item[fieldName]);
-                weekCount = 1;
-                lastValue = Number(item[fieldName]);
-            }
-
-            // Handle the last item
-            if (index === data.length - 1) {
-                weeklyData.push({
-                    ...item,
-                    date: currentWeek.format('YYYY-MM-DD'),
-                    [fieldName]: aggregationType === 'sum' ? weekTotal :
-                        aggregationType === 'avg' ? (weekCount > 0 ? weekTotal / weekCount : 0) :
-                            lastValue
-                } as T);
-            }
-        });
-
-        return detectBulkImports(weeklyData);
-    } else if (range > 356 || (range === -1 && dateSpan > 150)) {
-        // Monthly changes
-        const monthlyData: T[] = [];
-        let currentMonth = moment(data[0].date).startOf('month');
-        let monthTotal = 0;
-        let monthCount = 0;
-        let lastValue = 0;
-
-        // For cumulative data like subscriber counts, we take the last value for each month
-        if (aggregationType === 'exact') {
-            const monthMap = new Map<string, T>();
-            
-            // Group by month and keep the latest entry for each month
-            data.forEach((item) => {
-                const itemDate = moment(item.date);
-                const monthKey = itemDate.format('YYYY-MM');
-                
-                if (!monthMap.has(monthKey) || moment(item.date).isAfter(moment(monthMap.get(monthKey)!.date))) {
-                    monthMap.set(monthKey, {...item});
-                }
-            });
-            
-            // Convert map to sorted array
-            const sortedMonths = Array.from(monthMap.entries())
-                .sort(([a], [b]) => a.localeCompare(b))
-                .map(([, value]) => value);
-                
-            return detectBulkImports(sortedMonths);
-        }
-        
-        // For non-cumulative data (sum/avg)
-        data.forEach((item, index) => {
-            const itemDate = moment(item.date);
-            const value = Number(item[fieldName]);
-            
-            if (itemDate.isSame(currentMonth, 'month')) {
-                // Simple heuristic to detect bulk imports
-                const isLikelyOutlier = aggregationType === 'sum' && value > 10000;
-                if (!isLikelyOutlier) {
-                    monthTotal += value;
-                    monthCount += 1;
-                }
-                lastValue = value;
-            } else {
-                // Add the value for the previous month
-                monthlyData.push({
-                    ...data[index - 1],
-                    date: currentMonth.format('YYYY-MM-DD'),
-                    [fieldName]: aggregationType === 'sum' 
-                        ? monthTotal // Use the accumulated total
-                        : aggregationType === 'avg' 
-                            ? (monthCount > 0 ? monthTotal / monthCount : 0) 
-                            : lastValue
-                } as T);
-
-                // Start new month
-                currentMonth = itemDate.startOf('month');
-                monthTotal = value;
-                monthCount = 1;
-                lastValue = value;
-            }
-
-            // Handle the last item
-            if (index === data.length - 1) {
-                monthlyData.push({
-                    ...item,
-                    date: currentMonth.format('YYYY-MM-DD'),
-                    [fieldName]: aggregationType === 'sum' 
-                        ? monthTotal
-                        : aggregationType === 'avg' 
-                            ? (monthCount > 0 ? monthTotal / monthCount : 0) 
-                            : lastValue
-                } as T);
-            }
-        });
-
-        return detectBulkImports(monthlyData);
+        return 'weekly';
     }
 
-    // Return data as is for other ranges
-    return detectBulkImports(data);
-};
+    // For monthly aggregation
+    if (range > 356 || (range === -1 && dateSpan > 150)) {
+        return 'monthly';
+    }
+
+    return 'none';
+}
 
 /**
- * Formats a date based on the range
- * - For ranges above 365 days: shows month and year (e.g. "Apr 2025")
- * - For ranges above 91 days: shows "Week of [date]"
- * - For other ranges: uses the default formatDisplayDate
+ * Detects potential bulk import events in the data
  */
-export const formatDisplayDateWithRange = (date: string, range: number): string => {
-    if (range > 365) {
-        return moment(date).format('MMM YYYY');
-    } else if (range >= 91) {
-        return `Week of ${formatDisplayDate(date)}`;
+function detectBulkImports<T extends {date: string}>(items: T[], fieldName: keyof T): T[] {
+    if (items.length <= 1) {
+        return items;
     }
-    return formatDisplayDate(date);
+
+    const values = items.map(item => Number(item[fieldName]));
+    const {threshold, average} = calculateOutlierThreshold(values);
+
+    return items.map((item) => {
+        const value = Number(item[fieldName]);
+        return {
+            ...item,
+            _isOutlier: value > threshold || value > average * 10
+        };
+    });
+}
+
+/**
+ * Aggregates data by week
+ */
+function aggregateByWeek<T extends {date: string}>(data: T[], fieldName: keyof T, aggregationType: AggregationType): T[] {
+    const weeklyData: T[] = [];
+    let currentWeek = moment(data[0].date).startOf('week');
+    let weekTotal = 0;
+    let weekCount = 0;
+    let lastValue = 0;
+
+    data.forEach((item, index) => {
+        const itemDate = moment(item.date);
+        if (isInSameWeek(itemDate.format('YYYY-MM-DD'), currentWeek.format('YYYY-MM-DD'))) {
+            weekTotal += Number(item[fieldName]);
+            weekCount += 1;
+            lastValue = Number(item[fieldName]);
+        } else {
+            weeklyData.push({
+                ...data[index - 1],
+                date: currentWeek.format('YYYY-MM-DD'),
+                [fieldName]: calculateAggregatedValue(weekTotal, weekCount, lastValue, aggregationType)
+            } as T);
+
+            currentWeek = itemDate.startOf('week');
+            weekTotal = Number(item[fieldName]);
+            weekCount = 1;
+            lastValue = Number(item[fieldName]);
+        }
+
+        if (index === data.length - 1) {
+            weeklyData.push({
+                ...item,
+                date: currentWeek.format('YYYY-MM-DD'),
+                [fieldName]: calculateAggregatedValue(weekTotal, weekCount, lastValue, aggregationType)
+            } as T);
+        }
+    });
+
+    return weeklyData;
+}
+
+/**
+ * Aggregates data by month using simple aggregation (sum/avg)
+ */
+function aggregateByMonth<T extends {date: string}>(data: T[], fieldName: keyof T, aggregationType: AggregationType): T[] {
+    const monthlyData: T[] = [];
+    let currentMonth = moment(data[0].date).startOf('month');
+    let monthTotal = 0;
+    let monthCount = 0;
+    let lastValue = 0;
+    let lastItem: T | null = null;
+
+    data.forEach((item, index) => {
+        const itemDate = moment(item.date);
+        const value = Number(item[fieldName]);
+        const isLikelyOutlier = aggregationType === 'sum' && value > 10000;
+
+        if (isInSameMonth(itemDate.format('YYYY-MM-DD'), currentMonth.format('YYYY-MM-DD'))) {
+            if (!isLikelyOutlier) {
+                monthTotal += value;
+                monthCount += 1;
+            }
+            lastValue = value;
+            lastItem = item;
+        } else {
+            if (aggregationType === 'exact' && lastItem) {
+                monthlyData.push({
+                    ...lastItem,
+                    [fieldName]: lastValue
+                } as T);
+            } else {
+                monthlyData.push({
+                    ...data[index - 1],
+                    date: currentMonth.format('YYYY-MM-DD'),
+                    [fieldName]: calculateAggregatedValue(monthTotal, monthCount, lastValue, aggregationType)
+                } as T);
+            }
+
+            currentMonth = itemDate.startOf('month');
+            monthTotal = isLikelyOutlier ? 0 : value;
+            monthCount = isLikelyOutlier ? 0 : 1;
+            lastValue = value;
+            lastItem = item;
+        }
+
+        if (index === data.length - 1) {
+            if (aggregationType === 'exact' && lastItem) {
+                monthlyData.push({
+                    ...lastItem,
+                    [fieldName]: lastValue
+                } as T);
+            } else {
+                monthlyData.push({
+                    ...item,
+                    date: currentMonth.format('YYYY-MM-DD'),
+                    [fieldName]: calculateAggregatedValue(monthTotal, monthCount, lastValue, aggregationType)
+                } as T);
+            }
+        }
+    });
+
+    return monthlyData;
+}
+
+/**
+ * Aggregates data by month for exact values, preserving important points
+ */
+function aggregateByMonthExact<T extends {date: string}>(data: T[], fieldName: keyof T): T[] {
+    const importantPoints = new Map<string, T>();
+
+    // Add first and last points
+    importantPoints.set(data[0].date, {...data[0]});
+    importantPoints.set(data[data.length - 1].date, {...data[data.length - 1]});
+
+    // Add month boundaries and track significant changes
+    let prevValue = Number(data[0][fieldName]);
+    data.forEach((item, index) => {
+        if (index === 0) {
+            return; // Skip first item as it's already added
+        }
+
+        const itemDate = moment(item.date);
+        const currentValue = Number(item[fieldName]);
+        const isMonthStart = itemDate.date() === 1;
+        const isMonthEnd = itemDate.clone().endOf('month').format('YYYY-MM-DD') === item.date;
+        const isSignificantChange = currentValue > prevValue * 1.02 || currentValue < prevValue * 0.98;
+
+        if (isMonthStart || isMonthEnd || isSignificantChange) {
+            importantPoints.set(item.date, {...item});
+        }
+        
+        prevValue = currentValue;
+    });
+
+    return Array.from(importantPoints.values())
+        .sort((a, b) => moment(a.date).diff(moment(b.date)));
+}
+
+/**
+ * Sanitizes chart data based on the date range
+ * - For ranges between 91-356 days: shows weekly changes
+ * - For ranges above 356 days or YTD: shows monthly changes
+ * - For other ranges: keeps data as is
+ */
+export const sanitizeChartData = <T extends {date: string}>(
+    data: T[],
+    range: number,
+    fieldName: keyof T = 'value' as keyof T,
+    aggregationType: AggregationType = 'avg'
+): T[] => {
+    if (!data.length) {
+        return [];
+    }
+
+    // Calculate the actual date span
+    const dateSpan = data.length > 1 ? calculateDateSpan(data[0].date, data[data.length - 1].date) : 0;
+
+    // Determine aggregation strategy
+    const strategy = determineAggregationStrategy(range, dateSpan, aggregationType);
+
+    // Apply the appropriate aggregation
+    let result: T[];
+    switch (strategy) {
+    case 'weekly':
+        result = aggregateByWeek(data, fieldName, aggregationType);
+        break;
+    case 'monthly':
+        result = aggregateByMonth(data, fieldName, aggregationType);
+        break;
+    default:
+        result = data;
+    }
+
+    // Always detect bulk imports
+    return detectBulkImports(result, fieldName);
+};
+
+// Export for testing
+export {
+    calculateDateSpan,
+    getMonthKey,
+    isInSameMonth,
+    isInSameWeek,
+    calculateAggregatedValue,
+    calculateOutlierThreshold,
+    detectBulkImports,
+    aggregateByWeek,
+    aggregateByMonth,
+    aggregateByMonthExact,
+    determineAggregationStrategy
 };

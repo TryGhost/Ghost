@@ -28,6 +28,7 @@ module.exports = {
     twitter_description: 'twitter_description',
     members_support_address: 'members_support_address',
     members_enabled: 'members_enabled',
+    donations_enabled: 'donations_enabled',
     allow_self_signup: 'allow_self_signup',
     members_invite_only: 'members_invite_only',
     members_signup_access: 'members_signup_access',

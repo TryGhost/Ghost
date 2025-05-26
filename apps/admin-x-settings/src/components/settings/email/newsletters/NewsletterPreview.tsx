@@ -8,13 +8,13 @@ import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
-    const hasEmailCustomizationFlag = useFeatureFlag('emailCustomization');
-    const hasEmailCustomizationAlphaFlag = useFeatureFlag('emailCustomizationAlpha');
-    const hasEmailCustomizationPrototypeFlag = useFeatureFlag('emailCustomizationPrototype');
+    const hasEmailCustomization = useFeatureFlag('emailCustomization');
+    const hasEmailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
+    const hasEmailCustomizationPrototype = useFeatureFlag('emailCustomizationPrototype');
     const {currentUser, settings, siteData, config} = useGlobalData();
     const [title, icon, commentsEnabled, supportEmailAddress, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'icon', 'comments_enabled', 'support_email_address', 'default_email_address']);
 
-    const hasEmailCustomization = hasEmailCustomizationFlag || hasEmailCustomizationAlphaFlag || hasEmailCustomizationPrototypeFlag;
+    const hasAnyEmailCustomization = hasEmailCustomization || hasEmailCustomizationAlpha || hasEmailCustomizationPrototype;
 
     let headerTitle: string | null = null;
     if (newsletter.show_header_title) {
@@ -173,7 +173,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
     const headerTextColor = headerColor() === 'transparent' ? textColor : textColorForBackgroundColor(headerColor()).hex();
     const secondaryHeaderTextColor = headerColor() === 'transparent' ? secondaryTextColor : textColorForBackgroundColor(headerColor()).alpha(0.5).toString();
 
-    const colors = hasEmailCustomization ? {
+    const colors = hasEmailCustomizationPrototype ? {
         backgroundColor: backgroundColor(),
         headerColor: headerColor(),
         borderColor: borderColor() || undefined,
@@ -192,19 +192,19 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
     return <NewsletterPreviewContent
         accentColor={siteData.accent_color}
         authorPlaceholder={currentUser.name || currentUser.email}
-        backgroundColor={colors.backgroundColor || '#ffffff'}
+        backgroundColor={hasEmailCustomizationPrototype && colors.backgroundColor || '#ffffff'}
         bodyFontCategory={newsletter.body_font_category}
-        buttonCorners={newsletter.button_corners || 'squircle'}
-        buttonStyle={newsletter.button_style || 'fill'}
+        buttonCorners={hasAnyEmailCustomization && newsletter.button_corners || 'rounded'}
+        buttonStyle={(hasEmailCustomizationPrototype || hasEmailCustomizationAlpha) && newsletter.button_style || 'fill'}
         dividerStyle={newsletter.divider_style || 'solid'}
         footerContent={newsletter.footer_content}
-        headerColor={colors.headerColor || headerColor()}
+        headerColor={hasEmailCustomizationPrototype ? (colors.headerColor || headerColor()) : 'transparent'}
         headerIcon={newsletter.show_header_icon ? icon : undefined}
         headerImage={newsletter.header_image}
         headerSubtitle={headerSubtitle}
         headerTitle={headerTitle}
-        imageCorners={newsletter.image_corners || 'square'}
-        linkStyle={newsletter.link_style || 'underline'}
+        imageCorners={(hasEmailCustomizationPrototype || hasEmailCustomizationAlpha) ? (newsletter.image_corners || 'square') : 'square'}
+        linkStyle={(hasAnyEmailCustomization) && newsletter.link_style || 'underline'}
         senderEmail={renderSenderEmail(newsletter, config, defaultEmailAddress)}
         senderName={newsletter.sender_name || title}
         senderReplyTo={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress)}
@@ -219,7 +219,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         siteTitle={title}
         titleAlignment={newsletter.title_alignment}
         titleFontCategory={newsletter.title_font_category}
-        titleFontWeight={newsletter.title_font_weight}
+        titleFontWeight={hasAnyEmailCustomization && newsletter.title_font_weight || 'bold'}
         {...colors}
     />;
 };

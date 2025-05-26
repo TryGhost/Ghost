@@ -221,62 +221,46 @@ export const getYRange = (data: { value: number }[]): {min: number; max: number}
     let min = Math.min(...values);
     let max = Math.max(...values);
 
-    // If min and max are equal, create a range around the value
-    if (min === max) {
-        const value = min;
-        // For zero, use a range of 0 to 1
-        if (value === 0) {
-            min = 0;
-            max = 1;
-        } else {
-            // For non-zero values, create a 10% range around the value
-            const range = Math.abs(value) * 0.1;
-            min = Math.max(0, value - range);
-            max = value + range;
+    // Helper function to round to nearest multiple of 10^n
+    const roundToNearestMultiple = (num: number): number => {
+        if (num === 0) {
+            return 0;
         }
-    } else {
-        // Ensure minimum 10% range between min and max
-        const range = max - min;
-        const minRange = Math.max(Math.abs(max), Math.abs(min)) * 0.1;
-        if (range < minRange) {
-            const padding = (minRange - range) / 2;
-            min = Math.max(0, min - padding);
-            max += padding;
-        }
-    }
+
+        // Determine the order of magnitude (10^n)
+        const magnitude = Math.floor(Math.log10(num));
+        const multiple = Math.pow(10, magnitude);
+
+        // Round to nearest multiple
+        return Math.round(num / multiple) * multiple;
+    };
+
+    // Add padding based on magnitude before rounding
+    const magnitude = Math.floor(Math.log10(Math.max(max, 1)));
+    const padding = Math.pow(10, magnitude);
+
+    // Add padding and ensure min is not negative
+    min = Math.max(0, min - padding);
+    max = max + padding;
+
+    // Round to nearest multiple of 10^n
+    min = roundToNearestMultiple(min);
+    max = roundToNearestMultiple(max);
 
     return {min, max};
 };
 
-// Calculates Y-axis ticks based on the data values
-export const getYTicks = (data: { value: number }[]): number[] => {
-    if (!data.length) {
-        return [];
+// Unfortunately in order to force Recharts area charts to start at a certain value
+// we need to use allowDataOverflow = true on the yAxis. This however clips the min
+// value if it reaches 0. In order to prevent this happening we add a bit of padding
+// to the min value.
+export const getYRangeWithMinPadding = (range: {min: number; max: number}) => {
+    if (range.min !== 0) {
+        return [range.min, range.max];
     }
-
-    const {min, max} = getYRange(data);
-
-    // Calculate the range and initial step
-    const range = max - min;
-    const initialStep = Math.pow(10, Math.floor(Math.log10(range)));
-
-    // Try different step sizes until we get 6 or fewer ticks
-    let step = initialStep;
-    let numTicks = Math.ceil(range / step) + 1;
-
-    // If we have too many ticks, increase the step size
-    while (numTicks > 6) {
-        step *= 2;
-        numTicks = Math.ceil(range / step) + 1;
-    }
-
-    // Generate the ticks
-    const ticks = [];
-    for (let i = Math.floor(min / step) * step; i <= Math.ceil(max / step) * step; i += step) {
-        ticks.push(i);
-    }
-
-    return ticks;
+    const padding = 0.005;
+    const minPadding = -2;
+    return [Math.min(range.min - (range.max * padding), minPadding), range.max];
 };
 
 // Calculates the width needed for the Y-axis based on the formatted tick values
@@ -298,7 +282,16 @@ export const calculateYAxisWidth = (ticks: number[], formatter: (value: number) 
 export const getRangeDates = (range: number) => {
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const endDate = moment().tz(timezone).endOf('day');
-    const startDate = moment().tz(timezone).subtract(range - 1, 'days').startOf('day');
+    let startDate;
+
+    if (range === -1) {
+        // Year to date - use January 1st of current year
+        startDate = moment().tz(timezone).startOf('year');
+    } else {
+        // Regular range calculation
+        startDate = moment().tz(timezone).subtract(range - 1, 'days').startOf('day');
+    }
+
     return {startDate, endDate, timezone};
 };
 

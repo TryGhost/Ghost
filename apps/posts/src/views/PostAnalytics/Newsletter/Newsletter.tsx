@@ -2,11 +2,12 @@
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer,ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, calculateYAxisWidth, formatNumber, formatPercentage} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, calculateYAxisWidth, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {getLinkById} from '@src/utils/link-helpers';
+import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useRef, useState} from 'react';
-import {useParams} from '@tryghost/admin-x-framework';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 
 interface postAnalyticsProps {}
@@ -27,19 +28,21 @@ interface NewsletterRadialChartProps {
 const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
     config,
     data,
-    percentageValue,
-    percentageLabel
+    percentageValue
 }) => {
+    const barWidth = 42;
+    const innerRadiusStart = data.length > 1 ? 72 : 89;
+
     const chartComponentConfig = {
-        innerRadius: 72,
-        outerRadius: 110,
+        innerRadius: innerRadiusStart,
+        outerRadius: innerRadiusStart + barWidth,
         startAngle: 90,
         endAngle: -270
     };
 
     return (
         <ChartContainer
-            className='mx-auto my-14 aspect-square max-h-[250px]'
+            className='mx-auto my-8 aspect-square max-h-[250px]'
             config={config}
         >
             <Recharts.RadialBarChart
@@ -49,34 +52,21 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                 outerRadius={chartComponentConfig.outerRadius}
                 startAngle={chartComponentConfig.startAngle}
             >
-                <Recharts.PolarAngleAxis angleAxisId={0} domain={[0, 100]} tick={false} type="number" />
+                <Recharts.PolarAngleAxis angleAxisId={0} domain={[0, 1]} tick={false} type="number" />
                 <Recharts.RadialBar
                     cornerRadius={10}
                     dataKey="value"
                     minPointSize={-2}
                     background
                 >
-                    <Recharts.LabelList
-                        className="capitalize"
-                        dataKey="datatype"
-                        fontSize={11}
-                        formatter={(value: string) => {
-                            let className = '';
-
-                            if (value === 'average') {
-                                className = 'fill-muted-foreground';
-                            } else if (data[1].value < 17) {
-                                className = 'fill-[#515151] mix-blend-exclusion';
-                            } else {
-                                className = 'fill-white';
-                            }
-
-                            return (
-                                <tspan className={`font-medium capitalize ${className}`}>{value}</tspan>
-                            );
-                        }}
-                        position="insideStart"
-                    />
+                    {data.length > 1 &&
+                        <Recharts.LabelList
+                            className="fill-black opacity-60"
+                            dataKey="datatype"
+                            fontSize={11}
+                            position="insideStart"
+                        />
+                    }
                 </Recharts.RadialBar>
                 <Recharts.PolarRadiusAxis axisLine={false} tick={false} tickLine={false}>
                     <Recharts.Label
@@ -90,19 +80,19 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                                         y={viewBox.cy}
                                     >
                                         <tspan
-                                            className="fill-foreground text-[2.6rem] font-semibold tracking-tight"
+                                            className="fill-foreground text-[1.6rem] font-semibold tracking-tight"
                                             x={viewBox.cx}
                                             y={viewBox.cy}
                                         >
                                             {formatPercentage(percentageValue)}
                                         </tspan>
-                                        <tspan
-                                            className="fill-muted-foreground font-medium"
-                                            x={viewBox.cx}
-                                            y={(viewBox.cy || 0) + 24}
-                                        >
-                                            {percentageLabel}
-                                        </tspan>
+                                        {/* <tspan
+                                                className="fill-muted-foreground font-medium"
+                                                x={viewBox.cx}
+                                                y={(viewBox.cy || 0) + 24}
+                                                >
+                                                {percentageLabel}
+                                                </tspan> */}
                                     </text>
                                 );
                             }
@@ -115,8 +105,8 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                             return (
                                 <div className='flex items-center gap-1'>
                                     <div className='size-2.5 rounded-[2px]' style={{backgroundColor: props.payload?.fill}}></div>
-                                    <div className='text-xs capitalize text-muted-foreground'>{props.payload?.datatype}</div>
-                                    <div className='ml-3 font-mono text-xs'>{value}%</div>
+                                    <div className='text-xs text-muted-foreground'>{props.payload?.datatype}</div>
+                                    <div className='ml-3 font-mono text-xs'>{formatPercentage(value)}</div>
                                 </div>
                             );
                         }}
@@ -124,6 +114,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                         hideLabel
                     />}
                     cursor={false}
+                    isAnimationActive={false}
                 />
             </Recharts.RadialBarChart>
         </ChartContainer>
@@ -132,7 +123,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
 
 const FunnelArrow: React.FC = () => {
     return (
-        <div className='absolute right-[-13px] top-1/2 flex size-[25px] -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground'>
+        <div className='absolute -right-4 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground'>
             <LucideIcon.ChevronRight className='ml-0.5' size={16} strokeWidth={1.5}/>
         </div>
     );
@@ -140,10 +131,30 @@ const FunnelArrow: React.FC = () => {
 
 const Newsletter: React.FC<postAnalyticsProps> = () => {
     const {postId} = useParams();
+    const navigate = useNavigate();
     const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
     const [editedUrl, setEditedUrl] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+
+    const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
+        searchParams: {
+            filter: `id:${postId}`,
+            fields: 'title,slug,published_at,uuid,status',
+            include: 'email'
+        }
+    });
+
+    const typedPost = post as Post;
+    // Use the utility function from admin-x-framework
+    const showNewsletterSection = hasBeenEmailed(typedPost);
+
+    useEffect(() => {
+        // Redirect to overview if the post wasn't sent as a newsletter
+        if (!isPostLoading && !showNewsletterSection) {
+            navigate(`/analytics/beta/${postId}`);
+        }
+    }, [navigate, postId, isPostLoading, showNewsletterSection]);
 
     const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId || '');
     const {editLinks} = useEditLinks();
@@ -222,37 +233,36 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         }
     } satisfies ChartConfig;
 
-    const isLoading = isNewsletterStatsLoading;
+    const isLoading = isNewsletterStatsLoading || isPostLoading;
 
     // "Sent" Chart
-    // const sentChartData: NewsletterRadialChartData[] = [
-    //     {datatype: 'average', value: 100, fill: 'hsl(var(--chart-gray))'},
-    //     {datatype: 'This newsletter', value: 100, fill: 'hsl(var(--chart-purple))'}
-    // ];
+    const sentChartData: NewsletterRadialChartData[] = [
+        {datatype: 'Sent', value: 1, fill: 'hsl(var(--chart-purple))'}
+    ];
 
-    // const sentChartConfig = {
-    //     percentage: {
-    //         label: 'O'
-    //     },
-    //     average: {
-    //         label: 'Average'
-    //     },
-    //     'This newsletter': {
-    //         label: 'This newsletter'
-    //     }
-    // } satisfies ChartConfig;
+    const sentChartConfig = {
+        percentage: {
+            label: 'O'
+        },
+        Average: {
+            label: 'Average'
+        },
+        'This newsletter': {
+            label: 'This newsletter'
+        }
+    } satisfies ChartConfig;
 
     // "Opened" Chart
     const openedChartData: NewsletterRadialChartData[] = [
-        {datatype: 'average', value: averageStats.openedRate * 100, fill: 'hsl(var(--chart-gray))'},
-        {datatype: 'This newsletter', value: stats.openedRate * 100, fill: 'hsl(var(--chart-blue))'}
+        {datatype: 'Average', value: averageStats.openedRate, fill: 'hsl(var(--chart-gray))'},
+        {datatype: 'This newsletter', value: stats.openedRate, fill: 'hsl(var(--chart-blue))'}
     ];
 
     const openedChartConfig = {
         percentage: {
-            label: 'O'
+            label: 'Opened'
         },
-        average: {
+        Average: {
             label: 'Average'
         },
         'This newsletter': {
@@ -262,15 +272,15 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     // "Clicked" Chart
     const clickedChartData: NewsletterRadialChartData[] = [
-        {datatype: 'average', value: averageStats.clickedRate * 100, fill: 'hsl(var(--chart-gray))'},
-        {datatype: 'This newsletter', value: stats.clickedRate * 100, fill: 'hsl(var(--chart-green))'}
+        {datatype: 'Average', value: averageStats.clickedRate, fill: 'hsl(var(--chart-gray))'},
+        {datatype: 'This newsletter', value: stats.clickedRate, fill: 'hsl(var(--chart-green))'}
     ];
 
     const clickedChartConfig = {
         percentage: {
-            label: 'O'
+            label: 'Clicked'
         },
-        average: {
+        Average: {
             label: 'Average'
         },
         'This newsletter': {
@@ -294,33 +304,31 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                 <CardDescription>How did this post perform</CardDescription>
                             </CardHeader>
                             <CardContent className='p-0'>
-                                <div className='grid grid-cols-3 items-stretch border-b'>
+                                <div className='grid grid-cols-3 items-stretch'>
                                     <KpiCard className='relative grow'>
                                         <KpiCardLabel>
-                                            {/* <div className='size-2.5 rounded-full bg-purple/30'></div> */}
-                                            <LucideIcon.Send strokeWidth={1.5} />
+                                            <div className='size-2.5 rounded-[2px] bg-purple/30'></div>
+                                            {/* <LucideIcon.Send strokeWidth={1.5} /> */}
                                             Sent
                                         </KpiCardLabel>
                                         <KpiCardContent>
                                             <KpiCardValue>{formatNumber(stats.sent)}</KpiCardValue>
                                         </KpiCardContent>
-                                        <FunnelArrow />
                                     </KpiCard>
                                     <KpiCard className='relative grow'>
                                         <KpiCardLabel>
-                                            {/* <div className='size-2.5 rounded-full bg-blue/30'></div> */}
-                                            <LucideIcon.MailOpen strokeWidth={1.5} />
+                                            <div className='size-2.5 rounded-[2px] bg-blue/30'></div>
+                                            {/* <LucideIcon.Eye strokeWidth={1.5} /> */}
                                             Opened
                                         </KpiCardLabel>
                                         <KpiCardContent>
                                             <KpiCardValue>{formatNumber(stats.opened)}</KpiCardValue>
                                         </KpiCardContent>
-                                        <FunnelArrow />
                                     </KpiCard>
                                     <KpiCard className='grow'>
                                         <KpiCardLabel>
-                                            {/* <div className='size-2.5 rounded-full bg-green/30'></div> */}
-                                            <LucideIcon.MousePointerClick strokeWidth={1.5} />
+                                            <div className='size-2.5 rounded-[2px] bg-green/30'></div>
+                                            {/* <LucideIcon.MousePointer strokeWidth={1.5} /> */}
                                             Clicked
                                         </KpiCardLabel>
                                         <KpiCardContent>
@@ -329,27 +337,29 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     </KpiCard>
                                 </div>
                                 <Tabs className="relative" defaultValue="radial">
-                                    <TabsList className="absolute right-3 top-3 grid grid-cols-2">
+                                    {/* <TabsList className="absolute right-3 top-3 grid grid-cols-2">
                                         <TabsTrigger value="radial"><LucideIcon.LoaderCircle /></TabsTrigger>
                                         <TabsTrigger value="bar"><LucideIcon.ChartNoAxesColumnDecreasing /></TabsTrigger>
-                                    </TabsList>
+                                    </TabsList> */}
                                     <TabsContent value="radial">
-                                        <div className='mx-auto flex flex-wrap items-center justify-center lg:gap-[10vw] lg:py-[3vw]'>
-                                            {/* <div className='border-r px-6'>
+                                        <div className='mx-auto -mt-8 grid grid-cols-3 items-center justify-center'>
+                                            <div className='relative min-w-[250px] border-r px-6'>
                                                 <NewsletterRadialChart
                                                     config={sentChartConfig}
                                                     data={sentChartData}
                                                     percentageLabel='Sent'
                                                     percentageValue={1}
                                                 />
-                                            </div> */}
-                                            <div className='min-w-[250px] px-6'>
+                                                <FunnelArrow />
+                                            </div>
+                                            <div className='relative min-w-[250px] border-r px-6'>
                                                 <NewsletterRadialChart
                                                     config={openedChartConfig}
                                                     data={openedChartData}
                                                     percentageLabel='Opened'
                                                     percentageValue={stats.openedRate}
                                                 />
+                                                <FunnelArrow />
                                             </div>
                                             <div className='min-w-[250px] px-6'>
                                                 <NewsletterRadialChart
@@ -378,7 +388,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     <TabsContent value="bar">
                                         <div>
                                             <ChartContainer className='max-h-[380px] w-full pb-6 pt-14' config={barChartConfig}>
-                                                <Recharts.BarChart barCategoryGap={24} data={barChartData} accessibilityLayer>
+                                                <Recharts.BarChart barCategoryGap={24} data={barChartData}>
                                                     <Recharts.CartesianGrid vertical={false} />
                                                     <Recharts.YAxis
                                                         axisLine={false}

@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.120.0",
+  "version": "5.120.2",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -49,7 +49,7 @@
     "@tryghost/helpers": "1.1.93",
     "@tryghost/kg-clean-basic-html": "4.2.4",
     "@tryghost/kg-converters": "1.1.4",
-    "@tryghost/koenig-lexical": "1.6.17",
+    "@tryghost/koenig-lexical": "1.6.22",
     "@tryghost/limit-service": "1.2.17",
     "@tryghost/members-csv": "2.0.2",
     "@tryghost/nql": "0.12.7",
@@ -178,7 +178,7 @@
     "jose": "4.15.9",
     "lru-cache": "6.0.0",
     "path-browserify": "1.0.1",
-    "webpack": "5.99.8"
+    "webpack": "5.99.9"
   },
   "nx": {
     "targets": {

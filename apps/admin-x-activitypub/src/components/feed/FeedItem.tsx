@@ -1,8 +1,8 @@
 import FeedItemMenu from './FeedItemMenu';
 import React, {useEffect, useRef, useState} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, LucideIcon, Skeleton} from '@tryghost/shade';
-import {Button as ButtonX, Heading, Icon, showToast} from '@tryghost/admin-x-design-system';
+import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
+import {toast} from 'sonner';
 
 import APAvatar from '../global/APAvatar';
 import ImageLightbox, {useLightboxImages} from '../global/ImageLightbox';
@@ -11,7 +11,7 @@ import FeedItemStats from './FeedItemStats';
 import clsx from 'clsx';
 import getReadingTime from '../../utils/get-reading-time';
 import getUsername from '../../utils/get-username';
-import {handleProfileClickRR} from '../../utils/handle-profile-click';
+import {handleProfileClick} from '../../utils/handle-profile-click';
 import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useDeleteMutationForUser} from '../../hooks/use-activity-pub-queries';
@@ -160,7 +160,7 @@ function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | un
                 <video className='h-[80px] w-full rounded object-cover' src={attachment.url} />
                 <div className='absolute inset-0 rounded bg-gray-900 opacity-50'></div>
                 <div className='absolute inset-0 flex items-center justify-center'>
-                    <Icon className='text-white' name='play-fill' size='lg' />
+                    <LucideIcon.Play color='white' fill='white' size={40} />
                 </div>
             </div>
         );
@@ -202,6 +202,8 @@ interface FeedItemProps {
 }
 
 const noop = () => {};
+
+const repostIcon = <LucideIcon.RefreshCw className='shrink-0 text-gray-700 dark:text-gray-600' size={16} strokeWidth={1.5} />;
 
 const FeedItem: React.FC<FeedItemProps> = ({
     actor,
@@ -249,7 +251,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         const handleProfileLinkClick = (e: MouseEvent) => {
             const target = e.target as HTMLElement;
             const link = target.closest('a[data-profile]');
-            
+
             if (link) {
                 const handle = link.getAttribute('data-profile')?.trim();
                 const isValidHandle = /^@([\w.-]+)@([\w-]+\.[\w.-]+[a-zA-Z])$/.test(handle || '');
@@ -257,7 +259,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                 if (isValidHandle && handle) {
                     e.preventDefault();
                     e.stopPropagation();
-                    handleProfileClickRR(handle, navigate);
+                    handleProfileClick(handle, navigate);
                 }
             }
         };
@@ -291,10 +293,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         if (object?.url) {
             await navigator.clipboard.writeText(object.url);
             setIsCopied(true);
-            showToast({
-                title: 'Link copied',
-                type: 'success'
-            });
+            toast.success('Link copied');
             setTimeout(() => setIsCopied(false), 2000);
         }
     };
@@ -322,11 +321,11 @@ const FeedItem: React.FC<FeedItemProps> = ({
             <>
                 {object && (
                     <div className={`group/article relative -mx-4 ${!isPending ? 'cursor-pointer' : 'pointer-events-none'} rounded-lg p-6 px-4 pb-[18px]`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
-                        {(type === 'Announce') && <div className='z-10 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
-                            <Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'} />
+                        {(type === 'Announce') && <div className='z-10 mb-2 flex items-center gap-1.5 text-gray-700 dark:text-gray-600'>
+                            {repostIcon}
                             <div className='flex min-w-0 items-center gap-1 text-sm'>
                                 <span className='truncate break-anywhere hover:underline' title={getUsername(actor)} onClick={(e) => {
-                                    handleProfileClickRR(actor, navigate, e);
+                                    handleProfileClick(actor, navigate, e);
                                 }}>{actor.name}</span>
                                 reposted
                             </div>
@@ -336,7 +335,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 <APAvatar author={author} disabled={isPending} />
                                 <div className='flex min-w-0 grow flex-col gap-0.5' onClick={(e) => {
                                     if (!isPending) {
-                                        handleProfileClickRR(author, navigate, e);
+                                        handleProfileClick(author, navigate, e);
                                     }
                                 }}>
                                     <span className={`min-w-0 truncate font-semibold leading-[normal] break-anywhere ${!isPending ? 'hover-underline' : ''} dark:text-white`}
@@ -399,7 +398,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             </div>
                                         }
                                     </div>
-                                    <div className='space-between relative z-[30] ml-[-7px] mt-1 flex'>
+                                    <div className='space-between relative z-[30] ml-[-8px] mt-1 flex'>
                                         {!isLoading ?
                                             showStats && <FeedItemStats
                                                 commentCount={commentCount}
@@ -436,9 +435,9 @@ const FeedItem: React.FC<FeedItemProps> = ({
                         <div className={`group/article relative`} data-layout='modal' onClick={onClick}>
                             <div className={`z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 pb-3 pt-4`} data-test-activity>
                                 {(type === 'Announce') && <div className='z-10 col-span-2 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
-                                    <div><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon></div>
+                                    <div>{repostIcon}</div>
                                     <span className='flex min-w-0 items-center gap-1'><span className='truncate break-anywhere hover:underline' title={getUsername(actor)} onClick={(e) => {
-                                        handleProfileClickRR(actor, navigate, e);
+                                        handleProfileClick(actor, navigate, e);
                                     }}>{actor.name}</span> reposted</span>
                                 </div>}
                                 {(showHeader) && <>
@@ -447,7 +446,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     </div>
                                     <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
                                         if (!isPending) {
-                                            handleProfileClickRR(author, navigate, e);
+                                            handleProfileClick(author, navigate, e);
                                         }
                                     }}>
                                         <div className='flex w-full'>
@@ -461,10 +460,10 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </>}
                                 <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
-                                        {object.name && <Heading className='mb-1 leading-tight break-anywhere' level={4} data-test-activity-heading>{object.name}</Heading>}
+                                        {object.name && <H4 className='mb-1 leading-tight break-anywhere' data-test-activity-heading>{object.name}</H4>}
                                         <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content-large text-pretty text-[1.6rem] tracking-[-0.011em] text-gray-900 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'></div>
                                         {renderFeedAttachment(object, openLightbox)}
-                                        <div className='space-between ml-[-7px] mt-3 flex'>
+                                        <div className='space-between ml-[-8px] mt-3 flex'>
                                             {showStats && <FeedItemStats
                                                 commentCount={commentCount}
                                                 layout={layout}
@@ -506,7 +505,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 <div className='flex w-full items-center justify-between'>
                                     <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible' onClick={(e) => {
                                         if (!isPending) {
-                                            handleProfileClickRR(author, navigate, e);
+                                            handleProfileClick(author, navigate, e);
                                         }
                                     }}>
                                         <div className='flex'>
@@ -529,18 +528,15 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
                                         {(object.type === 'Article') && renderFeedAttachment(object, openLightbox)}
-                                        {object.name && <Heading className='my-1 text-pretty leading-tight break-anywhere' level={5} data-test-activity-heading>{object.name}</Heading>}
-                                        {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'></div>}
+                                        {object.name && <H4 className='mt-2.5 text-pretty leading-tight break-anywhere' data-test-activity-heading>{object.name}</H4>}
+                                        {(object.preview && object.type === 'Article') ? <div className='mt-1 line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'></div>}
                                         {(object.type === 'Note') && renderFeedAttachment(object, openLightbox)}
-                                        {(object.type === 'Article') && <ButtonX
-                                            className={`mt-3 self-start text-gray-900 transition-all hover:opacity-60`}
-                                            color='grey'
-                                            fullWidth={true}
+                                        {(object.type === 'Article') && <Button
+                                            className='mt-3 w-full'
                                             id='read-more'
-                                            label='Read more'
-                                            size='md'
-                                        />}
-                                        <div className='space-between ml-[-7px] mt-2 flex'>
+                                            variant='secondary'
+                                        >Read more</Button>}
+                                        <div className='space-between ml-[-8px] mt-2 flex'>
                                             {showStats && <FeedItemStats
                                                 commentCount={commentCount}
                                                 disabled={isPending}
@@ -583,12 +579,12 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             title={getUsername(author)}
                                             data-test-activity-heading
                                             onClick={(e) => {
-                                                handleProfileClickRR(author, navigate, e);
+                                                handleProfileClick(author, navigate, e);
                                             }}
                                         >{author.name}
                                         </span>
-                                        {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600'><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon><span className='line-clamp-1 hover:underline' title={getUsername(actor)} onClick={(e) => {
-                                            handleProfileClickRR(actor, navigate, e);
+                                        {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600'>{repostIcon}<span className='line-clamp-1 hover:underline' title={getUsername(actor)} onClick={(e) => {
+                                            handleProfileClick(actor, navigate, e);
                                         }}>{actor.name}</span> reposted</span>}
                                         <span className='shrink-0 whitespace-nowrap text-gray-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object, !object.authored)}</span>
                                     </> :
@@ -597,13 +593,13 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             </div>
                             <div className='flex'>
                                 <div className='flex min-h-[73px] w-full min-w-0 flex-col items-start justify-start gap-1'>
-                                    <Heading className='line-clamp-2 w-full max-w-[600px] text-pretty text-[1.6rem] font-semibold leading-tight break-anywhere' level={5} data-test-activity-heading>
+                                    <H4 className='line-clamp-2 w-full max-w-[600px] text-pretty leading-tight break-anywhere' data-test-activity-heading>
                                         {isLoading ? <Skeleton className='w-full max-w-96' /> : (object.name ? object.name : (
                                             <span dangerouslySetInnerHTML={{
                                                 __html: stripHtml(object.content || '')
                                             }}></span>
                                         ))}
-                                    </Heading>
+                                    </H4>
                                     <div className='ap-note-content line-clamp-2 w-full max-w-[600px] text-pretty text-base leading-normal text-gray-800 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'>
                                         {!isLoading ?
                                             <div dangerouslySetInnerHTML={{

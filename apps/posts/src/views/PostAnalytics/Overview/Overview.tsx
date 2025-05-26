@@ -5,10 +5,10 @@ import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import WebOverview from './components/WebOverview';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, formatNumber, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
+import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars} from '../Growth/Growth';
-import {getStatEndpointUrl, getToken, useNavigate, useParams} from '@tryghost/admin-x-framework';
-import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
+import {getStatEndpointUrl, getToken, hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useMemo} from 'react';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
@@ -24,7 +24,8 @@ const Overview: React.FC = () => {
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid'
+            fields: 'title,slug,published_at,uuid,email,status,count,feature_image',
+            include: 'email,authors,tags,tiers,count.clicks,count.signups,count.paid_conversions'
         }
     });
 
@@ -56,13 +57,17 @@ const Overview: React.FC = () => {
     const kpiValues = getWebKpiValues(data as unknown as KpiDataItem[] | null);
 
     const kpiIsLoading = isLoading || isConfigLoading || loading;
+    const typedPost = post as Post;
+
+    // Use the utility function from admin-x-framework
+    const showNewsletterSection = hasBeenEmailed(typedPost);
 
     return (
         <>
             <PostAnalyticsHeader currentTab='Overview'>
                 <div className='flex items-center gap-1 text-nowrap rounded-full bg-green/10 px-3 py-px pr-4 text-xs text-green-600'>
                     <LucideIcon.FlaskConical size={16} strokeWidth={1.5} />
-                    Viewing Ghost Analytics (beta)
+                    Viewing Analytics (beta)
                     <Button className='pl-1 pr-0 text-green-600 !underline' size='sm' variant='link' onClick={() => {
                         navigate(`/posts/analytics/${postId}`, {crossApp: true});
                     }}>Switch back</Button>
@@ -73,7 +78,7 @@ const Overview: React.FC = () => {
                     <CardHeader className='hidden'>
                         <CardTitle>Newsletter performance</CardTitle>
                     </CardHeader>
-                    <CardContent className='flex items-stretch p-0'>
+                    <CardContent className='grid grid-cols-4 items-stretch p-0'>
                         {kpiIsLoading ?
                             ''
                             :
@@ -86,7 +91,7 @@ const Overview: React.FC = () => {
                                     Unique visitors
                                     </KpiCardLabel>
                                     <KpiCardContent>
-                                        <KpiCardValue>{formatNumber(kpiValues.visits)}</KpiCardValue>
+                                        <KpiCardValue>{kpiValues.visits}</KpiCardValue>
                                     </KpiCardContent>
                                 </KpiCard>
                                 <KpiCard className='grow' onClick={() => {
@@ -97,7 +102,7 @@ const Overview: React.FC = () => {
                                     Pageviews
                                     </KpiCardLabel>
                                     <KpiCardContent>
-                                        <KpiCardValue>{formatNumber(kpiValues.views)}</KpiCardValue>
+                                        <KpiCardValue>{kpiValues.views}</KpiCardValue>
                                     </KpiCardContent>
                                 </KpiCard>
                                 <KpiCard className='grow' onClick={() => {
@@ -126,24 +131,9 @@ const Overview: React.FC = () => {
                         }
                     </CardContent>
                 </Card>
-                <Card className='group/card'>
-                    <div className='flex items-center justify-between gap-6'>
-                        <CardHeader>
-                            <CardTitle>Newsletter performance</CardTitle>
-                            <CardDescription>How members interacted with this email</CardDescription>
-                        </CardHeader>
-                        <Button className='mr-6 opacity-0 transition-all group-hover/card:opacity-100' variant='outline' onClick={() => {
-                            navigate(`/analytics/beta/${postId}/newsletter`);
-                        }}>
-                                View more
-                            <LucideIcon.ArrowRight />
-                        </Button>
-                    </div>
-                    <CardContent>
-                        <Separator />
-                        <NewsletterOverview />
-                    </CardContent>
-                </Card>
+                {showNewsletterSection && (
+                    <NewsletterOverview />
+                )}
                 <Card className='group/card'>
                     <div className='flex items-center justify-between gap-6'>
                         <CardHeader>

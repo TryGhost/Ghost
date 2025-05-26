@@ -12,7 +12,7 @@ import Layout from '@components/layout';
 import NotificationIcon from './components/NotificationIcon';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {Notification} from '@src/api/activitypub';
-import {handleProfileClickRR} from '@utils/handle-profile-click';
+import {handleProfileClick} from '@utils/handle-profile-click';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {stripHtml} from '@src/utils/content-formatters';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -100,7 +100,7 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
                 className={actorClass}
                 onClick={(e) => {
                     e?.stopPropagation();
-                    handleProfileClickRR(firstActor.handle, navigate);
+                    handleProfileClick(firstActor.handle, navigate);
                 }}
             >
                 {firstActor.name}
@@ -126,6 +126,51 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
     }
 
     return <></>;
+};
+
+const ProfileLinkedContent: React.FC<{
+    content: string;
+    className?: string;
+    stripTags?: string[];
+}> = ({content, className, stripTags = []}) => {
+    const contentRef = useRef<HTMLDivElement>(null);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const element = contentRef.current;
+        if (!element) {
+            return;
+        }
+
+        const handleProfileLinkClick = (e: Event) => {
+            const target = (e as MouseEvent).target as HTMLElement;
+            const link = target.closest('a[data-profile]');
+
+            if (link) {
+                const handle = link.getAttribute('data-profile')?.trim();
+                const isValidHandle = /^@([\w.-]+)@([\w-]+\.[\w.-]+[a-zA-Z])$/.test(handle || '');
+
+                if (isValidHandle && handle) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleProfileClick(handle, navigate);
+                }
+            }
+        };
+
+        element.addEventListener('click', handleProfileLinkClick);
+        return () => {
+            element.removeEventListener('click', handleProfileLinkClick);
+        };
+    }, [navigate, content]);
+
+    return (
+        <div
+            dangerouslySetInnerHTML={{__html: stripHtml(content || '', stripTags)}}
+            ref={contentRef}
+            className={className}
+        />
+    );
 };
 
 const Notifications: React.FC = () => {
@@ -207,7 +252,7 @@ const Notifications: React.FC = () => {
             if (group.actors.length > 1) {
                 toggleOpen(group.id || `${group.type}_${index}`);
             } else {
-                handleProfileClickRR(group.actors[0].handle, navigate);
+                handleProfileClick(group.actors[0].handle, navigate);
             }
             break;
         case 'mention':
@@ -303,7 +348,7 @@ const Notifications: React.FC = () => {
                                                                         className='flex items-center break-anywhere hover:opacity-80'
                                                                         onClick={(e) => {
                                                                             e?.stopPropagation();
-                                                                            handleProfileClickRR(actor.handle, navigate);
+                                                                            handleProfileClick(actor.handle, navigate);
                                                                         }}
                                                                     >
                                                                         <APAvatar author={{
@@ -352,9 +397,10 @@ const Notifications: React.FC = () => {
                                                         /> :
                                                         <>
                                                             <div className='mt-2.5 rounded-md bg-gray-100 px-5 py-[14px] group-hover:bg-gray-200 dark:bg-gray-925/30 group-hover:dark:bg-black/40'>
-                                                                <div
-                                                                    dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '')}}
+                                                                <ProfileLinkedContent
                                                                     className='ap-note-content text-pretty'
+                                                                    content={group.post?.content || ''}
+                                                                    stripTags={['a']}
                                                                 />
                                                             </div>
                                                         </>

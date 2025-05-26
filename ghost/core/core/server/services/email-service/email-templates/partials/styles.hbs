@@ -9,6 +9,9 @@ img {
     border: none;
     -ms-interpolation-mode: bicubic;
     max-width: 100%;
+    {{#if hasRoundedImageCorners}}
+    border-radius: 6px;
+    {{/if}}
 }
 
 img.is-dark-background {
@@ -216,6 +219,16 @@ h6 {
     line-height: 1.11em;
     font-weight: {{titleWeight}};
     text-rendering: optimizeLegibility;
+}
+
+.title-serif h1,
+.title-serif h2,
+.title-serif h3,
+.title-serif h4,
+.title-serif h5,
+.title-serif h6 {
+    font-family: Georgia, serif;
+    letter-spacing: -0.01em;
 }
 
 h1 {
@@ -529,12 +542,13 @@ figure blockquote p {
     LATEST POSTS TABLE
 ------------------------------------- */
 
-.latest-posts-header {
+h3.latest-posts-header {
     margin: 0;
     padding: 8px 0 8px;
     color: #15212A;
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 13px;
-    font-weight: {{titleWeight}};
+    font-weight: 600;
     text-transform: uppercase;
 }
 
@@ -601,8 +615,9 @@ figure blockquote p {
 }
 
 .subscription-box h3 {
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
     margin: 0 0 18px;
 }
@@ -661,7 +676,14 @@ figure blockquote p {
 .post-content a,
 .post-content-sans-serif a {
     color: {{accentColor}};
-    {{linkStyles}}
+    {{#if (eq linkStyle "regular")}}
+    text-decoration: none;
+    {{else if (eq linkStyle "bold")}}
+    text-decoration: none;
+    font-weight: 700;
+    {{else}}
+    text-decoration: underline;
+    {{/if}}
 }
 
 a[data-flickr-embed] img {
@@ -695,6 +717,9 @@ a[data-flickr-embed] img {
     margin: 0 auto;
     height: auto;
     width: auto;
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{/if}}
 }
 
 .kg-image-card span {
@@ -796,6 +821,11 @@ a[data-flickr-embed] img {
     width: 100% !important;
     height: auto !important;
     padding-top: 20px;
+    {{#if hasRoundedImageCorners}}
+    border-radius: 6px;
+    padding-top: 0 !important;
+    margin-top: 20px !important;
+    {{/if}}
 }
 
 .kg-video-preview {
@@ -803,11 +833,18 @@ a[data-flickr-embed] img {
     background-image: radial-gradient(circle at center, #5b5f66, #1d1f21);
     display: block;
     text-decoration: none !important;
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{/if}}
 }
 
 .kg-video-preview table {
     background-size: cover;
     min-height: 200px; /* for when images aren't loaded */
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{/if}}
+    overflow: hidden;
 }
 
 .kg-video-play-button {
@@ -912,11 +949,23 @@ a[data-flickr-embed] img {
     font-size: 20px;
 }
 
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+.kg-cta-card {
+    margin: 0 0 1.5em 0;
+    padding: 0 24px;
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{else}}
+        border-radius: 0;
+    {{/if}}
+}
+{{else}}
 .kg-cta-card {
     margin: 0 0 1.5em 0;
     padding: 0 24px;
     border-radius: 8px;
 }
+{{/hasFeature}}
 
 .kg-cta-card + * {
     margin-top: 1.5em !important;
@@ -1080,11 +1129,31 @@ table.kg-cta-content-wrapper:not(.kg-cta-bg-none.kg-cta-no-dividers table.kg-cta
     padding-bottom: 0;
 }
 
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+img.kg-cta-image {
+    display: block;
+    border: 0;
+    {{#if hasRoundedImageCorners}}
+        border-radius: 4px;
+    {{else}}
+        border-radius: 0;
+    {{/if}}
+}
+
+.kg-cta-bg-none img.kg-cta-image {
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{else}}
+        border-radius: 0;
+    {{/if}}
+}
+{{else}}
 img.kg-cta-image {
     display: block;
     border-radius: 6px;
     border: 0;
 }
+{{/hasFeature}}
 
 .kg-cta-minimal img.kg-cta-image {
     width: 64px;
@@ -1103,8 +1172,9 @@ img.kg-cta-image {
     font-family: Georgia, serif;
 }
 
-.kg-cta-text a {
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
     color: #15212A;
+    text-decoration: underline;
 }
 
 .kg-cta-link-accent .kg-cta-text a {
@@ -1133,7 +1203,7 @@ img.kg-cta-image {
     text-align: center;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .kg-cta-button-container {
     padding-top: 20px;
 }
@@ -1284,7 +1354,7 @@ img.kg-cta-image {
     color: #ffffff;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .kg-header-card h2 {
     font-size: 32px;
     font-weight: {{titleWeight}};
@@ -1349,6 +1419,7 @@ img.kg-cta-image {
 .kg-header-card.kg-v2 .kg-header-card-heading a,
 .kg-header-card.kg-v2 .kg-header-card-subheading a {
     color: inherit;
+    text-decoration: underline;
 }
 {{else}}
 .kg-header-card h2 {
@@ -1460,10 +1531,14 @@ img.kg-cta-image {
 }
 {{/hasFeature}}
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .kg-product-card {
     margin: 0 0 1.5em;
-    border-radius: 6px;
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{else}}
+        border-radius: 0;
+    {{/if}}
     border: 1px solid #e9e9e9;
 }
 
@@ -1482,6 +1557,9 @@ img.kg-cta-image {
     height: auto;
     padding: 0;
     border: none;
+    {{#if hasRoundedImageCorners}}
+        border-radius: 4px;
+    {{/if}}
 }
 
 .kg-product-title {
@@ -1693,6 +1771,35 @@ img.kg-cta-image {
     border: 1px solid #e0e7eb;
 }
 
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+.kg-toggle-card {
+    border: 1px solid #E5ECF0;
+    border-radius: 4px;
+    margin-bottom: 24px;
+    width: 100%;
+}
+
+.kg-toggle-heading {
+    margin: 0;
+    padding: 24px 24px 12px;
+}
+
+.kg-toggle-heading h4 {
+    margin: 0;
+    font-weight: {{titleWeight}};
+}
+
+.kg-toggle-content {
+    color: #394047;
+    font-size: 16px;
+    line-height: 1.5;
+    padding: 0 24px 24px;
+}
+
+.kg-toggle-content > *:last-of-type {
+    margin-bottom: 0;
+}
+{{else}}
 .kg-toggle-card {
     background: transparent;
     padding: 20px;
@@ -1700,7 +1807,7 @@ img.kg-cta-image {
     border-radius: 4px;
     border: 1px solid #73818c;
 }
-
+{{/hasFeature}}
 
 /* -------------------------------------
     HEADER, FOOTER, MAIN
@@ -1743,7 +1850,7 @@ img.kg-cta-image {
     BUTTONS
 ------------------------------------- */
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 table.btn {
     box-sizing: border-box;
     width: auto;
@@ -1805,7 +1912,7 @@ table.btn-accent a {
 .btn table td {
     background-color: #ffffff;
     border-radius: 5px;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     border-radius: {{buttonBorderRadius}};
     {{/hasFeature}}
     text-align: center;
@@ -1816,7 +1923,7 @@ table.btn-accent a {
     background-color: #ffffff;
     border: solid 1px #3498db;
     border-radius: 5px;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     border-radius: {{buttonBorderRadius}};
     {{/hasFeature}}
     box-sizing: border-box;
@@ -1973,7 +2080,7 @@ table.btn-accent a {
         border-right-width: 0 !important;
     }
 
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     {{else}}
     table.body .btn table {
         width: 100% !important;
@@ -2196,7 +2303,7 @@ table.btn-accent a {
         margin: 2em 0 !important;
     }
 
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     {{else}}
         table.body .kg-header-card.kg-v2 span {
         font-size: inherit !important;
@@ -2289,7 +2396,7 @@ table.btn-accent a {
         height: 52px !important;
     }
 
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     {{else}}
     table.body .kg-cta-minimal a.kg-cta-button {
         display: inline-block !important;
@@ -2344,7 +2451,7 @@ table.btn-accent a {
         line-height: inherit;
     }
 
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     {{else}}
     .btn-primary table td:hover {
         background-color: #34495e !important;

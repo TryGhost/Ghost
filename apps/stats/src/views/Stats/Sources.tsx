@@ -4,9 +4,9 @@ import React from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber, formatPercentage, formatQueryDate, isValidDomain} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber, formatPercentage, formatQueryDate, getRangeDates, isValidDomain} from '@tryghost/shade';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
-import {getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
+import {getPeriodText} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
@@ -16,7 +16,7 @@ interface SourceRowProps {
     source?: string | number;
 }
 
-const SourceRow: React.FC<SourceRowProps> = ({className, source}) => {
+export const SourceRow: React.FC<SourceRowProps> = ({className, source}) => {
     return (
         <>
             <img

@@ -1,7 +1,6 @@
 import FeedItem from '@src/components/feed/FeedItem';
 import {Activity} from '@src/api/activitypub';
-import {LoadingIndicator, Separator} from '@tryghost/shade';
-import {NoValueLabel} from '@tryghost/admin-x-design-system';
+import {LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon, Separator} from '@tryghost/shade';
 import {useEffect, useRef} from 'react';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
@@ -57,7 +56,8 @@ const Likes: React.FC<LikesProps> = ({
     return (
         <>
             {hasNextPage === false && posts.length === 0 && (
-                <NoValueLabel icon='heart'>
+                <NoValueLabel>
+                    <NoValueLabelIcon><LucideIcon.Heart /></NoValueLabelIcon>
                     You haven&apos;t liked anything yet.
                 </NoValueLabel>
             )}

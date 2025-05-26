@@ -44,13 +44,25 @@ module.exports = {
             return false;
         });
 
-        handlebars.registerHelper('hasFeature', function (flag, options) {
-            if (labs.isSet(flag)) {
+        handlebars.registerHelper('eq', function (a, b) {
+            return a === b;
+        });
+
+        handlebars.registerHelper('hasFeature', function () {
+            // Get all arguments except the last one (options)
+            const options = arguments[arguments.length - 1];
+            const flags = Array.from(arguments).slice(0, -1);
+
+            // Check if any of the flags are set
+            const hasAnyFeature = flags.some(f => labs.isSet(f));
+
+            if (hasAnyFeature) {
                 return options.fn(this);
             } else {
                 return options.inverse(this);
             }
         });
+
         handlebars.registerHelper('t', function (key, options) {
             let hash = options?.hash;
             return thist(key, hash || options || {});

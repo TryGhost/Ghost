@@ -2,7 +2,7 @@ import React from 'react';
 import moment from 'moment-timezone';
 import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
-import {useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
 
 interface PostWithPublishedAt extends Post {
     published_at?: string;
@@ -23,16 +23,19 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid,feature_image,url'
+            fields: 'title,slug,published_at,uuid,feature_image,url,email,status',
+            include: 'email'
         }
     });
 
     const typedPost = post as PostWithPublishedAt;
+    // Use the utility function from admin-x-framework
+    const showNewsletterTab = hasBeenEmailed(typedPost);
 
     return (
         <>
             <header className='z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-black'>
-                <div className='relative flex min-h-[102px] w-full items-start justify-between gap-5 p-8 pb-0'>
+                <div className='relative flex min-h-[102px] w-full items-start justify-between gap-5 px-8 pb-0 pt-8'>
                     <div className='flex w-full flex-col gap-5'>
                         <div className='flex w-full items-center justify-between'>
                             <Breadcrumb>
@@ -108,13 +111,15 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                         <TabsTrigger value="Web" onClick={() => {
                             navigate(`/analytics/beta/${postId}/web`);
                         }}>
-                            Web stats
+                            Web traffic
                         </TabsTrigger>
-                        <TabsTrigger value="Newsletter" onClick={() => {
-                            navigate(`/analytics/beta/${postId}/newsletter`);
-                        }}>
-                            Newsletter
-                        </TabsTrigger>
+                        {showNewsletterTab && (
+                            <TabsTrigger value="Newsletter" onClick={() => {
+                                navigate(`/analytics/beta/${postId}/newsletter`);
+                            }}>
+                                Newsletter
+                            </TabsTrigger>
+                        )}
                         <TabsTrigger value="Growth" onClick={() => {
                             navigate(`/analytics/beta/${postId}/growth`);
                         }}>

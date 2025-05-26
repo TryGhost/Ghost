@@ -15,7 +15,18 @@ export default defineConfig({
         // Use a basic reporter instead of completely silencing output
         // This provides test results without the noisy warnings
         silent: false,
-        reporters: 'basic'
+        reporters: 'basic',
+        coverage: {
+            include: ['src/utils/**/*.ts'],
+            reporter: ['text', 'lcov'],
+            all: true,
+            provider: 'v8',
+            thresholds: {
+                lines: 100,
+                functions: 100,
+                statements: 100
+            }
+        }
     },
     resolve: {
         alias: {

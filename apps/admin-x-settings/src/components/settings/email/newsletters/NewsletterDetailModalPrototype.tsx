@@ -93,7 +93,7 @@ const Sidebar: React.FC<{
     ];
 
     const fontWeightOptions: SelectOption[] = [
-        {value: 'normal', label: 'Normal'},
+        {value: 'normal', label: 'Regular'},
         {value: 'medium', label: 'Medium'},
         {value: 'semibold', label: 'Semi-bold'},
         {value: 'bold', label: 'Bold'}

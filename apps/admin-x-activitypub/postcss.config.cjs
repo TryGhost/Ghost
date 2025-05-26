@@ -1,1 +1,8 @@
-module.exports = require('@tryghost/admin-x-design-system/postcss.config.cjs');
+module.exports = {
+    plugins: {
+        'postcss-import': {},
+        'tailwindcss/nesting': {},
+        tailwindcss: {},
+        autoprefixer: {}
+    }
+};

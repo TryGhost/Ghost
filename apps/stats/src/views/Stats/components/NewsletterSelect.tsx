@@ -15,8 +15,8 @@ const NewsletterSelect: React.FC = () => {
     // Default to the default newsletter (sort_order = 1) when the component loads
     useEffect(() => {
         if (activeNewsletters.length > 0 && !selectedNewsletterId) {
-            // First try to find the default newsletter (sort_order = 1)
-            const defaultNewsletter = activeNewsletters.find(newsletter => newsletter.sort_order === 1);
+            // First try to find the default newsletter (sort_order = 0)
+            const defaultNewsletter = activeNewsletters.find(newsletter => newsletter.sort_order === 0);
 
             // If we found a default newsletter, use it
             if (defaultNewsletter) {
@@ -29,7 +29,7 @@ const NewsletterSelect: React.FC = () => {
     }, [activeNewsletters, selectedNewsletterId, setSelectedNewsletterId]);
 
     // Handle no newsletters case
-    if (!activeNewsletters.length) {
+    if (activeNewsletters.length <= 1) {
         return null;
     }
 

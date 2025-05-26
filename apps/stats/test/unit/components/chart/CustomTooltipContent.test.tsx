@@ -4,7 +4,8 @@ import {render, screen} from '@testing-library/react';
 
 // Mock the formatDisplayDate function from @tryghost/shade
 vi.mock('@tryghost/shade', () => ({
-    formatDisplayDate: (date: string) => `Formatted: ${date}`
+    formatDisplayDate: (date: string) => `Formatted: ${date}`,
+    formatDisplayDateWithRange: (date: string) => `Formatted: ${date}`
 }));
 
 describe('CustomTooltipContent Component', () => {
@@ -28,13 +29,13 @@ describe('CustomTooltipContent Component', () => {
         }];
 
         render(<CustomTooltipContent active={true} payload={mockPayload} />);
-        
+
         // Check that the date is displayed and formatted
         expect(screen.getByText('Formatted: 2023-05-15')).toBeInTheDocument();
-        
+
         // Check that the label is displayed
         expect(screen.getByText('Test Label')).toBeInTheDocument();
-        
+
         // Check that the value is displayed
         expect(screen.getByText('1234')).toBeInTheDocument();
     });
@@ -50,9 +51,9 @@ describe('CustomTooltipContent Component', () => {
         }];
 
         render(<CustomTooltipContent active={true} payload={mockPayload} />);
-        
+
         // Check that the formatted value is used instead of the raw value
         expect(screen.getByText('$1,234')).toBeInTheDocument();
         expect(screen.queryByText('1234')).not.toBeInTheDocument();
     });
-}); 
+});

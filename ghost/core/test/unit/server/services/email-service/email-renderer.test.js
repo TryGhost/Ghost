@@ -2089,14 +2089,17 @@ describe('Email renderer', function () {
             );
         });
 
-        it('passes expected data through to lexical renderer (emailCustomizationAlpha)', async function () {
-            labsEnabled = {emailCustomizationAlpha: true};
+        const testLexicalRenderDesignOptions = async function ({expectedObject, labs}) {
+            labsEnabled = labs || false;
 
             const post = createModel(basePost);
             const newsletter = createModel({
                 ...baseNewsletter,
+                title_font_weight: 'semibold',
                 button_corners: 'square',
-                button_style: 'outline'
+                button_style: 'outline',
+                link_style: 'normal',
+                image_corners: 'rounded'
             });
             const segment = null;
             const options = {};
@@ -2109,12 +2112,35 @@ describe('Email renderer', function () {
                 {
                     target: 'email',
                     postUrl: 'http://example.com',
-                    design: {
-                        buttonCorners: 'square',
-                        buttonStyle: 'outline'
-                    }
+                    design: expectedObject
                 }
             );
+        };
+
+        it('passes expected data through to lexical renderer (emailCustomization)', async function () {
+            await testLexicalRenderDesignOptions({
+                expectedObject: {
+                    buttonCorners: 'square',
+                    buttonStyle: 'outline',
+                    titleFontWeight: 'semibold',
+                    linkStyle: 'normal',
+                    imageCorners: 'rounded'
+                },
+                labs: {emailCustomization: true}
+            });
+        });
+
+        it('passes expected data through to lexical renderer (emailCustomizationAlpha)', async function () {
+            await testLexicalRenderDesignOptions({
+                expectedObject: {
+                    buttonCorners: 'square',
+                    buttonStyle: 'outline',
+                    titleFontWeight: 'semibold',
+                    linkStyle: 'normal',
+                    imageCorners: 'rounded'
+                },
+                labs: {emailCustomizationAlpha: true}
+            });
         });
     });
 
@@ -2347,6 +2373,7 @@ describe('Email renderer', function () {
             });
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
             assert.deepEqual(data.classes, {
+                container: 'container title-serif',
                 title: 'post-title post-title-no-excerpt post-title-serif post-title-left',
                 titleLink: 'post-title-link post-title-link-left',
                 meta: 'post-meta post-meta-left',
@@ -2577,6 +2604,12 @@ describe('Email renderer', function () {
             }, 'buttonBorderRadius', expectedRadius, {labsEnabled: true});
         }
 
+        async function testImageCorners(imageCorners, expectedBoolean) {
+            return await testDataProperty({
+                image_corners: imageCorners
+            }, 'hasRoundedImageCorners', expectedBoolean, {labsEnabled: true});
+        }
+
         it('sets buttonBorderRadius to correct default (emailCustomizationAlpha)', async function () {
             await testButtonBorderRadius(null, '6px');
         });
@@ -2591,6 +2624,15 @@ describe('Email renderer', function () {
 
         it('sets buttonBorderRadius to correct pill value (emailCustomizationAlpha)', async function () {
             await testButtonBorderRadius('pill', '9999px');
+        });
+
+        it('sets imageCorners to correct rounded value (emailCustomizationAlpha)', async function () {
+            await testImageCorners('rounded', true);
+        });
+
+        it('sets imageCorners to correct square value which is false (emailCustomizationAlpha)', async function () {
+            // null because square has no border radius
+            await testImageCorners('square', false);
         });
 
         async function testHasOutlineButtons(buttonStyle, expectedValue) {
@@ -2639,29 +2681,22 @@ describe('Email renderer', function () {
             });
         });
 
-        [
-            ['normal', 'text-decoration: underline;', {labsEnabled: false}],
-            ['underline', 'text-decoration: underline;', {labsEnabled: true}],
-            ['regular', 'text-decoration: none;', {labsEnabled: true}],
-            ['bold', 'text-decoration: none; font-weight: 700;', {labsEnabled: true}],
-            [null, 'text-decoration: underline;', {labsEnabled: true}]
-        ].forEach(([settingValue, linkStyles, options]) => {
-            it(`link styles for ${settingValue || '`null`'} are correct${options.labsEnabled ? ' (emailCustomizationAlpha)' : ''}`, async function () {
-                labsEnabled = options.labsEnabled ?? false;
+        function testLinkStyle(settingValue, expectedValue, options = {labsEnabled: true}) {
+            testDataProperty({
+                link_style: settingValue
+            }, 'linkStyle', expectedValue, options);
+        }
 
-                const html = '';
-                const post = createModel({
-                    posts_meta: createModel({}),
-                    loaded: ['posts_meta'],
-                    published_at: new Date(0)
-                });
-                const newsletter = createModel({
-                    link_style: settingValue
-                });
-                const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+        it('uses correct default when emailCustomizationAlpha is not enabled', async function () {
+            await testLinkStyle('normal', 'underline', {labsEnabled: false});
+        });
 
-                assert.equal(data.linkStyles, linkStyles);
-            });
+        it('sets linkStyle to correct default (emailCustomizationAlpha)', async function () {
+            await testLinkStyle(null, 'underline', {labsEnabled: true});
+        });
+
+        it('passes newsletter link_style through (emailCustomizationAlpha)', async function () {
+            await testLinkStyle('normal', 'normal', {labsEnabled: false});
         });
     });
 
