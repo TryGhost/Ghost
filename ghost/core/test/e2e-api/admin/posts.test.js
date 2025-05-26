@@ -1,5 +1,5 @@
 const should = require('should');
-const {agentProvider, fixtureManager, mockManager, matchers, assertions} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {anyArray, anyContentVersion, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
 const models = require('../../../core/server/models');
 const escapeRegExp = require('lodash/escapeRegExp');

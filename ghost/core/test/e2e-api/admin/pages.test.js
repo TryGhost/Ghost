@@ -1,8 +1,7 @@
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
 const models = require('../../../core/server/models');
-const {agentProvider, fixtureManager, mockManager, matchers, assertions} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {anyArray, anyBoolean, anyContentVersion, anyEtag, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyUuid, stringMatching} = matchers;
-const {cacheInvalidateHeaderSetToWildcard} = assertions;
 
 const tierSnapshot = {
     id: anyObjectId,
