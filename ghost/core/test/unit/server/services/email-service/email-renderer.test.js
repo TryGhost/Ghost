@@ -2832,7 +2832,8 @@ describe('Email renderer', function () {
                 imageSize: {
                     getImageSizeFromUrl() {
                         return {
-                            width: 2000
+                            width: 2000,
+                            height: null
                         };
                     }
                 },
