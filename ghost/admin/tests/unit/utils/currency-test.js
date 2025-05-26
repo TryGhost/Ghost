@@ -1,6 +1,6 @@
-import {getNonDecimal, getSymbol, isZeroDecimalCurrency, minimumAmountForCurrency} from 'ghost-admin/utils/currency';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
+import {getNonDecimal, getSymbol, isZeroDecimalCurrency, minimumAmountForCurrency} from 'ghost-admin/utils/currency';
 
 describe('Unit: Util: currency', function () {
     describe('isZeroDecimalCurrency', function () {
