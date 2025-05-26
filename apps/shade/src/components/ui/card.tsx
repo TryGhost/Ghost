@@ -150,4 +150,55 @@ const CardFooter = React.forwardRef<
 });
 CardFooter.displayName = 'CardFooter';
 
-export {Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, cardVariants};
+const KpiCardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
+    return (
+        <div
+            className={
+                cn(
+                    'flex flex-col border-r border-border last:border-none items-start gap-4 px-6 py-5 transition-all',
+                    className
+                )}
+            {...props}
+        >
+            {children}
+        </div>
+    );
+};
+
+const KpiCardHeaderContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
+    return (
+        <div className={cn('flex flex-col', className)} {...props}>
+            {children}
+        </div>
+    );
+};
+
+const KpiCardHeaderLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
+    return (
+        <div className={cn('[&_svg]:size-4 flex items-center gap-1.5 text-base text-muted-foreground h-[22px] font-medium', className)} {...props}>
+            {children}
+        </div>
+    );
+};
+
+const KpiCardHeaderValue: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
+    return (
+        <div className={cn('text-[26px] mt-0.5 tracking-tighter leading-none font-semibold', className)} {...props}>
+            {children}
+        </div>
+    );
+};
+
+export {
+    Card,
+    CardHeader,
+    CardFooter,
+    CardTitle,
+    CardDescription,
+    CardContent,
+    KpiCardHeader,
+    KpiCardHeaderContent,
+    KpiCardHeaderLabel,
+    KpiCardHeaderValue,
+    cardVariants
+};

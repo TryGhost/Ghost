@@ -1,6 +1,7 @@
 import Growth from './views/Stats/Growth';
 import Locations from './views/Stats/Locations';
 import Newsletters from './views/Stats/Newsletters';
+import Overview from './views/Stats/Overview';
 import Web from './views/Stats/Web';
 import {RouteObject} from '@tryghost/admin-x-framework';
 // import {withFeatureFlag} from './hooks/withFeatureFlag';
@@ -15,7 +16,7 @@ export const routes: RouteObject[] = [
     {
         path: '',
         index: true,
-        element: <Web />
+        element: <Overview />
     },
     {
         path: '/web/',

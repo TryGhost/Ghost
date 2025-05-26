@@ -23,22 +23,27 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                         <TabsTrigger value="/" onClick={() => {
                             navigate('/');
                         }}>
-                        Web traffic
+                            Overview
+                        </TabsTrigger>
+                        <TabsTrigger value="/web/" onClick={() => {
+                            navigate('/web/');
+                        }}>
+                            Web traffic
                         </TabsTrigger>
                         <TabsTrigger value="/newsletters/" onClick={() => {
                             navigate('/newsletters/');
                         }}>
-                        Newsletters
+                            Newsletters
                         </TabsTrigger>
                         <TabsTrigger value="/growth/" onClick={() => {
                             navigate('/growth/');
                         }}>
-                        Growth
+                            Growth
                         </TabsTrigger>
                         <TabsTrigger value="/locations/" onClick={() => {
                             navigate('/locations/');
                         }}>
-                        Locations
+                            Locations
                         </TabsTrigger>
                     </TabsList>
                 </Tabs>
