@@ -11,8 +11,8 @@
     "scripts": {
         "build": "tsc -p tsconfig.declaration.json && vite build",
         "prepare": "yarn build",
-        "test": "yarn test:types && yarn nx build && vitest run --coverage",
-        "test:unit": "yarn test:types && yarn nx build && vitest run",
+        "test": "yarn test:types && vitest run --coverage",
+        "test:unit": "yarn test:types && vitest run",
         "test:types": "tsc --noEmit",
         "lint:code": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
         "lint": "yarn lint:code && yarn lint:test",
@@ -107,5 +107,24 @@
     "peerDependencies": {
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
+    },
+    "nx": {
+        "targets": {
+            "build": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
+            "dev": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
+            "test:unit": {
+                "dependsOn": [
+                    "^build"
+                ]
+            }
+        }
     }
 }

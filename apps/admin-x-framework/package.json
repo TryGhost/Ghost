@@ -107,6 +107,11 @@
     },
     "nx": {
         "targets": {
+            "build": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
             "dev": {
                 "dependsOn": [
                     "^build"
@@ -114,9 +119,7 @@
             },
             "test:unit": {
                 "dependsOn": [
-                    "test:unit",
-                    "^build",
-                    "@tryghost/admin-x-design-system:test:unit"
+                    "^build"
                 ]
             }
         }
