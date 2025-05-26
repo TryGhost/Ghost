@@ -441,6 +441,8 @@ class PaymentsService {
                 // For comparison with Stripe's unit_amount, we need to handle zero-decimal currencies
                 // For zero-decimal currencies, Stripe's unit_amount will be the same as our tierAmount
                 // For other currencies, Stripe's unit_amount will be 100x our tierAmount
+                // We divide by 100 for zero-decimal currencies because our amounts are stored in cents internally,
+                // but Stripe expects them in the base currency units (e.g., 1 yen instead of 100 cents)
                 const expectedUnitAmount = isZeroDecimalCurrency(tier.currency)
                     ? tierAmount / 100
                     : tierAmount;
@@ -483,6 +485,8 @@ class PaymentsService {
         
         // For zero-decimal currencies like JPY, we don't need to multiply by 100
         // For other currencies, Stripe expects the amount in cents (smallest currency unit)
+        // We divide by 100 for zero-decimal currencies because our amounts are stored in cents internally,
+        // but for currencies like JPY, Stripe expects amounts in whole yen, not "cents of yen"
         const amount = isZeroDecimalCurrency(tier.currency)
             ? priceAmount / 100
             : priceAmount;
