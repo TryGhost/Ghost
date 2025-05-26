@@ -19,6 +19,18 @@ function assertCorrectFrontendHeaders(res) {
     should.exist(res.headers.date);
 }
 
+function assertPaywallRendered(res) {
+    res.text.should.match(/Before paywall/, 'Content before paywall should be rendered');
+    res.text.should.not.match(/After paywall/, 'Content after paywall should not be rendered');
+    res.text.should.match(/This post is for/, 'Paywall should be rendered');
+}
+
+function assertNoPaywallRendered(res) {
+    res.text.should.match(/Before paywall/, 'Content before paywall should be rendered');
+    res.text.should.match(/After paywall/, 'Content after paywall should be rendered');
+    res.text.should.not.match(/This post is for/, 'Paywall should not be rendered');
+}
+
 describe('Frontend Routing: Preview Routes', function () {
     async function addPosts() {
         await testUtils.teardownDb();
@@ -66,16 +78,28 @@ describe('Frontend Routing: Preview Routes', function () {
             });
     });
 
+    it('should assume the user has access to the post if member_status is not provided', async function () {
+        await request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c905/')
+            .expect('Content-Type', /html/)
+            .expect(200)
+            .expect(assertCorrectFrontendHeaders)
+            .expect(assertNoPaywallRendered);
+    });
+
+    it('should render draft as an anonymous user with ?member_status=anonymous', async function () {
+        await request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c905/?member_status=anonymous')
+            .expect('Content-Type', /html/)
+            .expect(200)
+            .expect(assertCorrectFrontendHeaders)
+            .expect(assertPaywallRendered);
+    });
+
     it('should render draft as free member with ?member_status=free', async function () {
         await request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c905/?member_status=free')
             .expect('Content-Type', /html/)
             .expect(200)
             .expect(assertCorrectFrontendHeaders)
-            .expect((res) => {
-                res.text.should.match(/Before paywall/);
-                res.text.should.not.match(/After paywall/);
-                res.text.should.match(/This post is for/);
-            });
+            .expect(assertPaywallRendered);
     });
 
     it('should render draft as paid member with ?member_status=paid', async function () {
@@ -83,11 +107,7 @@ describe('Frontend Routing: Preview Routes', function () {
             .expect('Content-Type', /html/)
             .expect(200)
             .expect(assertCorrectFrontendHeaders)
-            .expect((res) => {
-                res.text.should.match(/Before paywall/);
-                res.text.should.match(/After paywall/);
-                res.text.should.not.match(/This post is for/);
-            });
+            .expect(assertNoPaywallRendered);
     });
 
     it('should redirect draft posts accessed via uuid and edit to admin post edit screen', async function () {
