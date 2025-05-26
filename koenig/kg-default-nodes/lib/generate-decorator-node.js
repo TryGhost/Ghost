@@ -37,9 +37,10 @@ function validateArguments(nodeType, properties) {
  * @param {string} nodeType – The node's type (must be unique)
  * @param {DecoratorNodeProperty[]} properties - An array of properties for the generated class
  * @param {boolean} hasVisibility - Whether to add a visibility property to the node
+ * @param {Function} defaultRenderFn - A function that returns a @tryghost/kg-lexical-html-renderer compatible object, e.g. {element: Div, type: 'inner}
  * @returns {Object} - The generated class.
  */
-export function generateDecoratorNode({nodeType, properties = [], version = 1, hasVisibility = false}) {
+export function generateDecoratorNode({nodeType, properties = [], defaultRenderFn, version = 1, hasVisibility = false}) {
     validateArguments(nodeType, properties);
 
     // Adds a `privateName` field to the properties for convenience (e.g. `__name`):
@@ -172,6 +173,28 @@ export function generateDecoratorNode({nodeType, properties = [], version = 1, h
                 }, {})
             };
             return dataset;
+        }
+
+        exportDOM(options = {}) {
+            // this.__version is used when a node has a version property which
+            // means it's set from the serialized version data at runtime
+            const nodeVersion = this.__version || version;
+
+            if (typeof defaultRenderFn === 'object') {
+                const render = defaultRenderFn[nodeVersion];
+                if (!render) {
+                    throw new Error(`[generateDecoratorNode] ${nodeType}: "defaultRenderFn" for version ${nodeVersion} is required`);
+                }
+                return render(this, options);
+            }
+
+            if (!defaultRenderFn) {
+                throw new Error(`[generateDecoratorNode] ${nodeType}: "defaultRenderFn" is required`);
+            }
+
+            const render = defaultRenderFn;
+
+            return render(this, options);
         }
 
         /* c8 ignore start */

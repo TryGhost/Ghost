@@ -6,7 +6,8 @@ import {parseHeaderNode} from './parsers/header-parser';
 import {renderHeaderNodeV2} from './renderers/v2/header-renderer';
 
 // This is our first node that has a custom version property
-export class HeaderNode extends generateDecoratorNode({nodeType: 'header',
+export class HeaderNode extends generateDecoratorNode({
+    nodeType: 'header',
     properties: [
         {name: 'size', default: 'small'},
         {name: 'style', default: 'dark'},
@@ -32,20 +33,14 @@ export class HeaderNode extends generateDecoratorNode({nodeType: 'header',
         {name: 'buttonTextColor', default: '#000000'},
         {name: 'layout', default: 'full'}, // replaces size
         {name: 'swapped', default: false}
-    ]}
-) {
+    ],
+    defaultRenderFn: {
+        1: renderHeaderNodeV1,
+        2: renderHeaderNodeV2
+    }
+}) {
     static importDOM() {
         return parseHeaderNode(this);
-    }
-
-    exportDOM(options = {}) {
-        if (this.version === 1) {
-            return renderHeaderNodeV1(this, options);
-        }
-
-        if (this.version === 2) {
-            return renderHeaderNodeV2(this, options);
-        }
     }
 }
 

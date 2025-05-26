@@ -2,7 +2,8 @@
 import {generateDecoratorNode} from '../../generate-decorator-node';
 import {renderEmailCtaNode} from './email-cta-renderer';
 
-export class EmailCtaNode extends generateDecoratorNode({nodeType: 'email-cta',
+export class EmailCtaNode extends generateDecoratorNode({
+    nodeType: 'email-cta',
     properties: [
         {name: 'alignment', default: 'left'},
         {name: 'buttonText', default: ''},
@@ -11,11 +12,9 @@ export class EmailCtaNode extends generateDecoratorNode({nodeType: 'email-cta',
         {name: 'segment', default: 'status:free'},
         {name: 'showButton', default: false},
         {name: 'showDividers', default: true}
-    ]}
-) {
-    exportDOM(options = {}) {
-        return renderEmailCtaNode(this, options);
-    }
+    ],
+    defaultRenderFn: renderEmailCtaNode
+}) {
 }
 
 export const $createEmailCtaNode = (dataset) => {

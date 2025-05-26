@@ -2,15 +2,13 @@
 import {generateDecoratorNode} from '../../generate-decorator-node';
 import {renderMarkdownNode} from './markdown-renderer';
 
-export class MarkdownNode extends generateDecoratorNode({nodeType: 'markdown',
+export class MarkdownNode extends generateDecoratorNode({
+    nodeType: 'markdown',
     properties: [
         {name: 'markdown', default: '', urlType: 'markdown', wordCount: true}
-    ]}
-) {
-    exportDOM(options = {}) {
-        return renderMarkdownNode(this, options);
-    }
-
+    ],
+    defaultRenderFn: renderMarkdownNode
+}) {
     isEmpty() {
         return !this.__markdown;
     }

@@ -3,7 +3,8 @@ import {generateDecoratorNode} from '../../generate-decorator-node';
 import {parseProductNode} from './product-parser';
 import {renderProductNode} from './product-renderer';
 
-export class ProductNode extends generateDecoratorNode({nodeType: 'product',
+export class ProductNode extends generateDecoratorNode({
+    nodeType: 'product',
     properties: [
         {name: 'productImageSrc', default: '', urlType: 'url'},
         {name: 'productImageWidth', default: null},
@@ -15,8 +16,9 @@ export class ProductNode extends generateDecoratorNode({nodeType: 'product',
         {name: 'productButtonEnabled', default: false},
         {name: 'productButton', default: ''},
         {name: 'productUrl', default: ''}
-    ]}
-) {
+    ],
+    defaultRenderFn: renderProductNode
+}) {
     /* override */
     exportJSON() {
         // checks if src is a data string
@@ -43,10 +45,6 @@ export class ProductNode extends generateDecoratorNode({nodeType: 'product',
 
     static importDOM() {
         return parseProductNode(this);
-    }
-
-    exportDOM(options = {}) {
-        return renderProductNode(this, options);
     }
 
     isEmpty() {

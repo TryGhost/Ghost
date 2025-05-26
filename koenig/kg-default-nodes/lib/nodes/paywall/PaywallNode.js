@@ -3,13 +3,12 @@ import {generateDecoratorNode} from '../../generate-decorator-node';
 import {parsePaywallNode} from './paywall-parser';
 import {renderPaywallNode} from './paywall-renderer';
 
-export class PaywallNode extends generateDecoratorNode({nodeType: 'paywall'}) {
+export class PaywallNode extends generateDecoratorNode({
+    nodeType: 'paywall',
+    defaultRenderFn: renderPaywallNode
+}) {
     static importDOM() {
         return parsePaywallNode(this);
-    }
-
-    exportDOM(options = {}) {
-        return renderPaywallNode(this, options);
     }
 }
 

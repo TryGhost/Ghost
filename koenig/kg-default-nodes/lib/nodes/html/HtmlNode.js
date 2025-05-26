@@ -3,18 +3,16 @@ import {generateDecoratorNode} from '../../generate-decorator-node';
 import {renderHtmlNode} from './html-renderer';
 import {parseHtmlNode} from './html-parser';
 
-export class HtmlNode extends generateDecoratorNode({nodeType: 'html',
+export class HtmlNode extends generateDecoratorNode({
+    nodeType: 'html',
     hasVisibility: true,
     properties: [
         {name: 'html', default: '', urlType: 'html', wordCount: true}
-    ]}
-) {
+    ],
+    defaultRenderFn: renderHtmlNode
+}) {
     static importDOM() {
         return parseHtmlNode(this);
-    }
-
-    exportDOM(options = {}) {
-        return renderHtmlNode(this, options);
     }
 
     isEmpty() {

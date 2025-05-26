@@ -3,19 +3,17 @@ import {generateDecoratorNode} from '../../generate-decorator-node';
 import {parseCodeBlockNode} from './codeblock-parser';
 import {renderCodeBlockNode} from './codeblock-renderer';
 
-export class CodeBlockNode extends generateDecoratorNode({nodeType: 'codeblock',
+export class CodeBlockNode extends generateDecoratorNode({
+    nodeType: 'codeblock',
     properties: [
         {name: 'code', default: '', wordCount: true},
         {name: 'language', default: ''},
         {name: 'caption', default: '', urlType: 'html', wordCount: true}
-    ]}
-) {
+    ],
+    defaultRenderFn: renderCodeBlockNode
+}) {
     static importDOM() {
         return parseCodeBlockNode(this);
-    }
-
-    exportDOM(options = {}) {
-        return renderCodeBlockNode(this, options);
     }
 
     isEmpty() {

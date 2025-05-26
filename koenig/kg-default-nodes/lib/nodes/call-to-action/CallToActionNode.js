@@ -23,13 +23,9 @@ export class CallToActionNode extends generateDecoratorNode({
         {name: 'imageUrl', default: ''},
         {name: 'imageWidth', default: null},
         {name: 'imageHeight', default: null}
-    ]
+    ],
+    defaultRenderFn: renderCallToActionNode
 }) {
-    /* overrides */
-    exportDOM(options = {}) {
-        return renderCallToActionNode(this, options);
-    }
-
     static importDOM() {
         return parseCallToActionNode(this);
     }

@@ -2,7 +2,8 @@
 import {generateDecoratorNode} from '../../generate-decorator-node';
 import {parseVideoNode} from './video-parser';
 import {renderVideoNode} from './video-renderer';
-export class VideoNode extends generateDecoratorNode({nodeType: 'video',
+export class VideoNode extends generateDecoratorNode({
+    nodeType: 'video',
     properties: [
         {name: 'src', default: '', urlType: 'url'},
         {name: 'caption', default: '', urlType: 'html', wordCount: true},
@@ -17,8 +18,9 @@ export class VideoNode extends generateDecoratorNode({nodeType: 'video',
         {name: 'thumbnailHeight', default: null},
         {name: 'cardWidth', default: 'regular'},
         {name: 'loop', default: false}
-    ]}
-) {
+    ],
+    defaultRenderFn: renderVideoNode
+}) {
     /* override */
     exportJSON() {
         const {src, caption, fileName, mimeType, width, height, duration, thumbnailSrc, customThumbnailSrc, thumbnailWidth, thumbnailHeight, cardWidth, loop} = this;
@@ -47,10 +49,6 @@ export class VideoNode extends generateDecoratorNode({nodeType: 'video',
 
     static importDOM() {
         return parseVideoNode(this);
-    }
-
-    exportDOM(options = {}) {
-        return renderVideoNode(this, options);
     }
 
     get formattedDuration() {

@@ -2,7 +2,8 @@
 import {generateDecoratorNode} from '../../generate-decorator-node';
 import {parseImageNode} from './image-parser';
 import {renderImageNode} from './image-renderer';
-export class ImageNode extends generateDecoratorNode({nodeType: 'image',
+export class ImageNode extends generateDecoratorNode({
+    nodeType: 'image',
     properties: [
         {name: 'src', default: '', urlType: 'url'},
         {name: 'caption', default: '', urlType: 'html', wordCount: true},
@@ -12,8 +13,9 @@ export class ImageNode extends generateDecoratorNode({nodeType: 'image',
         {name: 'width', default: null},
         {name: 'height', default: null},
         {name: 'href', default: '', urlType: 'url'}
-    ]}
-) {
+    ],
+    defaultRenderFn: renderImageNode
+}) {
     /* @override */
     exportJSON() {
         // checks if src is a data string
@@ -37,10 +39,6 @@ export class ImageNode extends generateDecoratorNode({nodeType: 'image',
 
     static importDOM() {
         return parseImageNode(this);
-    }
-
-    exportDOM(options = {}) {
-        return renderImageNode(this, options);
     }
 
     hasEditMode() {

@@ -2,14 +2,13 @@
 import {generateDecoratorNode} from '../../generate-decorator-node';
 import {renderEmailNode} from './email-renderer';
 
-export class EmailNode extends generateDecoratorNode({nodeType: 'email',
+export class EmailNode extends generateDecoratorNode({
+    nodeType: 'email',
     properties: [
         {name: 'html', default: '', urlType: 'html'}
-    ]}
-) {
-    exportDOM(options = {}) {
-        return renderEmailNode(this, options);
-    }
+    ],
+    defaultRenderFn: renderEmailNode
+}) {
 }
 
 export const $createEmailNode = (dataset) => {

@@ -3,13 +3,12 @@ import {generateDecoratorNode} from '../../generate-decorator-node';
 import {renderHorizontalRuleNode} from './horizontalrule-renderer';
 import {parseHorizontalRuleNode} from './horizontalrule-parser';
 
-export class HorizontalRuleNode extends generateDecoratorNode({nodeType: 'horizontalrule'}) {
+export class HorizontalRuleNode extends generateDecoratorNode({
+    nodeType: 'horizontalrule',
+    defaultRenderFn: renderHorizontalRuleNode
+}) {
     static importDOM() {
         return parseHorizontalRuleNode(this);
-    }
-
-    exportDOM(options = {}) {
-        return renderHorizontalRuleNode(this, options);
     }
 
     getTextContent() {

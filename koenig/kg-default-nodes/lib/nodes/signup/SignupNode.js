@@ -3,7 +3,8 @@ import {signupParser} from './signup-parser';
 import {renderSignupCardToDOM} from './signup-renderer';
 import {generateDecoratorNode} from '../../generate-decorator-node';
 
-export class SignupNode extends generateDecoratorNode({nodeType: 'signup',
+export class SignupNode extends generateDecoratorNode({
+    nodeType: 'signup',
     properties: [
         {name: 'alignment', default: 'left'},
         {name: 'backgroundColor', default: '#F0F0F0'},
@@ -20,7 +21,9 @@ export class SignupNode extends generateDecoratorNode({nodeType: 'signup',
         {name: 'subheader', default: '', wordCount: true},
         {name: 'successMessage', default: 'Email sent! Check your inbox to complete your signup.'},
         {name: 'swapped', default: false}
-    ]}) {
+    ],
+    defaultRenderFn: renderSignupCardToDOM
+}) {
     /* override */
     constructor({alignment, backgroundColor, backgroundImageSrc, backgroundSize, textColor, buttonColor, buttonTextColor, buttonText, disclaimer, header, labels, layout, subheader, successMessage, swapped} = {}, key) {
         super(key);
@@ -43,10 +46,6 @@ export class SignupNode extends generateDecoratorNode({nodeType: 'signup',
 
     static importDOM() {
         return signupParser(this);
-    }
-
-    exportDOM(options = {}) {
-        return renderSignupCardToDOM(this, options);
     }
 
     // keeping some custom methods for labels as it requires some special handling

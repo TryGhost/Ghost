@@ -3,7 +3,8 @@ import {generateDecoratorNode} from '../../generate-decorator-node';
 import {parseBookmarkNode} from './bookmark-parser';
 import {renderBookmarkNode} from './bookmark-renderer';
 
-export class BookmarkNode extends generateDecoratorNode({nodeType: 'bookmark',
+export class BookmarkNode extends generateDecoratorNode({
+    nodeType: 'bookmark',
     properties: [
         {name: 'title', default: '', wordCount: true},
         {name: 'description', default: '', wordCount: true},
@@ -13,14 +14,11 @@ export class BookmarkNode extends generateDecoratorNode({nodeType: 'bookmark',
         {name: 'publisher', default: ''},
         {name: 'icon', urlPath: 'metadata.icon', default: '', urlType: 'url'},
         {name: 'thumbnail', urlPath: 'metadata.thumbnail', default: '', urlType: 'url'}
-    ]}
-) {
+    ],
+    defaultRenderFn: renderBookmarkNode
+}) {
     static importDOM() {
         return parseBookmarkNode(this);
-    }
-
-    exportDOM(options = {}) {
-        return renderBookmarkNode(this, options);
     }
 
     /* override */

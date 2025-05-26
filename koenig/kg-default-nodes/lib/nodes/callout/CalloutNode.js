@@ -3,13 +3,15 @@ import {generateDecoratorNode} from '../../generate-decorator-node';
 import {renderCalloutNode} from './callout-renderer';
 import {parseCalloutNode} from './callout-parser';
 
-export class CalloutNode extends generateDecoratorNode({nodeType: 'callout',
+export class CalloutNode extends generateDecoratorNode({
+    nodeType: 'callout',
     properties: [
         {name: 'calloutText', default: '', wordCount: true},
         {name: 'calloutEmoji', default: '💡'},
         {name: 'backgroundColor', default: 'blue'}
-    ]}
-) {
+    ],
+    defaultRenderFn: renderCalloutNode
+}) {
     /* override */
     constructor({calloutText, calloutEmoji, backgroundColor} = {}, key) {
         super(key);
@@ -20,10 +22,6 @@ export class CalloutNode extends generateDecoratorNode({nodeType: 'callout',
 
     static importDOM() {
         return parseCalloutNode(this);
-    }
-
-    exportDOM(options = {}) {
-        return renderCalloutNode(this, options);
     }
 }
 
