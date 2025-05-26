@@ -221,7 +221,7 @@
   "devDependencies": {
     "@actions/core": "1.11.1",
     "@playwright/test": "1.52.0",
-    "@tryghost/express-test": "0.14.0",
+    "@tryghost/express-test": "0.14.1",
     "@tryghost/webhook-mock-receiver": "0.2.17",
     "@types/bookshelf": "1.2.9",
     "@types/common-tags": "1.8.4",
