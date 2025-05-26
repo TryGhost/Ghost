@@ -180,6 +180,20 @@ export function generateDecoratorNode({nodeType, properties = [], defaultRenderF
             // means it's set from the serialized version data at runtime
             const nodeVersion = this.__version || version;
 
+            if (options.feature?.emailCustomizationAlpha && options.renderers?.[nodeType]) {
+                const render = options.renderers[nodeType];
+
+                if (typeof render === 'object') {
+                    const versionRenderer = render[nodeVersion];
+                    if (!versionRenderer) {
+                        throw new Error(`[generateDecoratorNode] ${nodeType}: options.renderers['${nodeType}'] for version ${nodeVersion} is required`);
+                    }
+                    return versionRenderer(this, options);
+                } else {
+                    return render(this, options);
+                }
+            }
+
             if (typeof defaultRenderFn === 'object') {
                 const render = defaultRenderFn[nodeVersion];
                 if (!render) {
