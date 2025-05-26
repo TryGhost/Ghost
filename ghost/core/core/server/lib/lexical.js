@@ -7,6 +7,7 @@ const storage = require('../adapters/storage');
 
 let nodes;
 let lexicalHtmlRenderer;
+let customRenderers;
 let urlTransformMap;
 let postsService;
 let serializePosts;
@@ -52,6 +53,18 @@ module.exports = {
         return lexicalHtmlRenderer;
     },
 
+    get customRenderers() {
+        if (!labs.isSet('emailCustomizationAlpha')) {
+            return undefined;
+        }
+
+        if (!customRenderers) {
+            customRenderers = require('../services/koenig/renderers');
+        }
+
+        return customRenderers;
+    },
+
     async render(lexical, userOptions = {}) {
         if (!postsService) {
             const getPostServiceInstance = require('../services/posts/posts-service');
@@ -77,7 +90,8 @@ module.exports = {
                 contentVisibility: labs.isSet('contentVisibility'),
                 emailCustomization: labs.isSet('emailCustomization'),
                 emailCustomizationAlpha: labs.isSet('emailCustomizationAlpha')
-            }
+            },
+            renderers: this.customRenderers
         }, userOptions);
 
         return await this.lexicalHtmlRenderer.render(lexical, options);

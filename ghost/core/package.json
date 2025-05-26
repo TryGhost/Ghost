@@ -126,6 +126,7 @@
     "chalk": "4.1.2",
     "charset": "1.0.1",
     "cheerio": "0.22.0",
+    "clsx": "2.1.1",
     "cluster-key-slot": "1.1.2",
     "common-tags": "1.8.2",
     "compression": "1.8.0",
