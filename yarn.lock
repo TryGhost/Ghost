@@ -7339,10 +7339,10 @@
     "@stdlib/utils-copy" "^0.2.0"
     uuid "^9.0.0"
 
-"@tryghost/express-test@0.14.0":
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/express-test/-/express-test-0.14.0.tgz#e1b926703d8de07084f35202e15aab9d5eb765c9"
-  integrity sha512-BE/B9BFmHk4XmHHuKDeEtbQNuEUZs5IrE6DDKJC29Z3xRZOVTJ2ckc+XNx9b72PJ2LigMCm6INydFJGJ2jLd8w==
+"@tryghost/express-test@0.14.1":
+  version "0.14.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/express-test/-/express-test-0.14.1.tgz#28ba5b7086dea36e1b603dd8249c837fc043ebd8"
+  integrity sha512-IHYtgwEFwwOSor7cf2kG5NsHeuLzX5n8R1CeYqK1ofduwZUv5JKfmgIqRCzhbVNS7VruVmOaXCQusy5OYGqymQ==
   dependencies:
     "@tryghost/jest-snapshot" "^0.5.18"
     cookiejar "^2.1.3"
