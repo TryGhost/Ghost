@@ -22,11 +22,11 @@ class AdminPublicationPage extends AdminPage {
     }
 
     async setLanguage(language) {
-        if (!language || typeof language !== 'string') {
+        if (!language || typeof language !== 'string' || language.trim().length === 0) {
             throw new Error('Language must be a non-empty string');
         }
 
-        await this.#languageField.fill(language);
+        await this.#languageField.fill(language.trim());
         await this.#saveButton.click();
     }
 
