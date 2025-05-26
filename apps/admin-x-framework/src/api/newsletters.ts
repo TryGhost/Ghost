@@ -34,7 +34,6 @@ export type Newsletter = {
     show_latest_posts: boolean;
     background_color: string;
     header_color: string;
-    border_color: string | null;
     button_color: string | null;
     link_color: string | null;
     title_color: string | null;

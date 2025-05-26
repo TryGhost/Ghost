@@ -521,30 +521,6 @@ const Sidebar: React.FC<{
                         value={newsletter.link_color}
                         onChange={color => updateNewsletter({link_color: color})}
                     />
-                    {/* <ColorPickerField
-                        clearButtonValue={null}
-                        direction='rtl'
-                        swatches={[
-                            {
-                                hex: siteData.accent_color,
-                                value: 'accent',
-                                title: 'Accent'
-                            },
-                            {
-                                hex: backgroundColorIsDark() ? '#ffffff' : '#000000',
-                                value: 'auto',
-                                title: 'Auto'
-                            },
-                            {
-                                value: null,
-                                title: 'Transparent',
-                                hex: '#00000000'
-                            }
-                        ]}
-                        title='Border color'
-                        value={newsletter.border_color}
-                        onChange={color => updateNewsletter({border_color: color})}
-                    /> */}
                 </Form>
 
                 <Form className='mt-6' gap='xs' margins='lg' title='Elements'>

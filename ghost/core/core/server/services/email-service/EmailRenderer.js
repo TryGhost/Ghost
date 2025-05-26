@@ -940,29 +940,6 @@ class EmailRenderer {
         return '#ffffff';
     }
 
-    #getBorderColor(newsletter, accentColor) {
-        /** @type {'transparent' | 'accent' | 'dark' | string | null} */
-        const value = newsletter.get('border_color');
-
-        const validHex = /#([0-9a-f]{3}){1,2}$/i;
-
-        if (validHex.test(value)) {
-            return value;
-        }
-
-        if (value === 'auto') {
-            const backgroundColor = this.#getBackgroundColor(newsletter);
-            return textColorForBackgroundColor(backgroundColor).hex();
-        }
-
-        if (value === 'accent') {
-            return accentColor;
-        }
-
-        // value === 'transparent', value === null, value is not valid hex
-        return null;
-    }
-
     #getTitleColor(newsletter, accentColor) {
         /** @type {'accent' | 'auto' | string | null} */
         const value = newsletter.get('title_color');
@@ -1044,8 +1021,6 @@ class EmailRenderer {
 
         const backgroundColor = this.#getBackgroundColor(newsletter);
         const backgroundIsDark = textColorForBackgroundColor(backgroundColor).hex().toLowerCase() === '#ffffff';
-        const borderColor = this.#getBorderColor(newsletter, accentColor);
-        const secondaryBorderColor = textColorForBackgroundColor(backgroundColor).alpha(0.12).toString();
         const titleColor = this.#getTitleColor(newsletter, accentColor);
         const titleWeight = this.#getTitleWeight(newsletter);
         const titleStrongWeight = this.#getTitleStrongWeight(titleWeight);
@@ -1213,8 +1188,6 @@ class EmailRenderer {
             showBadge: newsletter.get('show_badge'),
             backgroundColor,
             backgroundIsDark,
-            borderColor,
-            secondaryBorderColor,
             titleColor,
             titleWeight,
             titleStrongWeight,

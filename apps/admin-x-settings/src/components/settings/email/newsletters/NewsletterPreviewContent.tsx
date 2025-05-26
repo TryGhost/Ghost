@@ -37,7 +37,6 @@ const NewsletterPreviewContent: React.FC<{
 
     backgroundColor?: string;
     headerColor?: string;
-    borderColor?: string;
     accentColor?: string;
     textColor?: string;
     secondaryTextColor?: string;

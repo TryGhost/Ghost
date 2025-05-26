@@ -43,7 +43,6 @@ module.exports = {
         show_subscription_details: {type: 'boolean', nullable: false, defaultTo: false},
         show_latest_posts: {type: 'boolean', nullable: false, defaultTo: false},
         background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'light'},
-        border_color: {type: 'string', maxlength: 50, nullable: true},
         title_color: {type: 'string', maxlength: 50, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},

@@ -60,26 +60,6 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         return 'transparent';
     };
 
-    const borderColor = () => {
-        const value = newsletter.border_color;
-
-        const validHex = /#([0-9a-f]{3}){1,2}$/i;
-
-        if (validHex.test(value || '')) {
-            return value;
-        }
-
-        if (value === 'auto') {
-            return textColorForBackgroundColor(backgroundColor()).hex();
-        }
-
-        if (value === 'accent') {
-            return siteData.accent_color;
-        }
-
-        return null;
-    };
-
     const buttonColor = () => {
         const value = newsletter.button_color;
 
@@ -116,8 +96,6 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
 
         return textColorForBackgroundColor(backgroundColor()).hex();
     };
-
-    const secondaryBorderColor = textColorForBackgroundColor(backgroundColor()).alpha(0.12).toString();
 
     const titleColor = () => {
         const value = newsletter.title_color;
@@ -176,8 +154,6 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
     const colors = hasEmailCustomizationPrototype ? {
         backgroundColor: backgroundColor(),
         headerColor: headerColor(),
-        borderColor: borderColor() || undefined,
-        secondaryBorderColor,
         titleColor: titleColor() || undefined,
         sectionTitleColor: sectionTitleColor() || undefined,
         buttonColor: buttonColor() || undefined,
