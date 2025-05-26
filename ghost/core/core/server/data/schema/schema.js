@@ -50,7 +50,12 @@ module.exports = {
         button_style: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'fill', validations: {isIn: [['fill', 'outline']]}},
         title_font_weight: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'bold', validations: {isIn: [['normal', 'medium', 'semibold', 'bold']]}},
         link_style: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'underline', validations: {isIn: [['underline', 'regular', 'bold']]}},
-        image_corners: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'square', validations: {isIn: [['square', 'rounded']]}}
+        image_corners: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'square', validations: {isIn: [['square', 'rounded']]}},
+        header_background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'transparent'},
+        section_title_color: {type: 'string', maxlength: 50, nullable: true},
+        divider_color: {type: 'string', maxlength: 50, nullable: true},
+        button_color: {type: 'string', maxlength: 50, nullable: true},
+        link_color: {type: 'string', maxlength: 50, nullable: true}
     },
     posts: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

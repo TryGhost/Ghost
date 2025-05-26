@@ -36,7 +36,7 @@ const NewsletterPreviewContent: React.FC<{
     showBadge?: boolean;
 
     backgroundColor?: string;
-    headerColor?: string;
+    headerBackgroundColor?: string;
     accentColor?: string;
     textColor?: string;
     secondaryTextColor?: string;
@@ -79,7 +79,7 @@ const NewsletterPreviewContent: React.FC<{
     showBadge,
 
     backgroundColor,
-    headerColor,
+    headerBackgroundColor,
     accentColor,
     textColor,
     secondaryTextColor,
@@ -159,7 +159,7 @@ const NewsletterPreviewContent: React.FC<{
 
                     {/* Email content */}
                     <div className="overflow-y-auto p-4 text-sm" style={{backgroundColor}}>
-                        <div className="px-[5.4rem]" style={{backgroundColor: headerColor}}>
+                        <div className="px-[5.4rem]" style={{backgroundColor: headerBackgroundColor}}>
                             {headerImage && (
                                 <div>
                                     <img alt="" className="mb-4 block" src={headerImage} />
@@ -237,7 +237,7 @@ const NewsletterPreviewContent: React.FC<{
                             )}
                         </div>
 
-                        <div className={clsx('px-[5.4rem]', headerColor !== 'transparent' && 'pt-10')}>
+                        <div className={clsx('px-[5.4rem]', headerBackgroundColor !== 'transparent' && 'pt-10')}>
                             <div className={clsx(
                                 'max-w-[600px] border-b border-grey-200 pb-5 leading-[27.2px] text-black',
                                 dividerStyle === 'dashed' && 'border-dashed',

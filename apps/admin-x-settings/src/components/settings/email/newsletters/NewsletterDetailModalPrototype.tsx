@@ -428,8 +428,8 @@ const Sidebar: React.FC<{
                             }
                         ]}
                         title='Header background color'
-                        value={newsletter.header_color || 'transparent'}
-                        onChange={color => updateNewsletter({header_color: color!})}
+                        value={newsletter.header_background_color || 'transparent'}
+                        onChange={color => updateNewsletter({header_background_color: color!})}
                     />
                     <ColorPickerField
                         direction='rtl'
