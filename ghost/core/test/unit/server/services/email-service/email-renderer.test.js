@@ -2833,7 +2833,7 @@ describe('Email renderer', function () {
                     getImageSizeFromUrl() {
                         return {
                             width: 2000,
-                            height: 1000
+                            height: null
                         };
                     }
                 },
@@ -2845,7 +2845,7 @@ describe('Email renderer', function () {
             });
             const response = await emailRenderer.limitImageWidth('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
             assert.equal(response.width, 600);
-            assert.equal(response.height, 300);
+            assert.equal(response.height, null);
             assert.equal(response.href, 'https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=1200');
         });
 
