@@ -35,6 +35,7 @@ describe('Frontend Routing: Preview Routes', function () {
     async function addPosts() {
         await testUtils.teardownDb();
         await testUtils.initData();
+        await testUtils.fixtures.insertExtraTiers();
         await testUtils.fixtures.insertPostsAndTags();
         await testUtils.fixtures.insertGatedPosts();
     }
@@ -92,6 +93,14 @@ describe('Frontend Routing: Preview Routes', function () {
             .expect(200)
             .expect(assertCorrectFrontendHeaders)
             .expect(assertPaywallRendered);
+    });
+
+    it('should render draft as a member with access to the post if visibility is tiers and member_status is paid', async function () {
+        await request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c906/?member_status=paid')
+            .expect('Content-Type', /html/)
+            .expect(200)
+            .expect(assertCorrectFrontendHeaders)
+            .expect(assertNoPaywallRendered);
     });
 
     it('should render draft as free member with ?member_status=free', async function () {
