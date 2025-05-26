@@ -3,7 +3,7 @@ import React from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, KpiCardHeader, KpiCardHeaderContent, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, KpiCardHeader, KpiCardHeaderContent, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface OverviewKPICardProps {
@@ -52,6 +52,61 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     );
 };
 
+interface PostTableCellProps {
+    featureImage?: string;
+    title: string;
+    publishDate: string;
+}
+
+const PostTableCell: React.FC<PostTableCellProps> = ({
+    featureImage,
+    title,
+    publishDate
+}) => {
+    return (
+        <div className='flex items-center gap-3 py-1 pl-1 text-sm'>
+            <div className='h-14 w-20 min-w-20 rounded-md bg-cover' style={{
+                backgroundImage: featureImage
+            }}></div>
+            <div className='flex flex-col gap-0.5 leading-tight'>
+                <span className='font-semibold'>{title}</span>
+                <span className='text-sm font-normal text-muted-foreground'>{publishDate}</span>
+            </div>
+        </div>
+    );
+};
+
+// interface HelpCardProps {
+//     className?: string;
+//     title: string;
+//     description: string;
+//     url: string;
+//     children?: React.ReactNode;
+// }
+
+// const HelpCard: React.FC<HelpCardProps> = ({
+//     className,
+//     title,
+//     description,
+//     url,
+//     children
+// }) => {
+//     return (
+//         <a className={cn(
+//             'block rounded-xl border bg-card p-6 transition-all hover:shadow-xs hover:bg-accent group/card',
+//             className
+//         )} href={url} rel='noreferrer' target='_blank'>
+//             <div className='flex items-center gap-6'>
+//                 {children}
+//                 <div className='flex flex-col gap-0.5 leading-tight'>
+//                     <span className='text-lg font-semibold'>{title}</span>
+//                     <span className='text-sm font-normal text-muted-foreground'>{description}</span>
+//                 </div>
+//             </div>
+//         </a>
+//     );
+// };
+
 const Overview: React.FC = () => {
     // const tabConfig = {
     //     visitors: {
@@ -87,7 +142,7 @@ const Overview: React.FC = () => {
 
                     <OverviewKPICard
                         description='How number of members of your publication changed over time'
-                        formattedValue='1,456'
+                        formattedValue='31,329'
                         iconName='User'
                         linkto='/growth/'
                         title='Members'
@@ -97,7 +152,7 @@ const Overview: React.FC = () => {
 
                     <OverviewKPICard
                         description='Monthly recurring revenue changes over time'
-                        formattedValue='1,456'
+                        formattedValue='$2,456'
                         iconName='DollarSign'
                         linkto='/growth/'
                         title='MRR'
@@ -106,22 +161,30 @@ const Overview: React.FC = () => {
                     </OverviewKPICard>
                 </div>
                 <div className='grid grid-cols-1 gap-8 lg:grid-cols-3'>
-                    <Card>
+                    <Card className='group/card'>
                         <CardHeader>
-                            <CardTitle>Latest post performance</CardTitle>
+                            <CardTitle className='flex items-baseline justify-between leading-snug'>
+                                Latest post performance
+                                <Button className='-translate-x-2 opacity-0 transition-all group-hover/card:translate-x-0 group-hover/card:opacity-100' variant='outline'>
+                                    Details
+                                    <LucideIcon.ArrowRight size={16} strokeWidth={1.5} />
+                                </Button>
+                            </CardTitle>
                             <CardDescription className='hidden'>How your last post did</CardDescription>
                         </CardHeader>
                         <CardContent className='flex flex-col items-stretch gap-6'>
-                            <div className='flex flex-col items-stretch gap-3'>
+                            <div className='flex flex-col items-stretch gap-2'>
                                 <div className='aspect-video w-full rounded-md bg-cover' style={{
                                     backgroundImage: 'url(https://picsum.photos/1920/1080?random)'
                                 }}></div>
+                                <div className='mt-1 font-semibold leading-tight'>The Rise of DIY Synth Culture: Building Your First Rig</div>
+                                <div className='text-sm text-muted-foreground'>Published and sent 5 days ago</div>
                             </div>
                             <div className='flex flex-col items-stretch gap-2 text-sm'>
                                 <div className='flex items-center justify-between'>
                                     <div className='flex items-center gap-1 font-medium text-muted-foreground'>
-                                        <LucideIcon.Eye size={16} strokeWidth={1.5} />
-                                        Views
+                                        <LucideIcon.MousePointer size={16} strokeWidth={1.5} />
+                                        Visitors
                                     </div>
                                     <div className='font-mono'>1,234</div>
                                 </div>
@@ -130,52 +193,126 @@ const Overview: React.FC = () => {
                                         <LucideIcon.MailOpen size={16} strokeWidth={1.5} />
                                         Open rate
                                     </div>
-                                    <div className='font-mono'>1,234</div>
+                                    <div className='font-mono'>71%</div>
                                 </div>
                                 <div className='flex items-center justify-between'>
                                     <div className='flex items-center gap-1 font-medium text-muted-foreground'>
                                         <LucideIcon.User size={16} strokeWidth={1.5} />
                                         Members
                                     </div>
-                                    <div className='font-mono'>1,234</div>
+                                    <div className='font-mono'>+3</div>
                                 </div>
                             </div>
                         </CardContent>
                         <CardFooter className='flex items-center justify-between gap-3'>
                             <Button><LucideIcon.Share /> Share post</Button>
-                            <Button variant='outline'><LucideIcon.BarChart />Post analytics</Button>
                         </CardFooter>
                     </Card>
-                    <Card className='lg:col-span-2'>
-                        <CardHeader className='hidden'>
-                            <CardTitle>Top posts</CardTitle>
-                            <CardDescription>Best performing post in the period</CardDescription>
+                    <Card className='group/card lg:col-span-2'>
+                        <CardHeader>
+                            <CardTitle className='flex items-baseline justify-between leading-snug'>
+                                Top posts in the last 30 days
+                                <Button className='-translate-x-2 opacity-0 transition-all group-hover/card:translate-x-0 group-hover/card:opacity-100' variant='outline'>
+                                    View all
+                                    <LucideIcon.ArrowRight size={16} strokeWidth={1.5} />
+                                </Button>
+                            </CardTitle>
+                            <CardDescription className='hidden'>Best performing post in the period</CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            Top posts
+                        <CardContent className='-mt-4'>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className='pl-0'>Post title</TableHead>
+                                        <TableHead className='text-right'>Visitors</TableHead>
+                                        <TableHead className='whitespace-nowrap text-right'>Open rate</TableHead>
+                                        <TableHead className='text-right'>Members</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    <TableRow>
+                                        <TableCell className="font-medium">
+                                            <PostTableCell
+                                                featureImage='url(https://picsum.photos/1920/1080?random?v=1)'
+                                                publishDate='13 days ago'
+                                                title='The Rise of DIY Synth Culture: Building Your First Rig'
+                                            />
+                                        </TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>2,345</TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>56%</TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>+2</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-medium">
+                                            <PostTableCell
+                                                featureImage='url(https://picsum.photos/1920/1080?random?v=2)'
+                                                publishDate='13 days ago'
+                                                title='Sculpting Sound: A Deep Dive into Modern Synthesizers'
+                                            />
+                                        </TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>2,345</TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>56%</TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>+2</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-medium">
+                                            <PostTableCell
+                                                featureImage='url(https://picsum.photos/1920/1080?random?v=3)'
+                                                publishDate='13 days ago'
+                                                title='From Voltage to Vibe: How Analog Synths Shape Sound'
+                                            />
+                                        </TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>2,345</TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>56%</TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>+2</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-medium">
+                                            <PostTableCell
+                                                featureImage='url(https://picsum.photos/1920/1080?random?v=4)'
+                                                publishDate='13 days ago'
+                                                title='Digital vs. Analog: The Great Synth Showdown'
+                                            />
+                                        </TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>2,345</TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>56%</TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>+2</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-medium">
+                                            <PostTableCell
+                                                featureImage='url(https://picsum.photos/1920/1080?random?v=5)'
+                                                publishDate='13 days ago'
+                                                title='Inside the Patchbay: Creative Routing Techniques for Unique Sounds'
+                                            />
+                                        </TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>2,345</TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>56%</TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>+2</TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
                         </CardContent>
                     </Card>
                 </div>
-                <div className='grid grid-cols-1 gap-8 lg:grid-cols-2'>
-                    <Card>
-                        <CardHeader className='hidden'>
-                            <CardTitle>Growing your audience</CardTitle>
-                            <CardDescription>Tips for growth</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            Bookmark card 1
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className='hidden'>
-                            <CardTitle>Analytics in Ghost</CardTitle>
-                            <CardDescription>Help to get started</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            Bookmark card 1
-                        </CardContent>
-                    </Card>
-                </div>
+                {/* <div className='grid grid-cols-1 gap-8 lg:grid-cols-2'>
+                    <HelpCard
+                        description='Find out how to review the performance of your content and get the most out of post analytics in Ghost.'
+                        title='How to grow your audience?'
+                        url='https://ghost.org/help'>
+                        <div className='flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-r from-muted-foreground/15 to-muted-foreground/10 p-4 opacity-80 transition-all group-hover/card:opacity-100'>
+                            <LucideIcon.Sprout className='text-green' size={40} strokeWidth={1} />
+                        </div>
+                    </HelpCard>
+                    <HelpCard
+                        description='Use these content distribution tactics to get more people to discover your work and increase engagement.'
+                        title='Analytics in Ghost'
+                        url='https://ghost.org/help'>
+                        <div className='flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-r from-muted-foreground/15 to-muted-foreground/10 p-4 opacity-80 transition-all group-hover/card:opacity-100'>
+                            <LucideIcon.ChartColumnIncreasing className='text-blue' size={40} strokeWidth={1} />
+                        </div>
+                    </HelpCard>
+                </div> */}
             </StatsView>
         </StatsLayout>
     );
