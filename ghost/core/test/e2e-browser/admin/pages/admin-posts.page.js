@@ -1,7 +1,10 @@
 const AdminPage = require('./admin-page');
 
 class AdminPostsPage extends AdminPage {
+    /** @private {import('@playwright/test').Locator} Locator for publish preview buttons */
     #previewPostButtons = null;
+
+    /** @private {import('@playwright/test').Locator} Locator for email preview buttons */
     #emailPreviewPostButtons = null;
     #emailPreviewPostButtonsSelector = '[data-test-button="email-preview"]';
 
@@ -16,12 +19,12 @@ class AdminPostsPage extends AdminPage {
     }
 
     async previewPost() {
-        this.#previewPostButtons.first().click();
+        await this.#previewPostButtons.first().click();
     }
 
     async emailPreviewForPost() {
-        this.page.waitForSelector(this.#emailPreviewPostButtonsSelector);
-        this.#emailPreviewPostButtons.first().click();
+        await this.page.waitForSelector(this.#emailPreviewPostButtonsSelector);
+        await this.#emailPreviewPostButtons.first().click();
     }
 }
 
