@@ -25,9 +25,10 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
 
     const [content, setContent] = useState('');
     const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+    const [isPosting, setIsPosting] = useState(false);
     const navigate = useNavigate();
 
-    const isDisabled = !content.trim() || !user;
+    const isDisabled = !content.trim() || !user || isPosting;
 
     const handlePost = async () => {
         const trimmedContent = content.trim();
@@ -37,12 +38,15 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
         }
 
         try {
+            setIsPosting(true);
             await noteMutation.mutateAsync({content: trimmedContent, imageUrl: uploadedImageUrl || undefined});
             navigate('/feed');
             setIsOpen(false);
         } catch (error) {
             // Handle error case if needed
             // console.error('Failed to create post:', error);
+        } finally {
+            setIsPosting(false);
         }
     };
 
@@ -200,7 +204,9 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
                     <DialogClose>
                         <Button className='min-w-16' variant='outline'>Cancel</Button>
                     </DialogClose>
-                    <Button className='min-w-16' disabled={isDisabled || isImageUploading} onClick={handlePost}>Post</Button>
+                    <Button className='min-w-16' disabled={isDisabled || isImageUploading} onClick={handlePost}>
+                        {isPosting ? <LoadingIndicator color='light' size='sm' /> : 'Post'}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
