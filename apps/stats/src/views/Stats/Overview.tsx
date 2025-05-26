@@ -1,10 +1,15 @@
+import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import DateRangeSelect from './components/DateRangeSelect';
 import React from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, H3, KpiCardHeader, KpiCardHeaderContent, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn} from '@tryghost/shade';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {AlignedAxisTick, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H3, KpiCardHeader, KpiCardHeaderContent, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn, formatDisplayDateWithRange, formatNumber, formatQueryDate, getRangeDates, getYRange, sanitizeChartData} from '@tryghost/shade';
+import {getAudienceQueryParam} from './components/AudienceSelect';
+import {getStatEndpointUrl, getToken, useNavigate} from '@tryghost/admin-x-framework';
+import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useQuery} from '@tinybirdco/charts';
+// import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
 interface OverviewKPICardProps {
     linkto: string;
@@ -40,7 +45,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
-            <KpiCardHeader className='grow border-none'>
+            <KpiCardHeader className='grow border-none pb-2'>
                 <KpiCardHeaderLabel>
                     {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
                     {title}
@@ -115,39 +120,145 @@ const HelpCard: React.FC<HelpCardProps> = ({
     );
 };
 
+interface WebKpiDataItem {
+    date: string;
+    [key: string]: string | number;
+}
+
 const Overview: React.FC = () => {
-    // const tabConfig = {
-    //     visitors: {
-    //         color: 'hsl(var(--chart-blue))'
-    //     },
-    //     'free-members': {
-    //         color: 'hsl(var(--chart-green))'
-    //     },
-    //     'paid-members': {
-    //         color: 'hsl(var(--chart-purple))'
-    //     },
-    //     mrr: {
-    //         color: 'hsl(var(--chart-orange))'
-    //     }
-    // };
+    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
+    const {range, audience} = useGlobalData();
+    const {startDate, endDate, timezone} = getRangeDates(range);
+
+    const params = {
+        site_uuid: statsConfig?.id || '',
+        date_from: formatQueryDate(startDate),
+        date_to: formatQueryDate(endDate),
+        timezone: timezone,
+        member_status: getAudienceQueryParam(audience)
+    };
+
+    const {data: visitorsData, loading: visitorsLoading} = useQuery({
+        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
+        token: getToken(statsConfig),
+        params
+    });
+
+    const visitorsChartData = sanitizeChartData<WebKpiDataItem>(visitorsData as WebKpiDataItem[] || [], range, 'visits' as keyof WebKpiDataItem, 'sum')?.map((item: WebKpiDataItem) => {
+        const value = Number(item.visits);
+        return {
+            date: String(item.date),
+            value,
+            formattedValue: formatNumber(value),
+            label: 'Visitors'
+        };
+    });
+
+    const isLoading = isConfigLoading || visitorsLoading;
+
+    // Calculate KPI values
+    const getKpiValues = () => {
+        // Visitors data
+        if (!visitorsData?.length) {
+            return {visits: 0};
+        }
+
+        const totalVisits = visitorsData.reduce((sum, item) => sum + Number(item.visits), 0);
+
+        return {
+            visits: formatNumber(totalVisits)
+        };
+    };
+
+    const kpiValues = getKpiValues();
+
+    const visitorsChartConfig = {
+        value: {
+            label: 'Visitors'
+        }
+    } satisfies ChartConfig;
+
+    const yRange = [getYRange(visitorsChartData).min, getYRange(visitorsChartData).max];
 
     return (
         <StatsLayout>
             <StatsHeader>
                 <DateRangeSelect />
             </StatsHeader>
-            <StatsView isLoading={false}>
+            <StatsView isLoading={isLoading}>
                 <div className='grid grid-cols-1 gap-8 lg:grid-cols-3'>
                     <OverviewKPICard
                         description='Number of individual people who visited your website'
                         diffDirection='down'
                         diffValue='-2.4%'
-                        formattedValue='2,456'
+                        formattedValue={kpiValues.visits}
                         iconName='MousePointer'
                         linkto='/web/'
                         title='Unique visitors'
                     >
-                        Chart
+                        <ChartContainer className='-mb-3 h-[10vw] max-h-[240px] w-full' config={visitorsChartConfig}>
+                            <Recharts.AreaChart
+                                data={visitorsChartData}
+                                margin={{
+                                    left: 4,
+                                    right: 4,
+                                    top: 0
+                                }}
+                            >
+                                <Recharts.CartesianGrid horizontal={false} vertical={false} />
+                                <Recharts.XAxis
+                                    axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
+                                    dataKey="date"
+                                    interval={0}
+                                    tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(value, range)} />}
+                                    tickFormatter={value => formatDisplayDateWithRange(value, range)}
+                                    tickLine={false}
+                                    tickMargin={10}
+                                    ticks={visitorsChartData && visitorsChartData.length > 0 ? [visitorsChartData[0].date, visitorsChartData[visitorsChartData.length - 1].date] : []}
+                                />
+                                <Recharts.YAxis
+                                    axisLine={false}
+                                    domain={yRange}
+                                    scale="linear"
+                                    tickFormatter={(value) => {
+                                        return formatNumber(value);
+                                    }}
+                                    tickLine={false}
+                                    ticks={[]}
+                                    width={0}
+                                />
+                                <ChartTooltip
+                                    content={<CustomTooltipContent color={'hsl(var(--chart-blue))'} range={range} />}
+                                    cursor={true}
+                                    isAnimationActive={false}
+                                    position={{y: 10}}
+                                />
+                                <defs>
+                                    <linearGradient id="fillChart" x1="0" x2="0" y1="0" y2="1">
+                                        <stop
+                                            offset="5%"
+                                            stopColor={'hsl(var(--chart-blue))'}
+                                            stopOpacity={0.8}
+                                        />
+                                        <stop
+                                            offset="95%"
+                                            stopColor={'hsl(var(--chart-blue))'}
+                                            stopOpacity={0.1}
+                                        />
+                                    </linearGradient>
+                                </defs>
+                                <Recharts.Area
+                                    dataKey="value"
+                                    fill="url(#fillChart)"
+                                    fillOpacity={0.2}
+                                    isAnimationActive={false}
+                                    stackId="a"
+                                    stroke={'hsl(var(--chart-blue))'}
+                                    strokeWidth={2}
+                                    type="linear"
+                                />
+                            </Recharts.AreaChart>
+                        </ChartContainer>
                     </OverviewKPICard>
 
                     <OverviewKPICard
