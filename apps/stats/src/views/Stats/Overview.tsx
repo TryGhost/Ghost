@@ -6,7 +6,7 @@ import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {AlignedAxisTick, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H3, KpiCardHeader, KpiCardHeaderContent, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn, formatDisplayDateWithRange, formatNumber, formatQueryDate, getRangeDates, getYRange, sanitizeChartData} from '@tryghost/shade';
 import {getAudienceQueryParam} from './components/AudienceSelect';
-import {getStatEndpointUrl, getToken, useNavigate} from '@tryghost/admin-x-framework';
+import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 // import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
@@ -24,7 +24,7 @@ interface OverviewKPICardProps {
 }
 
 const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
-    linkto,
+    // linkto,
     title,
     iconName,
     description,
@@ -34,13 +34,11 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     formattedValue,
     children
 }) => {
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const IconComponent = LucideIcon[iconName] as LucideIcon.LucideIcon;
 
     return (
-        <Card className='hover:cursor-pointer hover:bg-accent' onClick={() => {
-            navigate(linkto);
-        }}>
+        <Card>
             <CardHeader className='hidden'>
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
@@ -96,6 +94,98 @@ interface HelpCardProps {
     url: string;
     children?: React.ReactNode;
 }
+
+interface OverviewChartProps {
+    data: Array<{
+        date: string;
+        value: number;
+        formattedValue: string;
+        label: string;
+    }>;
+    range: number;
+    color?: string;
+    id: string;
+}
+
+const OverviewChart: React.FC<OverviewChartProps> = ({
+    data,
+    range,
+    color = 'hsl(var(--chart-blue))',
+    id
+}) => {
+    const yRange = [getYRange(data).min, getYRange(data).max];
+    const chartConfig = {
+        value: {
+            label: data[0]?.label || 'Value'
+        }
+    } satisfies ChartConfig;
+
+    return (
+        <ChartContainer className='-mb-3 h-[10vw] max-h-[240px] w-full' config={chartConfig}>
+            <Recharts.AreaChart
+                data={data}
+                margin={{
+                    left: 4,
+                    right: 4,
+                    top: 0
+                }}
+            >
+                <Recharts.CartesianGrid horizontal={false} vertical={false} />
+                <Recharts.XAxis
+                    axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
+                    dataKey="date"
+                    interval={0}
+                    tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(value, range)} />}
+                    tickFormatter={value => formatDisplayDateWithRange(value, range)}
+                    tickLine={false}
+                    tickMargin={10}
+                    ticks={data && data.length > 0 ? [data[0].date, data[data.length - 1].date] : []}
+                />
+                <Recharts.YAxis
+                    axisLine={false}
+                    domain={yRange}
+                    scale="linear"
+                    tickFormatter={(value: number) => {
+                        return formatNumber(value);
+                    }}
+                    tickLine={false}
+                    ticks={[]}
+                    width={0}
+                />
+                <ChartTooltip
+                    content={<CustomTooltipContent color={color} range={range} />}
+                    cursor={true}
+                    isAnimationActive={false}
+                    position={{y: 10}}
+                />
+                <defs>
+                    <linearGradient id={`fillChart-${id}`} x1="0" x2="0" y1="0" y2="1">
+                        <stop
+                            offset="5%"
+                            stopColor={color}
+                            stopOpacity={0.8}
+                        />
+                        <stop
+                            offset="95%"
+                            stopColor={color}
+                            stopOpacity={0.1}
+                        />
+                    </linearGradient>
+                </defs>
+                <Recharts.Area
+                    dataKey="value"
+                    fill={`url(#fillChart-${id})`}
+                    fillOpacity={0.2}
+                    isAnimationActive={false}
+                    stackId="a"
+                    stroke={color}
+                    strokeWidth={2}
+                    type="linear"
+                />
+            </Recharts.AreaChart>
+        </ChartContainer>
+    );
+};
 
 const HelpCard: React.FC<HelpCardProps> = ({
     className,
@@ -160,7 +250,7 @@ const Overview: React.FC = () => {
     const getKpiValues = () => {
         // Visitors data
         if (!visitorsData?.length) {
-            return {visits: 0};
+            return {visits: '0'};
         }
 
         const totalVisits = visitorsData.reduce((sum, item) => sum + Number(item.visits), 0);
@@ -171,14 +261,6 @@ const Overview: React.FC = () => {
     };
 
     const kpiValues = getKpiValues();
-
-    const visitorsChartConfig = {
-        value: {
-            label: 'Visitors'
-        }
-    } satisfies ChartConfig;
-
-    const yRange = [getYRange(visitorsChartData).min, getYRange(visitorsChartData).max];
 
     return (
         <StatsLayout>
@@ -196,69 +278,12 @@ const Overview: React.FC = () => {
                         linkto='/web/'
                         title='Unique visitors'
                     >
-                        <ChartContainer className='-mb-3 h-[10vw] max-h-[240px] w-full' config={visitorsChartConfig}>
-                            <Recharts.AreaChart
-                                data={visitorsChartData}
-                                margin={{
-                                    left: 4,
-                                    right: 4,
-                                    top: 0
-                                }}
-                            >
-                                <Recharts.CartesianGrid horizontal={false} vertical={false} />
-                                <Recharts.XAxis
-                                    axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
-                                    dataKey="date"
-                                    interval={0}
-                                    tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(value, range)} />}
-                                    tickFormatter={value => formatDisplayDateWithRange(value, range)}
-                                    tickLine={false}
-                                    tickMargin={10}
-                                    ticks={visitorsChartData && visitorsChartData.length > 0 ? [visitorsChartData[0].date, visitorsChartData[visitorsChartData.length - 1].date] : []}
-                                />
-                                <Recharts.YAxis
-                                    axisLine={false}
-                                    domain={yRange}
-                                    scale="linear"
-                                    tickFormatter={(value) => {
-                                        return formatNumber(value);
-                                    }}
-                                    tickLine={false}
-                                    ticks={[]}
-                                    width={0}
-                                />
-                                <ChartTooltip
-                                    content={<CustomTooltipContent color={'hsl(var(--chart-blue))'} range={range} />}
-                                    cursor={true}
-                                    isAnimationActive={false}
-                                    position={{y: 10}}
-                                />
-                                <defs>
-                                    <linearGradient id="fillChart" x1="0" x2="0" y1="0" y2="1">
-                                        <stop
-                                            offset="5%"
-                                            stopColor={'hsl(var(--chart-blue))'}
-                                            stopOpacity={0.8}
-                                        />
-                                        <stop
-                                            offset="95%"
-                                            stopColor={'hsl(var(--chart-blue))'}
-                                            stopOpacity={0.1}
-                                        />
-                                    </linearGradient>
-                                </defs>
-                                <Recharts.Area
-                                    dataKey="value"
-                                    fill="url(#fillChart)"
-                                    fillOpacity={0.2}
-                                    isAnimationActive={false}
-                                    stackId="a"
-                                    stroke={'hsl(var(--chart-blue))'}
-                                    strokeWidth={2}
-                                    type="linear"
-                                />
-                            </Recharts.AreaChart>
-                        </ChartContainer>
+                        <OverviewChart
+                            color='hsl(var(--chart-blue))'
+                            data={visitorsChartData}
+                            id="visitors"
+                            range={range}
+                        />
                     </OverviewKPICard>
 
                     <OverviewKPICard
@@ -270,7 +295,12 @@ const Overview: React.FC = () => {
                         linkto='/growth/'
                         title='Members'
                     >
-                        Chart
+                        <OverviewChart
+                            color='hsl(var(--chart-green))'
+                            data={visitorsChartData}
+                            id="members"
+                            range={range}
+                        />
                     </OverviewKPICard>
 
                     <OverviewKPICard
@@ -282,7 +312,12 @@ const Overview: React.FC = () => {
                         linkto='/growth/'
                         title='MRR'
                     >
-                        Chart
+                        <OverviewChart
+                            color='hsl(var(--chart-orange))'
+                            data={visitorsChartData}
+                            id="mrr"
+                            range={range}
+                        />
                     </OverviewKPICard>
                 </div>
                 <div className='grid grid-cols-1 gap-8 lg:grid-cols-3'>
@@ -427,7 +462,7 @@ const Overview: React.FC = () => {
                         title='Analytics in Ghost'
                         url='https://ghost.org/help'>
                         <div className='flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-r from-muted-foreground/15 to-muted-foreground/10 p-4 opacity-80 transition-all group-hover/card:opacity-100'>
-                            <LucideIcon.Sprout className='text-green' size={40} strokeWidth={1} />
+                            <LucideIcon.Sprout className='text-muted-foreground' size={40} strokeWidth={1} />
                         </div>
                     </HelpCard>
                     <HelpCard
@@ -435,7 +470,7 @@ const Overview: React.FC = () => {
                         title='How to reach more people?'
                         url='https://ghost.org/help'>
                         <div className='flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-r from-muted-foreground/15 to-muted-foreground/10 p-4 opacity-80 transition-all group-hover/card:opacity-100'>
-                            <LucideIcon.ChartColumnIncreasing className='text-blue' size={40} strokeWidth={1} />
+                            <LucideIcon.ChartColumnIncreasing className='text-muted-foreground' size={40} strokeWidth={1} />
                         </div>
                     </HelpCard>
                 </div>
