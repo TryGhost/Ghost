@@ -35,11 +35,11 @@
   },
   "dependencies": {
     "@codemirror/lang-html": "6.4.9",
-    "@tryghost/color-utils": "0.2.5",
+    "@tryghost/color-utils": "0.2.6",
     "@tryghost/kg-unsplash-selector": "0.3.3",
-    "@tryghost/limit-service": "1.2.17",
+    "@tryghost/limit-service": "1.2.18",
     "@tryghost/nql": "0.12.7",
-    "@tryghost/timezone-data": "0.4.7",
+    "@tryghost/timezone-data": "0.4.8",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "validator": "7.2.0"
@@ -49,7 +49,7 @@
     "@testing-library/react": "14.3.1",
     "@tryghost/admin-x-design-system": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",
-    "@tryghost/custom-fonts": "1.0.0",
+    "@tryghost/custom-fonts": "1.0.1",
     "@types/react": "18.3.22",
     "@types/react-dom": "18.3.7",
     "@types/validator": "13.15.1",
