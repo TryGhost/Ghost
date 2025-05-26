@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {cn} from '@/lib/utils';
 import {cva} from 'class-variance-authority';
+import {TrendingDown, TrendingUp} from 'lucide-react';
 
 type CardsVariant = 'outline' | 'plain';
 const CardsVariantContext = React.createContext<CardsVariant>('outline');
@@ -150,4 +151,82 @@ const CardFooter = React.forwardRef<
 });
 CardFooter.displayName = 'CardFooter';
 
-export {Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, cardVariants};
+const KpiCardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
+    return (
+        <div
+            className={
+                cn(
+                    'flex flex-col border-r border-border last:border-none items-start gap-4 px-6 py-5 transition-all',
+                    className
+                )}
+            {...props}
+        >
+            {children}
+        </div>
+    );
+};
+
+const KpiCardHeaderContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
+    return (
+        <div className={cn('flex flex-col gap-1', className)} {...props}>
+            {children}
+        </div>
+    );
+};
+
+const KpiCardHeaderLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
+    return (
+        <div className={cn('[&_svg]:size-4 flex items-center gap-1.5 text-base text-muted-foreground h-[22px] font-medium', className)} {...props}>
+            {children}
+        </div>
+    );
+};
+
+interface KpiCardValueProps {
+    value: string | number;
+    diffDirection?: 'up' | 'down' | 'same';
+    diffValue?: string | number;
+}
+
+const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, diffValue}) => {
+    const diffContainerClassName = cn(
+        'hidden xl:!flex xl:!visible items-center gap-1 text-xs -mb-1 h-[18px]',
+        diffDirection === 'up' && 'text-green-600',
+        diffDirection === 'down' && 'text-red-600',
+        diffDirection === 'same' && 'text-gray-700'
+    );
+    return (
+        <div className='flex flex-col items-start gap-1'>
+            <div className='text-[2.3rem] font-semibold leading-none tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>
+                {value}
+            </div>
+            {diffValue &&
+            <>
+                <div className={diffContainerClassName}>
+                    {diffDirection === 'up' &&
+                        <TrendingUp className='!size-[12px]' size={14} strokeWidth={2} />
+                    }
+                    {diffDirection === 'down' &&
+                        <TrendingDown className='!size-[12px]' size={14} strokeWidth={2} />
+                    }
+                    <span className='font-medium leading-none'>{diffValue}</span>
+                </div>
+            </>
+            }
+        </div>
+    );
+};
+
+export {
+    Card,
+    CardHeader,
+    CardFooter,
+    CardTitle,
+    CardDescription,
+    CardContent,
+    KpiCardHeader,
+    KpiCardHeaderContent,
+    KpiCardHeaderLabel,
+    KpiCardHeaderValue,
+    cardVariants
+};
