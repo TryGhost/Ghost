@@ -1,5 +1,5 @@
 const should = require('should');
-const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, mockManager, matchers, assertions} = require('../../utils/e2e-framework');
 const {anyArray, anyContentVersion, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
 const models = require('../../../core/server/models');
 const escapeRegExp = require('lodash/escapeRegExp');
@@ -465,7 +465,7 @@ describe('Posts API', function () {
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag,
-                    'x-cache-invalidate': anyString
+                    'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
                 });
 
             // mobiledoc revisions are created
@@ -519,7 +519,7 @@ describe('Posts API', function () {
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag,
-                    'x-cache-invalidate': anyString
+                    'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
                 });
 
             // post revisions are created
@@ -614,7 +614,7 @@ describe('Posts API', function () {
                         .matchHeaderSnapshot({
                             'content-version': anyContentVersion,
                             etag: anyEtag,
-                            'x-cache-invalidate': anyString
+                            'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
                         })
                         .matchBodySnapshot({
                             posts: [Object.assign({}, matchPostShallowIncludes, {
