@@ -3,7 +3,7 @@ import React from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, KpiCardHeader, KpiCardHeaderContent, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, H3, KpiCardHeader, KpiCardHeaderContent, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn} from '@tryghost/shade';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface OverviewKPICardProps {
@@ -84,36 +84,36 @@ const PostTableCell: React.FC<PostTableCellProps> = ({
     );
 };
 
-// interface HelpCardProps {
-//     className?: string;
-//     title: string;
-//     description: string;
-//     url: string;
-//     children?: React.ReactNode;
-// }
+interface HelpCardProps {
+    className?: string;
+    title: string;
+    description: string;
+    url: string;
+    children?: React.ReactNode;
+}
 
-// const HelpCard: React.FC<HelpCardProps> = ({
-//     className,
-//     title,
-//     description,
-//     url,
-//     children
-// }) => {
-//     return (
-//         <a className={cn(
-//             'block rounded-xl border bg-card p-6 transition-all hover:shadow-xs hover:bg-accent group/card',
-//             className
-//         )} href={url} rel='noreferrer' target='_blank'>
-//             <div className='flex items-center gap-6'>
-//                 {children}
-//                 <div className='flex flex-col gap-0.5 leading-tight'>
-//                     <span className='text-lg font-semibold'>{title}</span>
-//                     <span className='text-sm font-normal text-muted-foreground'>{description}</span>
-//                 </div>
-//             </div>
-//         </a>
-//     );
-// };
+const HelpCard: React.FC<HelpCardProps> = ({
+    className,
+    title,
+    description,
+    url,
+    children
+}) => {
+    return (
+        <a className={cn(
+            'block rounded-xl border bg-card p-6 transition-all hover:shadow-xs hover:bg-accent group/card',
+            className
+        )} href={url} rel='noreferrer' target='_blank'>
+            <div className='flex items-center gap-6'>
+                {children}
+                <div className='flex flex-col gap-0.5 leading-tight'>
+                    <span className='text-base font-semibold'>{title}</span>
+                    <span className='text-sm font-normal text-muted-foreground'>{description}</span>
+                </div>
+            </div>
+        </a>
+    );
+};
 
 const Overview: React.FC = () => {
     // const tabConfig = {
@@ -309,10 +309,11 @@ const Overview: React.FC = () => {
                         </CardContent>
                     </Card>
                 </div>
-                {/* <div className='grid grid-cols-1 gap-8 lg:grid-cols-2'>
+                <div className='grid grid-cols-1 gap-8 lg:grid-cols-2'>
+                    <H3 className='-mb-4 mt-4 lg:col-span-2'>Grow your audience</H3>
                     <HelpCard
                         description='Find out how to review the performance of your content and get the most out of post analytics in Ghost.'
-                        title='How to grow your audience?'
+                        title='Analytics in Ghost'
                         url='https://ghost.org/help'>
                         <div className='flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-r from-muted-foreground/15 to-muted-foreground/10 p-4 opacity-80 transition-all group-hover/card:opacity-100'>
                             <LucideIcon.Sprout className='text-green' size={40} strokeWidth={1} />
@@ -320,13 +321,13 @@ const Overview: React.FC = () => {
                     </HelpCard>
                     <HelpCard
                         description='Use these content distribution tactics to get more people to discover your work and increase engagement.'
-                        title='Analytics in Ghost'
+                        title='How to reach more people?'
                         url='https://ghost.org/help'>
                         <div className='flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-r from-muted-foreground/15 to-muted-foreground/10 p-4 opacity-80 transition-all group-hover/card:opacity-100'>
                             <LucideIcon.ChartColumnIncreasing className='text-blue' size={40} strokeWidth={1} />
                         </div>
                     </HelpCard>
-                </div> */}
+                </div>
             </StatsView>
         </StatsLayout>
     );
