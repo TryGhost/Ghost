@@ -1286,13 +1286,32 @@ class EmailRenderer {
             if (visibleHeight) {
                 unsplashUrl.searchParams.set('h', (visibleHeight * 2).toFixed(0));
                 unsplashUrl.searchParams.set('fit', 'crop');
+                return {
+                    href: unsplashUrl.href,
+                    width: visibleWidth,
+                    height: visibleHeight
+                };
             }
 
-            return {
-                href: unsplashUrl.href,
-                width: visibleWidth,
-                height: visibleHeight
-            };
+            // If no visibleHeight provided, try to get the original image size to calculate aspect ratio
+            try {
+                const size = await this.#imageSize.getImageSizeFromUrl(href);
+                const height = Math.round(size.height * (visibleWidth / size.width));
+                
+                return {
+                    href: unsplashUrl.href,
+                    width: visibleWidth,
+                    height
+                };
+            } catch (err) {
+                logging.error(err);
+                // Fallback to a 16:9 aspect ratio if we can't get the image size
+                return {
+                    href: unsplashUrl.href,
+                    width: visibleWidth,
+                    height: Math.round(visibleWidth * (9 / 16))
+                };
+            }
         } else {
             try {
                 const size = await this.#imageSize.getImageSizeFromUrl(href);

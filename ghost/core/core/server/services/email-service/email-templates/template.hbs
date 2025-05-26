@@ -113,7 +113,21 @@
                                                     {{#if post.feature_image_caption }}
                                                         feature-image-with-caption
                                                     {{/if}}
-                                                " align="center"><img
+                                                " align="center">
+                                                {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+                                                    {{#if hasRoundedImageCorners}}
+                                                         <!--[if gte mso 9]>
+                                                         <div style="margin-bottom: 20px;">
+                                                            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" fillcolor="none" arcsize="5%" style="{{#if post.feature_image_width}}width:{{post.feature_image_width}}px;{{/if}} {{#if post.feature_image_height}}height:{{post.feature_image_height}}px;{{/if}}" stroked="f">
+                                                                <v:fill type="frame" src="{{post.feature_image}}" />
+                                                            </v:roundrect>
+                                                        </div>
+                                                        <![endif]-->
+                                                        <!--[if !mso]><!-->
+                                                    {{/if}}
+                                                {{/hasFeature}}
+                                                
+                                                <img
                                                     src="{{post.feature_image}}"
                                                     {{#if post.feature_image_width }}
                                                         width="{{post.feature_image_width}}"
@@ -121,7 +135,13 @@
                                                     {{#if post.feature_image_alt }}
                                                         alt="{{post.feature_image_alt}}"
                                                     {{/if}}
-                                                ></td>
+                                                >
+                                                {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+                                                    {{#if hasRoundedImageCorners}}
+                                                        <!--<![endif]-->
+                                                    {{/if}}
+                                                {{/hasFeature}}
+                                                </td>
                                             </tr>
 
                                              {{#if post.feature_image_caption }}
