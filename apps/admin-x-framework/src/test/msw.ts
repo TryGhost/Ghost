@@ -195,8 +195,26 @@ export function createHandlersFromConfig(
         let apiPath: string | RegExp;
         
         if (typeof path === 'string') {
-            // For string paths, use literal string matching (no RegExp)
+            // For string paths, use literal string path
             apiPath = `${base}${path}`;
+            
+            // In MSW v2, query parameters in string paths need special handling
+            if (apiPath.includes('?')) {
+                // Extract the base path and create a regex that matches regardless of query param order
+                const basePath = apiPath.split('?')[0];
+                const queryParts = apiPath.split('?')[1].split('&');
+                
+                // Create a regex that matches the path with any order of query parameters
+                const queryRegexParts = queryParts.map(part => {
+                    const [key, value] = part.split('=');
+                    if (value) {
+                        return `(?=.*[?&]${key}=${encodeURIComponent(value).replace(/%/g, '%25')}(?:&|$))`;
+                    }
+                    return `(?=.*[?&]${key}(?:=|&|$))`;
+                });
+                
+                apiPath = new RegExp(`^${basePath}\\?${queryRegexParts.join('')}.*$`);
+            }
         } else {
             // For RegExp paths, preserve the regex pattern
             apiPath = new RegExp(`${base}${path.source}`);

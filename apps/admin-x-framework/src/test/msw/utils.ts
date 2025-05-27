@@ -23,6 +23,25 @@ export function createHandlerFromMockConfig(requestConfig: MockRequestConfig & {
         // MSW doesn't need the API path prefix when hosted on the same origin
         // Use literal string (not RegExp) to preserve query parameters
         pathPattern = path.startsWith('/ghost/api/admin') ? path : `/ghost/api/admin${path}`;
+        
+        // In MSW v2, query parameters in string paths need special handling
+        // This approach keeps the original functionality intact
+        if (pathPattern.includes('?')) {
+            // Extract the base path and create a regex that matches regardless of query param order
+            const basePath = pathPattern.split('?')[0];
+            const queryParts = pathPattern.split('?')[1].split('&');
+            
+            // Create a regex that matches the path with any order of query parameters
+            const queryRegexParts = queryParts.map(part => {
+                const [key, value] = part.split('=');
+                if (value) {
+                    return `(?=.*[?&]${key}=${encodeURIComponent(value).replace(/%/g, '%25')}(?:&|$))`;
+                }
+                return `(?=.*[?&]${key}(?:=|&|$))`;
+            });
+            
+            pathPattern = new RegExp(`^${basePath}\\?${queryRegexParts.join('')}.*$`);
+        }
     } else {
         // For RegExp paths, preserve the pattern
         pathPattern = path;
