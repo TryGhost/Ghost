@@ -1,21 +1,20 @@
 import react from '@vitejs/plugin-react';
-import {PluginOption, UserConfig, mergeConfig} from 'vite';
+import {Plugin, UserConfig, mergeConfig, defineConfig} from 'vite';
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 import svgr from 'vite-plugin-svgr';
-import {defineConfig} from 'vitest/config';
 
-const externalPlugin = ({externals}: { externals: Record<string, string> }): PluginOption => {
+const externalPlugin = ({externals}: { externals: Record<string, string> }): Plugin => {
     return {
         name: 'external-globals',
         apply: 'build',
         enforce: 'pre',
-        resolveId(id) {
+        resolveId(id: string) {
             if (Object.keys(externals).includes(id)) {
                 // Naming convention for IDs that will be resolved by a plugin
                 return `\0${id}`;
             }
         },
-        async load(id) {
+        async load(id: string) {
             const [originalId, externalName] = Object.entries(externals).find(([key]) => id === `\0${key}`) || [];
 
             if (originalId) {
@@ -70,16 +69,6 @@ export default function adminXViteConfig({packageName, entry, overrides}: {packa
             commonjsOptions: {
                 include: [/packages/, /node_modules/]
             }
-        },
-        test: {
-            globals: true, // required for @testing-library/jest-dom extensions
-            environment: 'jsdom',
-            include: ['./test/unit/**/*'],
-            testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
-            ...(process.env.CI && { // https://github.com/vitest-dev/vitest/issues/1674
-                minThreads: 1,
-                maxThreads: 2
-            })
         }
     });
 
