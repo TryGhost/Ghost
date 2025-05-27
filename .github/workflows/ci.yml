@@ -861,7 +861,7 @@ jobs:
       CI: true
       BASE_URL: http://localhost:2368
       ADMIN_USERNAME: test@example.com
-      ADMIN_PASSWORD: SuperSecure123!@#
+      ADMIN_PASSWORD: testpassword123
       EMAIL_PROVIDER: mailhog
       MAILHOG_API_URL: http://localhost:8025
     steps:
@@ -899,26 +899,39 @@ jobs:
       - name: Setup Ghost database
         working-directory: ghost/core
         run: |
-          database__client=mysql \
-          database__connection__host=127.0.0.1 \
-          database__connection__port=3306 \
-          database__connection__user=root \
-          database__connection__password=root \
-          database__connection__database=ghost_test \
           yarn knex-migrator init
+          yarn knex-migrator migrate
+
+      - name: Create admin user
+        working-directory: ghost/core
+        run: |
+          NODE_ENV=development node -e "
+          const models = require('./core/server/models');
+          const security = require('@tryghost/security');
+
+          (async () => {
+            await models.init();
+            const existingUser = await models.User.findOne({email: '${{ env.ADMIN_USERNAME }}'});
+            if (!existingUser) {
+              const password = await security.password.hash('${{ env.ADMIN_PASSWORD }}');
+              await models.User.add({
+                name: 'Test Admin',
+                slug: 'test-admin',
+                email: '${{ env.ADMIN_USERNAME }}',
+                password: password,
+                status: 'active'
+              }, {context: {internal: true}});
+              console.log('Admin user created');
+            } else {
+              console.log('Admin user already exists');
+            }
+            process.exit(0);
+          })();
+          "
 
       - name: Start Ghost
         working-directory: ghost/core
         run: |
-          database__client=mysql \
-          database__connection__host=127.0.0.1 \
-          database__connection__port=3306 \
-          database__connection__user=root \
-          database__connection__password=root \
-          database__connection__database=ghost_test \
-          mail__transport=SMTP \
-          mail__options__host=127.0.0.1 \
-          mail__options__port=1025 \
           yarn dev &
           sleep 10
 

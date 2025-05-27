@@ -12,9 +12,6 @@
     "build:ts": "tsc",
     "prepare": "tsc",
     "test:e2e": "playwright test",
-    "test:e2e:setup": "ts-node src/fixtures/setup.ts",
-    "test:e2e:local": "./scripts/test-local.sh",
-    "test:e2e:cleanup": "./scripts/test-cleanup.sh",
     "test": "yarn test:types && yarn test:unit && yarn test:e2e",
     "test:types": "tsc --noEmit",
     "lint:code": "eslint src/ --ext .ts --cache",
@@ -38,7 +35,6 @@
     "@tryghost/errors": "^1.3.7",
     "@tryghost/logging": "^2.4.21",
     "eslint-plugin-playwright": "^2.2.0",
-    "mailhog": "^4.16.0",
-    "mysql2": "^3.11.5"
+    "mailhog": "^4.16.0"
   }
 }
