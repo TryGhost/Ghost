@@ -19,6 +19,7 @@ interface AreaChartProps {
     syncId?: string;
     allowDataOverflow?: boolean;
     showYAxisValues?: boolean;
+    dataFormatter?: () => void;
 }
 
 const AreaChart: React.FC<AreaChartProps> = ({
@@ -30,7 +31,8 @@ const AreaChart: React.FC<AreaChartProps> = ({
     className,
     syncId,
     allowDataOverflow = false,
-    showYAxisValues = true
+    showYAxisValues = true,
+    dataFormatter = formatNumber
 }) => {
     const yRange = yAxisRange || [getYRange(data).min, getYRange(data).max];
     const chartConfig = {
@@ -69,11 +71,11 @@ const AreaChart: React.FC<AreaChartProps> = ({
                     domain={yRange}
                     scale="linear"
                     tickFormatter={(value: number) => {
-                        return formatNumber(value);
+                        return dataFormatter(value);
                     }}
                     tickLine={false}
                     ticks={[]}
-                    width={showYAxisValues ? calculateYAxisWidth(yRange, (value: number) => formatNumber(value)) : 0}
+                    width={showYAxisValues ? calculateYAxisWidth(yRange, (value: number) => dataFormatter(value)) : 0}
                 />
                 <ChartTooltip
                     content={<CustomTooltipContent color={color} range={range} />}

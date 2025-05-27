@@ -192,6 +192,12 @@ const GrowthKPIs: React.FC<{
                     className='-mb-3 h-[16vw] max-h-[320px] w-full'
                     color={tabConfig[currentTab as keyof typeof tabConfig].color}
                     data={chartData}
+                    dataFormatter={currentTab === 'mrr'
+                        ?
+                        (value: number) => {
+                            return `$${formatNumber(value)}`;
+                        } :
+                        formatNumber}
                     id="mrr"
                     range={range}
                     yAxisRange={yRangeWithMinPadding}
