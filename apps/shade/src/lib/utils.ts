@@ -291,7 +291,8 @@ export const getYRange = (data: { value: number }[]): {min: number; max: number}
     // Determine the order of magnitude for rounding based on the range
     const rangeMagnitude = Math.floor(Math.log10(range));
     // Always round to at least 10s, but use larger steps for bigger ranges
-    const roundTo = Math.max(10, Math.pow(10, rangeMagnitude));
+    // const roundTo = Math.max(10, Math.pow(10, rangeMagnitude));
+    const roundTo = Math.pow(10, rangeMagnitude);
 
     // Round min and max to the appropriate precision
     min = Math.max(0, Math.floor(min / roundTo) * roundTo);
