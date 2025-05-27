@@ -163,7 +163,8 @@ Caddyfile
 
 # Build files
 /apps/*/build
-/ghost/*/build
+/ghost/*/
+/e2e/build
 
 # Typescript build artifacts
 tsconfig.tsbuildinfo
