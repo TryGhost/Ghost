@@ -1,7 +1,7 @@
 name: ghost-ci-e2e
 
 services:
-  mysql:
+  mysql-test:
     image: mysql:8.4.5
     container_name: ghost-mysql-ci
     command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
@@ -9,14 +9,14 @@ services:
       - 3306:3306
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: ghost
+      MYSQL_DATABASE: ghost_test
     restart: always
     healthcheck:
       test: mysql -uroot -proot ghost -e 'select 1'
       interval: 1s
       retries: 120
 
-  redis:
+  redis-test:
     image: redis:7.0
     container_name: ghost-redis-ci
     ports:
@@ -32,7 +32,7 @@ services:
       interval: 1s
       retries: 120
 
-  mailhog:
+  mailhog-test:
     image: mailhog/mailhog:latest
     container_name: ghost-mailhog-ci
     ports:

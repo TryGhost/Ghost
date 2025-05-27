@@ -1,4 +1,3 @@
-import fetch from 'node-fetch';
 import logging from '@tryghost/logging';
 
 async function globalSetup() {
