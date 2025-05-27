@@ -8,6 +8,7 @@ const routerManager = require('../../../../../../core/frontend/services/routing/
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const renderer = require('../../../../../../core/frontend/services/rendering');
 const dataService = require('../../../../../../core/frontend/services/data');
+const config = require('../../../../../../core/shared/config');
 
 function failTest(done) {
     return function (err) {
@@ -113,6 +114,36 @@ describe('Unit - services/routing/controllers/collection', function () {
             ownsStub.calledOnce.should.be.true();
             done();
         }).catch(done);
+    });
+
+    it('pass custom page param', function (done) {
+        const configStub = sinon.stub(config, 'get');
+        configStub.callThrough();
+        configStub.withArgs('pagination:pageParameter').returns('seite');
+
+        req.params.seite = 2;
+
+        fetchDataStub.withArgs({page: 2, slug: undefined, limit: postsPerPage}, res.routerOptions)
+            .resolves({
+                posts: posts,
+                meta: {
+                    pagination: {
+                        pages: 5
+                    }
+                }
+            });
+
+        try {
+            controllers.collection(req, res, failTest(done)).then(function () {
+                themeEngine.getActive.calledOnce.should.be.true();
+                security.string.safe.calledOnce.should.be.false();
+                fetchDataStub.calledOnce.should.be.true();
+                ownsStub.calledOnce.should.be.true();
+                done();
+            }).catch(done);
+        } finally {
+            configStub.restore();
+        }
     });
 
     it('update hbs engine: router defines limit', function (done) {

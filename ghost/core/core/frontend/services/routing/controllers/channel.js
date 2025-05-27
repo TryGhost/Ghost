@@ -5,6 +5,7 @@ const security = require('@tryghost/security');
 const themeEngine = require('../../theme-engine');
 const dataService = require('../../data');
 const renderer = require('../../rendering');
+const config = require('../../../../shared/config');
 
 const messages = {
     pageNotFound: 'Page not found.'
@@ -23,8 +24,10 @@ const messages = {
 module.exports = function channelController(req, res, next) {
     debug('channelController', req.params, res.routerOptions);
 
+    const pageParam = config.get('pagination:pageParameter');
+
     const pathOptions = {
-        page: req.params.page !== undefined ? req.params.page : 1,
+        page: req.params[pageParam] !== undefined ? req.params[pageParam] : 1,
         slug: req.params.slug ? security.string.safe(req.params.slug) : undefined
     };
 
