@@ -1,7 +1,7 @@
-import {FullConfig} from '@playwright/test';
-
 async function sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 }
 
 async function waitForGhost(baseURL: string, maxRetries = 30, retryDelay = 2000): Promise<void> {
