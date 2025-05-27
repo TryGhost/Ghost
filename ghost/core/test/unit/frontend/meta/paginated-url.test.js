@@ -2,6 +2,8 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
 const getPaginatedUrl = require('../../../../core/frontend/meta/paginated-url');
 const configUtils = require('../../../utils/config-utils');
+const sinon = require('sinon');
+const config = require('../../../../core/shared/config');
 
 describe('getPaginatedUrl', function () {
     let data;
@@ -164,6 +166,52 @@ describe('getPaginatedUrl', function () {
             assert.equal(urls.page1, '/blog/featured/');
             assert.equal(urls.page5, '/blog/featured/page/5/');
             assert.equal(urls.page10, '/blog/featured/page/10/');
+        });
+    });
+
+    describe('custom paging page parameter', function () {
+        let configStub;
+
+        before(function () {
+            configStub = sinon.stub(config, 'get');
+            configStub.callThrough();
+            configStub.withArgs('pagination:pageParameter').returns('seite');
+        });
+
+        after(function () {
+            configStub.restore();
+        });
+
+        it('should calculate correct urls of an index collection', function () {
+            // Setup tests
+            data.relativeUrl = '/';
+            data.pagination = {prev: null, next: 2};
+
+            // Execute test
+            const urls = getTestUrls();
+
+            // Check results
+            assert.equal(urls.next, `${siteUrl()}/seite/2/`);
+            assert.equal(urls.prev, null);
+            assert.equal(urls.page1, '/');
+            assert.equal(urls.page5, '/seite/5/');
+            assert.equal(urls.page10, '/seite/10/');
+        });
+
+        it('should calculate correct urls for the last page of another collection', function () {
+            // Setup tests
+            data.relativeUrl = '/featured/seite/10/';
+            data.pagination = {prev: 9, next: null};
+
+            // Execute test
+            const urls = getTestUrls();
+
+            // Check results
+            assert.equal(urls.next, null);
+            assert.equal(urls.prev, `${siteUrl()}/featured/seite/9/`);
+            assert.equal(urls.page1, '/featured/');
+            assert.equal(urls.page5, '/featured/seite/5/');
+            assert.equal(urls.page10, '/featured/seite/10/');
         });
     });
 });

@@ -8,6 +8,7 @@ const routerManager = require('../../../../../../core/frontend/services/routing/
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const renderer = require('../../../../../../core/frontend/services/rendering');
 const dataService = require('../../../../../../core/frontend/services/data');
+const config = require('../../../../../../core/shared/config');
 
 describe('Unit - services/routing/controllers/collection', function () {
     let req;
@@ -89,6 +90,31 @@ describe('Unit - services/routing/controllers/collection', function () {
 
     it('pass page param', async function () {
         req.params.page = 2;
+
+        fetchDataStub.withArgs({page: 2, slug: undefined, limit: postsPerPage}, res.routerOptions)
+            .resolves({
+                posts: posts,
+                meta: {
+                    pagination: {
+                        pages: 5
+                    }
+                }
+            });
+
+        await controllers.collection(req, res, next);
+        sinon.assert.calledOnce(themeEngine.getActive);
+        sinon.assert.notCalled(security.string.safe);
+        sinon.assert.calledOnce(fetchDataStub);
+        sinon.assert.calledOnce(ownsResourceStub);
+        sinon.assert.notCalled(next);
+    });
+
+    it('pass custom page param', async function () {
+        const configStub = sinon.stub(config, 'get');
+        configStub.callThrough();
+        configStub.withArgs('pagination:pageParameter').returns('seite');
+
+        req.params.seite = 2;
 
         fetchDataStub.withArgs({page: 2, slug: undefined, limit: postsPerPage}, res.routerOptions)
             .resolves({
