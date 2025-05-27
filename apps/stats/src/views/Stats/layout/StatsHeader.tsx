@@ -1,5 +1,6 @@
 import React from 'react';
 import {H1, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger, ViewHeader} from '@tryghost/shade';
+import {useFeatureFlag} from '@src/hooks/useFeatureFlag';
 import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
 
 interface StatsHeaderProps {
@@ -11,6 +12,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
 }) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const alphaFlag = useFeatureFlag('trafficAnalyticsAlpha', '/');
 
     return (
         <>
@@ -20,13 +22,15 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
             <Navbar className='border-none pt-0.5'>
                 <Tabs className="w-full" defaultValue={location.pathname} variant='pill'>
                     <TabsList>
+                        {alphaFlag.isEnabled &&
+                            <TabsTrigger value="/overview/" onClick={() => {
+                                navigate('/overview/');
+                            }}>
+                                Overview
+                            </TabsTrigger>
+                        }
                         <TabsTrigger value="/" onClick={() => {
                             navigate('/');
-                        }}>
-                            Overview
-                        </TabsTrigger>
-                        <TabsTrigger value="/web/" onClick={() => {
-                            navigate('/web/');
                         }}>
                             Web traffic
                         </TabsTrigger>
