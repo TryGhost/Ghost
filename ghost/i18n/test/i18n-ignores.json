@@ -66,7 +66,7 @@
             {
                 "file": "de/portal.json",
                 "key": "Start {amount}-day free trial",
-                "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
+                "comment": "translated text doesn't fit on the button"
             },
             {
                 "file": "hu/comments.json",
