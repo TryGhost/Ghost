@@ -1,9 +1,9 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {removeCodeWrappersFromHelpers, removeSpaces, wrapReplacementStrings} from '../../utils/replacement-strings';
-import {escapeHtml} from '../../utils/escape-html';
-import {renderEmptyContainer} from '../../utils/render-empty-container';
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
+const {removeCodeWrappersFromHelpers, removeSpaces, wrapReplacementStrings} = require('../render-utils/replacement-strings');
+const {escapeHtml} = require('../render-utils/escape-html');
+const {renderEmptyContainer} = require('../render-utils/render-empty-container');
 
-export function renderEmailCtaNode(node, options = {}) {
+function renderEmailCtaNode(node, options = {}) {
     addCreateDocumentOption(options);
 
     const document = options.createDocument();
@@ -57,3 +57,5 @@ export function renderEmailCtaNode(node, options = {}) {
 
     return {element};
 }
+
+module.exports = renderEmailCtaNode;

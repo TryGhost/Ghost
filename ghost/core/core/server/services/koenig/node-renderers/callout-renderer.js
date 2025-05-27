@@ -1,7 +1,7 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {cleanDOM} from '../../utils/clean-dom';
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
+const {cleanDOM} = require('../render-utils/clean-dom');
 
-export function renderCalloutNode(node, options = {}) {
+function renderCalloutNode(node, options = {}) {
     addCreateDocumentOption(options);
     const document = options.createDocument();
     const element = document.createElement('div');
@@ -36,3 +36,5 @@ export function renderCalloutNode(node, options = {}) {
 
     return {element};
 }
+
+module.exports = renderCalloutNode;

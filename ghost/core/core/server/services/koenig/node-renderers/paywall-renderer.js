@@ -1,6 +1,6 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
 
-export function renderPaywallNode(_, options = {}) {
+function renderPaywallNode(_, options = {}) {
     addCreateDocumentOption(options);
     const document = options.createDocument();
     const element = document.createElement('div');
@@ -11,3 +11,5 @@ export function renderPaywallNode(_, options = {}) {
     // @see @tryghost/kg-lexical-html-renderer package
     return {element, type: 'inner'};
 }
+
+module.exports = renderPaywallNode;

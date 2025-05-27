@@ -1,6 +1,6 @@
-import {addCreateDocumentOption} from '../../../../utils/add-create-document-option';
-import {slugify} from '../../../../utils/slugify';
-import {getSrcsetAttribute} from '../../../../utils/srcset-attribute';
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
+const {slugify} = require('../render-utils/slugify');
+const {getSrcsetAttribute} = require('../render-utils/srcset-attribute');
 
 function cardTemplate(nodeData, options = {}) {
     const cardClasses = getCardClasses(nodeData).join(' ');
@@ -161,7 +161,7 @@ function emailTemplate(nodeData, options) {
     );
 }
 
-export function renderHeaderNodeV2(dataset, options = {}) {
+function renderHeaderNodeV2(dataset, options = {}) {
     addCreateDocumentOption(options);
     const document = options.createDocument();
 
@@ -216,7 +216,7 @@ export function renderHeaderNodeV2(dataset, options = {}) {
     return {element: element.firstElementChild};
 }
 
-export function getCardClasses(nodeData) {
+function getCardClasses(nodeData) {
     let cardClasses = ['kg-card kg-header-card kg-v2'];
 
     if (nodeData.layout && nodeData.layout !== 'split') {
@@ -243,3 +243,5 @@ export function getCardClasses(nodeData) {
 
     return cardClasses;
 }
+
+module.exports = renderHeaderNodeV2;

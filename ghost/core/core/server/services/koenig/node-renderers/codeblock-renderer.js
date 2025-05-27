@@ -1,7 +1,7 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {renderEmptyContainer} from '../../utils/render-empty-container';
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
+const {renderEmptyContainer} = require('../render-utils/render-empty-container');
 
-export function renderCodeBlockNode(node, options = {}) {
+function renderCodeBlockNode(node, options = {}) {
     addCreateDocumentOption(options);
     const document = options.createDocument();
 
@@ -33,3 +33,5 @@ export function renderCodeBlockNode(node, options = {}) {
         return {element: pre};
     }
 }
+
+module.exports = renderCodeBlockNode;

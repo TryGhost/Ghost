@@ -1,8 +1,8 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {renderEmptyContainer} from '../../utils/render-empty-container';
-import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions';
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
+const {renderEmptyContainer} = require('../render-utils/render-empty-container');
+const {getResizedImageDimensions} = require('../render-utils/get-resized-image-dimensions');
 
-export function renderProductNode(node, options = {}) {
+function renderProductNode(node, options = {}) {
     addCreateDocumentOption(options);
     const document = options.createDocument();
 
@@ -46,7 +46,7 @@ export function renderProductNode(node, options = {}) {
     return {element: element.firstElementChild};
 }
 
-export function cardTemplate({data}) {
+function cardTemplate({data}) {
     return (
         `
         <div class="kg-card kg-product-card">
@@ -75,7 +75,7 @@ export function cardTemplate({data}) {
     );
 }
 
-export function emailCardTemplate({data, feature}) {
+function emailCardTemplate({data, feature}) {
     let imageDimensions;
 
     if (data.productImageWidth && data.productImageHeight) {
@@ -179,3 +179,5 @@ export function emailCardTemplate({data, feature}) {
         `
     );
 }
+
+module.exports = renderProductNode;

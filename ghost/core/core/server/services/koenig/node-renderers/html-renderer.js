@@ -1,8 +1,8 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {renderEmptyContainer} from '../../utils/render-empty-container';
-import {renderWithVisibility} from '../../utils/visibility';
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
+const {renderEmptyContainer} = require('../render-utils/render-empty-container');
+const {renderWithVisibility} = require('../render-utils/visibility');
 
-export function renderHtmlNode(node, options = {}) {
+function renderHtmlNode(node, options = {}) {
     addCreateDocumentOption(options);
     const document = options.createDocument();
 
@@ -25,3 +25,5 @@ export function renderHtmlNode(node, options = {}) {
     // `type: 'value'` will render the value of the textarea element
     return {element: textarea, type: 'value'};
 }
+
+module.exports = renderHtmlNode;
