@@ -224,6 +224,7 @@
   "devDependencies": {
     "@actions/core": "1.11.1",
     "@playwright/test": "1.52.0",
+    "@prettier/sync": "0.5.5",
     "@tryghost/express-test": "0.14.1",
     "@tryghost/webhook-mock-receiver": "0.2.17",
     "@types/bookshelf": "1.2.9",
@@ -242,6 +243,7 @@
     "expect": "29.7.0",
     "find-root": "1.1.0",
     "form-data": "4.0.2",
+    "html-minifier": "4.0.0",
     "html-validate": "8.29.0",
     "inquirer": "8.2.6",
     "jwk-to-pem": "2.0.7",
