@@ -24,8 +24,8 @@ const wrapper: React.FC<{ children: ReactNode }> = ({children}) => (
     </FrameworkProvider>
 );
 
-describe('useFetchApi', function () {
-    it('makes an API request', async function () {
+describe('useFetchApi', () => {
+    it('makes an API request', async () => {
         await withMockFetch({
             json: {test: 1}
         }, async (mock) => {
