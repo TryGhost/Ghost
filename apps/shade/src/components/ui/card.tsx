@@ -166,14 +166,6 @@ const KpiCardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children
     );
 };
 
-const KpiCardHeaderContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
-    return (
-        <div className={cn('flex flex-col gap-1', className)} {...props}>
-            {children}
-        </div>
-    );
-};
-
 const KpiCardHeaderLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (
         <div className={cn('[&_svg]:size-4 flex items-center gap-1.5 text-base text-muted-foreground h-[22px] font-medium', className)} {...props}>
@@ -184,7 +176,7 @@ const KpiCardHeaderLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({chi
 
 interface KpiCardValueProps {
     value: string | number;
-    diffDirection?: 'up' | 'down' | 'same';
+    diffDirection?: 'up' | 'down' | 'same' | 'empty';
     diffValue?: string | number;
 }
 
@@ -200,7 +192,7 @@ const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, 
             <div className='text-[2.3rem] font-semibold leading-none tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>
                 {value}
             </div>
-            {diffValue &&
+            {diffDirection &&
             <>
                 <div className={diffContainerClassName}>
                     {diffDirection === 'up' &&
@@ -225,7 +217,6 @@ export {
     CardDescription,
     CardContent,
     KpiCardHeader,
-    KpiCardHeaderContent,
     KpiCardHeaderLabel,
     KpiCardHeaderValue,
     cardVariants
