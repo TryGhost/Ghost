@@ -2,7 +2,7 @@
 
 # --- Configuration ---
 # !! IMPORTANT: Set this to your Caddy Docker container name or ID !!
-CADDY_CONTAINER_NAME="ghost-caddy-1" # PLEASE UPDATE IF YOUR CONTAINER NAME IS DIFFERENT
+CADDY_CONTAINER_NAME="ghost-caddy" # PLEASE UPDATE IF YOUR CONTAINER NAME IS DIFFERENT
 
 # Path where Caddy stores its local root CA inside the container
 CADDY_INTERNAL_CERT_PATH="/data/caddy/pki/authorities/local/root.crt"

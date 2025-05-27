@@ -80,6 +80,7 @@ services:
 
   caddy:
     image: caddy:latest
+    container_name: ghost-caddy
     profiles: [ split ]
     ports:
       - "80:80"
