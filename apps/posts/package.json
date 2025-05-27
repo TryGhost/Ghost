@@ -33,7 +33,7 @@
         "@types/jest": "29.5.14",
         "@types/react": "18.3.23",
         "@vitest/coverage-v8": "2.1.8",
-        "msw": "2.8.4",
+        "msw": "2.8.5",
         "vite": "5.4.19",
         "vitest": "2.1.8"
     },
