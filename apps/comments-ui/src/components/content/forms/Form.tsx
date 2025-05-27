@@ -1,9 +1,9 @@
+import EditIcon from '../../../images/icons/edit.svg?react';
 import React from 'react';
+import SpinnerIcon from '../../../images/icons/spinner.svg?react';
 import {Avatar} from '../Avatar';
 import {Comment, OpenCommentForm, useAppContext} from '../../../AppContext';
-import {ReactComponent as EditIcon} from '../../../images/icons/edit.svg';
 import {Editor, EditorContent} from '@tiptap/react';
-import {ReactComponent as SpinnerIcon} from '../../../images/icons/spinner.svg';
 import {Transition} from '@headlessui/react';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {usePopupOpen} from '../../../utils/hooks';
@@ -54,7 +54,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress
     }, [editor, comment, openForm, dispatchAction]);
 
     if (progress === 'sending') {
-        buttonIcon = <SpinnerIcon className={`h-[24px] w-[24px] fill-white`} data-testid="button-spinner" />;
+        buttonIcon = <SpinnerIcon className={`size-[24px] fill-white`} data-testid="button-spinner" />;
     }
 
     const stopIfFocused = useCallback((event) => {
@@ -200,7 +200,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingT
                         onMouseDown={editExpertise}
                     >
                         <span><span className="mx-[0.3em] hidden sm:inline">·</span>{expertise ? expertise : t('Add your expertise')}</span>
-                        {expertise && <EditIcon className="ml-1 h-[12px] w-[12px] translate-x-[-6px] stroke-black/50 opacity-0 transition-all duration-100 ease-out group-hover:translate-x-0 group-hover:stroke-black/75 group-hover:opacity-100 dark:stroke-white/60 dark:group-hover:stroke-white/75" />}
+                        {expertise && <EditIcon className="ml-1 size-[12px] translate-x-[-6px] stroke-black/50 opacity-0 transition-all duration-100 ease-out group-hover:translate-x-0 group-hover:stroke-black/75 group-hover:opacity-100 dark:stroke-white/60 dark:group-hover:stroke-white/75" />}
                     </button>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 import {useContext} from 'react';
 import AppContext from '../../AppContext';
-import {ReactComponent as LeftArrowIcon} from '../../images/icons/arrow-left.svg';
+import LeftArrowIcon from '../../images/icons/arrow-left.svg?react';
 
 export const BackButtonStyles = `
     .gh-portal-btn-back,

@@ -4,7 +4,7 @@ import {hasCommentsEnabled, hasMultipleNewsletters} from '../../utils/helpers';
 import CloseButton from '../../components/common/CloseButton';
 import BackButton from '../../components/common/BackButton';
 import ActionButton from '../../components/common/ActionButton';
-import {ReactComponent as EmailDeliveryFailedIcon} from '../../images/icons/email-delivery-failed.svg';
+import EmailDeliveryFailedIcon from '../../images/icons/email-delivery-failed.svg?react';
 
 export default function EmailSuppressedPage() {
     const {brandColor, lastPage, onAction, action, site, t} = useContext(AppContext);

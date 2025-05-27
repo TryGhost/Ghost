@@ -3,9 +3,9 @@ import {useContext, useState, useEffect, useCallback, useMemo} from 'react';
 import CloseButton from '../common/CloseButton';
 import {clearURLParams} from '../../utils/notifications';
 import LoadingPage from './LoadingPage';
-import {ReactComponent as ArrowIcon} from '../../images/icons/arrow-top-right.svg';
-import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
-import {ReactComponent as CheckmarkIcon} from '../../images/icons/check-circle.svg';
+import ArrowIcon from '../../images/icons/arrow-top-right.svg?react';
+import LoaderIcon from '../../images/icons/loader.svg?react';
+import CheckmarkIcon from '../../images/icons/check-circle.svg?react';
 
 import {getRefDomain} from '../../utils/helpers';
 

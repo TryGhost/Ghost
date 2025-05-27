@@ -3,7 +3,7 @@ import {useContext, useState} from 'react';
 import Switch from '../common/Switch';
 import {getSiteNewsletters, hasOnlyFreePlan} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
-import {ReactComponent as LockIcon} from '../../images/icons/lock.svg';
+import LockIcon from '../../images/icons/lock.svg?react';
 
 function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribedNewsletters, t}) {
     const isChecked = subscribedNewsletters.some((d) => {

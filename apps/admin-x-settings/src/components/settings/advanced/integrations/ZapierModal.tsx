@@ -1,9 +1,9 @@
 import APIKeys from './APIKeys';
 import IntegrationHeader from './IntegrationHeader';
+import Logo from '../../../../assets/images/zapier-logo.svg?react';
 import NiceModal from '@ebay/nice-modal-react';
+import ZapierIcon from '../../../../assets/icons/zapier.svg?react';
 import {Button, ConfirmationModal, Icon, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
-import {ReactComponent as Logo} from '../../../../assets/images/zapier-logo.svg';
-import {ReactComponent as ZapierIcon} from '../../../../assets/icons/zapier.svg';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {resolveAsset} from '../../../../utils/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';

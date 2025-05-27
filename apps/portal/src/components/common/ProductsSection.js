@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
-import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
+import LoaderIcon from '../../images/icons/loader.svg?react';
+import CheckmarkIcon from '../../images/icons/checkmark.svg?react';
 import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice, getProductFromPrice, getFreeTierTitle, getFreeTierDescription, getFreeProduct, getFreeProductBenefits, getSupportAddress, formatNumber, isCookiesDisabled, hasOnlyFreeProduct, isMemberActivePrice, hasFreeTrialTier, isComplimentaryMember} from '../../utils/helpers';
 import AppContext from '../../AppContext';
 import calculateDiscount from '../../utils/discount';

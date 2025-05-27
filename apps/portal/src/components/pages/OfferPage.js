@@ -1,7 +1,7 @@
 import React from 'react';
 import ActionButton from '../common/ActionButton';
 import AppContext from '../../AppContext';
-import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
+import CheckmarkIcon from '../../images/icons/checkmark.svg?react';
 import CloseButton from '../common/CloseButton';
 import InputForm from '../common/InputForm';
 import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, isSameCurrency, formatNumber, hasMultipleNewsletters} from '../../utils/helpers';

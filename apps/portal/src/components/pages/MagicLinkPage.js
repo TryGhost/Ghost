@@ -2,7 +2,7 @@ import React from 'react';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
-import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
+import EnvelopeIcon from '../../images/icons/envelope.svg?react';
 
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {

@@ -23,6 +23,12 @@ export default (function viteConfig() {
             },
             optimizeDeps: {
                 include: ['@tryghost/kg-unsplash-selector', '@tryghost/custom-fonts']
+            },
+            test: {
+                globals: true,
+                environment: 'jsdom',
+                include: ['test/unit/**/*.test.ts'],
+                exclude: ['test/acceptance/**/*']
             }
         },
         build: {

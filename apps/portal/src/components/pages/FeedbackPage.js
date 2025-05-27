@@ -1,8 +1,8 @@
 import {useContext, useEffect, useState} from 'react';
 import AppContext from '../../AppContext';
-import {ReactComponent as ThumbDownIcon} from '../../images/icons/thumbs-down.svg';
-import {ReactComponent as ThumbUpIcon} from '../../images/icons/thumbs-up.svg';
-import {ReactComponent as ThumbErrorIcon} from '../../images/icons/thumbs-error.svg';
+import ThumbDownIcon from '../../images/icons/thumbs-down.svg?react';
+import ThumbUpIcon from '../../images/icons/thumbs-up.svg?react';
+import ThumbErrorIcon from '../../images/icons/thumbs-error.svg?react';
 import setupGhostApi from '../../utils/api';
 import {chooseBestErrorMessage} from '../../utils/errors';
 import ActionButton from '../common/ActionButton';

@@ -35,8 +35,8 @@
         "@types/react": "18.3.23",
         "@types/react-svg-map": "2.1.4",
         "@vitejs/plugin-react": "4.5.0",
-        "vite": "4.5.14",
-        "vitest": "0.34.3"
+        "vite": "6.3.5",
+        "vitest": "3.1.4"
     },
     "dependencies": {
         "@svg-maps/world": "1.0.1",

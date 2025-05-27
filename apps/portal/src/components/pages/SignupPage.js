@@ -8,7 +8,7 @@ import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed} from '../../utils/helpers';
-import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
+import InvitationIcon from '../../images/icons/invitation.svg?react';
 import {interceptAnchorClicks} from '../../utils/links';
 
 export const SignupPageStyles = `

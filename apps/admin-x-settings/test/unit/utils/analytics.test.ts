@@ -1,5 +1,6 @@
-import * as assert from 'assert/strict';
 import trackEvent from '../../../src/utils/analytics';
+import {describe, it} from 'vitest';
+import {expect} from 'vitest';
 
 describe('trackEvent', function () {
     it('calls posthog.capture with the correct event name and properties', function () {
@@ -10,8 +11,8 @@ describe('trackEvent', function () {
 
         window.posthog = {
             capture: (eventName, props) => {
-                assert.equal(eventName, 'Recommendation Added');
-                assert.deepEqual(props, {
+                expect(eventName).toBe('Recommendation Added');
+                expect(props).toEqual({
                     oneClickSubscribe: true
                 });
             }
@@ -27,8 +28,8 @@ describe('trackEvent', function () {
         };
 
         window.plausible = (eventName, {props}) => {
-            assert.equal(eventName, 'Recommendation Added');
-            assert.deepEqual(props, {
+            expect(eventName).toBe('Recommendation Added');
+            expect(props).toEqual({
                 oneClickSubscribe: true
             });
         };

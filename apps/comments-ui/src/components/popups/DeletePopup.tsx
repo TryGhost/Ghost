@@ -1,7 +1,7 @@
 import CloseButton from './CloseButton';
+import SpinnerIcon from '../../images/icons/spinner.svg?react';
+import SuccessIcon from '../../images/icons/success.svg?react';
 import {Comment} from '../../AppContext';
-import {ReactComponent as SpinnerIcon} from '../../images/icons/spinner.svg';
-import {ReactComponent as SuccessIcon} from '../../images/icons/success.svg';
 import {useAppContext} from '../../AppContext';
 import {useState} from 'react';
 
@@ -24,8 +24,8 @@ const DeletePopup = ({comment}: {comment: Comment}) => {
         buttonText = t('Deleted');
     }
 
-    const buttonIcon1 = <SpinnerIcon className="mr-2 h-[24px] w-[24px] fill-white" />;
-    const buttonIcon2 = <SuccessIcon className="mr-2 h-[16px] w-[16px]" />;
+    const buttonIcon1 = <SpinnerIcon className="mr-2 size-[24px] fill-white" />;
+    const buttonIcon2 = <SuccessIcon className="mr-2 size-[16px]" />;
 
     let buttonIcon = null;
     if (progress === 'sending') {

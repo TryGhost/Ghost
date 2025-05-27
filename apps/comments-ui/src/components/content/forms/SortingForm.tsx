@@ -1,5 +1,5 @@
+import ChevronIcon from '../../../images/icons/chevron-down.svg?react';
 import React, {useEffect, useRef, useState} from 'react';
-import {ReactComponent as ChevronIcon} from '../../../images/icons/chevron-down.svg';
 import {useAppContext, useOrderChange} from '../../../AppContext';
 
 export const SortingForm: React.FC = () => {
@@ -55,7 +55,7 @@ export const SortingForm: React.FC = () => {
                 onClick={() => setIsOpen(!isOpen)}
             >
                 {options.find(option => option.value === selectedOption)?.label}
-                <span className="h-2 w-2 stroke-[3px]"><ChevronIcon /></span>
+                <span className="size-2 stroke-[3px]"><ChevronIcon /></span>
             </button>
 
             {isOpen && (

@@ -1,4 +1,4 @@
-import {ReactComponent as UserIcon} from '../../images/icons/user.svg';
+import UserIcon from '../../images/icons/user.svg?react';
 
 export const AvatarStyles = `
     .gh-portal-avatar {

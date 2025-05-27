@@ -1,8 +1,8 @@
 import React from 'react';
 import AppContext from '../../AppContext';
-import {ReactComponent as CloseIcon} from '../../images/icons/close.svg';
-import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark-fill.svg';
-import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg';
+import CloseIcon from '../../images/icons/close.svg?react';
+import CheckmarkIcon from '../../images/icons/checkmark-fill.svg?react';
+import WarningIcon from '../../images/icons/warning-fill.svg?react';
 import {getSupportAddress} from '../../utils/helpers';
 import {clearURLParams} from '../../utils/notifications';
 import Interpolate from '@doist/react-interpolate';

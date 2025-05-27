@@ -1,7 +1,7 @@
 import AppContext from '../../../../AppContext';
 import {useContext} from 'react';
 import {isEmailSuppressed, hasNewsletterSendingEnabled, hasCommentsEnabled} from '../../../../utils/helpers';
-import {ReactComponent as EmailDeliveryFailedIcon} from '../../../../images/icons/email-delivery-failed.svg';
+import EmailDeliveryFailedIcon from '../../../../images/icons/email-delivery-failed.svg?react';
 
 function DisabledEmailNotice({t}) {
     return (

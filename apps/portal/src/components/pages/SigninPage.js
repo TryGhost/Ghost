@@ -6,7 +6,7 @@ import AppContext from '../../AppContext';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 import {hasAvailablePrices, isSigninAllowed, isSignupAllowed} from '../../utils/helpers';
-import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
+import InvitationIcon from '../../images/icons/invitation.svg?react';
 
 export default class SigninPage extends React.Component {
     static contextType = AppContext;

@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import {MouseEvent, UIEvent, useCallback, useEffect, useRef} from 'react';
 import {HexColorInput, HexColorPicker} from 'react-colorful';
-import {ReactComponent as EyedropperIcon} from '../../assets/icons/eyedropper.svg';
+import EyedropperIcon from '../../assets/icons/eyedropper.svg?react';
 import Button from '../Button';
 
 declare global {

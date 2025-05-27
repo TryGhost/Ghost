@@ -1,5 +1,5 @@
+import EmailIcon from '../../../assets/icons/email.svg?react';
 import React from 'react';
-import {ReactComponent as EmailIcon} from '../../../assets/icons/email.svg';
 import {useAppContext} from '../../AppContext';
 
 export const SuccessView: React.FC<{

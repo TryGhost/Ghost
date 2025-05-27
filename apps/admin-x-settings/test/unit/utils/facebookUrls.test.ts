@@ -1,36 +1,37 @@
-import * as assert from 'assert/strict';
+import {describe, it} from 'vitest';
+import {expect} from 'vitest';
 import {facebookHandleToUrl, facebookUrlToHandle, validateFacebookUrl} from '../../../src/utils/socialUrls/index';
 
 describe('Facebook URLs', () => {
     describe('URL validation', () => {
         it('should return empty string when input is empty', () => {
-            assert.equal(validateFacebookUrl(''), '');
+            expect(validateFacebookUrl('')).toBe('');
         });
 
         it('should format various Facebook URL formats correctly', () => {
-            assert.equal(validateFacebookUrl('facebook.com/myPage'), 'https://www.facebook.com/myPage');
-            assert.equal(validateFacebookUrl('https://www.facebook.com/myPage'), 'https://www.facebook.com/myPage');
-            assert.equal(validateFacebookUrl('www.facebook.com/myPage'), 'https://www.facebook.com/myPage');
-            assert.equal(validateFacebookUrl('/myPage'), 'https://www.facebook.com/myPage');
+            expect(validateFacebookUrl('facebook.com/myPage')).toBe('https://www.facebook.com/myPage');
+            expect(validateFacebookUrl('https://www.facebook.com/myPage')).toBe('https://www.facebook.com/myPage');
+            expect(validateFacebookUrl('www.facebook.com/myPage')).toBe('https://www.facebook.com/myPage');
+            expect(validateFacebookUrl('/myPage')).toBe('https://www.facebook.com/myPage');
         });
 
         it('should reject URLs from other domains', () => {
-            assert.throws(() => validateFacebookUrl('https://twitter.com/myPage'), /The URL must be in a format like https:\/\/www\.facebook\.com\/yourPage/);
-            assert.throws(() => validateFacebookUrl('http://example.com'), /The URL must be in a format like https:\/\/www\.facebook\.com\/yourPage/);
+            expect(() => validateFacebookUrl('https://twitter.com/myPage')).toThrow(/The URL must be in a format like https:\/\/www\.facebook\.com\/yourPage/);
+            expect(() => validateFacebookUrl('http://example.com')).toThrow(/The URL must be in a format like https:\/\/www\.facebook\.com\/yourPage/);
         });
     });
 
     describe('Handle to URL conversion', () => {
         it('should convert Facebook handle to full URL', () => {
-            assert.equal(facebookHandleToUrl('myPage'), 'https://www.facebook.com/myPage');
+            expect(facebookHandleToUrl('myPage')).toBe('https://www.facebook.com/myPage');
         });
     });
 
     describe('URL to handle extraction', () => {
         it('should extract Facebook handle from URL', () => {
-            assert.equal(facebookUrlToHandle('https://www.facebook.com/myPage'), 'myPage');
-            assert.equal(facebookUrlToHandle('https://www.facebook.com/myPage/'), 'myPage/');
-            assert.equal(facebookUrlToHandle('invalid-url'), null);
+            expect(facebookUrlToHandle('https://www.facebook.com/myPage')).toBe('myPage');
+            expect(facebookUrlToHandle('https://www.facebook.com/myPage/')).toBe('myPage/');
+            expect(facebookUrlToHandle('invalid-url')).toBe(null);
         });
     });
 }); 

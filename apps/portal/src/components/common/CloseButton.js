@@ -1,6 +1,6 @@
 import React from 'react';
 import AppContext from '../../AppContext';
-import {ReactComponent as CloseIcon} from '../../images/icons/close.svg';
+import CloseIcon from '../../images/icons/close.svg?react';
 
 export default class CloseButton extends React.Component {
     static contextType = AppContext;

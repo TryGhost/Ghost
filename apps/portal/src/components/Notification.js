@@ -2,9 +2,9 @@ import React from 'react';
 import Frame from './Frame';
 import AppContext from '../AppContext';
 import NotificationStyle from './Notification.styles';
-import {ReactComponent as CloseIcon} from '../images/icons/close.svg';
-import {ReactComponent as CheckmarkIcon} from '../images/icons/checkmark-fill.svg';
-import {ReactComponent as WarningIcon} from '../images/icons/warning-fill.svg';
+import CloseIcon from '../images/icons/close.svg?react';
+import CheckmarkIcon from '../images/icons/checkmark-fill.svg?react';
+import WarningIcon from '../images/icons/warning-fill.svg?react';
 import NotificationParser, {clearURLParams} from '../utils/notifications';
 import {getPortalLink} from '../utils/helpers';
 

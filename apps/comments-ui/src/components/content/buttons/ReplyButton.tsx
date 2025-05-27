@@ -1,4 +1,4 @@
-import {ReactComponent as ReplyIcon} from '../../../images/icons/reply.svg';
+import ReplyIcon from '../../../images/icons/reply.svg?react';
 import {useAppContext} from '../../../AppContext';
 
 type Props = {

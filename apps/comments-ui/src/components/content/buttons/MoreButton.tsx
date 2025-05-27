@@ -1,6 +1,6 @@
 import CommentContextMenu from '../context-menus/CommentContextMenu';
+import MoreIcon from '../../../images/icons/more.svg?react';
 import {Comment, useAppContext} from '../../../AppContext';
-import {ReactComponent as MoreIcon} from '../../../images/icons/more.svg';
 import {useState} from 'react';
 
 type Props = {

@@ -2,7 +2,7 @@ import {useContext} from 'react';
 import AppContext from '../../AppContext';
 import CloseButton from '../common/CloseButton';
 import ActionButton from '../common/ActionButton';
-import {ReactComponent as WarningIcon} from '../../images/icons/warning-outline.svg';
+import WarningIcon from '../../images/icons/warning-outline.svg?react';
 import * as Sentry from '@sentry/react';
 
 export const TipsAndDonationsErrorStyle = `
