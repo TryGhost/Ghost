@@ -241,10 +241,32 @@ h2 {
     font-size: 32px;
 }
 
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+h2 {
+    color: {{postHeadingTitleColor}};
+}
+{{#if postLinkColor}}
+h2:not(.kg-header-card-heading) a {
+    color: {{postLinkColor}} !important;
+}
+{{/if}}
+{{/hasFeature}}
+
 h3 {
     margin: 1.5em 0 0.5em 0;
     font-size: 26px;
 }
+
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+h3 {
+    color: {{postHeadingTitleColor}};
+}
+{{#if postLinkColor}}
+h3 a {
+    color: {{postLinkColor}} !important;
+}
+{{/if}}
+{{/hasFeature}}
 
 h4 {
     margin: 1.8em 0 0.5em 0;
