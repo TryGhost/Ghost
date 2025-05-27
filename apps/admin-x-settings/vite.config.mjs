@@ -14,9 +14,9 @@ export default (function viteConfig() {
             resolve: {
                 // Shim node modules utilized by the @tryghost/nql package
                 alias: {
-                    fs: 'node-shim.cjs',
-                    path: 'node-shim.cjs',
-                    util: 'node-shim.cjs',
+                    fs: resolve(__dirname, 'node-shim.cjs'),
+                    path: resolve(__dirname, 'node-shim.cjs'),
+                    util: resolve(__dirname, 'node-shim.cjs'),
                     // @TODO: Remove this when @tryghost/nql is updated
                     mingo: resolve(__dirname, '../../node_modules/mingo/dist/mingo.js')
                 }
