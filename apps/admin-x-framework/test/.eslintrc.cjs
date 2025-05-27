@@ -3,10 +3,8 @@ module.exports = {
     extends: [
         'plugin:ghost/ts-test'
     ],
-    env: {
-        'vitest-globals/env': true
-    },
     rules: {
-        'ghost/mocha/no-arrow-functions': 'off'
+        'ghost/mocha/no-mocha-arrows': 'off',
+        '@typescript-eslint/no-explicit-any': 'off'
     }
 };
