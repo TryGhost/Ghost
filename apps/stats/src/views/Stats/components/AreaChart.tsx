@@ -1,6 +1,6 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import React from 'react';
-import {AlignedAxisTick, ChartConfig, ChartContainer, ChartTooltip, Recharts, calculateYAxisWidth, cn, formatDisplayDateWithRange, formatNumber, getYRange} from '@tryghost/shade';
+import {AlignedAxisTick, ChartConfig, ChartContainer, ChartTooltip, Recharts, calculateYAxisWidth, cn, formatDisplayDateWithRange, formatNumber, getYRange, getYRangeWithMinPadding} from '@tryghost/shade';
 
 export type AreaChartDataItem = {
     date: string;
@@ -68,13 +68,13 @@ const AreaChart: React.FC<AreaChartProps> = ({
                 <Recharts.YAxis
                     allowDataOverflow={allowDataOverflow}
                     axisLine={false}
-                    domain={yRange}
+                    domain={allowDataOverflow ? getYRangeWithMinPadding({min: yRange[0], max: yRange[1]}) : yRange}
                     scale="linear"
                     tickFormatter={(value: number) => {
                         return dataFormatter(value);
                     }}
                     tickLine={false}
-                    ticks={[]}
+                    ticks={yRange}
                     width={showYAxisValues ? calculateYAxisWidth(yRange, (value: number) => dataFormatter(value)) : 0}
                 />
                 <ChartTooltip

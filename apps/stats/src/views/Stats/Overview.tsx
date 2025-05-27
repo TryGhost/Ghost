@@ -271,6 +271,7 @@ const Overview: React.FC = () => {
                         title='Members'
                     >
                         <AreaChart
+                            allowDataOverflow={true}
                             className={areaChartClassName}
                             color='hsl(var(--chart-green))'
                             data={membersChartData}
@@ -291,6 +292,7 @@ const Overview: React.FC = () => {
                         title='MRR'
                     >
                         <AreaChart
+                            allowDataOverflow={true}
                             className={areaChartClassName}
                             color='hsl(var(--chart-orange))'
                             data={mrrChartData}

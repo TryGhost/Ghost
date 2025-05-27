@@ -7,7 +7,7 @@ import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatNumber, formatPercentage, getYRange, getYRangeWithMinPadding} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -143,9 +143,6 @@ const NewsletterKPIs: React.FC<{
     const barDomain = [0, 1];
     const barTicks = [0, 1];
 
-    const yRange = [getYRange(subscribersData).min, getYRange(subscribersData).max];
-    const yRangeWithMinPadding = getYRangeWithMinPadding({min: yRange[0], max: yRange[1]});
-
     const tabConfig = {
         'total-subscribers': {
             color: 'hsl(var(--chart-purple))',
@@ -201,7 +198,6 @@ const NewsletterKPIs: React.FC<{
                         data={subscribersData}
                         id="mrr"
                         range={range}
-                        yAxisRange={yRangeWithMinPadding}
                     />
                 }
 

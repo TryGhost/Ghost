@@ -5,7 +5,7 @@ import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, KpiTabTrigger, KpiTabValue, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, centsToDollars, formatNumber, getYRange, getYRangeWithMinPadding} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, KpiTabTrigger, KpiTabValue, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, centsToDollars, formatNumber} from '@tryghost/shade';
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -120,9 +120,6 @@ const GrowthKPIs: React.FC<{
         return processedData;
     }, [currentTab, allChartData, range]);
 
-    const yRange = [getYRange(chartData).min, getYRange(chartData).max];
-    const yRangeWithMinPadding = getYRangeWithMinPadding({min: yRange[0], max: yRange[1]});
-
     const tabConfig = {
         'total-members': {
             color: 'hsl(var(--chart-blue))'
@@ -200,7 +197,6 @@ const GrowthKPIs: React.FC<{
                         formatNumber}
                     id="mrr"
                     range={range}
-                    yAxisRange={yRangeWithMinPadding}
                 />
             </div>
         </Tabs>
