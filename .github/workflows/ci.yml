@@ -913,6 +913,7 @@ jobs:
       - name: Start Ghost
         working-directory: ghost/core
         env:
+          mail__options__host: localhost
           database__client: mysql2
           database__connection__host: localhost
           database__connection__user: root
@@ -954,13 +955,6 @@ jobs:
         if: always()
         run: |
           docker compose -f .docker/compose/compose.ci.e2e.yml down -v
-
-      - uses: tryghost/actions/actions/slack-build@main
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        with:
-          status: ${{ job.status }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
 
   job_tinybird_forward:
