@@ -28,7 +28,7 @@ https://localhost {
 ## Add the following to your /etc/hosts file:
 ## 127.0.0.1 site.ghost
 site.ghost {
-	reverse_proxy server:2368
+    reverse_proxy server:2368
 }
 
 # Access Ghost Admin at https://admin.ghost/ghost
