@@ -1,5 +1,5 @@
 // import AudienceSelect from './components/AudienceSelect';
-import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
+import AreaChart from './components/AreaChart';
 import DateRangeSelect from './components/DateRangeSelect';
 import NewsletterSelect from './components/NewsletterSelect';
 import React, {useMemo, useState} from 'react';
@@ -7,7 +7,7 @@ import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {AlignedAxisTick, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatDisplayDateWithRange, formatNumber, formatPercentage, getYRange, getYRangeWithMinPadding} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatNumber, formatPercentage, getYRange, getYRangeWithMinPadding} from '@tryghost/shade';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -134,12 +134,6 @@ const NewsletterKPIs: React.FC<{
         return processedData;
     }, [allSubscribersData, range, totalSubscribers]);
 
-    const subscribersChartConfig = {
-        value: {
-            label: 'Newsletter subscribers'
-        }
-    } satisfies ChartConfig;
-
     const barChartConfig = {
         open_rate: {
             label: 'Open rate'
@@ -200,69 +194,15 @@ const NewsletterKPIs: React.FC<{
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 {(currentTab === 'total-subscribers') &&
-                <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] min-h-[280px] w-full' config={subscribersChartConfig}>
-                    <Recharts.AreaChart
+                    <AreaChart
+                        allowDataOverflow={true}
+                        className='-mb-3 h-[16vw] max-h-[320px] w-full'
+                        color={tabConfig['total-subscribers'].color}
                         data={subscribersData}
-                        margin={{
-                            left: 4,
-                            right: 4,
-                            top: 12
-                        }}
-                    >
-                        <Recharts.CartesianGrid horizontal={false} vertical={false} />
-                        <Recharts.XAxis
-                            axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
-                            dataKey="date"
-                            interval={0}
-                            stroke="hsl(var(--gray-300))"
-                            tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(value, range)} />}
-                            tickFormatter={value => formatDisplayDateWithRange(value, range)}
-                            tickLine={false}
-                            tickMargin={8}
-                            ticks={subscribersData.length > 0 ? [subscribersData[0].date, subscribersData[subscribersData.length - 1].date] : []}
-                        />
-                        <Recharts.YAxis
-                            allowDataOverflow={true}
-                            axisLine={false}
-                            domain={yRangeWithMinPadding}
-                            scale="linear"
-                            tickFormatter={value => formatNumber(value)}
-                            tickLine={false}
-                            ticks={yRange}
-                            width={calculateYAxisWidth(yRange, (value: number) => formatNumber(value))}
-                        />
-                        <ChartTooltip
-                            content={<CustomTooltipContent color={tabConfig['total-subscribers'].color} range={range} />}
-                            cursor={true}
-                            isAnimationActive={false}
-                            position={{y: 20}}
-                        />
-                        <defs>
-                            <linearGradient id="fillChart" x1="0" x2="0" y1="0" y2="1">
-                                <stop
-                                    offset="5%"
-                                    stopColor={tabConfig['total-subscribers'].color}
-                                    stopOpacity={0.8}
-                                />
-                                <stop
-                                    offset="95%"
-                                    stopColor={tabConfig['total-subscribers'].color}
-                                    stopOpacity={0.1}
-                                />
-                            </linearGradient>
-                        </defs>
-                        <Recharts.Area
-                            dataKey={tabConfig['total-subscribers'].datakey}
-                            fill="url(#fillChart)"
-                            fillOpacity={0.2}
-                            isAnimationActive={false}
-                            stackId="a"
-                            stroke={tabConfig['total-subscribers'].color}
-                            strokeWidth={2}
-                            type="linear"
-                        />
-                    </Recharts.AreaChart>
-                </ChartContainer>
+                        id="mrr"
+                        range={range}
+                        yAxisRange={yRangeWithMinPadding}
+                    />
                 }
 
                 {(currentTab === 'avg-open-rate' || currentTab === 'avg-click-rate') &&
