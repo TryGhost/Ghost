@@ -882,13 +882,13 @@ jobs:
 
       - name: Start supporting services
         run: |
-          docker compose up -d mysql redis mailhog
-          docker compose ps
+          docker compose -f .docker/compose/compose.ci.e2e.yml up -d
+          docker compose -f .docker/compose/compose.ci.e2e.yml ps
 
       - name: Wait for MySQL and Redis
         run: |
-          timeout 60 bash -c 'until docker compose exec -T mysql mysql -uroot -proot -e "SELECT 1"; do sleep 1; done'
-          timeout 60 bash -c 'until docker compose exec -T redis redis-cli ping; do sleep 1; done'
+          timeout 60 bash -c 'until docker compose -f .docker/compose/compose.ci.e2e.yml exec -T mysql mysql -uroot -proot -e "SELECT 1"; do sleep 1; done'
+          timeout 60 bash -c 'until docker compose -f .docker/compose/compose.ci.e2e.yml exec -T redis redis-cli ping; do sleep 1; done'
 
       - name: Build packages
         run: yarn nx run-many -t build --exclude=ghost-admin
@@ -965,7 +965,7 @@ jobs:
       - name: Stop services
         if: always()
         run: |
-          docker compose down -v
+          docker compose -f .docker/compose/compose.ci.e2e.yml down -v
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
