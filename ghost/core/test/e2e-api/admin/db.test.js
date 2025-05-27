@@ -2,24 +2,9 @@ const {agentProvider, fixtureManager, matchers, assertions, mockManager} = requi
 const {anyContentVersion, anyErrorId, anyEtag, anyContentLength, stringMatching} = matchers;
 const {cacheInvalidateHeaderNotSet, cacheInvalidateHeaderSetToWildcard} = assertions;
 const {exportedBodyLatest} = require('../../utils/fixtures/export/body-generator');
-const FormData = require('form-data');
-const fs = require('fs').promises;
 const path = require('path');
 const assert = require('assert/strict');
-const mime = require('mime-types');
 
-const attachFile = async (name, filePath) => {
-    const formData = new FormData();
-    const fullFilePath = path.join(__dirname, filePath);
-    const fileContent = await fs.readFile(fullFilePath);
-
-    formData.append(name, fileContent, {
-        filename: path.basename(fullFilePath),
-        contentType: mime.lookup(fullFilePath) || 'application/octet-stream'
-    });
-
-    return formData;
-};
 
 describe('DB API', function () {
     let agent;
@@ -119,7 +104,7 @@ describe('DB API', function () {
     it('Handles invalid zip file uploads (central directory)', async function () {
         await agent
             .post('db/')
-            .body(await attachFile('importfile', '../../utils/fixtures/import/zips/empty.zip'))
+            .attach('importfile', path.join(__dirname, '../../utils/fixtures/import/zips/empty.zip'))
             .expectStatus(415)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -135,7 +120,7 @@ describe('DB API', function () {
     it('Handles invalid zip file uploads (malformed comments)', async function () {
         await agent
             .post('db/')
-            .body(await attachFile('importfile', '../../utils/fixtures/import/zips/malformed-comments.zip'))
+            .attach('importfile', path.join(__dirname, '../../utils/fixtures/import/zips/malformed-comments.zip'))
             .expectStatus(415)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
