@@ -860,6 +860,7 @@ jobs:
     env:
       CI: true
       BASE_URL: http://localhost:2368
+      database__connection__host: localhost
       ADMIN_USERNAME: test@example.com
       ADMIN_PASSWORD: not_very_secure
       EMAIL_PROVIDER: mailhog
