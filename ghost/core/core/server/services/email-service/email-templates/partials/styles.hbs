@@ -242,6 +242,21 @@ h2 {
 }
 
 {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+
+h1 {
+    {{#if postHeadingTitleColor}}
+    color: {{postHeadingTitleColor}};
+    {{else}}
+    color: #15212A; /* fallback to default */
+    {{/if}}
+}
+
+{{#if postLinkColor }}
+h1 a {
+    color: {{postLinkColor}} !important;
+}
+{{/if}}
+
 h2 {
     {{#if postHeadingTitleColor}}
     color: {{postHeadingTitleColor}};
@@ -263,7 +278,31 @@ h3 {
 }
 
 {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
-h3:not(.kg-header-card-subheader) {
+h3:not(.kg-header-card-subheader):not(.latest-posts-header) {
+    {{#if postHeadingTitleColor}}
+    color: {{postHeadingTitleColor}};
+    {{else}}
+    color: #15212A; /* fallback to default */
+    {{/if}}
+}
+
+/* Ensure subscription-box h3 keeps its original color */
+.subscription-box h3 {
+    color: #15212A !important;
+}
+
+{{#if postLinkColor}}
+h3:not(.kg-header-card-subheader):not(.latest-posts-header) a {
+    color: {{postLinkColor}} !important;
+}
+{{/if}}
+{{/hasFeature}}
+
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+h4 {
+    margin: 1.8em 0 0.5em 0;
+    font-size: 21px;
+    line-height: 1.2em;
     {{#if postHeadingTitleColor}}
     color: {{postHeadingTitleColor}};
     {{else}}
@@ -271,29 +310,59 @@ h3:not(.kg-header-card-subheader) {
     {{/if}}
 }
 {{#if postLinkColor}}
-h3:not(.kg-header-card-subheader) a {
+h4 a {
     color: {{postLinkColor}} !important;
 }
 {{/if}}
 {{/hasFeature}}
 
-h4 {
-    margin: 1.8em 0 0.5em 0;
-    font-size: 21px;
-    line-height: 1.2em;
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+h5 {
+    margin: 2em 0 0.5em 0;
+    font-size: 19px;
+    line-height: 1.3em;
+    {{#if postHeadingTitleColor}}
+    color: {{postHeadingTitleColor}};
+    {{else}}
+    color: #15212A; /* fallback to default */
+    {{/if}}
 }
-
+{{#if postLinkColor}}
+h5 a {
+    color: {{postLinkColor}} !important;
+}
+{{/if}}
+{{else}}
 h5 {
     margin: 2em 0 0.5em 0;
     font-size: 19px;
     line-height: 1.3em;
 }
+{{/hasFeature}}
 
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+h6 {
+    margin: 2em 0 0.5em 0;
+    font-size: 19px;
+    line-height: 1.3em;
+    {{#if postHeadingTitleColor}}
+    color: {{postHeadingTitleColor}};
+    {{else}}
+    color: #15212A; /* fallback to default */
+    {{/if}}
+}
+{{#if postLinkColor}}
+h6 a {
+    color: {{postLinkColor}} !important;
+}
+{{/if}}
+{{else}}
 h6 {
     margin: 2em 0 0.5em 0;
     font-size: 19px;
     line-height: 1.3em;
 }
+{{/hasFeature}}
 
 h1 strong,
 h2 strong,
