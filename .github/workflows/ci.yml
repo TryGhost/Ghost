@@ -899,6 +899,13 @@ jobs:
 
       - name: Setup Ghost database
         working-directory: ghost/core
+        env:
+          database__connection__client: mysql2
+          database__connection__host: localhost
+          database__connection__user: root
+          database__connection__password: root
+          database__connection__database: ghost_test
+          database__connection__port: 3306
         run: |
           yarn knex-migrator init
           yarn knex-migrator migrate
