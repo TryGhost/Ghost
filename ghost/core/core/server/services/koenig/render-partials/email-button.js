@@ -1,5 +1,5 @@
-import clsx from 'clsx';
-import {html} from '../tagged-template-fns.mjs';
+const clsx = require('clsx');
+const {html} = require('../render-utils/tagged-template-fns.js');
 
 /**
  * @param {Object} options
@@ -10,7 +10,7 @@ import {html} from '../tagged-template-fns.mjs';
  * @param {string} [options.url='']
  * @returns {string}
  */
-export function renderEmailButton({
+function renderEmailButton({
     alignment = '',
     color = 'accent',
     text = '',
@@ -33,3 +33,7 @@ export function renderEmailButton({
         </table>
     `;
 }
+
+module.exports = {
+    renderEmailButton
+};

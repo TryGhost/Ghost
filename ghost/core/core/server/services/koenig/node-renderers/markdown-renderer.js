@@ -1,7 +1,7 @@
-import markdownHtmlRenderer from '@tryghost/kg-markdown-html-renderer';
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+const markdownHtmlRenderer = require('@tryghost/kg-markdown-html-renderer');
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
 
-export function renderMarkdownNode(node, options = {}) {
+function renderMarkdownNode(node, options = {}) {
     addCreateDocumentOption(options);
     const document = options.createDocument();
 
@@ -14,3 +14,5 @@ export function renderMarkdownNode(node, options = {}) {
     // @see @tryghost/kg-lexical-html-renderer package
     return {element, type: 'inner'};
 }
+
+module.exports = renderMarkdownNode;

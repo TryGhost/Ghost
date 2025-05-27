@@ -1,8 +1,8 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {renderEmptyContainer} from '../../utils/render-empty-container';
-import twitterRenderer from './types/twitter';
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
+const {renderEmptyContainer} = require('../render-utils/render-empty-container');
+const twitterRenderer = require('./embed/types/twitter');
 
-export function renderEmbedNode(node, options = {}) {
+function renderEmbedNode(node, options = {}) {
     addCreateDocumentOption(options);
 
     const document = options.createDocument();
@@ -71,3 +71,5 @@ function renderTemplate(node, document, options) {
 
     return {element: figure};
 }
+
+module.exports = renderEmbedNode;

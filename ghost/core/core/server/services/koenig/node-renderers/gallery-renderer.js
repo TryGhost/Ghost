@@ -1,10 +1,10 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {getAvailableImageWidths} from '../../utils/get-available-image-widths';
-import {isLocalContentImage} from '../../utils/is-local-content-image';
-import {isUnsplashImage} from '../../utils/is-unsplash-image';
-import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions';
-import {setSrcsetAttribute} from '../../utils/srcset-attribute';
-import {renderEmptyContainer} from '../../utils/render-empty-container';
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
+const {getAvailableImageWidths} = require('../render-utils/get-available-image-widths');
+const {isLocalContentImage} = require('../render-utils/is-local-content-image');
+const {isUnsplashImage} = require('../render-utils/is-unsplash-image');
+const {getResizedImageDimensions} = require('../render-utils/get-resized-image-dimensions');
+const {setSrcsetAttribute} = require('../render-utils/srcset-attribute');
+const {renderEmptyContainer} = require('../render-utils/render-empty-container');
 
 const MAX_IMG_PER_ROW = 3;
 
@@ -35,7 +35,7 @@ function buildStructure(images) {
     return rows;
 }
 
-export function renderGalleryNode(node, options = {}) {
+function renderGalleryNode(node, options = {}) {
     addCreateDocumentOption(options);
     const document = options.createDocument();
 
@@ -127,7 +127,7 @@ export function renderGalleryNode(node, options = {}) {
 
                 if (isUnsplashImage(image.src)) {
                     const unsplashUrl = new URL(image.src);
-                    unsplashUrl.searchParams.set('w', 1200);
+                    unsplashUrl.searchParams.set('w', '1200');
                     img.setAttribute('src', unsplashUrl.href);
                 }
             }
@@ -155,3 +155,5 @@ export function renderGalleryNode(node, options = {}) {
 
     return {element: figure};
 }
+
+module.exports = renderGalleryNode;

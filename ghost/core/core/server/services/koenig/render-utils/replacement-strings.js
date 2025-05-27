@@ -3,7 +3,7 @@
  * @param {string} html
  * @returns {string}
  */
-export function removeSpaces(html) {
+function removeSpaces(html) {
     return html.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
@@ -14,7 +14,7 @@ export function removeSpaces(html) {
  * @param {string} html
  * @returns {string}
  */
-export function wrapReplacementStrings(html) {
+function wrapReplacementStrings(html) {
     return html.replace(/\{(\w*?)(?:,? *"(.*?)")?\}/g, '%%$&%%');
 }
 
@@ -25,7 +25,7 @@ export function wrapReplacementStrings(html) {
  * @param {string} html
  * @returns {string}
  */
-export function removeCodeWrappersFromHelpers(html,document) {
+function removeCodeWrappersFromHelpers(html, document) {
     // parse html to make patterns easier to match
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
@@ -35,7 +35,7 @@ export function removeCodeWrappersFromHelpers(html,document) {
         const codeTextContent = codeElement.textContent;
         // extract the content of the code element if it follows the helper pattern (e.g. {foo})
         if (codeTextContent.match(/((.*?){.*?}(.*?))/gi)) {
-            const codeContent = codeElement.innerHTML; 
+            const codeContent = codeElement.innerHTML;
             codeElement.parentNode.replaceChild(document.createRange().createContextualFragment(codeContent), codeElement);
         }
     });
@@ -43,3 +43,9 @@ export function removeCodeWrappersFromHelpers(html,document) {
     const cleanedHtml = tempDiv.innerHTML;
     return cleanedHtml;
 }
+
+module.exports = {
+    removeSpaces,
+    wrapReplacementStrings,
+    removeCodeWrappersFromHelpers
+};

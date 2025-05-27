@@ -1,11 +1,11 @@
-import {getAvailableImageWidths} from '../../utils/get-available-image-widths';
-import {isLocalContentImage} from '../../utils/is-local-content-image';
-import {setSrcsetAttribute} from '../../utils/srcset-attribute';
-import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions';
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {renderEmptyContainer} from '../../utils/render-empty-container';
+const {getAvailableImageWidths} = require('../render-utils/get-available-image-widths');
+const {isLocalContentImage} = require('../render-utils/is-local-content-image');
+const {setSrcsetAttribute} = require('../render-utils/srcset-attribute');
+const {getResizedImageDimensions} = require('../render-utils/get-resized-image-dimensions');
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
+const {renderEmptyContainer} = require('../render-utils/render-empty-container');
 
-export function renderImageNode(node, options = {}) {
+function renderImageNode(node, options = {}) {
     addCreateDocumentOption(options);
 
     const document = options.createDocument();
@@ -127,3 +127,5 @@ export function renderImageNode(node, options = {}) {
 
     return {element: figure};
 }
+
+module.exports = renderImageNode;

@@ -1,4 +1,4 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
 
 // ref https://ghost.org/docs/themes/members#signup-forms
 
@@ -68,7 +68,7 @@ function loadingIcon() {
     </svg>`;
 }
 
-export function renderSignupCardToDOM(dataset, options = {}) {
+function renderSignupCardToDOM(dataset, options = {}) {
     addCreateDocumentOption(options);
     const document = options.createDocument();
 
@@ -122,7 +122,7 @@ export function renderSignupCardToDOM(dataset, options = {}) {
     return {element: element.firstElementChild};
 }
 
-export function getCardClasses(nodeData) {
+function getCardClasses(nodeData) {
     let cardClasses = ['kg-card kg-signup-card'];
 
     if (nodeData.layout && nodeData.layout !== 'split') {
@@ -161,3 +161,5 @@ const getAccentClass = (nodeData) => {
         return '';
     }
 };
+
+module.exports = renderSignupCardToDOM;

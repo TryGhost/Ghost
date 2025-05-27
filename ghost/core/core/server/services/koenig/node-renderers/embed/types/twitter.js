@@ -1,7 +1,7 @@
-import {DateTime} from 'luxon';
-import toArray from 'lodash/toArray';
+const {DateTime} = require('luxon');
+const _ = require('lodash');
 
-export default function render(node, document, options) {
+function render(node, document, options) {
     const metadata = node.metadata;
 
     const figure = document.createElement('figure');
@@ -42,7 +42,7 @@ export default function render(node, document, options) {
         if (mentions) {
             let last = 0;
             let parts = [];
-            let content = toArray(tweetContent);
+            let content = _.toArray(tweetContent);
             for (const entity of entities) {
                 let type = 'text';
                 let data = content.slice(entity.start, entity.end + 1).join('').replace(/\n/g, '<br>');
@@ -167,3 +167,5 @@ export default function render(node, document, options) {
 
     return {element: figure};
 }
+
+module.exports = render;

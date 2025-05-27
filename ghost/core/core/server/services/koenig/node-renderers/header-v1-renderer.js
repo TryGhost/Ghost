@@ -1,8 +1,8 @@
-import {addCreateDocumentOption} from '../../../../utils/add-create-document-option';
-import {renderEmptyContainer} from '../../../../utils/render-empty-container';
-import {slugify} from '../../../../utils/slugify';
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
+const {renderEmptyContainer} = require('../render-utils/render-empty-container');
+const {slugify} = require('../render-utils/slugify');
 
-export function renderHeaderNodeV1(node, options = {}) {
+function renderHeaderNodeV1(node, options = {}) {
     addCreateDocumentOption(options);
 
     const document = options.createDocument();
@@ -58,3 +58,5 @@ export function renderHeaderNodeV1(node, options = {}) {
 
     return {element: div};
 }
+
+module.exports = renderHeaderNodeV1;
