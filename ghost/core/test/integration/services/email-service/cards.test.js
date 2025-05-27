@@ -194,12 +194,12 @@ describe('Can send cards via email', function () {
         });
 
         const excludedCards = [
-            'collection', // only used in pages, will never be emailed
-            'extended-text', // not a card
-            'extended-quote', // not a card
-            'extended-heading', // not a card
-            'call-to-action', // behind the contentVisibility labs flag
-            // not a card and shouldn't be present in published posts / emails
+            // only used in pages, will never be emailed
+            'collection',
+            // non-card nodes
+            'extended-text',
+            'extended-quote',
+            'extended-heading',
             'tk',
             'at-link',
             'at-link-search',
