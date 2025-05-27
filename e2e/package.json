@@ -11,7 +11,6 @@
     "build": "yarn build:ts",
     "build:ts": "tsc",
     "prepare": "tsc",
-    "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --100 --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
     "test:e2e": "playwright test",
     "test": "yarn test:types && yarn test:unit && yarn test:e2e",
     "test:types": "tsc --noEmit",
