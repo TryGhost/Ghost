@@ -1,7 +1,7 @@
 import React from 'react';
 
 import './AnnouncementBar.css';
-import {ReactComponent as CloseIcon} from '../icons/clear.svg';
+import CloseIcon from '../icons/clear.svg?react';
 
 export function AnnouncementBar({settings = {}}) {
     const [visible, setVisible] = React.useState(shouldShowBar(settings.announcement));
