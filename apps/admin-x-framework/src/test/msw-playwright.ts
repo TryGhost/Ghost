@@ -71,12 +71,12 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
                 const queryParts = apiPath.split('?')[1].split('&');
                 
                 // Create a regex that matches the path with any order of query parameters
-                const queryRegexParts = queryParts.map(part => {
-                    const [key, value] = part.split('=');
+                const queryRegexParts = queryParts.map((part) => {
+                    const [paramKey, value] = part.split('=');
                     if (value) {
-                        return `(?=.*[?&]${key}=${encodeURIComponent(value).replace(/%/g, '%25')}(?:&|$))`;
+                        return `(?=.*[?&]${paramKey}=${encodeURIComponent(value).replace(/%/g, '%25')}(?:&|$))`;
                     }
-                    return `(?=.*[?&]${key}(?:=|&|$))`;
+                    return `(?=.*[?&]${paramKey}(?:=|&|$))`;
                 });
                 
                 apiPath = new RegExp(`^${basePath}\\?${queryRegexParts.join('')}.*$`);

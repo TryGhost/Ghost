@@ -205,7 +205,7 @@ export function createHandlersFromConfig(
                 const queryParts = apiPath.split('?')[1].split('&');
                 
                 // Create a regex that matches the path with any order of query parameters
-                const queryRegexParts = queryParts.map(part => {
+                const queryRegexParts = queryParts.map((part) => {
                     const [key, value] = part.split('=');
                     if (value) {
                         return `(?=.*[?&]${key}=${encodeURIComponent(value).replace(/%/g, '%25')}(?:&|$))`;
