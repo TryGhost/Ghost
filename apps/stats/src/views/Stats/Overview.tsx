@@ -255,6 +255,7 @@ const Overview: React.FC = () => {
                             data={visitorsChartData}
                             id="visitors"
                             range={range}
+                            showYAxisValues={false}
                             syncId="overview-charts"
                             yAxisRange={visitorsYRange}
                         />
@@ -270,11 +271,13 @@ const Overview: React.FC = () => {
                         title='Members'
                     >
                         <AreaChart
+                            allowDataOverflow={true}
                             className={areaChartClassName}
                             color='hsl(var(--chart-green))'
                             data={membersChartData}
                             id="members"
                             range={range}
+                            showYAxisValues={false}
                             syncId="overview-charts"
                         />
                     </OverviewKPICard>
@@ -289,11 +292,13 @@ const Overview: React.FC = () => {
                         title='MRR'
                     >
                         <AreaChart
+                            allowDataOverflow={true}
                             className={areaChartClassName}
                             color='hsl(var(--chart-orange))'
                             data={mrrChartData}
                             id="mrr"
                             range={range}
+                            showYAxisValues={false}
                             syncId="overview-charts"
                         />
                     </OverviewKPICard>

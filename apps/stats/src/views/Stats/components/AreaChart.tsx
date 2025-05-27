@@ -1,6 +1,6 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import React from 'react';
-import {AlignedAxisTick, ChartConfig, ChartContainer, ChartTooltip, Recharts, cn, formatDisplayDateWithRange, formatNumber, getYRange} from '@tryghost/shade';
+import {AlignedAxisTick, ChartConfig, ChartContainer, ChartTooltip, Recharts, calculateYAxisWidth, cn, formatDisplayDateWithRange, formatNumber, getYRange, getYRangeWithMinPadding} from '@tryghost/shade';
 
 export type AreaChartDataItem = {
     date: string;
@@ -17,6 +17,9 @@ interface AreaChartProps {
     id: string;
     className?: string;
     syncId?: string;
+    allowDataOverflow?: boolean;
+    showYAxisValues?: boolean;
+    dataFormatter?: () => void;
 }
 
 const AreaChart: React.FC<AreaChartProps> = ({
@@ -26,7 +29,10 @@ const AreaChart: React.FC<AreaChartProps> = ({
     color = 'hsl(var(--chart-blue))',
     id,
     className,
-    syncId
+    syncId,
+    allowDataOverflow = false,
+    showYAxisValues = true,
+    dataFormatter = formatNumber
 }) => {
     const yRange = yAxisRange || [getYRange(data).min, getYRange(data).max];
     const chartConfig = {
@@ -60,15 +66,16 @@ const AreaChart: React.FC<AreaChartProps> = ({
                     ticks={data && data.length > 0 ? [data[0].date, data[data.length - 1].date] : []}
                 />
                 <Recharts.YAxis
+                    allowDataOverflow={allowDataOverflow}
                     axisLine={false}
-                    domain={yRange}
+                    domain={allowDataOverflow ? getYRangeWithMinPadding({min: yRange[0], max: yRange[1]}) : yRange}
                     scale="linear"
                     tickFormatter={(value: number) => {
-                        return formatNumber(value);
+                        return dataFormatter(value);
                     }}
                     tickLine={false}
-                    ticks={[]}
-                    width={0}
+                    ticks={yRange}
+                    width={showYAxisValues ? calculateYAxisWidth(yRange, (value: number) => dataFormatter(value)) : 0}
                 />
                 <ChartTooltip
                     content={<CustomTooltipContent color={color} range={range} />}

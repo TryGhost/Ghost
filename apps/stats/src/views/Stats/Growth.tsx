@@ -1,11 +1,11 @@
-import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
+import AreaChart, {AreaChartDataItem} from './components/AreaChart';
 import DateRangeSelect from './components/DateRangeSelect';
 import React, {useMemo, useState} from 'react';
 import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {AlignedAxisTick, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, centsToDollars, formatDisplayDateWithRange, formatNumber, getYRange, getYRangeWithMinPadding} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, KpiTabTrigger, KpiTabValue, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, centsToDollars, formatNumber} from '@tryghost/shade';
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -81,7 +81,7 @@ const GrowthKPIs: React.FC<{
         sanitizedData = sanitizeChartData(allChartData, range, fieldName, 'exact');
 
         // Then map the sanitized data to the final format
-        let processedData: ChartDataItem[] = [];
+        let processedData: AreaChartDataItem[] = [];
 
         switch (currentTab) {
         case 'free-members':
@@ -119,15 +119,6 @@ const GrowthKPIs: React.FC<{
 
         return processedData;
     }, [currentTab, allChartData, range]);
-
-    const chartConfig = {
-        value: {
-            label: currentTab === 'mrr' ? 'MRR' : 'Members'
-        }
-    } satisfies ChartConfig;
-
-    const yRange = [getYRange(chartData).min, getYRange(chartData).max];
-    const yRangeWithMinPadding = getYRangeWithMinPadding({min: yRange[0], max: yRange[1]});
 
     const tabConfig = {
         'total-members': {
@@ -193,90 +184,20 @@ const GrowthKPIs: React.FC<{
                 </KpiTabTrigger>
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
-                <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] w-full' config={chartConfig}>
-                    <Recharts.AreaChart
-                        data={chartData}
-                        margin={{
-                            left: 4,
-                            right: 4,
-                            top: 12
-                        }}
-                    >
-                        <Recharts.CartesianGrid horizontal={false} vertical={false} />
-                        <Recharts.XAxis
-                            axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
-                            dataKey="date"
-                            interval={0}
-                            stroke="hsl(var(--gray-300))"
-                            tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(value, range)} />}
-                            tickFormatter={value => formatDisplayDateWithRange(value, range)}
-                            tickLine={false}
-                            tickMargin={8}
-                            ticks={chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}
-                        />
-                        <Recharts.YAxis
-                            allowDataOverflow={true}
-                            axisLine={false}
-                            domain={yRangeWithMinPadding}
-                            tickFormatter={(value) => {
-                                switch (currentTab) {
-                                case 'total-members':
-                                case 'free-members':
-                                case 'paid-members':
-                                    return formatNumber(value);
-                                case 'mrr':
-                                    return `$${formatNumber(value)}`;
-                                default:
-                                    return value.toLocaleString();
-                                }
-                            }}
-                            tickLine={false}
-                            ticks={yRange}
-                            width={calculateYAxisWidth(yRange, (value: number) => {
-                                switch (currentTab) {
-                                case 'total-members':
-                                case 'free-members':
-                                case 'paid-members':
-                                    return formatNumber(value);
-                                case 'mrr':
-                                    return `$${value}`;
-                                default:
-                                    return value.toLocaleString();
-                                }
-                            })}
-                        />
-                        <ChartTooltip
-                            content={<CustomTooltipContent color={tabConfig[currentTab as keyof typeof tabConfig].color} range={range} />}
-                            cursor={true}
-                            isAnimationActive={false}
-                            position={{y: 20}}
-                        />
-                        <defs>
-                            <linearGradient id="fillChart" x1="0" x2="0" y1="0" y2="1">
-                                <stop
-                                    offset="5%"
-                                    stopColor={tabConfig[currentTab as keyof typeof tabConfig].color}
-                                    stopOpacity={0.8}
-                                />
-                                <stop
-                                    offset="95%"
-                                    stopColor={tabConfig[currentTab as keyof typeof tabConfig].color}
-                                    stopOpacity={0.1}
-                                />
-                            </linearGradient>
-                        </defs>
-                        <Recharts.Area
-                            dataKey="value"
-                            fill="url(#fillChart)"
-                            fillOpacity={0.2}
-                            isAnimationActive={false}
-                            stackId="a"
-                            stroke={tabConfig[currentTab as keyof typeof tabConfig].color}
-                            strokeWidth={2}
-                            type="linear"
-                        />
-                    </Recharts.AreaChart>
-                </ChartContainer>
+                <AreaChart
+                    allowDataOverflow={true}
+                    className='-mb-3 h-[16vw] max-h-[320px] w-full'
+                    color={tabConfig[currentTab as keyof typeof tabConfig].color}
+                    data={chartData}
+                    dataFormatter={currentTab === 'mrr'
+                        ?
+                        (value: number) => {
+                            return `$${formatNumber(value)}`;
+                        } :
+                        formatNumber}
+                    id="mrr"
+                    range={range}
+                />
             </div>
         </Tabs>
     );
