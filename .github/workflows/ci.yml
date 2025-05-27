@@ -900,7 +900,7 @@ jobs:
       - name: Setup Ghost database
         working-directory: ghost/core
         env:
-          database__connection__client: mysql2
+          database__client: mysql2
           database__connection__host: localhost
           database__connection__user: root
           database__connection__password: root
@@ -913,7 +913,7 @@ jobs:
       - name: Start Ghost
         working-directory: ghost/core
         env:
-          database__connection__client: mysql2
+          database__client: mysql2
           database__connection__host: localhost
           database__connection__user: root
           database__connection__password: root

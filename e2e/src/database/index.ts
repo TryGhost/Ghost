@@ -25,7 +25,7 @@ function getDatabaseConfig(): DatabaseConfig {
 
 export async function resetDb(): Promise<void> {
     const config = getDatabaseConfig();
-    logging.info('Resetting database', config);
+    console.log('Resetting database', config);
     const db = knex(config);
 
     try {
