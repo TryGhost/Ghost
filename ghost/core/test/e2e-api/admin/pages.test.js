@@ -1,7 +1,7 @@
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
 const models = require('../../../core/server/models');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {anyArray, anyBoolean, anyContentVersion, anyEtag, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyUuid} = matchers;
+const {anyArray, anyBoolean, anyContentVersion, anyEtag, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyUuid, stringMatching} = matchers;
 
 const tierSnapshot = {
     id: anyObjectId,
@@ -136,7 +136,7 @@ describe('Pages API', function () {
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag,
-                    'x-cache-invalidate': anyString
+                    'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
                 });
         });
 
@@ -182,7 +182,7 @@ describe('Pages API', function () {
                         .matchHeaderSnapshot({
                             'content-version': anyContentVersion,
                             etag: anyEtag,
-                            'x-cache-invalidate': anyString
+                            'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
                         })
                         .matchBodySnapshot({
                             pages: [Object.assign({}, matchPageShallowIncludes, {
