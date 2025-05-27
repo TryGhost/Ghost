@@ -147,7 +147,7 @@ describe('Utils: generateDecoratorNode', function () {
                 feature: {
                     emailCustomizationAlpha: true
                 },
-                renderers: {
+                nodeRenderers: {
                     'render-test': customRenderer
                 }
             });
@@ -184,12 +184,12 @@ describe('Utils: generateDecoratorNode', function () {
                 feature: {
                     emailCustomizationAlpha: true
                 },
-                renderers: {
+                nodeRenderers: {
                     'versioned-render-test': {
                         1: () => ({})
                     }
                 }
-            })).should.throw('[generateDecoratorNode] versioned-render-test: options.renderers[\'versioned-render-test\'] for version 2 is required');
+            })).should.throw('[generateDecoratorNode] versioned-render-test: options.nodeRenderers[\'versioned-render-test\'] for version 2 is required');
         }));
     });
 
