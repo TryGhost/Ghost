@@ -861,7 +861,7 @@ jobs:
       CI: true
       BASE_URL: http://localhost:2368
       ADMIN_USERNAME: test@example.com
-      ADMIN_PASSWORD: testpassword123
+      ADMIN_PASSWORD: not_very_secure
       EMAIL_PROVIDER: mailhog
       MAILHOG_API_URL: http://localhost:8025
     steps:
