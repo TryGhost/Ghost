@@ -4,7 +4,7 @@ import React, {useMemo} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, H3, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, H3, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {getAudienceQueryParam} from './components/AudienceSelect';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -191,6 +191,30 @@ const Overview: React.FC = () => {
         return processedData;
     }, [growthChartData, range]);
 
+    /* Get MRR
+    /* ---------------------------------------------------------------------- */
+    // Create chart data based on selected tab
+    const mrrChartData = useMemo(() => {
+        if (!growthChartData || growthChartData.length === 0) {
+            return [];
+        }
+
+        let sanitizedData: GrowthChartDataItem[] = [];
+        const fieldName: keyof GrowthChartDataItem = 'mrr';
+
+        sanitizedData = sanitizeChartData<GrowthChartDataItem>(growthChartData, range, fieldName, 'exact');
+
+        // Then map the sanitized data to the final format
+        const processedData: AreaChartDataItem[] = sanitizedData.map(item => ({
+            date: item.date,
+            value: centsToDollars(item.mrr),
+            formattedValue: `$${formatNumber(centsToDollars(item.mrr))}`,
+            label: 'MRR'
+        }));
+
+        return processedData;
+    }, [growthChartData, range]);
+
     /* Calculate KPI values
     /* ---------------------------------------------------------------------- */
     const kpiValues = useMemo(() => {
@@ -238,7 +262,7 @@ const Overview: React.FC = () => {
                         description='How number of members of your publication changed over time'
                         diffDirection='up'
                         diffValue='1.1%'
-                        formattedValue='31,329'
+                        formattedValue={formatNumber(growthTotals.totalMembers)}
                         iconName='User'
                         linkto='/growth/'
                         title='Members'
@@ -256,7 +280,7 @@ const Overview: React.FC = () => {
                         description='Monthly recurring revenue changes over time'
                         diffDirection='up'
                         diffValue='1.2%'
-                        formattedValue='$2,456'
+                        formattedValue={`$${formatNumber(centsToDollars(growthTotals.mrr))}`}
                         iconName='DollarSign'
                         linkto='/growth/'
                         title='MRR'
@@ -264,7 +288,7 @@ const Overview: React.FC = () => {
                         <AreaChart
                             className={areaChartClassName}
                             color='hsl(var(--chart-orange))'
-                            data={visitorsChartData}
+                            data={mrrChartData}
                             id="mrr"
                             range={range}
                         />
