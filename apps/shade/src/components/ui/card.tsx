@@ -176,7 +176,7 @@ const KpiCardHeaderLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({chi
 
 interface KpiCardValueProps {
     value: string | number;
-    diffDirection?: 'up' | 'down' | 'same';
+    diffDirection?: 'up' | 'down' | 'same' | 'empty';
     diffValue?: string | number;
 }
 
@@ -192,7 +192,7 @@ const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, 
             <div className='text-[2.3rem] font-semibold leading-none tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>
                 {value}
             </div>
-            {diffValue &&
+            {diffDirection &&
             <>
                 <div className={diffContainerClassName}>
                     {diffDirection === 'up' &&

@@ -12,6 +12,7 @@ export type AreaChartDataItem = {
 interface AreaChartProps {
     data: AreaChartDataItem[];
     range: number;
+    yAxisRange?: [number, number],
     color?: string;
     id: string;
     className?: string;
@@ -20,11 +21,12 @@ interface AreaChartProps {
 const AreaChart: React.FC<AreaChartProps> = ({
     data,
     range,
+    yAxisRange,
     color = 'hsl(var(--chart-blue))',
     id,
     className
 }) => {
-    const yRange = [getYRange(data).min, getYRange(data).max];
+    const yRange = yAxisRange || [getYRange(data).min, getYRange(data).max];
     const chartConfig = {
         value: {
             label: data[0]?.label || 'Value'
@@ -40,7 +42,7 @@ const AreaChart: React.FC<AreaChartProps> = ({
                 margin={{
                     left: 4,
                     right: 4,
-                    top: 0
+                    top: 4
                 }}
             >
                 <Recharts.CartesianGrid horizontal={false} vertical={false} />

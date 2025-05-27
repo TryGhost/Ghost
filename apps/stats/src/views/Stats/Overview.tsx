@@ -17,7 +17,7 @@ interface OverviewKPICardProps {
     title: string;
     iconName: keyof typeof LucideIcon;
     description: string;
-    diffDirection?: 'up' | 'down' | 'same';
+    diffDirection?: 'up' | 'down' | 'same' | 'empty';
     diffValue?: string;
     color?: string;
     formattedValue: string;
@@ -166,6 +166,7 @@ const Overview: React.FC = () => {
             };
         });
     }, [visitorsData, range]);
+    const visitorsYRange: [number, number] = [0, Math.max(...(visitorsChartData?.map((item: AreaChartDataItem) => item.value) || [0]))];
 
     /* Get members
     /* ---------------------------------------------------------------------- */
@@ -231,7 +232,7 @@ const Overview: React.FC = () => {
     }, [visitorsData]);
 
     const isLoading = isConfigLoading || isVisitorsLoading || isGrowthStatsLoading;
-    const areaChartClassName = '-mb-3 h-[10vw] max-h-[240px]';
+    const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px]';
 
     return (
         <StatsLayout>
@@ -242,8 +243,7 @@ const Overview: React.FC = () => {
                 <div className='grid grid-cols-1 gap-8 lg:grid-cols-3'>
                     <OverviewKPICard
                         description='Number of individual people who visited your website'
-                        diffDirection='down'
-                        diffValue='-2.4%'
+                        diffDirection='empty'
                         formattedValue={kpiValues.visits}
                         iconName='MousePointer'
                         linkto='/web/'
@@ -255,13 +255,14 @@ const Overview: React.FC = () => {
                             data={visitorsChartData}
                             id="visitors"
                             range={range}
+                            yAxisRange={visitorsYRange}
                         />
                     </OverviewKPICard>
 
                     <OverviewKPICard
                         description='How number of members of your publication changed over time'
-                        diffDirection='up'
-                        diffValue='1.1%'
+                        diffDirection={growthTotals.directions.total}
+                        diffValue={growthTotals.percentChanges.total}
                         formattedValue={formatNumber(growthTotals.totalMembers)}
                         iconName='User'
                         linkto='/growth/'
@@ -278,8 +279,8 @@ const Overview: React.FC = () => {
 
                     <OverviewKPICard
                         description='Monthly recurring revenue changes over time'
-                        diffDirection='up'
-                        diffValue='1.2%'
+                        diffDirection={growthTotals.directions.mrr}
+                        diffValue={growthTotals.percentChanges.mrr}
                         formattedValue={`$${formatNumber(centsToDollars(growthTotals.mrr))}`}
                         iconName='DollarSign'
                         linkto='/growth/'
