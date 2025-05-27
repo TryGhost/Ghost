@@ -5,7 +5,7 @@ import React, {useState} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, isValidDomain} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange, isValidDomain} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {SourceRow} from './Sources';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
@@ -142,6 +142,7 @@ const WebKPIs:React.FC = ({}) => {
                         data={chartData}
                         id="mrr"
                         range={range}
+                        yAxisRange={[0, getYRange(chartData).max]}
                     />
                 }
             </div>
