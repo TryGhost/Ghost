@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.120.2",
+  "version": "5.120.3",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -188,7 +188,7 @@
     "mime-types": "2.1.35",
     "moment": "2.24.0",
     "moment-timezone": "0.5.45",
-    "multer": "1.4.4",
+    "multer": "2.0.0",
     "mysql2": "3.14.1",
     "nconf": "0.13.0",
     "node-fetch": "2.7.0",
