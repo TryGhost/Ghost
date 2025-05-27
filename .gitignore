@@ -125,6 +125,7 @@ test/functional/*.png
 /ghost/core/core/frontend/public/ghost-stats.min.js
 # Caddyfile - for local development with ssl + caddy
 Caddyfile
+!.docker/caddy/Caddyfile
 
 # Playwright state with cookies it keeps across tests
 /ghost/core/playwright-state.json
@@ -181,3 +182,7 @@ temp*.sql
 .yarncache
 .yarncachecopy
 .yarnhash
+
+# yalc — for linking local packages in a docker compatible way
+yalc.lock
+.yalc

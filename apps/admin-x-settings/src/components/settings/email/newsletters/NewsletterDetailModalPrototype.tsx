@@ -428,8 +428,8 @@ const Sidebar: React.FC<{
                             }
                         ]}
                         title='Header background color'
-                        value={newsletter.header_color || 'transparent'}
-                        onChange={color => updateNewsletter({header_color: color!})}
+                        value={newsletter.header_background_color || 'transparent'}
+                        onChange={color => updateNewsletter({header_background_color: color!})}
                     />
                     <ColorPickerField
                         direction='rtl'
@@ -446,8 +446,8 @@ const Sidebar: React.FC<{
                             }
                         ]}
                         title='Post title color'
-                        value={newsletter.title_color}
-                        onChange={color => updateNewsletter({title_color: color})}
+                        value={newsletter.post_title_color}
+                        onChange={color => updateNewsletter({post_title_color: color})}
                     />
                     <ColorPickerField
                         direction='rtl'
@@ -521,30 +521,6 @@ const Sidebar: React.FC<{
                         value={newsletter.link_color}
                         onChange={color => updateNewsletter({link_color: color})}
                     />
-                    {/* <ColorPickerField
-                        clearButtonValue={null}
-                        direction='rtl'
-                        swatches={[
-                            {
-                                hex: siteData.accent_color,
-                                value: 'accent',
-                                title: 'Accent'
-                            },
-                            {
-                                hex: backgroundColorIsDark() ? '#ffffff' : '#000000',
-                                value: 'auto',
-                                title: 'Auto'
-                            },
-                            {
-                                value: null,
-                                title: 'Transparent',
-                                hex: '#00000000'
-                            }
-                        ]}
-                        title='Border color'
-                        value={newsletter.border_color}
-                        onChange={color => updateNewsletter({border_color: color})}
-                    /> */}
                 </Form>
 
                 <Form className='mt-6' gap='xs' margins='lg' title='Elements'>
