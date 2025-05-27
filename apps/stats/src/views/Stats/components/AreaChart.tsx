@@ -2,13 +2,15 @@ import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import React from 'react';
 import {AlignedAxisTick, ChartConfig, ChartContainer, ChartTooltip, Recharts, cn, formatDisplayDateWithRange, formatNumber, getYRange} from '@tryghost/shade';
 
+export type AreaChartDataItem = {
+    date: string;
+    value: number;
+    formattedValue: string;
+    label: string;
+}
+
 interface AreaChartProps {
-    data: Array<{
-        date: string;
-        value: number;
-        formattedValue: string;
-        label: string;
-    }>;
+    data: AreaChartDataItem[];
     range: number;
     color?: string;
     id: string;

@@ -1,6 +1,6 @@
-import AreaChart from './components/AreaChart';
+import AreaChart, {AreaChartDataItem} from './components/AreaChart';
 import DateRangeSelect from './components/DateRangeSelect';
-import React from 'react';
+import React, {useMemo} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
@@ -8,6 +8,7 @@ import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, Card
 import {getAudienceQueryParam} from './components/AudienceSelect';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useGrowthStats} from '@src/hooks/useGrowthStats';
 import {useQuery} from '@tinybirdco/charts';
 // import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
@@ -121,12 +122,26 @@ interface WebKpiDataItem {
     [key: string]: string | number;
 }
 
+type GrowthChartDataItem = {
+    date: string;
+    value: number;
+    free: number;
+    paid: number;
+    comped: number;
+    mrr: number;
+    formattedValue: string;
+    label?: string;
+};
+
 const Overview: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
+    const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals} = useGrowthStats(range);
 
-    const params = {
+    /* Get visitors
+    /* ---------------------------------------------------------------------- */
+    const visitorsParams = {
         site_uuid: statsConfig?.id || '',
         date_from: formatQueryDate(startDate),
         date_to: formatQueryDate(endDate),
@@ -134,26 +149,51 @@ const Overview: React.FC = () => {
         member_status: getAudienceQueryParam(audience)
     };
 
-    const {data: visitorsData, loading: visitorsLoading} = useQuery({
+    const {data: visitorsData, loading: isVisitorsLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
         token: getToken(statsConfig),
-        params
+        params: visitorsParams
     });
 
-    const visitorsChartData = sanitizeChartData<WebKpiDataItem>(visitorsData as WebKpiDataItem[] || [], range, 'visits' as keyof WebKpiDataItem, 'sum')?.map((item: WebKpiDataItem) => {
-        const value = Number(item.visits);
-        return {
-            date: String(item.date),
-            value,
-            formattedValue: formatNumber(value),
-            label: 'Visitors'
-        };
-    });
+    const visitorsChartData = useMemo(() => {
+        return sanitizeChartData<WebKpiDataItem>(visitorsData as WebKpiDataItem[] || [], range, 'visits' as keyof WebKpiDataItem, 'sum')?.map((item: WebKpiDataItem) => {
+            const value = Number(item.visits);
+            return {
+                date: String(item.date),
+                value,
+                formattedValue: formatNumber(value),
+                label: 'Visitors'
+            };
+        });
+    }, [visitorsData, range]);
 
-    const isLoading = isConfigLoading || visitorsLoading;
+    /* Get members
+    /* ---------------------------------------------------------------------- */
+    // Create chart data based on selected tab
+    const membersChartData = useMemo(() => {
+        if (!growthChartData || growthChartData.length === 0) {
+            return [];
+        }
 
-    // Calculate KPI values
-    const getKpiValues = () => {
+        let sanitizedData: GrowthChartDataItem[] = [];
+        const fieldName: keyof GrowthChartDataItem = 'value';
+
+        sanitizedData = sanitizeChartData<GrowthChartDataItem>(growthChartData, range, fieldName, 'exact');
+
+        // Then map the sanitized data to the final format
+        const processedData: AreaChartDataItem[] = sanitizedData.map(item => ({
+            date: item.date,
+            value: item.free + item.paid + item.comped,
+            formattedValue: formatNumber(item.free + item.paid + item.comped),
+            label: 'Total members'
+        }));
+
+        return processedData;
+    }, [growthChartData, range]);
+
+    /* Calculate KPI values
+    /* ---------------------------------------------------------------------- */
+    const kpiValues = useMemo(() => {
         // Visitors data
         if (!visitorsData?.length) {
             return {visits: '0'};
@@ -164,10 +204,9 @@ const Overview: React.FC = () => {
         return {
             visits: formatNumber(totalVisits)
         };
-    };
+    }, [visitorsData]);
 
-    const kpiValues = getKpiValues();
-
+    const isLoading = isConfigLoading || isVisitorsLoading || isGrowthStatsLoading;
     const areaChartClassName = '-mb-3 h-[10vw] max-h-[240px]';
 
     return (
@@ -207,7 +246,7 @@ const Overview: React.FC = () => {
                         <AreaChart
                             className={areaChartClassName}
                             color='hsl(var(--chart-green))'
-                            data={visitorsChartData}
+                            data={membersChartData}
                             id="members"
                             range={range}
                         />
