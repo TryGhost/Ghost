@@ -851,6 +851,130 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+  job_e2e:
+    name: E2E tests
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_core == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: true
+      BASE_URL: http://localhost:2368
+      ADMIN_USERNAME: test@example.com
+      ADMIN_PASSWORD: testpassword123
+      EMAIL_PROVIDER: mailhog
+      MAILHOG_API_URL: http://localhost:8025
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-node@v4
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Start supporting services
+        run: |
+          docker compose up -d mysql redis mailhog
+          docker compose ps
+
+      - name: Wait for MySQL and Redis
+        run: |
+          timeout 60 bash -c 'until docker compose exec -T mysql mysql -uroot -proot -e "SELECT 1"; do sleep 1; done'
+          timeout 60 bash -c 'until docker compose exec -T redis redis-cli ping; do sleep 1; done'
+
+      - name: Build packages
+        run: yarn nx run-many -t build --exclude=ghost-admin
+
+      - name: Build Admin
+        run: yarn nx run ghost-admin:build:dev
+
+      - name: Setup Ghost database
+        working-directory: ghost/core
+        run: |
+          yarn knex-migrator init
+          yarn knex-migrator migrate
+
+      - name: Create admin user
+        working-directory: ghost/core
+        run: |
+          NODE_ENV=development node -e "
+          const models = require('./core/server/models');
+          const security = require('@tryghost/security');
+
+          (async () => {
+            await models.init();
+            const existingUser = await models.User.findOne({email: '${{ env.ADMIN_USERNAME }}'});
+            if (!existingUser) {
+              const password = await security.password.hash('${{ env.ADMIN_PASSWORD }}');
+              await models.User.add({
+                name: 'Test Admin',
+                slug: 'test-admin',
+                email: '${{ env.ADMIN_USERNAME }}',
+                password: password,
+                status: 'active'
+              }, {context: {internal: true}});
+              console.log('Admin user created');
+            } else {
+              console.log('Admin user already exists');
+            }
+            process.exit(0);
+          })();
+          "
+
+      - name: Start Ghost
+        working-directory: ghost/core
+        run: |
+          yarn dev &
+          sleep 10
+
+      - name: Wait for Ghost to be ready
+        run: |
+          timeout 120 bash -c 'until curl -f http://localhost:2368/ghost/api/admin/site/; do sleep 2; done'
+
+      - name: Setup Playwright
+        uses: ./.github/actions/setup-playwright
+
+      - name: Run E2E tests
+        working-directory: e2e
+        run: yarn test:e2e
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-playwright-report
+          path: e2e/playwright-report
+          retention-days: 30
+
+      - name: Upload test traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: e2e/test-results
+          retention-days: 7
+
+      - name: Stop services
+        if: always()
+        run: |
+          docker compose down -v
+
+      - uses: tryghost/actions/actions/slack-build@main
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+
   job_tinybird_forward:
     name: Tinybird Tests (Forward)
     runs-on: blacksmith-4vcpu-ubuntu-2404
@@ -1029,6 +1153,7 @@ jobs:
         job_admin_x_activitypub,
         job_comments_ui,
         job_signup_form,
+        job_e2e,
         job_tinybird_forward
       ]
     if: always()
