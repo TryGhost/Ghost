@@ -130,7 +130,7 @@ services:
     image: ghost-monorepo:latest
     working_dir: /home/ghost/e2e
     command: [ "yarn", "test:e2e" ]
-    profiles: [ "e2e-tests" ]
+    profiles: [ "test-e2e" ]
     ports:
       - "9323:9323"
     tty: true

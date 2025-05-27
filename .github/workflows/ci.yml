@@ -902,33 +902,6 @@ jobs:
           yarn knex-migrator init
           yarn knex-migrator migrate
 
-      - name: Create admin user
-        working-directory: ghost/core
-        run: |
-          NODE_ENV=development node -e "
-          const models = require('./core/server/models');
-          const security = require('@tryghost/security');
-
-          (async () => {
-            await models.init();
-            const existingUser = await models.User.findOne({email: '${{ env.ADMIN_USERNAME }}'});
-            if (!existingUser) {
-              const password = await security.password.hash('${{ env.ADMIN_PASSWORD }}');
-              await models.User.add({
-                name: 'Test Admin',
-                slug: 'test-admin',
-                email: '${{ env.ADMIN_USERNAME }}',
-                password: password,
-                status: 'active'
-              }, {context: {internal: true}});
-              console.log('Admin user created');
-            } else {
-              console.log('Admin user already exists');
-            }
-            process.exit(0);
-          })();
-          "
-
       - name: Start Ghost
         working-directory: ghost/core
         run: |
@@ -1116,7 +1089,6 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           flags: admin-tests
-          move_coverage_to_trash: true
 
       - name: Restore E2E coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
@@ -1134,7 +1106,6 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           flags: e2e-tests
-          move_coverage_to_trash: true
 
   job_required_tests:
     name: All required tests passed or skipped

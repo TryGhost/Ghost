@@ -1,5 +1,5 @@
 import {type Page, type Locator, expect} from '@playwright/test';
-import type {IEmailService} from '../services/email/IEmailService';
+import type {IEmailService} from '../../services/email/IEmailService';
 import logging from '@tryghost/logging';
 
 export class TwoFactorAuthPage {

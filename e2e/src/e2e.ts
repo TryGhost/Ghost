@@ -1,2 +1,1 @@
-// Main module file
-export {};
+export * from './playwright/test-fixtures';
