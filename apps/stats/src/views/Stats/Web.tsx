@@ -172,7 +172,7 @@ const SourcesTable:React.FC = () => {
 
     return (
         <>
-            {isLoading ? 'Loading' :
+            {isLoading ? '' :
                 <Table>
                     <TableHeader>
                         <TableRow>
