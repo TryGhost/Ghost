@@ -2241,28 +2241,7 @@ describe('Email renderer', function () {
             }
         });
 
-        it('Uses the correct border colors based on settings', async function () {
-            settings.accent_color = '#ABC123';
-            const tests = [
-                {input: 'Invalid Color', expected: null},
-                {input: '#BADA55', expected: '#BADA55'},
-                {input: 'auto', expected: '#FFFFFF', background_color: '#15212A'},
-                {input: 'auto', expected: '#000000', background_color: '#ffffff'},
-                {input: 'light', expected: null},
-                {input: 'accent', expected: settings.accent_color},
-                {input: 'transparent', expected: null}
-            ];
-
-            for (const test of tests) {
-                const data = await templateDataWithSettings({
-                    border_color: test.input,
-                    background_color: test.background_color
-                });
-                assert.equal(data.borderColor, test.expected);
-            }
-        });
-
-        it('Uses the correct title colors based on settings and background color', async function () {
+        it('Uses the correct post title colors based on settings and background color', async function () {
             settings.accent_color = '#DEF456';
             const tests = [
                 {input: '#BADA55', expected: '#BADA55'},
@@ -2273,10 +2252,10 @@ describe('Email renderer', function () {
 
             for (const test of tests) {
                 const data = await templateDataWithSettings({
-                    title_color: test.input,
+                    post_title_color: test.input,
                     background_color: test.background_color
                 });
-                assert.equal(data.titleColor, test.expected);
+                assert.equal(data.postTitleColor, test.expected);
             }
         });
 
