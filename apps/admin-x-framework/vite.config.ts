@@ -59,6 +59,10 @@ export default (function viteConfig() {
             include: ['./test/unit/**/*'],
             setupFiles: ['./test/setup.ts'],
             testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
+            coverage: {
+                provider: 'v8',
+                reporter: ['text', 'html']
+            },
             ...(process.env.CI && { // https://github.com/vitest-dev/vitest/issues/1674
                 minThreads: 1,
                 maxThreads: 2

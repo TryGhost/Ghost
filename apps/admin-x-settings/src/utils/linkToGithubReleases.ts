@@ -1,4 +1,4 @@
-import semverParse from 'semver/functions/parse';
+import semver from 'semver';
 
 // This function needs to support:
 // - 5.94.1+moya
@@ -12,7 +12,7 @@ export function linkToGitHubReleases(version: string): string {
     const cleanedVersion = version.replace('+moya', '');
 
     try {
-        const semverVersion = semverParse(cleanedVersion, {includePrerelease: true} as any);
+        const semverVersion = semver.parse(cleanedVersion, {includePrerelease: true} as any);
         const prerelease = semverVersion?.prerelease;
 
         if (prerelease && prerelease?.length > 0) {

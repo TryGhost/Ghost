@@ -32,9 +32,10 @@
         "@testing-library/react": "14.3.1",
         "@types/jest": "29.5.14",
         "@types/react": "18.3.23",
+        "@vitest/coverage-v8": "2.1.8",
         "msw": "2.8.4",
-        "vite": "4.5.14",
-        "vitest": "0.34.3"
+        "vite": "5.4.19",
+        "vitest": "2.1.8"
     },
     "dependencies": {
         "@tinybirdco/charts": "0.2.4",

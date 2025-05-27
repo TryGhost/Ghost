@@ -40,7 +40,7 @@
     "@testing-library/react": "14.3.1",
     "@testing-library/react-hooks": "8.0.1",
     "@types/lodash-es": "4.17.12",
-    "@vitejs/plugin-react": "4.5.0",
+    "@vitejs/plugin-react": "4.3.4",
     "c8": "8.0.1",
     "chai": "4.5.0",
     "eslint-plugin-react-hooks": "4.6.2",
@@ -55,9 +55,9 @@
     "storybook": "8.6.14",
     "typescript": "5.8.3",
     "validator": "13.12.0",
-    "vite": "4.5.14",
+    "vite": "5.4.19",
     "vite-plugin-svgr": "3.3.0",
-    "vitest": "0.34.3"
+    "vitest": "2.1.8"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
