@@ -1,13 +1,14 @@
-import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
+import AreaChart, {AreaChartDataItem} from './components/AreaChart';
 import DateRangeSelect from './components/DateRangeSelect';
-import React from 'react';
+import React, {useMemo} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {AlignedAxisTick, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H3, KpiCardHeader, KpiCardHeaderContent, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn, formatDisplayDateWithRange, formatNumber, formatQueryDate, getRangeDates, getYRange, sanitizeChartData} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, H3, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {getAudienceQueryParam} from './components/AudienceSelect';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useGrowthStats} from '@src/hooks/useGrowthStats';
 import {useQuery} from '@tinybirdco/charts';
 // import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
@@ -16,7 +17,7 @@ interface OverviewKPICardProps {
     title: string;
     iconName: keyof typeof LucideIcon;
     description: string;
-    diffDirection?: 'up' | 'down' | 'same';
+    diffDirection?: 'up' | 'down' | 'same' | 'empty';
     diffValue?: string;
     color?: string;
     formattedValue: string;
@@ -43,18 +44,16 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
-            <KpiCardHeader className='grow border-none pb-2'>
+            <KpiCardHeader className='grow gap-2 border-none pb-2'>
                 <KpiCardHeaderLabel>
                     {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
                     {title}
                 </KpiCardHeaderLabel>
-                <KpiCardHeaderContent>
-                    <KpiCardHeaderValue
-                        diffDirection={diffDirection}
-                        diffValue={diffValue}
-                        value={formattedValue}
-                    />
-                </KpiCardHeaderContent>
+                <KpiCardHeaderValue
+                    diffDirection={diffDirection}
+                    diffValue={diffValue}
+                    value={formattedValue}
+                />
             </KpiCardHeader>
             <CardContent>
                 {children}
@@ -95,98 +94,6 @@ interface HelpCardProps {
     children?: React.ReactNode;
 }
 
-interface OverviewChartProps {
-    data: Array<{
-        date: string;
-        value: number;
-        formattedValue: string;
-        label: string;
-    }>;
-    range: number;
-    color?: string;
-    id: string;
-}
-
-const OverviewChart: React.FC<OverviewChartProps> = ({
-    data,
-    range,
-    color = 'hsl(var(--chart-blue))',
-    id
-}) => {
-    const yRange = [getYRange(data).min, getYRange(data).max];
-    const chartConfig = {
-        value: {
-            label: data[0]?.label || 'Value'
-        }
-    } satisfies ChartConfig;
-
-    return (
-        <ChartContainer className='-mb-3 h-[10vw] max-h-[240px] w-full' config={chartConfig}>
-            <Recharts.AreaChart
-                data={data}
-                margin={{
-                    left: 4,
-                    right: 4,
-                    top: 0
-                }}
-            >
-                <Recharts.CartesianGrid horizontal={false} vertical={false} />
-                <Recharts.XAxis
-                    axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
-                    dataKey="date"
-                    interval={0}
-                    tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(value, range)} />}
-                    tickFormatter={value => formatDisplayDateWithRange(value, range)}
-                    tickLine={false}
-                    tickMargin={10}
-                    ticks={data && data.length > 0 ? [data[0].date, data[data.length - 1].date] : []}
-                />
-                <Recharts.YAxis
-                    axisLine={false}
-                    domain={yRange}
-                    scale="linear"
-                    tickFormatter={(value: number) => {
-                        return formatNumber(value);
-                    }}
-                    tickLine={false}
-                    ticks={[]}
-                    width={0}
-                />
-                <ChartTooltip
-                    content={<CustomTooltipContent color={color} range={range} />}
-                    cursor={true}
-                    isAnimationActive={false}
-                    position={{y: 10}}
-                />
-                <defs>
-                    <linearGradient id={`fillChart-${id}`} x1="0" x2="0" y1="0" y2="1">
-                        <stop
-                            offset="5%"
-                            stopColor={color}
-                            stopOpacity={0.8}
-                        />
-                        <stop
-                            offset="95%"
-                            stopColor={color}
-                            stopOpacity={0.1}
-                        />
-                    </linearGradient>
-                </defs>
-                <Recharts.Area
-                    dataKey="value"
-                    fill={`url(#fillChart-${id})`}
-                    fillOpacity={0.2}
-                    isAnimationActive={false}
-                    stackId="a"
-                    stroke={color}
-                    strokeWidth={2}
-                    type="linear"
-                />
-            </Recharts.AreaChart>
-        </ChartContainer>
-    );
-};
-
 const HelpCard: React.FC<HelpCardProps> = ({
     className,
     title,
@@ -215,12 +122,26 @@ interface WebKpiDataItem {
     [key: string]: string | number;
 }
 
+type GrowthChartDataItem = {
+    date: string;
+    value: number;
+    free: number;
+    paid: number;
+    comped: number;
+    mrr: number;
+    formattedValue: string;
+    label?: string;
+};
+
 const Overview: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
+    const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals} = useGrowthStats(range);
 
-    const params = {
+    /* Get visitors
+    /* ---------------------------------------------------------------------- */
+    const visitorsParams = {
         site_uuid: statsConfig?.id || '',
         date_from: formatQueryDate(startDate),
         date_to: formatQueryDate(endDate),
@@ -228,26 +149,76 @@ const Overview: React.FC = () => {
         member_status: getAudienceQueryParam(audience)
     };
 
-    const {data: visitorsData, loading: visitorsLoading} = useQuery({
+    const {data: visitorsData, loading: isVisitorsLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
         token: getToken(statsConfig),
-        params
+        params: visitorsParams
     });
 
-    const visitorsChartData = sanitizeChartData<WebKpiDataItem>(visitorsData as WebKpiDataItem[] || [], range, 'visits' as keyof WebKpiDataItem, 'sum')?.map((item: WebKpiDataItem) => {
-        const value = Number(item.visits);
-        return {
-            date: String(item.date),
-            value,
-            formattedValue: formatNumber(value),
-            label: 'Visitors'
-        };
-    });
+    const visitorsChartData = useMemo(() => {
+        return sanitizeChartData<WebKpiDataItem>(visitorsData as WebKpiDataItem[] || [], range, 'visits' as keyof WebKpiDataItem, 'sum')?.map((item: WebKpiDataItem) => {
+            const value = Number(item.visits);
+            return {
+                date: String(item.date),
+                value,
+                formattedValue: formatNumber(value),
+                label: 'Visitors'
+            };
+        });
+    }, [visitorsData, range]);
+    const visitorsYRange: [number, number] = [0, Math.max(...(visitorsChartData?.map((item: AreaChartDataItem) => item.value) || [0]))];
 
-    const isLoading = isConfigLoading || visitorsLoading;
+    /* Get members
+    /* ---------------------------------------------------------------------- */
+    // Create chart data based on selected tab
+    const membersChartData = useMemo(() => {
+        if (!growthChartData || growthChartData.length === 0) {
+            return [];
+        }
 
-    // Calculate KPI values
-    const getKpiValues = () => {
+        let sanitizedData: GrowthChartDataItem[] = [];
+        const fieldName: keyof GrowthChartDataItem = 'value';
+
+        sanitizedData = sanitizeChartData<GrowthChartDataItem>(growthChartData, range, fieldName, 'exact');
+
+        // Then map the sanitized data to the final format
+        const processedData: AreaChartDataItem[] = sanitizedData.map(item => ({
+            date: item.date,
+            value: item.free + item.paid + item.comped,
+            formattedValue: formatNumber(item.free + item.paid + item.comped),
+            label: 'Members'
+        }));
+
+        return processedData;
+    }, [growthChartData, range]);
+
+    /* Get MRR
+    /* ---------------------------------------------------------------------- */
+    // Create chart data based on selected tab
+    const mrrChartData = useMemo(() => {
+        if (!growthChartData || growthChartData.length === 0) {
+            return [];
+        }
+
+        let sanitizedData: GrowthChartDataItem[] = [];
+        const fieldName: keyof GrowthChartDataItem = 'mrr';
+
+        sanitizedData = sanitizeChartData<GrowthChartDataItem>(growthChartData, range, fieldName, 'exact');
+
+        // Then map the sanitized data to the final format
+        const processedData: AreaChartDataItem[] = sanitizedData.map(item => ({
+            date: item.date,
+            value: centsToDollars(item.mrr),
+            formattedValue: `$${formatNumber(centsToDollars(item.mrr))}`,
+            label: 'MRR'
+        }));
+
+        return processedData;
+    }, [growthChartData, range]);
+
+    /* Calculate KPI values
+    /* ---------------------------------------------------------------------- */
+    const kpiValues = useMemo(() => {
         // Visitors data
         if (!visitorsData?.length) {
             return {visits: '0'};
@@ -258,9 +229,10 @@ const Overview: React.FC = () => {
         return {
             visits: formatNumber(totalVisits)
         };
-    };
+    }, [visitorsData]);
 
-    const kpiValues = getKpiValues();
+    const isLoading = isConfigLoading || isVisitorsLoading || isGrowthStatsLoading;
+    const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px]';
 
     return (
         <StatsLayout>
@@ -271,52 +243,58 @@ const Overview: React.FC = () => {
                 <div className='grid grid-cols-1 gap-8 lg:grid-cols-3'>
                     <OverviewKPICard
                         description='Number of individual people who visited your website'
-                        diffDirection='down'
-                        diffValue='-2.4%'
+                        diffDirection='empty'
                         formattedValue={kpiValues.visits}
                         iconName='MousePointer'
                         linkto='/web/'
                         title='Unique visitors'
                     >
-                        <OverviewChart
+                        <AreaChart
+                            className={areaChartClassName}
                             color='hsl(var(--chart-blue))'
                             data={visitorsChartData}
                             id="visitors"
                             range={range}
+                            syncId="overview-charts"
+                            yAxisRange={visitorsYRange}
                         />
                     </OverviewKPICard>
 
                     <OverviewKPICard
                         description='How number of members of your publication changed over time'
-                        diffDirection='up'
-                        diffValue='1.1%'
-                        formattedValue='31,329'
+                        diffDirection={growthTotals.directions.total}
+                        diffValue={growthTotals.percentChanges.total}
+                        formattedValue={formatNumber(growthTotals.totalMembers)}
                         iconName='User'
                         linkto='/growth/'
                         title='Members'
                     >
-                        <OverviewChart
+                        <AreaChart
+                            className={areaChartClassName}
                             color='hsl(var(--chart-green))'
-                            data={visitorsChartData}
+                            data={membersChartData}
                             id="members"
                             range={range}
+                            syncId="overview-charts"
                         />
                     </OverviewKPICard>
 
                     <OverviewKPICard
                         description='Monthly recurring revenue changes over time'
-                        diffDirection='up'
-                        diffValue='1.2%'
-                        formattedValue='$2,456'
+                        diffDirection={growthTotals.directions.mrr}
+                        diffValue={growthTotals.percentChanges.mrr}
+                        formattedValue={`$${formatNumber(centsToDollars(growthTotals.mrr))}`}
                         iconName='DollarSign'
                         linkto='/growth/'
                         title='MRR'
                     >
-                        <OverviewChart
+                        <AreaChart
+                            className={areaChartClassName}
                             color='hsl(var(--chart-orange))'
-                            data={visitorsChartData}
+                            data={mrrChartData}
                             id="mrr"
                             range={range}
+                            syncId="overview-charts"
                         />
                     </OverviewKPICard>
                 </div>
