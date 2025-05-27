@@ -19,6 +19,8 @@ export default defineConfig({
     reporter: [
         ['html', {host: process.env.PLAYWRIGHT_HTML_REPORT_HOST || 'localhost', port: 9323}]
     ],
+    /* Global setup */
+    globalSetup: require.resolve('./src/global-setup'),
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
     /* Base URL to use in actions like `await page.goto('/')`. */

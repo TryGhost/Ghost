@@ -1,9 +1,9 @@
 import {test as baseTest} from '@playwright/test';
-import {LoginPage} from './page-objects/LoginPage';
-import {TwoFactorAuthPage} from './page-objects/TwoFactorAuthPage';
-import {DashboardPage} from './page-objects/DashboardPage';
-import {EmailServiceFactory} from './services/email/EmailServiceFactory';
-import type {IEmailService} from './services/email/IEmailService';
+import {LoginPage} from './pages/LoginPage';
+import {TwoFactorAuthPage} from './pages/TwoFactorAuthPage';
+import {DashboardPage} from './pages/DashboardPage';
+import {EmailServiceFactory} from '../services/email/EmailServiceFactory';
+import type {IEmailService} from '../services/email/IEmailService';
 import Errors from '@tryghost/errors';
 
 // Define types for our custom fixtures
