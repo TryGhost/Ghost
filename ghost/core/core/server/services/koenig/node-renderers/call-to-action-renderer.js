@@ -1,8 +1,8 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {renderWithVisibility} from '../../utils/visibility';
-import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions';
-import {isLocalContentImage} from '../../utils/is-local-content-image';
-import {buildCleanBasicHtmlForElement} from '../../utils/build-clean-basic-html-for-element';
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
+const {renderWithVisibility} = require('../render-utils/visibility');
+const {getResizedImageDimensions} = require('../render-utils/get-resized-image-dimensions');
+const {isLocalContentImage} = require('../render-utils/is-local-content-image');
+const {buildCleanBasicHtmlForElement} = require('../render-utils/build-clean-basic-html-for-element');
 
 const showButton = dataset => dataset.showButton && dataset.buttonUrl && dataset.buttonText;
 
@@ -335,7 +335,7 @@ function emailCTATemplate(dataset, options = {}) {
     }
 }
 
-export function renderCallToActionNode(node, options = {}) {
+function renderCallToActionNode(node, options = {}) {
     addCreateDocumentOption(options);
     const document = options.createDocument();
     const dataset = {
@@ -385,3 +385,5 @@ export function renderCallToActionNode(node, options = {}) {
 
     return renderWithVisibility({element: element.firstElementChild}, node.visibility, options);
 }
+
+module.exports = renderCallToActionNode;

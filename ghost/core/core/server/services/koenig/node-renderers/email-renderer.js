@@ -1,8 +1,8 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {removeSpaces, removeCodeWrappersFromHelpers, wrapReplacementStrings} from '../../utils/replacement-strings';
-import {renderEmptyContainer} from '../../utils/render-empty-container';
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
+const {removeSpaces, removeCodeWrappersFromHelpers, wrapReplacementStrings} = require('../render-utils/replacement-strings');
+const {renderEmptyContainer} = require('../render-utils/render-empty-container');
 
-export function renderEmailNode(node, options = {}) {
+function renderEmailNode(node, options = {}) {
     addCreateDocumentOption(options);
     const document = options.createDocument();
 
@@ -21,3 +21,5 @@ export function renderEmailNode(node, options = {}) {
     // @see @tryghost/kg-lexical-html-renderer package
     return {element, type: 'inner'};
 }
+
+module.exports = renderEmailNode;

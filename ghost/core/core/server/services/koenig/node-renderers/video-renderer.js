@@ -1,7 +1,7 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {renderEmptyContainer} from '../../utils/render-empty-container';
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
+const {renderEmptyContainer} = require('../render-utils/render-empty-container');
 
-export function renderVideoNode(node, options = {}) {
+function renderVideoNode(node, options = {}) {
     addCreateDocumentOption(options);
 
     const document = options.createDocument();
@@ -22,7 +22,7 @@ export function renderVideoNode(node, options = {}) {
     return {element: element.firstElementChild};
 }
 
-export function cardTemplate({node, cardClasses}) {
+function cardTemplate({node, cardClasses}) {
     const width = node.width;
     const height = node.height;
     const posterSpacerSrc = `https://img.spacergif.org/v1/${width}x${height}/0a/spacer.png`;
@@ -90,7 +90,7 @@ export function cardTemplate({node, cardClasses}) {
     );
 }
 
-export function emailCardTemplate({node, options, cardClasses}) {
+function emailCardTemplate({node, options, cardClasses}) {
     const thumbnailSrc = node.customThumbnailSrc || node.thumbnailSrc;
     const emailTemplateMaxWidth = 600;
     const aspectRatio = node.width / node.height;
@@ -143,7 +143,7 @@ export function emailCardTemplate({node, options, cardClasses}) {
     );
 }
 
-export function getCardClasses(node) {
+function getCardClasses(node) {
     let cardClasses = ['kg-card kg-video-card'];
 
     if (node.cardWidth) {
@@ -155,3 +155,5 @@ export function getCardClasses(node) {
 
     return cardClasses;
 }
+
+module.exports = renderVideoNode;

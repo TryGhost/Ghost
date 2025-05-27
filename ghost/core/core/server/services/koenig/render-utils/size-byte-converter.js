@@ -1,4 +1,4 @@
-export function sizeToBytes(size) {
+function sizeToBytes(size) {
     if (!size) {
         return 0;
     }
@@ -13,7 +13,7 @@ export function sizeToBytes(size) {
     return Math.round(sizeNumber * Math.pow(1024, sizeUnitIndex));
 }
 
-export function bytesToSize(bytes) {
+function bytesToSize(bytes) {
     if (!bytes) {
         return '0 Byte';
     }
@@ -24,3 +24,8 @@ export function bytesToSize(bytes) {
     const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
     return Math.round((bytes / Math.pow(1024, i))) + ' ' + sizes[i];
 }
+
+module.exports = {
+    sizeToBytes,
+    bytesToSize
+};

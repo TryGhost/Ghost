@@ -15,4 +15,7 @@ const oneline = function (strings, ...values) {
 // Using `html` as a synonym for `oneline` in order to get syntax highlighting in editors
 const html = oneline;
 
-export {oneline, html};
+module.exports = {
+    oneline,
+    html
+};

@@ -1,5 +1,5 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {html} from '../../utils/tagged-template-fns.mjs';
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
+const {html} = require('../render-utils/tagged-template-fns.js');
 
 function cardTemplate({node}) {
     return (
@@ -52,7 +52,7 @@ function emailCardTemplate({node}, options = {}) {
     );
 }
 
-export function renderToggleNode(node, options = {}) {
+function renderToggleNode(node, options = {}) {
     addCreateDocumentOption(options);
 
     const document = options.createDocument();
@@ -67,3 +67,5 @@ export function renderToggleNode(node, options = {}) {
     const element = container.firstElementChild;
     return {element};
 }
+
+module.exports = renderToggleNode;

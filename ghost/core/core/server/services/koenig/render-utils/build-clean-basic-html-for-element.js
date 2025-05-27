@@ -1,6 +1,6 @@
-import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
+const cleanBasicHtml = require('@tryghost/kg-clean-basic-html');
 
-export function buildCleanBasicHtmlForElement(domNode) {
+function buildCleanBasicHtmlForElement(domNode) {
     return function _cleanBasicHtml(html, additionalOptions = {}) {
         const cleanedHtml = cleanBasicHtml(html, {
             createDocument: (_html) => {
@@ -13,3 +13,7 @@ export function buildCleanBasicHtmlForElement(domNode) {
         return cleanedHtml;
     };
 }
+
+module.exports = {
+    buildCleanBasicHtmlForElement
+};

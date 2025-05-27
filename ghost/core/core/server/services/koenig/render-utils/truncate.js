@@ -1,6 +1,6 @@
-import {escapeHtml} from './escape-html';
+const {escapeHtml} = require('./escape-html');
 
-export function truncateText(text, maxLength) {
+function truncateText(text, maxLength) {
     if (text && text.length > maxLength) {
         return text.substring(0, maxLength - 1).trim() + '…';
     } else {
@@ -8,7 +8,7 @@ export function truncateText(text, maxLength) {
     }
 }
 
-export function truncateHtml(text, maxLength, maxLengthMobile) {
+function truncateHtml(text, maxLength, maxLengthMobile) {
     // If no mobile length specified or mobile length is larger than desktop,
     // just do a simple truncate
     if (!maxLengthMobile || maxLength <= maxLengthMobile) {
@@ -34,3 +34,8 @@ export function truncateHtml(text, maxLength, maxLengthMobile) {
         return escapeHtml(text ?? '');
     }
 }
+
+module.exports = {
+    truncateText,
+    truncateHtml
+};

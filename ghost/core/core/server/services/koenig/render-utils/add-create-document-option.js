@@ -1,6 +1,6 @@
 // If we're in a browser environment, we can use the global document object,
 // but if we're in a non-browser environment, we need to be passed a `createDocument` function
-export function addCreateDocumentOption(options) {
+function addCreateDocumentOption(options) {
     if (!options.createDocument && options.dom) {
         options.createDocument = function () {
             return options.dom.window.document;
@@ -9,6 +9,7 @@ export function addCreateDocumentOption(options) {
 
     if (!options.createDocument) {
         /* c8 ignore start */
+        // eslint-disable-next-line no-undef
         let document = typeof window !== 'undefined' && window.document;
 
         if (!document) {
@@ -21,3 +22,7 @@ export function addCreateDocumentOption(options) {
         /* c8 ignore end */
     }
 }
+
+module.exports = {
+    addCreateDocumentOption
+};

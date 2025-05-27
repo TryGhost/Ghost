@@ -1,9 +1,9 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {renderEmptyContainer} from '../../utils/render-empty-container';
-import {escapeHtml} from '../../utils/escape-html';
-import {bytesToSize} from '../../utils/size-byte-converter';
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
+const {renderEmptyContainer} = require('../render-utils/render-empty-container');
+const {escapeHtml} = require('../render-utils/escape-html');
+const {bytesToSize} = require('../render-utils/size-byte-converter');
 
-export function renderFileNode(node, options = {}) {
+function renderFileNode(node, options = {}) {
     addCreateDocumentOption(options);
     const document = options.createDocument();
 
@@ -151,3 +151,5 @@ function cardTemplate(node, document) {
 
     return {element: card};
 }
+
+module.exports = renderFileNode;

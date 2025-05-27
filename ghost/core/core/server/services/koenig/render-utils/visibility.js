@@ -1,9 +1,9 @@
-import {renderEmptyContainer} from './render-empty-container';
+const {renderEmptyContainer} = require('./render-empty-container');
 
-export const ALL_MEMBERS_SEGMENT = 'status:free,status:-free';
-export const PAID_MEMBERS_SEGMENT = 'status:-free'; // paid + comped
-export const FREE_MEMBERS_SEGMENT = 'status:free';
-export const NO_MEMBERS_SEGMENT = '';
+const ALL_MEMBERS_SEGMENT = 'status:free,status:-free';
+const PAID_MEMBERS_SEGMENT = 'status:-free'; // paid + comped
+const FREE_MEMBERS_SEGMENT = 'status:free';
+const NO_MEMBERS_SEGMENT = '';
 
 const DEFAULT_VISIBILITY = {
     web: {
@@ -20,11 +20,11 @@ function isNullish(value) {
 }
 
 // ensure we always work with a deep copy to avoid accidental ref mutations
-export function buildDefaultVisibility() {
+function buildDefaultVisibility() {
     return JSON.parse(JSON.stringify(DEFAULT_VISIBILITY));
 }
 
-export function isOldVisibilityFormat(visibility) {
+function isOldVisibilityFormat(visibility) {
     return !Object.prototype.hasOwnProperty.call(visibility, 'web')
         || !Object.prototype.hasOwnProperty.call(visibility, 'email')
         || !Object.prototype.hasOwnProperty.call(visibility.web, 'nonMember')
@@ -32,7 +32,7 @@ export function isOldVisibilityFormat(visibility) {
         || isNullish(visibility.email.memberSegment);
 }
 
-export function isVisibilityRestricted(visibility) {
+function isVisibilityRestricted(visibility) {
     if (isOldVisibilityFormat(visibility)) {
         return visibility.showOnEmail === false
             || visibility.showOnWeb === false
@@ -73,7 +73,7 @@ export function isVisibilityRestricted(visibility) {
 // memberSegment: 'status:free,status:-free' = everyone
 // memberSegment: 'status:free' = free members
 // memberSegment: 'status:-free' = paid + comped members
-export function migrateOldVisibilityFormat(visibility) {
+function migrateOldVisibilityFormat(visibility) {
     if (!visibility || !isOldVisibilityFormat(visibility)) {
         return visibility;
     }
@@ -114,7 +114,7 @@ export function migrateOldVisibilityFormat(visibility) {
     return newVisibility;
 }
 
-export function renderWithVisibility(originalRenderOutput, visibility, options) {
+function renderWithVisibility(originalRenderOutput, visibility, options) {
     const document = originalRenderOutput.element.ownerDocument;
     const content = _getRenderContent(originalRenderOutput);
 
@@ -182,3 +182,15 @@ function _renderWithWebVisibility(document, content, webVisibility) {
     textarea.value = wrappedContent;
     return {element: textarea, type: 'value'};
 }
+
+module.exports = {
+    ALL_MEMBERS_SEGMENT,
+    PAID_MEMBERS_SEGMENT,
+    FREE_MEMBERS_SEGMENT,
+    NO_MEMBERS_SEGMENT,
+    buildDefaultVisibility,
+    isOldVisibilityFormat,
+    isVisibilityRestricted,
+    migrateOldVisibilityFormat,
+    renderWithVisibility
+};
