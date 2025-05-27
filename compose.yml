@@ -55,6 +55,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      ghost-migrations:
+        condition: service_completed_successfully
     environment:
       - DEBUG=${DEBUG:-}
       - SSH_AUTH_SOCK=/ssh-agent
@@ -116,6 +118,21 @@ services:
       mysql:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      ghost-migrations:
+        condition: service_completed_successfully
+  ghost-migrations:
+    <<: *service-template
+    image: ghost-monorepo:latest
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+    command: ["yarn", "knex-migrator", "migrate"]
+    profiles: [ ghost, split ]
+    tty: true
+    depends_on:
+      mysql:
         condition: service_healthy
 
   mysql:
