@@ -4,6 +4,7 @@ import {TwoFactorAuthPage} from './pages/TwoFactorAuthPage';
 import {DashboardPage} from './pages/DashboardPage';
 import {EmailServiceFactory} from '../services/email/EmailServiceFactory';
 import type {IEmailService} from '../services/email/IEmailService';
+import {resetDb} from '../database';
 import Errors from '@tryghost/errors';
 
 // Define types for our custom fixtures
@@ -81,6 +82,11 @@ export const test = baseTest.extend<TestFixtures>({
     dashboardPage: async ({page}, use) => {
         await use(new DashboardPage(page));
     }
+});
+
+// Global beforeEach hook to reset database sessions before each test
+test.beforeEach(async () => {
+    await resetDb();
 });
 
 export {expect} from '@playwright/test';

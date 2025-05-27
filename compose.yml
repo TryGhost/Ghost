@@ -125,29 +125,6 @@ services:
       redis:
         condition: service_healthy
 
-  e2e:
-    <<: *service-template
-    image: ghost-monorepo:latest
-    working_dir: /home/ghost/e2e
-    command: [ "yarn", "test:e2e" ]
-    profiles: [ "test-e2e" ]
-    ports:
-      - "9323:9323"
-    tty: true
-    depends_on:
-      server:
-        condition: service_healthy
-      admin:
-        condition: service_started
-      mailhog:
-        condition: service_started
-    environment:
-      - BASE_URL=http://server:2368
-      - ADMIN_USERNAME=${ADMIN_USERNAME}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - EMAIL_PROVIDER=mailhog
-      - PLAYWRIGHT_HTML_REPORT_HOST=0.0.0.0
-
   mysql:
     image: mysql:8.4.5
     container_name: ghost-mysql
@@ -211,14 +188,131 @@ services:
     container_name: ghost-pushgateway
     ports:
       - 9091:9091
+
+  ## Todo: mailhog should be part of default services
   mailhog:
     image: mailhog/mailhog:latest
     container_name: ghost-mailhog
-    profiles: [ ghost, split ]
+    profiles: [ ghost, split]
     ports:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web interface
     restart: always
+
+# ================================================
+# Profile: `test`
+# Runs playwright tests against Ghost
+# ================================================
+  mysql-test:
+    image: mysql:8.4.5
+    container_name: ghost-mysql-test
+    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
+    profiles: [ "test" ]
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ghost_test
+    restart: always
+    networks:
+      - test-network
+    healthcheck:
+      test: mysql -uroot -proot ghost_test -e 'select 1'
+      interval: 1s
+      retries: 120
+
+  redis-test:
+    image: redis:7.0
+    container_name: ghost-redis-test
+    networks:
+      - test-network
+    profiles: [ "test" ]
+    restart: always
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - --raw
+        - incr
+        - ping
+      interval: 1s
+      retries: 120
+
+  mailhog-test:
+    image: mailhog/mailhog:latest
+    container_name: ghost-mailhog-test
+    networks:
+      - test-network
+    profiles: [ "test" ]
+    ports:
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web interface
+    restart: always
+
+  tests-e2e:
+    <<: *service-template
+    image: ghost-monorepo:latest
+    working_dir: /home/ghost/e2e
+    command: [ "yarn", "test:e2e" ]
+    profiles: [ "e2e" ]
+    ports:
+      - "9323:9323"
+    tty: true
+    networks:
+      - test-network
+    depends_on:
+      e2e-server:
+        condition: service_healthy
+      mailhog-test:
+        condition: service_started
+    environment:
+      - BASE_URL=http://e2e-server:2369
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - EMAIL_PROVIDER=mailhog
+      - PLAYWRIGHT_HTML_REPORT_HOST=0.0.0.0
+
+  e2e-server:
+    <<: *service-template
+    image: ghost-monorepo:latest
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+    working_dir: /home/ghost/ghost/core
+    command: [ "yarn", "dev" ]
+    ports:
+      - "2369:2369"
+    profiles: [ e2e ]
+    tty: true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:2369/ghost/api/admin/site/" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - test-network
+    depends_on:
+      mysql-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+    environment:
+      - DEBUG=${DEBUG:-}
+      - SSH_AUTH_SOCK=/ssh-agent
+      - NX_DAEMON=false
+      - GHOST_DEV_IS_DOCKER=true
+      - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
+      - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+      - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
+      - server__port=2369
+      - redis__host=redis-test
+      - database__connection__database=ghost_test
+      - database__connection__host=mysql-test
+      - mail__options__host=mailhog-test
+
 volumes:
   mysql-data: {}
   redis-data: {}
@@ -241,3 +335,7 @@ volumes:
   node_modules_apps_sodo-search: {}
   node_modules_apps_stats: {}
   node_modules_e2e: {}
+
+networks:
+  test-network:
+    driver: bridge

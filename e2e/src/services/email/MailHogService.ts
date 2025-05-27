@@ -7,7 +7,7 @@ export class MailHogService implements IEmailService {
     private mailhogClient: API;
     private mailhogApiUrl: string; // Keep for logging purposes
 
-    constructor(mailhogApiUrl: string = 'http://mailhog:8025') {
+    constructor(mailhogApiUrl: string = 'http://mailhog-test:8025') {
         this.mailhogApiUrl = mailhogApiUrl.replace(/\/$/, '');
         try {
             const url = new URL(this.mailhogApiUrl);

@@ -3,33 +3,21 @@ import knex from 'knex';
 interface DatabaseConfig {
     client: string;
     connection: {
-        host?: string;
-        user?: string;
-        password?: string;
-        database?: string;
-        filename?: string;
+        host: string;
+        user: string;
+        password: string;
+        database: string;
     };
 }
 
 function getDatabaseConfig(): DatabaseConfig {
-    const nodeEnv = process.env.NODE_ENV || 'testing';
-
-    if (nodeEnv.includes('mysql')) {
-        return {
-            client: 'mysql2',
-            connection: {
-                host: process.env.database__connection__host || 'localhost',
-                user: process.env.database__connection__user || 'root',
-                password: process.env.database__connection__password || 'root',
-                database: process.env.database__connection__database || 'ghost_testing'
-            }
-        };
-    }
-
     return {
-        client: 'sqlite3',
+        client: 'mysql2',
         connection: {
-            filename: process.env.database__connection__filename || '/dev/shm/ghost-test.db'
+            host: process.env.database__connection__host || 'mysql-test',
+            user: process.env.database__connection__user || 'root',
+            password: process.env.database__connection__password || 'root',
+            database: process.env.database__connection__database || 'ghost_test'
         }
     };
 }
