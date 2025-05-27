@@ -7,6 +7,8 @@ dotenv.config();
  */
 export default defineConfig({
     testDir: './test/e2e',
+    /* Global setup to run before all tests */
+    globalSetup: require.resolve('./playwright.global-setup.ts'),
     /* Run tests in files in parallel */
     fullyParallel: true,
     /* Fail the build on CI if you accidentally left test.only in the source code. */
