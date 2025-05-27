@@ -1028,7 +1028,6 @@ class EmailRenderer {
         const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
         const linkColor = backgroundIsDark ? '#ffffff' : accentColor;
         const hasRoundedImageCorners = (labs.isSet('emailCustomization') || labs.isSet('emailCustomizationAlpha')) ? this.#getImageCorners(newsletter) : false;
-        const postTitleColor = (labs.isSet('emailCustomization') || labs.isSet('emailCustomizationAlpha')) ? '#f826ff' : null;
 
         let buttonBorderRadius = '6px';
 
@@ -1209,7 +1208,6 @@ class EmailRenderer {
             footerContent: newsletter.get('footer_content'),
             linkStyle,
             hasOutlineButtons,
-            postTitleColor,
 
             classes: {
                 container: 'container' + (newsletter.get('title_font_category') === 'serif' ? ` title-serif` : ``),
