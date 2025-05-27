@@ -181,3 +181,8 @@ temp*.sql
 .yarncache
 .yarncachecopy
 .yarnhash
+
+# yalc — for linking local packages in a docker compatible way
+yalc
+yalc.lock
+.yalc
