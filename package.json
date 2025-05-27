@@ -67,7 +67,10 @@
     "@tryghost/logging": "2.4.22",
     "jackspeak": "2.3.6",
     "moment": "2.24.0",
-    "moment-timezone": "0.5.45"
+    "moment-timezone": "0.5.45",
+    "cheerio": "1.0.0-rc.12",
+    "ember-modifier": "4.2.0",
+    "ember-auto-import": "2.10.0"
   },
   "lint-staged": {
     "*.js": "eslint"
