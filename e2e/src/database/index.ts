@@ -28,9 +28,8 @@ export async function resetDb(): Promise<void> {
     console.log('Resetting database', config);
     const db = knex(config);
 
-    try {
-        await db('sessions').truncate();
-    } finally {
-        await db.destroy();
-    }
+    await db('sessions').truncate();
+
+    const result = await db.raw('SELECT * FROM sessions');
+    console.log('Result', result);
 }
