@@ -89,5 +89,24 @@
   "peerDependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
-  }
+  },
+  "nx": {
+        "targets": {
+            "build": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
+            "dev": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
+            "test:unit": {
+                "dependsOn": [
+                    "^build"
+                ]
+            }
+        }
+    }
 }

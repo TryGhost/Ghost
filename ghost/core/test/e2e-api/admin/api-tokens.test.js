@@ -69,4 +69,51 @@ describe('Admin API', function () {
                 });
         });
     });
+
+    describe('Integration Tokens', function () {
+        describe('Zapier', function () {
+            before(async function () {
+                await agent.useZapierAdminAPIKey();
+            });
+
+            it('Request to user/me will 404 as there is no user associated with the token', async function () {
+                await agent
+                    .get('users/me')
+                    .expectStatus(404);
+            });
+
+            it('Request to list users will succeed', async function () {
+                await agent
+                    .get('users')
+                    .expectStatus(200);
+            });
+        });
+
+        describe('Backup Integration', function () {
+            before(async function () {
+                await agent.useBackupAdminAPIKey();
+            });
+
+            it('Request to user/me will 403 because the backup integration has restricted permissions', async function () {
+                await agent
+                    .get('users/me')
+                    .expectStatus(403);
+            });
+
+            it('Request to list users will also 403 due to restricted permissions', async function () {
+                await agent
+                    .get('users')
+                    .expectStatus(403);
+            });
+        });
+    });
+
+    describe('User Authentication', function () {
+        it('Double check we can do user auth after a token is used', async function () {
+            await agent.loginAsOwner();
+            await agent
+                .get('users/me')
+                .expectStatus(200);
+        });
+    });
 });
