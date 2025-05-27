@@ -887,8 +887,8 @@ jobs:
 
       - name: Wait for MySQL and Redis
         run: |
-          timeout 60 bash -c 'until docker compose -f .docker/compose/compose.ci.e2e.yml exec -T mysql mysql -uroot -proot -e "SELECT 1"; do sleep 1; done'
-          timeout 60 bash -c 'until docker compose -f .docker/compose/compose.ci.e2e.yml exec -T redis redis-cli ping; do sleep 1; done'
+          timeout 60 bash -c 'until docker compose -f .docker/compose/compose.ci.e2e.yml exec -T mysql-test mysql -uroot -proot -e "SELECT 1"; do sleep 1; done'
+          timeout 60 bash -c 'until docker compose -f .docker/compose/compose.ci.e2e.yml exec -T redis-test redis-cli ping; do sleep 1; done'
 
       - name: Build packages
         run: yarn nx run-many -t build --exclude=ghost-admin
