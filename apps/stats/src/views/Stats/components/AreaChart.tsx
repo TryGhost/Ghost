@@ -16,6 +16,7 @@ interface AreaChartProps {
     color?: string;
     id: string;
     className?: string;
+    syncId?: string;
 }
 
 const AreaChart: React.FC<AreaChartProps> = ({
@@ -24,7 +25,8 @@ const AreaChart: React.FC<AreaChartProps> = ({
     yAxisRange,
     color = 'hsl(var(--chart-blue))',
     id,
-    className
+    className,
+    syncId
 }) => {
     const yRange = yAxisRange || [getYRange(data).min, getYRange(data).max];
     const chartConfig = {
@@ -44,6 +46,7 @@ const AreaChart: React.FC<AreaChartProps> = ({
                     right: 4,
                     top: 4
                 }}
+                syncId={syncId}
             >
                 <Recharts.CartesianGrid horizontal={false} vertical={false} />
                 <Recharts.XAxis

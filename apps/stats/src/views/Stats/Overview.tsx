@@ -186,7 +186,7 @@ const Overview: React.FC = () => {
             date: item.date,
             value: item.free + item.paid + item.comped,
             formattedValue: formatNumber(item.free + item.paid + item.comped),
-            label: 'Total members'
+            label: 'Members'
         }));
 
         return processedData;
@@ -255,6 +255,7 @@ const Overview: React.FC = () => {
                             data={visitorsChartData}
                             id="visitors"
                             range={range}
+                            syncId="overview-charts"
                             yAxisRange={visitorsYRange}
                         />
                     </OverviewKPICard>
@@ -274,6 +275,7 @@ const Overview: React.FC = () => {
                             data={membersChartData}
                             id="members"
                             range={range}
+                            syncId="overview-charts"
                         />
                     </OverviewKPICard>
 
@@ -292,6 +294,7 @@ const Overview: React.FC = () => {
                             data={mrrChartData}
                             id="mrr"
                             range={range}
+                            syncId="overview-charts"
                         />
                     </OverviewKPICard>
                 </div>
