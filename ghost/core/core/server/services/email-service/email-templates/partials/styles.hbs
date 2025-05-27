@@ -243,12 +243,17 @@ h2 {
 
 {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 h2 {
+    {{#if postHeadingTitleColor}}
     color: {{postHeadingTitleColor}};
+    {{else}}
+    color: #15212A; /* fallback to default */
+    {{/if}}
 }
 {{#if postLinkColor}}
 h2:not(.kg-header-card-heading) a {
     color: {{postLinkColor}} !important;
 }
+
 {{/if}}
 {{/hasFeature}}
 
@@ -258,11 +263,15 @@ h3 {
 }
 
 {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
-h3 {
+h3:not(.kg-header-card-subheader) {
+    {{#if postHeadingTitleColor}}
     color: {{postHeadingTitleColor}};
+    {{else}}
+    color: #15212A; /* fallback to default */
+    {{/if}}
 }
 {{#if postLinkColor}}
-h3 a {
+h3:not(.kg-header-card-subheader) a {
     color: {{postLinkColor}} !important;
 }
 {{/if}}
