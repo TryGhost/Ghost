@@ -25824,7 +25824,7 @@ pend@~1.2.0:
   resolved "https://registry.yarnpkg.com/pend/-/pend-1.2.0.tgz#7a57eb550a6783f9115331fcf4663d5c8e007a50"
   integrity sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==
 
-"perf-primitives@github:RobbieTheWagner/perf-primitives#a6a26f11497ca27be3763a88a5f20744e424756b":
+perf-primitives@RobbieTheWagner/perf-primitives#a6a26f11497ca27be3763a88a5f20744e424756b:
   version "0.0.6"
   resolved "https://codeload.github.com/RobbieTheWagner/perf-primitives/tar.gz/a6a26f11497ca27be3763a88a5f20744e424756b"
   dependencies:
