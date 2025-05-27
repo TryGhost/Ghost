@@ -166,14 +166,6 @@ const KpiCardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children
     );
 };
 
-const KpiCardHeaderContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
-    return (
-        <div className={cn('flex flex-col gap-1', className)} {...props}>
-            {children}
-        </div>
-    );
-};
-
 const KpiCardHeaderLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (
         <div className={cn('[&_svg]:size-4 flex items-center gap-1.5 text-base text-muted-foreground h-[22px] font-medium', className)} {...props}>
@@ -225,7 +217,6 @@ export {
     CardDescription,
     CardContent,
     KpiCardHeader,
-    KpiCardHeaderContent,
     KpiCardHeaderLabel,
     KpiCardHeaderValue,
     cardVariants

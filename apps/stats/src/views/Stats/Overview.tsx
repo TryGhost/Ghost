@@ -1,10 +1,10 @@
-import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
+import AreaChart from './components/AreaChart';
 import DateRangeSelect from './components/DateRangeSelect';
 import React from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {AlignedAxisTick, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H3, KpiCardHeader, KpiCardHeaderContent, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn, formatDisplayDateWithRange, formatNumber, formatQueryDate, getRangeDates, getYRange, sanitizeChartData} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, H3, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {getAudienceQueryParam} from './components/AudienceSelect';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -43,18 +43,16 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
-            <KpiCardHeader className='grow border-none pb-2'>
+            <KpiCardHeader className='grow gap-2 border-none pb-2'>
                 <KpiCardHeaderLabel>
                     {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
                     {title}
                 </KpiCardHeaderLabel>
-                <KpiCardHeaderContent>
-                    <KpiCardHeaderValue
-                        diffDirection={diffDirection}
-                        diffValue={diffValue}
-                        value={formattedValue}
-                    />
-                </KpiCardHeaderContent>
+                <KpiCardHeaderValue
+                    diffDirection={diffDirection}
+                    diffValue={diffValue}
+                    value={formattedValue}
+                />
             </KpiCardHeader>
             <CardContent>
                 {children}
@@ -94,98 +92,6 @@ interface HelpCardProps {
     url: string;
     children?: React.ReactNode;
 }
-
-interface OverviewChartProps {
-    data: Array<{
-        date: string;
-        value: number;
-        formattedValue: string;
-        label: string;
-    }>;
-    range: number;
-    color?: string;
-    id: string;
-}
-
-const OverviewChart: React.FC<OverviewChartProps> = ({
-    data,
-    range,
-    color = 'hsl(var(--chart-blue))',
-    id
-}) => {
-    const yRange = [getYRange(data).min, getYRange(data).max];
-    const chartConfig = {
-        value: {
-            label: data[0]?.label || 'Value'
-        }
-    } satisfies ChartConfig;
-
-    return (
-        <ChartContainer className='-mb-3 h-[10vw] max-h-[240px] w-full' config={chartConfig}>
-            <Recharts.AreaChart
-                data={data}
-                margin={{
-                    left: 4,
-                    right: 4,
-                    top: 0
-                }}
-            >
-                <Recharts.CartesianGrid horizontal={false} vertical={false} />
-                <Recharts.XAxis
-                    axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
-                    dataKey="date"
-                    interval={0}
-                    tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(value, range)} />}
-                    tickFormatter={value => formatDisplayDateWithRange(value, range)}
-                    tickLine={false}
-                    tickMargin={10}
-                    ticks={data && data.length > 0 ? [data[0].date, data[data.length - 1].date] : []}
-                />
-                <Recharts.YAxis
-                    axisLine={false}
-                    domain={yRange}
-                    scale="linear"
-                    tickFormatter={(value: number) => {
-                        return formatNumber(value);
-                    }}
-                    tickLine={false}
-                    ticks={[]}
-                    width={0}
-                />
-                <ChartTooltip
-                    content={<CustomTooltipContent color={color} range={range} />}
-                    cursor={true}
-                    isAnimationActive={false}
-                    position={{y: 10}}
-                />
-                <defs>
-                    <linearGradient id={`fillChart-${id}`} x1="0" x2="0" y1="0" y2="1">
-                        <stop
-                            offset="5%"
-                            stopColor={color}
-                            stopOpacity={0.8}
-                        />
-                        <stop
-                            offset="95%"
-                            stopColor={color}
-                            stopOpacity={0.1}
-                        />
-                    </linearGradient>
-                </defs>
-                <Recharts.Area
-                    dataKey="value"
-                    fill={`url(#fillChart-${id})`}
-                    fillOpacity={0.2}
-                    isAnimationActive={false}
-                    stackId="a"
-                    stroke={color}
-                    strokeWidth={2}
-                    type="linear"
-                />
-            </Recharts.AreaChart>
-        </ChartContainer>
-    );
-};
 
 const HelpCard: React.FC<HelpCardProps> = ({
     className,
@@ -262,6 +168,8 @@ const Overview: React.FC = () => {
 
     const kpiValues = getKpiValues();
 
+    const areaChartClassName = '-mb-3 h-[10vw] max-h-[240px]';
+
     return (
         <StatsLayout>
             <StatsHeader>
@@ -278,7 +186,8 @@ const Overview: React.FC = () => {
                         linkto='/web/'
                         title='Unique visitors'
                     >
-                        <OverviewChart
+                        <AreaChart
+                            className={areaChartClassName}
                             color='hsl(var(--chart-blue))'
                             data={visitorsChartData}
                             id="visitors"
@@ -295,7 +204,8 @@ const Overview: React.FC = () => {
                         linkto='/growth/'
                         title='Members'
                     >
-                        <OverviewChart
+                        <AreaChart
+                            className={areaChartClassName}
                             color='hsl(var(--chart-green))'
                             data={visitorsChartData}
                             id="members"
@@ -312,7 +222,8 @@ const Overview: React.FC = () => {
                         linkto='/growth/'
                         title='MRR'
                     >
-                        <OverviewChart
+                        <AreaChart
+                            className={areaChartClassName}
                             color='hsl(var(--chart-orange))'
                             data={visitorsChartData}
                             id="mrr"
