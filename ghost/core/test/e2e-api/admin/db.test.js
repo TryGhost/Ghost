@@ -5,7 +5,6 @@ const {exportedBodyLatest} = require('../../utils/fixtures/export/body-generator
 const path = require('path');
 const assert = require('assert/strict');
 
-
 describe('DB API', function () {
     let agent;
 
