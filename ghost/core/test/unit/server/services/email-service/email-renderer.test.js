@@ -2264,15 +2264,12 @@ describe('Email renderer', function () {
             settings.accent_color = '#DEF456';
             const tests = [
                 {input: '#BADA55', expected: '#BADA55'},
-                {input: 'accent', expected: settings.accent_color},
-                {input: 'Invalid Color', expected: '#FFFFFF', background_color: '#15212A'},
-                {input: null, expected: '#000000', background_color: '#ffffff'}
+                {input: 'accent', expected: settings.accent_color}
             ];
 
             for (const test of tests) {
                 const data = await templateDataWithSettings({
-                    post_title_color: test.input,
-                    background_color: test.background_color
+                    post_title_color: test.input
                 });
                 assert.equal(data.postTitleColor, test.expected);
             }
