@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {createTestWrapper, defaultMockData, mockApiHook, setupUniversalMocks} from '../../utils/test-helpers';
+import {createTestWrapper, mockApiHook, setupUniversalMocks} from '../../utils/test-helpers';
 import {renderHook, waitFor} from '@testing-library/react';
 import {responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
@@ -29,16 +29,13 @@ describe('usePostNewsletterStats', () => {
         const {result} = renderHook(() => usePostNewsletterStats(testPostId), {wrapper});
 
         await waitFor(() => {
-            // Derive from the mocked post data
-            const post = defaultMockData.postsResponse.posts[0];
-            const expectedStats = {
-                sent: post?.email?.email_count || 0,
-                opened: post?.email?.opened_count || 0,
-                clicked: post?.count?.clicks || 0,
-                openedRate: post?.email?.email_count ? (post.email.opened_count / post.email.email_count) : 0,
-                clickedRate: post?.email?.email_count ? (post.count.clicks / post.email.email_count) : 0
-            };
-            expect(result.current.stats).toEqual(expectedStats);
+            expect(result.current.stats).toEqual({
+                sent: 1000,
+                opened: 300,
+                clicked: 50,
+                openedRate: 0.3,
+                clickedRate: 0.05
+            });
         });
     });
 

@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import React from 'react';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {
     createErrorMock,
     createLoadingMock,
     createMockApiReturn,
     createSuccessMock,
-    createTestWrapper,
     mockApiHook,
     resetAllMocks
-} from '../../../admin-x-framework/src/test/hook-testing-utils';
+} from '@tryghost/admin-x-framework/test/hook-testing-utils';
 import {responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {vi} from 'vitest';
 
@@ -16,13 +17,29 @@ import type {LinkResponseType} from '@tryghost/admin-x-framework/api/links';
 import type {NewsletterStatsResponseType, PostGrowthStatsResponseType, PostReferrersResponseType} from '@tryghost/admin-x-framework/api/stats';
 import type {PostsResponseType} from '@tryghost/admin-x-framework/api/posts';
 
+// Create a test wrapper with QueryClient
+export const createTestWrapper = () => {
+    const queryClient = new QueryClient({
+        defaultOptions: {
+            queries: {retry: false},
+            mutations: {retry: false}
+        }
+    });
+    
+    const Wrapper = ({children}: {children: React.ReactNode}) => (
+        React.createElement(QueryClientProvider, {client: queryClient}, children)
+    );
+    Wrapper.displayName = 'TestWrapper';
+    
+    return Wrapper;
+};
+
 // Re-export centralized utilities for convenience
 export {
     createErrorMock,
     createLoadingMock,
     createMockApiReturn,
     createSuccessMock,
-    createTestWrapper,
     mockApiHook,
     resetAllMocks
 };
