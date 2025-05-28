@@ -241,12 +241,12 @@ h2 {
     font-size: 32px;
 }
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomizationAlpha"}}
 
 /* Post content headings */
 .post-content-row h1 {
-    {{#if postHeadingTitleColor}}
-    color: {{postHeadingTitleColor}};
+    {{#if postSectionTitleColor}}
+    color: {{postSectionTitleColor}};
     {{else}}
     color: #15212A; /* fallback to default */
     {{/if}}
@@ -255,8 +255,8 @@ h2 {
 
 
 .post-content-row h2 {
-    {{#if postHeadingTitleColor}}
-    color: {{postHeadingTitleColor}};
+    {{#if postSectionTitleColor}}
+    color: {{postSectionTitleColor}};
     {{else}}
     color: #15212A; /* fallback to default */
     {{/if}}
@@ -271,10 +271,10 @@ h3 {
     font-size: 26px;
 }
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomizationAlpha"}}
 .post-content-row h3 {
-    {{#if postHeadingTitleColor}}
-    color: {{postHeadingTitleColor}};
+    {{#if postSectionTitleColor}}
+    color: {{postSectionTitleColor}};
     {{else}}
     color: #15212A; /* fallback to default */
     {{/if}}
@@ -286,8 +286,8 @@ h3 {
     margin: 1.8em 0 0.5em 0;
     font-size: 21px;
     line-height: 1.2em;
-    {{#if postHeadingTitleColor}}
-    color: {{postHeadingTitleColor}};
+    {{#if postSectionTitleColor}}
+    color: {{postSectionTitleColor}};
     {{else}}
     color: #15212A; /* fallback to default */
     {{/if}}
@@ -302,13 +302,13 @@ h4 {
 }
 {{/hasFeature}}
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomizationAlpha"}}
 .post-content-row h5 {
     margin: 2em 0 0.5em 0;
     font-size: 19px;
     line-height: 1.3em;
-    {{#if postHeadingTitleColor}}
-    color: {{postHeadingTitleColor}};
+    {{#if postSectionTitleColor}}
+    color: {{postSectionTitleColor}};
     {{else}}
     color: #15212A; /* fallback to default */
     {{/if}}
@@ -323,13 +323,13 @@ h5 {
 }
 {{/hasFeature}}
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomizationAlpha"}}
 .post-content-row h6 {
     margin: 2em 0 0.5em 0;
     font-size: 19px;
     line-height: 1.3em;
-    {{#if postHeadingTitleColor}}
-    color: {{postHeadingTitleColor}};
+    {{#if postSectionTitleColor}}
+    color: {{postSectionTitleColor}};
     {{else}}
     color: #15212A; /* fallback to default */
     {{/if}}
@@ -685,19 +685,19 @@ h3.latest-posts-header {
     color: #73818c !important;
 }
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomizationAlpha"}}
 /* Custom heading colors for latest posts */
 .latest-post-title h4 {
-    {{#if postHeadingTitleColor}}
-    color: {{postHeadingTitleColor}};
+    {{#if postSectionTitleColor}}
+    color: {{postSectionTitleColor}};
     {{else}}
     color: #15212A; /* fallback to default */
     {{/if}}
 }
 
 .latest-post-title h4 a {
-    {{#if postHeadingTitleColor}}
-    color: {{postHeadingTitleColor}} !important;
+    {{#if postSectionTitleColor}}
+    color: {{postSectionTitleColor}} !important;
     {{else}}
     color: #15212A !important;
     {{/if}}
