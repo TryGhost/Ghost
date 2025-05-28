@@ -457,7 +457,6 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         // Loading config must be the first thing we do, because it is required for absolutely everything
         debug('Begin: Load config');
         config = require('./shared/config');
-        console.log('database config: ', config.get('database'));
         debug('End: Load config');
 
         // Logging is also used absolutely everywhere
