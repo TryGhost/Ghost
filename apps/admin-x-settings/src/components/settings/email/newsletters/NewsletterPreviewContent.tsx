@@ -98,11 +98,10 @@ const NewsletterPreviewContent: React.FC<{
 }) => {
     const showHeader = headerIcon || headerTitle;
     const {config} = useGlobalData();
-    const hasEmailCustomizationPrototype = useFeatureFlag('emailCustomizationPrototype');
     const hasEmailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
 
-    const hasAnyEmailCustomization = hasEmailCustomization || hasEmailCustomizationAlpha || hasEmailCustomizationPrototype;
+    const hasAnyEmailCustomization = hasEmailCustomization || hasEmailCustomizationAlpha;
 
     const currentDate = new Date().toLocaleDateString('default', {
         year: 'numeric',
