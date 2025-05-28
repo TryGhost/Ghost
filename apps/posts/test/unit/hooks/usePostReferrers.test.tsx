@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {createTestWrapper, mockApiHook, setupUniversalMocks} from '../../utils/test-helpers';
+import {createTestWrapper, defaultMockData, mockApiHook, setupUniversalMocks} from '../../utils/test-helpers';
 import {getRangeDates, usePostReferrers} from '@src/hooks/usePostReferrers';
 import {renderHook, waitFor} from '@testing-library/react';
 import {responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
@@ -65,12 +65,7 @@ describe('usePostReferrers', () => {
 
             await waitFor(() => {
                 expect(result.current.stats).toEqual(responseFixtures.postReferrers.stats);
-                expect(result.current.totals).toEqual({
-                    post_id: '64d623b64676110001e897d9',
-                    free_members: 100,
-                    paid_members: 25,
-                    mrr: 1250
-                });
+                expect(result.current.totals).toEqual(defaultMockData.growthStats.stats[0]);
                 expect(result.current.isLoading).toBe(false);
             });
         });
