@@ -1,7 +1,6 @@
 import AppContext from '../../AppContext';
 import {useContext, useEffect, useState} from 'react';
 import {isPaidMember, getSiteNewsletters, hasNewsletterSendingEnabled} from '../../utils/helpers';
-import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 import NewsletterManagement from '../common/NewsletterManagement';
 import Interpolate from '@doist/react-interpolate';
 
@@ -45,7 +44,6 @@ export default function AccountEmailPage() {
                 <>
                     <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}>
                         <Interpolate
-                            syntax={SYNTAX_I18NEXT}
                             string={t('{memberEmail} will no longer receive emails when someone replies to your comments.')}
                             mapping={{
                                 memberEmail: <strong>{member?.email}</strong>
@@ -68,7 +66,6 @@ export default function AccountEmailPage() {
             <>
                 <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}>
                     <Interpolate
-                        syntax={SYNTAX_I18NEXT}
                         string={t('{memberEmail} will no longer receive {newsletterName} newsletter.')}
                         mapping={{
                             memberEmail: <strong>{member?.email}</strong>,
