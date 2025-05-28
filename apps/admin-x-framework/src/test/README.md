@@ -1,5 +1,78 @@
 # Testing with Admin-X-Framework
 
+## Vitest Configuration
+
+The admin-x-framework provides a shared vitest configuration factory to reduce duplication across apps while allowing customization.
+
+### Basic Usage
+
+```typescript
+// vitest.config.ts
+import {createVitestConfig} from '@tryghost/admin-x-framework/test/vitest-config';
+
+export default createVitestConfig();
+```
+
+This provides sensible defaults:
+- **React support** with `@vitejs/plugin-react`
+- **jsdom environment** for DOM testing
+- **Global test APIs** (describe, it, expect, etc.)
+- **Standard aliases** (`@src`, `@test`)
+- **Setup file** at `./test/setup.ts`
+- **Coverage reporting** with text and HTML output
+- **Common exclusions** (node_modules, test files, config files)
+
+### Customization Options
+
+```typescript
+export default createVitestConfig({
+    // Custom setup files
+    setupFiles: ['./test/setup.ts', './test/custom-setup.ts'],
+    
+    // Additional path aliases
+    aliases: {
+        '@components': './src/components',
+        '@utils': './src/utils',
+        '@views': './src/views'
+    },
+    
+    // Custom test file patterns
+    include: [
+        './test/unit/**/*.{test,spec}.{js,ts,jsx,tsx}',
+        './src/**/*.{test,spec}.{js,ts,jsx,tsx}'
+    ],
+    
+    // Coverage configuration overrides
+    coverage: {
+        threshold: {
+            global: {
+                branches: 80,
+                functions: 80,
+                lines: 80,
+                statements: 80
+            }
+        }
+    },
+    
+    // Additional vitest options
+    testOptions: {
+        timeout: 10000,
+        retry: 2
+    },
+    
+    // Reduce output verbosity
+    silent: false,
+    reporter: 'basic'
+});
+```
+
+### Benefits
+
+- **Consistent Configuration**: All apps use the same base setup
+- **Reduced Duplication**: No need to copy vitest config between apps
+- **Easy Updates**: Framework updates automatically benefit all apps
+- **Flexible Customization**: Override any option while keeping sensible defaults
+
 ## Test Setup for Shade Components
 
 The admin-x-framework provides shared test setup utilities for apps using shade components. These utilities handle common mocks required for responsive behavior and chart components.
