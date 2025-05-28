@@ -1,0 +1,44 @@
+{
+    "stats": [
+        {
+            "post_id": "64d623b64676110001e897d9",
+            "post_title": "Welcome to Ghost",
+            "send_date": "2024-01-05T10:00:00.000Z",
+            "sent_to": 1000,
+            "total_opens": 450,
+            "open_rate": 0.45,
+            "total_clicks": 120,
+            "click_rate": 0.12
+        },
+        {
+            "post_id": "64d623b64676110001e897d8",
+            "post_title": "Getting Started with Ghost",
+            "send_date": "2024-01-04T10:00:00.000Z",
+            "sent_to": 980,
+            "total_opens": 420,
+            "open_rate": 0.43,
+            "total_clicks": 98,
+            "click_rate": 0.10
+        },
+        {
+            "post_id": "64d623b64676110001e897d7",
+            "post_title": "Ghost Tips and Tricks",
+            "send_date": "2024-01-03T10:00:00.000Z",
+            "sent_to": 950,
+            "total_opens": 380,
+            "open_rate": 0.40,
+            "total_clicks": 85,
+            "click_rate": 0.09
+        }
+    ],
+    "meta": {
+        "pagination": {
+            "page": 1,
+            "limit": 20,
+            "pages": 1,
+            "total": 3,
+            "next": null,
+            "prev": null
+        }
+    }
+} 
