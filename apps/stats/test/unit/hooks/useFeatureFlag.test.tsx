@@ -25,7 +25,6 @@ describe('useFeatureFlag', () => {
 
     it('returns loading state when data is loading', () => {
         mocks.mockUseGlobalData.mockReturnValue({
-            ...mocks.mockUseGlobalData.mock.results[0]?.value || {},
             isLoading: true,
             settings: []
         });
