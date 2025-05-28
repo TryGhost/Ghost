@@ -745,7 +745,12 @@ function ProductCardButton({selectedProduct, product, disabled, noOfProducts, tr
 
     if (trialDays > 0) {
         return (
-            t('Start {amount}-day free trial', {amount: trialDays})
+            <Interpolate
+                string={t('Start {amount}-day free trial')}
+                mapping={{
+                    amount: trialDays
+                }}
+            />
         );
     }
 
