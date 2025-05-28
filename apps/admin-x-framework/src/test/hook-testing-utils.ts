@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {UseQueryResult} from '@tanstack/react-query';
-import {vi} from 'vitest';
+import * as vitest from 'vitest';
+
+// For vitest 0.34.3 compatibility
+const vi = (vitest as any).vi || vitest;
 
 /**
  * Creates a properly typed mock UseQueryResult for API hooks
@@ -11,34 +14,34 @@ export const createMockApiReturn = <T>(
     isLoading = false,
     error: Error | null = null
 ): UseQueryResult<T> => ({
-    data,
-    isLoading,
-    error,
-    refetch: vi.fn(),
-    isError: !!error,
-    isLoadingError: false,
-    isRefetchError: false,
-    isSuccess: !isLoading && !error && data !== undefined,
-    isIdle: false,
-    status: isLoading ? 'loading' : error ? 'error' : 'success',
-    dataUpdatedAt: Date.now(),
-    errorUpdatedAt: error ? Date.now() : 0,
-    failureCount: error ? 1 : 0,
-    isFetched: true,
-    isFetchedAfterMount: true,
-    isFetching: isLoading,
-    isPlaceholderData: false,
-    isPreviousData: false,
-    isStale: false,
-    remove: vi.fn(),
-    // Add missing properties for TypeScript compatibility
-    failureReason: null,
-    errorUpdateCount: 0,
-    isInitialLoading: isLoading,
-    isPaused: false,
-    isRefetching: false,
-    isStaleByTime: false
-} as unknown as UseQueryResult<T>);
+        data,
+        isLoading,
+        error,
+        refetch: vi.fn(),
+        isError: !!error,
+        isLoadingError: false,
+        isRefetchError: false,
+        isSuccess: !isLoading && !error && data !== undefined,
+        isIdle: false,
+        status: isLoading ? 'loading' : error ? 'error' : 'success',
+        dataUpdatedAt: Date.now(),
+        errorUpdatedAt: error ? Date.now() : 0,
+        failureCount: error ? 1 : 0,
+        isFetched: true,
+        isFetchedAfterMount: true,
+        isFetching: isLoading,
+        isPlaceholderData: false,
+        isPreviousData: false,
+        isStale: false,
+        remove: vi.fn(),
+        // Add missing properties for TypeScript compatibility
+        failureReason: null,
+        errorUpdateCount: 0,
+        isInitialLoading: isLoading,
+        isPaused: false,
+        isRefetching: false,
+        isStaleByTime: false
+    } as unknown as UseQueryResult<T>);
 
 /**
  * Applies a mock return value to an API hook mock function
@@ -65,28 +68,24 @@ export const createMockApiHook = <T>() => {
     const mockFn = vi.fn();
     return {
         mock: mockFn,
-        mockReturnValue: (data: T | undefined, isLoading = false, error: Error | null = null) => 
-            mockApiHook(mockFn, data, isLoading, error)
+        mockReturnValue: (data: T | undefined, isLoading = false, error: Error | null = null) => mockApiHook(mockFn, data, isLoading, error)
     };
 };
 
 /**
  * Utility to create loading state mocks
  */
-export const createLoadingMock = <T>(mockFn: any): UseQueryResult<T> => 
-    mockApiHook<T>(mockFn, undefined, true, null);
+export const createLoadingMock = <T>(mockFn: any): UseQueryResult<T> => mockApiHook<T>(mockFn, undefined, true, null);
 
 /**
  * Utility to create error state mocks
  */
-export const createErrorMock = <T>(mockFn: any, error: Error): UseQueryResult<T> => 
-    mockApiHook<T>(mockFn, undefined, false, error);
+export const createErrorMock = <T>(mockFn: any, error: Error): UseQueryResult<T> => mockApiHook<T>(mockFn, undefined, false, error);
 
 /**
  * Utility to create success state mocks
  */
-export const createSuccessMock = <T>(mockFn: any, data: T): UseQueryResult<T> => 
-    mockApiHook<T>(mockFn, data, false, null);
+export const createSuccessMock = <T>(mockFn: any, data: T): UseQueryResult<T> => mockApiHook<T>(mockFn, data, false, null);
 
 /**
  * Common mock data patterns for Ghost entities
@@ -165,10 +164,9 @@ export const createTypedMockApiHook = <T>() => {
     
     return {
         mock: mockFn,
-        configure: (config: MockApiHookConfig<T>) => 
-            mockApiHook(mockFn, config.data, config.isLoading, config.error),
+        configure: (config: MockApiHookConfig<T>) => mockApiHook(mockFn, config.data, config.isLoading, config.error),
         mockLoading: () => createLoadingMock<T>(mockFn),
         mockError: (error: Error) => createErrorMock<T>(mockFn, error),
         mockSuccess: (data: T) => createSuccessMock<T>(mockFn, data)
     };
-}; 
+};
