@@ -40,7 +40,7 @@
         "@testing-library/react": "14.3.1",
         "@testing-library/react-hooks": "8.0.1",
         "@types/lodash-es": "4.17.12",
-        "@types/node": "22.15.23",
+        "@types/node": "22.15.24",
         "@vitejs/plugin-react": "4.5.0",
         "c8": "8.0.1",
         "chai": "4.5.0",
