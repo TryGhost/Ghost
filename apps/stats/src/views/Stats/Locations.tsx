@@ -7,7 +7,7 @@ import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn, formatNumber, formatQueryDate, getCountryFlag, getRangeDates} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, cn, formatNumber, formatQueryDate, getCountryFlag, getRangeDates} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -32,7 +32,7 @@ const normalizeCountryCode = (code: string): string => {
         'GREAT BRITAIN': 'GB',
         NETHERLANDS: 'NL'
     };
-    
+
     const upperCode = code.toUpperCase();
     return mappings[upperCode] || (code.length > 2 ? code.substring(0, 2) : code);
 };
@@ -178,6 +178,8 @@ const Locations:React.FC = () => {
         setTooltipData(null);
     };
 
+    const tableData = data?.slice(0, 10);
+
     return (
         <StatsLayout>
             <StatsHeader>
@@ -185,64 +187,58 @@ const Locations:React.FC = () => {
                 <DateRangeSelect />
             </StatsHeader>
             <StatsView data={data} isLoading={isLoading}>
-                <Card>
-                    <CardHeader>
+                <Card className='p-0'>
+                    <CardHeader className='border-b'>
                         <CardTitle>Top Locations</CardTitle>
                         <CardDescription>A geographic breakdown of your readers {getPeriodText(range)}</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <div className='svg-map-container relative mx-auto max-w-[680px] [&_.svg-map]:stroke-background'>
-                            <SVGMap
-                                locationClassName={getLocationClassName}
-                                map={World}
-                                onLocationMouseOut={handleLocationMouseOut}
-                                onLocationMouseOver={handleLocationMouseOver}
-                            />
-                            {tooltipData && (
-                                <div
-                                    className="pointer-events-none fixed z-50 min-w-[120px] rounded-lg border bg-background px-3 py-2 text-sm text-foreground shadow-lg transition-all duration-150 ease-in-out"
-                                    style={{
-                                        left: tooltipData.x + 10,
-                                        top: tooltipData.y + 10,
-                                        transform: 'translate3d(0, 0, 0)'
-                                    }}
-                                >
-                                    <div className="flex gap-1">
-                                        <span>{getSafeCountryFlag(tooltipData.countryCode)}</span>
-                                        <span className="font-medium">{tooltipData.countryName}</span>
+                    <CardContent className='p-0'>
+                        <div className='grid grid-cols-3 items-stretch'>
+                            <div className='svg-map-container relative col-span-2 mx-auto w-full max-w-[680px] p-8 [&_.svg-map]:stroke-background'>
+                                <SVGMap
+                                    locationClassName={getLocationClassName}
+                                    map={World}
+                                    onLocationMouseOut={handleLocationMouseOut}
+                                    onLocationMouseOver={handleLocationMouseOver}
+                                />
+                                {tooltipData && (
+                                    <div
+                                        className="pointer-events-none fixed z-50 min-w-[120px] rounded-lg border bg-background px-3 py-2 text-sm text-foreground shadow-lg transition-all duration-150 ease-in-out"
+                                        style={{
+                                            left: tooltipData.x + 10,
+                                            top: tooltipData.y + 10,
+                                            transform: 'translate3d(0, 0, 0)'
+                                        }}
+                                    >
+                                        <div className="flex gap-1">
+                                            <span>{getSafeCountryFlag(tooltipData.countryCode)}</span>
+                                            <span className="font-medium">{tooltipData.countryName}</span>
+                                        </div>
+                                        <div className='flex grow items-center justify-between gap-3'>
+                                            <div className="text-sm text-muted-foreground">Visitors</div>
+                                            <div className="font-mono font-medium">{formatNumber(tooltipData.visits)}</div>
+                                        </div>
                                     </div>
-                                    <div className='flex grow items-center justify-between gap-3'>
-                                        <div className="text-sm text-muted-foreground">Visitors</div>
-                                        <div className="font-mono font-medium">{formatNumber(tooltipData.visits)}</div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                        {isLoading ? 'Loading' :
-                            <div className='mt-6'>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className='w-[80%]'>Country</TableHead>
-                                            <TableHead className='w-[20%] text-right'>Visitors</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {data?.map((row) => {
-                                            const countryName = getCountryName(`${row.location}`) || 'Unknown';
-                                            return (
-                                                <TableRow key={row.location || 'unknown'}>
-                                                    <TableCell className="font-medium">
-                                                        <span title={countryName || 'Unknown'}>{getSafeCountryFlag(`${row.location}`)} {countryName}</span>
-                                                    </TableCell>
-                                                    <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
-                                                </TableRow>
-                                            );
-                                        })}
-                                    </TableBody>
-                                </Table>
+                                )}
                             </div>
-                        }
+                            <div className='border-l'>
+                                <div className='flex items-center justify-between border-b text-sm'>
+                                    <div className='px-6 py-4 font-medium text-muted-foreground'>Country</div>
+                                    <div className='px-6 py-4 text-right font-medium text-muted-foreground'>Visitors</div>
+                                </div>
+                                <div className='py-2'>
+                                    {tableData?.map((row) => {
+                                        const countryName = getCountryName(`${row.location}`) || 'Unknown';
+                                        return (
+                                            <div key={row.location || 'unknown'} className='flex items-center justify-between text-sm'>
+                                                <div className='px-6 py-3 font-medium'>{getSafeCountryFlag(`${row.location}`)} {countryName}</div>
+                                                <div className='px-6 py-3 text-right font-mono'>{formatNumber(Number(row.visits))}</div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
             </StatsView>
