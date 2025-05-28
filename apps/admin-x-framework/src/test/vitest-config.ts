@@ -28,7 +28,7 @@ export function createVitestConfig(options: VitestConfigOptions = {}) {
         setupFiles = ['./test/setup.ts'],
         aliases = {},
         include = [
-            './test/**/*.{test,spec}.{js,ts,jsx,tsx}',
+            './test/unit/**/*.{test,spec}.{js,ts,jsx,tsx}',
             './src/**/*.{test,spec}.{js,ts,jsx,tsx}'
         ],
         coverage = {},
