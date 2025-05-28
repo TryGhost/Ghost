@@ -243,7 +243,8 @@ h2 {
 
 {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 
-h1 {
+/* Post content headings */
+.post-content-row h1 {
     {{#if postHeadingTitleColor}}
     color: {{postHeadingTitleColor}};
     {{else}}
@@ -251,25 +252,18 @@ h1 {
     {{/if}}
 }
 
-{{#if postLinkColor }}
-h1 a {
-    color: {{postLinkColor}} !important;
-}
-{{/if}}
 
-h2 {
+
+.post-content-row h2 {
     {{#if postHeadingTitleColor}}
     color: {{postHeadingTitleColor}};
     {{else}}
     color: #15212A; /* fallback to default */
     {{/if}}
 }
-{{#if postLinkColor}}
-h2:not(.kg-header-card-heading) a {
-    color: {{postLinkColor}} !important;
-}
 
-{{/if}}
+
+
 {{/hasFeature}}
 
 h3 {
@@ -278,7 +272,7 @@ h3 {
 }
 
 {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
-h3:not(.kg-header-card-subheader):not(.latest-posts-header) {
+.post-content-row h3 {
     {{#if postHeadingTitleColor}}
     color: {{postHeadingTitleColor}};
     {{else}}
@@ -286,20 +280,9 @@ h3:not(.kg-header-card-subheader):not(.latest-posts-header) {
     {{/if}}
 }
 
-/* Ensure subscription-box h3 keeps its original color */
-.subscription-box h3 {
-    color: #15212A !important;
-}
 
-{{#if postLinkColor}}
-h3:not(.kg-header-card-subheader):not(.latest-posts-header) a {
-    color: {{postLinkColor}} !important;
-}
-{{/if}}
-{{/hasFeature}}
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
-h4 {
+.post-content-row h4 {
     margin: 1.8em 0 0.5em 0;
     font-size: 21px;
     line-height: 1.2em;
@@ -309,15 +292,18 @@ h4 {
     color: #15212A; /* fallback to default */
     {{/if}}
 }
-{{#if postLinkColor}}
-h4 a {
-    color: {{postLinkColor}} !important;
+
+
+{{else}}
+h4 {
+    margin: 1.8em 0 0.5em 0;
+    font-size: 21px;
+    line-height: 1.2em;
 }
-{{/if}}
 {{/hasFeature}}
 
 {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
-h5 {
+.post-content-row h5 {
     margin: 2em 0 0.5em 0;
     font-size: 19px;
     line-height: 1.3em;
@@ -327,11 +313,8 @@ h5 {
     color: #15212A; /* fallback to default */
     {{/if}}
 }
-{{#if postLinkColor}}
-h5 a {
-    color: {{postLinkColor}} !important;
-}
-{{/if}}
+
+
 {{else}}
 h5 {
     margin: 2em 0 0.5em 0;
@@ -341,7 +324,7 @@ h5 {
 {{/hasFeature}}
 
 {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
-h6 {
+.post-content-row h6 {
     margin: 2em 0 0.5em 0;
     font-size: 19px;
     line-height: 1.3em;
@@ -351,11 +334,9 @@ h6 {
     color: #15212A; /* fallback to default */
     {{/if}}
 }
-{{#if postLinkColor}}
-h6 a {
-    color: {{postLinkColor}} !important;
-}
-{{/if}}
+
+
+
 {{else}}
 h6 {
     margin: 2em 0 0.5em 0;
@@ -703,6 +684,25 @@ h3.latest-posts-header {
 .latest-post p a {
     color: #73818c !important;
 }
+
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+/* Custom heading colors for latest posts */
+.latest-post-title h4 {
+    {{#if postHeadingTitleColor}}
+    color: {{postHeadingTitleColor}};
+    {{else}}
+    color: #15212A; /* fallback to default */
+    {{/if}}
+}
+
+.latest-post-title h4 a {
+    {{#if postHeadingTitleColor}}
+    color: {{postHeadingTitleColor}} !important;
+    {{else}}
+    color: #15212A !important;
+    {{/if}}
+}
+{{/hasFeature}}
 
 /* -------------------------------------
     SUBSCRIPTION DETAILS BOX
