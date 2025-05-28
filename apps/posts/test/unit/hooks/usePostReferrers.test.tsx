@@ -2,7 +2,7 @@ import {beforeEach, describe, expect, it} from 'vitest';
 
 // Since the hook is mainly API calls, let's test any utility functions
 // For now, we'll create a placeholder test structure
-describe('usePostNewsletterStats', () => {
+describe('usePostReferrers', () => {
     beforeEach(() => {
         // Reset any global state if needed
     });
@@ -14,4 +14,4 @@ describe('usePostNewsletterStats', () => {
             expect(true).toBe(true);
         });
     });
-});
+}); 

@@ -1,12 +1,16 @@
 import '@testing-library/jest-dom';
-import {afterEach, vi} from 'vitest';
+import {afterEach} from 'vitest';
 import {cleanup} from '@testing-library/react';
+import {setupShadeMocks} from '@tryghost/admin-x-framework/test/setup';
 
 // Automatically clean up after each test
 // eslint-disable-next-line
 afterEach(() => {
     cleanup();
 });
+
+// Set up common mocks for shade components
+setupShadeMocks();
 
 // Filter out specific React warnings that we can't fix directly
 // eslint-disable-next-line no-console
@@ -34,26 +38,3 @@ console.error = (...args) => {
     // Keep original console.error behavior for other messages
     originalConsoleError(...args);
 };
-
-// Mock ResizeObserver for charts and responsive components
-class ResizeObserverMock {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
-}
-
-global.ResizeObserver = ResizeObserverMock;
-
-// Mock getBoundingClientRect to return non-zero dimensions
-// This prevents many chart warnings by providing fake dimensions for DOM elements
-Element.prototype.getBoundingClientRect = vi.fn(() => ({
-    width: 500,
-    height: 500,
-    top: 0,
-    left: 0,
-    right: 500,
-    bottom: 500,
-    x: 0,
-    y: 0,
-    toJSON: () => {}
-}));
