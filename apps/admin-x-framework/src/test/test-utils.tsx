@@ -233,20 +233,6 @@ export const testDataFactories = {
 };
 
 /**
- * Performance testing utilities
- */
-export function measureRenderTime<T>(renderFn: () => T): {result: T; renderTime: number} {
-    const start = performance.now();
-    const result = renderFn();
-    const end = performance.now();
-    
-    return {
-        result,
-        renderTime: end - start
-    };
-}
-
-/**
  * Mock timer utilities
  */
 export function mockTimers() {

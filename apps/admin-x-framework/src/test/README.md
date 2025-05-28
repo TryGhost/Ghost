@@ -286,18 +286,6 @@ const cleanup = setupConsoleFiltering({
 cleanup();
 ```
 
-### Performance Testing
-
-```typescript
-import {measureRenderTime} from '@tryghost/admin-x-framework/test/test-utils';
-
-const {result, renderTime} = measureRenderTime(() => {
-    return renderWithProviders(<ExpensiveComponent />);
-});
-
-expect(renderTime).toBeLessThan(100); // Assert performance
-```
-
 ### Timer Mocking
 
 ```typescript
