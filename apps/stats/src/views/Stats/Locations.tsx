@@ -7,7 +7,7 @@ import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, cn, formatNumber, formatQueryDate, getCountryFlag, getRangeDates} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, Flag, cn, formatNumber, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -35,11 +35,6 @@ const normalizeCountryCode = (code: string): string => {
 
     const upperCode = code.toUpperCase();
     return mappings[upperCode] || (code.length > 2 ? code.substring(0, 2) : code);
-};
-
-// Wrapper for getCountryFlag that normalizes the country code first
-const getSafeCountryFlag = (code: string): string => {
-    return getCountryFlag(normalizeCountryCode(code));
 };
 
 interface TooltipData {
@@ -194,7 +189,7 @@ const Locations:React.FC = () => {
                     </CardHeader>
                     <CardContent className='p-0'>
                         <div className='grid grid-cols-3 items-stretch'>
-                            <div className='svg-map-container relative col-span-2 mx-auto w-full max-w-[680px] p-8 [&_.svg-map]:stroke-background'>
+                            <div className='svg-map-container relative col-span-2 mx-auto w-full max-w-[680px] px-8 py-12 [&_.svg-map]:stroke-background'>
                                 <SVGMap
                                     locationClassName={getLocationClassName}
                                     map={World}
@@ -210,11 +205,11 @@ const Locations:React.FC = () => {
                                             transform: 'translate3d(0, 0, 0)'
                                         }}
                                     >
-                                        <div className="flex gap-1">
-                                            <span>{getSafeCountryFlag(tooltipData.countryCode)}</span>
+                                        <div className="flex items-center gap-2">
+                                            <Flag countryCode={`${normalizeCountryCode(tooltipData.countryCode)}`} height='12px' width='20px' />
                                             <span className="font-medium">{tooltipData.countryName}</span>
                                         </div>
-                                        <div className='flex grow items-center justify-between gap-3'>
+                                        <div className='mt-1 flex grow items-center justify-between gap-3'>
                                             <div className="text-sm text-muted-foreground">Visitors</div>
                                             <div className="font-mono font-medium">{formatNumber(tooltipData.visits)}</div>
                                         </div>
@@ -231,8 +226,11 @@ const Locations:React.FC = () => {
                                         const countryName = getCountryName(`${row.location}`) || 'Unknown';
                                         return (
                                             <div key={row.location || 'unknown'} className='flex items-center justify-between text-sm'>
-                                                <div className='px-6 py-3 font-medium'>{getSafeCountryFlag(`${row.location}`)} {countryName}</div>
-                                                <div className='px-6 py-3 text-right font-mono'>{formatNumber(Number(row.visits))}</div>
+                                                <div className='flex items-center gap-3 px-6 py-2.5 font-medium'>
+                                                    <Flag countryCode={`${normalizeCountryCode(row.location as string)}`} />
+                                                    {countryName}
+                                                </div>
+                                                <div className='px-6 py-2.5 text-right font-mono'>{formatNumber(Number(row.visits))}</div>
                                             </div>
                                         );
                                     })}
