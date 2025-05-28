@@ -2361,6 +2361,25 @@ describe('Email renderer', function () {
             });
         });
 
+        it('adds post-title-color class when emailCustomizationAlpha is enabled', async function () {
+            labsEnabled = true;
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'serif',
+                title_alignment: 'left',
+                body_font_category: 'sans_serif',
+                post_title_color: '#BADA55'
+            });
+
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.classes.title, 'post-title post-title-no-excerpt post-title-serif post-title-left post-title-color');
+        });
+
         it('has correct excerpt classes for serif title+body', async function () {
             const html = '';
             const post = createModel({
