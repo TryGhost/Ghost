@@ -1,5 +1,33 @@
 # Testing with Admin-X-Framework
 
+## Test Setup for Shade Components
+
+The admin-x-framework provides shared test setup utilities for apps using shade components. These utilities handle common mocks required for responsive behavior and chart components.
+
+### Setting Up Your Test Environment
+
+In your app's test setup file (e.g., `test/setup.ts`), import and call the shared setup function:
+
+```typescript
+import '@testing-library/jest-dom';
+import {setupShadeMocks} from '@tryghost/admin-x-framework/test/setup';
+
+// Set up common mocks for shade components
+setupShadeMocks();
+```
+
+This automatically provides mocks for:
+- **`window.matchMedia`** - Required for responsive behavior in shade components
+- **`ResizeObserver`** - Required for charts and responsive components  
+- **`getBoundingClientRect`** - Provides fake dimensions for DOM elements in tests
+
+### Benefits
+
+- **No Duplication**: Apps don't need to maintain their own copies of common mocks
+- **Consistent Behavior**: All apps get the same mock implementations
+- **Easy Updates**: Framework updates automatically benefit all apps
+- **Reduced Boilerplate**: Less setup code needed in each app
+
 ## API Mocking for Acceptance Tests
 
 The admin-x-framework provides a centralized approach to mocking API endpoints for acceptance tests. All common endpoints are pre-configured with realistic fixture data.
