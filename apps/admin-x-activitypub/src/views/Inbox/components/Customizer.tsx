@@ -65,7 +65,7 @@ export const useCustomizerSettings = () => {
 
     const [currentFontSizeIndex, setCurrentFontSizeIndex] = useState(() => {
         const saved = localStorage.getItem(STORAGE_KEYS.FONT_SIZE);
-        return saved ? parseInt(saved) : 1;
+        return saved ? parseInt(saved) : 2;
     });
 
     const [fontStyle, setFontStyle] = useState<FontStyle>(() => {
@@ -94,7 +94,7 @@ export const useCustomizerSettings = () => {
         setCurrentFontSizeIndex(prevIndex => Math.max(prevIndex - 1, 0));
     };
 
-    const resetFontSize = () => setCurrentFontSizeIndex(1);
+    const resetFontSize = () => setCurrentFontSizeIndex(2);
 
     return {
         backgroundColor,
