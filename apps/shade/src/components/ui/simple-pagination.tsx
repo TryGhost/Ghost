@@ -20,7 +20,7 @@ interface SimplePaginationPagesProps extends React.HTMLAttributes<HTMLSpanElemen
 
 const SimplePaginationPages = React.forwardRef<HTMLSpanElement, SimplePaginationPagesProps>(({className, currentPage, totalPages, ...props}, ref) => {
     return (
-        <span ref={ref} className={cn('text-muted-foreground', className)} {...props}>{currentPage} of {totalPages}</span>
+        <span ref={ref} className={cn('text-muted-foreground', className)} {...props}>Pages {currentPage} of {totalPages}</span>
     );
 });
 
