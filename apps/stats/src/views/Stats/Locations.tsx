@@ -7,7 +7,7 @@ import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Flag, LucideIcon, cn, formatNumber, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Flag, LucideIcon, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, cn, formatNumber, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -217,11 +217,12 @@ const Locations:React.FC = () => {
                                 )}
                             </div>
                             <div className='border-l px-6'>
-                                <div className='flex items-center justify-between pb-2 pt-5 text-sm'>
+                                <div className='flex items-center justify-between py-4 text-sm'>
                                     <div className='font-medium text-muted-foreground'>Country</div>
                                     <div className='text-right font-medium text-muted-foreground'>Visitors</div>
                                 </div>
-                                <div>
+                                <Separator />
+                                <div className='py-2'>
                                     {tableData?.map((row) => {
                                         const countryName = getCountryName(`${row.location}`) || 'Unknown';
                                         return (
@@ -235,13 +236,17 @@ const Locations:React.FC = () => {
                                         );
                                     })}
                                 </div>
-                                <div className='flex items-center justify-between gap-4 py-3 text-sm'>
-                                    <span className='text-muted-foreground'>1 of 2</span>
-                                    <div className='flex items-center gap-1.5'>
-                                        <Button size='sm' variant='outline' disabled><LucideIcon.ArrowLeft /></Button>
-                                        <Button size='sm' variant='outline'><LucideIcon.ArrowRight /></Button>
-                                    </div>
-                                </div>
+                                <SimplePagination>
+                                    <SimplePaginationPages currentPage='1' totalPages='3' />
+                                    <SimplePaginationNavigation>
+                                        <SimplePaginationPreviousButton onClick={() => {
+                                            // console.log('prev');
+                                        }} />
+                                        <SimplePaginationNextButton onClick={() => {
+                                            // console.log('next');
+                                        }} />
+                                    </SimplePaginationNavigation>
+                                </SimplePagination>
                             </div>
                         </div>
                     </CardContent>

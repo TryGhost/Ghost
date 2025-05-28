@@ -19,6 +19,7 @@ export * from './components/ui/popover';
 export * from './components/ui/right-sidebar';
 export * from './components/ui/separator';
 export * from './components/ui/select';
+export * from './components/ui/simple-pagination';
 export * from './components/ui/sheet';
 export * from './components/ui/sidebar';
 export * from './components/ui/skeleton';
