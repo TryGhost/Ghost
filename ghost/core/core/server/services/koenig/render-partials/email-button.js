@@ -8,13 +8,15 @@ const {html} = require('../render-utils/tagged-template-fns.js');
  * @param {string} [options.text='']
  * @param {string} [options.textColor]
  * @param {string} [options.url='']
+ * @param {string} [options.buttonWidth='']
  * @returns {string}
  */
 function renderEmailButton({
     alignment = '',
     color = 'accent',
     text = '',
-    url = ''
+    url = '',
+    buttonWidth = ''
 } = {}) {
     const buttonClasses = clsx(
         'btn',
@@ -22,10 +24,10 @@ function renderEmailButton({
     );
 
     return html`
-        <table class="${buttonClasses}" border="0" cellspacing="0" cellpadding="0" align="${alignment}">
+        <table class="${buttonClasses}" border="0" cellspacing="0" cellpadding="0"${alignment ? ` align="${alignment}"` : ''}>
             <tbody>
                 <tr>
-                    <td align="center">
+                    <td align="center"${buttonWidth ? ` width="${buttonWidth}"` : ''}>
                         <a href="${url}">${text}</a>
                     </td>
                 </tr>
