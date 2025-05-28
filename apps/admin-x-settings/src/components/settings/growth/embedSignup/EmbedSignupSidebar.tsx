@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, ColorIndicator, ColorPicker, Form, Heading, LoadMultiSelectOptions, MultiSelect, MultiSelectOption, Radio, StickyFooter, TextArea, debounce} from '@tryghost/admin-x-design-system';
+import {Button, ButtonGroup, ColorPickerField, Form, Heading, LoadMultiSelectOptions, MultiSelect, MultiSelectOption, StickyFooter, TextArea, debounce} from '@tryghost/admin-x-design-system';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
 import {MultiValue} from 'react-select';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
@@ -33,8 +33,6 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
     embedScript,
     handleLayoutSelect,
     handleCopyClick,
-    customColor,
-    setCustomColor,
     isCopied}) => {
     const {loadData} = useFilterableApi<Label>({path: '/labels/', filterKey: 'name', responseKey: 'labels'});
 
@@ -46,70 +44,57 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
     return (
         <div className='flex h-[calc(100vh-16vmin)] max-h-[645px] flex-col justify-between overflow-y-scroll border-l border-grey-200 p-6 pb-0 dark:border-grey-900'>
             <div>
-                <Heading className='mb-4' level={4}>Embed signup form</Heading>
-                <Form>
-                    <Radio
-                        id='embed-layout'
-                        options={[
-                            {
-                                label: 'Branded',
-                                value: 'all-in-one'
-                            },
-                            {
-                                label: 'Minimal',
-                                value: 'minimal'
-                            }
-                        ]}
-                        selectedOption={selectedLayout}
-                        title='Layout'
-                        onSelect={(value) => {
-                            handleLayoutSelect(value);
-                        }}
-                    />
+                <Heading className='mb-8' level={4}>Embed signup form</Heading>
+                <Form gap='sm'>
+                    <div className='flex w-full items-center justify-between'>
+                        <div>Layout</div>
+                        <ButtonGroup 
+                            activeKey={selectedLayout} 
+                            buttons={[
+                                {
+                                    key: 'all-in-one',
+                                    label: 'Branded',
+                                    size: 'md',
+                                    className: 'w-auto !px-3',
+                                    onClick: () => handleLayoutSelect('all-in-one')
+                                },
+                                {
+                                    key: 'minimal',
+                                    label: 'Minimal',
+                                    size: 'md',
+                                    className: 'w-auto !px-3',
+                                    onClick: () => handleLayoutSelect('minimal')
+                                }
+                            ]} 
+                            clearBg={false}
+                        />
+                    </div>
                     {
                         selectedLayout === 'all-in-one' &&
-                        <ColorIndicator
-                            isExpanded={false}
+                        <ColorPickerField
+                            direction='rtl'
+                            eyedropper={true}
                             swatches={[
                                 {
                                     hex: '#08090c',
-                                    title: 'Dark'
+                                    title: 'Dark',
+                                    value: '#08090c'
                                 },
                                 {
                                     hex: '#ffffff',
-                                    title: 'Light'
+                                    title: 'Light',
+                                    value: '#ffffff'
                                 },
                                 {
                                     hex: (accentColor || '#d74780'),
-                                    title: 'Accent'
+                                    title: 'Accent',
+                                    value: (accentColor || '#d74780')
                                 }
                             ]}
-                            swatchSize='lg'
                             title='Background color'
                             value={selectedColor}
-                            onSwatchChange={(e) => {
-                                if (e && setCustomColor) {
-                                    handleColorToggle(e);
-                                    setCustomColor({active: false});
-                                }
-                            }}
-                            onTogglePicker={() => {
-                                if (setCustomColor) {
-                                    setCustomColor({active: true});
-                                }
-                            }}
-                        />
-                    }
-
-                    {
-                        selectedLayout === 'all-in-one' && customColor?.active &&
-                        <ColorPicker
-                            containerClassName='!-mt-4'
-                            eyedropper={false}
-                            hexValue={selectedColor || '#d74780'}
                             onChange={(e) => {
-                                if (setCustomColor && e) {
-                                    setCustomColor({active: true});
+                                if (e) {
                                     handleColorToggle(e);
                                 }
                             }}
