@@ -1470,6 +1470,13 @@ img.kg-cta-image {
     color: inherit;
     text-decoration: underline;
 }
+
+.kg-header-card.kg-v2 .btn td,
+.kg-header-card.kg-v2 .btn td a {
+    {{#if hasOutlineButtons}}
+    background-color: transparent;
+    {{/if}}
+}
 {{else}}
 .kg-header-card h2 {
     font-size: 3em;
