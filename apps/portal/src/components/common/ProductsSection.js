@@ -5,7 +5,6 @@ import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice
 import AppContext from '../../AppContext';
 import calculateDiscount from '../../utils/discount';
 import Interpolate from '@doist/react-interpolate';
-import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 
 export const ProductsSectionStyles = () => {
     // const products = getSiteProducts({site});
@@ -747,7 +746,6 @@ function ProductCardButton({selectedProduct, product, disabled, noOfProducts, tr
     if (trialDays > 0) {
         return (
             <Interpolate
-                syntax={SYNTAX_I18NEXT}
                 string={t('Start {amount}-day free trial')}
                 mapping={{
                     amount: trialDays
