@@ -65,10 +65,10 @@ function emailTemplate(node, options, document) {
         });
 
         cardHtml = html`
-        <table border="0" cellpadding="0" cellspacing="0">
+        <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
             <tbody>
                 <tr>
-                    <td>
+                    <td class="kg-card-spacing">
                         ${buttonHtml}
                     </td>
                 </tr>

@@ -110,10 +110,10 @@ describe('services/koenig/node-renderers/button-renderer', function () {
             assert.ok(result.html);
 
             assertPrettifiesTo(result.html, html`
-                <table border="0" cellpadding="0" cellspacing="0">
+                <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
                     <tbody>
                         <tr>
-                            <td>
+                            <td class="kg-card-spacing">
                                 <table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0" align="center">
                                     <tbody>
                                         <tr>
