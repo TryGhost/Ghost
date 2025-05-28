@@ -2259,6 +2259,25 @@ describe('Email renderer', function () {
             }
         });
 
+        it('Uses the correct post title color when emailCustomizationAlpha is enabled', async function () {
+            labsEnabled = true;
+            settings.accent_color = '#DEF456';
+            const tests = [
+                {input: '#BADA55', expected: '#BADA55'},
+                {input: 'accent', expected: settings.accent_color},
+                {input: 'Invalid Color', expected: '#FFFFFF', background_color: '#15212A'},
+                {input: null, expected: '#000000', background_color: '#ffffff'}
+            ];
+
+            for (const test of tests) {
+                const data = await templateDataWithSettings({
+                    post_title_color: test.input,
+                    background_color: test.background_color
+                });
+                assert.equal(data.postTitleColor, test.expected);
+            }
+        });
+
         it('Sets the backgroundIsDark correctly', async function () {
             const tests = [
                 {background_color: '#15212A', expected: true},
