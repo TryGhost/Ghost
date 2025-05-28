@@ -32,5 +32,6 @@ export {
     waitForMockCall,
     waitForMockCalls,
     resetAllMocks,
-    createTypedMockApiHook
+    createTypedMockApiHook,
+    createTestWrapper
 } from './test/hook-testing-utils';

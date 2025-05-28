@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import React from 'react';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {UseQueryResult} from '@tanstack/react-query';
 import * as vitest from 'vitest';
 
@@ -86,6 +88,31 @@ export const createErrorMock = <T>(mockFn: any, error: Error): UseQueryResult<T>
  * Utility to create success state mocks
  */
 export const createSuccessMock = <T>(mockFn: any, data: T): UseQueryResult<T> => mockApiHook<T>(mockFn, data, false, null);
+
+/**
+ * Creates a test wrapper with QueryClient for testing hooks that use React Query
+ * 
+ * @example
+ * ```typescript
+ * const wrapper = createTestWrapper();
+ * const {result} = renderHook(() => useMyHook(), {wrapper});
+ * ```
+ */
+export const createTestWrapper = () => {
+    const queryClient = new QueryClient({
+        defaultOptions: {
+            queries: {retry: false},
+            mutations: {retry: false}
+        }
+    });
+    
+    const Wrapper = ({children}: {children: React.ReactNode}) => (
+        React.createElement(QueryClientProvider, {client: queryClient}, children)
+    );
+    Wrapper.displayName = 'TestWrapper';
+    
+    return Wrapper;
+};
 
 /**
  * Common mock data patterns for Ghost entities
