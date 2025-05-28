@@ -1,6 +1,7 @@
 const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
 const {renderEmptyContainer} = require('../render-utils/render-empty-container');
 const {getResizedImageDimensions} = require('../render-utils/get-resized-image-dimensions');
+const {renderEmailButton} = require('../render-partials/email-button');
 
 function renderProductNode(node, options = {}) {
     addCreateDocumentOption(options);
@@ -90,6 +91,13 @@ function emailCardTemplate({data, feature}) {
     }
 
     if (feature?.emailCustomization || feature?.emailCustomizationAlpha) {
+        const buttonHtml = renderEmailButton({
+            color: 'accent',
+            text: data.productButton,
+            url: data.productUrl,
+            buttonWidth: '100%'
+        });
+
         return (
             `
             <table class="kg-product-card" cellspacing="0" cellpadding="0" border="0">
@@ -121,13 +129,7 @@ function emailCardTemplate({data, feature}) {
                             ${data.productButtonEnabled ? `
                                 <tr>
                                     <td class="kg-product-button-wrapper">
-                                        <table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0">
-                                            <tr>
-                                                <td align="center" width="100%">
-                                                    <a href="${data.productUrl}">${data.productButton}</a>
-                                                </td>
-                                            </tr>
-                                        </table>
+                                        ${buttonHtml}
                                     </td>
                                 </tr>
                             ` : ''}
