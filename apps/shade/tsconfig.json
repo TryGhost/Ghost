@@ -4,7 +4,7 @@
         "lib": ["DOM", "DOM.Iterable", "ESNext"],
         "module": "ESNext",
         "skipLibCheck": true,
-        "types": ["vite/client", "mocha"],
+        "types": ["vite/client", "vitest/globals"],
 
         /* Bundler mode */
         "moduleResolution": "bundler",

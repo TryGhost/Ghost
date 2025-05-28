@@ -2195,7 +2195,50 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                     </tbody></table>
                 </td>
             </tr>
-        </tbody></table>
+        </tbody></table><table class=\\"kg-card kg-cta-card kg-cta-bg-none  kg-cta-immersive     kg-cta-centered\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; margin: 0 0 1.5em 0; padding: 0; border-radius: 0; border-bottom: 1px solid #e0e7eb;\\">
+                
+                    <tbody><tr>
+                        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                            <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                                <tbody><tr>
+                                    <td class=\\"kg-cta-sponsor-label\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 12px 0; border-bottom: 1px solid #e0e7eb; padding-top: 0; border-color: #e0e7eb;\\" valign=\\"top\\">
+                                        <p style=\\"line-height: 1.6em; margin: 0; color: #89959f; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 500; text-transform: uppercase;\\"><span style=\\"white-space: pre-wrap;\\">SPONSORED test card</span></p>
+                                    </td>
+                                </tr>
+                            </tbody></table>
+                        </td>
+                    </tr>
+                
+                
+                <tr>
+                    <td class=\\"kg-cta-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" class=\\"kg-cta-content-wrapper\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding: 24px 0 26px;\\">
+                            
+                            <tbody><tr>
+                                <td class=\\"kg-cta-text\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; font-family: Georgia, serif;\\" valign=\\"top\\">
+                                    <p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; text-align: center; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Here&#x2019;s a basic CTA card</span></p>
+                                </td>
+                            </tr>
+                            
+                                <tr>
+                                    <td class=\\"kg-cta-button-container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 20px;\\" valign=\\"top\\">
+                                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin-left: auto; margin-right: auto; width: unset;\\">
+                                            <tbody><tr>
+                                                <td class=\\"kg-cta-button-wrapper \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; padding: 8px 20px 9px; border-radius: 6px; text-align: center; background-color: #000000; color: #ffffff;\\" bgcolor=\\"#000000\\" valign=\\"top\\" align=\\"center\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-cta-button \\" style=\\"overflow-wrap: anywhere; display: inline-block; width: 100%; font-size: 0.9em; font-weight: 600; font-weight: 500; text-align: center; text-decoration: none; border-radius: 6px; background-color: #000000; color: #ffffff;\\" target=\\"_blank\\">
+                                                        Learn more
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody></table>
+                                    </td>
+                                </tr>
+                            
+                        </tbody></table>
+                    </td>
+                </tr>
+            
+            </tbody></table>
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -2586,6 +2629,61 @@ test.txt • 16 Bytes [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SPONSORED test card
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Here’s a basic CTA card
+
+
+
+
+
+
+
+
+
+
+
+Learn more
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
 
 
 
@@ -3477,7 +3575,50 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                     </tbody></table>
                 </td>
             </tr>
-        </tbody></table>
+        </tbody></table><table class=\\"kg-card kg-cta-card kg-cta-bg-none  kg-cta-immersive     kg-cta-centered\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; margin: 0 0 1.5em 0; padding: 0; border-radius: 0; border-bottom: 1px solid #e0e7eb;\\">
+                
+                    <tbody><tr>
+                        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                            <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                                <tbody><tr>
+                                    <td class=\\"kg-cta-sponsor-label\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 12px 0; border-bottom: 1px solid #e0e7eb; padding-top: 0; border-color: #e0e7eb;\\" valign=\\"top\\">
+                                        <p style=\\"line-height: 1.6em; margin: 0; color: #89959f; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 500; text-transform: uppercase;\\"><span style=\\"white-space: pre-wrap;\\">SPONSORED test card</span></p>
+                                    </td>
+                                </tr>
+                            </tbody></table>
+                        </td>
+                    </tr>
+                
+                
+                <tr>
+                    <td class=\\"kg-cta-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" class=\\"kg-cta-content-wrapper\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding: 24px 0 26px;\\">
+                            
+                            <tbody><tr>
+                                <td class=\\"kg-cta-text\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; font-family: Georgia, serif;\\" valign=\\"top\\">
+                                    <p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; text-align: center; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Here&#x2019;s a basic CTA card</span></p>
+                                </td>
+                            </tr>
+                            
+                                <tr>
+                                    <td class=\\"kg-cta-button-container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 20px;\\" valign=\\"top\\">
+                                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin-left: auto; margin-right: auto; width: unset;\\">
+                                            <tbody><tr>
+                                                <td class=\\"kg-cta-button-wrapper \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; padding: 8px 20px 9px; border-radius: 6px; text-align: center; background-color: #000000; color: #ffffff;\\" bgcolor=\\"#000000\\" valign=\\"top\\" align=\\"center\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-cta-button \\" style=\\"overflow-wrap: anywhere; display: inline-block; width: 100%; font-size: 0.9em; font-weight: 600; font-weight: 500; text-align: center; text-decoration: none; border-radius: 6px; background-color: #000000; color: #ffffff;\\" target=\\"_blank\\">
+                                                        Learn more
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody></table>
+                                    </td>
+                                </tr>
+                            
+                        </tbody></table>
+                    </td>
+                </tr>
+            
+            </tbody></table>
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -3874,6 +4015,61 @@ test.txt • 16 Bytes [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SPONSORED test card
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Here’s a basic CTA card
+
+
+
+
+
+
+
+
+
+
+
+Learn more
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
 
 
 
@@ -4725,7 +4921,50 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                     </tbody></table>
                 </td>
             </tr>
-        </tbody></table>
+        </tbody></table><table class=\\"kg-card kg-cta-card kg-cta-bg-none  kg-cta-immersive     kg-cta-centered\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; margin: 0 0 1.5em 0; padding: 0; border-radius: 0; border-bottom: 1px solid #e0e7eb;\\">
+                
+                    <tbody><tr>
+                        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                            <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                                <tbody><tr>
+                                    <td class=\\"kg-cta-sponsor-label\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 12px 0; border-bottom: 1px solid #e0e7eb; padding-top: 0; border-color: #e0e7eb;\\" valign=\\"top\\">
+                                        <p style=\\"line-height: 1.6em; margin: 0; color: #89959f; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 500; text-transform: uppercase;\\"><span style=\\"white-space: pre-wrap;\\">SPONSORED test card</span></p>
+                                    </td>
+                                </tr>
+                            </tbody></table>
+                        </td>
+                    </tr>
+                
+                
+                <tr>
+                    <td class=\\"kg-cta-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" class=\\"kg-cta-content-wrapper\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding: 24px 0 26px;\\">
+                            
+                            <tbody><tr>
+                                <td class=\\"kg-cta-text\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; font-family: Georgia, serif;\\" valign=\\"top\\">
+                                    <p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; text-align: center; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Here&#x2019;s a basic CTA card</span></p>
+                                </td>
+                            </tr>
+                            
+                                <tr>
+                                    <td class=\\"kg-cta-button-container\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 20px;\\" valign=\\"top\\">
+                                        <table class=\\"btn\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto; margin-left: auto; margin-right: auto;\\" width=\\"auto\\">
+                                            <tbody><tr>
+                                                <td class style=\\"font-size: 18px; vertical-align: top; padding: 8px 20px 9px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #000000; color: #ffffff;\\" align=\\"center\\" bgcolor=\\"#000000\\" valign=\\"top\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class style=\\"overflow-wrap: anywhere; border-radius: 6px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none; background-color: #000000; color: #ffffff;\\" target=\\"_blank\\">
+                                                        Learn more
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody></table>
+                                    </td>
+                                </tr>
+                            
+                        </tbody></table>
+                    </td>
+                </tr>
+            
+            </tbody></table>
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -5146,6 +5385,61 @@ test.txt • 16 Bytes [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SPONSORED test card
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Here’s a basic CTA card
+
+
+
+
+
+
+
+
+
+
+
+Learn more
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
 
 
 
@@ -6009,7 +6303,50 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                     </tbody></table>
                 </td>
             </tr>
-        </tbody></table>
+        </tbody></table><table class=\\"kg-card kg-cta-card kg-cta-bg-none  kg-cta-immersive     kg-cta-centered\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; margin: 0 0 1.5em 0; padding: 0; border-radius: 0; border-bottom: 1px solid #e0e7eb;\\">
+                
+                    <tbody><tr>
+                        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                            <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                                <tbody><tr>
+                                    <td class=\\"kg-cta-sponsor-label\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 12px 0; border-bottom: 1px solid #e0e7eb; padding-top: 0; border-color: #e0e7eb;\\" valign=\\"top\\">
+                                        <p style=\\"line-height: 1.6em; margin: 0; color: #89959f; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 500; text-transform: uppercase;\\"><span style=\\"white-space: pre-wrap;\\">SPONSORED test card</span></p>
+                                    </td>
+                                </tr>
+                            </tbody></table>
+                        </td>
+                    </tr>
+                
+                
+                <tr>
+                    <td class=\\"kg-cta-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" class=\\"kg-cta-content-wrapper\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding: 24px 0 26px;\\">
+                            
+                            <tbody><tr>
+                                <td class=\\"kg-cta-text\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; font-family: Georgia, serif;\\" valign=\\"top\\">
+                                    <p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; text-align: center; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Here&#x2019;s a basic CTA card</span></p>
+                                </td>
+                            </tr>
+                            
+                                <tr>
+                                    <td class=\\"kg-cta-button-container\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 20px;\\" valign=\\"top\\">
+                                        <table class=\\"btn\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto; margin-left: auto; margin-right: auto;\\" width=\\"auto\\">
+                                            <tbody><tr>
+                                                <td class style=\\"font-size: 18px; vertical-align: top; padding: 8px 20px 9px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #000000; color: #ffffff;\\" align=\\"center\\" bgcolor=\\"#000000\\" valign=\\"top\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class style=\\"overflow-wrap: anywhere; border-radius: 6px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none; background-color: #000000; color: #ffffff;\\" target=\\"_blank\\">
+                                                        Learn more
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody></table>
+                                    </td>
+                                </tr>
+                            
+                        </tbody></table>
+                    </td>
+                </tr>
+            
+            </tbody></table>
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -6436,6 +6773,61 @@ test.txt • 16 Bytes [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SPONSORED test card
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Here’s a basic CTA card
+
+
+
+
+
+
+
+
+
+
+
+Learn more
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
 
 
 
@@ -7283,7 +7675,50 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                     </tbody></table>
                 </td>
             </tr>
-        </tbody></table>
+        </tbody></table><table class=\\"kg-card kg-cta-card kg-cta-bg-none  kg-cta-immersive     kg-cta-centered\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; margin: 0 0 1.5em 0; padding: 0; border-radius: 0; border-bottom: 1px solid #e0e7eb;\\">
+                
+                    <tbody><tr>
+                        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                            <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                                <tbody><tr>
+                                    <td class=\\"kg-cta-sponsor-label\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 12px 0; border-bottom: 1px solid #e0e7eb; padding-top: 0; border-color: #e0e7eb;\\" valign=\\"top\\">
+                                        <p style=\\"line-height: 1.6em; margin: 0; color: #89959f; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 500; text-transform: uppercase;\\"><span style=\\"white-space: pre-wrap;\\">SPONSORED test card</span></p>
+                                    </td>
+                                </tr>
+                            </tbody></table>
+                        </td>
+                    </tr>
+                
+                
+                <tr>
+                    <td class=\\"kg-cta-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" class=\\"kg-cta-content-wrapper\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding: 24px 0 26px;\\">
+                            
+                            <tbody><tr>
+                                <td class=\\"kg-cta-text\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; font-family: Georgia, serif;\\" valign=\\"top\\">
+                                    <p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; text-align: center; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Here&#x2019;s a basic CTA card</span></p>
+                                </td>
+                            </tr>
+                            
+                                <tr>
+                                    <td class=\\"kg-cta-button-container\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 20px;\\" valign=\\"top\\">
+                                        <table class=\\"btn\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto; margin-left: auto; margin-right: auto;\\" width=\\"auto\\">
+                                            <tbody><tr>
+                                                <td class style=\\"font-size: 18px; vertical-align: top; padding: 8px 20px 9px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #000000; color: #ffffff;\\" align=\\"center\\" bgcolor=\\"#000000\\" valign=\\"top\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class style=\\"overflow-wrap: anywhere; border-radius: 6px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none; background-color: #000000; color: #ffffff;\\" target=\\"_blank\\">
+                                                        Learn more
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody></table>
+                                    </td>
+                                </tr>
+                            
+                        </tbody></table>
+                    </td>
+                </tr>
+            
+            </tbody></table>
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -7701,6 +8136,61 @@ test.txt • 16 Bytes [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SPONSORED test card
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Here’s a basic CTA card
+
+
+
+
+
+
+
+
+
+
+
+Learn more
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
 
 
 
@@ -8560,7 +9050,50 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                     </tbody></table>
                 </td>
             </tr>
-        </tbody></table>
+        </tbody></table><table class=\\"kg-card kg-cta-card kg-cta-bg-none  kg-cta-immersive     kg-cta-centered\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; margin: 0 0 1.5em 0; padding: 0; border-radius: 0; border-bottom: 1px solid #e0e7eb;\\">
+                
+                    <tbody><tr>
+                        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                            <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                                <tbody><tr>
+                                    <td class=\\"kg-cta-sponsor-label\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 12px 0; border-bottom: 1px solid #e0e7eb; padding-top: 0; border-color: #e0e7eb;\\" valign=\\"top\\">
+                                        <p style=\\"line-height: 1.6em; margin: 0; color: #89959f; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 500; text-transform: uppercase;\\"><span style=\\"white-space: pre-wrap;\\">SPONSORED test card</span></p>
+                                    </td>
+                                </tr>
+                            </tbody></table>
+                        </td>
+                    </tr>
+                
+                
+                <tr>
+                    <td class=\\"kg-cta-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" class=\\"kg-cta-content-wrapper\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding: 24px 0 26px;\\">
+                            
+                            <tbody><tr>
+                                <td class=\\"kg-cta-text\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; font-family: Georgia, serif;\\" valign=\\"top\\">
+                                    <p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; text-align: center; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Here&#x2019;s a basic CTA card</span></p>
+                                </td>
+                            </tr>
+                            
+                                <tr>
+                                    <td class=\\"kg-cta-button-container\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 20px;\\" valign=\\"top\\">
+                                        <table class=\\"btn\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: auto; margin-left: auto; margin-right: auto;\\" width=\\"auto\\">
+                                            <tbody><tr>
+                                                <td class style=\\"font-size: 18px; vertical-align: top; padding: 8px 20px 9px; border-radius: 6px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #000000; color: #ffffff;\\" align=\\"center\\" bgcolor=\\"#000000\\" valign=\\"top\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class style=\\"overflow-wrap: anywhere; border-radius: 6px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 15px; font-weight: 600; margin: 0; text-decoration: none; background-color: #000000; color: #ffffff;\\" target=\\"_blank\\">
+                                                        Learn more
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody></table>
+                                    </td>
+                                </tr>
+                            
+                        </tbody></table>
+                    </td>
+                </tr>
+            
+            </tbody></table>
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -8984,6 +9517,61 @@ test.txt • 16 Bytes [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SPONSORED test card
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Here’s a basic CTA card
+
+
+
+
+
+
+
+
+
+
+
+Learn more
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
 
 
 
@@ -9863,7 +10451,50 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                     </tbody></table>
                 </td>
             </tr>
-        </tbody></table>
+        </tbody></table><table class=\\"kg-card kg-cta-card kg-cta-bg-none  kg-cta-immersive     kg-cta-centered\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; margin: 0 0 1.5em 0; padding: 0; border-radius: 0; border-bottom: 1px solid #e0e7eb;\\">
+                
+                    <tbody><tr>
+                        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                            <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                                <tbody><tr>
+                                    <td class=\\"kg-cta-sponsor-label\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 12px 0; border-bottom: 1px solid #e0e7eb; padding-top: 0; border-color: #e0e7eb;\\" valign=\\"top\\">
+                                        <p style=\\"line-height: 1.6em; margin: 0; color: #89959f; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 500; text-transform: uppercase;\\"><span style=\\"white-space: pre-wrap;\\">SPONSORED test card</span></p>
+                                    </td>
+                                </tr>
+                            </tbody></table>
+                        </td>
+                    </tr>
+                
+                
+                <tr>
+                    <td class=\\"kg-cta-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" class=\\"kg-cta-content-wrapper\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding: 24px 0 26px;\\">
+                            
+                            <tbody><tr>
+                                <td class=\\"kg-cta-text\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; font-family: Georgia, serif;\\" valign=\\"top\\">
+                                    <p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; text-align: center; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Here&#x2019;s a basic CTA card</span></p>
+                                </td>
+                            </tr>
+                            
+                                <tr>
+                                    <td class=\\"kg-cta-button-container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 20px;\\" valign=\\"top\\">
+                                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin-left: auto; margin-right: auto; width: unset;\\">
+                                            <tbody><tr>
+                                                <td class=\\"kg-cta-button-wrapper \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; padding: 8px 20px 9px; border-radius: 6px; text-align: center; background-color: #000000; color: #ffffff;\\" bgcolor=\\"#000000\\" valign=\\"top\\" align=\\"center\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-cta-button \\" style=\\"overflow-wrap: anywhere; display: inline-block; width: 100%; font-size: 0.9em; font-weight: 600; font-weight: 500; text-align: center; text-decoration: none; border-radius: 6px; background-color: #000000; color: #ffffff;\\" target=\\"_blank\\">
+                                                        Learn more
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody></table>
+                                    </td>
+                                </tr>
+                            
+                        </tbody></table>
+                    </td>
+                </tr>
+            
+            </tbody></table>
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -10254,6 +10885,61 @@ test.txt • 16 Bytes [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SPONSORED test card
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Here’s a basic CTA card
+
+
+
+
+
+
+
+
+
+
+
+Learn more
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
 
 
 
@@ -11145,7 +11831,50 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                     </tbody></table>
                 </td>
             </tr>
-        </tbody></table>
+        </tbody></table><table class=\\"kg-card kg-cta-card kg-cta-bg-none  kg-cta-immersive     kg-cta-centered\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; margin: 0 0 1.5em 0; padding: 0; border-radius: 0; border-bottom: 1px solid #e0e7eb;\\">
+                
+                    <tbody><tr>
+                        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                            <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                                <tbody><tr>
+                                    <td class=\\"kg-cta-sponsor-label\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 12px 0; border-bottom: 1px solid #e0e7eb; padding-top: 0; border-color: #e0e7eb;\\" valign=\\"top\\">
+                                        <p style=\\"line-height: 1.6em; margin: 0; color: #89959f; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 500; text-transform: uppercase;\\"><span style=\\"white-space: pre-wrap;\\">SPONSORED test card</span></p>
+                                    </td>
+                                </tr>
+                            </tbody></table>
+                        </td>
+                    </tr>
+                
+                
+                <tr>
+                    <td class=\\"kg-cta-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" class=\\"kg-cta-content-wrapper\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding: 24px 0 26px;\\">
+                            
+                            <tbody><tr>
+                                <td class=\\"kg-cta-text\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; font-family: Georgia, serif;\\" valign=\\"top\\">
+                                    <p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; text-align: center; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Here&#x2019;s a basic CTA card</span></p>
+                                </td>
+                            </tr>
+                            
+                                <tr>
+                                    <td class=\\"kg-cta-button-container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 20px;\\" valign=\\"top\\">
+                                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin-left: auto; margin-right: auto; width: unset;\\">
+                                            <tbody><tr>
+                                                <td class=\\"kg-cta-button-wrapper \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; padding: 8px 20px 9px; border-radius: 6px; text-align: center; background-color: #000000; color: #ffffff;\\" bgcolor=\\"#000000\\" valign=\\"top\\" align=\\"center\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-cta-button \\" style=\\"overflow-wrap: anywhere; display: inline-block; width: 100%; font-size: 0.9em; font-weight: 600; font-weight: 500; text-align: center; text-decoration: none; border-radius: 6px; background-color: #000000; color: #ffffff;\\" target=\\"_blank\\">
+                                                        Learn more
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody></table>
+                                    </td>
+                                </tr>
+                            
+                        </tbody></table>
+                    </td>
+                </tr>
+            
+            </tbody></table>
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -11542,6 +12271,61 @@ test.txt • 16 Bytes [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SPONSORED test card
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Here’s a basic CTA card
+
+
+
+
+
+
+
+
+
+
+
+Learn more
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
 
 
 
