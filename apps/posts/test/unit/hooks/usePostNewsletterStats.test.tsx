@@ -3,29 +3,26 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {renderHook, waitFor} from '@testing-library/react';
 import {responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
-import {createTestWrapper, mockApiHook, setupPostMocks} from '../../utils/test-helpers';
+import {createTestWrapper, mockApiHook, setupUniversalMocks} from '../../utils/test-helpers';
 
-// Mock the API hooks
+// Centralized API mocking
 vi.mock('@tryghost/admin-x-framework/api/posts');
 vi.mock('@tryghost/admin-x-framework/api/stats');
 vi.mock('@tryghost/admin-x-framework/api/links');
-
-const mockGetPost = vi.mocked(await import('@tryghost/admin-x-framework/api/posts')).getPost;
-const mockUseNewsletterStatsByNewsletterId = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).useNewsletterStatsByNewsletterId;
-const mockUseTopLinks = vi.mocked(await import('@tryghost/admin-x-framework/api/links')).useTopLinks;
+vi.mock('@src/providers/PostAnalyticsContext');
+vi.mock('@tryghost/admin-x-framework/api/settings');
 
 describe('usePostNewsletterStats', () => {
     const testPostId = '64d623b64676110001e897d9';
     let wrapper: any;
+    let mocks: any;
     
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
         wrapper = createTestWrapper();
-        // Set up default mocks using the helper
-        const mocks = setupPostMocks();
-        mockGetPost.mockImplementation(mocks.mockGetPost);
-        mockUseNewsletterStatsByNewsletterId.mockImplementation(mocks.mockUseNewsletterStats);
-        mockUseTopLinks.mockImplementation(mocks.mockUseTopLinks);
+        
+        // Universal setup - mocks ALL API hooks with sensible defaults
+        mocks = await setupUniversalMocks();
     });
 
     it('calculates stats correctly from post data', async () => {
@@ -44,12 +41,18 @@ describe('usePostNewsletterStats', () => {
 
     it('returns default stats when post has no email data', async () => {
         const postWithoutEmail = {
-            id: testPostId,
-            newsletter: {id: 'newsletter-123'}
-            // No email or count data
+            posts: [{
+                id: testPostId,
+                url: 'https://example.com/post',
+                slug: 'test-post',
+                title: 'Test Post',
+                uuid: 'test-uuid',
+                newsletter: {id: 'newsletter-123'}
+                // No email or count data
+            }]
         };
 
-        mockApiHook(mockGetPost, {posts: [postWithoutEmail]});
+        mockApiHook(mocks.mockGetPost, postWithoutEmail);
 
         const {result} = renderHook(() => usePostNewsletterStats(testPostId), {wrapper});
 
@@ -81,7 +84,7 @@ describe('usePostNewsletterStats', () => {
     });
 
     it('handles loading states correctly', async () => {
-        mockApiHook(mockGetPost, undefined, true);
+        mockApiHook(mocks.mockGetPost, undefined, true);
 
         const {result} = renderHook(() => usePostNewsletterStats(testPostId), {wrapper});
 
@@ -89,9 +92,9 @@ describe('usePostNewsletterStats', () => {
     });
 
     it('handles missing data gracefully', async () => {
-        mockApiHook(mockGetPost, undefined);
-        mockApiHook(mockUseNewsletterStatsByNewsletterId, undefined);
-        mockApiHook(mockUseTopLinks, undefined);
+        mockApiHook(mocks.mockGetPost, undefined);
+        mockApiHook(mocks.mockUseNewsletterStatsByNewsletterId, undefined);
+        mockApiHook(mocks.mockUseTopLinks, undefined);
 
         const {result} = renderHook(() => usePostNewsletterStats(testPostId), {wrapper});
 
@@ -112,7 +115,7 @@ describe('usePostNewsletterStats', () => {
     });
 
     it('provides refetch function for top links', async () => {
-        const mockReturn = mockApiHook(mockUseTopLinks, undefined);
+        const mockReturn = mockApiHook(mocks.mockUseTopLinks, undefined);
         const mockRefetch = vi.fn();
         mockReturn.refetch = mockRefetch;
 

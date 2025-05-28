@@ -3,24 +3,26 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {renderHook, waitFor} from '@testing-library/react';
 import {responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {getRangeDates, usePostReferrers} from '@src/hooks/usePostReferrers';
-import {createTestWrapper, mockApiHook, mockData} from '../../utils/test-helpers';
+import {createTestWrapper, mockApiHook, setupUniversalMocks} from '../../utils/test-helpers';
 
-// Mock the API hooks
+// Centralized API mocking
+vi.mock('@tryghost/admin-x-framework/api/posts');
 vi.mock('@tryghost/admin-x-framework/api/stats');
-
-const mockUsePostReferrersAPI = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).usePostReferrers;
-const mockUsePostGrowthStatsAPI = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).usePostGrowthStats;
+vi.mock('@tryghost/admin-x-framework/api/links');
+vi.mock('@src/providers/PostAnalyticsContext');
+vi.mock('@tryghost/admin-x-framework/api/settings');
 
 describe('usePostReferrers', () => {
     const testPostId = '64d623b64676110001e897d9';
     let wrapper: any;
+    let mocks: any;
     
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
         wrapper = createTestWrapper();
-        // Set up default mocks using the helper
-        mockApiHook(mockUsePostReferrersAPI, responseFixtures.postReferrers);
-        mockApiHook(mockUsePostGrowthStatsAPI, mockData.growthStats);
+        
+        // Universal setup - mocks ALL API hooks with sensible defaults
+        mocks = await setupUniversalMocks();
     });
 
     describe('getRangeDates utility function', () => {
@@ -64,6 +66,7 @@ describe('usePostReferrers', () => {
             await waitFor(() => {
                 expect(result.current.stats).toEqual(responseFixtures.postReferrers.stats);
                 expect(result.current.totals).toEqual({
+                    post_id: '64d623b64676110001e897d9',
                     free_members: 100,
                     paid_members: 25,
                     mrr: 1250
@@ -73,8 +76,8 @@ describe('usePostReferrers', () => {
         });
 
         it('returns empty stats when no data available', async () => {
-            mockApiHook(mockUsePostReferrersAPI, undefined);
-            mockApiHook(mockUsePostGrowthStatsAPI, undefined);
+            mockApiHook(mocks.mockUsePostReferrers, undefined);
+            mockApiHook(mocks.mockUsePostGrowthStats, undefined);
 
             const {result} = renderHook(() => usePostReferrers(testPostId), {wrapper});
 
@@ -86,7 +89,7 @@ describe('usePostReferrers', () => {
         });
 
         it('returns loading true when referrers API is loading', async () => {
-            mockApiHook(mockUsePostReferrersAPI, undefined, true);
+            mockApiHook(mocks.mockUsePostReferrers, undefined, true);
 
             const {result} = renderHook(() => usePostReferrers(testPostId), {wrapper});
 
@@ -94,7 +97,7 @@ describe('usePostReferrers', () => {
         });
 
         it('returns loading true when growth stats API is loading', async () => {
-            mockApiHook(mockUsePostGrowthStatsAPI, undefined, true);
+            mockApiHook(mocks.mockUsePostGrowthStats, undefined, true);
 
             const {result} = renderHook(() => usePostReferrers(testPostId), {wrapper});
 
