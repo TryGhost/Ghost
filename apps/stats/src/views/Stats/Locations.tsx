@@ -7,7 +7,7 @@ import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, Flag, cn, formatNumber, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Flag, LucideIcon, cn, formatNumber, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -216,24 +216,31 @@ const Locations:React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                            <div className='border-l'>
-                                <div className='flex items-center justify-between border-b text-sm'>
-                                    <div className='px-6 py-4 font-medium text-muted-foreground'>Country</div>
-                                    <div className='px-6 py-4 text-right font-medium text-muted-foreground'>Visitors</div>
+                            <div className='border-l px-6'>
+                                <div className='flex items-center justify-between pb-2 pt-5 text-sm'>
+                                    <div className='font-medium text-muted-foreground'>Country</div>
+                                    <div className='text-right font-medium text-muted-foreground'>Visitors</div>
                                 </div>
-                                <div className='py-2'>
+                                <div>
                                     {tableData?.map((row) => {
                                         const countryName = getCountryName(`${row.location}`) || 'Unknown';
                                         return (
                                             <div key={row.location || 'unknown'} className='flex items-center justify-between text-sm'>
-                                                <div className='flex items-center gap-3 px-6 py-2.5 font-medium'>
+                                                <div className='flex items-center gap-3 py-2.5 font-medium'>
                                                     <Flag countryCode={`${normalizeCountryCode(row.location as string)}`} />
                                                     {countryName}
                                                 </div>
-                                                <div className='px-6 py-2.5 text-right font-mono'>{formatNumber(Number(row.visits))}</div>
+                                                <div className='py-2.5 text-right font-mono'>{formatNumber(Number(row.visits))}</div>
                                             </div>
                                         );
                                     })}
+                                </div>
+                                <div className='flex items-center justify-between gap-4 py-3 text-sm'>
+                                    <span className='text-muted-foreground'>1 of 2</span>
+                                    <div className='flex items-center gap-1.5'>
+                                        <Button size='sm' variant='outline' disabled><LucideIcon.ArrowLeft /></Button>
+                                        <Button size='sm' variant='outline'><LucideIcon.ArrowRight /></Button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
