@@ -170,7 +170,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         backgroundColor={hasEmailCustomizationAlpha && colors.backgroundColor || '#ffffff'}
         bodyFontCategory={newsletter.body_font_category}
         buttonCorners={hasAnyEmailCustomization && newsletter.button_corners || 'rounded'}
-        buttonStyle={hasEmailCustomizationAlpha && newsletter.button_style || 'fill'}
+        buttonStyle={hasAnyEmailCustomization && newsletter.button_style || 'fill'}
         dividerStyle={newsletter.divider_style || 'solid'}
         footerContent={newsletter.footer_content}
         headerBackgroundColor={hasEmailCustomizationAlpha ? (colors.headerBackgroundColor || headerBackgroundColor()) : 'transparent'}
@@ -178,7 +178,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         headerImage={newsletter.header_image}
         headerSubtitle={headerSubtitle}
         headerTitle={headerTitle}
-        imageCorners={hasEmailCustomizationAlpha ? (newsletter.image_corners || 'square') : 'square'}
+        imageCorners={hasAnyEmailCustomization ? (newsletter.image_corners || 'square') : 'square'}
         linkStyle={(hasAnyEmailCustomization) && newsletter.link_style || 'underline'}
         senderEmail={renderSenderEmail(newsletter, config, defaultEmailAddress)}
         senderName={newsletter.sender_name || title}
