@@ -26,52 +26,16 @@ This provides sensible defaults:
 
 ```typescript
 export default createVitestConfig({
-    // Custom setup files
-    setupFiles: ['./test/setup.ts', './test/custom-setup.ts'],
-    
-    // Additional path aliases
+    include: ['./test/unit/**/*.{test,spec}.{js,ts,jsx,tsx}'], // Custom test patterns
     aliases: {
         '@components': './src/components',
-        '@utils': './src/utils',
-        '@views': './src/views'
+        '@utils': './src/utils'
     },
-    
-    // Custom test file patterns
-    include: [
-        './test/unit/**/*.{test,spec}.{js,ts,jsx,tsx}',
-        './src/**/*.{test,spec}.{js,ts,jsx,tsx}'
-    ],
-    
-    // Coverage configuration overrides
-    coverage: {
-        threshold: {
-            global: {
-                branches: 80,
-                functions: 80,
-                lines: 80,
-                statements: 80
-            }
-        }
-    },
-    
-    // Additional vitest options
-    testOptions: {
-        timeout: 10000,
-        retry: 2
-    },
-    
-    // Reduce output verbosity
     silent: false,
-    reporter: 'basic'
+    reporter: 'basic',
+    setupFiles: ['./test/setup.ts', './test/custom-setup.ts']
 });
 ```
-
-### Benefits
-
-- **Consistent Configuration**: All apps use the same base setup
-- **Reduced Duplication**: No need to copy vitest config between apps
-- **Easy Updates**: Framework updates automatically benefit all apps
-- **Flexible Customization**: Override any option while keeping sensible defaults
 
 ## Test Setup for Shade Components
 
@@ -79,123 +43,213 @@ The admin-x-framework provides shared test setup utilities for apps using shade 
 
 ### Setting Up Your Test Environment
 
-In your app's test setup file (e.g., `test/setup.ts`), import and call the shared setup function:
+In your app's test setup file (e.g., `test/setup.ts`), import and call the shared setup functions:
 
 ```typescript
 import '@testing-library/jest-dom';
-import {setupShadeMocks} from '@tryghost/admin-x-framework/test/setup';
+import {setupShadeMocks, setupConsoleFilters} from '@tryghost/admin-x-framework/test/setup';
 
 // Set up common mocks for shade components
 setupShadeMocks();
+
+// Set up console filtering for common warnings (optional)
+setupConsoleFilters();
 ```
 
-This automatically provides mocks for:
+### Available Setup Functions
+
+#### `setupShadeMocks()`
+Automatically provides mocks for:
 - **`window.matchMedia`** - Required for responsive behavior in shade components
 - **`ResizeObserver`** - Required for charts and responsive components  
-- **`getBoundingClientRect`** - Provides fake dimensions for DOM elements in tests
+- **`Element.prototype.getBoundingClientRect`** - Required for positioning calculations
 
-### Benefits
+#### `setupConsoleFilters()`
+Filters out common warnings that can't be fixed:
+- React defaultProps warnings from third-party libraries
+- Chart dimension warnings in headless environments
+- Duplicate key warnings from table components
 
-- **No Duplication**: Apps don't need to maintain their own copies of common mocks
-- **Consistent Behavior**: All apps get the same mock implementations
-- **Easy Updates**: Framework updates automatically benefit all apps
-- **Reduced Boilerplate**: Less setup code needed in each app
+## Test Utilities
 
-## API Mocking for Acceptance Tests
+The framework provides comprehensive test utilities for consistent testing across apps.
 
-The admin-x-framework provides a centralized approach to mocking API endpoints for acceptance tests. All common endpoints are pre-configured with realistic fixture data.
-
-### Basic Usage
+### Component and Hook Testing
 
 ```typescript
-import {createMockRequests, mockApi} from '@tryghost/admin-x-framework/test/acceptance';
-import {expect, test} from '@playwright/test';
+import {renderWithProviders, renderHookWithProviders, createTestQueryClient} from '@tryghost/admin-x-framework/test/test-utils';
 
-test('loads with default data', async ({page}) => {
-    // This includes mocks for all common endpoints:
-    // - Global data (settings, config, site, user)
-    // - Stats endpoints (member count, MRR, newsletter stats, etc.)
-    // - Posts endpoints (posts, links)
-    // - Limit requests (users, invites, roles, newsletters)
-    await mockApi({page, requests: createMockRequests()});
+// Render components with all necessary providers
+const {getByText} = renderWithProviders(<MyComponent />);
 
-    await page.goto('/');
-    await expect(page.locator('body')).toBeVisible();
+// Render hooks with providers
+const {result} = renderHookWithProviders(() => useMyHook());
+
+// Custom QueryClient for specific tests
+const queryClient = createTestQueryClient();
+renderWithProviders(<MyComponent />, {queryClient});
+
+// Custom framework props
+renderWithProviders(<MyComponent />, {
+    frameworkProps: {
+        ghostVersion: '4.x'
+    }
 });
 ```
 
-### Overriding Specific Responses
+### API Testing Utilities
 
 ```typescript
-test('can customize specific endpoints', async ({page}) => {
-    const customMemberHistory = {
-        stats: [
-            {date: '2024-01-01', paid: 50, free: 100, comped: 5, paid_subscribed: 2, paid_canceled: 0}
-        ],
-        meta: {totals: {paid: 50, free: 100, comped: 5}}
-    };
+import {waitForApiCall, waitForApiCalls} from '@tryghost/admin-x-framework/test/test-utils';
 
-    await mockApi({page, requests: createMockRequests({
-        browseMemberCountHistory: {
-            method: 'GET', 
-            path: /^\/stats\/member_count\//, 
-            response: customMemberHistory
-        }
-    })});
+// Wait for a single API call
+await waitForApiCall(mockFetch);
 
-    await page.goto('/');
-    // Test with custom data...
+// Wait for multiple API calls
+await waitForApiCalls(mockFetch, 3);
+```
+
+### Test Data Factories
+
+```typescript
+import {testDataFactories} from '@tryghost/admin-x-framework/test/test-utils';
+
+// Create test data with defaults
+const post = testDataFactories.post();
+const member = testDataFactories.member();
+const user = testDataFactories.user();
+const newsletter = testDataFactories.newsletter();
+
+// Override specific properties
+const publishedPost = testDataFactories.post({
+    status: 'published',
+    title: 'My Custom Title'
 });
+```
+
+### Console Filtering
+
+```typescript
+import {setupConsoleFiltering} from '@tryghost/admin-x-framework/test/test-utils';
+
+// Basic usage
+const cleanup = setupConsoleFiltering();
+
+// Custom filtering
+const cleanup = setupConsoleFiltering({
+    suppressReactWarnings: false,
+    suppressChartWarnings: true,
+    suppressMessages: ['Custom warning to suppress']
+});
+
+// Clean up when done
+cleanup();
+```
+
+### Performance Testing
+
+```typescript
+import {measureRenderTime} from '@tryghost/admin-x-framework/test/test-utils';
+
+const {result, renderTime} = measureRenderTime(() => {
+    return renderWithProviders(<ExpensiveComponent />);
+});
+
+expect(renderTime).toBeLessThan(100); // Assert performance
+```
+
+### Timer Mocking
+
+```typescript
+import {mockTimers} from '@tryghost/admin-x-framework/test/test-utils';
+
+const timers = mockTimers();
+
+// Advance time
+timers.advanceTime(1000);
+
+// Run all timers
+timers.runAllTimers();
+
+// Clean up
+timers.cleanup();
+```
+
+## API Mocking
+
+### Basic API Mocking
+
+```typescript
+import {mockApi, createMockRequests} from '@tryghost/admin-x-framework/test/acceptance';
+
+// Basic usage - covers most common endpoints
+await mockApi({page, requests: createMockRequests()});
+
+// Override specific endpoints
+await mockApi({page, requests: createMockRequests({
+    browseMemberCountHistory: {
+        method: 'GET', 
+        path: /^\/stats\/member_count\//, 
+        response: customMemberData
+    }
+})});
 ```
 
 ### Available Mock Endpoints
 
-The `defaultRequests` object includes mocks for:
+The `createMockRequests()` function provides mocks for:
 
-#### Global Data
-- `browseSettings` - Site settings
-- `browseConfig` - Ghost configuration
-- `browseSite` - Site information
-- `browseMe` - Current user data
+**Global Data:**
+- Settings, configuration, site data
+- User authentication and roles
+- Newsletters and invites
 
-#### Stats Endpoints
-- `browseMemberCountHistory` - Member count over time
-- `browseMrrHistory` - Monthly recurring revenue history
-- `browseNewsletterStats` - Newsletter performance stats
-- `browseTopPosts` - Top performing posts
-- `browsePostReferrers` - Post referrer data
-- `browseLinks` - Link click tracking
+**Stats Endpoints:**
+- Member count history (`/stats/member_count/`)
+- Monthly recurring revenue (`/stats/mrr/`)
+- Newsletter statistics (`/stats/newsletter-stats/`)
+- Top posts (`/stats/top-posts/`)
+- Post referrers (`/stats/posts/{id}/top-referrers`)
+- Link tracking (`/links/`)
 
-#### Posts Endpoints
-- `browsePost` - Individual post data
-- `browseNewsletterStats` - Newsletter stats for posts
-- `browseLinks` - Link data for posts
+**Posts Endpoints:**
+- Post data and metadata
+- Link management
 
-#### Limit Requests
-- `browseUsers` - User list with pagination
-- `browseInvites` - Pending invitations
-- `browseRoles` - User roles
-- `browseNewslettersLimit` - Newsletter list
+## Best Practices
 
-### Unit Testing
-
-For unit tests, focus on testing pure utility functions extracted from hooks:
-
+### 1. Use Centralized Configuration
 ```typescript
-import {getRangeDates} from '../../../src/hooks/useGrowthStats';
+// ✅ Good - Use shared config
+export default createVitestConfig();
 
-describe('getRangeDates', () => {
-    it('returns correct dates for specific range', () => {
-        const {dateFrom, endDate} = getRangeDates(7);
-        // Test the utility function...
-    });
-});
+// ❌ Avoid - Duplicating configuration
+export default defineConfig({...});
 ```
 
-### Benefits
+### 2. Leverage Test Utilities
+```typescript
+// ✅ Good - Use provided utilities
+import {renderWithProviders, testDataFactories} from '@tryghost/admin-x-framework/test/test-utils';
 
-1. **No Duplication**: Apps don't need to maintain their own mock configurations
-2. **Comprehensive Coverage**: All common endpoints are mocked by default
-3. **Easy Overrides**: Simple to customize specific responses when needed
-4. **Consistent Data**: All apps use the same realistic fixture data
-5. **Maintainable**: Updates to fixtures benefit all apps automatically 
+// ❌ Avoid - Manual setup
+const queryClient = new QueryClient({...});
+```
+
+### 3. Consistent Test Data
+```typescript
+// ✅ Good - Use factories
+const post = testDataFactories.post({title: 'Custom Title'});
+
+// ❌ Avoid - Inline objects
+const post = {id: '1', title: 'Custom Title', ...};
+```
+
+### 4. Proper Cleanup
+```typescript
+// ✅ Good - Use provided cleanup
+import {setupShadeMocks} from '@tryghost/admin-x-framework/test/setup';
+
+// ❌ Avoid - Manual cleanup management
+afterEach(() => { /* manual cleanup */ });
+``` 
