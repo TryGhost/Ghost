@@ -6,6 +6,7 @@ import {EmailServiceFactory} from '../services/email/EmailServiceFactory';
 import type {IEmailService} from '../services/email/IEmailService';
 import {resetDb} from '../database';
 import Errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 
 // Define types for our custom fixtures
 export type TestFixtures = {
@@ -85,8 +86,11 @@ export const test = baseTest.extend<TestFixtures>({
 });
 
 // Global beforeEach hook to reset database sessions before each test
-test.beforeEach(async () => {
+test.beforeEach(async ({page}) => {
+    logging.debug('globalBeforeEach:begin');
+    await page.context().clearCookies();
     await resetDb();
+    logging.debug('globalBeforeEach:end');
 });
 
 export {expect} from '@playwright/test';

@@ -1,6 +1,8 @@
 import logging from '@tryghost/logging';
+import {resetDb} from '../database';
 
 async function globalSetup() {
+    logging.debug('globalSetup:begin');
     const baseURL = process.env.BASE_URL || 'http://localhost:2368';
     const adminUsername = process.env.ADMIN_USERNAME || 'test@example.com';
     const adminPassword = process.env.ADMIN_PASSWORD || 'testpassword123';
@@ -45,16 +47,15 @@ async function globalSetup() {
             }
 
             logging.info('✅ Admin user created successfully');
-        } else {
-            logging.info('✅ Ghost setup already completed');
 
-            // Try to login to verify the admin user exists and credentials are correct
-            const sessionResponse = await fetch(`${baseURL}/ghost/api/admin/session`, {
+            // Perform initial login to mark user as having logged in
+            // Otherwise 2FA is skipped because it's the first login
+            logging.info('🔐 Performing initial login...');
+            const loginResponse = await fetch(`${baseURL}/ghost/api/admin/session`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept-Version': 'v5.0',
-                    Origin: baseURL
+                    'Accept-Version': 'v5.0'
                 },
                 body: JSON.stringify({
                     username: adminUsername,
@@ -62,24 +63,22 @@ async function globalSetup() {
                 })
             });
 
-            if (sessionResponse.status === 201) {
-                logging.info('✅ Admin user credentials verified');
-            } else if (sessionResponse.status === 403) {
-                // This might be a 2FA requirement, which is fine
-                const responseBody = await sessionResponse.json();
-                if (responseBody.errors && responseBody.errors[0] && responseBody.errors[0].type === 'Needs2FAError') {
-                    logging.info('✅ Admin user exists (2FA required)');
-                } else {
-                    logging.warn('⚠️  Could not verify admin credentials:', responseBody);
-                }
+            if (!loginResponse.ok) {
+                const error = await loginResponse.text();
+                logging.warn(`Initial login failed: ${loginResponse.status} - ${error}`);
             } else {
-                logging.warn('⚠️  Could not verify admin credentials. Status:', sessionResponse.status);
+                logging.info('✅ Initial login completed');
             }
+        } else {
+            throw new Error('Ghost setup already completed');
         }
     } catch (error) {
         logging.error('❌ Global setup failed:', error);
         throw error;
     }
+
+    await resetDb();
+    logging.debug('globalSetup:end');
 }
 
 export default globalSetup;
