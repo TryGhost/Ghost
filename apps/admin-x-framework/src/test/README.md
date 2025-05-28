@@ -330,6 +330,20 @@ import MyComponent from '../../../src/components/MyComponent';
 
 The vitest configuration automatically provides `@src` and `@test` aliases for cleaner imports.
 
+**Important**: For path aliases to work in both tests and builds, you need to configure TypeScript path mapping in your `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@src/*": ["./src/*"],
+      "@test/*": ["./test/*"]
+    }
+  }
+}
+```
+
 ### 2. Use Centralized Configuration
 ```typescript
 // ✅ Good - Use shared config
