@@ -1,7 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {UseQueryResult} from '@tanstack/react-query';
+import {
+    createErrorMock,
+    createLoadingMock,
+    createMockApiReturn,
+    createSuccessMock,
+    mockApiHook,
+    resetAllMocks
+} from '../../../admin-x-framework/src/test/hook-testing-utils';
 import {responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {vi} from 'vitest';
 
@@ -25,52 +32,14 @@ export const createTestWrapper = () => {
     return Wrapper;
 };
 
-// Mock infrastructure (could be moved to admin-x-framework)
-export const createMockApiReturn = <T>(
-    data: T | undefined,
-    isLoading = false,
-    error: Error | null = null
-): UseQueryResult<T> => ({
-        data,
-        isLoading,
-        error,
-        refetch: vi.fn(),
-        isError: !!error,
-        isLoadingError: false,
-        isRefetchError: false,
-        isSuccess: !isLoading && !error && data !== undefined,
-        isIdle: false,
-        status: isLoading ? 'loading' : error ? 'error' : 'success',
-        dataUpdatedAt: Date.now(),
-        errorUpdatedAt: error ? Date.now() : 0,
-        failureCount: error ? 1 : 0,
-        isFetched: true,
-        isFetchedAfterMount: true,
-        isFetching: isLoading,
-        isPlaceholderData: false,
-        isPreviousData: false,
-        isStale: false,
-        remove: vi.fn(),
-        // Add missing properties for TypeScript compatibility
-        failureReason: null,
-        errorUpdateCount: 0,
-        isInitialLoading: isLoading,
-        isPaused: false,
-        isRefetching: false,
-        isStaleByTime: false
-    } as unknown as UseQueryResult<T>);
-
-export const mockApiHook = <T>(
-    mockFn: any,
-    data: T | undefined,
-    isLoading = false,
-    error: Error | null = null
-): UseQueryResult<T> => {
-    const returnValue = createMockApiReturn(data, isLoading, error);
-    if (mockFn && typeof mockFn.mockReturnValue === 'function') {
-        mockFn.mockReturnValue(returnValue);
-    }
-    return returnValue;
+// Re-export centralized utilities for convenience
+export {
+    createErrorMock,
+    createLoadingMock,
+    createMockApiReturn,
+    createSuccessMock,
+    mockApiHook,
+    resetAllMocks
 };
 
 // Default mock data (uses centralized responseFixtures)

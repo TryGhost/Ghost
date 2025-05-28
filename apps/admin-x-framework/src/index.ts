@@ -18,3 +18,19 @@ export {Link, NavLink, Outlet, useLocation, useParams, useSearchParams, redirect
 // Data fetching
 export type {InfiniteData} from '@tanstack/react-query';
 export {useQueryClient} from '@tanstack/react-query';
+
+// Testing utilities
+export type {MockApiHookConfig} from './test/hook-testing-utils';
+export {
+    createMockApiReturn,
+    mockApiHook,
+    createMockApiHook,
+    createLoadingMock,
+    createErrorMock,
+    createSuccessMock,
+    mockDataFactories,
+    waitForMockCall,
+    waitForMockCalls,
+    resetAllMocks,
+    createTypedMockApiHook
+} from './test/hook-testing-utils';
