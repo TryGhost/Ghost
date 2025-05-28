@@ -1,5 +1,4 @@
 import knex from 'knex';
-import type {Knex} from 'knex';
 
 interface DatabaseConfig {
     client: string;
