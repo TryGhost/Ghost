@@ -132,6 +132,7 @@ export interface Post {
     type: PostType;
     title: string;
     excerpt: string;
+    summary: string | null;
     content: string;
     url: string;
     featureImageUrl: string | null;
