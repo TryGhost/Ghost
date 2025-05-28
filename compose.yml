@@ -202,6 +202,7 @@ services:
 # ================================================
 # Profile: `test`
 # Runs playwright tests against Ghost
+# Default services duplicated to keep full isolation between dev and test environments
 # ================================================
   mysql-test:
     image: mysql:8.4.5
@@ -214,6 +215,8 @@ services:
     restart: always
     networks:
       - test-network
+    tmpfs:
+      - /var/lib/mysql:rw,noexec,nosuid,size=1g
     healthcheck:
       test: mysql -uroot -proot ghost_test -e 'select 1'
       interval: 1s

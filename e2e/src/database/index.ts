@@ -1,5 +1,5 @@
 import knex from 'knex';
-import logging from '@tryghost/logging';
+import type {Knex} from 'knex';
 
 interface DatabaseConfig {
     client: string;
@@ -25,11 +25,8 @@ function getDatabaseConfig(): DatabaseConfig {
 
 export async function resetDb(): Promise<void> {
     const config = getDatabaseConfig();
-    console.log('Resetting database', config);
     const db = knex(config);
 
     await db('sessions').truncate();
-
-    const result = await db.raw('SELECT * FROM sessions');
-    console.log('Result', result);
+    await db('brute').truncate();
 }
