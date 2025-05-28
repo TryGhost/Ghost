@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it} from 'vitest';
-import {getRangeDates} from '../../../src/hooks/useGrowthStats';
+import {getRangeDates} from '@src/hooks/useGrowthStats';
 
 describe('useGrowthStats', () => {
     beforeEach(() => {

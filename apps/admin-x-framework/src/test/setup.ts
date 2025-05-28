@@ -3,6 +3,8 @@
  * Import and call these functions in your app's test setup file.
  */
 
+import {setupConsoleFiltering} from './test-utils';
+
 /**
  * Sets up common mocks required for shade components in tests.
  * Call this in your app's test setup file.
@@ -29,22 +31,36 @@ export function setupShadeMocks() {
         unobserve() {}
         disconnect() {}
     }
+    
+    Object.defineProperty(window, 'ResizeObserver', {
+        writable: true,
+        value: ResizeObserverMock
+    });
 
-    global.ResizeObserver = ResizeObserverMock;
-
-    // Mock getBoundingClientRect - provides fake dimensions for DOM elements
-    // This prevents chart warnings and helps with layout calculations in tests
-    const mockGetBoundingClientRect = () => ({
-        width: 500,
-        height: 500,
+    // Mock getBoundingClientRect - required for positioning calculations
+    Element.prototype.getBoundingClientRect = () => ({
+        width: 0,
+        height: 0,
         top: 0,
         left: 0,
-        right: 500,
-        bottom: 500,
+        bottom: 0,
+        right: 0,
         x: 0,
         y: 0,
         toJSON: () => {}
     });
+}
 
-    Element.prototype.getBoundingClientRect = mockGetBoundingClientRect;
+/**
+ * Sets up console filtering for common warnings that can't be fixed.
+ * This is separate from setupShadeMocks so apps can choose which to use.
+ */
+export function setupConsoleFilters() {
+    return setupConsoleFiltering({
+        suppressReactWarnings: true,
+        suppressChartWarnings: true,
+        suppressMessages: [
+            'Encountered two children with the same key'
+        ]
+    });
 } 

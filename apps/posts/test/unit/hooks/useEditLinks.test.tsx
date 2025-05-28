@@ -1,13 +1,13 @@
-import GlobalDataProvider from '../../../src/providers/PostAnalyticsContext';
+import GlobalDataProvider from '@src/providers/PostAnalyticsContext';
 import React, {act} from 'react';
-import {HttpResponse, http} from 'msw';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {afterAll, afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
+import {createErrorHandler, setupMswServer} from '@tryghost/admin-x-framework/test/msw-utils';
+import {describe, expect, it} from 'vitest';
 import {renderHook, waitFor} from '@testing-library/react';
-import {setupServer} from 'msw/node';
-import {useEditLinks} from '../../../src/hooks/useEditLinks';
+import {useEditLinks} from '@src/hooks/useEditLinks';
 
-const server = setupServer();
+// Set up MSW server with common Ghost API handlers
+const server = setupMswServer();
 
 const createTestQueryClient = () => new QueryClient({
     defaultOptions: {
@@ -19,13 +19,6 @@ const createTestQueryClient = () => new QueryClient({
 });
 
 describe('useEditLinks', () => {
-    beforeAll(() => server.listen());
-    afterEach(() => {
-        server.resetHandlers();
-        vi.resetAllMocks();
-    });
-    afterAll(() => server.close());
-
     const wrapper = ({children}: {children: React.ReactNode}) => {
         const queryClient = createTestQueryClient();
         return (
@@ -40,7 +33,7 @@ describe('useEditLinks', () => {
         expect(result.current.isEditLinksLoading).toBe(false);
     });
 
-    it('calls the API and updates loading state on successful edit', async () => {
+    it('calls the API with correct parameters and body on successful edit', async () => {
         const mockSuccessResponse = {
             bulk: {
                 action: 'updateLink',
@@ -52,12 +45,17 @@ describe('useEditLinks', () => {
             }
         };
 
+        // Override the default handler with request validation
+        const {http, HttpResponse} = await import('msw');
         server.use(
             http.put('/ghost/api/admin/links/bulk/', async ({request}) => {
                 const url = new URL(request.url);
-                expect(url.searchParams.get('filter')).toBe('post_id:\'test-post-id\'+to:\'https://original.com\'');
-
                 const body = await request.json();
+                
+                // Validate URL parameters
+                expect(url.searchParams.get('filter')).toBe('post_id:\'test-post-id\'+to:\'https://original.com\'');
+                
+                // Validate request body
                 expect(body).toEqual({
                     bulk: {
                         action: 'updateLink',
@@ -68,6 +66,7 @@ describe('useEditLinks', () => {
                         }
                     }
                 });
+                
                 return HttpResponse.json(mockSuccessResponse);
             })
         );
@@ -90,10 +89,9 @@ describe('useEditLinks', () => {
     });
 
     it('handles API error and updates loading state', async () => {
+        // Use the error handler utility
         server.use(
-            http.put('/ghost/api/admin/links/bulk/', () => {
-                return new HttpResponse(null, {status: 500});
-            })
+            createErrorHandler('put', '/ghost/api/admin/links/bulk/', 500)
         );
 
         const {result} = renderHook(() => useEditLinks(), {wrapper});
@@ -124,6 +122,8 @@ describe('useEditLinks', () => {
             resolveRequest = resolve;
         });
 
+        // Custom handler with delay
+        const {http, HttpResponse} = await import('msw');
         server.use(
             http.put('/ghost/api/admin/links/bulk/', async () => {
                 await requestPromise; // Hold the request
