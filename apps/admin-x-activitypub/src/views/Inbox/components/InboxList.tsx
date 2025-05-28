@@ -74,11 +74,12 @@ const InboxList:React.FC<InboxListProps> = ({
                             <div className='mx-auto flex min-h-[calc(100dvh_-_117px)] items-start gap-11'>
                                 <div className='flex w-full min-w-0 flex-col items-center'>
                                     <div className='flex w-full min-w-0 flex-col items-start'>
-                                        <ul className='mx-auto flex w-full flex-col'>
+                                        <ul className='mx-auto flex w-full flex-col' data-testid='inbox-list'>
                                             {activities.map((activity, index) => (
                                                 <li
                                                 // eslint-disable-next-line react/no-array-index-key
                                                     key={`${activity.id}-${activity.type}-${index}`} // We are using index here as activity.id is cannot be guaranteed to be unique at the moment
+                                                    data-testid='inbox-item'
                                                     data-test-view-article
                                                 >
                                                     <FeedItem

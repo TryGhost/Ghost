@@ -220,8 +220,8 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
         [] as Array<MockRequestConfig & {name: keyof Requests}>
     );
 
-    const routeRegex = options?.useActivityPub ? /\/activitypub\// : /\/ghost\/api\/admin\//;
-    const routeReplaceRegex = options.useActivityPub ? /^.*\/activitypub/ : /^.*\/ghost\/api\/admin/;
+    const routeRegex = options?.useActivityPub ? /\/.ghost\/activitypub\// : /\/ghost\/api\/admin\//;
+    const routeReplaceRegex = options?.useActivityPub ? /^.*\/.ghost\/activitypub/ : /^.*\/ghost\/api\/admin/;
 
     await page.route(routeRegex, async (route) => {
         const apiPath = route.request().url().replace(routeReplaceRegex, '');
