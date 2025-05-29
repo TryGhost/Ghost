@@ -23,7 +23,7 @@ const notImplemented = function notImplemented(req, res, next) {
     // CASE: user is requesting with staff token, check blocklist, else skip to permission system
     // Staff tokens have a user_id associated with them, integration tokens don't
     if (req.api_key?.get('user_id')) {
-        // Remove trailing slash for consistent comparison
+        // Check if staff token is trying to access blocked endpoints
         const isDeleteAllContent = req.method === 'DELETE' && req.path === '/db/';
         const isTransferOwnership = req.method === 'PUT' && req.path === '/users/owner/';
 
