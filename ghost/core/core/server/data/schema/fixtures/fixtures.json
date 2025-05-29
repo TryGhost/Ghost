@@ -879,7 +879,8 @@
                     "identity": "read"
                 },
                 "DB Backup Integration": {
-                    "db": "all"
+                    "db": "all",
+                    "member": "browse"
                 },
                 "Scheduler Integration": {
                     "post": "publish"
