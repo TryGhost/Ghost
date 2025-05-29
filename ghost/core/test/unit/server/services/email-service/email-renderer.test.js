@@ -2100,7 +2100,8 @@ describe('Email renderer', function () {
                 button_style: 'outline',
                 link_style: 'normal',
                 image_corners: 'rounded',
-                section_title_color: '#BADA55'
+                section_title_color: '#BADA55',
+                post_title_color: '#BADA55'
             });
             const segment = null;
             const options = {};
@@ -2139,7 +2140,8 @@ describe('Email renderer', function () {
                     titleFontWeight: 'semibold',
                     linkStyle: 'normal',
                     imageCorners: 'rounded',
-                    sectionTitleColor: '#BADA55'
+                    sectionTitleColor: '#BADA55',
+                    postTitleColor: '#BADA55'
                 },
                 labs: {emailCustomizationAlpha: true}
             });
@@ -2261,35 +2263,52 @@ describe('Email renderer', function () {
             }
         });
 
-        it('Uses the correct section title colors based on settings when emailCustomizationAlpha is enabled', async function () {
-            labsEnabled = true;
-            settings.accent_color = '#DEF456';
-            const tests = [
-                {input: '#BADA55', expected: '#BADA55'},
-                {input: 'accent', expected: settings.accent_color},
-                {input: 'auto', expected: '#15212A'},
-                {input: 'Invalid Color', expected: '#15212A'},
-                {input: null, expected: '#15212A'}
-            ];
+it('Uses the correct section title colors based on settings when emailCustomizationAlpha is enabled', async function () {
+        labsEnabled = true;
+        settings.accent_color = '#DEF456';
+        const tests = [
+            { input: '#BADA55', expected: '#BADA55' },
+            { input: 'accent', expected: settings.accent_color },
+            { input: 'auto', expected: '#15212A' },
+            { input: 'Invalid Color', expected: '#15212A' },
+            { input: null, expected: '#15212A' }
+        ];
 
-            for (const test of tests) {
-                const data = await templateDataWithSettings({
-                    section_title_color: test.input
-                });
-                assert.equal(data.sectionTitleColor, test.expected);
-            }
-        });
-
-        it('Returns null for sectionTitleColor when emailCustomizationAlpha is disabled', async function () {
-            labsEnabled = false;
-            settings.accent_color = '#DEF456';
-
+        for (const test of tests) {
             const data = await templateDataWithSettings({
-                section_title_color: '#BADA55'
+                section_title_color: test.input
             });
-            assert.equal(data.sectionTitleColor, null);
-        });
+            assert.equal(data.sectionTitleColor, test.expected, `Failed for section_title_color input: ${test.input}`);
+        }
+    });
 
+    it('Uses the correct post title color when emailCustomizationAlpha is enabled', async function () {
+        labsEnabled = true;
+        settings.accent_color = '#DEF456';
+        const tests = [
+            { input: '#BADA55', expected: '#BADA55' },
+            { input: 'accent', expected: settings.accent_color }
+        ];
+
+        for (const test of tests) {
+            const data = await templateDataWithSettings({
+                post_title_color: test.input
+            });
+            assert.equal(data.postTitleColor, test.expected, `Failed for post_title_color input: ${test.input}`);
+        }
+    });
+
+    it('Returns null for sectionTitleColor and postTitleColor when emailCustomizationAlpha is disabled', async function () {
+        labsEnabled = false;
+        settings.accent_color = '#DEF456';
+
+        const data = await templateDataWithSettings({
+            section_title_color: '#BADA55',
+            post_title_color: '#BADA55'
+        });
+        assert.equal(data.sectionTitleColor, null, 'sectionTitleColor should be null when emailCustomizationAlpha is disabled');
+        assert.equal(data.postTitleColor, null, 'postTitleColor should be null when emailCustomizationAlpha is disabled');
+    });
         it('Sets the backgroundIsDark correctly', async function () {
             const tests = [
                 {background_color: '#15212A', expected: true},
@@ -2390,6 +2409,25 @@ describe('Email renderer', function () {
                 excerpt: 'post-excerpt post-excerpt-no-feature-image post-excerpt-serif-sans post-excerpt-left',
                 body: 'post-content-sans-serif'
             });
+        });
+
+        it('adds post-title-color class when emailCustomizationAlpha is enabled', async function () {
+            labsEnabled = true;
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'serif',
+                title_alignment: 'left',
+                body_font_category: 'sans_serif',
+                post_title_color: '#BADA55'
+            });
+
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.classes.title, 'post-title post-title-no-excerpt post-title-serif post-title-left post-title-color');
         });
 
         it('has correct excerpt classes for serif title+body', async function () {

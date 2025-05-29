@@ -457,6 +457,14 @@ figure blockquote p {
     text-align: center;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+{{#if postTitleColor}}
+.post-title-color a {
+    color: {{postTitleColor}} !important;
+}
+{{/if}}
+{{/hasFeature}}
+
 .post-title-with-excerpt {
     padding-bottom: 8px;
 }
