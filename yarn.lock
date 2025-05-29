@@ -16637,25 +16637,26 @@ eslint-plugin-es-x@^7.1.0:
     "@eslint-community/eslint-utils" "^4.1.2"
     "@eslint-community/regexpp" "^4.6.0"
 
-eslint-plugin-filenames@allouis/eslint-plugin-filenames#15dc354f4e3d155fc2d6ae082dbfc26377539a18:
+eslint-plugin-filenames-ts@1.3.2:
   version "1.3.2"
-  resolved "https://codeload.github.com/allouis/eslint-plugin-filenames/tar.gz/15dc354f4e3d155fc2d6ae082dbfc26377539a18"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-filenames-ts/-/eslint-plugin-filenames-ts-1.3.2.tgz#06be818d3494f0f2a298ac044f495beb81fe2e5d"
+  integrity sha512-ZgcMHTYL4JXBmvbUYAyNeqKIwC038v6Jru+FxJlZ2vk3XOaWIiFphcjbVS/7bdIRADMnXYI8xfgY9g/xtIoDVw==
   dependencies:
     lodash.camelcase "4.3.0"
     lodash.kebabcase "4.1.1"
     lodash.snakecase "4.1.1"
     lodash.upperfirst "4.3.1"
 
-eslint-plugin-ghost@3.4.0:
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-3.4.0.tgz#2a84e53e1bdc3ca722e2886e49d5de0dd2344d6f"
-  integrity sha512-uj/ClW5yyfm0tHikI7jyWJbMqLVnn3PTr5GwVc0NTciM9tgkfS7TxEi8jAEa1idLRGPou+gF+Tvt0QBI/29S4g==
+eslint-plugin-ghost@3.4.3:
+  version "3.4.3"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-3.4.3.tgz#ecbe80369cd603411825b1766b52470ab261730b"
+  integrity sha512-PHvr9PYlR6xo69H7EzXONdDIdBVXHcNJbSBBMVfhhuVEPb8Z5ov4AIR0ZHg6wkbE3AW7ko8dL9QAJavnroT9Yg==
   dependencies:
     "@kapouer/eslint-plugin-no-return-in-loop" "1.0.0"
     "@typescript-eslint/eslint-plugin" "6.9.1"
     "@typescript-eslint/parser" "6.9.1"
     eslint-plugin-ember "11.11.1"
-    eslint-plugin-filenames allouis/eslint-plugin-filenames#15dc354f4e3d155fc2d6ae082dbfc26377539a18
+    eslint-plugin-filenames-ts "1.3.2"
     eslint-plugin-mocha "7.0.1"
     eslint-plugin-n "16.2.0"
     eslint-plugin-sort-imports-es6-autofix "0.6.0"
