@@ -1,5 +1,6 @@
+import inboxFixture from './responses/inbox.json';
 import {expect, test} from '@playwright/test';
-import {mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Inbox', async () => {
     test('I can view a list of articles in the Inbox', async ({page}) => {
@@ -7,7 +8,7 @@ test.describe('Inbox', async () => {
             getInbox: {
                 method: 'GET',
                 path: '/inbox',
-                response: responseFixtures.activitypubInbox
+                response: inboxFixture
             }
         }, options: {useActivityPub: true}});
 
@@ -22,7 +23,7 @@ test.describe('Inbox', async () => {
         await expect(feedItems).toHaveCount(10);
 
         // Check that the first item title, author name and excerpt are rendered
-        const firstPost = responseFixtures.activitypubInbox.posts[0];
+        const firstPost = inboxFixture.posts[0];
         const firstFeedItem = feedItems.first();
         const firstFeedItemText = await firstFeedItem.textContent();
 
@@ -33,13 +34,13 @@ test.describe('Inbox', async () => {
 
     test('I can click on a post to view it', async ({page}) => {
         const postIndex = 2;
-        const postFixture = responseFixtures.activitypubInbox.posts[postIndex];
+        const postFixture = inboxFixture.posts[postIndex];
 
         await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
                 path: '/inbox',
-                response: responseFixtures.activitypubInbox
+                response: inboxFixture
             },
             getPost: {
                 method: 'GET',
@@ -89,13 +90,13 @@ test.describe('Inbox', async () => {
     });
 
     test('I can like a post', async ({page}) => {
-        const secondPostFixture = responseFixtures.activitypubInbox.posts[1];
+        const secondPostFixture = inboxFixture.posts[1];
 
         const {lastApiRequests} = await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
                 path: '/inbox',
-                response: responseFixtures.activitypubInbox
+                response: inboxFixture
             },
             likePost: {
                 method: 'POST',
@@ -137,13 +138,13 @@ test.describe('Inbox', async () => {
     });
 
     test('I can reply to a post', async ({page}) => {
-        const secondPostFixture = responseFixtures.activitypubInbox.posts[1];
+        const secondPostFixture = inboxFixture.posts[1];
 
         const {lastApiRequests} = await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
                 path: '/inbox',
-                response: responseFixtures.activitypubInbox
+                response: inboxFixture
             },
             getPost: {
                 method: 'GET',
@@ -215,13 +216,13 @@ test.describe('Inbox', async () => {
     });
 
     test('I can repost a post', async ({page}) => {
-        const secondPostFixture = responseFixtures.activitypubInbox.posts[1];
+        const secondPostFixture = inboxFixture.posts[1];
 
         const {lastApiRequests} = await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
                 path: '/inbox',
-                response: responseFixtures.activitypubInbox
+                response: inboxFixture
             },
             repostPost: {
                 method: 'POST',

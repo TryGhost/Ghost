@@ -16,7 +16,6 @@ import siteFixture from './responses/site.json';
 import themesFixture from './responses/themes.json';
 import tiersFixture from './responses/tiers.json';
 import usersFixture from './responses/users.json';
-import activitypubInboxFixture from './responses/activitypub/inbox.json';
 import activitypubFeedFixture from './responses/activitypub/feed.json';
 import memberCountHistoryFixture from './responses/member_count_history.json';
 import mrrHistoryFixture from './responses/mrr_history.json';
@@ -74,7 +73,6 @@ export const responseFixtures = {
     newsletters: newslettersFixture as NewslettersResponseType,
     actions: actionsFixture as ActionsResponseType,
     latestPost: {posts: [{id: '1', url: `${siteFixture.site.url}/test-post/`}]},
-    activitypubInbox: activitypubInboxFixture,
     activitypubFeed: activitypubFeedFixture,
     memberCountHistory: memberCountHistoryFixture as MemberCountHistoryResponseType,
     mrrHistory: mrrHistoryFixture as MrrHistoryResponseType,
