@@ -347,6 +347,7 @@ class EmailRenderer {
             renderOptions.design = {
                 ...renderOptions.design,
                 ...betaDesignOptions,
+                sectionTitleColor: newsletter?.get('section_title_color'),
                 postTitleColor: newsletter?.get('post_title_color')
             };
         }
@@ -960,6 +961,23 @@ class EmailRenderer {
         return textColorForBackgroundColor(backgroundColor).hex();
     }
 
+    #getSectionTitleColor(newsletter, accentColor) {
+        /** @type {'accent' | 'auto' | string | null} */
+        const value = newsletter.get('section_title_color');
+        const validHex = /#([0-9a-f]{3}){1,2}$/i;
+
+        if (validHex.test(value)) {
+            return value;
+        }
+
+        if (value === 'accent') {
+            return accentColor;
+        }
+
+        // default to #15212A
+        return '#15212A';
+    }
+
     #getTitleWeight(newsletter) {
         const weights = {
             normal: '400',
@@ -1029,7 +1047,7 @@ class EmailRenderer {
         const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
         const linkColor = backgroundIsDark ? '#ffffff' : accentColor;
         const hasRoundedImageCorners = (labs.isSet('emailCustomization') || labs.isSet('emailCustomizationAlpha')) ? this.#getImageCorners(newsletter) : false;
-
+        const sectionTitleColor = labs.isSet('emailCustomizationAlpha') ? this.#getSectionTitleColor(newsletter, accentColor) : null;
         let buttonBorderRadius = '6px';
 
         if (labs.isSet('emailCustomization') || labs.isSet('emailCustomizationAlpha')) {
@@ -1197,7 +1215,7 @@ class EmailRenderer {
             linkColor,
             hasRoundedImageCorners,
             buttonBorderRadius,
-
+            sectionTitleColor,
             headerImage,
             headerImageWidth,
             showHeaderIcon: newsletter.get('show_header_icon') && this.#settingsCache.get('icon'),

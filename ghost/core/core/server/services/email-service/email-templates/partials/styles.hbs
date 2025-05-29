@@ -241,28 +241,109 @@ h2 {
     font-size: 32px;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+
+/* Post content headings */
+.post-content-row h1 {
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
+    {{else}}
+    color: #15212A; /* fallback to default */
+    {{/if}}
+}
+
+
+
+.post-content-row h2 {
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
+    {{else}}
+    color: #15212A; /* fallback to default */
+    {{/if}}
+}
+
+
+
+{{/hasFeature}}
+
 h3 {
     margin: 1.5em 0 0.5em 0;
     font-size: 26px;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.post-content-row h3 {
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
+    {{else}}
+    color: #15212A; /* fallback to default */
+    {{/if}}
+}
+
+
+
+.post-content-row h4 {
+    margin: 1.8em 0 0.5em 0;
+    font-size: 21px;
+    line-height: 1.2em;
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
+    {{else}}
+    color: #15212A; /* fallback to default */
+    {{/if}}
+}
+
+
+{{else}}
 h4 {
     margin: 1.8em 0 0.5em 0;
     font-size: 21px;
     line-height: 1.2em;
 }
+{{/hasFeature}}
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.post-content-row h5 {
+    margin: 2em 0 0.5em 0;
+    font-size: 19px;
+    line-height: 1.3em;
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
+    {{else}}
+    color: #15212A; /* fallback to default */
+    {{/if}}
+}
+
+
+{{else}}
 h5 {
     margin: 2em 0 0.5em 0;
     font-size: 19px;
     line-height: 1.3em;
 }
+{{/hasFeature}}
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.post-content-row h6 {
+    margin: 2em 0 0.5em 0;
+    font-size: 19px;
+    line-height: 1.3em;
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
+    {{else}}
+    color: #15212A; /* fallback to default */
+    {{/if}}
+}
+
+
+
+{{else}}
 h6 {
     margin: 2em 0 0.5em 0;
     font-size: 19px;
     line-height: 1.3em;
 }
+{{/hasFeature}}
 
 h1 strong,
 h2 strong,
@@ -611,6 +692,25 @@ h3.latest-posts-header {
 .latest-post p a {
     color: #73818c !important;
 }
+
+{{#hasFeature "emailCustomizationAlpha"}}
+/* Custom heading colors for latest posts */
+.latest-post-title h4 {
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
+    {{else}}
+    color: #15212A; /* fallback to default */
+    {{/if}}
+}
+
+.latest-post-title h4 a {
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}} !important;
+    {{else}}
+    color: #15212A !important;
+    {{/if}}
+}
+{{/hasFeature}}
 
 /* -------------------------------------
     SUBSCRIPTION DETAILS BOX
