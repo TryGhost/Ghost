@@ -51,7 +51,9 @@ export {ReactComponent as GoogleLogo} from './assets/images/google-logo.svg';
 export {ReactComponent as TwitterLogo} from './assets/images/twitter-logo.svg';
 export {ReactComponent as XLogo} from './assets/images/x-logo.svg';
 
+// Hooks
 export {default as useGlobalDirtyState} from './hooks/use-global-dirty-state';
+export {useSimplePagination} from './hooks/use-simple-pagination';
 
 // Utils
 export * from '@/lib/utils';

@@ -3,6 +3,10 @@ import React from 'react';
 import {Button, ButtonProps} from './button';
 import {ArrowLeft, ArrowRight} from 'lucide-react';
 
+/**
+ * Use along with use-simple-pagination hook — see that file for more about how
+ */
+
 const SimplePagination = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({className, children, ...props}, ref) => {
     return (
         <div ref={ref} className={cn('flex items-center justify-between gap-4 pb-6 text-sm', className)} {...props}>

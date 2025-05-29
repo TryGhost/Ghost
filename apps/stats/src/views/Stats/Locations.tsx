@@ -7,7 +7,7 @@ import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, Flag, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, cn, formatNumber, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, Flag, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, cn, formatNumber, formatQueryDate, getRangeDates, useSimplePagination} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -50,7 +50,6 @@ const Locations:React.FC = () => {
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
-    const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 10;
 
     const params = {
@@ -191,20 +190,18 @@ const Locations:React.FC = () => {
         setTooltipData(null);
     };
 
-    const totalPages = useMemo(() => {
-        if (!sortedData) {
-            return 1;
-        }
-        return Math.ceil(sortedData.length / ITEMS_PER_PAGE);
-    }, [sortedData]);
-
-    const tableData = useMemo(() => {
-        if (!sortedData) {
-            return null;
-        }
-        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-        return sortedData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-    }, [sortedData, currentPage]);
+    const {
+        currentPage,
+        totalPages,
+        paginatedData: tableData,
+        nextPage,
+        previousPage,
+        hasNextPage,
+        hasPreviousPage
+    } = useSimplePagination({
+        data: sortedData,
+        itemsPerPage: ITEMS_PER_PAGE
+    });
 
     return (
         <StatsLayout>
@@ -271,16 +268,12 @@ const Locations:React.FC = () => {
                                     <SimplePaginationPages currentPage={currentPage.toString()} totalPages={totalPages.toString()} />
                                     <SimplePaginationNavigation>
                                         <SimplePaginationPreviousButton
-                                            disabled={currentPage === 1}
-                                            onClick={() => {
-                                                setCurrentPage(prev => Math.max(1, prev - 1));
-                                            }}
+                                            disabled={!hasPreviousPage}
+                                            onClick={previousPage}
                                         />
                                         <SimplePaginationNextButton
-                                            disabled={currentPage === totalPages}
-                                            onClick={() => {
-                                                setCurrentPage(prev => Math.min(totalPages, prev + 1));
-                                            }}
+                                            disabled={!hasNextPage}
+                                            onClick={nextPage}
                                         />
                                     </SimplePaginationNavigation>
                                 </SimplePagination>
