@@ -54,7 +54,10 @@ module.exports = {
     },
 
     get customNodeRenderers() {
-        if (!labs.isSet('emailCustomizationAlpha')) {
+        if (
+            !labs.isSet('emailCustomizationAlpha') &&
+            !labs.isSet('emailCustomization')
+        ) {
             return undefined;
         }
 
