@@ -2748,14 +2748,14 @@ describe('Email renderer', function () {
             await testLinkStyle('normal', 'normal', {labsEnabled: false});
         });
 
-        function testDividerColor(settingValue, expectedValue) {
+        function testDividerColor(settingValue, expectedValue, options = {labsEnabled: true}) {
             testDataProperty({
                 divider_color: settingValue
-            }, 'dividerColor', expectedValue, {labsEnabled: true});
+            }, 'dividerColor', expectedValue, options);
         }
 
         it('sets dividerColor to correct default (no labs flags)', async function () {
-            await testDividerColor('accent', '#e0e7eb');
+            await testDividerColor('accent', '#e0e7eb', {labsEnabled: false});
         });
 
         it('sets dividerColor to correct default value (emailCustomizationAlpha)', async function () {
