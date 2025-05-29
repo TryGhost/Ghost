@@ -1,6 +1,7 @@
 import NewsletterPreview from './NewsletterPreview';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
+import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
 import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, SelectOption, Separator, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
@@ -66,7 +67,7 @@ const Sidebar: React.FC<{
     errors: ErrorMessages;
     clearError: (field: string) => void;
 }> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
-    // const hasEmailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
+    const hasEmailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
 
     const {updateRoute} = useRouting();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
@@ -688,27 +689,29 @@ const Sidebar: React.FC<{
                             }
                         ]} clearBg={false} />
                     </div>
-                    {/* <div className='mb-1'>
-                        <ColorPickerField
-                            direction='rtl'
-                            eyedropper={true}
-                            swatches={[
-                                {
-                                    value: 'light',
-                                    title: 'Light',
-                                    hex: '#e0e7eb'
-                                },
-                                {
-                                    value: 'accent',
-                                    title: 'Accent',
-                                    hex: siteData.accent_color
-                                }
-                            ]}
-                            title='Divider color'
-                            value={newsletter.divider_color || 'light'}
-                            onChange={color => updateNewsletter({divider_color: color})}
-                        />
-                    </div> */}
+                    {hasEmailCustomizationAlpha &&
+                        <div className='mb-1'>
+                            <ColorPickerField
+                                direction='rtl'
+                                eyedropper={true}
+                                swatches={[
+                                    {
+                                        value: 'light',
+                                        title: 'Light',
+                                        hex: '#e0e7eb'
+                                    },
+                                    {
+                                        value: 'accent',
+                                        title: 'Accent',
+                                        hex: siteData.accent_color
+                                    }
+                                ]}
+                                title='Divider color'
+                                value={newsletter.divider_color || 'light'}
+                                onChange={color => updateNewsletter({divider_color: color})}
+                            />
+                        </div>
+                    }
                 </Form>
             </>
         }

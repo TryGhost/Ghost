@@ -348,7 +348,11 @@ class EmailRenderer {
         if (labs?.isSet('emailCustomizationAlpha')) {
             renderOptions.design = {
                 ...renderOptions.design,
-                ...betaDesignOptions
+                ...betaDesignOptions,
+                // TODO:
+                // if the other options have default values we should follow the same pattern
+                // as the divider color to avoid duplicating magic values in renderers
+                dividerColor: this.#getDividerColor(newsletter)
             };
         }
 
@@ -1025,6 +1029,24 @@ class EmailRenderer {
         return false;
     }
 
+    #getDividerColor(newsletter) {
+        const labs = this.getLabs();
+
+        if (labs?.isSet('emailCustomizationAlpha')) {
+            const value = newsletter?.get('divider_color');
+            const validHex = /#([0-9a-f]{3}){1,2}$/i;
+
+            if (value === 'accent') {
+                return this.#settingsCache.get('accent_color');
+            } else if (validHex.test(value)) {
+                return value;
+            }
+        }
+
+        // value === 'light'/missing/invalid
+        return '#e0e7eb';
+    }
+
     /**
      * @private
      */
@@ -1054,6 +1076,7 @@ class EmailRenderer {
         const linkColor = backgroundIsDark ? '#ffffff' : accentColor;
         const hasRoundedImageCorners = hasAnyEmailCustomization ? this.#getImageCorners(newsletter) : false;
         const sectionTitleColor = hasAnyEmailCustomization ? this.#getSectionTitleColor(newsletter, accentColor) : null;
+        const dividerColor = this.#getDividerColor(newsletter);
 
         let buttonBorderRadius = '6px';
         if (hasAnyEmailCustomization) {
@@ -1216,6 +1239,7 @@ class EmailRenderer {
             headerImage,
             headerImageWidth,
             showHeaderIcon: newsletter.get('show_header_icon') && this.#settingsCache.get('icon'),
+            dividerColor,
 
             // TODO: consider moving these to newsletter property
             showHeaderTitle: newsletter.get('show_header_title'),

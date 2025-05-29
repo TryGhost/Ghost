@@ -2101,7 +2101,8 @@ describe('Email renderer', function () {
                 link_style: 'normal',
                 image_corners: 'rounded',
                 section_title_color: '#BADA55',
-                post_title_color: '#BADA55'
+                post_title_color: '#BADA55',
+                divider_color: 'light' // should return our default hex value
             });
             const segment = null;
             const options = {};
@@ -2141,7 +2142,8 @@ describe('Email renderer', function () {
                     linkStyle: 'normal',
                     imageCorners: 'rounded',
                     sectionTitleColor: '#BADA55',
-                    postTitleColor: '#BADA55'
+                    postTitleColor: '#BADA55',
+                    dividerColor: '#e0e7eb'
                 },
                 labs: {emailCustomizationAlpha: true}
             });
@@ -2307,6 +2309,7 @@ describe('Email renderer', function () {
             });
             assert.equal(data.sectionTitleColor, null);
         });
+
         it('Sets the backgroundIsDark correctly', async function () {
             const tests = [
                 {background_color: '#15212A', expected: true},
@@ -2743,6 +2746,37 @@ describe('Email renderer', function () {
 
         it('passes newsletter link_style through (emailCustomizationAlpha)', async function () {
             await testLinkStyle('normal', 'normal', {labsEnabled: false});
+        });
+
+        function testDividerColor(settingValue, expectedValue) {
+            testDataProperty({
+                divider_color: settingValue
+            }, 'dividerColor', expectedValue, {labsEnabled: true});
+        }
+
+        it('sets dividerColor to correct default (no labs flags)', async function () {
+            await testDividerColor('accent', '#e0e7eb');
+        });
+
+        it('sets dividerColor to correct default value (emailCustomizationAlpha)', async function () {
+            await testDividerColor(null, '#e0e7eb');
+        });
+
+        it('sets dividerColor to correct light value (emailCustomizationAlpha)', async function () {
+            await testDividerColor('light', '#e0e7eb');
+        });
+
+        it('sets dividerColor to correct accent value (emailCustomizationAlpha)', async function () {
+            settings.accent_color = '#aabbcc';
+            await testDividerColor('accent', '#aabbcc');
+        });
+
+        it('sets dividerColor to correct custom value (emailCustomizationAlpha)', async function () {
+            await testDividerColor('#BADA55', '#BADA55');
+        });
+
+        it('sets dividerColor to default value if invalid value is provided (emailCustomizationAlpha)', async function () {
+            await testDividerColor('#nothex', '#e0e7eb');
         });
     });
 
