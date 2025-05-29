@@ -324,7 +324,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                         {(type === 'Announce') && <div className='z-10 mb-2 flex items-center gap-1.5 text-gray-700 dark:text-gray-600'>
                             {repostIcon}
                             <div className='flex min-w-0 items-center gap-1 text-sm'>
-                                <span className='break-anywhere truncate hover:underline' title={getUsername(actor)} onClick={(e) => {
+                                <span className='truncate break-anywhere hover:underline' title={getUsername(actor)} onClick={(e) => {
                                     handleProfileClick(actor, navigate, e);
                                 }}>{actor.name}</span>
                                 reposted
@@ -338,7 +338,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         handleProfileClick(author, navigate, e);
                                     }
                                 }}>
-                                    <span className={`break-anywhere min-w-0 truncate font-semibold leading-[normal] ${isCompact ? 'text-lg' : 'text-md'} ${!isPending ? 'hover-underline' : ''} dark:text-white`}
+                                    <span className={`min-w-0 truncate font-semibold leading-[normal] break-anywhere ${isCompact ? 'text-lg' : 'text-md'} ${!isPending ? 'hover-underline' : ''} dark:text-white`}
                                         data-test-activity-heading
                                     >
                                         {!isLoading ? author.name : <Skeleton className='w-24' />}
@@ -364,15 +364,15 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             <div className='relative col-start-2 col-end-3 w-full gap-4 pl-[52px]'>
                                 <div className='flex flex-col'>
                                     <div className=''>
-                                        {(object.type === 'Article') ? <div className='border-gray-150 hover:bg-gray-75 rounded-md border transition-colors dark:border-gray-950 dark:hover:bg-gray-950'>
+                                        {(object.type === 'Article') ? <div className='rounded-md border border-gray-150 transition-colors hover:bg-gray-75 dark:border-gray-950 dark:hover:bg-gray-950'>
                                             {renderFeedAttachment(object, openLightbox)}
                                             <div className='p-5'>
-                                                <div className='break-anywhere mb-1 line-clamp-2 text-pretty text-lg font-semibold leading-tight tracking-tight' data-test-activity-heading>{object.name}</div>
-                                                <div className='break-anywhere line-clamp-3 leading-[1.4em]'>{object.preview?.content}</div>
+                                                <div className='mb-1 line-clamp-2 text-pretty text-lg font-semibold leading-tight tracking-tight break-anywhere' data-test-activity-heading>{object.name}</div>
+                                                <div className='line-clamp-3 leading-[1.4em] break-anywhere'>{object.preview?.content}</div>
                                             </div>
                                         </div> :
                                             <div className='relative'>
-                                                <div className='ap-note-content break-anywhere line-clamp-[10] text-pretty leading-[1.4285714286] tracking-[-0.006em] text-gray-900 dark:text-gray-600 [&_p+p]:mt-3'>
+                                                <div className='ap-note-content line-clamp-[10] text-pretty leading-[1.4285714286] tracking-[-0.006em] text-gray-900 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'>
                                                     {!isLoading ?
                                                         <div dangerouslySetInnerHTML={{
                                                             __html: openLinksInNewTab(object.content || '') ?? ''
@@ -410,7 +410,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 repostCount={repostCount}
                                                 onLikeClick={onLikeClick}
                                             /> :
-                                            <Skeleton className='w-18 ml-2' />
+                                            <Skeleton className='ml-2 w-18' />
                                         }
                                     </div>
                                 </div>
@@ -436,7 +436,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             <div className={`z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 pb-3 pt-4`} data-test-activity>
                                 {(type === 'Announce') && <div className='z-10 col-span-2 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
                                     <div>{repostIcon}</div>
-                                    <span className='flex min-w-0 items-center gap-1'><span className='break-anywhere truncate hover:underline' title={getUsername(actor)} onClick={(e) => {
+                                    <span className='flex min-w-0 items-center gap-1'><span className='truncate break-anywhere hover:underline' title={getUsername(actor)} onClick={(e) => {
                                         handleProfileClick(actor, navigate, e);
                                     }}>{actor.name}</span> reposted</span>
                                 </div>}
@@ -450,7 +450,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         }
                                     }}>
                                         <div className='flex w-full'>
-                                            <span className='break-anywhere min-w-0 truncate whitespace-nowrap font-semibold after:mx-1 after:font-normal after:text-gray-700 after:content-["·"] after:dark:text-gray-600' data-test-activity-heading>{author.name}</span>
+                                            <span className='min-w-0 truncate whitespace-nowrap font-semibold break-anywhere after:mx-1 after:font-normal after:text-gray-700 after:content-["·"] after:dark:text-gray-600' data-test-activity-heading>{author.name}</span>
                                             <div>{renderTimestamp(object, !object.authored)}</div>
                                         </div>
                                         <div className='flex w-full'>
@@ -460,8 +460,8 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </>}
                                 <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
-                                        {object.name && <H4 className='break-anywhere mb-1 leading-tight' data-test-activity-heading>{object.name}</H4>}
-                                        <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content-large break-anywhere text-pretty text-[1.6rem] tracking-[-0.011em] text-gray-900 dark:text-gray-600 [&_p+p]:mt-3'></div>
+                                        {object.name && <H4 className='mb-1 leading-tight break-anywhere' data-test-activity-heading>{object.name}</H4>}
+                                        <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content-large text-pretty text-[1.6rem] tracking-[-0.011em] text-gray-900 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'></div>
                                         {renderFeedAttachment(object, openLightbox)}
                                         <div className='space-between ml-[-8px] mt-3 flex'>
                                             {showStats && <FeedItemStats
@@ -509,7 +509,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         }
                                     }}>
                                         <div className='flex'>
-                                            <span className='break-anywhere min-w-0 truncate whitespace-nowrap font-semibold text-black after:mx-1 after:font-normal after:text-gray-700 after:content-["·"] dark:text-white' data-test-activity-heading>{author.name}</span>
+                                            <span className='min-w-0 truncate whitespace-nowrap font-semibold text-black break-anywhere after:mx-1 after:font-normal after:text-gray-700 after:content-["·"] dark:text-white' data-test-activity-heading>{author.name}</span>
                                             <div>{renderTimestamp(object, (isPending === false && !object.authored))}</div>
                                         </div>
                                         <div className='flex'>
@@ -528,8 +528,8 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
                                         {(object.type === 'Article') && renderFeedAttachment(object, openLightbox)}
-                                        {object.name && <H4 className='break-anywhere mt-2.5 text-pretty leading-tight' data-test-activity-heading>{object.name}</H4>}
-                                        {(object.preview && object.type === 'Article') ? <div className='mt-1 line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content break-anywhere text-pretty tracking-[-0.006em] text-gray-900 dark:text-gray-600 [&_p+p]:mt-3'></div>}
+                                        {object.name && <H4 className='mt-2.5 text-pretty leading-tight break-anywhere' data-test-activity-heading>{object.name}</H4>}
+                                        {(object.preview && object.type === 'Article') ? <div className='mt-1 line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'></div>}
                                         {(object.type === 'Note') && renderFeedAttachment(object, openLightbox)}
                                         {(object.type === 'Article') && <Button
                                             className='mt-3 w-full'
@@ -569,13 +569,13 @@ const FeedItem: React.FC<FeedItemProps> = ({
         return (
             <>
                 {object && (
-                    <div className='group/article hover:bg-gray-75 relative -mx-4 -my-px flex min-h-[112px] min-w-0 cursor-pointer items-center justify-between rounded-lg p-6 dark:hover:bg-gray-950/50' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
+                    <div className='group/article relative -mx-4 -my-px flex min-h-[112px] min-w-0 cursor-pointer items-center justify-between rounded-lg p-6 hover:bg-gray-75 dark:hover:bg-gray-950/50' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
                         <div className='w-full min-w-0'>
                             <div className='z-10 mb-1.5 flex w-full min-w-0 items-center gap-1.5 text-sm group-hover/article:border-transparent'>
                                 {!isLoading ?
                                     <>
                                         <APAvatar author={author} size='2xs' />
-                                        <span className='break-anywhere min-w-0 truncate font-semibold text-gray-900 hover:underline dark:text-gray-600'
+                                        <span className='min-w-0 truncate font-semibold text-gray-900 break-anywhere hover:underline dark:text-gray-600'
                                             title={getUsername(author)}
                                             data-test-activity-heading
                                             onClick={(e) => {
@@ -593,14 +593,14 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             </div>
                             <div className='flex'>
                                 <div className='flex min-h-[73px] w-full min-w-0 flex-col items-start justify-start gap-1'>
-                                    <H4 className='break-anywhere line-clamp-2 w-full max-w-[600px] text-pretty leading-tight' data-test-activity-heading>
+                                    <H4 className='line-clamp-2 w-full max-w-[600px] text-pretty leading-tight break-anywhere' data-test-activity-heading>
                                         {isLoading ? <Skeleton className='w-full max-w-96' /> : (object.name ? object.name : (
                                             <span dangerouslySetInnerHTML={{
                                                 __html: stripHtml(object.content || '')
                                             }}></span>
                                         ))}
                                     </H4>
-                                    <div className='ap-note-content break-anywhere line-clamp-2 w-full max-w-[600px] text-pretty text-base leading-normal text-gray-800 dark:text-gray-600 [&_p+p]:mt-3'>
+                                    <div className='ap-note-content line-clamp-2 w-full max-w-[600px] text-pretty text-base leading-normal text-gray-800 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'>
                                         {!isLoading ?
                                             <div dangerouslySetInnerHTML={{
                                                 __html: stripHtml(object.preview?.content ?? object.content ?? '')
