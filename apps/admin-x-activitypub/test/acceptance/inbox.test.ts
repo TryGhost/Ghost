@@ -2,7 +2,7 @@ import {expect, test} from '@playwright/test';
 import {mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Inbox', async () => {
-    test('The user can view a list of articles in the Inbox', async ({page}) => {
+    test('I can view a list of articles in the Inbox', async ({page}) => {
         await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
@@ -31,7 +31,7 @@ test.describe('Inbox', async () => {
         expect(firstFeedItemText).toContain(firstPost.excerpt);
     });
 
-    test('The user can click on a post to view it', async ({page}) => {
+    test('I can click on a post to view it', async ({page}) => {
         const postIndex = 2;
         const postFixture = responseFixtures.activitypubInbox.posts[postIndex];
 
@@ -86,5 +86,53 @@ test.describe('Inbox', async () => {
         await expect(iframeContent.getByText(
             postFixture.content.replace(/<[^>]*>?/g, '').trim()
         )).toBeVisible(); // Content (inside the iframe)
+    });
+
+    test('I can like a post', async ({page}) => {
+        const secondPostFixture = responseFixtures.activitypubInbox.posts[1]; // Second post (0-indexed)
+
+        const {lastApiRequests} = await mockApi({page, requests: {
+            getInbox: {
+                method: 'GET',
+                path: '/inbox',
+                response: responseFixtures.activitypubInbox
+            },
+            likePost: {
+                method: 'POST',
+                path: `/actions/like/${encodeURIComponent(secondPostFixture.id)}`,
+                response: {}
+            }
+        }, options: {useActivityPub: true}});
+
+        await page.goto('#/inbox');
+
+        // Wait for the inbox list to be visible
+        const inboxList = page.getByTestId('inbox-list');
+        await expect(inboxList).toBeVisible();
+
+        // Get all posts
+        const posts = page.getByTestId('inbox-item');
+        await expect(posts).toHaveCount(10);
+
+        // Get the second post (index 1)
+        const secondPost = posts.nth(1);
+
+        // Hover over the second post to make the like button appear
+        await secondPost.hover();
+
+        // Wait for the like button to be visible on hover
+        const likeButton = secondPost.getByRole('button', {name: /like/i});
+        await expect(likeButton).toBeVisible();
+
+        // Click the like button
+        await likeButton.click();
+
+        // Verify the like button is now active
+        await expect(likeButton).toHaveAttribute('title', 'Undo like');
+        const icon = likeButton.locator('svg');
+        await expect(icon).toHaveClass(/fill-pink-500/);
+
+        // Verify that a POST request was made to the like endpoint
+        expect(lastApiRequests.likePost).toBeTruthy();
     });
 });
