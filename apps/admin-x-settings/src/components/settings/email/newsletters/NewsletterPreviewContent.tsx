@@ -36,14 +36,13 @@ const NewsletterPreviewContent: React.FC<{
     showBadge?: boolean;
 
     backgroundColor?: string;
-    headerColor?: string;
-    borderColor?: string;
+    headerBackgroundColor?: string;
     accentColor?: string;
     textColor?: string;
     secondaryTextColor?: string;
     headerTextColor?: string;
     secondaryHeaderTextColor?: string;
-    titleColor?: string;
+    postTitleColor?: string;
     sectionTitleColor?: string;
     dividerColor?: string;
     buttonColor?: string;
@@ -80,13 +79,13 @@ const NewsletterPreviewContent: React.FC<{
     showBadge,
 
     backgroundColor,
-    headerColor,
+    headerBackgroundColor,
     accentColor,
     textColor,
     secondaryTextColor,
     headerTextColor,
     secondaryHeaderTextColor,
-    titleColor,
+    postTitleColor,
     sectionTitleColor,
     dividerColor,
     buttonColor,
@@ -99,11 +98,10 @@ const NewsletterPreviewContent: React.FC<{
 }) => {
     const showHeader = headerIcon || headerTitle;
     const {config} = useGlobalData();
-    const hasEmailCustomizationPrototype = useFeatureFlag('emailCustomizationPrototype');
     const hasEmailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
 
-    const hasAnyEmailCustomization = hasEmailCustomization || hasEmailCustomizationAlpha || hasEmailCustomizationPrototype;
+    const hasAnyEmailCustomization = hasEmailCustomization || hasEmailCustomizationAlpha;
 
     const currentDate = new Date().toLocaleDateString('default', {
         year: 'numeric',
@@ -160,7 +158,7 @@ const NewsletterPreviewContent: React.FC<{
 
                     {/* Email content */}
                     <div className="overflow-y-auto p-4 text-sm" style={{backgroundColor}}>
-                        <div className="px-[5.4rem]" style={{backgroundColor: headerColor}}>
+                        <div className="px-[5.4rem]" style={{backgroundColor: headerBackgroundColor}}>
                             {headerImage && (
                                 <div>
                                     <img alt="" className="mb-4 block" src={headerImage} />
@@ -186,7 +184,7 @@ const NewsletterPreviewContent: React.FC<{
                                                 titleFontWeight === 'bold' && 'font-bold',
                                                 titleAlignment === 'center' ? 'text-center' : 'text-left',
                                                 showExcerpt ? 'mb-2' : 'mb-8'
-                                            )} style={{color: titleColor}}>Delivery Apps Are Changing Your Neighbourhood</h2>
+                                            )} style={{color: postTitleColor}}>Delivery Apps Are Changing Your Neighbourhood</h2>
                                             {showExcerpt && (
                                                 <p className={excerptClasses} style={{color: headerTextColor}}>Delivery apps are thriving—local restaurants and workers are paying the price.</p>
                                             )}
@@ -198,7 +196,7 @@ const NewsletterPreviewContent: React.FC<{
                                                 titleFontCategory === 'serif' && 'font-serif',
                                                 titleAlignment === 'center' ? 'text-center' : 'text-left',
                                                 showExcerpt ? 'mb-2' : 'mb-8'
-                                            )} style={{color: titleColor}}>
+                                            )} style={{color: postTitleColor}}>
                                                 Your email newsletter
                                             </h2>
                                             {showExcerpt && (
@@ -238,7 +236,7 @@ const NewsletterPreviewContent: React.FC<{
                             )}
                         </div>
 
-                        <div className={clsx('px-[5.4rem]', headerColor !== 'transparent' && 'pt-10')}>
+                        <div className={clsx('px-[5.4rem]', headerBackgroundColor !== 'transparent' && 'pt-10')}>
                             <div className={clsx(
                                 'max-w-[600px] border-b border-grey-200 pb-5 leading-[27.2px] text-black',
                                 dividerStyle === 'dashed' && 'border-dashed',

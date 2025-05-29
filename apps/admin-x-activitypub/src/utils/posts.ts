@@ -89,6 +89,7 @@ export function mapPostToActivity(post: Post): Activity {
         type: objectType,
         name: post.title,
         content: post.content,
+        summary: post.summary,
         url: post.url,
         attributedTo: actor,
         image: post.featureImageUrl ?? '',

@@ -22,6 +22,8 @@ const path = require('path');
 const os = require('os');
 const crypto = require('crypto');
 
+const assert = require('assert/strict');
+
 const fixtureUtils = require('./fixture-utils');
 const redirectsUtils = require('./redirects');
 const configUtils = require('./configUtils');
@@ -444,6 +446,37 @@ class Nullable extends AsymmetricMatcher {
     }
 }
 
+/*
+ * Assertion Helpers
+ */
+
+/**
+ * Assert that the x-cache-invalidate header not set
+ * @returns {Function}
+ */
+function cacheInvalidateHeaderNotSet() {
+    return ({headers}) => {
+        // Assert header should not exist
+        assert.equal(
+            headers['x-cache-invalidate'],
+            undefined,
+            'x-cache-invalidate header should not be present');
+    };
+}
+
+/**
+ * Assert that the x-cache-invalidate header is set to /*
+ * @returns {Function}
+ */
+function cacheInvalidateHeaderSetToWildcard() {
+    return ({headers}) => {
+        assert.equal(
+            headers['x-cache-invalidate'],
+            '/*',
+            'x-cache-invalidate header should be set to /*');
+    };
+}
+
 module.exports = {
     // request agent
     agentProvider: {
@@ -501,6 +534,11 @@ module.exports = {
         //        An ideal solution would be removal of this matcher altogether.
         anyLocalURL: stringMatching(/http:\/\/127.0.0.1:2369\/[A-Za-z0-9_-]+\//),
         stringMatching
+    },
+
+    assertions: {
+        cacheInvalidateHeaderNotSet,
+        cacheInvalidateHeaderSetToWildcard
     },
 
     // utilities
