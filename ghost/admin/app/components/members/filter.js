@@ -164,6 +164,8 @@ export default class MembersFilter extends Component {
 
     newsletters;
 
+    @tracked isLoading = false;
+
     get filterProperties() {
         let availableFilters = FILTER_PROPERTIES;
 
@@ -239,6 +241,8 @@ export default class MembersFilter extends Component {
         // we need to make sure all the filters are loaded before parsing the default filter
         // otherwise the filter will be parsed with the wrong properties
         try {
+            this.isLoading = true;
+
             await this.fetchTiers.perform();
             await this.fetchNewsletters.perform();
             await this.fetchOffers.perform();
@@ -249,6 +253,8 @@ export default class MembersFilter extends Component {
             }
 
             throw e;
+        } finally {
+            this.isLoading = false;
         }
 
         if (this.args.defaultFilterParam) {

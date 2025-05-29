@@ -1,14 +1,18 @@
-<GhBasicDropdown @verticalPosition="below" @horizontalPosition="right" @onClose={{this.onDropdownClose}} as |dd|>
+<GhBasicDropdown @verticalPosition="below" @horizontalPosition="right" @onClose={{this.onDropdownClose}} @disabled={{this.isLoading}} as |dd|>
 
     <dd.Trigger
         class="gh-btn gh-btn-icon gh-btn-action-icon"
         data-test-button="members-filter-actions"
     >
         <span class="{{if @isFiltered "gh-btn-label-green"}}" {{did-update this.parseDefaultFilters @parseFilterParamCounter}}>
-            {{svg-jar "filter"}}
-            Filter
-            {{#if @isFiltered}}
-            ({{this.totalFilters}})
+            {{#if this.isLoading}}
+                <div class="gh-loading-spinner-small"></div>
+            {{else}}
+                {{svg-jar "filter"}}
+                Filter
+                {{#if @isFiltered}}
+                    ({{this.totalFilters}})
+                {{/if}}
             {{/if}}
         </span>
     </dd.Trigger>
