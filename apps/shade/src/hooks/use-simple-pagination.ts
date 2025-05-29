@@ -1,4 +1,4 @@
-import {useMemo, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 
 /**
  * A simple pagination hook that handles data slicing and page navigation.
@@ -52,6 +52,10 @@ export function useSimplePagination<T>({
 }: UseSimplePaginationProps<T>): UseSimplePaginationResult<T> {
     const [currentPage, setCurrentPage] = useState(initialPage);
 
+    if (itemsPerPage <= 0) {
+        throw new Error('itemsPerPage must be a positive number');
+    }
+
     const setCurrentPageSafe = (page: number) => {
         const clampedPage = Math.max(1, Math.min(totalPages, page));
         setCurrentPage(clampedPage);
@@ -63,6 +67,13 @@ export function useSimplePagination<T>({
         }
         return Math.ceil(data.length / itemsPerPage);
     }, [data, itemsPerPage]);
+
+    // Reset to page 1 if current page becomes invalid due to data changes
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(1);
+        }
+    }, [currentPage, totalPages]);
 
     const paginatedData = useMemo(() => {
         if (!data) {
