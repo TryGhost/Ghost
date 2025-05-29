@@ -4,6 +4,7 @@ import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api
 import {Button, LucideIcon} from '@tryghost/shade';
 import {useAnimatedCounter} from '@hooks/use-animated-counter';
 import {useDerepostMutationForUser, useLikeMutationForUser, useRepostMutationForUser, useUnlikeMutationForUser} from '@hooks/use-activity-pub-queries';
+import {useKeyboardShortcuts} from '@hooks/use-keyboard-shortcuts';
 
 interface FeedItemStatsProps {
     actor: ActorProperties;
@@ -36,13 +37,16 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
     const [isReposted, setIsReposted] = useState(object.reposted);
     const [showReplyModal, setShowReplyModal] = useState(false);
 
-    // Sync with external changes - Update the liked / reposted state when the object changes
+    useKeyboardShortcuts({
+        isReplyAvailable: !onCommentClick,
+        onOpenReply: () => setShowReplyModal(true)
+    });
+
     useEffect(() => {
         setIsLiked(object.liked);
         setIsReposted(object.reposted);
     }, [object.liked, object.reposted]);
 
-    // Sync with external changes - Update the repost count when the initialRepostCount changes
     useEffect(() => {
         if (repostCount !== initialRepostCount) {
             if (initialRepostCount > repostCount) {
@@ -82,11 +86,9 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
     const handleCommentClick = (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
 
-        // If there's a custom onCommentClick handler (for special cases), use it
         if (onCommentClick) {
             onCommentClick();
         } else {
-            // Otherwise, open our modal for both Notes and Articles
             setShowReplyModal(true);
         }
     };

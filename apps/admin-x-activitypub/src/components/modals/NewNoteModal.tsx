@@ -4,7 +4,7 @@ import FeedItem from '@components/feed/FeedItem';
 import getUsername from '@utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
-import {ChangeEvent, useEffect, useRef, useState} from 'react';
+import {ChangeEvent, useCallback, useEffect, useRef, useState} from 'react';
 import {ComponentPropsWithoutRef, ReactNode} from 'react';
 import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE} from '@utils/image';
 import {toast} from 'sonner';
@@ -59,7 +59,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
 
     const isDisabled = !content.trim() || !user || isPosting;
 
-    const handlePost = async () => {
+    const handlePost = useCallback(async () => {
         const trimmedContent = content.trim();
 
         if (!trimmedContent || !user) {
@@ -92,7 +92,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
         } finally {
             setIsPosting(false);
         }
-    };
+    }, [content, user, replyTo, replyMutation, noteMutation, uploadedImageUrl, onReply, onReplyError, setIsOpen, navigate]);
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setContent(e.target.value);
@@ -116,6 +116,23 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
             return () => clearTimeout(timeoutId);
         }
     }, [isOpen, props.open]);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                e.preventDefault();
+                if (!isDisabled && !isImageUploading) {
+                    handlePost();
+                }
+            }
+        };
+
+        const modalIsOpen = props.open !== undefined ? props.open : isOpen;
+        if (modalIsOpen) {
+            document.addEventListener('keydown', handleKeyDown);
+            return () => document.removeEventListener('keydown', handleKeyDown);
+        }
+    }, [isOpen, props.open, isDisabled, isImageUploading, handlePost]);
 
     const handleImageUpload = async (file: File) => {
         try {
