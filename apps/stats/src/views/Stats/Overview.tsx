@@ -4,7 +4,7 @@ import React, {useMemo} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, H3, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {getAudienceQueryParam} from './components/AudienceSelect';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -94,7 +94,7 @@ interface HelpCardProps {
     children?: React.ReactNode;
 }
 
-const HelpCard: React.FC<HelpCardProps> = ({
+export const HelpCard: React.FC<HelpCardProps> = ({
     className,
     title,
     description,
@@ -347,9 +347,11 @@ const Overview: React.FC = () => {
                                 </div>
                             </div>
                         </CardContent>
+                        {/*
+                        TBD
                         <CardFooter className='flex items-center justify-between gap-3'>
                             <Button><LucideIcon.Share /> Share post</Button>
-                        </CardFooter>
+                        </CardFooter> */}
                     </Card>
                     <Card className='group/card lg:col-span-2'>
                         <CardHeader>
@@ -438,6 +440,8 @@ const Overview: React.FC = () => {
                         </CardContent>
                     </Card>
                 </div>
+                {/*
+                TBD
                 <div className='grid grid-cols-1 gap-8 lg:grid-cols-2'>
                     <H3 className='-mb-4 mt-4 lg:col-span-2'>Grow your audience</H3>
                     <HelpCard
@@ -456,7 +460,7 @@ const Overview: React.FC = () => {
                             <LucideIcon.ChartColumnIncreasing className='text-muted-foreground' size={40} strokeWidth={1} />
                         </div>
                     </HelpCard>
-                </div>
+                </div> */}
             </StatsView>
         </StatsLayout>
     );
