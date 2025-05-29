@@ -1,21 +1,30 @@
 import * as FormPrimitive from '@radix-ui/react-form';
 import APAvatar from '@components/global/APAvatar';
-import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import FeedItem from '@components/feed/FeedItem';
+import getUsername from '@utils/get-username';
+import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 import {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {ComponentPropsWithoutRef, ReactNode} from 'react';
 import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE} from '@utils/image';
 import {toast} from 'sonner';
-import {uploadFile, useAccountForUser, useNoteMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
+import {uploadFile, useAccountForUser, useNoteMutationForUser, useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface NewNoteModalProps extends ComponentPropsWithoutRef<typeof Dialog> {
     children?: ReactNode;
+    replyTo?: {
+        object: ObjectProperties;
+        actor: ActorProperties;
+    };
+    onReply?: () => void;
+    onReplyError?: () => void;
 }
 
-const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
+const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, onReplyError, ...props}) => {
     const {data: user} = useUserDataForUser('index');
     const noteMutation = useNoteMutationForUser('index', user);
+    const replyMutation = useReplyMutationForUser('index', user);
     const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', 'me');
     const [isOpen, setIsOpen] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -39,10 +48,24 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
 
         try {
             setIsPosting(true);
-            await noteMutation.mutateAsync({content: trimmedContent, imageUrl: uploadedImageUrl || undefined});
-            navigate('/feed');
+
+            if (replyTo) {
+                await replyMutation.mutateAsync({
+                    inReplyTo: replyTo.object.id,
+                    content: trimmedContent,
+                    imageUrl: uploadedImageUrl || undefined
+                });
+                onReply?.();
+            } else {
+                await noteMutation.mutateAsync({content: trimmedContent, imageUrl: uploadedImageUrl || undefined});
+                navigate('/feed');
+            }
+
             setIsOpen(false);
         } catch (error) {
+            if (replyTo) {
+                onReplyError?.();
+            }
             // Handle error case if needed
             // console.error('Failed to create post:', error);
         } finally {
@@ -130,6 +153,14 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
         };
     }, [imagePreview]);
 
+    let placeholder = 'What\'s new?';
+    if (replyTo) {
+        const attributedTo = replyTo.object.attributedTo || {};
+        if (typeof attributedTo === 'object' && 'preferredUsername' in attributedTo && 'id' in attributedTo) {
+            placeholder = `Reply to ${getUsername(attributedTo as ActorProperties)}...`;
+        }
+    }
+
     return (
         <Dialog open={isOpen} onOpenChange={(open) => {
             if (open) {
@@ -148,18 +179,31 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
-            <DialogContent className='min-h-[200px]'>
+            <DialogContent className={`max-h-[80vh] min-h-[200px] overflow-y-auto`} onClick={e => e.stopPropagation()}>
                 <DialogHeader className='hidden'>
-                    <DialogTitle>New note</DialogTitle>
+                    <DialogTitle>{replyTo ? 'Reply' : 'New note'}</DialogTitle>
                     <DialogDescription>Post your thoughts to the Social web</DialogDescription>
                 </DialogHeader>
-                <div className='flex items-start gap-3'>
+                {replyTo && (
+                    <FeedItem
+                        actor={replyTo.actor}
+                        allowDelete={false}
+                        commentCount={replyTo.object.replyCount ?? 0}
+                        isCompact={true}
+                        layout='reply'
+                        object={replyTo.object}
+                        repostCount={replyTo.object.repostCount ?? 0}
+                        type={replyTo.object.type === 'Article' ? 'Article' : 'Note'}
+                        onClick={() => {}}
+                    />
+                )}
+                <div className='flex min-h-24 items-start gap-3'>
                     <APAvatar author={user as ActorProperties} />
                     <FormPrimitive.Root asChild>
                         <div className='-mt-0.5 flex w-full flex-col gap-0.5'>
                             {isLoadingAccount ?
                                 <Skeleton className='w-10' /> :
-                                <span className='text-lg font-semibold'>{account?.name}</span>
+                                <span className='class="break-anywhere dark:text-white" min-w-0 truncate whitespace-nowrap font-semibold text-black'>{account?.name}</span>
                             }
                             <FormPrimitive.Field name='content' asChild>
                                 <FormPrimitive.Control asChild>
@@ -167,7 +211,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
                                         ref={textareaRef}
                                         autoFocus={true}
                                         className='ap-textarea w-full resize-none bg-transparent text-[1.5rem]'
-                                        placeholder='What&apos;s new?'
+                                        placeholder={placeholder}
                                         rows={1}
                                         value={content}
                                         onChange={handleChange}

@@ -189,12 +189,6 @@ const Notifications: React.FC = () => {
         // Don't need to know about setting timeouts or anything like that
     };
 
-    const handleCommentClick = (postId?: string) => {
-        if (postId) {
-            navigate(`/feed/${encodeURIComponent(postId)}`);
-        }
-    };
-
     const maxAvatars = 5;
 
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = useNotificationsForUser('index');
@@ -319,12 +313,12 @@ const Notifications: React.FC = () => {
                                                                     name: actor.name,
                                                                     handle: actor.handle
                                                                 }}
-                                                                className='-ml-2 !bg-[#F3F3F3] outline outline-2 outline-white group-hover:!bg-[#EDEEF0] group-hover:outline-gray-75 dark:outline-black group-hover:dark:outline-gray-950'
+                                                                className='group-hover:outline-gray-75 -ml-2 !bg-[#F3F3F3] outline outline-2 outline-white group-hover:!bg-[#EDEEF0] dark:outline-black group-hover:dark:outline-gray-950'
                                                                 size='notification'
                                                             />
                                                         ))}
                                                         {group.actors.length > maxAvatars && (!openStates[group.id || `${group.type}_${index}`]) && (
-                                                            <div className='absolute right-[28px] z-10 flex size-9 items-center justify-center rounded-full bg-black/50 text-base font-semibold tracking-tightest text-white'>
+                                                            <div className='tracking-tightest absolute right-[28px] z-10 flex size-9 items-center justify-center rounded-full bg-black/50 text-base font-semibold text-white'>
                                                                 {`+${group.actors.length - maxAvatars}`}
                                                             </div>
                                                         )}
@@ -345,7 +339,7 @@ const Notifications: React.FC = () => {
                                                                 {group.actors.map((actor: ActorProperties) => (
                                                                     <div
                                                                         key={actor.id}
-                                                                        className='flex items-center break-anywhere hover:opacity-80'
+                                                                        className='break-anywhere flex items-center hover:opacity-80'
                                                                         onClick={(e) => {
                                                                             e?.stopPropagation();
                                                                             handleProfileClick(actor.handle, navigate);
@@ -396,7 +390,7 @@ const Notifications: React.FC = () => {
                                                             className='ap-note-content mt-0.5 line-clamp-1 text-pretty text-sm text-gray-700 dark:text-gray-600'
                                                         /> :
                                                         <>
-                                                            <div className='mt-2.5 rounded-md bg-gray-100 px-5 py-[14px] group-hover:bg-gray-200 dark:bg-gray-925/30 group-hover:dark:bg-black/40'>
+                                                            <div className='dark:bg-gray-925/30 mt-2.5 rounded-md bg-gray-100 px-5 py-[14px] group-hover:bg-gray-200 group-hover:dark:bg-black/40'>
                                                                 <ProfileLinkedContent
                                                                     className='ap-note-content text-pretty'
                                                                     content={group.post?.content || ''}
@@ -409,6 +403,14 @@ const Notifications: React.FC = () => {
                                                 {((group.type === 'reply' && group.post) || group.type === 'mention') && (
                                                     <div className="mt-1.5">
                                                         <FeedItemStats
+                                                            actor={{
+                                                                ...group.actors[0],
+                                                                icon: {
+                                                                    url: group.actors[0].avatarUrl || ''
+                                                                },
+                                                                id: group.actors[0].url,
+                                                                preferredUsername: group.actors[0].handle?.replace(/^@([^@]+)@.*$/, '$1') || 'unknown'
+                                                            }}
                                                             buttonClassName='hover:bg-gray-200'
                                                             commentCount={group.post.replyCount || 0}
                                                             layout="notification"
@@ -419,7 +421,6 @@ const Notifications: React.FC = () => {
                                                                 reposted: group.post.repostedByMe
                                                             }}
                                                             repostCount={group.post.repostCount || 0}
-                                                            onCommentClick={() => handleCommentClick(group.post?.id)}
                                                             onLikeClick={handleLikeClick}
                                                         />
                                                     </div>
