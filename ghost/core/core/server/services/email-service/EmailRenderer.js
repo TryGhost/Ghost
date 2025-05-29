@@ -346,7 +346,8 @@ class EmailRenderer {
         if (labs && labs.isSet('emailCustomizationAlpha')) {
             renderOptions.design = {
                 ...renderOptions.design,
-                ...betaDesignOptions
+                ...betaDesignOptions,
+                postTitleColor: newsletter?.get('post_title_color')
             };
         }
 

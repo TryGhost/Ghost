@@ -2099,7 +2099,8 @@ describe('Email renderer', function () {
                 button_corners: 'square',
                 button_style: 'outline',
                 link_style: 'normal',
-                image_corners: 'rounded'
+                image_corners: 'rounded',
+                post_title_color: '#BADA55'
             });
             const segment = null;
             const options = {};
@@ -2137,7 +2138,8 @@ describe('Email renderer', function () {
                     buttonStyle: 'outline',
                     titleFontWeight: 'semibold',
                     linkStyle: 'normal',
-                    imageCorners: 'rounded'
+                    imageCorners: 'rounded',
+                    postTitleColor: '#BADA55'
                 },
                 labs: {emailCustomizationAlpha: true}
             });
