@@ -52,6 +52,11 @@ export function useSimplePagination<T>({
 }: UseSimplePaginationProps<T>): UseSimplePaginationResult<T> {
     const [currentPage, setCurrentPage] = useState(initialPage);
 
+    const setCurrentPageSafe = (page: number) => {
+        const clampedPage = Math.max(1, Math.min(totalPages, page));
+        setCurrentPage(clampedPage);
+    };
+
     const totalPages = useMemo(() => {
         if (!data) {
             return 1;
@@ -80,7 +85,7 @@ export function useSimplePagination<T>({
 
     return {
         currentPage,
-        setCurrentPage,
+        setCurrentPage: setCurrentPageSafe,
         totalPages,
         paginatedData,
         nextPage,
