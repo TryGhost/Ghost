@@ -213,4 +213,52 @@ test.describe('Inbox', async () => {
             content: 'This is a test reply'
         });
     });
+
+    test('I can repost a post', async ({page}) => {
+        const secondPostFixture = responseFixtures.activitypubInbox.posts[1];
+
+        const {lastApiRequests} = await mockApi({page, requests: {
+            getInbox: {
+                method: 'GET',
+                path: '/inbox',
+                response: responseFixtures.activitypubInbox
+            },
+            repostPost: {
+                method: 'POST',
+                path: `/actions/repost/${encodeURIComponent(secondPostFixture.id)}`,
+                response: {}
+            }
+        }, options: {useActivityPub: true}});
+
+        await page.goto('#/inbox');
+
+        // Wait for the inbox list to be visible
+        const inboxList = page.getByTestId('inbox-list');
+        await expect(inboxList).toBeVisible();
+
+        // Get all posts
+        const posts = page.getByTestId('inbox-item');
+        await expect(posts).toHaveCount(10);
+
+        // Get the second post
+        const secondPost = posts.nth(1);
+
+        // Hover over the second post to make the repost button appear
+        await secondPost.hover();
+
+        // Wait for the repost button to be visible on hover
+        const repostButton = secondPost.getByRole('button', {name: /repost/i});
+        await expect(repostButton).toBeVisible();
+
+        // Click the repost button
+        await repostButton.click();
+
+        // Verify the repost button is now active
+        await expect(repostButton).toHaveAttribute('title', 'Undo repost');
+        const icon = repostButton.locator('svg');
+        await expect(icon).toHaveClass(/text-green-500/);
+
+        // Verify that a POST request was made to the repost endpoint
+        expect(lastApiRequests.repostPost).toBeTruthy();
+    });
 });
