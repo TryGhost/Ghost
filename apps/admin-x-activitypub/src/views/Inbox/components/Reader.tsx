@@ -151,6 +151,11 @@ const ArticleBody: React.FC<{
                     const script = document.createElement('script');
                     script.src = '/public/cards.min.js';
                     document.head.appendChild(script);
+
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = '/public/cards.min.css';
+                    document.head.appendChild(link);
                 });
             </script>
 
@@ -318,7 +323,7 @@ const ArticleBody: React.FC<{
 
             // Get all headings except the article title
             const headingElements = Array.from(
-                iframe.contentDocument.querySelectorAll('h1:not(.gh-article-title), h2, h3, h4, h5, h6')
+                iframe.contentDocument.querySelectorAll('.gh-content > :is(h2, h3, h4, h5, h6)[id]')
             );
 
             if (headingElements.length === 0) {
@@ -605,157 +610,152 @@ export const Reader: React.FC<ReaderProps> = ({
 
     return (
         <div ref={modalRef as React.RefObject<HTMLDivElement>} className={`max-h-full overflow-auto rounded-md ${backgroundColor === 'DARK' && 'dark'} ${(backgroundColor === 'LIGHT' || backgroundColor === 'SEPIA') && 'light'} ${COLOR_OPTIONS[backgroundColor].background}`}>
-            {
-                isLoadingPost ? (
-                    <LoadingIndicator size='lg' />
-                ) : (
-                    <>
-                        <div className='flex h-full flex-col'>
-                            <div className='relative flex-1'>
-                                <div className={`sticky top-0 z-50 flex h-[102px] items-center justify-center rounded-t-md border-b ${COLOR_OPTIONS[backgroundColor].background} ${COLOR_OPTIONS[backgroundColor].border}`}>
-                                    <div
-                                        className='grid w-full px-8'
-                                        style={{
-                                            gridTemplateColumns: `1fr minmax(0,${currentGridWidth}) 1fr`
-                                        }}
-                                    >
-                                        <div className='flex items-center'>
-                                            <BackButton className={COLOR_OPTIONS[backgroundColor].button} onClick={onClose} />
+
+            <>
+                <div className='flex h-full flex-col'>
+                    <div className='relative flex-1'>
+                        <div className={`sticky top-0 z-50 flex h-[102px] items-center justify-center rounded-t-md border-b ${COLOR_OPTIONS[backgroundColor].background} ${COLOR_OPTIONS[backgroundColor].border}`}>
+                            <div
+                                className='grid w-full px-8'
+                                style={{
+                                    gridTemplateColumns: `1fr minmax(0,${currentGridWidth}) 1fr`
+                                }}
+                            >
+                                <div className='flex items-center'>
+                                    <BackButton className={COLOR_OPTIONS[backgroundColor].button} onClick={onClose} />
+                                </div>
+                                <div className='col-[2/3] mx-auto flex w-full items-center gap-3'>
+                                    <div className='relative z-10 pt-[3px]'>
+                                        <APAvatar author={actor}/>
+                                    </div>
+                                    <div className='relative z-10 mt-0.5 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => handleProfileClick(actor, navigate, e)}>
+                                        <div className='flex w-full'>
+                                            <span className='min-w-0 truncate whitespace-nowrap font-semibold text-black hover:underline dark:text-white'>{isLoadingPost ? <Skeleton className='w-20' /> : actor.name}</span>
                                         </div>
-                                        <div className='col-[2/3] mx-auto flex w-full items-center gap-3'>
-                                            <div className='relative z-10 pt-[3px]'>
-                                                <APAvatar author={actor}/>
-                                            </div>
-                                            <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => handleProfileClick(actor, navigate, e)}>
-                                                <div className='flex w-full'>
-                                                    <span className='min-w-0 truncate whitespace-nowrap font-semibold text-black hover:underline dark:text-white'>{actor.name}</span>
-                                                </div>
-                                                <div className='flex w-full'>
-                                                    <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>
-                                                    <span className='text-gray-700'>{renderTimestamp(object, !object.authored)}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className='col-[3/4] flex items-center justify-end gap-2'>
-                                            <Customizer
-                                                backgroundColor={backgroundColor}
-                                                currentFontSizeIndex={currentFontSizeIndex}
-                                                fontStyle={fontStyle}
-                                                onColorChange={handleColorChange}
-                                                onDecreaseFontSize={decreaseFontSize}
-                                                onFontStyleChange={setFontStyle}
-                                                onIncreaseFontSize={increaseFontSize}
-                                                onOpenChange={setIsCustomizerOpen}
-                                                onResetFontSize={resetFontSize}
-                                            />
+                                        <div className='flex w-full'>
+                                            {!isLoadingPost && <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>}
+                                            <span className='text-gray-700'>{isLoadingPost ? <Skeleton className='w-[120px]' /> : renderTimestamp(object, !object.authored)}</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div className='relative flex-1'>
-                                    <TableOfContents
-                                        iframeElement={iframeElement}
-                                        modalRef={modalRef}
-                                        tocItems={tocItems}
-                                        onOpenChange={setIsTOCOpen}
+                                <div className='col-[3/4] flex items-center justify-end gap-2'>
+                                    <Customizer
+                                        backgroundColor={backgroundColor}
+                                        currentFontSizeIndex={currentFontSizeIndex}
+                                        fontStyle={fontStyle}
+                                        onColorChange={handleColorChange}
+                                        onDecreaseFontSize={decreaseFontSize}
+                                        onFontStyleChange={setFontStyle}
+                                        onIncreaseFontSize={increaseFontSize}
+                                        onOpenChange={setIsCustomizerOpen}
+                                        onResetFontSize={resetFontSize}
                                     />
-                                    <div className='grow overflow-y-auto'>
-                                        <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
-                                            <div className='flex flex-col items-center pb-8' id='object-content'>
-                                                <ArticleBody
-                                                    authors={authors}
-                                                    backgroundColor={backgroundColor}
-                                                    excerpt={object?.preview?.content ?? ''}
-                                                    fontSize={fontSize}
-                                                    fontStyle={fontStyle}
-                                                    heading={object.name}
-                                                    html={object.content ?? ''}
-                                                    image={typeof object.image === 'string' ? object.image : object.image?.url}
-                                                    isPopoverOpen={isCustomizerOpen || isTOCOpen}
-                                                    postUrl={object?.url || ''}
-                                                    onHeadingsExtracted={handleHeadingsExtracted}
-                                                    onIframeLoad={handleIframeLoad}
-                                                    onLoadingChange={setIsLoading}
-                                                />
-                                                <div className='-ml-3 w-full' style={{maxWidth: currentGridWidth}}>
-                                                    <FeedItemStats
-                                                        commentCount={replyCount}
-                                                        layout={'modal'}
-                                                        likeCount={1}
-                                                        object={object}
-                                                        repostCount={object.repostCount ?? 0}
-                                                        onCommentClick={() => {
-                                                            repliesRef.current?.scrollIntoView({
-                                                                behavior: 'smooth',
-                                                                block: 'center'
-                                                            });
-                                                            setFocusReply(true);
-                                                        }}
-                                                        onLikeClick={onLikeClick}
-                                                    />
-                                                </div>
-                                            </div>
-                                            {object.type === 'Tombstone' && (
-                                                <DeletedFeedItem last={true} />
-                                            )}
-
-                                            <div ref={replyBoxRef} className='mx-auto w-full border-t border-black/[8%] dark:border-gray-950' style={{maxWidth: currentGridWidth}}>
-                                                <APReplyBox
-                                                    focused={focusReply ? 1 : 0}
-                                                    object={object}
-                                                    onReply={incrementReplyCount}
-                                                    onReplyError={decrementReplyCount}
-                                                />
-                                                <FeedItemDivider />
-                                            </div>
-
-                                            {isLoadingThread && <LoadingIndicator size='lg' />}
-
-                                            <div ref={repliesRef} className='mx-auto w-full' style={{maxWidth: currentGridWidth}}>
-                                                {threadChildren.map((item, index) => {
-                                                    const showDivider = index !== threadChildren.length - 1;
-
-                                                    return (
-                                                        <React.Fragment key={item.id}>
-                                                            <FeedItem
-                                                                actor={item.actor}
-                                                                allowDelete={item.object.authored}
-                                                                commentCount={item.object.replyCount ?? 0}
-                                                                isPending={isPendingActivity(item.id)}
-                                                                last={true}
-                                                                layout='reply'
-                                                                object={item.object}
-                                                                parentId={object.id}
-                                                                repostCount={item.object.repostCount ?? 0}
-                                                                type='Note'
-                                                                onClick={() => {
-                                                                    navigate(`/feed/${encodeURIComponent(item.object.id)}`);
-                                                                }}
-                                                                onCommentClick={() => {
-                                                                    navigate(`/feed/${encodeURIComponent(item.object.id)}?focusReply=true`);
-                                                                }}
-                                                                onDelete={decrementReplyCount}
-                                                            />
-                                                            {showDivider && <FeedItemDivider />}
-                                                        </React.Fragment>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className='pointer-events-none !visible sticky bottom-0 hidden items-end justify-between px-10 pb-[42px] lg:!flex'>
-                                <div className='pointer-events-auto text-gray-600'>
-                                    {getReadingTime(object.content ?? '')}
-                                </div>
-                                <div key={readingProgress} className='pointer-events-auto min-w-10 text-right text-gray-600 transition-all duration-200 ease-out'>
-                                    {readingProgress}%
                                 </div>
                             </div>
                         </div>
-                    </>
-                )
-            }
+                        <div className='relative flex-1'>
+                            <TableOfContents
+                                iframeElement={iframeElement}
+                                modalRef={modalRef}
+                                tocItems={tocItems}
+                                onOpenChange={setIsTOCOpen}
+                            />
+                            {!isLoadingPost && <div className='grow overflow-y-auto'>
+                                <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
+                                    <div className='flex flex-col items-center pb-8' id='object-content'>
+                                        <ArticleBody
+                                            authors={authors}
+                                            backgroundColor={backgroundColor}
+                                            excerpt={object.summary ?? ''}
+                                            fontSize={fontSize}
+                                            fontStyle={fontStyle}
+                                            heading={object.name}
+                                            html={object.content ?? ''}
+                                            image={typeof object.image === 'string' ? object.image : object.image?.url}
+                                            isPopoverOpen={isCustomizerOpen || isTOCOpen}
+                                            postUrl={object?.url || ''}
+                                            onHeadingsExtracted={handleHeadingsExtracted}
+                                            onIframeLoad={handleIframeLoad}
+                                            onLoadingChange={setIsLoading}
+                                        />
+                                        <div className='-ml-3 w-full' style={{maxWidth: currentGridWidth}}>
+                                            <FeedItemStats
+                                                commentCount={replyCount}
+                                                layout={'modal'}
+                                                likeCount={1}
+                                                object={object}
+                                                repostCount={object.repostCount ?? 0}
+                                                onCommentClick={() => {
+                                                    repliesRef.current?.scrollIntoView({
+                                                        behavior: 'smooth',
+                                                        block: 'center'
+                                                    });
+                                                    setFocusReply(true);
+                                                }}
+                                                onLikeClick={onLikeClick}
+                                            />
+                                        </div>
+                                    </div>
+                                    {object.type === 'Tombstone' && (
+                                        <DeletedFeedItem last={true} />
+                                    )}
+
+                                    <div ref={replyBoxRef} className='mx-auto w-full border-t border-black/[8%] dark:border-gray-950' style={{maxWidth: currentGridWidth}}>
+                                        <APReplyBox
+                                            focused={focusReply ? 1 : 0}
+                                            object={object}
+                                            onReply={incrementReplyCount}
+                                            onReplyError={decrementReplyCount}
+                                        />
+                                        <FeedItemDivider />
+                                    </div>
+
+                                    {isLoadingThread && <LoadingIndicator size='lg' />}
+
+                                    <div ref={repliesRef} className='mx-auto w-full' style={{maxWidth: currentGridWidth}}>
+                                        {threadChildren.map((item, index) => {
+                                            const showDivider = index !== threadChildren.length - 1;
+
+                                            return (
+                                                <React.Fragment key={item.id}>
+                                                    <FeedItem
+                                                        actor={item.actor}
+                                                        allowDelete={item.object.authored}
+                                                        commentCount={item.object.replyCount ?? 0}
+                                                        isPending={isPendingActivity(item.id)}
+                                                        last={true}
+                                                        layout='reply'
+                                                        object={item.object}
+                                                        parentId={object.id}
+                                                        repostCount={item.object.repostCount ?? 0}
+                                                        type='Note'
+                                                        onClick={() => {
+                                                            navigate(`/feed/${encodeURIComponent(item.object.id)}`);
+                                                        }}
+                                                        onCommentClick={() => {
+                                                            navigate(`/feed/${encodeURIComponent(item.object.id)}?focusReply=true`);
+                                                        }}
+                                                        onDelete={decrementReplyCount}
+                                                    />
+                                                    {showDivider && <FeedItemDivider />}
+                                                </React.Fragment>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>}
+                        </div>
+                    </div>
+                    {!isLoadingPost && <div className='pointer-events-none !visible sticky bottom-0 hidden items-end justify-between px-10 pb-[42px] lg:!flex'>
+                        <div className='pointer-events-auto text-gray-600'>
+                            {getReadingTime(object.content ?? '')}
+                        </div>
+                        <div key={readingProgress} className='pointer-events-auto min-w-10 text-right text-gray-600 transition-all duration-200 ease-out'>
+                            {readingProgress}%
+                        </div>
+                    </div>}
+                </div>
+            </>
         </div>
     );
 };

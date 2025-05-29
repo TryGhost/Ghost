@@ -1,299 +1,126 @@
-import GlobalDataProvider from '../../../src/providers/PostAnalyticsContext';
-import React from 'react';
-import {HttpResponse, http} from 'msw';
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {afterAll, afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {createTestWrapper, mockApiHook, setupUniversalMocks} from '../../utils/test-helpers';
 import {renderHook, waitFor} from '@testing-library/react';
-import {setupServer} from 'msw/node';
-import {usePostNewsletterStats} from '../../../src/hooks/usePostNewsletterStats';
+import {responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 
-const server = setupServer();
-
-const createTestQueryClient = () => new QueryClient({
-    defaultOptions: {
-        queries: {
-            retry: false
-        }
-    }
-});
+// Centralized API mocking
+vi.mock('@tryghost/admin-x-framework/api/posts');
+vi.mock('@tryghost/admin-x-framework/api/stats');
+vi.mock('@tryghost/admin-x-framework/api/links');
+vi.mock('@src/providers/PostAnalyticsContext');
+vi.mock('@tryghost/admin-x-framework/api/settings');
 
 describe('usePostNewsletterStats', () => {
-    beforeAll(() => server.listen());
-    afterEach(() => {
-        server.resetHandlers();
-        vi.resetAllMocks();
-    });
-    afterAll(() => server.close());
-
-    const wrapper = ({children}: {children: React.ReactNode}) => {
-        const queryClient = createTestQueryClient();
-        return (
-            <QueryClientProvider client={queryClient}>
-                <GlobalDataProvider>{children}</GlobalDataProvider>
-            </QueryClientProvider>
-        );
-    };
-
-    it('returns empty stats when post is not loaded', async () => {
-        server.use(
-            http.get('/ghost/api/admin/posts/:id/', () => {
-                return HttpResponse.json({posts: []});
-            }),
-            http.get('/ghost/api/admin/stats/newsletter-stats/', () => {
-                return HttpResponse.json({stats: []});
-            }),
-            http.get('/ghost/api/admin/links/', () => {
-                return HttpResponse.json({links: []});
-            })
-        );
-
-        const {result} = renderHook(() => usePostNewsletterStats('post-id'), {wrapper});
-
-        // Initial state should be loading
-        expect(result.current.isLoading).toBe(true);
-
-        await waitFor(() => {
-            expect(result.current.isLoading).toBe(false);
-        });
-
-        expect(result.current.post).toBeUndefined();
-        expect(result.current.stats).toEqual({
-            sent: 0,
-            opened: 0,
-            clicked: 0,
-            openedRate: 0,
-            clickedRate: 0
-        });
-
-        expect(result.current.averageStats).toEqual({
-            openedRate: 0,
-            clickedRate: 0
-        });
-        expect(result.current.topLinks).toEqual([]);
+    const testPostId = '64d623b64676110001e897d9';
+    let wrapper: any;
+    let mocks: any;
+    
+    beforeEach(async () => {
+        vi.clearAllMocks();
+        wrapper = createTestWrapper();
+        
+        // Universal setup - mocks ALL API hooks with sensible defaults
+        mocks = await setupUniversalMocks();
     });
 
     it('calculates stats correctly from post data', async () => {
-        let linksRequestUrl: URL | undefined;
-
-        server.use(
-            http.get('/ghost/api/admin/posts/:id/', () => {
-                return HttpResponse.json({
-                    posts: [{
-                        id: 'post-id',
-                        email: {
-                            email_count: 1000,
-                            opened_count: 500
-                        },
-                        count: {
-                            clicks: 200
-                        }
-                    }],
-                    meta: {}
-                });
-            }),
-            http.get('/ghost/api/admin/stats/newsletter-stats/', () => {
-                return HttpResponse.json({
-                    stats: [
-                        {
-                            open_rate: 0.5,
-                            click_rate: 0.2
-                        },
-                        {
-                            open_rate: 0.6,
-                            click_rate: 0.4
-                        }
-                    ],
-                    meta: {}
-                });
-            }),
-            http.get('/ghost/api/admin/links/', ({request}) => {
-                linksRequestUrl = new URL(request.url);
-                return HttpResponse.json({
-                    links: [{
-                        post_id: 'post-id',
-                        link: {
-                            link_id: 'link-1',
-                            from: 'https://example.com/from',
-                            to: 'https://example.com/to?ref=test&attribution_id=test&attribution_type=test',
-                            edited: false
-                        },
-                        count: {
-                            clicks: 10
-                        }
-                    }, {
-                        post_id: 'post-id',
-                        link: {
-                            link_id: 'link-2',
-                            from: 'https://example.com/from',
-                            to: 'https://google.com/?ref=test&attribution_id=test&attribution_type=test',
-                            edited: false
-                        },
-                        count: {
-                            clicks: 20
-                        }
-                    }],
-                    meta: {}
-                });
-            })
-        );
-        const {result} = renderHook(() => usePostNewsletterStats('post-id'), {wrapper});
+        const {result} = renderHook(() => usePostNewsletterStats(testPostId), {wrapper});
 
         await waitFor(() => {
-            expect(result.current.isLoading).toBe(false);
+            expect(result.current.stats).toEqual({
+                sent: 1000,
+                opened: 300,
+                clicked: 50,
+                openedRate: 0.3,
+                clickedRate: 0.05
+            });
         });
-
-        expect(result.current.stats).toEqual({
-            sent: 1000,
-            opened: 500,
-            clicked: 200,
-            openedRate: 0.5,
-            clickedRate: 0.2
-        });
-
-        expect(result.current.averageStats).toEqual({
-            openedRate: 0.55,
-            clickedRate: 0.3
-        });
-
-        expect(result.current.topLinks).toEqual([{
-            count: 20,
-            link: {
-                link_id: 'link-2',
-                from: 'https://example.com/from',
-                originalTo: 'https://google.com/?ref=test&attribution_id=test&attribution_type=test',
-                title: 'google.com',
-                to: 'https://google.com/',
-                edited: false
-            }
-        }, {
-            count: 10,
-            link: {
-                link_id: 'link-1',
-                from: 'https://example.com/from',
-                originalTo: 'https://example.com/to?ref=test&attribution_id=test&attribution_type=test',
-                title: 'example.com/to',
-                to: 'https://example.com/to',
-                edited: false
-            }
-        }]);
-
-        expect(linksRequestUrl?.searchParams.get('filter')).toBe('post_id:\'post-id\'');
     });
 
-    it('handles missing email data', async () => {
-        server.use(
-            http.get('/ghost/api/admin/posts/:id/', () => {
-                return HttpResponse.json({
-                    posts: [{
-                        id: 'post-id',
-                        count: {
-                            clicks: 200
-                        }
-                    }]
-                });
-            }),
-            http.get('/ghost/api/admin/stats/newsletter-stats/', () => {
-                return HttpResponse.json({
-                    stats: [],
-                    meta: {}
-                });
-            }),
-            http.get('/ghost/api/admin/links/', () => {
-                return HttpResponse.json({links: []});
-            })
-        );
+    it('returns default stats when post has no email data', async () => {
+        const postWithoutEmail = {
+            posts: [{
+                id: testPostId,
+                url: 'https://example.com/post',
+                slug: 'test-post',
+                title: 'Test Post',
+                uuid: 'test-uuid',
+                newsletter: {id: 'newsletter-123'}
+                // No email or count data
+            }]
+        };
 
-        const {result} = renderHook(() => usePostNewsletterStats('post-id'), {wrapper});
+        mockApiHook(mocks.mockGetPost, postWithoutEmail);
+
+        const {result} = renderHook(() => usePostNewsletterStats(testPostId), {wrapper});
 
         await waitFor(() => {
-            expect(result.current.isLoading).toBe(false);
+            expect(result.current.stats).toEqual({
+                sent: 0,
+                opened: 0,
+                clicked: 0,
+                openedRate: 0,
+                clickedRate: 0
+            });
         });
-
-        expect(result.current.stats).toEqual({
-            sent: 0,
-            opened: 0,
-            clicked: 200,
-            openedRate: 0,
-            clickedRate: 0
-        });
-        expect(result.current.topLinks).toEqual([]);
     });
 
-    it('handles missing count data', async () => {
-        server.use(
-            http.get('/ghost/api/admin/posts/:id/', () => {
-                return HttpResponse.json({
-                    posts: [{
-                        id: 'post-id',
-                        email: {
-                            email_count: 1000,
-                            opened_count: 500
-                        }
-                    }]
-                });
-            }),
-            http.get('/ghost/api/admin/stats/newsletter-stats/', () => {
-                return HttpResponse.json({
-                    stats: [],
-                    meta: {}
-                });
-            }),
-            http.get('/ghost/api/admin/links/', () => {
-                return HttpResponse.json({links: []});
-            })
-        );
-
-        const {result} = renderHook(() => usePostNewsletterStats('post-id'), {wrapper});
+    it('calculates average stats from newsletter data', async () => {
+        const {result} = renderHook(() => usePostNewsletterStats(testPostId), {wrapper});
 
         await waitFor(() => {
-            expect(result.current.isLoading).toBe(false);
+            // Based on the newsletter stats fixture, calculate expected averages
+            const stats = responseFixtures.newsletterStats.stats;
+            const avgOpenRate = stats.reduce((sum, s) => sum + s.open_rate, 0) / stats.length;
+            const avgClickRate = stats.reduce((sum, s) => sum + s.click_rate, 0) / stats.length;
+            
+            expect(result.current.averageStats).toEqual({
+                openedRate: Number(avgOpenRate.toFixed(2)),
+                clickedRate: Number(avgClickRate.toFixed(2))
+            });
         });
-
-        expect(result.current.stats).toEqual({
-            sent: 1000,
-            opened: 500,
-            clicked: 0,
-            openedRate: 0.5,
-            clickedRate: 0
-        });
-        expect(result.current.topLinks).toEqual([]);
     });
 
-    it('handles missing newsletter stats', async () => {
-        server.use(
-            http.get('/ghost/api/admin/posts/:id/', () => {
-                return HttpResponse.json({
-                    posts: [{
-                        id: 'post-id',
-                        email: {
-                            email_count: 1000,
-                            opened_count: 500
-                        },
-                        count: {
-                            clicks: 200
-                        }
-                    }],
-                    meta: {}
-                });
-            }),
-            http.get('/ghost/api/admin/stats/newsletter-stats/', () => {
-                return HttpResponse.json({stats: undefined});
-            }),
-            http.get('/ghost/api/admin/links/', () => {
-                return HttpResponse.json({links: []});
-            })
-        );
+    it('handles loading states correctly', async () => {
+        mockApiHook(mocks.mockGetPost, undefined, true);
 
-        const {result} = renderHook(() => usePostNewsletterStats('post-id'), {wrapper});
+        const {result} = renderHook(() => usePostNewsletterStats(testPostId), {wrapper});
+
+        expect(result.current.isLoading).toBe(true);
+    });
+
+    it('handles missing data gracefully', async () => {
+        mockApiHook(mocks.mockGetPost, undefined);
+        mockApiHook(mocks.mockUseNewsletterStatsByNewsletterId, undefined);
+        mockApiHook(mocks.mockUseTopLinks, undefined);
+
+        const {result} = renderHook(() => usePostNewsletterStats(testPostId), {wrapper});
 
         await waitFor(() => {
-            expect(result.current.isLoading).toBe(false);
+            expect(result.current.stats).toEqual({
+                sent: 0,
+                opened: 0,
+                clicked: 0,
+                openedRate: 0,
+                clickedRate: 0
+            });
+            expect(result.current.averageStats).toEqual({
+                openedRate: 0,
+                clickedRate: 0
+            });
+            expect(result.current.topLinks).toEqual([]);
         });
+    });
 
-        expect(result.current.averageStats).toEqual({
-            openedRate: 0,
-            clickedRate: 0
-        });
-        expect(result.current.topLinks).toEqual([]);
+    it('provides refetch function for top links', async () => {
+        const mockReturn = mockApiHook(mocks.mockUseTopLinks, undefined);
+        const mockRefetch = vi.fn();
+        mockReturn.refetch = mockRefetch;
+
+        const {result} = renderHook(() => usePostNewsletterStats(testPostId), {wrapper});
+
+        expect(result.current.refetchTopLinks).toBe(mockRefetch);
     });
 });

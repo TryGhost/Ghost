@@ -10,6 +10,7 @@ describe('mapPostToActivity', function () {
             type: PostType.Article,
             title: 'Test Post',
             excerpt: 'Test Excerpt',
+            summary: 'Test Summary',
             content: 'Test Content',
             url: 'https://example.com/posts/123',
             featureImageUrl: 'https://example.com/posts/123/feature.jpg',
@@ -117,6 +118,7 @@ describe('mapPostToActivity', function () {
         expect(object.type).toBe('Article');
         expect(object.name).toBe('Test Post');
         expect(object.content).toBe('Test Content');
+        expect(object.summary).toBe('Test Summary');
         expect(object.url).toBe('https://example.com/posts/123');
         expect(object.attributedTo.id).toBe('https://example.com/users/123');
         expect(object.published).toBe('2024-01-01T00:00:00Z');

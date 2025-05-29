@@ -12,6 +12,7 @@ export type ObjectProperties = {
     type: 'Article' | 'Link' | 'Note' | 'Tombstone';
     name: string;
     content: string | null;
+    summary: string | null;
     url?: string | undefined;
     attributedTo?: object | string | object[] | undefined;
     image?: string | {
