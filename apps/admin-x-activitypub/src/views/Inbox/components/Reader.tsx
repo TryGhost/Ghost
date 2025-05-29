@@ -7,6 +7,7 @@ import {renderTimestamp} from '../../../utils/render-timestamp';
 import {usePostForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '@src/components/global/APAvatar';
+import APReplyBox from '@src/components/global/APReplyBox';
 import BackButton from '@src/components/global/BackButton';
 import DeletedFeedItem from '@src/components/feed/DeletedFeedItem';
 import FeedItem from '@src/components/feed/FeedItem';
@@ -675,12 +676,6 @@ export const Reader: React.FC<ReaderProps> = ({
                                                 likeCount={1}
                                                 object={object}
                                                 repostCount={object.repostCount ?? 0}
-                                                onCommentClick={() => {
-                                                    repliesRef.current?.scrollIntoView({
-                                                        behavior: 'smooth',
-                                                        block: 'center'
-                                                    });
-                                                }}
                                                 onLikeClick={onLikeClick}
                                                 onReplyCountChange={incrementReplyCount}
                                             />
@@ -689,6 +684,15 @@ export const Reader: React.FC<ReaderProps> = ({
                                     {object.type === 'Tombstone' && (
                                         <DeletedFeedItem last={true} />
                                     )}
+
+                                    <div className='mx-auto w-full border-t border-black/[8%] dark:border-gray-950' style={{maxWidth: currentGridWidth}}>
+                                        <APReplyBox
+                                            object={object}
+                                            onReply={() => incrementReplyCount(1)}
+                                            onReplyError={() => decrementReplyCount(1)}
+                                        />
+                                        <FeedItemDivider />
+                                    </div>
 
                                     {isLoadingThread && <LoadingIndicator size='lg' />}
 
