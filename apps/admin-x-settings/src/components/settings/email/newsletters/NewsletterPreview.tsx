@@ -10,11 +10,10 @@ import {useGlobalData} from '../../../providers/GlobalDataProvider';
 const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
     const hasEmailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
-    const hasEmailCustomizationPrototype = useFeatureFlag('emailCustomizationPrototype');
     const {currentUser, settings, siteData, config} = useGlobalData();
     const [title, icon, commentsEnabled, supportEmailAddress, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'icon', 'comments_enabled', 'support_email_address', 'default_email_address']);
 
-    const hasAnyEmailCustomization = hasEmailCustomization || hasEmailCustomizationAlpha || hasEmailCustomizationPrototype;
+    const hasAnyEmailCustomization = hasEmailCustomization || hasEmailCustomizationAlpha;
 
     let headerTitle: string | null = null;
     if (newsletter.show_header_title) {
@@ -151,35 +150,57 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
     const headerTextColor = headerBackgroundColor() === 'transparent' ? textColor : textColorForBackgroundColor(headerBackgroundColor()).hex();
     const secondaryHeaderTextColor = headerBackgroundColor() === 'transparent' ? secondaryTextColor : textColorForBackgroundColor(headerBackgroundColor()).alpha(0.5).toString();
 
-    const colors = hasEmailCustomizationPrototype ? {
-        backgroundColor: backgroundColor(),
-        headerBackgroundColor: headerBackgroundColor(),
-        postTitleColor: postTitleColor() || undefined,
-        sectionTitleColor: sectionTitleColor() || undefined,
-        buttonColor: buttonColor() || undefined,
-        linkColor: linkColor() || undefined,
-        dividerColor: dividerColor() || undefined,
-        textColor,
-        secondaryTextColor,
-        headerTextColor,
-        secondaryHeaderTextColor
-    } : {};
+    type Colors = {
+        backgroundColor?: string;
+        headerBackgroundColor?: string;
+        postTitleColor?: string;
+        sectionTitleColor?: string;
+        buttonColor?: string;
+        linkColor?: string;
+        dividerColor?: string;
+        textColor?: string;
+        secondaryTextColor?: string;
+        headerTextColor?: string;
+        secondaryHeaderTextColor?: string;
+    }
+
+    let colors: Colors = {};
+    if (hasEmailCustomizationAlpha) {
+        colors = {
+            backgroundColor: backgroundColor(),
+            headerBackgroundColor: headerBackgroundColor(),
+            postTitleColor: postTitleColor() || undefined,
+            sectionTitleColor: sectionTitleColor() || undefined,
+            buttonColor: buttonColor() || undefined,
+            linkColor: linkColor() || undefined,
+            dividerColor: dividerColor() || undefined,
+            textColor,
+            secondaryTextColor,
+            headerTextColor,
+            secondaryHeaderTextColor
+        };
+    } else if (hasEmailCustomization) {
+        colors = {
+            postTitleColor: postTitleColor() || undefined,
+            sectionTitleColor: sectionTitleColor() || undefined
+        };
+    }
 
     return <NewsletterPreviewContent
         accentColor={siteData.accent_color}
         authorPlaceholder={currentUser.name || currentUser.email}
-        backgroundColor={hasEmailCustomizationPrototype && colors.backgroundColor || '#ffffff'}
+        backgroundColor={hasEmailCustomizationAlpha && colors.backgroundColor || '#ffffff'}
         bodyFontCategory={newsletter.body_font_category}
         buttonCorners={hasAnyEmailCustomization && newsletter.button_corners || 'rounded'}
-        buttonStyle={(hasEmailCustomizationPrototype || hasEmailCustomizationAlpha) && newsletter.button_style || 'fill'}
+        buttonStyle={hasAnyEmailCustomization && newsletter.button_style || 'fill'}
         dividerStyle={newsletter.divider_style || 'solid'}
         footerContent={newsletter.footer_content}
-        headerBackgroundColor={hasEmailCustomizationPrototype ? (colors.headerBackgroundColor || headerBackgroundColor()) : 'transparent'}
+        headerBackgroundColor={hasEmailCustomizationAlpha ? (colors.headerBackgroundColor || headerBackgroundColor()) : 'transparent'}
         headerIcon={newsletter.show_header_icon ? icon : undefined}
         headerImage={newsletter.header_image}
         headerSubtitle={headerSubtitle}
         headerTitle={headerTitle}
-        imageCorners={(hasEmailCustomizationPrototype || hasEmailCustomizationAlpha) ? (newsletter.image_corners || 'square') : 'square'}
+        imageCorners={hasAnyEmailCustomization ? (newsletter.image_corners || 'square') : 'square'}
         linkStyle={(hasAnyEmailCustomization) && newsletter.link_style || 'underline'}
         senderEmail={renderSenderEmail(newsletter, config, defaultEmailAddress)}
         senderName={newsletter.sender_name || title}

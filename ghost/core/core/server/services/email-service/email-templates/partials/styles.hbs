@@ -264,6 +264,18 @@ h6 {
     line-height: 1.3em;
 }
 
+/* Post content headings */
+.post-content-row h1,
+.post-content-row h2,
+.post-content-row h3,
+.post-content-row h4,
+.post-content-row h5,
+.post-content-row h6 {
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
+    {{/if}}
+}
+
 h1 strong,
 h2 strong,
 h3 strong,
@@ -375,6 +387,14 @@ figure blockquote p {
     font-weight: {{titleWeight}};
     text-align: center;
 }
+
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#if postTitleColor}}
+.post-title-color a {
+    color: {{postTitleColor}} !important;
+}
+{{/if}}
+{{/hasFeature}}
 
 .post-title-with-excerpt {
     padding-bottom: 8px;
@@ -604,6 +624,19 @@ h3.latest-posts-header {
     color: #73818c !important;
 }
 
+/* Custom heading colors for latest posts */
+.latest-post-title h4 {
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
+    {{/if}}
+}
+
+.latest-post-title h4 a {
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}} !important;
+    {{/if}}
+}
+
 /* -------------------------------------
     SUBSCRIPTION DETAILS BOX
 ------------------------------------- */
@@ -688,6 +721,10 @@ h3.latest-posts-header {
 
 a[data-flickr-embed] img {
     height: auto;
+}
+
+td.kg-card-spacing {
+    padding: 0 0 1.5em 0;
 }
 
 /* Any card with altered visibility is wrapped in a div with the .kg-visibility-wrapper class */

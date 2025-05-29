@@ -29,12 +29,14 @@
         "preview": "vite preview"
     },
     "devDependencies": {
+        "@tanstack/react-query": "4.36.1",
         "@testing-library/react": "14.3.1",
         "@testing-library/jest-dom": "5.17.0",
         "@types/jest": "29.5.14",
         "@types/react": "18.3.23",
         "@types/react-svg-map": "2.1.4",
         "@vitejs/plugin-react": "4.5.0",
+        "msw": "2.8.3",
         "vite": "4.5.14",
         "vitest": "0.34.3"
     },

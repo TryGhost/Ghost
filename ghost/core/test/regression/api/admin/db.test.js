@@ -1,5 +1,4 @@
 const path = require('path');
-const _ = require('lodash');
 const os = require('os');
 const fs = require('fs-extra');
 const crypto = require('crypto');
@@ -18,15 +17,10 @@ let eventsTriggered;
 const TABLE_ALLOWLIST_LENGTH = 20;
 
 describe('DB API', function () {
-    let backupKey;
-    let schedulerKey;
-
     before(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request);
-        backupKey = _.find(testUtils.getExistingData().apiKeys, {integration: {slug: 'ghost-backup'}});
-        schedulerKey = _.find(testUtils.getExistingData().apiKeys, {integration: {slug: 'ghost-scheduler'}});
     });
 
     beforeEach(function () {
@@ -125,46 +119,6 @@ describe('DB API', function () {
             .expect('Content-Type', /json/)
             .attach('importfile', path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'))
             .expect(415);
-    });
-
-    it('export can be triggered by backup integration', function () {
-        const backupQuery = `?filename=test`;
-        const fsStub = sinon.stub(fs, 'writeFile').resolves();
-
-        return request.post(localUtils.API.getApiQuery(`db/backup${backupQuery}`))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/', backupKey)}`)
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect(200)
-            .then((res) => {
-                res.body.should.be.Object();
-                res.body.db[0].filename.should.match(/test\.json/);
-                fsStub.calledOnce.should.eql(true);
-            });
-    });
-
-    it('export can not be triggered by integration other than backup', function () {
-        const fsStub = sinon.stub(fs, 'writeFile').resolves();
-
-        return request.post(localUtils.API.getApiQuery(`db/backup`))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/', schedulerKey)}`)
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect(403)
-            .then((res) => {
-                should.exist(res.body.errors);
-                res.body.errors[0].type.should.eql('NoPermissionError');
-                fsStub.called.should.eql(false);
-            });
-    });
-
-    it('export can be triggered by Admin authentication', function () {
-        sinon.stub(fs, 'writeFile').resolves();
-
-        return request.post(localUtils.API.getApiQuery(`db/backup`))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect(200);
     });
 
     it('Can import a JSON database exported from Ghost 2.x', async function () {

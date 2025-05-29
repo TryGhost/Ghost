@@ -212,7 +212,7 @@ export const centsToDollars = (value: number) => {
 /* -------------------------------------------------------------------------- */
 
 // Calculates the Y-axis range with appropriate padding
-export const getYRange = (data: { value: number }[]): {min: number; max: number} => {
+export const getYRangeWithLargePadding = (data: { value: number }[]): {min: number; max: number} => {
     if (!data.length) {
         return {min: 0, max: 1};
     }
@@ -246,6 +246,68 @@ export const getYRange = (data: { value: number }[]): {min: number; max: number}
     // Round to nearest multiple of 10^n
     min = roundToNearestMultiple(min);
     max = roundToNearestMultiple(max);
+
+    return {min, max};
+};
+
+export const getYRange = (data: { value: number }[]): {min: number; max: number} => {
+    if (!data.length) {
+        return {min: 0, max: 1};
+    }
+
+    const values = data.map(d => Number(d.value));
+    let min = Math.min(...values);
+    let max = Math.max(...values);
+
+    // If min and max are the same, create a range around the value
+    // if (min === max) {
+    //     const value = min;
+    //     // Round to nearest 10
+    //     const roundTo = 10;
+    //     min = Math.max(0, Math.floor(value / roundTo) * roundTo);
+    //     max = Math.ceil(value / roundTo) * roundTo;
+    //     // If min and max are still the same, add 10 to max
+    //     if (min === max) {
+    //         max += roundTo;
+    //     }
+    //     return {min, max};
+    // }
+
+    if (min === max) {
+        const value = min;
+        return {min: Math.max(0, value - 1), max: value + 1};
+    }
+
+    // Calculate the range
+    const range = max - min;
+
+    // Use a percentage-based padding (5% of the range)
+    const padding = range * 0.05;
+
+    // Add padding and ensure min is not negative
+    min = Math.max(0, min - padding);
+    max = max + padding;
+
+    // Determine the order of magnitude for rounding based on the range
+    const rangeMagnitude = Math.floor(Math.log10(range));
+    // Always round to at least 10s, but use larger steps for bigger ranges
+    // const roundTo = Math.max(10, Math.pow(10, rangeMagnitude));
+    const roundTo = Math.pow(10, rangeMagnitude);
+
+    // Round min and max to the appropriate precision
+    min = Math.max(0, Math.floor(min / roundTo) * roundTo);
+    max = Math.ceil(max / roundTo) * roundTo;
+
+    // Ensure we have a visible range even after rounding
+    if (min === max) {
+        const midPoint = (min + max) / 2;
+        const smallRange = Math.max(Math.abs(midPoint) * 0.01, roundTo);
+        min = Math.max(0, Math.floor(midPoint - smallRange));
+        max = Math.ceil(midPoint + smallRange);
+    }
+
+    // Final safety check to ensure min is never negative
+    min = Math.max(0, min);
 
     return {min, max};
 };
@@ -297,7 +359,7 @@ export const getRangeDates = (range: number) => {
 
 // Converts a country code to corresponding flag emoji
 export function getCountryFlag(countryCode:string) {
-    if (!countryCode || countryCode === null || countryCode.toUpperCase() === 'NULL' || countryCode === 'ᴺᵁᴸᴸ') {
+    if (!countryCode || countryCode === null || countryCode.toUpperCase() === 'NULL' || countryCode === 'ᴺᵁᴸᴸ' || countryCode === 'ᴺᵁ') {
         return '🏳️';
     }
     return countryCode.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)

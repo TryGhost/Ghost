@@ -324,7 +324,7 @@ class EmailRenderer {
 
         const labs = this.getLabs();
 
-        if (labs && (labs.isSet('emailCustomization') || labs.isSet('emailCustomizationAlpha'))) {
+        if (labs?.isSet('emailCustomization') || labs?.isSet('emailCustomizationAlpha')) {
             renderOptions.design = {};
         }
 
@@ -333,17 +333,19 @@ class EmailRenderer {
             buttonStyle: newsletter?.get('button_style'),
             titleFontWeight: newsletter?.get('title_font_weight'),
             linkStyle: newsletter?.get('link_style'),
-            imageCorners: newsletter?.get('image_corners')
+            imageCorners: newsletter?.get('image_corners'),
+            postTitleColor: newsletter?.get('post_title_color'),
+            sectionTitleColor: newsletter?.get('section_title_color')
         };
 
-        if (labs && labs.isSet('emailCustomization')) {
+        if (labs?.isSet('emailCustomization')) {
             renderOptions.design = {
                 ...renderOptions.design,
                 ...betaDesignOptions
             };
         }
 
-        if (labs && labs.isSet('emailCustomizationAlpha')) {
+        if (labs?.isSet('emailCustomizationAlpha')) {
             renderOptions.design = {
                 ...renderOptions.design,
                 ...betaDesignOptions
@@ -959,6 +961,27 @@ class EmailRenderer {
         return textColorForBackgroundColor(backgroundColor).hex();
     }
 
+    #getSectionTitleColor(newsletter, accentColor) {
+        const labs = this.getLabs();
+        if (!labs?.isSet('emailCustomization') && !labs?.isSet('emailCustomizationAlpha')) {
+            return null;
+        }
+
+        /** @type {'accent' | 'auto' | string | null} */
+        const value = newsletter.get('section_title_color');
+        const validHex = /#([0-9a-f]{3}){1,2}$/i;
+
+        if (validHex.test(value)) {
+            return value;
+        }
+
+        if (value === 'accent') {
+            return accentColor;
+        }
+
+        return null;
+    }
+
     #getTitleWeight(newsletter) {
         const weights = {
             normal: '400',
@@ -968,7 +991,7 @@ class EmailRenderer {
         };
 
         const labs = this.getLabs();
-        if (!labs.isSet('emailCustomizationAlpha') && !labs.isSet('emailCustomization')) {
+        if (!labs?.isSet('emailCustomizationAlpha') && !labs?.isSet('emailCustomization')) {
             return weights.bold;
         }
 
@@ -981,7 +1004,7 @@ class EmailRenderer {
     #getTitleStrongWeight(titleWeight) {
         const numericWeight = parseInt(titleWeight, 10);
 
-        if (isNaN(numericWeight) || !this.#labs.isSet('emailCustomizationAlpha')) {
+        if (isNaN(numericWeight) || (!this.#labs?.isSet('emailCustomization') && !this.#labs?.isSet('emailCustomizationAlpha'))) {
             return '800';
         }
 
@@ -1019,6 +1042,8 @@ class EmailRenderer {
             accentColor = '#15212A';
         }
 
+        const hasAnyEmailCustomization = labs.isSet('emailCustomization') || labs.isSet('emailCustomizationAlpha');
+
         const backgroundColor = this.#getBackgroundColor(newsletter);
         const backgroundIsDark = textColorForBackgroundColor(backgroundColor).hex().toLowerCase() === '#ffffff';
         const postTitleColor = this.#getPostTitleColor(newsletter, accentColor);
@@ -1027,11 +1052,11 @@ class EmailRenderer {
         const textColor = textColorForBackgroundColor(backgroundColor).hex();
         const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
         const linkColor = backgroundIsDark ? '#ffffff' : accentColor;
-        const hasRoundedImageCorners = (labs.isSet('emailCustomization') || labs.isSet('emailCustomizationAlpha')) ? this.#getImageCorners(newsletter) : false;
+        const hasRoundedImageCorners = hasAnyEmailCustomization ? this.#getImageCorners(newsletter) : false;
+        const sectionTitleColor = hasAnyEmailCustomization ? this.#getSectionTitleColor(newsletter, accentColor) : null;
 
         let buttonBorderRadius = '6px';
-
-        if (labs.isSet('emailCustomization') || labs.isSet('emailCustomizationAlpha')) {
+        if (hasAnyEmailCustomization) {
             if (newsletter.get('button_corners') === 'square') {
                 buttonBorderRadius = '0';
             } else if (newsletter.get('button_corners') === 'pill') {
@@ -1039,13 +1064,7 @@ class EmailRenderer {
             }
         }
 
-        let hasOutlineButtons = false;
-        if (
-            (labs.isSet('emailCustomization') || labs.isSet('emailCustomizationAlpha')) &&
-            newsletter.get('button_style') === 'outline'
-        ) {
-            hasOutlineButtons = true;
-        }
+        const hasOutlineButtons = hasAnyEmailCustomization && newsletter.get('button_style') === 'outline';
 
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
         const {href: postFeatureImage, width: postFeatureImageWidth, height: postFeatureImageHeight} = await this.limitImageWidth(post.get('feature_image'));
@@ -1140,10 +1159,7 @@ class EmailRenderer {
             excerptFontClass = 'post-excerpt-serif-sans';
         }
 
-        let linkStyle = 'underline';
-        if (labs.isSet('emailCustomization') || labs.isSet('emailCustomizationAlpha')) {
-            linkStyle = newsletter.get('link_style') || 'underline';
-        }
+        const linkStyle = (hasAnyEmailCustomization && newsletter.get('link_style')) || 'underline';
 
         const data = {
             site: {
@@ -1196,7 +1212,7 @@ class EmailRenderer {
             linkColor,
             hasRoundedImageCorners,
             buttonBorderRadius,
-
+            sectionTitleColor,
             headerImage,
             headerImageWidth,
             showHeaderIcon: newsletter.get('show_header_icon') && this.#settingsCache.get('icon'),
@@ -1211,7 +1227,7 @@ class EmailRenderer {
 
             classes: {
                 container: 'container' + (newsletter.get('title_font_category') === 'serif' ? ` title-serif` : ``),
-                title: 'post-title' + ` ` + (post.get('custom_excerpt') ? 'post-title-with-excerpt' : 'post-title-no-excerpt') + (newsletter.get('title_font_category') === 'serif' ? ` post-title-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-title-left` : ``),
+                title: 'post-title' + ` ` + (post.get('custom_excerpt') ? 'post-title-with-excerpt' : 'post-title-no-excerpt') + (newsletter.get('title_font_category') === 'serif' ? ` post-title-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-title-left` : ``) + (hasAnyEmailCustomization ? ` post-title-color` : ``),
                 titleLink: 'post-title-link' + (newsletter.get('title_alignment') === 'left' ? ` post-title-link-left` : ``),
                 excerpt: 'post-excerpt' + ` ` + (newsletter.get('show_feature_image') && !!postFeatureImage ? 'post-excerpt-with-feature-image' : 'post-excerpt-no-feature-image') + ` ` + excerptFontClass + (newsletter.get('title_alignment') === 'left' ? ` post-excerpt-left` : ``),
                 meta: 'post-meta' + (newsletter.get('title_alignment') === 'left' ? ` post-meta-left` : ` post-meta-center`),
