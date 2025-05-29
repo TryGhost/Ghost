@@ -11,7 +11,7 @@ test.describe('Inbox', async () => {
             }
         }, options: {useActivityPub: true}});
 
-        await page.goto('/inbox');
+        await page.goto('#/inbox');
 
         // Wait for the inbox list to be visible
         const inboxList = page.getByTestId('inbox-list');
@@ -52,7 +52,7 @@ test.describe('Inbox', async () => {
             }
         }, options: {useActivityPub: true}});
 
-        await page.goto('/inbox');
+        await page.goto('#/inbox');
 
         // Wait for the inbox list to be visible
         const inboxList = page.getByTestId('inbox-list');
