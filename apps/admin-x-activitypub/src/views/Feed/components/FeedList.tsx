@@ -91,9 +91,6 @@ const FeedList:React.FC<FeedListProps> = ({
                                                         onClick={() => {
                                                             navigate(`/feed/${encodeURIComponent(activity.id)}`);
                                                         }}
-                                                        onCommentClick={() => {
-                                                            navigate(`/feed/${encodeURIComponent(activity.id)}?focusReply=true`);
-                                                        }}
                                                     />
                                                     {index < activities.length - 1 && (
                                                         <Separator />

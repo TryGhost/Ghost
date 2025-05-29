@@ -1,10 +1,12 @@
+import NewNoteModal from '@components/modals/NewNoteModal';
 import React, {useEffect, useState} from 'react';
+import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LucideIcon} from '@tryghost/shade';
-import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {useAnimatedCounter} from '@hooks/use-animated-counter';
 import {useDerepostMutationForUser, useLikeMutationForUser, useRepostMutationForUser, useUnlikeMutationForUser} from '@hooks/use-activity-pub-queries';
 
 interface FeedItemStatsProps {
+    actor: ActorProperties;
     object: ObjectProperties;
     likeCount: number;
     commentCount: number;
@@ -13,10 +15,12 @@ interface FeedItemStatsProps {
     disabled?: boolean;
     buttonClassName?: string;
     onLikeClick: () => void;
-    onCommentClick: () => void;
+    onCommentClick?: () => void; // Made optional since we'll handle it internally
+    onReplyCountChange?: (increment: number) => void; // New prop for parent to update reply count
 }
 
 const FeedItemStats: React.FC<FeedItemStatsProps> = ({
+    actor,
     object,
     likeCount,
     commentCount,
@@ -25,10 +29,12 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
     disabled = false,
     buttonClassName = '',
     onLikeClick,
-    onCommentClick
+    onCommentClick,
+    onReplyCountChange
 }) => {
     const [isLiked, setIsLiked] = useState(object.liked);
     const [isReposted, setIsReposted] = useState(object.reposted);
+    const [showReplyModal, setShowReplyModal] = useState(false);
 
     // Sync with external changes - Update the liked / reposted state when the object changes
     useEffect(() => {
@@ -73,68 +79,101 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
         onLikeClick();
     };
 
+    const handleCommentClick = (e: React.MouseEvent<HTMLElement>) => {
+        e.stopPropagation();
+
+        // If there's a custom onCommentClick handler (for special cases), use it
+        if (onCommentClick) {
+            onCommentClick();
+        } else {
+            // Otherwise, open our modal for both Notes and Articles
+            setShowReplyModal(true);
+        }
+    };
+
     const buttonClass = `px-2 gap-1.5 font-normal text-md [&_svg]:size-[18px] transition-color ap-action-button text-gray-900 hover:text-gray-900 hover:bg-black/[3%] dark:bg-black dark:hover:bg-gray-950 dark:text-gray-600 ${buttonClassName}`;
 
-    return (<div className={`flex ${layout !== 'inbox' && 'gap-1'}`}>
-        <Button
-            className={`${buttonClass} ${isLiked && 'text-pink-500 hover:text-pink-500'}`}
-            disabled={disabled}
-            id='like'
-            title={`${isLiked ? 'Undo like' : 'Like'}`}
-            variant='ghost'
-            onClick={(e?: React.MouseEvent<HTMLElement>) => {
-                e?.stopPropagation();
-                if (e) {
-                    handleLikeClick(e);
-                }
-            }}
-        >
-            <LucideIcon.Heart className={`${isLiked && 'fill-pink-500 text-pink-500'}`} />
-            {false && likeCount}
-        </Button>
-        <Button
-            className={`${buttonClass}`}
-            disabled={disabled}
-            id='comment'
-            title='Reply'
-            variant='ghost'
-            onClick={(e?: React.MouseEvent<HTMLElement>) => {
-                e?.stopPropagation();
-                onCommentClick();
-            }}
-        >
-            <LucideIcon.MessageCircle />
-            {!(commentCount === 0 || (layout === 'inbox')) && new Intl.NumberFormat().format(commentCount)}
-        </Button>
-        <Button
-            className={`${buttonClass} ${isReposted && 'text-green-500 hover:text-green-500'}`}
-            disabled={disabled}
-            id='repost'
-            title={`${isReposted ? 'Undo repost' : 'Repost'}`}
-            variant='ghost'
-            onClick={(e?: React.MouseEvent<HTMLElement>) => {
-                e?.stopPropagation();
+    return (
+        <>
+            <div className={`flex ${layout !== 'inbox' && 'gap-1'}`}>
+                <Button
+                    className={`${buttonClass} ${isLiked && 'text-pink-500 hover:text-pink-500'}`}
+                    disabled={disabled}
+                    id='like'
+                    title={`${isLiked ? 'Undo like' : 'Like'}`}
+                    variant='ghost'
+                    onClick={(e?: React.MouseEvent<HTMLElement>) => {
+                        e?.stopPropagation();
+                        if (e) {
+                            handleLikeClick(e);
+                        }
+                    }}
+                >
+                    <LucideIcon.Heart className={`${isLiked && 'fill-pink-500 text-pink-500'}`} />
+                    {false && likeCount}
+                </Button>
+                <Button
+                    className={`${buttonClass}`}
+                    disabled={disabled}
+                    id='comment'
+                    title='Reply'
+                    variant='ghost'
+                    onClick={handleCommentClick}
+                >
+                    <LucideIcon.MessageCircle />
+                    {!(commentCount === 0 || (layout === 'inbox')) && new Intl.NumberFormat().format(commentCount)}
+                </Button>
+                <Button
+                    className={`${buttonClass} ${isReposted && 'text-green-500 hover:text-green-500'}`}
+                    disabled={disabled}
+                    id='repost'
+                    title={`${isReposted ? 'Undo repost' : 'Repost'}`}
+                    variant='ghost'
+                    onClick={(e?: React.MouseEvent<HTMLElement>) => {
+                        e?.stopPropagation();
 
-                if (!isReposted) {
-                    repostMutation.mutate(object.id, {
-                        onError() {
-                            setIsReposted(false);
+                        if (!isReposted) {
+                            repostMutation.mutate(object.id, {
+                                onError() {
+                                    setIsReposted(false);
+                                    decrementReposts();
+                                }
+                            });
+                            incrementReposts();
+                        } else {
+                            derepostMutation.mutate(object.id);
                             decrementReposts();
                         }
-                    });
-                    incrementReposts();
-                } else {
-                    derepostMutation.mutate(object.id);
-                    decrementReposts();
-                }
 
-                setIsReposted(!isReposted);
-            }}
-        >
-            <LucideIcon.RefreshCw className={`${isReposted && 'text-green-500'}`} />
-            {!((initialRepostCount === 0 && !isReposted) || repostCount === 0 || (layout === 'inbox')) && RepostCounter}
-        </Button>
-    </div>);
+                        setIsReposted(!isReposted);
+                    }}
+                >
+                    <LucideIcon.RefreshCw className={`${isReposted && 'text-green-500'}`} />
+                    {!((initialRepostCount === 0 && !isReposted) || repostCount === 0 || (layout === 'inbox')) && RepostCounter}
+                </Button>
+            </div>
+
+            {showReplyModal && (
+                <NewNoteModal
+                    open={showReplyModal}
+                    replyTo={{
+                        object: object,
+                        actor: actor
+                    }}
+                    onOpenChange={(open) => {
+                        setShowReplyModal(open);
+                    }}
+                    onReply={() => {
+                        onReplyCountChange?.(1);
+                        setShowReplyModal(false);
+                    }}
+                    onReplyError={() => {
+                        onReplyCountChange?.(-1);
+                    }}
+                />
+            )}
+        </>
+    );
 };
 
 export default FeedItemStats;
