@@ -2285,9 +2285,9 @@ describe('Email renderer', function () {
             const tests = [
                 {input: '#BADA55', expected: '#BADA55'},
                 {input: 'accent', expected: settings.accent_color},
-                {input: 'auto', expected: '#15212A'},
-                {input: 'Invalid Color', expected: '#15212A'},
-                {input: null, expected: '#15212A'}
+                {input: 'auto', expected: null},
+                {input: 'Invalid Color', expected: null},
+                {input: null, expected: null}
             ];
 
             for (const test of tests) {
