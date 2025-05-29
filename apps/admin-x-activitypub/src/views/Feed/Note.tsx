@@ -1,4 +1,5 @@
 import APAvatar from '@src/components/global/APAvatar';
+import APReplyBox from '@src/components/global/APReplyBox';
 import DeletedFeedItem from '@src/components/feed/DeletedFeedItem';
 import FeedItem from '@components/feed/FeedItem';
 import Layout from '@src/components/layout/Layout';
@@ -128,6 +129,11 @@ const Note = () => {
                                                     showHeader={threadParents.length > 0}
                                                     showStats={true}
                                                     type='Note'
+                                                />
+                                                <APReplyBox
+                                                    object={object}
+                                                    onReply={() => handleReplyCountChange(1)}
+                                                    onReplyError={() => handleReplyCountChange(-1)}
                                                 />
                                                 <FeedItemDivider />
                                                 <div ref={repliesRef}>

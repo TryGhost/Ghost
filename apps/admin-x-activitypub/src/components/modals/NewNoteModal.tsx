@@ -37,6 +37,13 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
     const [isPosting, setIsPosting] = useState(false);
     const navigate = useNavigate();
 
+    // Sync external open prop with internal state
+    useEffect(() => {
+        if (props.open !== undefined) {
+            setIsOpen(props.open);
+        }
+    }, [props.open]);
+
     const isDisabled = !content.trim() || !user || isPosting;
 
     const handlePost = async () => {
@@ -83,6 +90,18 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
             textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
         }
     }, [content]);
+
+    // Focus textarea when modal opens
+    useEffect(() => {
+        const modalIsOpen = props.open !== undefined ? props.open : isOpen;
+        if (modalIsOpen && textareaRef.current) {
+            // Small delay to ensure modal is fully rendered
+            const timeoutId = setTimeout(() => {
+                textareaRef.current?.focus();
+            }, 100);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [isOpen, props.open]);
 
     const handleImageUpload = async (file: File) => {
         try {
@@ -162,7 +181,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
     }
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => {
+        <Dialog open={props.open !== undefined ? props.open : isOpen} onOpenChange={(open) => {
             if (open) {
                 setContent('');
                 setImagePreview(null);
@@ -174,8 +193,13 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                     imageInputRef.current.value = '';
                 }
             }
+
             setIsOpen(open);
-        }} {...props}>
+
+            if (props.onOpenChange) {
+                props.onOpenChange(open);
+            }
+        }} {...(props.open !== undefined ? {} : props)}>
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
