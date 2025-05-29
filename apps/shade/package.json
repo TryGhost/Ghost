@@ -90,7 +90,7 @@
         "react-hook-form": "7.56.4",
         "react-hot-toast": "2.5.2",
         "react-select": "5.10.1",
-        "react-world-flags": "^1.6.0",
+        "react-world-flags": "1.6.0",
         "recharts": "2.15.3",
         "rollup-plugin-node-builtins": "2.1.2",
         "sinon": "17.0.1",
