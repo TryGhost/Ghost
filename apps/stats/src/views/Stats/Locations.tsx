@@ -50,6 +50,8 @@ const Locations:React.FC = () => {
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
 
     const params = {
         site_uuid: statsConfig?.id || '',
@@ -80,8 +82,6 @@ const Locations:React.FC = () => {
             return 0;
         });
     }, [data]);
-
-    console.log(sortedData);
 
     const isLoading = isConfigLoading || loading;
 
@@ -191,7 +191,20 @@ const Locations:React.FC = () => {
         setTooltipData(null);
     };
 
-    const tableData = sortedData?.slice(0, 10);
+    const totalPages = useMemo(() => {
+        if (!sortedData) {
+            return 1;
+        }
+        return Math.ceil(sortedData.length / ITEMS_PER_PAGE);
+    }, [sortedData]);
+
+    const tableData = useMemo(() => {
+        if (!sortedData) {
+            return null;
+        }
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        return sortedData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [sortedData, currentPage]);
 
     return (
         <StatsLayout>
@@ -255,14 +268,20 @@ const Locations:React.FC = () => {
                                     })}
                                 </div>
                                 <SimplePagination>
-                                    <SimplePaginationPages currentPage='1' totalPages='3' />
+                                    <SimplePaginationPages currentPage={currentPage.toString()} totalPages={totalPages.toString()} />
                                     <SimplePaginationNavigation>
-                                        <SimplePaginationPreviousButton onClick={() => {
-                                            // console.log('prev');
-                                        }} />
-                                        <SimplePaginationNextButton onClick={() => {
-                                            // console.log('next');
-                                        }} />
+                                        <SimplePaginationPreviousButton
+                                            disabled={currentPage === 1}
+                                            onClick={() => {
+                                                setCurrentPage(prev => Math.max(1, prev - 1));
+                                            }}
+                                        />
+                                        <SimplePaginationNextButton
+                                            disabled={currentPage === totalPages}
+                                            onClick={() => {
+                                                setCurrentPage(prev => Math.min(totalPages, prev + 1));
+                                            }}
+                                        />
                                     </SimplePaginationNavigation>
                                 </SimplePagination>
                             </div>
