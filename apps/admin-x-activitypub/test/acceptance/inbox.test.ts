@@ -89,7 +89,7 @@ test.describe('Inbox', async () => {
     });
 
     test('I can like a post', async ({page}) => {
-        const secondPostFixture = responseFixtures.activitypubInbox.posts[1]; // Second post (0-indexed)
+        const secondPostFixture = responseFixtures.activitypubInbox.posts[1];
 
         const {lastApiRequests} = await mockApi({page, requests: {
             getInbox: {
@@ -114,7 +114,7 @@ test.describe('Inbox', async () => {
         const posts = page.getByTestId('inbox-item');
         await expect(posts).toHaveCount(10);
 
-        // Get the second post (index 1)
+        // Get the second post
         const secondPost = posts.nth(1);
 
         // Hover over the second post to make the like button appear
@@ -134,5 +134,83 @@ test.describe('Inbox', async () => {
 
         // Verify that a POST request was made to the like endpoint
         expect(lastApiRequests.likePost).toBeTruthy();
+    });
+
+    test('I can reply to a post', async ({page}) => {
+        const secondPostFixture = responseFixtures.activitypubInbox.posts[1];
+
+        const {lastApiRequests} = await mockApi({page, requests: {
+            getInbox: {
+                method: 'GET',
+                path: '/inbox',
+                response: responseFixtures.activitypubInbox
+            },
+            getPost: {
+                method: 'GET',
+                path: `/post/${encodeURIComponent(secondPostFixture.id)}`,
+                response: {
+                    ...secondPostFixture,
+                    metadata: {
+                        ghostAuthors: []
+                    }
+                }
+            },
+            replyToPost: {
+                method: 'POST',
+                path: `/actions/reply/${encodeURIComponent(secondPostFixture.id)}`,
+                response: {
+                    id: 'new-reply-id',
+                    type: 'Note',
+                    content: 'This is a test reply'
+                }
+            }
+        }, options: {useActivityPub: true}});
+
+        await page.goto('#/inbox');
+
+        // Wait for the inbox list to be visible
+        const inboxList = page.getByTestId('inbox-list');
+        await expect(inboxList).toBeVisible();
+
+        // Get all posts
+        const posts = page.getByTestId('inbox-item');
+        await expect(posts).toHaveCount(10);
+
+        // Get the second post
+        const secondPost = posts.nth(1);
+
+        // Hover over the second post to make the comment button appear
+        await secondPost.hover();
+
+        // Wait for the comment button to be visible on hover
+        const replyButton = secondPost.getByRole('button', {name: /reply/i});
+        await expect(replyButton).toBeVisible();
+
+        // Click the reply button
+        await replyButton.click();
+
+        // Verify the route changed and includes focusReply param
+        await expect(page).toHaveURL(new RegExp(`/inbox/${encodeURIComponent(secondPostFixture.id)}\\?focusReply=true`));
+
+        // Wait for the modal to show
+        await page.waitForSelector('[role="dialog"]', {timeout: 10000});
+
+        // Find the reply textarea and type a reply
+        const replyTextarea = page.getByPlaceholder(/reply/i);
+        await expect(replyTextarea).toBeVisible();
+        await expect(replyTextarea).toBeFocused();
+
+        await replyTextarea.fill('This is a test reply');
+
+        // Click the Post button
+        const postButton = page.locator('button#post');
+        await expect(postButton).toBeEnabled();
+        await postButton.click();
+
+        // Verify that a POST request was made to the reply endpoint
+        expect(lastApiRequests.replyToPost).toBeTruthy();
+        expect(lastApiRequests.replyToPost?.body).toMatchObject({
+            content: 'This is a test reply'
+        });
     });
 });
