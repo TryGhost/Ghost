@@ -1,6 +1,6 @@
 import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import DateRangeSelect from './components/DateRangeSelect';
-import React, {useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
@@ -65,6 +65,24 @@ const Locations:React.FC = () => {
         params
     });
 
+    // Move "NULL" (uknown) location as the last item in the list
+    const sortedData = useMemo(() => {
+        if (!data) {
+            return null;
+        }
+        return [...data].sort((a, b) => {
+            if (a.location === 'ᴺᵁᴸᴸ') {
+                return 1;
+            }
+            if (b.location === 'ᴺᵁᴸᴸ') {
+                return -1;
+            }
+            return 0;
+        });
+    }, [data]);
+
+    console.log(sortedData);
+
     const isLoading = isConfigLoading || loading;
 
     interface LocationData {
@@ -107,7 +125,7 @@ const Locations:React.FC = () => {
         }, {} as Record<string, TransformedLocationData>);
     };
 
-    const transformedData = transformData(data as LocationData[] | null);
+    const transformedData = transformData(sortedData as LocationData[] | null);
 
     const getLocationClassName = (location: {id: string, name: string}) => {
         const countryCode = location.id.toUpperCase();
@@ -173,7 +191,7 @@ const Locations:React.FC = () => {
         setTooltipData(null);
     };
 
-    const tableData = data?.slice(0, 10);
+    const tableData = sortedData?.slice(0, 10);
 
     return (
         <StatsLayout>
