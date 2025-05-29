@@ -1,9 +1,12 @@
-import inboxFixture from './responses/inbox.json';
+import inboxFixture from '../utils/responses/activitypub/inbox.json';
 import {expect, test} from '@playwright/test';
 import {mockApi} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockInitialApiRequests} from '../utils/initial-api-requests';
 
 test.describe('Inbox', async () => {
     test('I can view a list of articles in the Inbox', async ({page}) => {
+        await mockInitialApiRequests(page);
+
         await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
@@ -35,6 +38,8 @@ test.describe('Inbox', async () => {
     test('I can click on a post to view it', async ({page}) => {
         const postIndex = 2;
         const postFixture = inboxFixture.posts[postIndex];
+
+        await mockInitialApiRequests(page);
 
         await mockApi({page, requests: {
             getInbox: {
@@ -92,6 +97,8 @@ test.describe('Inbox', async () => {
     test('I can like a post', async ({page}) => {
         const secondPostFixture = inboxFixture.posts[1];
 
+        await mockInitialApiRequests(page);
+
         const {lastApiRequests} = await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
@@ -139,6 +146,8 @@ test.describe('Inbox', async () => {
 
     test('I can reply to a post', async ({page}) => {
         const secondPostFixture = inboxFixture.posts[1];
+
+        await mockInitialApiRequests(page);
 
         const {lastApiRequests} = await mockApi({page, requests: {
             getInbox: {
@@ -217,6 +226,8 @@ test.describe('Inbox', async () => {
 
     test('I can repost a post', async ({page}) => {
         const secondPostFixture = inboxFixture.posts[1];
+
+        await mockInitialApiRequests(page);
 
         const {lastApiRequests} = await mockApi({page, requests: {
             getInbox: {
