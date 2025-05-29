@@ -19,14 +19,16 @@ test.describe('Inbox', async () => {
 
         // Check that the first page of items is rendered
         const feedItems = page.getByTestId('inbox-item');
-        await expect(feedItems).toHaveCount(10); // The fixture has 10 articles
+        await expect(feedItems).toHaveCount(10);
 
-        // Check that the first item title, author name and reading time are rendered
-        const firstItem = feedItems.first();
-        const firstItemText = await firstItem.textContent();
-        expect(firstItemText).toContain('Tech Insights'); // Author name
-        expect(firstItemText).toContain('The Future of AI in Healthcare'); // Title
-        expect(firstItemText).toContain('min read');
+        // Check that the first item title, author name and excerpt are rendered
+        const firstPost = responseFixtures.activitypubInbox.posts[0];
+        const firstFeedItem = feedItems.first();
+        const firstFeedItemText = await firstFeedItem.textContent();
+
+        expect(firstFeedItemText).toContain(firstPost.author.name);
+        expect(firstFeedItemText).toContain(firstPost.title);
+        expect(firstFeedItemText).toContain(firstPost.excerpt);
     });
 
     test('The user can click on a post to view it', async ({page}) => {
