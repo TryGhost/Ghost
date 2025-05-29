@@ -6,7 +6,6 @@ import NewsletterManagement from '../common/NewsletterManagement';
 import CloseButton from '../common/CloseButton';
 import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg';
 import Interpolate from '@doist/react-interpolate';
-import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 import LoadingPage from './LoadingPage';
 
 function SiteLogo() {
@@ -188,7 +187,6 @@ export default function UnsubscribePage() {
                 <div>
                     <p className='gh-portal-text-center'>
                         <Interpolate
-                            syntax={SYNTAX_I18NEXT}
                             string={t('{memberEmail} will no longer receive this newsletter.')}
                             mapping={{
                                 memberEmail: <strong>{member?.email}</strong>
@@ -197,7 +195,6 @@ export default function UnsubscribePage() {
                     </p>
                     <p className='gh-portal-text-center'>
                         <Interpolate
-                            syntax={SYNTAX_I18NEXT}
                             string={t('Didn\'t mean to do this? Manage your preferences <button>here</button>.')}
                             mapping={{
                                 button: <button
@@ -221,7 +218,6 @@ export default function UnsubscribePage() {
                 <>
                     <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}>
                         <Interpolate
-                            syntax={SYNTAX_I18NEXT}
                             string={t('{memberEmail} will no longer receive emails when someone replies to your comments.')}
                             mapping={{
                                 memberEmail: <strong>{member?.email}</strong>
@@ -244,7 +240,6 @@ export default function UnsubscribePage() {
             <>
                 <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}>
                     <Interpolate
-                        syntax={SYNTAX_I18NEXT}
                         string={t('{memberEmail} will no longer receive {newsletterName} newsletter.')}
                         mapping={{
                             memberEmail: <strong>{member?.email}</strong>,
