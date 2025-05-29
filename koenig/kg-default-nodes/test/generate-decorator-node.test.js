@@ -135,29 +135,33 @@ describe('Utils: generateDecoratorNode', function () {
             (() => node.exportDOM()).should.throw('[generateDecoratorNode] versioned-render-test: "defaultRenderFn" for version 2 is required');
         }));
 
-        it('uses custom renderer if passed in (emailCustomizationAlpha)', editorTest(function () {
-            const node = $createNodeWithRender();
-            const customRenderer = () => ({
-                element: 'span',
-                type: 'inner',
-                content: 'custom render'
-            });
+        // eslint-disable-next-line ghost/mocha/no-setup-in-describe
+        ['emailCustomizationAlpha', 'emailCustomization'].forEach((feature) => {
+            it(`uses custom renderer if passed in (${feature})`, editorTest(function () {
+                const node = $createNodeWithRender();
+                const customRenderer = () => ({
+                    element: 'span',
+                    type: 'inner',
+                    content: 'custom render'
+                });
 
-            const result = node.exportDOM({
-                feature: {
-                    emailCustomizationAlpha: true
-                },
-                nodeRenderers: {
-                    'render-test': customRenderer
-                }
-            });
+                const featureOption = {};
+                featureOption[feature] = true;
 
-            result.should.deepEqual({
-                element: 'span',
-                type: 'inner',
-                content: 'custom render'
-            });
-        }));
+                const result = node.exportDOM({
+                    feature: featureOption,
+                    nodeRenderers: {
+                        'render-test': customRenderer
+                    }
+                });
+
+                result.should.deepEqual({
+                    element: 'span',
+                    type: 'inner',
+                    content: 'custom render'
+                });
+            }));
+        });
 
         it('throws error when custom versioned renderer is missing for node version (emailCustomizationAlpha)', editorTest(function () {
             const VersionedNode = utils.generateDecoratorNode({
