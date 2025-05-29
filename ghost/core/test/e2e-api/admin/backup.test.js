@@ -9,7 +9,7 @@ describe('Backup Integration', function () {
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('users');
+        await fixtureManager.init('users', 'members');
     });
 
     beforeEach(function () {
@@ -50,6 +50,21 @@ describe('Backup Integration', function () {
                 assert.ok(fileJSON.meta, 'Written file has a property called meta');
                 assert.ok(fileJSON.data, 'Written file has a property called data');
             });
+
+            it('Cannot export members CSV', async function () {
+                await agent
+                    .get('members/upload/?limit=all')
+                    .expectStatus(403)
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        etag: anyEtag
+                    })
+                    .matchBodySnapshot({
+                        errors: [{
+                            id: anyErrorId
+                        }]
+                    });
+            });
         });
 
         describe('Zapier Integration', function () {
@@ -70,6 +85,20 @@ describe('Backup Integration', function () {
                         errors: [{
                             id: anyErrorId
                         }]
+                    });
+            });
+
+            it('Can export members CSV', async function () {
+                await agent
+                    .get('members/upload/?limit=all')
+                    .expectStatus(200)
+                    .expectEmptyBody()
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        'content-disposition': stringMatching(/attachment; filename="members\./)
+                    })
+                    .expect(({text}) => {
+                        assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
                     });
             });
         });
@@ -103,6 +132,20 @@ describe('Backup Integration', function () {
                 assert.ok(fileJSON.meta, 'Written file has a property called meta');
                 assert.ok(fileJSON.data, 'Written file has a property called data');
             });
+
+            it('Can export members CSV', async function () {
+                await agent
+                    .get('members/upload/?limit=all')
+                    .expectStatus(200)
+                    .expectEmptyBody()
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        'content-disposition': stringMatching(/attachment; filename="members\./)
+                    })
+                    .expect(({text}) => {
+                        assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
+                    });
+            });
         });
 
         describe('Editor: User authentication', function () {
@@ -112,6 +155,21 @@ describe('Backup Integration', function () {
 
             it('Cannot create a DB backup', async function () {
                 await agent.post('db/backup?filename=test')
+                    .expectStatus(403)
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        etag: anyEtag
+                    })
+                    .matchBodySnapshot({
+                        errors: [{
+                            id: anyErrorId
+                        }]
+                    });
+            });
+
+            it('Cannot export members CSV', async function () {
+                await agent
+                    .get('members/upload/?limit=all')
                     .expectStatus(403)
                     .matchHeaderSnapshot({
                         'content-version': anyContentVersion,
