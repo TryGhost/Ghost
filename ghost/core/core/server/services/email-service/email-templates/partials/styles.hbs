@@ -245,8 +245,8 @@ h2 {
 
 /* Post content headings */
 .post-content-row h1 {
-    {{#if postSectionTitleColor}}
-    color: {{postSectionTitleColor}};
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
     {{else}}
     color: #15212A; /* fallback to default */
     {{/if}}
@@ -255,8 +255,8 @@ h2 {
 
 
 .post-content-row h2 {
-    {{#if postSectionTitleColor}}
-    color: {{postSectionTitleColor}};
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
     {{else}}
     color: #15212A; /* fallback to default */
     {{/if}}
@@ -273,8 +273,8 @@ h3 {
 
 {{#hasFeature "emailCustomizationAlpha"}}
 .post-content-row h3 {
-    {{#if postSectionTitleColor}}
-    color: {{postSectionTitleColor}};
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
     {{else}}
     color: #15212A; /* fallback to default */
     {{/if}}
@@ -286,8 +286,8 @@ h3 {
     margin: 1.8em 0 0.5em 0;
     font-size: 21px;
     line-height: 1.2em;
-    {{#if postSectionTitleColor}}
-    color: {{postSectionTitleColor}};
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
     {{else}}
     color: #15212A; /* fallback to default */
     {{/if}}
@@ -307,8 +307,8 @@ h4 {
     margin: 2em 0 0.5em 0;
     font-size: 19px;
     line-height: 1.3em;
-    {{#if postSectionTitleColor}}
-    color: {{postSectionTitleColor}};
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
     {{else}}
     color: #15212A; /* fallback to default */
     {{/if}}
@@ -328,8 +328,8 @@ h5 {
     margin: 2em 0 0.5em 0;
     font-size: 19px;
     line-height: 1.3em;
-    {{#if postSectionTitleColor}}
-    color: {{postSectionTitleColor}};
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
     {{else}}
     color: #15212A; /* fallback to default */
     {{/if}}
@@ -688,16 +688,16 @@ h3.latest-posts-header {
 {{#hasFeature "emailCustomizationAlpha"}}
 /* Custom heading colors for latest posts */
 .latest-post-title h4 {
-    {{#if postSectionTitleColor}}
-    color: {{postSectionTitleColor}};
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
     {{else}}
     color: #15212A; /* fallback to default */
     {{/if}}
 }
 
 .latest-post-title h4 a {
-    {{#if postSectionTitleColor}}
-    color: {{postSectionTitleColor}} !important;
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}} !important;
     {{else}}
     color: #15212A !important;
     {{/if}}

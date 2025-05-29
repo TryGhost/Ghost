@@ -2099,7 +2099,8 @@ describe('Email renderer', function () {
                 button_corners: 'square',
                 button_style: 'outline',
                 link_style: 'normal',
-                image_corners: 'rounded'
+                image_corners: 'rounded',
+                section_title_color: '#BADA55'
             });
             const segment = null;
             const options = {};
@@ -2137,7 +2138,8 @@ describe('Email renderer', function () {
                     buttonStyle: 'outline',
                     titleFontWeight: 'semibold',
                     linkStyle: 'normal',
-                    imageCorners: 'rounded'
+                    imageCorners: 'rounded',
+                    sectionTitleColor: '#BADA55'
                 },
                 labs: {emailCustomizationAlpha: true}
             });
@@ -2274,18 +2276,18 @@ describe('Email renderer', function () {
                 const data = await templateDataWithSettings({
                     section_title_color: test.input
                 });
-                assert.equal(data.postSectionTitleColor, test.expected);
+                assert.equal(data.sectionTitleColor, test.expected);
             }
         });
 
-        it('Returns null for postSectionTitleColor when emailCustomizationAlpha is disabled', async function () {
+        it('Returns null for sectionTitleColor when emailCustomizationAlpha is disabled', async function () {
             labsEnabled = false;
             settings.accent_color = '#DEF456';
 
             const data = await templateDataWithSettings({
                 section_title_color: '#BADA55'
             });
-            assert.equal(data.postSectionTitleColor, null);
+            assert.equal(data.sectionTitleColor, null);
         });
 
         it('Sets the backgroundIsDark correctly', async function () {
