@@ -35,6 +35,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
     const [content, setContent] = useState('');
     const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
     const [isPosting, setIsPosting] = useState(false);
+    const [isSticky, setIsSticky] = useState(false);
     const navigate = useNavigate();
 
     // Sync external open prop with internal state
@@ -43,6 +44,18 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
             setIsOpen(props.open);
         }
     }, [props.open]);
+
+    useEffect(() => {
+        const modalIsOpen = props.open !== undefined ? props.open : isOpen;
+        if (modalIsOpen) {
+            const timer = setTimeout(() => {
+                setIsSticky(true);
+            }, 150);
+            return () => clearTimeout(timer);
+        } else {
+            setIsSticky(false);
+        }
+    }, [isOpen, props.open]);
 
     const isDisabled = !content.trim() || !user || isPosting;
 
@@ -268,7 +281,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                         <Button className='absolute right-3 top-3 size-8 bg-black/60 opacity-0 hover:bg-black/80 group-hover:opacity-100' onClick={handleClearImage}><LucideIcon.Trash2 /></Button>
                     </div>
                 }
-                <DialogFooter className='sticky bottom-0 bg-background py-6 dark:bg-[#101114]'>
+                <DialogFooter className={`${isSticky ? 'sticky' : 'static'} bottom-0 bg-background py-6 dark:bg-[#101114]`}>
                     <Button className='mr-auto w-[34px] !min-w-0' variant='outline' onClick={() => imageInputRef.current?.click()}><LucideIcon.Image /></Button>
                     <DialogClose>
                         <Button className='min-w-16' variant='outline'>Cancel</Button>
