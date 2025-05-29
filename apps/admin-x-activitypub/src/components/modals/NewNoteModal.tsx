@@ -69,6 +69,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
             }
 
             setIsOpen(false);
+            toast.success(replyTo ? 'Reply posted' : 'Note posted');
         } catch (error) {
             if (replyTo) {
                 onReplyError?.();
@@ -203,7 +204,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
-            <DialogContent className={`max-h-[80vh] min-h-[200px] overflow-y-auto`} onClick={e => e.stopPropagation()}>
+            <DialogContent className={`max-h-[80vh] min-h-[200px] overflow-y-auto pb-0`} onClick={e => e.stopPropagation()}>
                 <DialogHeader className='hidden'>
                     <DialogTitle>{replyTo ? 'Reply' : 'New note'}</DialogTitle>
                     <DialogDescription>Post your thoughts to the Social web</DialogDescription>
@@ -267,7 +268,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                         <Button className='absolute right-3 top-3 size-8 bg-black/60 opacity-0 hover:bg-black/80 group-hover:opacity-100' onClick={handleClearImage}><LucideIcon.Trash2 /></Button>
                     </div>
                 }
-                <DialogFooter>
+                <DialogFooter className='sticky bottom-0 bg-background py-6 dark:bg-[#101114]'>
                     <Button className='mr-auto w-[34px] !min-w-0' variant='outline' onClick={() => imageInputRef.current?.click()}><LucideIcon.Image /></Button>
                     <DialogClose>
                         <Button className='min-w-16' variant='outline'>Cancel</Button>
