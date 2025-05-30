@@ -230,6 +230,9 @@ test.describe('Inbox', async () => {
         await expect(postButton).toBeEnabled();
         await postButton.click();
 
+        // Wait for the reply to be posted
+        await page.waitForTimeout(100);
+
         // Verify that a POST request was made to the reply endpoint
         expect(lastApiRequests.replyToPost).toBeTruthy();
         expect(lastApiRequests.replyToPost?.body).toMatchObject({
