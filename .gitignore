@@ -161,6 +161,7 @@ Caddyfile
 # Build files
 /apps/*/build
 /ghost/*/build
+/e2e/build
 
 # Typescript build artifacts
 tsconfig.tsbuildinfo
@@ -186,3 +187,8 @@ temp*.sql
 # yalc — for linking local packages in a docker compatible way
 yalc.lock
 .yalc
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
