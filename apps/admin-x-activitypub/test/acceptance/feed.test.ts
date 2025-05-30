@@ -9,6 +9,82 @@ test.describe('Feed', async () => {
         await mockInitialApiRequests(page);
     });
 
+    test('I can publish a note', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            getFeed: {
+                method: 'GET',
+                path: '/feed',
+                response: feedFixture
+            },
+            getActivityPubUser: {
+                method: 'GET',
+                path: '/users/index',
+                response: activityPubUser
+            },
+            getAccount: {
+                method: 'GET',
+                path: '/account/me',
+                response: {
+                    id: 'user-1',
+                    name: 'Test User',
+                    handle: '@test@localhost',
+                    bio: 'Test bio',
+                    url: 'https://localhost/@test',
+                    avatarUrl: 'https://localhost/avatar.jpg',
+                    followingCount: 10,
+                    followerCount: 20
+                }
+            },
+            postNote: {
+                method: 'POST',
+                path: '/actions/note',
+                response: {
+                    post: {
+                        id: 'new-note-id',
+                        type: 0,
+                        content: '<p>My first test note!</p>',
+                        publishedAt: new Date().toISOString()
+                    }
+                }
+            }
+        }, options: {useActivityPub: true}});
+
+        await page.goto('#/feed');
+
+        // Wait for the feed to load
+        const feedList = page.getByRole('list');
+        await expect(feedList).toBeVisible();
+
+        // Find and click the "New note" button in the sidebar
+        const newNoteButton = page.getByRole('button', {name: 'New note'});
+        await expect(newNoteButton).toBeVisible();
+        await newNoteButton.click();
+
+        // Wait for the modal to appear
+        await page.waitForSelector('[role="dialog"]', {timeout: 10000});
+
+        // Find the textarea in the modal and type content
+        const noteTextarea = page.getByPlaceholder('What\'s new?');
+        await expect(noteTextarea).toBeVisible();
+        await expect(noteTextarea).toBeFocused();
+
+        await noteTextarea.fill('My first test note!');
+
+        // Find and click the Post button in the modal
+        const postButton = page.getByRole('button', {name: 'Post'});
+        await expect(postButton).toBeEnabled();
+        await postButton.click();
+
+        // Wait for the request to complete
+        await page.waitForTimeout(100);
+
+        // Verify that a POST request was made to the note endpoint
+        expect(lastApiRequests.postNote).toBeTruthy();
+        expect(lastApiRequests.postNote?.body).toMatchObject({
+            content: 'My first test note!'
+        });
+    });
+
     test('I can view a list of notes in the Feed', async ({page}) => {
         await mockApi({page, requests: {
             getFeed: {
