@@ -6,17 +6,17 @@ import {mockApi} from '@tryghost/admin-x-framework/test/acceptance';
 
 const initialAdminApiRequests = {
     getCurrentUser: {
-        method: 'GET' as const,
-        path: '/users/me',
+        method: 'GET',
+        path: /users\/me\/?(\?.*)?/,
         response: usersMe
     },
     getSite: {
-        method: 'GET' as const,
+        method: 'GET',
         path: '/site',
         response: site
     },
     getIdentities: {
-        method: 'GET' as const,
+        method: 'GET',
         path: '/identities/',
         response: identities
     }

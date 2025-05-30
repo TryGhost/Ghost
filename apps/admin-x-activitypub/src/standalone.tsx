@@ -19,13 +19,9 @@ if (import.meta.env.VITE_TEST) {
     window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
         const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
 
-        // Mock the current user endpoint
-        if (url.includes('/ghost/api/admin/users/me')) {
-            return new Response(JSON.stringify(usersMe), {
-                status: 200,
-                headers: {'Content-Type': 'application/json'}
-            });
-        }
+        // Log the request URL
+        // eslint-disable-next-line no-console
+        console.log('🔍 Request URL:', url);
 
         // Mock the ActivityPub users endpoint
         if (url.includes('/.ghost/activitypub/users/')) {
