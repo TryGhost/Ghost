@@ -120,7 +120,7 @@ class CommentsServiceEmails {
      * @param {*} comment The comment model that has been reported
      * @param {*} reporter The member object who reported this comment
      */
-    async notifiyReport(comment, reporter) {
+    async notifyReport(comment, reporter) {
         const post = await this.models.Post.findOne({id: comment.get('post_id')}, {withRelated: ['authors']});
         const member = await this.models.Member.findOne({id: comment.get('member_id')});
         const owner = await this.models.User.getOwnerUser();
