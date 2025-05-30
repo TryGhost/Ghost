@@ -1,7 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
-const ALLOWED_INCLUDES = ['authors', 'tags'];
+const ALLOWED_INCLUDES = ['authors', 'tags', 'tiers'];
 const ALLOWED_MEMBER_STATUSES = ['anonymous', 'free', 'paid'];
 
 const messages = {
@@ -10,7 +10,7 @@ const messages = {
 
 // Simulate serving content as different member states by setting the minimal
 // member context needed for content gating to function
-const _addMemberContextToFrame = (frame) => {
+const _addMemberContextToFrame = async (frame) => {
     if (!frame?.options?.member_status) {
         return;
     }
@@ -29,8 +29,22 @@ const _addMemberContextToFrame = (frame) => {
     }
 
     if (frame.options?.member_status === 'paid') {
+        // For member_status=paid, add all paid tiers to the member context
+        let memberProducts = [];
+        const paidProducts = await models.Product.findAll({
+            status: 'active',
+            type: 'paid'
+        });
+        if (paidProducts.length > 0) {
+            memberProducts = paidProducts.map((product) => {
+                return {
+                    slug: product.get('slug')
+                };
+            });
+        }
         frame.original.context.member = {
-            status: 'paid'
+            status: 'paid',
+            products: memberProducts
         };
     }
 };
@@ -67,7 +81,7 @@ const controller = {
             }
         },
         async query(frame) {
-            _addMemberContextToFrame(frame);
+            await _addMemberContextToFrame(frame);
 
             const model = await models.Post.findOne(Object.assign({status: 'all'}, frame.data), frame.options);
             if (!model) {
