@@ -1,14 +1,15 @@
+import activityPubUser from './responses/activitypub/users.json';
 import identities from './responses/ghost/identities.json';
+import ownerUser from './responses/ghost/users.json';
 import site from './responses/ghost/site.json';
-import usersMe from './responses/ghost/users-me.json';
 import {Page} from '@playwright/test';
 import {mockApi} from '@tryghost/admin-x-framework/test/acceptance';
 
 const initialAdminApiRequests = {
-    getCurrentUser: {
+    getStaffUser: {
         method: 'GET',
         path: /users\/me\/?(\?.*)?/,
-        response: usersMe
+        response: ownerUser
     },
     getSite: {
         method: 'GET',
@@ -22,6 +23,15 @@ const initialAdminApiRequests = {
     }
 };
 
+const initialActivityPubRequests = {
+    getActivityPubUser: {
+        method: 'GET',
+        path: '/users/index',
+        response: activityPubUser
+    }
+};
+
 export async function mockInitialApiRequests(page: Page) {
     await mockApi({page, requests: initialAdminApiRequests});
+    await mockApi({page, requests: initialActivityPubRequests, options: {useActivityPub: true}});
 }

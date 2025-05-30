@@ -1,3 +1,4 @@
+import activityPubUser from '../utils/responses/activitypub/users.json';
 import inboxFixture from '../utils/responses/activitypub/inbox.json';
 import {expect, test} from '@playwright/test';
 import {mockApi} from '@tryghost/admin-x-framework/test/acceptance';
@@ -160,6 +161,22 @@ test.describe('Inbox', async () => {
                         ghostAuthors: []
                     }
                 }
+            },
+            getThread: {
+                method: 'GET',
+                path: `/thread/${encodeURIComponent(secondPostFixture.id)}`,
+                response: {
+                    posts: [
+                        {
+                            ...secondPostFixture
+                        }
+                    ]
+                }
+            },
+            getActivityPubUser: {
+                method: 'GET',
+                path: '/users/index',
+                response: activityPubUser
             },
             replyToPost: {
                 method: 'POST',
