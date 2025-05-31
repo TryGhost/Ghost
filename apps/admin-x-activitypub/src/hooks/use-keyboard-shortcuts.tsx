@@ -5,6 +5,7 @@ interface KeyboardShortcutsOptions {
     onOpenNewNote?: () => void;
     onOpenReply?: () => void;
     isReplyAvailable?: boolean;
+    componentRef?: React.RefObject<HTMLElement>;
 }
 
 export const useKeyboardShortcuts = (options: KeyboardShortcutsOptions = {}) => {
@@ -27,18 +28,34 @@ export const useKeyboardShortcuts = (options: KeyboardShortcutsOptions = {}) => 
                 return;
             }
 
+            // Check if there's an open dialog
+            const openDialog = document.querySelector('[role="dialog"][data-state="open"]');
+
+            // If a dialog is open, only respond if this component is inside the dialog
+            if (openDialog) {
+                const component = options.componentRef?.current;
+                const isComponentInDialog = component?.closest('[role="dialog"]') === openDialog;
+                if (!isComponentInDialog) {
+                    return;
+                }
+            }
+
             switch (e.key.toLowerCase()) {
             case 'n':
-                e.preventDefault();
-                if (options.onOpenNewNote) {
-                    options.onOpenNewNote();
-                } else {
-                    setIsNewNoteModalOpen(true);
+                // Don't allow new note when any dialog is open
+                if (!openDialog) {
+                    e.preventDefault();
+                    if (options.onOpenNewNote) {
+                        options.onOpenNewNote();
+                    } else {
+                        setIsNewNoteModalOpen(true);
+                    }
                 }
                 break;
             case 'r':
                 if (options.isReplyAvailable && options.onOpenReply) {
                     const isReaderOrNote = location.pathname.includes('/feed/') || location.pathname.includes('/inbox/');
+
                     if (isReaderOrNote) {
                         e.preventDefault();
                         options.onOpenReply();

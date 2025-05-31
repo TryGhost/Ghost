@@ -19,9 +19,10 @@ interface NewNoteModalProps extends ComponentPropsWithoutRef<typeof Dialog> {
     };
     onReply?: () => void;
     onReplyError?: () => void;
+    onOpenChange?: (open: boolean) => void;
 }
 
-const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, onReplyError, ...props}) => {
+const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, onReplyError, onOpenChange, ...props}) => {
     const {data: user} = useUserDataForUser('index');
     const noteMutation = useNoteMutationForUser('index', user);
     const replyMutation = useReplyMutationForUser('index', user);
@@ -82,6 +83,9 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
             }
 
             setIsOpen(false);
+            if (onOpenChange) {
+                onOpenChange(false);
+            }
             toast.success(replyTo ? 'Reply posted' : 'Note posted');
         } catch (error) {
             if (replyTo) {
@@ -92,7 +96,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
         } finally {
             setIsPosting(false);
         }
-    }, [content, user, replyTo, replyMutation, noteMutation, uploadedImageUrl, onReply, onReplyError, setIsOpen, navigate]);
+    }, [content, user, replyTo, replyMutation, noteMutation, uploadedImageUrl, onReply, onReplyError, setIsOpen, navigate, onOpenChange]);
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setContent(e.target.value);
@@ -227,8 +231,8 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
 
             setIsOpen(open);
 
-            if (props.onOpenChange) {
-                props.onOpenChange(open);
+            if (onOpenChange) {
+                onOpenChange(open);
             }
         }} {...(props.open !== undefined ? {} : props)}>
             <DialogTrigger asChild>

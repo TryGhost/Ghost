@@ -1,5 +1,5 @@
 import NewNoteModal from '@components/modals/NewNoteModal';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LucideIcon} from '@tryghost/shade';
 import {useAnimatedCounter} from '@hooks/use-animated-counter';
@@ -36,10 +36,12 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
     const [isLiked, setIsLiked] = useState(object.liked);
     const [isReposted, setIsReposted] = useState(object.reposted);
     const [showReplyModal, setShowReplyModal] = useState(false);
+    const statsRef = useRef<HTMLDivElement>(null);
 
     useKeyboardShortcuts({
-        isReplyAvailable: !onCommentClick,
-        onOpenReply: () => setShowReplyModal(true)
+        isReplyAvailable: !onCommentClick && layout !== 'reply',
+        onOpenReply: () => setShowReplyModal(true),
+        componentRef: statsRef
     });
 
     useEffect(() => {
@@ -97,7 +99,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
 
     return (
         <>
-            <div className={`flex ${layout !== 'inbox' && 'gap-1'}`}>
+            <div ref={statsRef} className={`flex ${layout !== 'inbox' && 'gap-1'}`}>
                 <Button
                     className={`${buttonClass} ${isLiked && 'text-pink-500 hover:text-pink-500'}`}
                     disabled={disabled}
