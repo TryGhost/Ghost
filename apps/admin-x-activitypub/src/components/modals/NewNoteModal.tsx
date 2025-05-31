@@ -138,6 +138,40 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
         }
     }, [isOpen, props.open, isDisabled, isImageUploading, handlePost]);
 
+    const handlePaste = useCallback(async (e: React.ClipboardEvent | ClipboardEvent) => {
+        const items = e.clipboardData?.items;
+        if (!items) {
+            return;
+        }
+
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (item.type.indexOf('image') !== -1) {
+                e.preventDefault();
+                const file = item.getAsFile();
+                if (file) {
+                    if (file.size > MAX_FILE_SIZE) {
+                        toast.error(FILE_SIZE_ERROR_MESSAGE);
+                        return;
+                    }
+
+                    const previewUrl = URL.createObjectURL(file);
+                    setImagePreview(previewUrl);
+                    await handleImageUpload(file);
+                }
+                break;
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        const modalIsOpen = props.open !== undefined ? props.open : isOpen;
+        if (modalIsOpen) {
+            document.addEventListener('paste', handlePaste);
+            return () => document.removeEventListener('paste', handlePaste);
+        }
+    }, [isOpen, props.open, handlePaste]);
+
     const handleImageUpload = async (file: File) => {
         try {
             setIsImageUploading(true);
@@ -238,7 +272,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
-            <DialogContent className={`max-h-[80vh] min-h-[200px] overflow-y-auto pb-0`} onClick={e => e.stopPropagation()}>
+            <DialogContent className={`max-h-[80vh] min-h-[240px] gap-0 overflow-y-auto pb-0`} onClick={e => e.stopPropagation()}>
                 <DialogHeader className='hidden'>
                     <DialogTitle>{replyTo ? 'Reply' : 'New note'}</DialogTitle>
                     <DialogDescription>Post your thoughts to the Social web</DialogDescription>
@@ -274,6 +308,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                                         rows={1}
                                         value={content}
                                         onChange={handleChange}
+                                        onPaste={handlePaste}
                                     />
                                 </FormPrimitive.Control>
                             </FormPrimitive.Field>
@@ -292,7 +327,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                     </FormPrimitive.Root>
                 </div>
                 {imagePreview &&
-                    <div className='group relative flex w-fit grow items-center justify-center'>
+                    <div className='group relative mt-6 flex w-fit grow items-center justify-center'>
                         <img alt='Image attachment preview' className={`max-h-[420px] w-full rounded-sm object-cover outline outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'opacity-10'}`} src={imagePreview} />
                         {isImageUploading &&
                             <div className='absolute leading-[0]'>
