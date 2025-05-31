@@ -94,9 +94,6 @@ const InboxList:React.FC<InboxListProps> = ({
                                                         onClick={() => {
                                                             navigate(`/inbox/${encodeURIComponent(activity.id)}`);
                                                         }}
-                                                        onCommentClick={() => {
-                                                            navigate(`/inbox/${encodeURIComponent(activity.id)}?focusReply=true`);
-                                                        }}
                                                     />
                                                     {index < activities.length - 1 && (
                                                         <Separator />
