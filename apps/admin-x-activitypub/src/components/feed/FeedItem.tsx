@@ -496,7 +496,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         return (
             <>
                 {object && (
-                    <div className={`group/article relative ${isCompact ? 'pb-2' : 'py-5'} ${!isPending ? 'cursor-pointer' : 'pointer-events-none'}`} data-layout='reply' data-object-id={object.id} onClick={onClick}>
+                    <div className={`group/article relative ${isCompact ? 'pb-6' : 'py-5'} ${!isPending ? 'cursor-pointer' : 'pointer-events-none'}`} data-layout='reply' data-object-id={object.id} onClick={onClick}>
                         <div className={`border-1 z-10 flex items-start gap-3 border-b-gray-200`} data-test-activity>
                             <div className='relative z-10 pt-[3px]'>
                                 <APAvatar author={author} disabled={isPending} />
@@ -553,7 +553,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             </div>
                         </div>
                         <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
-                        {!last && <div className={`absolute left-[18px] ${isCompact ? 'bottom-[-6px] top-12' : 'bottom-[2px] top-[68px]'} z-0 mb-[-13px] w-[2px] rounded-sm bg-gray-200`}></div>}
+                        {!last && <div className={`absolute left-[19px] ${isCompact ? 'bottom-[8px] top-[51px]' : 'bottom-[-7px] top-[71px]'} z-0 w-[2px] rounded-sm bg-gray-200`}></div>}
                     </div>
                 )}
                 <ImageLightbox

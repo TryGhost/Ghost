@@ -51,7 +51,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
         if (modalIsOpen) {
             const timer = setTimeout(() => {
                 setIsSticky(true);
-            }, 150);
+            }, 200);
             return () => clearTimeout(timer);
         } else {
             setIsSticky(false);
