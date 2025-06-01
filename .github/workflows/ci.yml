@@ -466,7 +466,7 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  job_database-tests:
+  job_acceptance-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
@@ -484,7 +484,7 @@ jobs:
     env:
       DB: ${{ matrix.env.DB }}
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
-    name: Database tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
+    name: Acceptance tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -904,7 +904,7 @@ jobs:
     name: Coverage
     needs: [
       job_admin-tests,
-      job_database-tests,
+      job_acceptance-tests,
       job_unit-tests
     ]
     runs-on: ubuntu-latest
@@ -929,18 +929,18 @@ jobs:
           move_coverage_to_trash: true
 
       - name: Restore E2E coverage
-        if: contains(needs.job_database-tests.result, 'success')
+        if: contains(needs.job_acceptance-tests.result, 'success')
         uses: actions/download-artifact@v4
         with:
           name: e2e-coverage
 
       - name: Move coverage
-        if: contains(needs.job_database-tests.result, 'success')
+        if: contains(needs.job_acceptance-tests.result, 'success')
         run: |
           rsync -av --remove-source-files core/* ghost/core
 
       - name: Upload E2E test coverage
-        if: contains(needs.job_database-tests.result, 'success')
+        if: contains(needs.job_acceptance-tests.result, 'success')
         uses: codecov/codecov-action@v5
         with:
           flags: e2e-tests
@@ -956,7 +956,7 @@ jobs:
         job_ghost-cli,
         job_admin-tests,
         job_unit-tests,
-        job_database-tests,
+        job_acceptance-tests,
         job_legacy-tests,
         job_browser-tests,
         job_admin_x_settings,
