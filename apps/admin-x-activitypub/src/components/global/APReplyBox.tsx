@@ -26,10 +26,9 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
         return null;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const attributedTo = (object.attributedTo || {}) as any;
+    const attributedTo = object.attributedTo as ActorProperties | undefined;
     let placeholder = 'Reply...';
-    if (typeof attributedTo.preferredUsername === 'string' && typeof attributedTo.id === 'string') {
+    if (attributedTo?.preferredUsername && attributedTo?.id) {
         placeholder = `Reply to ${getUsername(attributedTo)}...`;
     }
 

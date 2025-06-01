@@ -16,8 +16,8 @@ interface FeedItemStatsProps {
     disabled?: boolean;
     buttonClassName?: string;
     onLikeClick: () => void;
-    onCommentClick?: () => void; // Made optional since we'll handle it internally
-    onReplyCountChange?: (increment: number) => void; // New prop for parent to update reply count
+    onCommentClick?: () => void;
+    onReplyCountChange?: (increment: number) => void;
 }
 
 const FeedItemStats: React.FC<FeedItemStatsProps> = ({
