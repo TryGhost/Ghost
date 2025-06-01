@@ -352,7 +352,8 @@ class EmailRenderer {
                 // TODO:
                 // if the other options have default values we should follow the same pattern
                 // as the divider color to avoid duplicating magic values in renderers
-                dividerColor: this.#getDividerColor(newsletter)
+                dividerColor: this.#getDividerColor(newsletter),
+                linkColor: newsletter.get('link_color')
             };
         }
 
@@ -1047,6 +1048,19 @@ class EmailRenderer {
         return '#e0e7eb';
     }
 
+    #getLinkColor(newsletter, accentColor, backgroundIsDark) {
+        const labs = this.getLabs();
+        if (labs?.isSet('emailCustomizationAlpha')) {
+            const value = newsletter.get('link_color');
+            const validHex = /#([0-9a-f]{3}){1,2}$/i;
+
+            if (validHex.test(value)) {
+                return value;
+            }
+        }
+
+        return backgroundIsDark ? '#ffffff' : accentColor;
+    }
     /**
      * @private
      */
@@ -1073,7 +1087,7 @@ class EmailRenderer {
         const titleStrongWeight = this.#getTitleStrongWeight(titleWeight);
         const textColor = textColorForBackgroundColor(backgroundColor).hex();
         const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
-        const linkColor = backgroundIsDark ? '#ffffff' : accentColor;
+        const linkColor = this.#getLinkColor(newsletter, accentColor, backgroundIsDark);
         const hasRoundedImageCorners = hasAnyEmailCustomization ? this.#getImageCorners(newsletter) : false;
         const sectionTitleColor = hasAnyEmailCustomization ? this.#getSectionTitleColor(newsletter, accentColor) : null;
         const dividerColor = this.#getDividerColor(newsletter);
