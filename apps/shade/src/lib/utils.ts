@@ -211,7 +211,7 @@ export const centsToDollars = (value: number) => {
 /* Chart formatters
 /* -------------------------------------------------------------------------- */
 
-// Calculates the Y-axis range with appropriate padding
+// Calculates the Y-axis range with padding
 export const getYRangeWithLargePadding = (data: { value: number }[]): {min: number; max: number} => {
     if (!data.length) {
         return {min: 0, max: 1};
@@ -259,34 +259,19 @@ export const getYRange = (data: { value: number }[]): {min: number; max: number}
     let min = Math.min(...values);
     let max = Math.max(...values);
 
-    // If min and max are the same, create a range around the value
-    // if (min === max) {
-    //     const value = min;
-    //     // Round to nearest 10
-    //     const roundTo = 10;
-    //     min = Math.max(0, Math.floor(value / roundTo) * roundTo);
-    //     max = Math.ceil(value / roundTo) * roundTo;
-    //     // If min and max are still the same, add 10 to max
-    //     if (min === max) {
-    //         max += roundTo;
-    //     }
-    //     return {min, max};
-    // }
-
     if (min === max) {
         const value = min;
         return {min: Math.max(0, value - 1), max: value + 1};
     }
 
-    // Calculate the range
-    const range = max - min;
-
-    // Use a percentage-based padding (5% of the range)
-    const padding = range * 0.05;
+    // Use a percentage-based padding (10% of the range)
+    const padding = 0.02;
 
     // Add padding and ensure min is not negative
-    min = Math.max(0, min - padding);
-    max = max + padding;
+    min = Math.max(0, min - (min * padding));
+    max = max + (max * padding);
+
+    const range = max - min;
 
     // Determine the order of magnitude for rounding based on the range
     const rangeMagnitude = Math.floor(Math.log10(range));
@@ -295,13 +280,17 @@ export const getYRange = (data: { value: number }[]): {min: number; max: number}
     const roundTo = Math.pow(10, rangeMagnitude);
 
     // Round min and max to the appropriate precision
-    min = Math.max(0, Math.floor(min / roundTo) * roundTo);
-    max = Math.ceil(max / roundTo) * roundTo;
+    const roundedMax = Math.round(max / roundTo) * roundTo;
+    max = roundedMax < max ? Math.ceil(max / roundTo) * roundTo : roundedMax;
+
+    const roundedMin = Math.round(min / roundTo) * roundTo;
+    min = roundedMin > min ? Math.floor(min / roundTo) * roundTo : roundedMin;
+    min = Math.max(0, min);
 
     // Ensure we have a visible range even after rounding
     if (min === max) {
         const midPoint = (min + max) / 2;
-        const smallRange = Math.max(Math.abs(midPoint) * 0.01, roundTo);
+        const smallRange = Math.max(Math.abs(midPoint) * padding, roundTo);
         min = Math.max(0, Math.floor(midPoint - smallRange));
         max = Math.ceil(midPoint + smallRange);
     }
@@ -338,6 +327,17 @@ export const calculateYAxisWidth = (ticks: number[], formatter: (value: number) 
     // Add padding for safety
     const width = Math.max(20, maxFormattedLength * 8 + 20);
     return width;
+};
+
+// Get range for date
+export const getRangeForStartDate = (startDate: string) => {
+    const publishedDate = new Date(startDate);
+    const today = new Date();
+    const diffInTime = today.getTime() - publishedDate.getTime();
+    const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
+
+    // Ensure minimum of 1 day to avoid issues with same-day publications
+    return Math.max(diffInDays, 1);
 };
 
 //Return today and startdate for charts
