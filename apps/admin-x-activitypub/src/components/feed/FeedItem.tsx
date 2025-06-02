@@ -76,7 +76,7 @@ export function renderFeedAttachment(
         return (
             <div className={`attachment-gallery mt-3 grid ${gridClass} gap-2`}>
                 {attachment.map((item, index) => (
-                    <img key={item.url} alt={item.name || `Image-${index}`} className={`size-full cursor-pointer rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} src={item.url} onClick={onImageClick ? handleImageClick(item.url) : undefined} />
+                    <img key={item.url} alt={item.name || `Image-${index}`} className={`size-full cursor-pointer rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} referrerPolicy='no-referrer' src={item.url} onClick={onImageClick ? handleImageClick(item.url) : undefined} />
                 ))}
             </div>
         );
@@ -87,7 +87,7 @@ export function renderFeedAttachment(
     case 'image/png':
     case 'image/gif':
     case 'image/webp':
-        return <img alt={attachment.name || 'Image'} className={`cursor-pointer ${object.type === 'Article' ? 'w-full rounded-t-md' : 'mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10'}`} src={attachment.url} onClick={onImageClick ? handleImageClick(attachment.url) : undefined} />;
+        return <img alt={attachment.name || 'Image'} className={`cursor-pointer ${object.type === 'Article' ? 'w-full rounded-t-md' : 'mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10'}`} referrerPolicy='no-referrer' src={attachment.url} onClick={onImageClick ? handleImageClick(attachment.url) : undefined} />;
     case 'video/mp4':
     case 'video/webm':
         return <div className='relative mb-4 mt-3'>
@@ -117,6 +117,7 @@ export function renderFeedAttachment(
                 <img
                     alt={attachment.name || 'Image'}
                     className={imageClassName}
+                    referrerPolicy='no-referrer'
                     src={imageUrl}
                     onClick={onImageClick ? handleImageClick(imageUrl) : undefined}
                 />
@@ -142,7 +143,7 @@ function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | un
 
     if (Array.isArray(attachment)) {
         return (
-            <img className={imageAttachmentStyles} src={attachment[0].url} />
+            <img className={imageAttachmentStyles} referrerPolicy='no-referrer' src={attachment[0].url} />
         );
     }
 
@@ -151,7 +152,7 @@ function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | un
     case 'image/png':
     case 'image/gif':
         return (
-            <img className={imageAttachmentStyles} src={attachment.url} />
+            <img className={imageAttachmentStyles} referrerPolicy='no-referrer' src={attachment.url} />
         );
     case 'video/mp4':
     case 'video/webm':
@@ -176,7 +177,7 @@ function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | un
         );
     default:
         if (object.image) {
-            return <img className={imageAttachmentStyles} src={typeof object.image === 'string' ? object.image : object.image?.url} />;
+            return <img className={imageAttachmentStyles} referrerPolicy='no-referrer' src={typeof object.image === 'string' ? object.image : object.image?.url} />;
         }
         return null;
     }
