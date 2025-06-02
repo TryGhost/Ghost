@@ -1,4 +1,4 @@
-import {calculateYAxisWidth, cn, formatDisplayDateWithRange, formatNumber, getYRange, getYRangeWithMinPadding} from '@/lib/utils';
+import {calculateYAxisWidth, cn, formatDisplayDateWithRange, formatNumber, getYRange} from '@/lib/utils';
 import React from 'react';
 import {AlignedAxisTick, ChartConfig, ChartContainer, ChartTooltip} from './chart';
 import {Area, AreaChart, CartesianGrid, XAxis, YAxis} from 'recharts';
@@ -82,6 +82,9 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
         }
     } satisfies ChartConfig;
 
+    // Use yRange as domain and set baseValue to the minimum
+    const baseValue = yRange[0];
+
     return (
         <ChartContainer className={
             cn('w-full', className)
@@ -109,7 +112,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
                 <YAxis
                     allowDataOverflow={allowDataOverflow}
                     axisLine={false}
-                    domain={allowDataOverflow ? getYRangeWithMinPadding({min: yRange[0], max: yRange[1]}) : yRange}
+                    domain={allowDataOverflow ? undefined : yRange}
                     scale="linear"
                     tickFormatter={(value: number) => {
                         return dataFormatter(value);
@@ -127,23 +130,23 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
                 <defs>
                     <linearGradient id={`fillChart-${id}`} x1="0" x2="0" y1="0" y2="1">
                         <stop
-                            offset="5%"
+                            offset='5%'
                             stopColor={color}
                             stopOpacity={0.8}
                         />
                         <stop
-                            offset="95%"
+                            offset='95%'
                             stopColor={color}
                             stopOpacity={0.1}
                         />
                     </linearGradient>
                 </defs>
                 <Area
+                    baseValue={baseValue}
                     dataKey="value"
                     fill={`url(#fillChart-${id})`}
                     fillOpacity={0.2}
                     isAnimationActive={false}
-                    stackId="a"
                     stroke={color}
                     strokeWidth={2}
                     type="linear"

@@ -184,7 +184,6 @@ const GrowthKPIs: React.FC<{
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 <GhAreaChart
-                    allowDataOverflow={true}
                     className='-mb-3 h-[16vw] max-h-[320px] w-full'
                     color={tabConfig[currentTab as keyof typeof tabConfig].color}
                     data={chartData}
