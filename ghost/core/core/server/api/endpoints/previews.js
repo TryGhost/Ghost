@@ -1,6 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
+const logging = require('@tryghost/logging');
 const ALLOWED_INCLUDES = ['authors', 'tags', 'tiers'];
 const ALLOWED_MEMBER_STATUSES = ['anonymous', 'free', 'paid'];
 
@@ -31,17 +32,23 @@ const _addMemberContextToFrame = async (frame) => {
     if (frame.options?.member_status === 'paid') {
         // For member_status=paid, add all paid tiers to the member context
         let memberProducts = [];
-        const paidProducts = await models.Product.findAll({
-            status: 'active',
-            type: 'paid'
-        });
-        if (paidProducts.length > 0) {
-            memberProducts = paidProducts.map((product) => {
-                return {
-                    slug: product.get('slug')
-                };
+        try {
+            const paidProducts = await models.Product.findAll({
+                status: 'active',
+                type: 'paid'
             });
+            if (paidProducts.length > 0) {
+                memberProducts = paidProducts.map((product) => {
+                    return {
+                        slug: product.get('slug')
+                    };
+                });
+            }
+        } catch (error) {
+            // Log error but don't fail preview - fallback to empty products array
+            logging.error('Failed to fetch paid products for preview:', error);
         }
+
         frame.original.context.member = {
             status: 'paid',
             products: memberProducts
