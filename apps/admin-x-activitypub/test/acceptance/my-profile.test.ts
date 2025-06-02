@@ -161,10 +161,9 @@ test.describe('My Profile', async () => {
 
     test.describe('Followers', () => {
         test('I can see people that follow me on my profile', async ({page}) => {
-            const bobHandle = myFollowers.accounts[0].handle;
-            const charlieHandle = myFollowers.accounts[1].handle;
+            const bob = myFollowers.accounts[0];
 
-            const {lastApiRequests} = await mockApi({page, requests: {
+            await mockApi({page, requests: {
                 getMyProfile: {
                     method: 'GET',
                     path: '/posts/me',
@@ -174,16 +173,6 @@ test.describe('My Profile', async () => {
                     method: 'GET',
                     path: '/account/me/follows/followers',
                     response: myFollowers
-                },
-                unfollowAccount: {
-                    method: 'POST',
-                    path: `/actions/unfollow/${encodeURIComponent(bobHandle)}`,
-                    response: {}
-                },
-                followAccount: {
-                    method: 'POST',
-                    path: `/actions/follow/${encodeURIComponent(charlieHandle)}`,
-                    response: {}
                 }
             }, options: {useActivityPub: true}});
 
@@ -200,66 +189,32 @@ test.describe('My Profile', async () => {
             const followersContent = page.locator('[role="tabpanel"][data-state="active"]');
             await expect(followersContent).toBeVisible();
 
-            const firstFollower = myFollowers.accounts[0];
-            const bobAccount = followersContent.locator('text=' + firstFollower.handle);
-
-            await expect(bobAccount).toBeVisible();
-
             const bobRow = followersContent.locator('div').filter({
-                hasText: firstFollower.name
+                hasText: bob.name
             }).filter({
-                hasText: firstFollower.handle
+                hasText: bob.handle
             }).first();
 
             await expect(bobRow).toBeVisible();
 
-            // Bob should have a "Following" button since followedByMe is true
-            const bobFollowButton = bobRow.locator('button').filter({hasText: /Following/i}).first();
-            await expect(bobFollowButton).toBeVisible();
+            // Check that Bob has a "Following" button since I'm following Bob:
+            const followingBob = bobRow.locator('button').filter({hasText: /Following/i}).first();
+            await expect(followingBob).toBeVisible();
 
-            // Check Charlie (second follower)
-            const secondFollower = myFollowers.accounts[1];
-            const charlieRow = followersContent.locator('div').filter({
-                hasText: secondFollower.name
-            }).filter({
-                hasText: secondFollower.handle
-            }).first();
+            // Clicking on the "Following" button should unfollow Bob
+            await followingBob.click();
 
-            await expect(charlieRow).toBeVisible();
-
-            // Charlie's button - check what's actually there
-            const charlieButton = charlieRow.locator('button').first();
-            const charlieButtonText = await charlieButton.textContent();
-
-            // The button might say "Following" even if followedByMe is false in the fixture
-            // This could be because the UI shows mutual follow status
-            if (charlieButtonText?.includes('Following')) {
-                // If Charlie shows "Following", test clicking it
-                await charlieButton.click();
-
-                // Also test clicking Bob's button
-                await bobFollowButton.click();
-            } else {
-                // Original test logic if Charlie has "Follow" button
-                await expect(charlieButton).toContainText('Follow');
-
-                // Test clicking Bob's unfollow button
-                await bobFollowButton.click();
-
-                // Test clicking Charlie's follow button
-                await charlieButton.click();
-            }
-
-            // Verify at least some API requests were made
-            expect(Object.keys(lastApiRequests).length).toBeGreaterThan(0);
+            // Bob should now have a "Follow" button since I'm not following him anymore:
+            const notFollowingBob = bobRow.locator('button').filter({hasText: /Follow/i}).first();
+            await expect(notFollowingBob).toBeVisible();
         });
     });
 
     test.describe('Following', () => {
         test('I can see people that I follow on my profile', async ({page}) => {
-            const bobHandle = myFollowing.accounts[0].handle;
+            const bob = myFollowing.accounts[0];
 
-            const {lastApiRequests} = await mockApi({page, requests: {
+            await mockApi({page, requests: {
                 getMyProfile: {
                     method: 'GET',
                     path: '/posts/me',
@@ -269,11 +224,6 @@ test.describe('My Profile', async () => {
                     method: 'GET',
                     path: '/account/me/follows/following',
                     response: myFollowing
-                },
-                unfollowAccount: {
-                    method: 'POST',
-                    path: `/actions/unfollow/${encodeURIComponent(bobHandle)}`,
-                    response: {}
                 }
             }, options: {useActivityPub: true}});
 
@@ -290,61 +240,32 @@ test.describe('My Profile', async () => {
             const followingContent = page.locator('[role="tabpanel"][data-state="active"]');
             await expect(followingContent).toBeVisible();
 
-            // Wait for content to load
-            await page.waitForTimeout(2000);
-
-            // The full test implementation below will work once the data loading issue is resolved:
-
-            // Look for the account items - they might be rendered in different ways
-            // First check if Bob (our first following) is visible
-            const firstFollowing = myFollowing.accounts[0];
-            const bobAccount = followingContent.locator('text=' + firstFollowing.handle);
-
-            // If we can't find any accounts, the list might still be empty
-            if (await bobAccount.count() === 0) {
-                // Check for empty state and return early
-                const emptyState = followingContent.locator('text=/follow anyone/i');
-                if (await emptyState.count() > 0) {
-                    return;
-                }
-            }
-
-            // Bob's account should be visible
-            await expect(bobAccount).toBeVisible();
-
-            // Find Bob's row/container
+            // Bob should be in my list of following:
             const bobRow = followingContent.locator('div').filter({
-                hasText: firstFollowing.name
+                hasText: bob.name
             }).filter({
-                hasText: firstFollowing.handle
+                hasText: bob.handle
             }).first();
 
             await expect(bobRow).toBeVisible();
 
-            // Bob should have a "Following" button since followedByMe is true
-            const bobFollowButton = bobRow.locator('button').filter({hasText: /Following/i}).first();
-            await expect(bobFollowButton).toBeVisible();
+            // Check that Bob has a "Following" button since I'm following Bob:
+            const followingBob = bobRow.locator('button').filter({hasText: /Following/i}).first();
+            await expect(followingBob).toBeVisible();
 
-            // Also check that Edgar is visible (second account)
-            const secondFollowing = myFollowing.accounts[1];
-            const edgarRow = followingContent.locator('div').filter({
-                hasText: secondFollowing.name
-            }).filter({
-                hasText: secondFollowing.handle
-            }).first();
+            // Clicking on the "Following" button should unfollow Bob
+            await followingBob.click();
 
-            await expect(edgarRow).toBeVisible();
+            // Bob should now have a "Follow" button since I'm not following him anymore:
+            const notFollowingBob = bobRow.locator('button').filter({hasText: /Follow/i}).first();
+            await expect(notFollowingBob).toBeVisible();
 
-            // Edgar should also have "Following" button
-            const edgarFollowButton = edgarRow.locator('button').filter({hasText: /Following/i}).first();
-            await expect(edgarFollowButton).toBeVisible();
+            // Clicking on the "Follow" button should follow Bob again
+            await notFollowingBob.click();
 
-            // Test unfollowing Bob
-            await bobFollowButton.click();
-            await page.waitForTimeout(100);
-
-            // Verify at least some API requests were made
-            expect(Object.keys(lastApiRequests).length).toBeGreaterThan(0);
+            // Bob should now have a "Following" button since I'm following him again:
+            const followingBobAgain = bobRow.locator('button').filter({hasText: /Following/i}).first();
+            await expect(followingBobAgain).toBeVisible();
         });
     });
 });
