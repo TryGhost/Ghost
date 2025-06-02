@@ -34,9 +34,10 @@ import ZapierModal from '../../settings/advanced/integrations/ZapierModal';
 
 // Wrapper component to conditionally render based on feature flag
 const ConditionalNewsletterDetailModal: ModalComponent = (props) => {
-    const hasEmailCustomization = useFeatureFlag('emailCustomization');
+    const emailCustomizationBeta = useFeatureFlag('emailCustomization');
+    const emailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
 
-    if (hasEmailCustomization) {
+    if (emailCustomizationBeta || emailCustomizationAlpha) {
         return <NewsletterDetailModalLabs {...props} />;
     } else {
         return <NewsletterDetailModal {...props} />;

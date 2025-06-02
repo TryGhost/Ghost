@@ -2,7 +2,7 @@ const {promises: fs, readFileSync} = require('fs');
 const path = require('path');
 const moment = require('moment');
 const glob = require('glob');
-const {EmailAddressParser} = require('@tryghost/email-addresses');
+const EmailAddressParser = require('../email-address/EmailAddressParser');
 
 class StaffServiceEmails {
     constructor({logging, models, mailer, settingsHelpers, settingsCache, blogIcon, urlUtils, labs}) {
@@ -263,7 +263,7 @@ class StaffServiceEmails {
     /**
      *
      * @param {object} eventData
-     * @param {import('@tryghost/donations').DonationPaymentEvent} eventData.donationPaymentEvent
+     * @param {import('../donations/DonationPaymentEvent').DonationPaymentEvent} eventData.donationPaymentEvent
      *
      * @returns {Promise<void>}
      */

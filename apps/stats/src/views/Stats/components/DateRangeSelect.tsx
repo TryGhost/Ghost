@@ -1,6 +1,6 @@
 import React from 'react';
+import {LucideIcon, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade';
 import {STATS_RANGE_OPTIONS} from '@src/utils/constants';
-import {Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
 const DateRangeSelect: React.FC = () => {
@@ -11,6 +11,7 @@ const DateRangeSelect: React.FC = () => {
             setRange(Number(value));
         }}>
             <SelectTrigger>
+                <LucideIcon.Calendar className='mr-2' size={16} strokeWidth={1.5} />
                 <SelectValue placeholder="Select a period" />
             </SelectTrigger>
             <SelectContent align='end'>

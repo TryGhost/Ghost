@@ -1,6 +1,6 @@
-require('should');
+const should = require('should');
 
-const Tier = require('@tryghost/tiers/lib/Tier');
+const Tier = require('../../../../../../core/server/services/tiers/Tier');
 const ObjectID = require('bson-objectid').default;
 const assert = require('assert/strict');
 const fs = require('fs-extra');

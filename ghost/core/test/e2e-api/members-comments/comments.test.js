@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils, dbUtils} = require('../../utils/e2e-framework');
-const {nullable, anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyErrorId, anyUuid, anyNumber, anyBoolean} = matchers;
+const {nullable, anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyErrorId, anyUuid, anyNumber, anyBoolean, stringMatching} = matchers;
 const should = require('should');
 const models = require('../../../core/server/models');
 const moment = require('moment-timezone');
@@ -215,7 +215,7 @@ function testPostComment({post_id, html, parent_id, in_reply_to_id}, {status = 2
         .matchHeaderSnapshot({
             etag: anyEtag,
             location: anyLocationFor('comments'),
-            'x-cache-invalidate': matchers.stringMatching(
+            'x-cache-invalidate': stringMatching(
                 parent_id
                     ? new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/replies/')
                     : new RegExp('/api/members/comments/post/[0-9a-f]{24}/')
@@ -995,7 +995,7 @@ describe('Comments API', function () {
                     .expectStatus(204)
                     .matchHeaderSnapshot({
                         etag: anyEtag,
-                        'x-cache-invalidate': matchers.stringMatching(
+                        'x-cache-invalidate': stringMatching(
                             new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/replies/')
                         )
                     })

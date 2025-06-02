@@ -16,7 +16,7 @@ const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const themeEngine = require('./frontend/services/theme-engine');
 const appService = require('./frontend/services/apps');
-const {cardAssets} = require('./frontend/services/assets-minification');
+const {adminAuthAssets, cardAssets} = require('./frontend/services/assets-minification');
 const routerManager = require('./frontend/services/routing').routerManager;
 const settingsCache = require('./shared/settings-cache');
 const urlService = require('./server/services/url');
@@ -51,6 +51,10 @@ class Bridge {
         return themeEngine.getActive();
     }
 
+    ensureAdminAuthAssetsMiddleware() {
+        return adminAuthAssets.serveMiddleware();
+    }
+
     async activateTheme(loadedTheme, checkedTheme) {
         let settings = {
             locale: settingsCache.get('locale')
@@ -65,6 +69,9 @@ class Bridge {
             const cardAssetConfig = this.getCardAssetConfig();
             debug('reload card assets config', cardAssetConfig);
             cardAssets.invalidate(cardAssetConfig);
+
+            // rebuild asset files
+            adminAuthAssets.invalidate();
         } catch (err) {
             logging.error(new errors.InternalServerError({
                 message: tpl(messages.activateFailed, {theme: loadedTheme.name}),

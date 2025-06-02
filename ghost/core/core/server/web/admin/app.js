@@ -3,13 +3,12 @@ const path = require('path');
 const express = require('../../../shared/express');
 const serveStatic = express.static;
 const config = require('../../../shared/config');
-const constants = require('@tryghost/constants');
 const urlUtils = require('../../../shared/url-utils');
 const shared = require('../shared');
 const errorHandler = require('@tryghost/mw-error-handler');
 const sentry = require('../../../shared/sentry');
 const redirectAdminUrls = require('./middleware/redirect-admin-urls');
-const createServeAuthFrameFileMw = require('./middleware/serve-auth-frame-file');
+const bridge = require('../../../bridge');
 
 /**
  *
@@ -29,7 +28,7 @@ module.exports = function setupAdminApp() {
     //        is specified in seconds. See https://github.com/expressjs/serve-static/issues/150 for more context
     adminApp.use('/assets', serveStatic(
         path.join(config.get('paths').adminAssets, 'assets'), {
-            maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : constants.ONE_YEAR_MS,
+            maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : (365 * 24 * 60 * 60 * 1000), // Default to 1 year in ms
             immutable: true,
             fallthrough: false
         }
@@ -39,7 +38,7 @@ module.exports = function setupAdminApp() {
     // request to the Admin API /users/me/ endpoint to check if the user is logged in.
     //
     // Used by comments-ui to add moderation options to front-end comments when logged in.
-    adminApp.use('/auth-frame', function authFrameMw(req, res, next) {
+    adminApp.use('/auth-frame', bridge.ensureAdminAuthAssetsMiddleware(), function authFrameMw(req, res, next) {
         // only render content when we have an Admin session cookie,
         // otherwise return a 204 to avoid JS and API requests being made unnecessarily
         try {
@@ -52,7 +51,9 @@ module.exports = function setupAdminApp() {
         } catch (err) {
             next(err);
         }
-    }, createServeAuthFrameFileMw(config, urlUtils));
+    }, serveStatic(
+        path.join(config.getContentPath('public'), 'admin-auth')
+    ));
 
     // Ember CLI's live-reload script
     if (config.get('env') === 'development') {

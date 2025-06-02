@@ -73,7 +73,10 @@ describe('ActivityPubAPI', function () {
                         expect(init?.body).toEqual('{"content":"Hello, world!"}');
                     },
                     response: JSONResponse({
-                        id: 'https://example.com/note/abc123'
+                        post: {
+                            id: 'https://example.com/note/abc123',
+                            content: 'Hello, world!'
+                        }
                     })
                 }
             });
@@ -88,7 +91,8 @@ describe('ActivityPubAPI', function () {
             const result = await api.note('Hello, world!');
 
             expect(result).toEqual({
-                id: 'https://example.com/note/abc123'
+                id: 'https://example.com/note/abc123',
+                content: 'Hello, world!'
             });
         });
 
@@ -100,9 +104,11 @@ describe('ActivityPubAPI', function () {
                         expect(init?.body).toEqual('{"content":"Hello, world!","imageUrl":"https://example.com/image.jpg"}');
                     },
                     response: JSONResponse({
-                        id: 'https://example.com/note/abc123',
-                        content: 'Hello, world!',
-                        image: 'https://example.com/image.jpg'
+                        post: {
+                            id: 'https://example.com/note/abc123',
+                            content: 'Hello, world!',
+                            image: 'https://example.com/image.jpg'
+                        }
                     })
                 }
             });

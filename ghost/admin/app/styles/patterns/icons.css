@@ -7,6 +7,14 @@
 
 .gh-icon-spinner {
     stroke: #fff;
+    animation: rotate-360 1s linear infinite;
+    width: 14px;
+    height: 14px;
+}
+
+/* Spinner for dropdown menus */
+.gh-btn-text .gh-icon-spinner {
+    stroke: #333;
 }
 
 /*

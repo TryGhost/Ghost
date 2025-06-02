@@ -5,8 +5,8 @@ import React, {useEffect, useRef} from 'react';
 import getName from '@src/utils/get-name';
 import getUsername from '@src/utils/get-username';
 import {Actor} from '@src/api/activitypub';
-import {List, LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
-import {handleProfileClickRR} from '@src/utils/handle-profile-click';
+import {Button, LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade';
+import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 type ActorListProps = {
@@ -54,20 +54,22 @@ const ActorList: React.FC<ActorListProps> = ({
     const navigate = useNavigate();
 
     return (
-        <div className='pt-3'>
+        <div className='pt-3' data-testid="actor-list">
             {
                 hasNextPage === false && actors.length === 0 ? (
-                    <NoValueLabel icon='user-add'>
+                    <NoValueLabel>
+                        <NoValueLabelIcon><LucideIcon.UserRoundPlus /></NoValueLabelIcon>
                         {noResultsMessage}
                     </NoValueLabel>
                 ) : (
-                    <List>
-                        {actors.map(({actor, isFollowing}) => {
+                    <div className='flex flex-col'>
+                        {actors.map(({actor, isFollowing, blockedByMe, domainBlockedByMe}) => {
                             return (
                                 <React.Fragment key={actor.id}>
                                     <ActivityItem key={actor.id}
+                                        data-testid="actor-item"
                                         onClick={() => {
-                                            handleProfileClickRR(actor, navigate);
+                                            handleProfileClick(actor, navigate);
                                         }}
                                     >
                                         <APAvatar author={actor} />
@@ -77,17 +79,21 @@ const ActorList: React.FC<ActorListProps> = ({
                                                 <div className='line-clamp-1 text-sm'>{actor.handle || getUsername(actor)}</div>
                                             </div>
                                         </div>
-                                        <FollowButton
-                                            className='ml-auto'
-                                            following={isFollowing}
-                                            handle={actor.handle || getUsername(actor)}
-                                            type='secondary'
-                                        />
+                                        {blockedByMe || domainBlockedByMe ?
+                                            <Button className='pointer-events-none ml-auto min-w-[90px]' variant='destructive'>Blocked</Button> :
+                                            <FollowButton
+                                                className='ml-auto'
+                                                data-testid="follow-button"
+                                                following={isFollowing}
+                                                handle={actor.handle || getUsername(actor)}
+                                                type='secondary'
+                                            />
+                                        }
                                     </ActivityItem>
                                 </React.Fragment>
                             );
                         })}
-                    </List>
+                    </div>
                 )
             }
             <div ref={loadMoreRef} className='h-1'></div>

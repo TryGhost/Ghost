@@ -12,16 +12,17 @@ const NotificationContext = React.createContext<NotificationContextType | undefi
 // Root component
 interface NotificationItemProps {
     isGrouped?: boolean;
+    centerAlign?: boolean;
     children: React.ReactNode;
     onClick?: () => void;
     url?: string;
     className?: string;
 }
 
-const NotificationItem = ({isGrouped, children, onClick, url, className}: NotificationItemProps) => {
+const NotificationItem = ({isGrouped, centerAlign, children, onClick, url, className}: NotificationItemProps) => {
     return (
         <NotificationContext.Provider value={{onClick, url}}>
-            <div className={`group relative -mx-4 -my-px ${isGrouped ? 'grid' : 'flex'} cursor-pointer grid-cols-[auto_1fr] items-start gap-x-4 gap-y-2 rounded-lg px-4 py-5 text-left break-anywhere hover:bg-gray-75 ${className}`}
+            <div className={`group relative -mx-4 -my-px ${isGrouped ? 'grid' : 'flex'} ${centerAlign ? 'items-center' : 'items-start'} cursor-pointer grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 rounded-lg px-4 py-5 text-left break-anywhere hover:bg-gray-75 ${className}`}
                 role='button'
                 onClick={onClick}
             >
@@ -50,7 +51,7 @@ const Avatars = ({children}: {children: React.ReactNode}) => {
 
 const Content = ({children}: {children: React.ReactNode}) => {
     return (
-        <div className='col-start-2 row-start-2 -mt-0.5 overflow-hidden'>
+        <div className='col-start-2 row-start-2 -mt-0.5 grow overflow-hidden'>
             {children}
         </div>
     );
