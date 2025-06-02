@@ -32039,10 +32039,10 @@ zip-stream@^4.1.0:
     compress-commons "^4.1.0"
     readable-stream "^3.6.0"
 
-zod@3.25.47:
-  version "3.25.47"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.47.tgz#4faa5f342208ef52c00ebf9c8f290c87abe7ffe7"
-  integrity sha512-+f8+agSYoT9niC0VUL60IuXnr81FJeJ27Lf5YPrmcxTWmygcpGBeEuAAovDDEjkyQ36KyqNswwbhISZ1Z7yY+A==
+zod@3.25.48:
+  version "3.25.48"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.48.tgz#6c2b536fbb519905e8f4a4ac58743de4d5331bb2"
+  integrity sha512-0X1mz8FtgEIvaxGjdIImYpZEaZMrund9pGXm3M6vM7Reba0e2eI71KPjSCGXBfwKDPwPoywf6waUKc3/tFvX2Q==
 
 zrender@5.6.0:
   version "5.6.0"
