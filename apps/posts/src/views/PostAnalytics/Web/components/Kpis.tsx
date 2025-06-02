@@ -97,7 +97,6 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
                                             data={chartData}
                                             id={currentMetric.dataKey}
                                             range={range}
-                                            showYAxisValues={false}
                                             syncId="overview-charts"
                                         />
                                     </div>

@@ -1,5 +1,5 @@
 import React, {useMemo} from 'react';
-import {BarChartLoadingIndicator, GhAreaChart, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
+import {BarChartLoadingIndicator, GhAreaChart, formatQueryDate, getRangeDates, getRangeForStartDate, sanitizeChartData} from '@tryghost/shade';
 import {KPI_METRICS} from '../../Web/components/Kpis';
 import {KpiDataItem} from '@src/utils/kpi-helpers';
 import {STATS_RANGES} from '@src/utils/constants';
@@ -12,7 +12,6 @@ const WebOverview:React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const currentMetric = KPI_METRICS.visits;
     const {postId} = useParams();
-    const range = STATS_RANGES.ALL_TIME.value;
 
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
@@ -20,6 +19,15 @@ const WebOverview:React.FC = () => {
             fields: 'title,slug,published_at,uuid'
         }
     });
+
+    // Calculate range based on days between today and post publication date
+    const range = useMemo(() => {
+        if (!post?.published_at) {
+            return STATS_RANGES.ALL_TIME.value; // Fallback if no publication date
+        }
+        const calculatedRange = getRangeForStartDate(post.published_at);
+        return calculatedRange;
+    }, [post?.published_at]);
 
     const {startDate, endDate, timezone} = getRangeDates(range);
 
@@ -58,7 +66,7 @@ const WebOverview:React.FC = () => {
         };
     });
 
-    const isLoading = isConfigLoading || loading;
+    const isLoading = isPostLoading || isConfigLoading || loading;
 
     return (
         <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
@@ -71,9 +79,8 @@ const WebOverview:React.FC = () => {
                     className={'-mb-3 h-[16vw] max-h-[320px] w-full'}
                     color='hsl(var(--chart-blue))'
                     data={chartData}
-                    id="mrr"
+                    id="visitors"
                     range={range}
-                    showYAxisValues={false}
                     syncId="overview-charts"
                 />
             }

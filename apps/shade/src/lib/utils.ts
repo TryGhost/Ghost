@@ -329,6 +329,17 @@ export const calculateYAxisWidth = (ticks: number[], formatter: (value: number) 
     return width;
 };
 
+// Get range for date
+export const getRangeForStartDate = (startDate: string) => {
+    const publishedDate = new Date(startDate);
+    const today = new Date();
+    const diffInTime = today.getTime() - publishedDate.getTime();
+    const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
+
+    // Ensure minimum of 1 day to avoid issues with same-day publications
+    return Math.max(diffInDays, 1);
+};
+
 //Return today and startdate for charts
 export const getRangeDates = (range: number) => {
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
