@@ -150,19 +150,41 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
     const headerTextColor = headerBackgroundColor() === 'transparent' ? textColor : textColorForBackgroundColor(headerBackgroundColor()).hex();
     const secondaryHeaderTextColor = headerBackgroundColor() === 'transparent' ? secondaryTextColor : textColorForBackgroundColor(headerBackgroundColor()).alpha(0.5).toString();
 
-    const colors = hasEmailCustomizationAlpha ? {
-        backgroundColor: backgroundColor(),
-        headerBackgroundColor: headerBackgroundColor(),
-        postTitleColor: postTitleColor() || undefined,
-        sectionTitleColor: sectionTitleColor() || undefined,
-        buttonColor: buttonColor() || undefined,
-        linkColor: linkColor() || undefined,
-        dividerColor: dividerColor() || undefined,
-        textColor,
-        secondaryTextColor,
-        headerTextColor,
-        secondaryHeaderTextColor
-    } : {};
+    type Colors = {
+        backgroundColor?: string;
+        headerBackgroundColor?: string;
+        postTitleColor?: string;
+        sectionTitleColor?: string;
+        buttonColor?: string;
+        linkColor?: string;
+        dividerColor?: string;
+        textColor?: string;
+        secondaryTextColor?: string;
+        headerTextColor?: string;
+        secondaryHeaderTextColor?: string;
+    }
+
+    let colors: Colors = {};
+    if (hasEmailCustomizationAlpha) {
+        colors = {
+            backgroundColor: backgroundColor(),
+            headerBackgroundColor: headerBackgroundColor(),
+            postTitleColor: postTitleColor() || undefined,
+            sectionTitleColor: sectionTitleColor() || undefined,
+            buttonColor: buttonColor() || undefined,
+            linkColor: linkColor() || undefined,
+            dividerColor: dividerColor() || undefined,
+            textColor,
+            secondaryTextColor,
+            headerTextColor,
+            secondaryHeaderTextColor
+        };
+    } else if (hasEmailCustomization) {
+        colors = {
+            postTitleColor: postTitleColor() || undefined,
+            sectionTitleColor: sectionTitleColor() || undefined
+        };
+    }
 
     return <NewsletterPreviewContent
         accentColor={siteData.accent_color}

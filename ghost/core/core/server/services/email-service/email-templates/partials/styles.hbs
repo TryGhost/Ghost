@@ -86,7 +86,7 @@ hr {
     height: 1px;
     background-color: transparent;
     border: 0;
-    border-top: 1px solid #e0e7eb;
+    border-top: 1px solid {{dividerColor}};
 }
 
 p,
@@ -241,109 +241,40 @@ h2 {
     font-size: 32px;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
-
-/* Post content headings */
-.post-content-row h1 {
-    {{#if sectionTitleColor}}
-    color: {{sectionTitleColor}};
-    {{else}}
-    color: #15212A; /* fallback to default */
-    {{/if}}
-}
-
-
-
-.post-content-row h2 {
-    {{#if sectionTitleColor}}
-    color: {{sectionTitleColor}};
-    {{else}}
-    color: #15212A; /* fallback to default */
-    {{/if}}
-}
-
-
-
-{{/hasFeature}}
-
 h3 {
     margin: 1.5em 0 0.5em 0;
     font-size: 26px;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
-.post-content-row h3 {
-    {{#if sectionTitleColor}}
-    color: {{sectionTitleColor}};
-    {{else}}
-    color: #15212A; /* fallback to default */
-    {{/if}}
-}
-
-
-
-.post-content-row h4 {
-    margin: 1.8em 0 0.5em 0;
-    font-size: 21px;
-    line-height: 1.2em;
-    {{#if sectionTitleColor}}
-    color: {{sectionTitleColor}};
-    {{else}}
-    color: #15212A; /* fallback to default */
-    {{/if}}
-}
-
-
-{{else}}
 h4 {
     margin: 1.8em 0 0.5em 0;
     font-size: 21px;
     line-height: 1.2em;
 }
-{{/hasFeature}}
 
-{{#hasFeature "emailCustomizationAlpha"}}
-.post-content-row h5 {
-    margin: 2em 0 0.5em 0;
-    font-size: 19px;
-    line-height: 1.3em;
-    {{#if sectionTitleColor}}
-    color: {{sectionTitleColor}};
-    {{else}}
-    color: #15212A; /* fallback to default */
-    {{/if}}
-}
-
-
-{{else}}
 h5 {
     margin: 2em 0 0.5em 0;
     font-size: 19px;
     line-height: 1.3em;
 }
-{{/hasFeature}}
 
-{{#hasFeature "emailCustomizationAlpha"}}
-.post-content-row h6 {
-    margin: 2em 0 0.5em 0;
-    font-size: 19px;
-    line-height: 1.3em;
-    {{#if sectionTitleColor}}
-    color: {{sectionTitleColor}};
-    {{else}}
-    color: #15212A; /* fallback to default */
-    {{/if}}
-}
-
-
-
-{{else}}
 h6 {
     margin: 2em 0 0.5em 0;
     font-size: 19px;
     line-height: 1.3em;
 }
-{{/hasFeature}}
+
+/* Post content headings */
+.post-content-row h1,
+.post-content-row h2,
+.post-content-row h3,
+.post-content-row h4,
+.post-content-row h5,
+.post-content-row h6 {
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
+    {{/if}}
+}
 
 h1 strong,
 h2 strong,
@@ -457,7 +388,7 @@ figure blockquote p {
     text-align: center;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 {{#if postTitleColor}}
 .post-title-color a {
     color: {{postTitleColor}} !important;
@@ -604,6 +535,13 @@ figure blockquote p {
     FEEDBACK BUTTONS
 ------------------------------------- */
 
+.feedback-buttons-container {
+    padding: 32px 0 24px;
+    border-bottom: 1px solid {{dividerColor}};
+    background-color: #ffffff;
+    text-align: center;
+}
+
 .feedback-buttons {
     /*width: auto !important;*/
     width: 100% !important;
@@ -630,6 +568,11 @@ figure blockquote p {
 /* -------------------------------------
     LATEST POSTS TABLE
 ------------------------------------- */
+
+.latest-posts-container {
+    padding: 24px 0;
+    border-bottom: 1px solid {{dividerColor}};
+}
 
 h3.latest-posts-header {
     margin: 0;
@@ -693,24 +636,18 @@ h3.latest-posts-header {
     color: #73818c !important;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
 /* Custom heading colors for latest posts */
 .latest-post-title h4 {
     {{#if sectionTitleColor}}
     color: {{sectionTitleColor}};
-    {{else}}
-    color: #15212A; /* fallback to default */
     {{/if}}
 }
 
 .latest-post-title h4 a {
     {{#if sectionTitleColor}}
     color: {{sectionTitleColor}} !important;
-    {{else}}
-    color: #15212A !important;
     {{/if}}
 }
-{{/hasFeature}}
 
 /* -------------------------------------
     SUBSCRIPTION DETAILS BOX
@@ -718,7 +655,7 @@ h3.latest-posts-header {
 
 .subscription-box {
     padding: 32px 0;
-    border-bottom: 1px solid #e0e7eb;
+    border-bottom: 1px solid {{dividerColor}};
     color: #15212A;
 }
 
@@ -765,7 +702,7 @@ h3.latest-posts-header {
     line-height: 1.5em;
     color: #15212A;
     padding-bottom: 20px;
-    border-bottom: 1px solid #e0e7eb;
+    border-bottom: 1px solid {{dividerColor}};
 }
 
 .post-content-sans-serif {
@@ -774,7 +711,7 @@ h3.latest-posts-header {
     line-height: 1.5em;
     color: #15212A;
     padding-bottom: 20px;
-    border-bottom: 1px solid #e0e7eb;
+    border-bottom: 1px solid {{dividerColor}};
 }
 
 .post-content-row:first-child > td, .header-image-row + .post-content-row > td {
@@ -1093,11 +1030,11 @@ td.kg-card-spacing {
 }
 
 .kg-cta-card.kg-cta-bg-none:not(.kg-cta-no-dividers) {
-    border-bottom: 1px solid #e0e7eb;
+    border-bottom: 1px solid {{dividerColor}};
 }
 
 .kg-cta-bg-none.kg-cta-no-label:not(.kg-cta-no-dividers) {
-    border-top: 1px solid #e0e7eb;
+    border-top: 1px solid {{dividerColor}};
 }
 
 .kg-cta-bg-white {
@@ -1135,7 +1072,7 @@ td.kg-card-spacing {
 
 .kg-cta-sponsor-label {
     padding: 12px 0;
-    border-bottom: 1px solid #e0e7eb;
+    border-bottom: 1px solid {{dividerColor}};
 }
 
 .kg-cta-bg-none .kg-cta-sponsor-label {
@@ -1149,7 +1086,7 @@ td.kg-card-spacing {
 
 .kg-cta-bg-none .kg-cta-sponsor-label,
 .kg-cta-bg-white .kg-cta-sponsor-label {
-    border-color: #e0e7eb;
+    border-color: {{dividerColor}};
 }
 
 .kg-cta-bg-grey .kg-cta-sponsor-label {
