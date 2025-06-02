@@ -10,6 +10,7 @@ const UsersService = require('../../services/Users');
 const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
 const ALLOWED_INCLUDES = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
 const UNSAFE_ATTRS = ['status', 'roles'];
+const logging = require('@tryghost/logging');
 
 const messages = {
     noPermissionToAction: 'You do not have permission to perform this action',
@@ -200,8 +201,10 @@ const controller = {
         permissions: true,
         async query(frame) {
             try {
+                logging.info(`[Deleting staff user] Destroying user : ${JSON.stringify(frame.options)}`);
                 return userService.destroyUser(frame.options);
             } catch (err) {
+                logging.error(`[Deleting staff user] Error deleting user: ${err}`);
                 throw new errors.NoPermissionError({
                     err: err
                 });

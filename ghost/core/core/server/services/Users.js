@@ -6,6 +6,7 @@ const ObjectId = require('bson-objectid').default;
  * @TODO: pass these in as dependencies
  */
 const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
+const logging = require('@tryghost/logging');
 
 /**
  * @typedef {Object} IdbBackup
@@ -157,42 +158,71 @@ class Users {
      */
     async destroyUser(frameOptions) {
         let filename = null;
-        const backupPath = await this.dbBackup.backup();
-
-        if (backupPath) {
-            const parsedFileName = path.parse(backupPath);
-            filename = `${parsedFileName.name}${parsedFileName.ext}`;
+        logging.info(`[Deleting staff user] Userid: ${frameOptions.id}`);
+        logging.info(`[Deleting staff user] Options: ${JSON.stringify(frameOptions)}`);
+        try {
+            logging.info(`[Deleting staff user] Backing up database`);
+            const backupPath = await this.dbBackup.backup();
+            if (backupPath) {
+                const parsedFileName = path.parse(backupPath);
+                filename = `${parsedFileName.name}${parsedFileName.ext}`;
+                logging.info(`[Deleting staff user] Backup file created: ${filename}`);
+            }
+        } catch (err) {
+            logging.error(`[Deleting staff user] Error backing up database: ${err}`);
         }
 
         return this.models.Base.transaction(async (t) => {
+            logging.info(`[Deleting staff user] Starting transaction`);
             frameOptions.transacting = t;
 
             const {PostRevisions} = require('../lib/PostRevisions');
 
+            logging.info(`[Deleting staff user] Removing author from post revisions`);
             // null author field for users' post revisions
-            const postRevisions = new PostRevisions({
-                model: this.models.PostRevision
-            });
-            await postRevisions.removeAuthorFromRevisions(frameOptions.id, {
-                transacting: frameOptions.transacting
-            });
+            try{
+                logging.info(`[Deleting staff user] Creating post revisions instance`);
+                const postRevisions = new PostRevisions({
+                    model: this.models.PostRevision
+                });
+                logging.info(`[Deleting staff user] Removing author from post revisions`);
+                await postRevisions.removeAuthorFromRevisions(frameOptions.id, {
+                    transacting: frameOptions.transacting
+                });
+                logging.info(`[Deleting staff user] Author removed from post revisions`);
+            } catch (err) {
+                logging.error(`[Deleting staff user] Error removing author from post revisions: ${err}`);
+            }
 
             // create a #author-slug tag and assign it to their posts
-            await this.assignTagToUserPosts({
-                id: frameOptions.id,
-                context: frameOptions.context,
-                transacting: frameOptions.transacting
-            });
+            try {
+                logging.info(`[Deleting staff user] Creating tag`);
+                await this.assignTagToUserPosts({
+                    id: frameOptions.id,
+                    context: frameOptions.context,
+                    transacting: frameOptions.transacting
+                });
+                logging.info(`[Deleting staff user] Tag created`);
+            } catch (err) {
+                logging.error(`[Deleting staff user] Error creating tag: ${err}`);
+            }
 
             // reassign posts to owner user
-            await this.models.Post.reassignByAuthor({
-                id: frameOptions.id,
-                context: frameOptions.context,
-                transacting: frameOptions.transacting
-            });
+            try {
+                logging.info(`[Deleting staff user] Reassigning posts to owner user`);
+                await this.models.Post.reassignByAuthor({
+                    id: frameOptions.id,
+                    context: frameOptions.context,
+                    transacting: frameOptions.transacting
+                });
+                logging.info(`[Deleting staff user] Posts reassigned to owner user`);
+            } catch (err) {
+                logging.error(`[Deleting staff user] Error reassigning posts to owner user: ${err}`);
+            }
 
             // delete user
             try {
+                logging.info(`[Deleting staff user] Destroying api key`);
                 await this.models.ApiKey.destroy({
                     ...frameOptions,
                     require: true,
@@ -200,14 +230,24 @@ class Users {
                         user_id: frameOptions.id
                     }
                 });
+                logging.info(`[Deleting staff user] Api key destroyed`);
             } catch (err) {
                 if (!(err instanceof this.models.ApiKey.NotFoundError)) {
+                    logging.error(`[Deleting staff user] Error destroying api key: ${err}`);
                     throw err;
                 }
+                logging.info(`[Deleting staff user] Api key not found`);
             }
 
-            await this.models.User.destroy(Object.assign({status: 'all'}, frameOptions));
+            try {
+                logging.info(`[Deleting staff user] Destroying user`);
+                await this.models.User.destroy(Object.assign({status: 'all'}, frameOptions));
+                logging.info(`[Deleting staff user] User destroyed`);
+            } catch (err) {
+                logging.error(`[Deleting staff user] Error destroying user: ${err}`);
+            }
 
+            logging.info(`[Deleting staff user] Transaction completed`);
             return filename;
         });
     }
