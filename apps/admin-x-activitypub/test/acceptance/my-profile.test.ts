@@ -107,9 +107,6 @@ test.describe('My Profile', async () => {
             await expect(otherPostMenuButton).toBeVisible();
             await otherPostMenuButton.click();
 
-            // Wait for the popover to appear
-            await page.waitForTimeout(100);
-
             // Verify the delete option is not present
             const deleteButtons = page.getByRole('button', {name: 'Delete'});
             await expect(deleteButtons).toHaveCount(0);
@@ -203,29 +200,11 @@ test.describe('My Profile', async () => {
             const followersContent = page.locator('[role="tabpanel"][data-state="active"]');
             await expect(followersContent).toBeVisible();
 
-            // Wait for content to load
-            await page.waitForTimeout(2000);
-
-            // The full test implementation below will work once the data loading issue is resolved:
-
-            // Look for the account items - they might be rendered in different ways
-            // First check if Bob (our first follower) is visible
             const firstFollower = myFollowers.accounts[0];
             const bobAccount = followersContent.locator('text=' + firstFollower.handle);
 
-            // If we can't find any accounts, the list might still be empty
-            if (await bobAccount.count() === 0) {
-                // Check for empty state and return early
-                const emptyState = followersContent.locator('text=/have no followers/i');
-                if (await emptyState.count() > 0) {
-                    return;
-                }
-            }
-
-            // Bob's account should be visible
             await expect(bobAccount).toBeVisible();
 
-            // Find Bob's row/container
             const bobRow = followersContent.locator('div').filter({
                 hasText: firstFollower.name
             }).filter({
@@ -257,22 +236,18 @@ test.describe('My Profile', async () => {
             if (charlieButtonText?.includes('Following')) {
                 // If Charlie shows "Following", test clicking it
                 await charlieButton.click();
-                await page.waitForTimeout(100);
 
                 // Also test clicking Bob's button
                 await bobFollowButton.click();
-                await page.waitForTimeout(100);
             } else {
                 // Original test logic if Charlie has "Follow" button
                 await expect(charlieButton).toContainText('Follow');
 
                 // Test clicking Bob's unfollow button
                 await bobFollowButton.click();
-                await page.waitForTimeout(100);
 
                 // Test clicking Charlie's follow button
                 await charlieButton.click();
-                await page.waitForTimeout(100);
             }
 
             // Verify at least some API requests were made

@@ -283,9 +283,6 @@ test.describe('Feed', async () => {
         // Check if the route changed to the individual post view
         await expect(page).toHaveURL(new RegExp(`/feed/${encodeURIComponent(thirdPostFixture.id)}`));
 
-        // Wait for the view to load
-        await page.waitForTimeout(500);
-
         // The reply box should be visible at the bottom of the post view
         const replyTextarea = page.getByPlaceholder(/reply/i);
         await expect(replyTextarea).toBeVisible();
