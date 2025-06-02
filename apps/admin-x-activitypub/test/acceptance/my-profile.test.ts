@@ -24,11 +24,11 @@ test.describe('My Profile', async () => {
             await page.goto('#/profile');
 
             // Wait for the profile posts list to be visible
-            const profileList = page.getByRole('list');
+            const profileList = page.getByTestId('profile-posts-list');
             await expect(profileList).toBeVisible();
 
             // Check that the posts are rendered
-            const profileItems = page.getByRole('listitem');
+            const profileItems = page.getByTestId('profile-post-item');
             await expect(profileItems).toHaveCount(9);
 
             // Check that My Profile shows posts I authored
@@ -69,17 +69,16 @@ test.describe('My Profile', async () => {
             await page.goto('#/profile');
 
             // Wait for the profile posts list to be visible
-            const profileList = page.getByRole('list');
+            const profileList = page.getByTestId('profile-posts-list');
             await expect(profileList).toBeVisible();
 
             // Get the first post (authored by me)
-            const profileItems = page.getByRole('listitem');
+            const profileItems = page.getByTestId('profile-post-item');
             const firstItem = profileItems.first();
 
-            // Click on the Delete button
+            // Open the menu and delete the post
             await firstItem.hover();
-            const actionButtons = firstItem.getByRole('button');
-            const menuButton = actionButtons.nth(0);
+            const menuButton = firstItem.getByTestId('menu-button');
             await expect(menuButton).toBeVisible();
             await menuButton.click();
             const deleteButton = page.getByRole('button', {name: 'Delete'});
@@ -101,9 +100,8 @@ test.describe('My Profile', async () => {
             const otherUserPost = profileItems.nth(7);
             await otherUserPost.hover();
 
-            // Click the menu button on the reposted post
-            const otherPostActionButtons = otherUserPost.getByRole('button');
-            const otherPostMenuButton = otherPostActionButtons.nth(0);
+            // Open the menu for a reposted post
+            const otherPostMenuButton = otherUserPost.getByTestId('menu-button');
             await expect(otherPostMenuButton).toBeVisible();
             await otherPostMenuButton.click();
 
@@ -135,11 +133,11 @@ test.describe('My Profile', async () => {
             await likesTab.click();
 
             // Wait for the liked posts list to be visible
-            const likedList = page.getByRole('list');
+            const likedList = page.getByTestId('profile-likes-list');
             await expect(likedList).toBeVisible();
 
             // Check that posts I liked posts are rendered
-            const likedItems = page.getByRole('listitem');
+            const likedItems = page.getByTestId('profile-like-item');
             await expect(likedItems).toHaveCount(4);
 
             const firstLikedPost = myLikedPosts.posts[0];
@@ -189,7 +187,16 @@ test.describe('My Profile', async () => {
             const followersContent = page.locator('[role="tabpanel"][data-state="active"]');
             await expect(followersContent).toBeVisible();
 
-            const bobRow = followersContent.locator('div').filter({
+            // Wait for actor list to load
+            const actorList = page.getByTestId('actor-list');
+            await expect(actorList).toBeVisible();
+
+            // Get actor items
+            const actorItems = page.getByTestId('actor-item');
+            await expect(actorItems).toHaveCount(myFollowers.accounts.length);
+
+            // Find Bob's actor item
+            const bobRow = actorItems.filter({
                 hasText: bob.name
             }).filter({
                 hasText: bob.handle
@@ -197,15 +204,15 @@ test.describe('My Profile', async () => {
 
             await expect(bobRow).toBeVisible();
 
-            // Check that Bob has a "Following" button since I'm following Bob:
-            const followingBob = bobRow.locator('button').filter({hasText: /Following/i}).first();
+            // Check that Bob has a "Following" button since I'm following Bob
+            const followingBob = bobRow.getByTestId('follow-button').filter({hasText: /Following/i}).first();
             await expect(followingBob).toBeVisible();
 
-            // Clicking on the "Following" button should unfollow Bob
+            // Click the "Following" button to unfollow Bob
             await followingBob.click();
 
-            // Bob should now have a "Follow" button since I'm not following him anymore:
-            const notFollowingBob = bobRow.locator('button').filter({hasText: /Follow/i}).first();
+            // Bob should now have a "Follow" button since I'm not following him anymore
+            const notFollowingBob = bobRow.getByTestId('follow-button').filter({hasText: /Follow/i}).first();
             await expect(notFollowingBob).toBeVisible();
         });
     });
@@ -240,8 +247,16 @@ test.describe('My Profile', async () => {
             const followingContent = page.locator('[role="tabpanel"][data-state="active"]');
             await expect(followingContent).toBeVisible();
 
-            // Bob should be in my list of following:
-            const bobRow = followingContent.locator('div').filter({
+            // Wait for actor list to load
+            const actorList = page.getByTestId('actor-list');
+            await expect(actorList).toBeVisible();
+
+            // Get actor items
+            const actorItems = page.getByTestId('actor-item');
+            await expect(actorItems).toHaveCount(myFollowing.accounts.length);
+
+            // Find Bob's actor item
+            const bobRow = actorItems.filter({
                 hasText: bob.name
             }).filter({
                 hasText: bob.handle
@@ -249,22 +264,22 @@ test.describe('My Profile', async () => {
 
             await expect(bobRow).toBeVisible();
 
-            // Check that Bob has a "Following" button since I'm following Bob:
-            const followingBob = bobRow.locator('button').filter({hasText: /Following/i}).first();
+            // Check that Bob has a "Following" button since I'm following Bob
+            const followingBob = bobRow.getByTestId('follow-button').filter({hasText: /Following/i}).first();
             await expect(followingBob).toBeVisible();
 
-            // Clicking on the "Following" button should unfollow Bob
+            // Click the "Following" button to unfollow Bob
             await followingBob.click();
 
-            // Bob should now have a "Follow" button since I'm not following him anymore:
-            const notFollowingBob = bobRow.locator('button').filter({hasText: /Follow/i}).first();
+            // Bob should now have a "Follow" button since I'm not following him anymore
+            const notFollowingBob = bobRow.getByTestId('follow-button').filter({hasText: /Follow/i}).first();
             await expect(notFollowingBob).toBeVisible();
 
-            // Clicking on the "Follow" button should follow Bob again
+            // Click the "Follow" button to follow Bob again
             await notFollowingBob.click();
 
-            // Bob should now have a "Following" button since I'm following him again:
-            const followingBobAgain = bobRow.locator('button').filter({hasText: /Following/i}).first();
+            // Bob should now have a "Following" button since I'm following him again
+            const followingBobAgain = bobRow.getByTestId('follow-button').filter({hasText: /Following/i}).first();
             await expect(followingBobAgain).toBeVisible();
         });
     });

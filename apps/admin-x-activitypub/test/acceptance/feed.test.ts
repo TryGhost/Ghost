@@ -97,11 +97,11 @@ test.describe('Feed', async () => {
         await page.goto('#/feed');
 
         // Wait for the feed list to be visible
-        const feedList = page.getByRole('list');
+        const feedList = page.getByTestId('feed-list');
         await expect(feedList).toBeVisible();
 
         // Check that the first page of items is rendered
-        const feedItems = page.getByRole('listitem');
+        const feedItems = page.getByTestId('feed-item');
         await expect(feedItems).toHaveCount(10);
 
         // Check that the first item content, author name and timestamp are rendered
@@ -134,11 +134,11 @@ test.describe('Feed', async () => {
         await page.goto('#/feed');
 
         // Wait for the feed list to be visible
-        const feedList = page.getByRole('list');
+        const feedList = page.getByTestId('feed-list');
         await expect(feedList).toBeVisible();
 
         // Get all feed items
-        const feedItems = page.getByRole('listitem');
+        const feedItems = page.getByTestId('feed-item');
         await expect(feedItems).toHaveCount(10);
 
         // Get the first post
@@ -181,11 +181,11 @@ test.describe('Feed', async () => {
         await page.goto('#/feed');
 
         // Wait for the feed list to be visible
-        const feedList = page.getByRole('list');
+        const feedList = page.getByTestId('feed-list');
         await expect(feedList).toBeVisible();
 
         // Get all feed items
-        const feedItems = page.getByRole('listitem');
+        const feedItems = page.getByTestId('feed-item');
         await expect(feedItems).toHaveCount(10);
 
         // Get the last post (10th item, index 9)
@@ -256,11 +256,11 @@ test.describe('Feed', async () => {
         await page.goto('#/feed');
 
         // Wait for the feed list to be visible
-        const feedList = page.getByRole('list');
+        const feedList = page.getByTestId('feed-list');
         await expect(feedList).toBeVisible();
 
         // Get all feed items
-        const feedItems = page.getByRole('listitem');
+        const feedItems = page.getByTestId('feed-item');
         await expect(feedItems).toHaveCount(10);
 
         // Get the third post
