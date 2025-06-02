@@ -3,7 +3,7 @@ import APAvatar from '@components/global/APAvatar';
 import FeedItem from '@components/feed/FeedItem';
 import getUsername from '@utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 import {ChangeEvent, useCallback, useEffect, useRef, useState} from 'react';
 import {ComponentPropsWithoutRef, ReactNode} from 'react';
 import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE} from '@utils/image';
@@ -39,6 +39,8 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
     const [isSticky, setIsSticky] = useState(false);
     const navigate = useNavigate();
 
+    const MAX_CONTENT_LENGTH = 500;
+
     // Sync external open prop with internal state
     useEffect(() => {
         if (props.open !== undefined) {
@@ -58,7 +60,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
         }
     }, [isOpen, props.open]);
 
-    const isDisabled = !content.trim() || !user || isPosting;
+    const isDisabled = !content.trim() || !user || isPosting || content.length > MAX_CONTENT_LENGTH;
 
     const handlePost = useCallback(async () => {
         const trimmedContent = content.trim();
@@ -291,12 +293,14 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                     />
                 )}
                 <div className='flex min-h-24 items-start gap-3'>
-                    <APAvatar author={user as ActorProperties} />
+                    <div className='sticky top-0'>
+                        <APAvatar author={user as ActorProperties} />
+                    </div>
                     <FormPrimitive.Root asChild>
                         <div className='-mt-0.5 flex w-full flex-col gap-0.5'>
                             {isLoadingAccount ?
                                 <Skeleton className='w-10' /> :
-                                <span className='class="break-anywhere dark:text-white" min-w-0 truncate whitespace-nowrap font-semibold text-black'>{account?.name}</span>
+                                <span className='min-w-0 truncate whitespace-nowrap font-semibold text-black break-anywhere dark:text-white'>{account?.name}</span>
                             }
                             <FormPrimitive.Field name='content' asChild>
                                 <FormPrimitive.Control asChild>
@@ -339,12 +343,14 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                 }
                 <DialogFooter className={`${isSticky ? 'sticky' : 'static'} bottom-0 bg-background py-6 dark:bg-[#101114]`}>
                     <Button className='mr-auto w-[34px] !min-w-0' variant='outline' onClick={() => imageInputRef.current?.click()}><LucideIcon.Image /></Button>
-                    <DialogClose>
-                        <Button className='min-w-16' variant='outline'>Cancel</Button>
-                    </DialogClose>
-                    <Button className='min-w-16' disabled={isDisabled || isImageUploading} onClick={handlePost}>
-                        {isPosting ? <LoadingIndicator color='light' size='sm' /> : 'Post'}
-                    </Button>
+                    <div className='flex items-center sm:space-x-3'>
+                        <div className={`text-sm ${content.length >= MAX_CONTENT_LENGTH ? 'text-red-500' : content.length >= MAX_CONTENT_LENGTH * 0.9 ? 'text-yellow-600' : 'text-gray-500'}`}>
+                            {content.length}/{MAX_CONTENT_LENGTH}
+                        </div>
+                        <Button className='min-w-16' disabled={isDisabled || isImageUploading} onClick={handlePost}>
+                            {isPosting ? <LoadingIndicator color='light' size='sm' /> : 'Post'}
+                        </Button>
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
