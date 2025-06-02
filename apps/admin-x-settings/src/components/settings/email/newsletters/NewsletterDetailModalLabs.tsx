@@ -603,7 +603,7 @@ const Sidebar: React.FC<{
                             }
                         ]} clearBg={false} />
                     </div>
-                    {/* <div className='mb-1'>
+                    <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
                             eyedropper={true}
@@ -623,7 +623,7 @@ const Sidebar: React.FC<{
                             value={newsletter.link_color}
                             onChange={color => updateNewsletter({link_color: color})}
                         />
-                    </div> */}
+                    </div>
                     <div className='flex w-full justify-between'>
                         <div>Link style</div>
                         <ButtonGroup activeKey={newsletter.link_style || 'underline'} buttons={[

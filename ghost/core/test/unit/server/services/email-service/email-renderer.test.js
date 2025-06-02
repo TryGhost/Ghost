@@ -2102,7 +2102,8 @@ describe('Email renderer', function () {
                 image_corners: 'rounded',
                 section_title_color: '#BADA55',
                 post_title_color: '#BADA55',
-                divider_color: 'light' // should return our default hex value
+                divider_color: 'light', // should return our default hex value
+                link_color: '#BADA55'
             });
             const segment = null;
             const options = {};
@@ -2143,7 +2144,8 @@ describe('Email renderer', function () {
                     imageCorners: 'rounded',
                     sectionTitleColor: '#BADA55',
                     postTitleColor: '#BADA55',
-                    dividerColor: '#e0e7eb'
+                    dividerColor: '#e0e7eb',
+                    linkColor: '#BADA55'
                 },
                 labs: {emailCustomizationAlpha: true}
             });
@@ -2334,6 +2336,24 @@ describe('Email renderer', function () {
             for (const test of tests) {
                 const data = await templateDataWithSettings({
                     background_color: test.background_color
+                });
+                assert.equal(data.linkColor, test.expected);
+            }
+        });
+
+        it('Uses the correct link colour best on settings when emailCustomizationAlpha is enabled', async function () {
+            labsEnabled = true;
+            settings.accent_color = '#A1B2C3';
+            const tests = [
+                {input: '#BADA55', expected: '#BADA55'},
+                {input: 'accent', expected: settings.accent_color},
+                {input: 'Invalid Color', expected: settings.accent_color}, // default to accent color
+                {input: null, expected: settings.accent_color} // default to accent color
+            ];
+
+            for (const test of tests) {
+                const data = await templateDataWithSettings({
+                    link_color: test.input
                 });
                 assert.equal(data.linkColor, test.expected);
             }
