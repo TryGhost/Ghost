@@ -102,6 +102,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
             <div ref={statsRef} className={`flex ${layout !== 'inbox' && 'gap-1'}`}>
                 <Button
                     className={`${buttonClass} ${isLiked && 'text-pink-500 hover:text-pink-500'}`}
+                    data-testid="like-button"
                     disabled={disabled}
                     id='like'
                     title={`${isLiked ? 'Undo like' : 'Like'}`}
@@ -118,6 +119,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
                 </Button>
                 <Button
                     className={`${buttonClass}`}
+                    data-testid="reply-button"
                     disabled={disabled}
                     id='comment'
                     title='Reply'
@@ -129,6 +131,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
                 </Button>
                 <Button
                     className={`${buttonClass} ${isReposted && 'text-green-500 hover:text-green-500'}`}
+                    data-testid="repost-button"
                     disabled={disabled}
                     id='repost'
                     title={`${isReposted ? 'Undo repost' : 'Repost'}`}

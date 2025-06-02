@@ -63,10 +63,11 @@ const Posts: React.FC<PostsProps> = ({
                     {noResultsMessage}
                 </NoValueLabel>
             )}
-            <ul className='mx-auto flex max-w-[640px] flex-col'>
+            <ul className='mx-auto flex max-w-[640px] flex-col' data-testid="profile-posts-list">
                 {posts.map((activity, index) => (
                     <li
                         key={`posts-${activity.id}`}
+                        data-testid="profile-post-item"
                         data-test-view-article
                     >
                         <FeedItem

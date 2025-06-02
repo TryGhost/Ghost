@@ -54,7 +54,7 @@ const ActorList: React.FC<ActorListProps> = ({
     const navigate = useNavigate();
 
     return (
-        <div className='pt-3'>
+        <div className='pt-3' data-testid="actor-list">
             {
                 hasNextPage === false && actors.length === 0 ? (
                     <NoValueLabel>
@@ -67,6 +67,7 @@ const ActorList: React.FC<ActorListProps> = ({
                             return (
                                 <React.Fragment key={actor.id}>
                                     <ActivityItem key={actor.id}
+                                        data-testid="actor-item"
                                         onClick={() => {
                                             handleProfileClick(actor, navigate);
                                         }}
@@ -82,6 +83,7 @@ const ActorList: React.FC<ActorListProps> = ({
                                             <Button className='pointer-events-none ml-auto min-w-[90px]' variant='destructive'>Blocked</Button> :
                                             <FollowButton
                                                 className='ml-auto'
+                                                data-testid="follow-button"
                                                 following={isFollowing}
                                                 handle={actor.handle || getUsername(actor)}
                                                 type='secondary'

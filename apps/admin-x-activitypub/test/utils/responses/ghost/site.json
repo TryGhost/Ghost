@@ -1,0 +1,8 @@
+{
+    "site": {
+        "title": "Test Site",
+        "description": "Test site description",
+        "url": "http://localhost:5173",
+        "version": "5.0.0"
+    }
+}
