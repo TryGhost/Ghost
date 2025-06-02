@@ -196,8 +196,8 @@ interface FeedItemProps {
     last?: boolean;
     isLoading?: boolean;
     isPending?: boolean;
+    isCompact?: boolean;
     onClick?: () => void;
-    onCommentClick: () => void;
     onDelete?: () => void;
     showStats?: boolean;
 }
@@ -219,8 +219,8 @@ const FeedItem: React.FC<FeedItemProps> = ({
     last,
     isLoading,
     isPending = false,
+    isCompact = false,
     onClick: onClickHandler = noop,
-    onCommentClick,
     onDelete = noop,
     showStats = true
 }) => {
@@ -339,12 +339,12 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         handleProfileClick(author, navigate, e);
                                     }
                                 }}>
-                                    <span className={`min-w-0 truncate font-semibold leading-[normal] break-anywhere ${!isPending ? 'hover-underline' : ''} dark:text-white`}
+                                    <span className={`min-w-0 truncate font-semibold leading-[normal] break-anywhere ${isCompact ? 'text-lg' : 'text-md'} ${!isPending ? 'hover-underline' : ''} dark:text-white`}
                                         data-test-activity-heading
                                     >
                                         {!isLoading ? author.name : <Skeleton className='w-24' />}
                                     </span>
-                                    <div className='flex w-full text-sm text-gray-700 dark:text-gray-600'>
+                                    <div className={`flex w-full ${isCompact ? 'text-md' : 'text-sm'} text-gray-700 dark:text-gray-600`}>
                                         <span className={`truncate leading-tight ${!isPending ? 'hover-underline' : ''}`}>
                                             {!isLoading ? getUsername(author) : <Skeleton className='w-56' />}
                                         </span>
@@ -402,13 +402,13 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     <div className='space-between relative z-[30] ml-[-8px] mt-1 flex'>
                                         {!isLoading ?
                                             showStats && <FeedItemStats
+                                                actor={author}
                                                 commentCount={commentCount}
                                                 disabled={isPending}
                                                 layout={layout}
                                                 likeCount={1}
                                                 object={object}
                                                 repostCount={repostCount}
-                                                onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
                                             /> :
                                             <Skeleton className='ml-2 w-18' />
@@ -466,12 +466,12 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         {renderFeedAttachment(object, openLightbox)}
                                         <div className='space-between ml-[-8px] mt-3 flex'>
                                             {showStats && <FeedItemStats
+                                                actor={author}
                                                 commentCount={commentCount}
                                                 layout={layout}
                                                 likeCount={1}
                                                 object={object}
                                                 repostCount={repostCount}
-                                                onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
                                             />}
                                         </div>
@@ -497,7 +497,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         return (
             <>
                 {object && (
-                    <div className={`group/article relative py-5 ${!isPending ? 'cursor-pointer' : 'pointer-events-none'}`} data-layout='reply' data-object-id={object.id} onClick={onClick}>
+                    <div className={`group/article relative ${isCompact ? 'pb-6' : 'py-5'} ${!isPending ? 'cursor-pointer' : 'pointer-events-none'}`} data-layout='reply' data-object-id={object.id} onClick={onClick}>
                         <div className={`border-1 z-10 flex items-start gap-3 border-b-gray-200`} data-test-activity>
                             <div className='relative z-10 pt-[3px]'>
                                 <APAvatar author={author} disabled={isPending} />
@@ -517,14 +517,14 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             <span className='truncate text-gray-700'>{getUsername(author)}</span>
                                         </div>
                                     </div>
-                                    <FeedItemMenu
+                                    {!isCompact && <FeedItemMenu
                                         allowDelete={allowDelete}
                                         disabled={isPending}
                                         layout='reply'
                                         trigger={UserMenuTrigger}
                                         onCopyLink={handleCopyLink}
                                         onDelete={handleDelete}
-                                    />
+                                    />}
                                 </div>
                                 <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
@@ -537,24 +537,24 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             id='read-more'
                                             variant='secondary'
                                         >Read more</Button>}
-                                        <div className='space-between ml-[-8px] mt-2 flex'>
+                                        {!isCompact && <div className='space-between ml-[-8px] mt-2 flex'>
                                             {showStats && <FeedItemStats
+                                                actor={author}
                                                 commentCount={commentCount}
                                                 disabled={isPending}
                                                 layout={layout}
                                                 likeCount={1}
                                                 object={object}
                                                 repostCount={repostCount}
-                                                onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
                                             />}
-                                        </div>
+                                        </div>}
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
-                        {!last && <div className="absolute bottom-0 left-[18px] top-[6.5rem] z-0 mb-[-13px] w-[2px] rounded-sm bg-gray-200"></div>}
+                        {!last && <div className={`absolute left-[19px] ${isCompact ? 'bottom-[8px] top-[51px]' : 'bottom-[-7px] top-[71px]'} z-0 w-[2px] rounded-sm bg-gray-200`}></div>}
                     </div>
                 )}
                 <ImageLightbox
@@ -616,12 +616,12 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </div>
                                 <div className='invisible absolute right-3 top-8 z-[49] flex -translate-y-1/2 rounded-lg bg-white p-1 shadow-md group-hover/article:visible dark:bg-black'>
                                     {showStats && <FeedItemStats
+                                        actor={author}
                                         commentCount={commentCount}
                                         layout={layout}
                                         likeCount={1}
                                         object={object}
                                         repostCount={repostCount}
-                                        onCommentClick={onCommentClick}
                                         onLikeClick={onLikeClick}
                                     />}
                                     <FeedItemMenu

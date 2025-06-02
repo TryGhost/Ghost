@@ -19,7 +19,7 @@ import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '../../../utils/pending-activity';
 import {openLinksInNewTab} from '@src/utils/content-formatters';
 import {useDebounce} from 'use-debounce';
-import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface IframeWindow extends Window {
     resizeIframe?: () => void;
@@ -423,17 +423,8 @@ export const Reader: React.FC<ReaderProps> = ({
         resetFontSize
     } = useCustomizerSettings();
     const modalRef = useRef<HTMLElement>(null);
-    const [focusReply, setFocusReply] = useState(false);
     const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
     const [isTOCOpen, setIsTOCOpen] = useState(false);
-    const location = useLocation();
-
-    useEffect(() => {
-        const searchParams = new URLSearchParams(location.search);
-        if (searchParams.get('focusReply') === 'true') {
-            setFocusReply(true);
-        }
-    }, [location.search, setFocusReply]);
 
     const {data: post, isLoading: isLoadingPost} = usePostForUser('index', postId);
     const activityData = post;
@@ -467,7 +458,6 @@ export const Reader: React.FC<ReaderProps> = ({
         setReplyCount((current: number) => current - step);
     }
 
-    const replyBoxRef = useRef<HTMLDivElement>(null);
     const repliesRef = useRef<HTMLDivElement>(null);
 
     const currentMaxWidth = '904px';
@@ -680,19 +670,14 @@ export const Reader: React.FC<ReaderProps> = ({
                                         />
                                         <div className='-ml-3 w-full' style={{maxWidth: currentGridWidth}}>
                                             <FeedItemStats
+                                                actor={actor}
                                                 commentCount={replyCount}
                                                 layout={'modal'}
                                                 likeCount={1}
                                                 object={object}
                                                 repostCount={object.repostCount ?? 0}
-                                                onCommentClick={() => {
-                                                    repliesRef.current?.scrollIntoView({
-                                                        behavior: 'smooth',
-                                                        block: 'center'
-                                                    });
-                                                    setFocusReply(true);
-                                                }}
                                                 onLikeClick={onLikeClick}
+                                                onReplyCountChange={incrementReplyCount}
                                             />
                                         </div>
                                     </div>
@@ -700,12 +685,11 @@ export const Reader: React.FC<ReaderProps> = ({
                                         <DeletedFeedItem last={true} />
                                     )}
 
-                                    <div ref={replyBoxRef} className='mx-auto w-full border-t border-black/[8%] dark:border-gray-950' style={{maxWidth: currentGridWidth}}>
+                                    <div className='mx-auto w-full border-t border-black/[8%] dark:border-gray-950' style={{maxWidth: currentGridWidth}}>
                                         <APReplyBox
-                                            focused={focusReply ? 1 : 0}
                                             object={object}
-                                            onReply={incrementReplyCount}
-                                            onReplyError={decrementReplyCount}
+                                            onReply={() => incrementReplyCount(1)}
+                                            onReplyError={() => decrementReplyCount(1)}
                                         />
                                         <FeedItemDivider />
                                     </div>
@@ -732,10 +716,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                         onClick={() => {
                                                             navigate(`/feed/${encodeURIComponent(item.object.id)}`);
                                                         }}
-                                                        onCommentClick={() => {
-                                                            navigate(`/feed/${encodeURIComponent(item.object.id)}?focusReply=true`);
-                                                        }}
-                                                        onDelete={decrementReplyCount}
+                                                        onDelete={() => decrementReplyCount()}
                                                     />
                                                     {showDivider && <FeedItemDivider />}
                                                 </React.Fragment>

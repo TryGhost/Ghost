@@ -83,13 +83,6 @@ const Likes: React.FC<LikesProps> = ({
                                     navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
                                 }
                             }}
-                            onCommentClick={() => {
-                                if (activity.object.type === 'Note') {
-                                    navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
-                                } else if (activity.object.type === 'Article') {
-                                    navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
-                                }
-                            }}
                         />
                         {index < posts.length - 1 && <Separator />}
                         {index === loadMoreIndex && (

@@ -251,6 +251,51 @@ function updateNotificationsRepostCache(queryClient: QueryClient, handle: string
     );
 }
 
+function updateNotificationsReplyCountCache(queryClient: QueryClient, handle: string, id: string, delta: number) {
+    const notificationQueryKey = QUERY_KEYS.notifications(handle);
+    queryClient.setQueriesData(
+        {queryKey: notificationQueryKey},
+        (current?: {pages?: {notifications?: Notification[]}[]}) => {
+            if (!current || !current.pages) {
+                return current;
+            }
+
+            try {
+                return {
+                    ...current,
+                    pages: current.pages.map((page) => {
+                        if (!page || !page.notifications) {
+                            return page;
+                        }
+
+                        return {
+                            ...page,
+                            notifications: page.notifications.map((notification) => {
+                                if (!notification || !notification.post) {
+                                    return notification;
+                                }
+
+                                if (notification.post.id === id) {
+                                    return {
+                                        ...notification,
+                                        post: {
+                                            ...notification.post,
+                                            replyCount: Math.max((notification.post.replyCount ?? 0) + delta, 0)
+                                        }
+                                    };
+                                }
+                                return notification;
+                            })
+                        };
+                    })
+                };
+            } catch (error) {
+                return current;
+            }
+        }
+    );
+}
+
 function updateReplyCountInCache(queryClient: QueryClient, id: string, delta: number) {
     const queryKeys = [
         QUERY_KEYS.feed,
@@ -1317,6 +1362,9 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
             // Increment the reply count of the inReplyTo post in the feed
             updateReplyCountInCache(queryClient, inReplyTo, 1);
 
+            // Update reply count in notifications
+            updateNotificationsReplyCountCache(queryClient, handle, inReplyTo, 1);
+
             // We do not need to increment the reply count of the inReplyTo post
             // in the thread as this is handled locally in the ArticleModal component
 
@@ -1340,6 +1388,9 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
 
             // Decrement the reply count of the inReplyTo post in the feed
             updateReplyCountInCache(queryClient, variables.inReplyTo, -1);
+
+            // Update reply count in notifications
+            updateNotificationsReplyCountCache(queryClient, handle, variables.inReplyTo, -1);
 
             // We do not need to decrement the reply count of the inReplyTo post
             // in the thread as this is handled locally in the ArticleModal component
@@ -1687,6 +1738,11 @@ export function useDeleteMutationForUser(handle: string) {
                         })
                 };
             });
+
+            // Update reply count in notifications if this was a reply
+            if (parentId) {
+                updateNotificationsReplyCountCache(queryClient, handle, parentId, -1);
+            }
 
             // Update the outbox cache:
             // - Remove the post from the outbox
