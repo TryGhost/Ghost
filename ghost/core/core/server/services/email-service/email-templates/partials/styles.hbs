@@ -276,6 +276,25 @@ h6 {
     {{/if}}
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+/* Links in captions */
+.feature-image-caption a,
+figcaption a {
+    color: {{linkColor}};
+}
+
+.kg-toggle-card:not(.kg-cta-card) a {
+    color: {{linkColor}};
+}
+.kg-callout-card:not(.kg-callout-card-accent) a {
+    color: {{linkColor}};
+}
+
+.subscription-box .manage-subscription a {
+    color: {{linkColor}} !important;
+}
+{{/hasFeature}}
+
 h1 strong,
 h2 strong,
 h3 strong,
@@ -720,7 +739,11 @@ h3.latest-posts-header {
 
 .post-content a,
 .post-content-sans-serif a {
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{linkColor}};
+    {{else}}
     color: {{accentColor}};
+    {{/hasFeature}}
     {{#if (eq linkStyle "regular")}}
     text-decoration: none;
     {{else if (eq linkStyle "bold")}}
