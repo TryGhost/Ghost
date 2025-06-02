@@ -5,7 +5,7 @@ import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Table, TableBody, TableHead, TableHeader, TableRow, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {getAudienceQueryParam} from './components/AudienceSelect';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
+import {getStatEndpointUrl, getToken, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
 import {useLatestPostStats} from '@src/hooks/useLatestPostStats';
@@ -115,6 +115,7 @@ const Overview: React.FC = () => {
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals} = useGrowthStats(range);
     const {isLoading: isLatestPostLoading, stats: latestPostStats} = useLatestPostStats();
+    const navigate = useNavigate();
 
     /* Get visitors
     /* ---------------------------------------------------------------------- */
@@ -217,7 +218,7 @@ const Overview: React.FC = () => {
                 <DateRangeSelect />
             </StatsHeader>
             <StatsView isLoading={isLoading}>
-                <div className='grid grid-cols-1 gap-8 lg:grid-cols-3'>
+                <div className='grid grid-cols-3 gap-8'>
                     <OverviewKPICard
                         description='Number of individual people who visited your website'
                         diffDirection='empty'
@@ -278,18 +279,19 @@ const Overview: React.FC = () => {
                         />
                     </OverviewKPICard>
                 </div>
-                <div className='grid grid-cols-1 gap-8 lg:grid-cols-3'>
-                    <Card className='group/card'>
+                <div className='grid grid-cols-3 gap-8'>
+                    <Card className={`group/card ${latestPostStats && 'hover:cursor-pointer'}`} onClick={() => {
+                        if (latestPostStats) {
+                            navigate(`/posts/analytics/beta/${latestPostStats.id}`, {crossApp: true});
+                        }
+                    }}>
                         <CardHeader>
                             <CardTitle className='flex items-baseline justify-between leading-snug'>
                                 Latest post performance
                                 {latestPostStats && (
-                                    <Button 
-                                        className='-translate-x-2 opacity-0 transition-all group-hover/card:translate-x-0 group-hover/card:opacity-100' 
+                                    <Button
+                                        className='-translate-x-2 opacity-0 transition-all group-hover/card:translate-x-0 group-hover/card:opacity-100'
                                         variant='outline'
-                                        onClick={() => {
-                                            window.location.href = `/ghost/#/posts/analytics/beta/${latestPostStats.id}`;
-                                        }}
                                     >
                                         Details
                                         <LucideIcon.ArrowRight size={16} strokeWidth={1.5} />
@@ -301,12 +303,12 @@ const Overview: React.FC = () => {
                         <CardContent className='flex flex-col items-stretch gap-6'>
                             {latestPostStats ? (
                                 <>
-                                    <div className='flex flex-col items-stretch gap-2'>
+                                    <div className='flex flex-col items-stretch'>
                                         <div className='aspect-video w-full rounded-md bg-cover' style={{
                                             backgroundImage: latestPostStats.feature_image ? `url(${latestPostStats.feature_image})` : undefined
                                         }}></div>
-                                        <div className='mt-1 font-semibold leading-tight'>{latestPostStats.title}</div>
-                                        <div className='text-sm text-muted-foreground'>Published {new Date(latestPostStats.published_at).toLocaleDateString()}</div>
+                                        <div className='mt-4 font-semibold leading-tight'>{latestPostStats.title}</div>
+                                        <div className='mt-0.5 text-sm text-muted-foreground'>Published {new Date(latestPostStats.published_at).toLocaleDateString()}</div>
                                     </div>
                                     <div className='flex flex-col items-stretch gap-2 text-sm'>
                                         <div className='flex items-center justify-between'>
