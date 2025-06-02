@@ -62,7 +62,7 @@ class PostsStatsService {
      * @param {StatsServiceOptions} options
      * @returns {Promise<{data: TopPostResult[]}>} The top posts based on the requested attribution metric
      */
-    async getTopPosts(options = {}) {
+    async getTopPosts(options) {
         try {
             const order = options.order || 'free_members desc';
             const limitRaw = Number.parseInt(String(options.limit ?? 20), 10); // Ensure options.limit is a string for parseInt
@@ -607,6 +607,7 @@ class PostsStatsService {
             const latestPost = await this.knex('posts as p')
                 .select(
                     'p.id',
+                    'p.uuid',
                     'p.title',
                     'p.slug',
                     'p.feature_image',
@@ -640,16 +641,15 @@ class PostsStatsService {
             let visitors = 0;
             if (this.tinybirdClient) {
                 try {
-                    const visitorData = await this.tinybirdClient.query('api_top_pages', {
-                        post_uuid: latestPost.id
+                    const dateFrom = new Date(latestPost.published_at).toISOString().split('T')[0];
+                    const visitorData = await this.tinybirdClient.fetch('api_top_pages', {
+                        post_uuid: latestPost.uuid,
+                        dateFrom: dateFrom
                     });
 
-                    if (visitorData?.data?.[0]) {
-                        visitors = visitorData.data[0].visitors || 0;
-                    }
-                } catch (err) {
-                    // Log the error but don't fail the whole request
-                    logging.error('Error fetching visitor data from Tinybird:', err);
+                    visitors = visitorData?.[0]?.visits || 0;
+                } catch (error) {
+                    logging.error('Error fetching visitor data from Tinybird:', error);
                 }
             }
 
@@ -671,6 +671,70 @@ class PostsStatsService {
             // Log the error but return a valid response
             logging.error('Error fetching latest post stats:', error);
             return {data: []};
+        }
+    }
+
+    /**
+     * Get top posts by views for a given date range
+     * @param {Object} options
+     * @param {string} options.date_from - Start date in YYYY-MM-DD format
+     * @param {string} options.date_to - End date in YYYY-MM-DD format
+     * @param {string} options.timezone - Timezone to use for date interpretation
+     * @param {number} [options.limit] - Maximum number of posts to return (default: 5)
+     * @returns {Promise<Object>} Top posts with view counts and additional Ghost data
+     */
+    async getTopPostsViews(options) {
+        try {
+            if (!this.tinybirdClient) {
+                return [];
+            }
+
+            const tinybirdOptions = {
+                dateFrom: options.date_from,
+                dateTo: options.date_to,
+                timezone: options.timezone,
+                limit: options.limit
+            };
+
+            const viewsData = await this.tinybirdClient.fetch('api_top_pages', tinybirdOptions);
+
+            if (!viewsData?.length) {
+                return [];
+            }
+
+            const postUuids = viewsData.filter(row => row.post_uuid).map(row => row.post_uuid);
+            
+            const posts = await this.knex('posts as p')
+                .select(
+                    'p.id as post_id',
+                    'p.uuid as post_uuid',
+                    'p.title',
+                    'p.published_at',
+                    'emails.email_count',
+                    'emails.opened_count'
+                )
+                .leftJoin('emails', 'emails.post_id', 'p.id')
+                .whereIn('p.uuid', postUuids);
+
+            return viewsData.map((row) => {
+                const post = posts.find(p => p.post_uuid === row.post_uuid);
+
+                if (!post) {
+                    return null;
+                }
+
+                return {
+                    post_id: post.post_id,
+                    title: post.title,
+                    published_at: post.published_at,
+                    views: row.visits,
+                    open_rate: post.email_count > 0 ? (post.opened_count / post.email_count) * 100 : null,
+                    members: post.email_count || 0
+                };
+            }).filter(Boolean);
+        } catch (error) {
+            logging.error('Error fetching top posts views:', error);
+            return [];
         }
     }
 }
