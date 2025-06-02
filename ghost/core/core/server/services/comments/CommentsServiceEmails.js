@@ -73,16 +73,18 @@ class CommentsServiceEmails {
             return;
         }
 
+        const memberId = reply.get('member_id');
+
         // Don't send a notification if you reply to your own comment
-        if (parentMember.id === reply.get('member_id')) {
+        if (parentMember.id === memberId) {
             return;
         }
 
-        const to = parentMember.get('email');
+        const parentMemberEmail = parentMember.get('email');
         const subject = '↪️ New reply to your comment on ' + this.settingsCache.get('title');
 
         const post = await this.models.Post.findOne({id: reply.get('post_id')});
-        const member = await this.models.Member.findOne({id: reply.get('member_id')});
+        const member = await this.models.Member.findOne({id: memberId});
 
         const memberName = member.get('name') || 'Anonymous';
 
@@ -99,14 +101,14 @@ class CommentsServiceEmails {
             memberInitials: this.extractInitials(memberName),
             accentColor: this.settingsCache.get('accent_color'),
             fromEmail: this.notificationFromAddress,
-            toEmail: to,
-            profileUrl: emailService.renderer.createUnsubscribeUrl(member.get('uuid'), {comments: true})
+            toEmail: parentMemberEmail,
+            profileUrl: emailService.renderer.createUnsubscribeUrl(parentMember.get('uuid'), {comments: true})
         };
 
         const {html, text} = await this.renderEmailTemplate('new-comment-reply', templateData);
 
         return this.sendMail({
-            to,
+            to: parentMemberEmail,
             subject,
             html,
             text
