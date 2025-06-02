@@ -156,6 +156,7 @@ module.exports = function apiRoutes() {
     router.get('/stats/referrers/posts/:id', mw.authAdminApi, http(api.stats.postReferrers));
     router.get('/stats/referrers', mw.authAdminApi, http(api.stats.referrersHistory));
     if (labs.isSet('trafficAnalytics')) {
+        router.get('/stats/latest-post', mw.authAdminApi, http(api.stats.latestPost));
         router.get('/stats/top-posts', mw.authAdminApi, http(api.stats.topPosts));
         router.get('/stats/top-content', mw.authAdminApi, http(api.stats.topContent));
         router.get('/stats/newsletter-stats', mw.authAdminApi, http(api.stats.newsletterStats));

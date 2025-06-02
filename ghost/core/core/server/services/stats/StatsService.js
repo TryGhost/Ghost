@@ -143,6 +143,14 @@ class StatsService {
     }
 
     /**
+     * Get stats for the latest published post
+     * @returns {Promise<{data: Object}>}
+     */
+    async getLatestPostStats() {
+        return await this.posts.getLatestPostStats();
+    }
+
+    /**
      * @param {object} deps
      *
      * @returns {StatsService}

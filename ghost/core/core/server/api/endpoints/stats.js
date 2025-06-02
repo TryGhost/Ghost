@@ -300,6 +300,24 @@ const controller = {
         async query(frame) {
             return await statsService.api.getGrowthStatsForPost(frame.data.id);
         }
+    },
+    latestPost: {
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData() {
+            return {
+                method: 'getLatestPostStats'
+            };
+        },
+        async query() {
+            return await statsService.api.getLatestPostStats();
+        }
     }
 };
 
