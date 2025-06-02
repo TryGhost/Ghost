@@ -70,16 +70,13 @@ test.describe('Feed', async () => {
 
         await noteTextarea.fill('My first test note!');
 
-        // Find and click the Post button in the modal
+        // Cick the Post button in the modal
         const postButton = page.getByRole('button', {name: 'Post'});
         await expect(postButton).toBeEnabled();
         await postButton.click();
 
-        // Wait for the request to complete
-        await page.waitForTimeout(100);
-
-        // Verify that a POST request was made to the note endpoint
-        expect(lastApiRequests.postNote).toBeTruthy();
+        // Checl that the note was published
+        await expect.poll(() => lastApiRequests.postNote).toBeTruthy();
         expect(lastApiRequests.postNote?.body).toMatchObject({
             content: 'My first test note!'
         });
@@ -110,8 +107,8 @@ test.describe('Feed', async () => {
         const firstFeedItemText = await firstFeedItem.textContent();
 
         expect(firstFeedItemText).toContain(firstPost.author.name);
-        expect(firstFeedItemText).toContain('Exciting times for web development!'); // Part of the first post's content
-        expect(firstFeedItemText).toContain('2 May'); // The formatted date from firstPost.publishedAt
+        expect(firstFeedItemText).toContain(firstPost.content.replace(/<[^>]*>?/g, '').substring(0, 100));
+        expect(firstFeedItemText).toContain(new Date(firstPost.publishedAt).toLocaleString('en-GB', {month: 'short', day: 'numeric'}));
     });
 
     test('I can like a note in my feed', async ({page}) => {
@@ -157,7 +154,8 @@ test.describe('Feed', async () => {
         const icon = likeButton.locator('svg');
         await expect(icon).toHaveClass(/fill-pink-500/);
 
-        // Verify that a POST request was made to the like endpoint
+        // Check that the like was created
+        await expect.poll(() => lastApiRequests.likePost).toBeTruthy();
         expect(lastApiRequests.likePost).toBeTruthy();
     });
 
@@ -199,10 +197,8 @@ test.describe('Feed', async () => {
         await expect(repostButton).toBeVisible();
         await repostButton.click();
 
-        // Wait for the request to complete
-        await page.waitForTimeout(100);
-
-        // Verify that a POST request was made to the repost endpoint
+        // Check that the repost was created
+        await expect.poll(() => lastApiRequests.repostPost).toBeTruthy();
         expect(lastApiRequests.repostPost).toBeTruthy();
     });
 
@@ -289,8 +285,8 @@ test.describe('Feed', async () => {
         await expect(postButton).toBeEnabled();
         await postButton.click();
 
-        // Verify that the reply was posted
-        expect(lastApiRequests.replyToPost).toBeTruthy();
+        // Check that the reply was posted
+        await expect.poll(() => lastApiRequests.replyToPost).toBeTruthy();
         expect(lastApiRequests.replyToPost?.body).toMatchObject({
             content: 'This is a test reply to a feed post'
         });

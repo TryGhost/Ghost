@@ -90,13 +90,10 @@ test.describe('My Profile', async () => {
             await expect(confirmDeleteButton).toBeVisible();
             await confirmDeleteButton.click();
 
-            // Wait for the request to be made
-            await page.waitForTimeout(100);
+            // Check that the post was deleted
+            await expect.poll(() => lastApiRequests.deletePost).toBeTruthy();
 
-            // Verify that a DELETE request was made
-            expect(lastApiRequests.deletePost).toBeTruthy();
-
-            // Now check that I can delete a post that I didn't authored (e.g. reposted by me)
+            // Now check that I cannot delete a post that I didn't authored
             const otherUserPost = profileItems.nth(7);
             await otherUserPost.hover();
 

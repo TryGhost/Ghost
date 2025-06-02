@@ -137,7 +137,8 @@ test.describe('Inbox', async () => {
         const icon = likeButton.locator('svg');
         await expect(icon).toHaveClass(/fill-pink-500/);
 
-        // Verify that a POST request was made to the like endpoint
+        // Check that the like was created
+        await expect.poll(() => lastApiRequests.likePost).toBeTruthy();
         expect(lastApiRequests.likePost).toBeTruthy();
     });
 
@@ -224,7 +225,7 @@ test.describe('Inbox', async () => {
         await postButton.click();
 
         // Verify that the reply was posted
-        expect(lastApiRequests.replyToPost).toBeTruthy();
+        await expect.poll(() => lastApiRequests.replyToPost).toBeTruthy();
         expect(lastApiRequests.replyToPost?.body).toMatchObject({
             content: 'This is a test reply'
         });
@@ -272,7 +273,8 @@ test.describe('Inbox', async () => {
         const icon = repostButton.locator('svg');
         await expect(icon).toHaveClass(/text-green-500/);
 
-        // Verify that a POST request was made to the repost endpoint
+        // Verify that the repost was created
+        await expect.poll(() => lastApiRequests.repostPost).toBeTruthy();
         expect(lastApiRequests.repostPost).toBeTruthy();
     });
 });
