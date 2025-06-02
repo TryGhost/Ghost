@@ -7555,10 +7555,10 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "4.2.5"
 
-"@tryghost/kg-unsplash-selector@0.3.3":
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-unsplash-selector/-/kg-unsplash-selector-0.3.3.tgz#4af84d35b27b55177084d84c8c72c3dae9958724"
-  integrity sha512-EEiOvFq1fEkck6hGzUjwdcDGoFKVgmqzsqT8a2MIMC15FZuLhdD7Rqiuc/cDjRv+2K3yj5eDXxcKOaPOQFWO7g==
+"@tryghost/kg-unsplash-selector@0.3.4":
+  version "0.3.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-unsplash-selector/-/kg-unsplash-selector-0.3.4.tgz#368083d40362840ca085a633f734bbf1fb9c9946"
+  integrity sha512-MeJwDcsQUUX07X+xDAZt6d5/u9j+KDPl9QI0lhPc74JWJcSiUHYolWLM31l8jxTp4cnEd9dUkezCvga0V33piA==
 
 "@tryghost/kg-utils@1.0.31":
   version "1.0.31"
@@ -26829,10 +26829,10 @@ react-error-boundary@^3.1.0:
   dependencies:
     "@babel/runtime" "^7.12.5"
 
-react-hook-form@7.56.4:
-  version "7.56.4"
-  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-7.56.4.tgz#273f55d43fb24ace3e2b9409d0d5326306d7905e"
-  integrity sha512-Rob7Ftz2vyZ/ZGsQZPaRdIefkgOSrQSPXfqBdvOPwJfoGnjwRJUs7EM7Kc1mcoDv3NOtqBzPGbcMB8CGn9CKgw==
+react-hook-form@7.57.0:
+  version "7.57.0"
+  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-7.57.0.tgz#d0bb0c84060c6b9282d99c64566ec919dfca9409"
+  integrity sha512-RbEks3+cbvTP84l/VXGUZ+JMrKOS8ykQCRYdm5aYsxnDquL0vspsyNhGRO7pcH6hsZqWlPOjLye7rJqdtdAmlg==
 
 react-hot-toast@2.5.2:
   version "2.5.2"
@@ -32039,10 +32039,10 @@ zip-stream@^4.1.0:
     compress-commons "^4.1.0"
     readable-stream "^3.6.0"
 
-zod@3.25.29:
-  version "3.25.29"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.29.tgz#4f0f3e01322b178942905764856e3b4969299d09"
-  integrity sha512-xetH/muIYuAyN7YJGKh99jkBQq/XbGEyTkv7JC4YYsWppHmfoU1MDoQa441WD1QMDaeCaEBO0e0hl1iSmluNQQ==
+zod@3.25.48:
+  version "3.25.48"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.48.tgz#6c2b536fbb519905e8f4a4ac58743de4d5331bb2"
+  integrity sha512-0X1mz8FtgEIvaxGjdIImYpZEaZMrund9pGXm3M6vM7Reba0e2eI71KPjSCGXBfwKDPwPoywf6waUKc3/tFvX2Q==
 
 zrender@5.6.0:
   version "5.6.0"

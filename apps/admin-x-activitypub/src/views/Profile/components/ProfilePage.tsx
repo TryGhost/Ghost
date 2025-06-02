@@ -109,6 +109,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                 <img
                                     alt={account?.name}
                                     className='size-full object-cover'
+                                    referrerPolicy='no-referrer'
                                     src={account?.bannerImageUrl}
                                 />
                             </div>

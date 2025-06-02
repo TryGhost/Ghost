@@ -1,5 +1,5 @@
 import React from 'react';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn, formatNumber, formatPercentage} from '@tryghost/shade';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 
@@ -28,7 +28,7 @@ const NewsletterOverview:React.FC = () => {
         }
     } satisfies ChartConfig;
 
-    const radialBarChartClassName = 'mx-auto aspect-square w-full min-h-[200px] max-w-[200px] grow';
+    const radialBarChartClassName = cn('mx-auto aspect-square w-full min-h-[200px] max-w-[200px] grow pointer-events-none');
 
     return (
         <div className='grid grid-cols-1 gap-8 xl:grid-cols-2'>
@@ -52,8 +52,10 @@ const NewsletterOverview:React.FC = () => {
                             <BarChartLoadingIndicator />
                         </div>
                         :
-                        <div className='mx-auto flex min-h-[250px] flex-wrap items-center justify-center xl:size-full'>
-                            <div className='flex grow flex-col items-center'>
+                        <div className='mx-auto flex min-h-[250px] flex-wrap items-stretch justify-center xl:size-full'>
+                            <div className='group flex grow flex-col items-center rounded-md p-4 transition-all hover:!cursor-pointer' onClick={() => {
+                                navigate(`/analytics/beta/${postId}/newsletter`);
+                            }}>
                                 <ChartContainer
                                     className={radialBarChartClassName}
                                     config={opensChartConfig}
@@ -109,13 +111,15 @@ const NewsletterOverview:React.FC = () => {
                                         </Recharts.PolarRadiusAxis>
                                     </Recharts.RadialBarChart>
                                 </ChartContainer>
-                                <div className='-mt-2 flex items-center gap-1.5 font-medium text-muted-foreground'>
+                                <div className='-mt-2 flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                     <LucideIcon.MailOpen size={16} strokeWidth={1.5} />
                                 Opened
                                 </div>
                             </div>
 
-                            <div className='flex grow flex-col items-center'>
+                            <div className='group flex grow flex-col items-center rounded-md p-4 transition-all hover:!cursor-pointer' onClick={() => {
+                                navigate(`/analytics/beta/${postId}/newsletter`);
+                            }}>
                                 <ChartContainer
                                     className={radialBarChartClassName}
                                     config={clickschartConfig}
@@ -172,7 +176,7 @@ const NewsletterOverview:React.FC = () => {
                                         </Recharts.PolarRadiusAxis>
                                     </Recharts.RadialBarChart>
                                 </ChartContainer>
-                                <div className='-mt-2 flex items-center gap-1.5 font-medium text-muted-foreground'>
+                                <div className='-mt-2 flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                     <LucideIcon.MousePointerClick size={16} strokeWidth={1.5} />
                                 Clicked
                                 </div>

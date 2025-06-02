@@ -61,10 +61,11 @@ const Likes: React.FC<LikesProps> = ({
                     You haven&apos;t liked anything yet.
                 </NoValueLabel>
             )}
-            <ul className='mx-auto flex max-w-[640px] flex-col'>
+            <ul className='mx-auto flex max-w-[640px] flex-col' data-testid="profile-likes-list">
                 {posts.map((activity, index) => (
                     <li
                         key={`likes-${activity.id}`}
+                        data-testid="profile-like-item"
                         data-test-view-article
                     >
                         <FeedItem
@@ -77,13 +78,6 @@ const Likes: React.FC<LikesProps> = ({
                             repostCount={activity.object.repostCount}
                             type={activity.type}
                             onClick={() => {
-                                if (activity.object.type === 'Note') {
-                                    navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
-                                } else if (activity.object.type === 'Article') {
-                                    navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
-                                }
-                            }}
-                            onCommentClick={() => {
                                 if (activity.object.type === 'Note') {
                                     navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
                                 } else if (activity.object.type === 'Article') {

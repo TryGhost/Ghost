@@ -1,11 +1,10 @@
-import AreaChart from './components/AreaChart';
 import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import DateRangeSelect from './components/DateRangeSelect';
 import React, {useMemo, useState} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange, isValidDomain} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, GhAreaChart, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange, isValidDomain} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {SourceRow} from './Sources';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
@@ -129,7 +128,7 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range}) => {
                 </KpiTabTrigger>
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
-                <AreaChart
+                <GhAreaChart
                     className='-mb-3 h-[16vw] max-h-[320px] w-full'
                     color={currentMetric.chartColor}
                     data={chartData}
