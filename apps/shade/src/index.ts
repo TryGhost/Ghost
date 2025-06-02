@@ -10,6 +10,7 @@ export * from './components/ui/dialog';
 export * from './components/ui/dropdown-menu';
 export * from './components/ui/flag';
 export * from './components/ui/form';
+export * from './components/ui/gh-chart';
 export * from './components/ui/input';
 export * from './components/ui/label';
 export * from './components/ui/loading-indicator';
@@ -57,7 +58,7 @@ export {useSimplePagination} from './hooks/use-simple-pagination';
 
 // Utils
 export * from '@/lib/utils';
-export {cn, debounce, kebabToPascalCase, formatUrl, formatQueryDate, formatNumber, formatDuration, formatPercentage, formatDisplayDate, isValidDomain, getYRange, getYRangeWithMinPadding, getYRangeWithLargePadding, calculateYAxisWidth, getRangeDates, getCountryFlag, sanitizeChartData, formatDisplayDateWithRange, centsToDollars} from '@/lib/utils';
+export {cn, debounce, kebabToPascalCase, formatUrl, formatQueryDate, formatNumber, formatDuration, formatPercentage, formatDisplayDate, isValidDomain, getYRange, getYRangeWithMinPadding, getYRangeWithLargePadding, calculateYAxisWidth, getRangeDates, getCountryFlag, sanitizeChartData, formatDisplayDateWithRange, centsToDollars, getRangeForStartDate} from '@/lib/utils';
 
 export {default as ShadeApp} from './ShadeApp';
 export type {ShadeAppProps} from './ShadeApp';

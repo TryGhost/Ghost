@@ -42,7 +42,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
 
     return (
         <ChartContainer
-            className='mx-auto my-8 aspect-square max-h-[250px]'
+            className='mx-auto aspect-square'
             config={config}
         >
             <Recharts.RadialBarChart
@@ -304,8 +304,9 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                 <CardDescription>How did this post perform</CardDescription>
                             </CardHeader>
                             <CardContent className='p-0'>
-                                <div className='grid grid-cols-3 items-stretch'>
+                                <div className='grid grid-cols-3 items-stretch border-b'>
                                     <KpiCard className='relative grow'>
+                                        <FunnelArrow />
                                         <KpiCardLabel>
                                             <div className='size-2.5 rounded-[2px] bg-purple/30'></div>
                                             {/* <LucideIcon.Send strokeWidth={1.5} /> */}
@@ -316,6 +317,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         </KpiCardContent>
                                     </KpiCard>
                                     <KpiCard className='relative grow'>
+                                        <FunnelArrow />
                                         <KpiCardLabel>
                                             <div className='size-2.5 rounded-[2px] bg-blue/30'></div>
                                             {/* <LucideIcon.Eye strokeWidth={1.5} /> */}
@@ -342,26 +344,24 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         <TabsTrigger value="bar"><LucideIcon.ChartNoAxesColumnDecreasing /></TabsTrigger>
                                     </TabsList> */}
                                     <TabsContent value="radial">
-                                        <div className='mx-auto -mt-8 grid grid-cols-3 items-center justify-center'>
-                                            <div className='relative min-w-[250px] border-r px-6'>
+                                        <div className='mx-auto grid grid-cols-3 items-center justify-center'>
+                                            <div className='border-r px-6'>
                                                 <NewsletterRadialChart
                                                     config={sentChartConfig}
                                                     data={sentChartData}
                                                     percentageLabel='Sent'
                                                     percentageValue={1}
                                                 />
-                                                <FunnelArrow />
                                             </div>
-                                            <div className='relative min-w-[250px] border-r px-6'>
+                                            <div className='border-r px-6'>
                                                 <NewsletterRadialChart
                                                     config={openedChartConfig}
                                                     data={openedChartData}
                                                     percentageLabel='Opened'
                                                     percentageValue={stats.openedRate}
                                                 />
-                                                <FunnelArrow />
                                             </div>
-                                            <div className='min-w-[250px] px-6'>
+                                            <div className='px-6'>
                                                 <NewsletterRadialChart
                                                     config={clickedChartConfig}
                                                     data={clickedChartData}
