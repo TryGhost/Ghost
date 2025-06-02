@@ -147,11 +147,9 @@ test.describe('Feed', async () => {
         // Hover over the first post to make the like button appear
         await firstPost.hover();
 
-        // Wait for the like button to be visible on hover
-        const likeButton = firstPost.getByRole('button', {name: /like/i}).first(); // First() to avoid matching "Undo like" on other posts
-        await expect(likeButton).toBeVisible();
-
         // Click the like button
+        const likeButton = firstPost.getByTestId('like-button');
+        await expect(likeButton).toBeVisible();
         await likeButton.click();
 
         // Verify the like button is now active
@@ -196,11 +194,9 @@ test.describe('Feed', async () => {
         // Hover over the last post to make the repost button appear
         await lastPost.hover();
 
-        // The repost button is at index 3 (0: menu, 1: like, 2: comment, 3: repost)
-        const actionButtons = lastPost.getByRole('button');
-        const repostButton = actionButtons.nth(3);
-
         // Click the repost button
+        const repostButton = lastPost.getByTestId('repost-button');
+        await expect(repostButton).toBeVisible();
         await repostButton.click();
 
         // Wait for the request to complete
@@ -270,35 +266,30 @@ test.describe('Feed', async () => {
         // Get the third post
         const thirdPost = feedItems.nth(2);
 
-        // Hover over the third post to make the comment button appear
+        // Hover over the third post to make the reply button appear
         await thirdPost.hover();
 
-        // The comment/reply button is at index 2 (0: menu, 1: like, 2: comment, 3: repost)
-        const actionButtons = thirdPost.getByRole('button');
-        const commentButton = actionButtons.nth(2);
+        // Click the reply button
+        const replyButton = thirdPost.getByTestId('reply-button');
+        await expect(replyButton).toBeVisible();
+        await replyButton.click();
 
-        // Click the comment button
-        await commentButton.click();
+        // Wait for the modal to appear
+        const modal = page.getByTestId('new-note-modal');
+        await expect(modal).toBeVisible();
 
-        // Check if the route changed to the individual post view
-        await expect(page).toHaveURL(new RegExp(`/feed/${encodeURIComponent(thirdPostFixture.id)}`));
-
-        // The reply box should be visible at the bottom of the post view
-        const replyTextarea = page.getByPlaceholder(/reply/i);
+        // Add a reply
+        const replyTextarea = modal.getByTestId('note-textarea');
         await expect(replyTextarea).toBeVisible();
         await expect(replyTextarea).toBeFocused();
-
         await replyTextarea.fill('This is a test reply to a feed post');
 
-        // Click the Post button
-        const postButton = page.locator('button#post');
+        // Post the reply
+        const postButton = modal.getByTestId('post-button');
         await expect(postButton).toBeEnabled();
         await postButton.click();
 
-        // Wait for the reply to be posted
-        await page.waitForTimeout(100);
-
-        // Verify that a POST request was made to the reply endpoint
+        // Verify that the reply was posted
         expect(lastApiRequests.replyToPost).toBeTruthy();
         expect(lastApiRequests.replyToPost?.body).toMatchObject({
             content: 'This is a test reply to a feed post'

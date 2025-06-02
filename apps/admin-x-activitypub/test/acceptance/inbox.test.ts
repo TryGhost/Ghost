@@ -127,11 +127,9 @@ test.describe('Inbox', async () => {
         // Hover over the second post to make the like button appear
         await secondPost.hover();
 
-        // Wait for the like button to be visible on hover
-        const likeButton = secondPost.getByRole('button', {name: /like/i});
-        await expect(likeButton).toBeVisible();
-
         // Click the like button
+        const likeButton = secondPost.getByTestId('like-button');
+        await expect(likeButton).toBeVisible();
         await likeButton.click();
 
         // Verify the like button is now active
@@ -202,38 +200,30 @@ test.describe('Inbox', async () => {
         // Get the second post
         const secondPost = posts.nth(1);
 
-        // Hover over the second post to make the comment button appear
+        // Hover over the second post to make the reply button appear
         await secondPost.hover();
 
-        // Wait for the comment button to be visible on hover
-        const replyButton = secondPost.getByRole('button', {name: /reply/i});
-        await expect(replyButton).toBeVisible();
-
         // Click the reply button
+        const replyButton = secondPost.getByTestId('reply-button');
+        await expect(replyButton).toBeVisible();
         await replyButton.click();
 
-        // Verify the route changed and includes focusReply param
-        await expect(page).toHaveURL(new RegExp(`/inbox/${encodeURIComponent(secondPostFixture.id)}\\?focusReply=true`));
+        // Wait for the modal to appear
+        const modal = page.getByTestId('new-note-modal');
+        await expect(modal).toBeVisible();
 
-        // Wait for the modal to show
-        await page.waitForSelector('[role="dialog"]', {timeout: 10000});
-
-        // Find the reply textarea and type a reply
-        const replyTextarea = page.getByPlaceholder(/reply/i);
+        // Add a reply
+        const replyTextarea = modal.getByTestId('note-textarea');
         await expect(replyTextarea).toBeVisible();
         await expect(replyTextarea).toBeFocused();
-
         await replyTextarea.fill('This is a test reply');
 
-        // Click the Post button
-        const postButton = page.locator('button#post');
+        // Post the reply
+        const postButton = modal.getByTestId('post-button');
         await expect(postButton).toBeEnabled();
         await postButton.click();
 
-        // Wait for the reply to be posted
-        await page.waitForTimeout(100);
-
-        // Verify that a POST request was made to the reply endpoint
+        // Verify that the reply was posted
         expect(lastApiRequests.replyToPost).toBeTruthy();
         expect(lastApiRequests.replyToPost?.body).toMatchObject({
             content: 'This is a test reply'
@@ -272,11 +262,9 @@ test.describe('Inbox', async () => {
         // Hover over the second post to make the repost button appear
         await secondPost.hover();
 
-        // Wait for the repost button to be visible on hover
-        const repostButton = secondPost.getByRole('button', {name: /repost/i});
-        await expect(repostButton).toBeVisible();
-
         // Click the repost button
+        const repostButton = secondPost.getByTestId('repost-button');
+        await expect(repostButton).toBeVisible();
         await repostButton.click();
 
         // Verify the repost button is now active
