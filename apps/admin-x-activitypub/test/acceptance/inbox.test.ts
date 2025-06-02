@@ -139,7 +139,6 @@ test.describe('Inbox', async () => {
 
         // Check that the like was created
         await expect.poll(() => lastApiRequests.likePost).toBeTruthy();
-        expect(lastApiRequests.likePost).toBeTruthy();
     });
 
     test('I can reply to a post', async ({page}) => {
@@ -275,6 +274,5 @@ test.describe('Inbox', async () => {
 
         // Verify that the repost was created
         await expect.poll(() => lastApiRequests.repostPost).toBeTruthy();
-        expect(lastApiRequests.repostPost).toBeTruthy();
     });
 });

@@ -156,7 +156,6 @@ test.describe('Feed', async () => {
 
         // Check that the like was created
         await expect.poll(() => lastApiRequests.likePost).toBeTruthy();
-        expect(lastApiRequests.likePost).toBeTruthy();
     });
 
     test('I can repost a note in my feed', async ({page}) => {
@@ -199,7 +198,6 @@ test.describe('Feed', async () => {
 
         // Check that the repost was created
         await expect.poll(() => lastApiRequests.repostPost).toBeTruthy();
-        expect(lastApiRequests.repostPost).toBeTruthy();
     });
 
     test('I can reply to a note in my feed', async ({page}) => {
