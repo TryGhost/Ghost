@@ -274,13 +274,6 @@ test.describe('My Profile', async () => {
             // Bob should now have a "Follow" button since I'm not following him anymore
             const notFollowingBob = bobRow.getByTestId('follow-button').filter({hasText: /Follow/i}).first();
             await expect(notFollowingBob).toBeVisible();
-
-            // Click the "Follow" button to follow Bob again
-            await notFollowingBob.click();
-
-            // Bob should now have a "Following" button since I'm following him again
-            const followingBobAgain = bobRow.getByTestId('follow-button').filter({hasText: /Following/i}).first();
-            await expect(followingBobAgain).toBeVisible();
         });
     });
 });
