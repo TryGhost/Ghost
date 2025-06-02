@@ -163,13 +163,17 @@ class Users {
         try {
             logging.info(`[Deleting staff user] Backing up database`);
             const backupPath = await this.dbBackup.backup();
+            logging.info(`[Deleting staff user] Backup path: ${backupPath}`);
             if (backupPath) {
+                logging.info(`[Deleting staff user] Backup path is not null`);
                 const parsedFileName = path.parse(backupPath);
+                logging.info(`[Deleting staff user] Parsed file name: ${JSON.stringify(parsedFileName)}`);
                 filename = `${parsedFileName.name}${parsedFileName.ext}`;
+                logging.info(`[Deleting staff user] Filename: ${filename}`);
                 logging.info(`[Deleting staff user] Backup file created: ${filename}`);
             }
         } catch (err) {
-            logging.error(`[Deleting staff user] Error backing up database: ${err}`);
+            logging.info(`[Deleting staff user] Error backing up database: ${err}`);
         }
 
         return this.models.Base.transaction(async (t) => {
@@ -191,7 +195,7 @@ class Users {
                 });
                 logging.info(`[Deleting staff user] Author removed from post revisions`);
             } catch (err) {
-                logging.error(`[Deleting staff user] Error removing author from post revisions: ${err}`);
+                logging.info(`[Deleting staff user] Error removing author from post revisions: ${err}`);
             }
 
             // create a #author-slug tag and assign it to their posts
@@ -204,7 +208,7 @@ class Users {
                 });
                 logging.info(`[Deleting staff user] Tag created`);
             } catch (err) {
-                logging.error(`[Deleting staff user] Error creating tag: ${err}`);
+                logging.info(`[Deleting staff user] Error creating tag: ${err}`);
             }
 
             // reassign posts to owner user
@@ -217,7 +221,7 @@ class Users {
                 });
                 logging.info(`[Deleting staff user] Posts reassigned to owner user`);
             } catch (err) {
-                logging.error(`[Deleting staff user] Error reassigning posts to owner user: ${err}`);
+                logging.info(`[Deleting staff user] Error reassigning posts to owner user: ${err}`);
             }
 
             // delete user
@@ -233,7 +237,7 @@ class Users {
                 logging.info(`[Deleting staff user] Api key destroyed`);
             } catch (err) {
                 if (!(err instanceof this.models.ApiKey.NotFoundError)) {
-                    logging.error(`[Deleting staff user] Error destroying api key: ${err}`);
+                    logging.info(`[Deleting staff user] Error destroying api key: ${err}`);
                     throw err;
                 }
                 logging.info(`[Deleting staff user] Api key not found`);
@@ -244,7 +248,7 @@ class Users {
                 await this.models.User.destroy(Object.assign({status: 'all'}, frameOptions));
                 logging.info(`[Deleting staff user] User destroyed`);
             } catch (err) {
-                logging.error(`[Deleting staff user] Error destroying user: ${err}`);
+                logging.info(`[Deleting staff user] Error destroying user: ${err}`);
             }
 
             logging.info(`[Deleting staff user] Transaction completed`);
