@@ -5,12 +5,13 @@ import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, Table, TableBody, TableHead, TableHeader, TableRow, centsToDollars, cn, formatDisplayDate, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {getAudienceQueryParam} from './components/AudienceSelect';
+import {getPeriodText} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
 import {useLatestPostStats} from '@src/hooks/useLatestPostStats';
 import {useQuery} from '@tinybirdco/charts';
-// import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
+import {useTopPostsViews} from '@src/hooks/useTopPostsViews';
 
 interface OverviewKPICardProps {
     linkto: string;
@@ -109,6 +110,15 @@ type GrowthChartDataItem = {
     label?: string;
 };
 
+interface TopPostViewsStats {
+    post_id: string;
+    title: string;
+    published_at: string;
+    views: number;
+    open_rate: number | null;
+    members: number;
+}
+
 const Overview: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
@@ -116,6 +126,7 @@ const Overview: React.FC = () => {
     const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals} = useGrowthStats(range);
     const {isLoading: isLatestPostLoading, stats: latestPostStats} = useLatestPostStats();
     const navigate = useNavigate();
+    const {data: topPostsData, isLoading: isTopPostsLoading} = useTopPostsViews({startDate, endDate, limit: 5, timezone});
 
     /* Get visitors
     /* ---------------------------------------------------------------------- */
@@ -209,8 +220,11 @@ const Overview: React.FC = () => {
         };
     }, [visitorsData]);
 
-    const isLoading = isConfigLoading || isVisitorsLoading || isGrowthStatsLoading || isLatestPostLoading;
+    const isLoading = isConfigLoading || isVisitorsLoading || isGrowthStatsLoading || isLatestPostLoading || isTopPostsLoading;
     const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px]';
+
+    console.log(`topPostsData`, topPostsData);
+    console.log(`topPostsData.stats`, topPostsData?.stats[0]);
 
     return (
         <StatsLayout>
@@ -351,26 +365,59 @@ const Overview: React.FC = () => {
                     <Card className='group/card lg:col-span-2'>
                         <CardHeader>
                             <CardTitle className='flex items-baseline justify-between leading-snug'>
-                                Top posts in the last 30 days
+                                Top posts {getPeriodText(range)}
                                 {/* <Button className='-translate-x-2 opacity-0 transition-all group-hover/card:translate-x-0 group-hover/card:opacity-100' variant='outline'>
                                     View all
                                     <LucideIcon.ArrowRight size={16} strokeWidth={1.5} />
                                 </Button> */}
                             </CardTitle>
-                            <CardDescription className='hidden'>Best performing post in the period</CardDescription>
+                            <CardDescription className='hidden'>Most viewed posts in this period</CardDescription>
                         </CardHeader>
                         <CardContent className='-mt-4'>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead className='pl-0'>Post title</TableHead>
-                                        <TableHead className='text-right'>Visitors</TableHead>
+                                        <TableHead className='text-right'>Views</TableHead>
                                         <TableHead className='whitespace-nowrap text-right'>Open rate</TableHead>
                                         <TableHead className='text-right'>Members</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {/* Top content table will be implemented next */}
+                                    {topPostsData?.stats?.[0]?.map((post: TopPostViewsStats) => (
+                                        <TableRow key={post.post_id}>
+                                            <TableHead className='pl-0 font-normal'>
+                                                <button 
+                                                    className='h-auto justify-start p-0 text-left font-normal hover:text-black dark:hover:text-white'
+                                                    type="button"
+                                                    onClick={() => {
+                                                        navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
+                                                    }}
+                                                >
+                                                    {post.title}
+                                                </button>
+                                            </TableHead>
+                                            <TableHead className='text-right font-mono font-normal'>
+                                                {formatNumber(post.views)}
+                                            </TableHead>
+                                            <TableHead className='text-right font-mono font-normal'>
+                                                {post.open_rate ? `${Math.round(post.open_rate)}%` : 'N/A'}
+                                            </TableHead>
+                                            <TableHead className='text-right font-mono font-normal'>
+                                                {post.members > 0 ? `+${formatNumber(post.members)}` : '0'}
+                                            </TableHead>
+                                        </TableRow>
+                                    ))}
+                                    {(!topPostsData?.stats?.[0] || topPostsData.stats?.[0].length === 0) && (
+                                        <TableRow>
+                                            <TableHead 
+                                                className='text-center font-normal text-muted-foreground'
+                                                colSpan={4}
+                                            >
+                                                No data for the selected period
+                                            </TableHead>
+                                        </TableRow>
+                                    )}
                                 </TableBody>
                             </Table>
                         </CardContent>

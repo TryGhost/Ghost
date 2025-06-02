@@ -34,16 +34,35 @@ const create = ({config, request}) => {
 
         // Use snake_case for query parameters as expected by Tinybird API
         const searchParams = {
-            site_uuid: statsConfig.id,
-            date_from: options.dateFrom,
-            date_to: options.dateTo,
-            timezone: options.timezone || config.get('timezone'),
-            member_status: options.memberStatus || 'all'
+            site_uuid: statsConfig.id
         };
+
+        // todo: refactor all uses to simply pass options through
+        if (options.dateFrom) {
+            searchParams.date_from = options.dateFrom;
+        }
+        if (options.dateTo) {
+            searchParams.date_to = options.dateTo;
+        }
+        if (options.timezone) {
+            searchParams.timezone = options.timezone;
+        }
+        if (options.memberStatus) {
+            searchParams.member_status = options.memberStatus;
+        }
+        
+        // Add any other options that might be needed (like post_uuid)
+        Object.entries(options).forEach(([key, value]) => {
+            if (!['dateFrom', 'dateTo', 'timezone', 'memberStatus'].includes(key)) {
+                searchParams[key] = value;
+            }
+        });
         
         // Convert searchParams to query string and append to URL
         const queryString = new URLSearchParams(searchParams).toString();
         const fullUrl = `${tinybirdUrl}?${queryString}`;
+
+        console.log(`fullUrl`, fullUrl);
         
         const requestOptions = {
             headers: {
