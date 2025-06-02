@@ -353,7 +353,7 @@ class EmailRenderer {
                 // if the other options have default values we should follow the same pattern
                 // as the divider color to avoid duplicating magic values in renderers
                 dividerColor: this.#getDividerColor(newsletter),
-                linkColor: newsletter.get('link_color')
+                linkColor: newsletter?.get('link_color')
             };
         }
 
