@@ -3,7 +3,7 @@ import React, {useMemo} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Table, TableBody, TableHead, TableHeader, TableRow, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, Table, TableBody, TableHead, TableHeader, TableRow, centsToDollars, cn, formatDisplayDate, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {getAudienceQueryParam} from './components/AudienceSelect';
 import {getStatEndpointUrl, getToken, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -280,7 +280,7 @@ const Overview: React.FC = () => {
                     </OverviewKPICard>
                 </div>
                 <div className='grid grid-cols-3 gap-8'>
-                    <Card className={`group/card ${latestPostStats && 'hover:cursor-pointer'}`} onClick={() => {
+                    <Card className={`group/card ${latestPostStats && 'transition-all hover:cursor-pointer hover:bg-accent/50'}`} onClick={() => {
                         if (latestPostStats) {
                             navigate(`/posts/analytics/beta/${latestPostStats.id}`, {crossApp: true});
                         }
@@ -288,7 +288,7 @@ const Overview: React.FC = () => {
                         <CardHeader>
                             <CardTitle className='flex items-baseline justify-between leading-snug'>
                                 Latest post performance
-                                {latestPostStats && (
+                                {/* {latestPostStats && (
                                     <Button
                                         className='-translate-x-2 opacity-0 transition-all group-hover/card:translate-x-0 group-hover/card:opacity-100'
                                         variant='outline'
@@ -296,7 +296,7 @@ const Overview: React.FC = () => {
                                         Details
                                         <LucideIcon.ArrowRight size={16} strokeWidth={1.5} />
                                     </Button>
-                                )}
+                                )} */}
                             </CardTitle>
                             <CardDescription className='hidden'>How your last post did</CardDescription>
                         </CardHeader>
@@ -304,11 +304,15 @@ const Overview: React.FC = () => {
                             {latestPostStats ? (
                                 <>
                                     <div className='flex flex-col items-stretch'>
-                                        <div className='aspect-video w-full rounded-md bg-cover' style={{
-                                            backgroundImage: latestPostStats.feature_image ? `url(${latestPostStats.feature_image})` : undefined
-                                        }}></div>
-                                        <div className='mt-4 font-semibold leading-tight'>{latestPostStats.title}</div>
-                                        <div className='mt-0.5 text-sm text-muted-foreground'>Published {new Date(latestPostStats.published_at).toLocaleDateString()}</div>
+                                        {latestPostStats.feature_image ?
+                                            <div className='aspect-video w-full rounded-md bg-cover' style={{
+                                                backgroundImage: `url(${latestPostStats.feature_image})`
+                                            }}></div>
+                                            :
+                                            <Separator />
+                                        }
+                                        <div className='mt-4 text-xl font-semibold leading-tight tracking-tight'>{latestPostStats.title}</div>
+                                        <div className='mt-0.5 text-sm text-muted-foreground'>Published {formatDisplayDate(latestPostStats.published_at)} {new Date(latestPostStats.published_at).toLocaleDateString()}</div>
                                     </div>
                                     <div className='flex flex-col items-stretch gap-2 text-sm'>
                                         <div className='flex items-center justify-between'>
@@ -318,13 +322,15 @@ const Overview: React.FC = () => {
                                             </div>
                                             <div className='font-mono'>{formatNumber(latestPostStats.visitors)}</div>
                                         </div>
+                                        {latestPostStats.open_rate &&
                                         <div className='flex items-center justify-between'>
                                             <div className='flex items-center gap-1 font-medium text-muted-foreground'>
                                                 <LucideIcon.MailOpen size={16} strokeWidth={1.5} />
                                                 Open rate
                                             </div>
-                                            <div className='font-mono'>{latestPostStats.open_rate ? `${Math.round(latestPostStats.open_rate)}%` : 'N/A'}</div>
+                                            <div className='font-mono'>{`${Math.round(latestPostStats.open_rate)}%`}</div>
                                         </div>
+                                        }
                                         <div className='flex items-center justify-between'>
                                             <div className='flex items-center gap-1 font-medium text-muted-foreground'>
                                                 <LucideIcon.User size={16} strokeWidth={1.5} />
@@ -346,10 +352,10 @@ const Overview: React.FC = () => {
                         <CardHeader>
                             <CardTitle className='flex items-baseline justify-between leading-snug'>
                                 Top posts in the last 30 days
-                                <Button className='-translate-x-2 opacity-0 transition-all group-hover/card:translate-x-0 group-hover/card:opacity-100' variant='outline'>
+                                {/* <Button className='-translate-x-2 opacity-0 transition-all group-hover/card:translate-x-0 group-hover/card:opacity-100' variant='outline'>
                                     View all
                                     <LucideIcon.ArrowRight size={16} strokeWidth={1.5} />
-                                </Button>
+                                </Button> */}
                             </CardTitle>
                             <CardDescription className='hidden'>Best performing post in the period</CardDescription>
                         </CardHeader>
