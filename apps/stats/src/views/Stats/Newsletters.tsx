@@ -1,5 +1,4 @@
 // import AudienceSelect from './components/AudienceSelect';
-import AreaChart from './components/AreaChart';
 import DateRangeSelect from './components/DateRangeSelect';
 import NewsletterSelect from './components/NewsletterSelect';
 import React, {useMemo, useState} from 'react';
@@ -7,7 +6,7 @@ import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, GhAreaChart, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -191,7 +190,7 @@ const NewsletterKPIs: React.FC<{
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 {(currentTab === 'total-subscribers') &&
-                    <AreaChart
+                    <GhAreaChart
                         allowDataOverflow={true}
                         className='-mb-3 h-[16vw] max-h-[320px] w-full'
                         color={tabConfig['total-subscribers'].color}

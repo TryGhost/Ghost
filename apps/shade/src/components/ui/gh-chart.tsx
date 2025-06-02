@@ -1,16 +1,57 @@
-import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
+import {calculateYAxisWidth, cn, formatDisplayDateWithRange, formatNumber, getYRange, getYRangeWithMinPadding} from '@/lib/utils';
 import React from 'react';
-import {AlignedAxisTick, ChartConfig, ChartContainer, ChartTooltip, Recharts, calculateYAxisWidth, cn, formatDisplayDateWithRange, formatNumber, getYRange, getYRangeWithMinPadding} from '@tryghost/shade';
+import {AlignedAxisTick, ChartConfig, ChartContainer, ChartTooltip} from './chart';
+import {Area, AreaChart, CartesianGrid, XAxis, YAxis} from 'recharts';
 
-export type AreaChartDataItem = {
+// A Ghost specific charts for analytics re-using ShadCN/UI and Recharts components
+
+interface TooltipPayload {
+    value: number;
+    payload: {
+        date?: string;
+        formattedValue?: string;
+        label?: string;
+    };
+}
+
+interface TooltipProps {
+    active?: boolean;
+    payload?: TooltipPayload[];
+    range?: number;
+    color?: string;
+}
+
+const GhCustomTooltipContent = ({active, payload, range, color}: TooltipProps) => {
+    if (!active || !payload?.length) {
+        return null;
+    }
+
+    const {date, formattedValue, label} = payload[0].payload;
+    const displayValue = formattedValue || payload[0].value;
+
+    return (
+        <div className="min-w-[120px] rounded-lg border bg-background px-3 py-2 shadow-lg">
+            {date && <div className="text-sm text-foreground">{formatDisplayDateWithRange(date, range || 0)}</div>}
+            <div className='flex items-center gap-2'>
+                <span className='inline-block size-[9px] rounded-[2px] opacity-50' style={{backgroundColor: color || 'hsl(var(--chart-1))'}}></span>
+                <div className='flex grow items-center justify-between gap-3'>
+                    {label && <div className="text-sm text-muted-foreground">{label}</div>}
+                    <div className="font-mono font-medium">{displayValue}</div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export type GhAreaChartDataItem = {
     date: string;
     value: number;
     formattedValue: string;
     label: string;
 }
 
-interface AreaChartProps {
-    data: AreaChartDataItem[];
+interface GhAreaChartProps {
+    data: GhAreaChartDataItem[];
     range: number;
     yAxisRange?: [number, number],
     color?: string;
@@ -19,10 +60,10 @@ interface AreaChartProps {
     syncId?: string;
     allowDataOverflow?: boolean;
     showYAxisValues?: boolean;
-    dataFormatter?: () => void;
+    dataFormatter?: (value: number) => string;
 }
 
-const AreaChart: React.FC<AreaChartProps> = ({
+const GhAreaChart: React.FC<GhAreaChartProps> = ({
     data,
     range,
     yAxisRange,
@@ -45,7 +86,7 @@ const AreaChart: React.FC<AreaChartProps> = ({
         <ChartContainer className={
             cn('w-full', className)
         } config={chartConfig}>
-            <Recharts.AreaChart
+            <AreaChart
                 data={data}
                 margin={{
                     left: 4,
@@ -54,18 +95,18 @@ const AreaChart: React.FC<AreaChartProps> = ({
                 }}
                 syncId={syncId}
             >
-                <Recharts.CartesianGrid horizontal={false} vertical={false} />
-                <Recharts.XAxis
+                <CartesianGrid horizontal={false} vertical={false} />
+                <XAxis
                     axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
                     dataKey="date"
                     interval={0}
-                    tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(value, range)} />}
-                    tickFormatter={value => formatDisplayDateWithRange(value, range)}
+                    tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(String(value), range)} />}
+                    tickFormatter={value => formatDisplayDateWithRange(String(value), range)}
                     tickLine={false}
                     tickMargin={10}
                     ticks={data && data.length > 0 ? [data[0].date, data[data.length - 1].date] : []}
                 />
-                <Recharts.YAxis
+                <YAxis
                     allowDataOverflow={allowDataOverflow}
                     axisLine={false}
                     domain={allowDataOverflow ? getYRangeWithMinPadding({min: yRange[0], max: yRange[1]}) : yRange}
@@ -75,10 +116,10 @@ const AreaChart: React.FC<AreaChartProps> = ({
                     }}
                     tickLine={false}
                     ticks={yRange}
-                    width={showYAxisValues ? calculateYAxisWidth(yRange, (value: number) => dataFormatter(value)) : 0}
+                    width={showYAxisValues ? calculateYAxisWidth(yRange, dataFormatter) : 0}
                 />
                 <ChartTooltip
-                    content={<CustomTooltipContent color={color} range={range} />}
+                    content={<GhCustomTooltipContent color={color} range={range} />}
                     cursor={true}
                     isAnimationActive={false}
                     position={{y: 10}}
@@ -97,7 +138,7 @@ const AreaChart: React.FC<AreaChartProps> = ({
                         />
                     </linearGradient>
                 </defs>
-                <Recharts.Area
+                <Area
                     dataKey="value"
                     fill={`url(#fillChart-${id})`}
                     fillOpacity={0.2}
@@ -107,9 +148,12 @@ const AreaChart: React.FC<AreaChartProps> = ({
                     strokeWidth={2}
                     type="linear"
                 />
-            </Recharts.AreaChart>
+            </AreaChart>
         </ChartContainer>
     );
 };
 
-export default AreaChart;
+export {
+    GhAreaChart,
+    GhCustomTooltipContent
+};

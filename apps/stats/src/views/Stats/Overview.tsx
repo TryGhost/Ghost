@@ -1,10 +1,9 @@
-import AreaChart, {AreaChartDataItem} from './components/AreaChart';
 import DateRangeSelect from './components/DateRangeSelect';
 import React, {useMemo} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {getAudienceQueryParam} from './components/AudienceSelect';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -166,7 +165,7 @@ const Overview: React.FC = () => {
             };
         });
     }, [visitorsData, range]);
-    const visitorsYRange: [number, number] = [0, Math.max(...(visitorsChartData?.map((item: AreaChartDataItem) => item.value) || [0]))];
+    const visitorsYRange: [number, number] = [0, Math.max(...(visitorsChartData?.map((item: GhAreaChartDataItem) => item.value) || [0]))];
 
     /* Get members
     /* ---------------------------------------------------------------------- */
@@ -182,7 +181,7 @@ const Overview: React.FC = () => {
         sanitizedData = sanitizeChartData<GrowthChartDataItem>(growthChartData, range, fieldName, 'exact');
 
         // Then map the sanitized data to the final format
-        const processedData: AreaChartDataItem[] = sanitizedData.map(item => ({
+        const processedData: GhAreaChartDataItem[] = sanitizedData.map(item => ({
             date: item.date,
             value: item.free + item.paid + item.comped,
             formattedValue: formatNumber(item.free + item.paid + item.comped),
@@ -206,7 +205,7 @@ const Overview: React.FC = () => {
         sanitizedData = sanitizeChartData<GrowthChartDataItem>(growthChartData, range, fieldName, 'exact');
 
         // Then map the sanitized data to the final format
-        const processedData: AreaChartDataItem[] = sanitizedData.map(item => ({
+        const processedData: GhAreaChartDataItem[] = sanitizedData.map(item => ({
             date: item.date,
             value: centsToDollars(item.mrr),
             formattedValue: `$${formatNumber(centsToDollars(item.mrr))}`,
@@ -249,7 +248,7 @@ const Overview: React.FC = () => {
                         linkto='/web/'
                         title='Unique visitors'
                     >
-                        <AreaChart
+                        <GhAreaChart
                             className={areaChartClassName}
                             color='hsl(var(--chart-blue))'
                             data={visitorsChartData}
@@ -270,7 +269,7 @@ const Overview: React.FC = () => {
                         linkto='/growth/'
                         title='Members'
                     >
-                        <AreaChart
+                        <GhAreaChart
                             allowDataOverflow={true}
                             className={areaChartClassName}
                             color='hsl(var(--chart-green))'
@@ -291,7 +290,7 @@ const Overview: React.FC = () => {
                         linkto='/growth/'
                         title='MRR'
                     >
-                        <AreaChart
+                        <GhAreaChart
                             allowDataOverflow={true}
                             className={areaChartClassName}
                             color='hsl(var(--chart-orange))'
