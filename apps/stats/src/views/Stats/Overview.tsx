@@ -1,11 +1,11 @@
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Table, TableBody, TableHead, TableHeader, TableRow, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import DateRangeSelect from './components/DateRangeSelect';
+import {getAudienceQueryParam} from './components/AudienceSelect';
+import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import React, {useMemo} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Table, TableBody, TableHead, TableHeader, TableRow, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
-import {getAudienceQueryParam} from './components/AudienceSelect';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
 import {useLatestPostStats} from '@src/hooks/useLatestPostStats';
@@ -283,10 +283,18 @@ const Overview: React.FC = () => {
                         <CardHeader>
                             <CardTitle className='flex items-baseline justify-between leading-snug'>
                                 Latest post performance
-                                <Button className='-translate-x-2 opacity-0 transition-all group-hover/card:translate-x-0 group-hover/card:opacity-100' variant='outline'>
-                                    Details
-                                    <LucideIcon.ArrowRight size={16} strokeWidth={1.5} />
-                                </Button>
+                                {latestPostStats && (
+                                    <Button 
+                                        className='-translate-x-2 opacity-0 transition-all group-hover/card:translate-x-0 group-hover/card:opacity-100' 
+                                        variant='outline'
+                                        onClick={() => {
+                                            window.location.href = `/ghost/#/posts/analytics/beta/${latestPostStats.id}`;
+                                        }}
+                                    >
+                                        Details
+                                        <LucideIcon.ArrowRight size={16} strokeWidth={1.5} />
+                                    </Button>
+                                )}
                             </CardTitle>
                             <CardDescription className='hidden'>How your last post did</CardDescription>
                         </CardHeader>
