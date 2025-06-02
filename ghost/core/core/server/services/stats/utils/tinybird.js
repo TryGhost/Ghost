@@ -44,12 +44,8 @@ const create = ({config, request}) => {
         if (options.dateTo) {
             searchParams.date_to = options.dateTo;
         }
-        if (options.timezone) {
-            searchParams.timezone = options.timezone;
-        }
-        if (options.memberStatus) {
-            searchParams.member_status = options.memberStatus;
-        }
+        searchParams.member_status = options.memberStatus || 'all';
+        searchParams.timezone = options.timezone || 'UTC';
         
         // Add any other options that might be needed (like post_uuid)
         Object.entries(options).forEach(([key, value]) => {
