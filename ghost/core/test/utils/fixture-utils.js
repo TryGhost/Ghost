@@ -149,6 +149,7 @@ const fixtures = {
 
     insertGatedPosts: async function insertGatedPosts() {
         const owner = await models.User.getOwnerUser(context.internal);
+        const tier = await models.Product.findOne({slug: 'silver'}, context.internal);
 
         const gatedPosts = [{
             id: '618ba1ffbe2896088840a6ef',
@@ -159,6 +160,17 @@ const fixtures = {
             uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c905',
             mobiledoc: DataGenerator.markdownToMobiledoc('Before paywall\n\n<!--members-only-->\n\nAfter paywall'),
             visibility: 'paid',
+            authors: [owner.toJSON()]
+        }, {
+            id: '618ba1ffbe2896088840a6ff',
+            title: 'This has a tiered paywall',
+            slug: 'paywall-tiered',
+            lexical: '',
+            status: 'draft',
+            uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c906',
+            visibility: 'tiers',
+            tiers: [tier.toJSON()],
+            mobiledoc: DataGenerator.markdownToMobiledoc('Before paywall\n\n<!--members-only-->\n\nAfter paywall'),
             authors: [owner.toJSON()]
         }];
 
@@ -535,7 +547,7 @@ const fixtures = {
 
     insertExtraTiers: async function insertExtraTiers() {
         const extraTier = DataGenerator.forKnex.createProduct({});
-        const extraTier2 = DataGenerator.forKnex.createProduct({slug: 'silver', name: 'Silver'});
+        const extraTier2 = DataGenerator.forKnex.createProduct({id: '6834edbcd2e19501e29e9537', slug: 'silver', name: 'Silver'});
         await models.Product.add(extraTier, context.internal);
         await models.Product.add(extraTier2, context.internal);
     },
