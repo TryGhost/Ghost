@@ -30,7 +30,7 @@ const KpiCard: React.FC<React.HTMLAttributes<HTMLButtonElement>> = ({children, c
         <button
             className={
                 cn(
-                    'flex flex-col border-r border-border last:border-none items-start gap-4 px-6 py-5 transition-all',
+                    'flex flex-col border-r border-border last:border-none items-start gap-2 px-6 py-5 transition-all',
                     props.onClick ? 'hover:bg-accent' : 'cursor-auto',
                     className
                 )}
