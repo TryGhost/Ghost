@@ -1048,7 +1048,7 @@ class EmailRenderer {
         return '#e0e7eb';
     }
 
-    #getLinkColor(newsletter, accentColor, backgroundIsDark) {
+    #getLinkColor(newsletter, accentColor) {
         const labs = this.getLabs();
         if (labs?.isSet('emailCustomizationAlpha')) {
             const value = newsletter.get('link_color');
@@ -1063,7 +1063,7 @@ class EmailRenderer {
             }
         }
 
-        return backgroundIsDark ? '#ffffff' : accentColor;
+        return accentColor;
     }
     /**
      * @private
@@ -1091,7 +1091,7 @@ class EmailRenderer {
         const titleStrongWeight = this.#getTitleStrongWeight(titleWeight);
         const textColor = textColorForBackgroundColor(backgroundColor).hex();
         const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
-        const linkColor = this.#getLinkColor(newsletter, accentColor, backgroundIsDark);
+        const linkColor = hasAnyEmailCustomization ? this.#getLinkColor(newsletter, accentColor) : backgroundIsDark ? '#ffffff' : accentColor;
         const hasRoundedImageCorners = hasAnyEmailCustomization ? this.#getImageCorners(newsletter) : false;
         const sectionTitleColor = hasAnyEmailCustomization ? this.#getSectionTitleColor(newsletter, accentColor) : null;
         const dividerColor = this.#getDividerColor(newsletter);
