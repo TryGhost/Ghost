@@ -277,7 +277,24 @@ h6 {
 }
 
 {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
-.post-content-row a {
+/* Links in captions */
+.feature-image-caption a,
+figcaption a {
+    color: {{linkColor}};
+}
+
+/* Links inside toggle card (not in CTA cards which have their own setting) */
+.kg-toggle-card:not(.kg-cta-card) a {
+    color: {{linkColor}};
+}
+
+/* Links inside callout cards (except the accent variant which has white links) */
+.kg-callout-card:not(.kg-callout-card-accent) a {
+    color: {{linkColor}};
+}
+
+/* Manage subscription link */
+.subscription-box .manage-subscription a {
     color: {{linkColor}} !important;
 }
 {{/hasFeature}}
@@ -726,7 +743,11 @@ h3.latest-posts-header {
 
 .post-content a,
 .post-content-sans-serif a {
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    color: {{linkColor}};
+    {{else}}
     color: {{accentColor}};
+    {{/hasFeature}}
     {{#if (eq linkStyle "regular")}}
     text-decoration: none;
     {{else if (eq linkStyle "bold")}}
