@@ -61,8 +61,6 @@ const create = ({config, request}) => {
         // Convert searchParams to query string and append to URL
         const queryString = new URLSearchParams(searchParams).toString();
         const fullUrl = `${tinybirdUrl}?${queryString}`;
-
-        console.log(`fullUrl`, fullUrl);
         
         const requestOptions = {
             headers: {

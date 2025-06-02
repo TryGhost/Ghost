@@ -100,7 +100,6 @@ class StatsService {
      */
     async getTopPostsViews(options) {
         const result = await this.posts.getTopPostsViews(options);
-        console.log(`result`, result);
         return result;
     }
 

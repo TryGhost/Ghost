@@ -223,9 +223,6 @@ const Overview: React.FC = () => {
     const isLoading = isConfigLoading || isVisitorsLoading || isGrowthStatsLoading || isLatestPostLoading || isTopPostsLoading;
     const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px]';
 
-    console.log(`topPostsData`, topPostsData);
-    console.log(`topPostsData.stats`, topPostsData?.stats[0]);
-
     return (
         <StatsLayout>
             <StatsHeader>
