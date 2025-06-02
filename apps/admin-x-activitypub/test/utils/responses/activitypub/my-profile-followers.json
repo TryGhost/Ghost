@@ -27,7 +27,7 @@
             "apId": "https://www.francoisweb.com/.ghost/activitypub/users/index",
             "name": "Francois's Site",
             "handle": "@francois@francoisweb.com",
-            "avatarUrl": "https://www.bobsite.com/profile.png",
+            "avatarUrl": "https://www.francoisweb.com/profile.png",
             "isFollowing": false,
             "followedByMe": true,
             "blockedByMe": false,

@@ -27,7 +27,7 @@
             "apId": "https://www.dannysite.com/.ghost/activitypub/users/index",
             "name": "Danny's Site",
             "handle": "@danny@dannysite.com",
-            "avatarUrl": "https://www.bobsite.com/profile.png",
+            "avatarUrl": "https://www.dannysite.com/profile.png",
             "isFollowing": true,
             "followedByMe": false,
             "blockedByMe": false,
