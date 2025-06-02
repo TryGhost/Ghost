@@ -7555,10 +7555,10 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "4.2.5"
 
-"@tryghost/kg-unsplash-selector@0.3.3":
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-unsplash-selector/-/kg-unsplash-selector-0.3.3.tgz#4af84d35b27b55177084d84c8c72c3dae9958724"
-  integrity sha512-EEiOvFq1fEkck6hGzUjwdcDGoFKVgmqzsqT8a2MIMC15FZuLhdD7Rqiuc/cDjRv+2K3yj5eDXxcKOaPOQFWO7g==
+"@tryghost/kg-unsplash-selector@0.3.4":
+  version "0.3.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-unsplash-selector/-/kg-unsplash-selector-0.3.4.tgz#368083d40362840ca085a633f734bbf1fb9c9946"
+  integrity sha512-MeJwDcsQUUX07X+xDAZt6d5/u9j+KDPl9QI0lhPc74JWJcSiUHYolWLM31l8jxTp4cnEd9dUkezCvga0V33piA==
 
 "@tryghost/kg-utils@1.0.31":
   version "1.0.31"
