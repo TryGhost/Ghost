@@ -49,9 +49,11 @@ class PostsStatsService {
     /**
      * @param {object} deps
      * @param {import('knex').Knex} deps.knex - Database client
+     * @param {object} [deps.tinybirdClient] - Tinybird client for analytics
      */
     constructor(deps) {
         this.knex = deps.knex;
+        this.tinybirdClient = deps.tinybirdClient;
     }
 
     /**
@@ -592,6 +594,83 @@ class PostsStatsService {
                     deltas: []
                 }]
             };
+        }
+    }
+
+    /**
+     * Get stats for the latest published post including open rate, member delta, and visitor count
+     * @returns {Promise<{data: Object|null, errors?: Array<{message: string}>}>}
+     */
+    async getLatestPostStats() {
+        try {
+            // Get the latest published post
+            const latestPost = await this.knex('posts as p')
+                .select(
+                    'p.id',
+                    'p.title',
+                    'p.slug',
+                    'p.feature_image',
+                    'p.published_at',
+                    'e.email_count',
+                    'e.opened_count'
+                )
+                .leftJoin('emails as e', 'p.id', 'e.post_id')
+                .where('p.status', 'published')
+                .whereNotNull('p.published_at')
+                .orderBy('p.published_at', 'desc')
+                .first();
+
+            if (!latestPost) {
+                return {data: []};
+            }
+
+            // Get member delta from members_created_events
+            const memberDelta = await this.knex('members_created_events')
+                .count('id as count')
+                .where('attribution_id', latestPost.id)
+                .where('attribution_type', 'post')
+                .first();
+
+            // Calculate open rate
+            const openRate = latestPost.email_count ? 
+                (latestPost.opened_count / latestPost.email_count) * 100 : 
+                null;
+
+            // Get visitor count from Tinybird
+            let visitors = 0;
+            if (this.tinybirdClient) {
+                try {
+                    const visitorData = await this.tinybirdClient.query('api_top_pages', {
+                        post_uuid: latestPost.id
+                    });
+
+                    if (visitorData?.data?.[0]) {
+                        visitors = visitorData.data[0].visitors || 0;
+                    }
+                } catch (err) {
+                    // Log the error but don't fail the whole request
+                    logging.error('Error fetching visitor data from Tinybird:', err);
+                }
+            }
+
+            return {
+                data: [{
+                    id: latestPost.id,
+                    title: latestPost.title,
+                    slug: latestPost.slug,
+                    feature_image: latestPost.feature_image,
+                    published_at: latestPost.published_at,
+                    recipient_count: latestPost.email_count,
+                    opened_count: latestPost.opened_count,
+                    open_rate: openRate,
+                    member_delta: memberDelta.count,
+                    visitors: visitors
+                }]
+            };
+        } catch (error) {
+            // Log the error but return a valid response
+            logging.error('Error fetching latest post stats:', error);
+            return {data: []};
         }
     }
 }
