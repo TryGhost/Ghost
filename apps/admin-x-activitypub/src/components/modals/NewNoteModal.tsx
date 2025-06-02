@@ -274,7 +274,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
-            <DialogContent className={`max-h-[80vh] min-h-[240px] gap-0 overflow-y-auto pb-0`} onClick={e => e.stopPropagation()}>
+            <DialogContent className={`max-h-[80vh] min-h-[240px] gap-0 overflow-y-auto pb-0`} data-testid="new-note-modal" onClick={e => e.stopPropagation()}>
                 <DialogHeader className='hidden'>
                     <DialogTitle>{replyTo ? 'Reply' : 'New note'}</DialogTitle>
                     <DialogDescription>Post your thoughts to the Social web</DialogDescription>
@@ -308,6 +308,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                                         ref={textareaRef}
                                         autoFocus={true}
                                         className='ap-textarea w-full resize-none bg-transparent text-[1.5rem]'
+                                        data-testid="note-textarea"
                                         placeholder={placeholder}
                                         rows={1}
                                         value={content}
@@ -347,7 +348,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                         <div className={`text-sm ${content.length >= MAX_CONTENT_LENGTH ? 'text-red-500' : content.length >= MAX_CONTENT_LENGTH * 0.9 ? 'text-yellow-600' : 'text-gray-500'}`}>
                             {content.length}/{MAX_CONTENT_LENGTH}
                         </div>
-                        <Button className='min-w-16' disabled={isDisabled || isImageUploading} onClick={handlePost}>
+                        <Button className='min-w-16' data-testid="post-button" disabled={isDisabled || isImageUploading} onClick={handlePost}>
                             {isPosting ? <LoadingIndicator color='light' size='sm' /> : 'Post'}
                         </Button>
                     </div>
