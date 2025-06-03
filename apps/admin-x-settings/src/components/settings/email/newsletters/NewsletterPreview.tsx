@@ -68,16 +68,12 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
             return value;
         }
 
-        if (value === 'accent') {
-            return siteData.accent_color;
-        }
-
         if (value === null) {
             const bg = backgroundColor();
             return textColorForBackgroundColor(bg).hex();
         }
 
-        return null;
+        return siteData.accent_color;
     };
 
     const linkColor = () => {

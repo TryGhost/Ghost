@@ -31,6 +31,7 @@ const Newsletter = ghostBookshelf.Model.extend({
             show_excerpt: false,
             button_corners: 'rounded',
             button_style: 'fill',
+            button_color: 'accent',
             title_font_weight: 'bold',
             link_style: 'underline',
             image_corners: 'square',
