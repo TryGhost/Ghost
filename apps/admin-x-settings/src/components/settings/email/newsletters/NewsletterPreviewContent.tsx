@@ -110,8 +110,6 @@ const NewsletterPreviewContent: React.FC<{
     });
     const currentYear = new Date().getFullYear();
 
-    const backgroundColorIsDark = backgroundColor && textColorForBackgroundColor(backgroundColor).hex().toLowerCase() === '#ffffff';
-
     // Process footer content to add target and rel attributes to links
     const processedFooterContent = footerContent ? footerContent.replace(/<a/g, '<a target="_blank" rel="noopener noreferrer"') : '';
 
