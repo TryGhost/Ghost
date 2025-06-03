@@ -365,7 +365,8 @@ class EmailRenderer {
         if (labs?.isSet('emailCustomizationAlpha')) {
             renderOptions.design = {
                 ...renderOptions.design,
-                ...betaDesignOptions
+                ...betaDesignOptions,
+                backgroundColor: newsletter?.get('background_color')
             };
         }
 
