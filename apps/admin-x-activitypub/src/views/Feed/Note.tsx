@@ -6,12 +6,12 @@ import Layout from '@src/components/layout/Layout';
 import React, {useEffect, useRef, useState} from 'react';
 import getUsername from '@src/utils/get-username';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
-import {LucideIcon, Skeleton} from '@tryghost/shade';
+import {LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {renderTimestamp} from '@src/utils/render-timestamp';
+import {useCachedPostForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
 import {useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
-import {usePostForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
 
 const FeedItemDivider: React.FC = () => (
     <div className="h-px bg-gray-200 dark:bg-gray-950"></div>
@@ -22,7 +22,7 @@ const Note = () => {
     const {canGoBack} = useNavigationStack();
 
     const activityId = postId ? decodeURIComponent(postId) : '';
-    const {data: post, isLoading: isPostLoading} = usePostForUser('index', postId!);
+    const {data: post, isLoading: isPostLoading} = useCachedPostForUser('index', postId!);
     const object = post?.object;
 
     const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
@@ -33,7 +33,7 @@ const Note = () => {
         }
     }, [object?.replyCount]);
 
-    const {data: thread} = useThreadForUser('index', activityId);
+    const {data: thread, isLoading: isThreadLoading} = useThreadForUser('index', activityId);
     const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
     const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
     const threadParents = (thread?.posts ?? []).slice(0, threadPostIdx);
@@ -62,11 +62,17 @@ const Note = () => {
     return (
         <Layout>
             {isPostLoading ?
-                <div className='mx-auto mt-8 flex max-w-[620px] items-center gap-3 px-8 pt-7'>
-                    <Skeleton className='size-10 rounded-full' />
-                    <div className='grow pt-1'>
-                        <Skeleton className='w-full' />
-                        <Skeleton className='w-2/3' />
+                <div className='mx-auto flex max-w-[620px] flex-col items-center gap-3 px-8 pt-9'>
+                    <div className='flex w-full items-center gap-3'>
+                        <Skeleton className='size-10 rounded-full' />
+                        <div className='grow pt-1'>
+                            <Skeleton className='w-25' />
+                            <Skeleton className='w-3/5' />
+                        </div>
+                    </div>
+                    <div className='w-full'>
+                        <Skeleton />
+                        <Skeleton className='w-4/5' />
                     </div>
                 </div>
                 :
@@ -137,7 +143,7 @@ const Note = () => {
                                                 />
                                                 <FeedItemDivider />
                                                 <div ref={repliesRef}>
-                                                    {threadChildren.map((item, index) => {
+                                                    {isThreadLoading ? <div className='flex justify-center py-8'><LoadingIndicator size='md' /></div> : threadChildren.map((item, index) => {
                                                         const showDivider = index !== threadChildren.length - 1;
 
                                                         return (

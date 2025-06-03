@@ -1990,6 +1990,65 @@ export function usePostForUser(handle: string, id: string | null) {
     });
 }
 
+export function useCachedPostForUser(handle: string, id: string | null) {
+    const queryClient = useQueryClient();
+
+    const getCachedPost = useCallback(() => {
+        if (!id) {
+            return null;
+        }
+
+        const feedData = queryClient.getQueryData<{pages: {posts: Activity[]}[]}>(QUERY_KEYS.feed);
+        if (feedData) {
+            for (const page of feedData.pages) {
+                const post = page.posts.find(p => p.id === id);
+                if (!post) {
+                    return null;
+                }
+                return post;
+            }
+        }
+
+        const inboxData = queryClient.getQueryData<{pages: {posts: Activity[]}[]}>(QUERY_KEYS.inbox);
+        if (inboxData) {
+            for (const page of inboxData.pages) {
+                const post = page.posts.find(p => p.id === id);
+                if (post) {
+                    // Check if the cached post has metadata - if not, we need to fetch
+                    if (post.object?.type === 'Article' && !post.object?.metadata) {
+                        return null;
+                    }
+                    return post;
+                }
+            }
+        }
+
+        return null;
+    }, [id, queryClient]);
+
+    const cachedPost = getCachedPost();
+
+    return useQuery({
+        queryKey: QUERY_KEYS.post(id || ''),
+        refetchOnMount: !cachedPost, // Only refetch if we don't have cached data
+        staleTime: cachedPost ? 5 * 60 * 1000 : 0,
+        enabled: Boolean(id),
+        initialData: cachedPost || undefined,
+        async queryFn() {
+            if (!id) {
+                throw new Error('Post ID is required');
+            }
+
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.getPost(id).then((response) => {
+                return mapPostToActivity(response);
+            });
+        }
+    });
+}
+
 export function useUpdateAccountMutationForUser(handle: string) {
     const queryClient = useQueryClient();
 
@@ -2018,4 +2077,33 @@ export async function uploadFile(file: File) {
     const siteUrl = await getSiteUrl();
     const api = createActivityPubAPI('index', siteUrl);
     return api.upload(file);
+}
+
+export function usePrefetchPostForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useCallback((id: string | null) => {
+        if (!id) {
+            return;
+        }
+
+        // Check if data is already in cache
+        const existingData = queryClient.getQueryData(QUERY_KEYS.post(id));
+        if (existingData) {
+            return;
+        }
+
+        // Prefetch the data
+        queryClient.prefetchQuery({
+            queryKey: QUERY_KEYS.post(id),
+            async queryFn() {
+                const siteUrl = await getSiteUrl();
+                const api = createActivityPubAPI(handle, siteUrl);
+                return api.getPost(id).then((response) => {
+                    return mapPostToActivity(response);
+                });
+            },
+            staleTime: 5 * 60 * 1000 // 5 minutes
+        });
+    }, [handle, queryClient]);
 }
