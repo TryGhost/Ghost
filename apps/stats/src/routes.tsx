@@ -20,7 +20,7 @@ export const routes: RouteObject[] = [
     {
         path: '/',
         index: true,
-        element: <Web />
+        element: <Overview />
     },
     {
         path: '/web/',
