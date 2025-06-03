@@ -9,7 +9,7 @@
     </head>
     <body>
         <span class="preheader">{{preheader}}</span>
-        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body" width="100%">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body" width="100%" {{#hasFeature "emailCustomizationAlpha"}} style="background-color: {{backgroundColor}} !important;" {{/hasFeature}}>
             <!-- Outlook doesn't respect max-width so we need an extra centered table -->
             <!--[if mso]>
             <tr>
@@ -22,7 +22,7 @@
                 <td class="{{classes.container}}">
                     <div class="content">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="main" width="100%">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="main" width="100%" {{#hasFeature "emailCustomizationAlpha"}} style="background-color: {{backgroundColor}} !important;" {{/hasFeature}}>
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
