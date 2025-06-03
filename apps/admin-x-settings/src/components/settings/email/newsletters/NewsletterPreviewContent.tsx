@@ -6,7 +6,6 @@ import clsx from 'clsx';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {GhostOrb, Icon} from '@tryghost/admin-x-design-system';
 import {isManagedEmail} from '@tryghost/admin-x-framework/api/config';
-import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const NewsletterPreviewContent: React.FC<{
