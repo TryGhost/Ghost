@@ -1,9 +1,10 @@
 import DateRangeSelect from './components/DateRangeSelect';
+import FeatureImagePlaceholder from './components/FeatureImagePlaceholder';
 import React, {useMemo} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, Table, TableBody, TableHead, TableHeader, TableRow, centsToDollars, cn, formatDisplayDate, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, cn, formatDisplayDate, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {getAudienceQueryParam} from './components/AudienceSelect';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken, useNavigate} from '@tryghost/admin-x-framework';
@@ -23,6 +24,7 @@ interface OverviewKPICardProps {
     color?: string;
     formattedValue: string;
     children?: React.ReactNode;
+    onClick?: () => void;
 }
 
 const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
@@ -34,19 +36,20 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     diffDirection,
     diffValue,
     formattedValue,
-    children
+    children,
+    onClick
 }) => {
     // const navigate = useNavigate();
     const IconComponent = LucideIcon[iconName] as LucideIcon.LucideIcon;
 
     return (
-        <Card>
+        <Card className={onClick && 'group transition-all hover:!cursor-pointer hover:bg-accent/50'} onClick={onClick}>
             <CardHeader className='hidden'>
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
             <KpiCardHeader className='grow gap-2 border-none pb-2'>
-                <KpiCardHeaderLabel>
+                <KpiCardHeaderLabel className={onClick && 'transition-all group-hover:text-foreground'}>
                     {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
                     {title}
                 </KpiCardHeaderLabel>
@@ -117,6 +120,7 @@ interface TopPostViewsStats {
     views: number;
     open_rate: number | null;
     members: number;
+    feature_image: string;
 }
 
 const Overview: React.FC = () => {
@@ -221,7 +225,7 @@ const Overview: React.FC = () => {
     }, [visitorsData]);
 
     const isLoading = isConfigLoading || isVisitorsLoading || isGrowthStatsLoading || isLatestPostLoading || isTopPostsLoading;
-    const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px]';
+    const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] hover:!cursor-pointer';
 
     return (
         <StatsLayout>
@@ -237,6 +241,9 @@ const Overview: React.FC = () => {
                         iconName='MousePointer'
                         linkto='/web/'
                         title='Unique visitors'
+                        onClick={() => {
+                            navigate('/');
+                        }}
                     >
                         <GhAreaChart
                             className={areaChartClassName}
@@ -258,6 +265,9 @@ const Overview: React.FC = () => {
                         iconName='User'
                         linkto='/growth/'
                         title='Members'
+                        onClick={() => {
+                            navigate('/growth/');
+                        }}
                     >
                         <GhAreaChart
                             className={areaChartClassName}
@@ -278,6 +288,9 @@ const Overview: React.FC = () => {
                         iconName='DollarSign'
                         linkto='/growth/'
                         title='MRR'
+                        onClick={() => {
+                            navigate('/growth/');
+                        }}
                     >
                         <GhAreaChart
                             className={areaChartClassName}
@@ -382,32 +395,38 @@ const Overview: React.FC = () => {
                                 </TableHeader>
                                 <TableBody>
                                     {topPostsData?.stats?.[0]?.map((post: TopPostViewsStats) => (
-                                        <TableRow key={post.post_id}>
-                                            <TableHead className='pl-0 font-normal'>
-                                                <button 
-                                                    className='h-auto justify-start p-0 text-left font-normal hover:text-black dark:hover:text-white'
-                                                    type="button"
-                                                    onClick={() => {
-                                                        navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
-                                                    }}
-                                                >
-                                                    {post.title}
-                                                </button>
-                                            </TableHead>
-                                            <TableHead className='text-right font-mono font-normal'>
+                                        <TableRow key={post.post_id} className='hover:cursor-pointer' onClick={() => {
+                                            navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
+                                        }}>
+                                            <TableCell className='font-'>
+                                                <div className='flex items-center gap-4'>
+                                                    {post.feature_image ?
+                                                        <div className='aspect-[4/3] w-20 shrink-0 rounded-md bg-cover' style={{
+                                                            backgroundImage: `url(${post.feature_image})`
+                                                        }}></div>
+                                                        :
+                                                        <FeatureImagePlaceholder className='aspect-[4/3] w-20 shrink-0' />
+                                                    }
+                                                    <div className='flex flex-col'>
+                                                        <span className='font-semibold leading-[1.35em]'>{post.title}</span>
+                                                        <span className='text-xs text-muted-foreground'>{formatDisplayDate(post.published_at)}</span>
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className='text-right font-mono'>
                                                 {formatNumber(post.views)}
-                                            </TableHead>
-                                            <TableHead className='text-right font-mono font-normal'>
-                                                {post.open_rate ? `${Math.round(post.open_rate)}%` : 'N/A'}
-                                            </TableHead>
-                                            <TableHead className='text-right font-mono font-normal'>
+                                            </TableCell>
+                                            <TableCell className='text-right font-mono'>
+                                                {post.open_rate ? `${Math.round(post.open_rate)}%` : <>&mdash;</>}
+                                            </TableCell>
+                                            <TableCell className='text-right font-mono'>
                                                 {post.members > 0 ? `+${formatNumber(post.members)}` : '0'}
-                                            </TableHead>
+                                            </TableCell>
                                         </TableRow>
                                     ))}
                                     {(!topPostsData?.stats?.[0] || topPostsData.stats?.[0].length === 0) && (
                                         <TableRow>
-                                            <TableHead 
+                                            <TableHead
                                                 className='text-center font-normal text-muted-foreground'
                                                 colSpan={4}
                                             >
