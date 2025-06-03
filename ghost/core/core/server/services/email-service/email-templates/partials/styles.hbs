@@ -88,6 +88,19 @@ hr {
     border: 0;
     border-top: 1px solid {{dividerColor}};
 }
+.kg-hr-card td {
+    margin: 0;
+    padding-top: 1.5em; /* account for elements above having bottom padding, we want 3em total */
+    padding-bottom: 3em;
+    font-size: 17px;
+}
+.kg-hr td {
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid {{dividerColor}};
+    font-size: 0;
+    line-height: 0;
+}
 
 p,
 ul,
@@ -262,6 +275,38 @@ h6 {
     margin: 2em 0 0.5em 0;
     font-size: 19px;
     line-height: 1.3em;
+}
+
+/*
+  Adjust margins and padding when hr cards surround headings to simulate the
+  margin collapsing that we no longer have when using table+padding for hr cards.
+  Goal is to always have 3em spacing between heading and divider line.
+*/
+h1:has(+ .kg-hr-card),
+h2:has(+ .kg-hr-card),
+h3:has(+ .kg-hr-card),
+h4:has(+ .kg-hr-card),
+h5:has(+ .kg-hr-card),
+h6:has(+ .kg-hr-card) {
+    margin-bottom: 0;
+}
+
+h1 + .kg-hr-card td,
+h2 + .kg-hr-card td,
+h3 + .kg-hr-card td,
+h4 + .kg-hr-card td,
+h5 + .kg-hr-card td,
+h6 + .kg-hr-card td {
+    padding-top: 3em;
+}
+
+.kg-hr-card + h1,
+.kg-hr-card + h2,
+.kg-hr-card + h3,
+.kg-hr-card + h4,
+.kg-hr-card + h5,
+.kg-hr-card + h6 {
+    margin-top: 0;
 }
 
 /* Post content headings */
