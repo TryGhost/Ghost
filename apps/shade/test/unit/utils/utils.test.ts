@@ -10,6 +10,7 @@ import {
     formatPercentage
 } from '@/lib/utils';
 import moment from 'moment-timezone';
+import {vi} from 'vitest';
 
 describe('utils', function () {
     describe('cn function', function () {
@@ -33,24 +34,30 @@ describe('utils', function () {
     });
 
     describe('debounce function', function () {
-        it('delays function execution', function (done) {
-            let counter = 0;
-            const increment = () => {
-                counter += 1;
-            };
-            
-            const debouncedIncrement = debounce(increment, 100);
-            
-            debouncedIncrement();
-            assert.equal(counter, 0, 'Function should not be called immediately');
-            
-            setTimeout(() => {
-                assert.equal(counter, 1, 'Function should be called after the delay');
-                done();
-            }, 150);
+        beforeEach(function () {
+            vi.useFakeTimers();
         });
 
-        it('only calls the function once if called multiple times within the wait period', function (done) {
+        afterEach(function () {
+            vi.restoreAllMocks();
+        });
+
+        it('delays function execution', function () {
+            let counter = 0;
+            const increment = () => {
+                counter += 1;
+            };
+            
+            const debouncedIncrement = debounce(increment, 100);
+            
+            debouncedIncrement();
+            assert.equal(counter, 0, 'Function should not be called immediately');
+            
+            vi.advanceTimersByTime(150);
+            assert.equal(counter, 1, 'Function should be called after the delay');
+        });
+
+        it('only calls the function once if called multiple times within the wait period', function () {
             let counter = 0;
             const increment = () => {
                 counter += 1;
@@ -64,10 +71,8 @@ describe('utils', function () {
             
             assert.equal(counter, 0, 'Function should not be called immediately');
             
-            setTimeout(() => {
-                assert.equal(counter, 1, 'Function should only be called once');
-                done();
-            }, 150);
+            vi.advanceTimersByTime(150);
+            assert.equal(counter, 1, 'Function should only be called once');
         });
 
         it('calls the function immediately if immediate is true', function () {
@@ -123,7 +128,7 @@ describe('utils', function () {
             // Using a predefined date for testing, bypassing the current date check
             // Test different year formatting without mocking Date
             const differentYearFormatted = formatDisplayDate('2020-12-31');
-            assert.equal(differentYearFormatted, '30 Dec 2020');
+            assert.equal(differentYearFormatted, '31 Dec 2020');
         });
     });
 

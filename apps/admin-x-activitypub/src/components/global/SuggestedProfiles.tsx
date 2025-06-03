@@ -36,6 +36,7 @@ export const SuggestedProfile: React.FC<SuggestedProfileProps & {
         <ActivityItem
             key={profile.id}
             onClick={() => {
+                onOpenChange?.(false);
                 navigate(`/profile/${profile.handle}`);
             }}
         >

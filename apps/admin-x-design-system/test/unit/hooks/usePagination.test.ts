@@ -1,8 +1,9 @@
+import {describe, it} from 'vitest';
 import {expect} from 'chai';
 import {renderHook, act} from '@testing-library/react-hooks';
 import {usePagination, PaginationMeta, PaginationData} from '../../../src/hooks/usePagination';
 
-describe('usePagination', function () {
+describe('usePagination', () => {
     const initialMeta: PaginationMeta = {
         limit: 10,
         pages: 5,
@@ -11,7 +12,7 @@ describe('usePagination', function () {
         prev: null
     };
 
-    it('should initialize with the given meta and page', function () {
+    it('should initialize with the given meta and page', () => {
         const {result} = renderHook(() => usePagination({
             meta: initialMeta,
             limit: 10,
@@ -33,7 +34,7 @@ describe('usePagination', function () {
         expect(result.current).to.deep.equal(expectedData);
     });
 
-    it('should update page correctly when nextPage and prevPage are called', function () {
+    it('should update page correctly when nextPage and prevPage are called', () => {
         let currentPage = 1;
         const setPage = (newPage: number) => {
             currentPage = newPage;
@@ -60,7 +61,7 @@ describe('usePagination', function () {
         expect(currentPage).to.equal(1);
     });
 
-    it('should update page correctly when setPage is called', function () {
+    it('should update page correctly when setPage is called', () => {
         let currentPage = 3;
         const setPage = (newPage: number) => {
             currentPage = newPage;
@@ -83,7 +84,7 @@ describe('usePagination', function () {
         expect(currentPage).to.equal(newPage);
     });
 
-    it('should handle edge cases where meta.pages < page when setting meta', function () {
+    it('should handle edge cases where meta.pages < page when setting meta', () => {
         let currentPage = 5;
         const setPage = (newPage: number) => {
             currentPage = newPage;

@@ -39,11 +39,37 @@ describe('PostsStatsService', function () {
     let memberIdCounter = 0;
     let subscriptionIdCounter = 0;
 
-    async function _createPost(id, title) {
-        await db('posts').insert({id, title});
+    async function _createPost(id, title, status = 'published') {
+        await db('posts').insert({id, title, status});
     }
 
-    async function _createFreeSignupEvent(postId, memberId, createdAt = new Date()) {
+    async function _createPostWithDetails(id, title, status = 'published', details = {}) {
+        const now = new Date();
+        const data = {
+            id,
+            title,
+            status,
+            slug: details.slug || `${title.toLowerCase().replace(/ /g, '-')}-${id}`,
+            feature_image: details.feature_image || null,
+            published_at: details.published_at || now,
+            uuid: details.uuid || null,
+            newsletter_id: details.newsletter_id || null
+        };
+        await db('posts').insert(data);
+        return data;
+    }
+
+    async function _createEmailStats(postId, emailCount, openedCount) {
+        await db('emails').insert({
+            id: `email_${postId}`,
+            post_id: postId,
+            email_count: emailCount,
+            opened_count: openedCount,
+            created_at: new Date()
+        });
+    }
+
+    async function _createFreeSignupEvent(postId, memberId, referrerSource, createdAt = new Date()) {
         eventIdCounter += 1;
         const eventId = `free_event_${eventIdCounter}`;
         await db('members_created_events').insert({
@@ -51,11 +77,13 @@ describe('PostsStatsService', function () {
             member_id: memberId,
             attribution_id: postId,
             attribution_type: 'post',
+            referrer_source: referrerSource,
+            referrer_url: referrerSource ? `https://${referrerSource}` : null,
             created_at: createdAt
         });
     }
 
-    async function _createPaidConversionEvent(postId, memberId, subscriptionId, mrr, createdAt = new Date()) {
+    async function _createPaidConversionEvent(postId, memberId, subscriptionId, mrr, referrerSource, createdAt = new Date()) {
         eventIdCounter += 1;
         const subCreatedEventId = `sub_created_${eventIdCounter}`;
         const paidEventId = `paid_event_${eventIdCounter}`;
@@ -66,6 +94,8 @@ describe('PostsStatsService', function () {
             subscription_id: subscriptionId,
             attribution_id: postId,
             attribution_type: 'post',
+            referrer_source: referrerSource,
+            referrer_url: referrerSource ? `https://${referrerSource}` : null,
             created_at: createdAt
         });
 
@@ -78,28 +108,34 @@ describe('PostsStatsService', function () {
         });
     }
 
-    async function _createFreeSignup(postId, memberId = null) {
+    async function _createFreeSignup(postId, referrerSource,memberId = null) {
         memberIdCounter += 1;
         const finalMemberId = memberId || `member_${memberIdCounter}`;
         await _createFreeSignupEvent(postId, finalMemberId);
     }
 
-    async function _createPaidSignup(postId, mrr, memberId = null, subscriptionId = null) {
+    async function _createPaidSignup(postId, mrr, referrerSource, memberId = null, subscriptionId = null) {
         memberIdCounter += 1;
         const finalMemberId = memberId || `member_${memberIdCounter}`;
         subscriptionIdCounter += 1;
         const finalSubscriptionId = subscriptionId || `sub_${subscriptionIdCounter}`;
-        await _createFreeSignupEvent(postId, finalMemberId);
-        await _createPaidConversionEvent(postId, finalMemberId, finalSubscriptionId, mrr);
+        await _createFreeSignupEvent(postId, finalMemberId, referrerSource);
+        await _createPaidConversionEvent(postId, finalMemberId, finalSubscriptionId, mrr, referrerSource);
     }
 
-    async function _createPaidConversion(signupPostId, conversionPostId, mrr, memberId = null, subscriptionId = null) {
+    async function _createPaidConversion(signupPostId, conversionPostId, mrr, referrerSource, memberId = null, subscriptionId = null) {
         memberIdCounter += 1;
         const finalMemberId = memberId || `member_${memberIdCounter}`;
         subscriptionIdCounter += 1;
         const finalSubscriptionId = subscriptionId || `sub_${subscriptionIdCounter}`;
-        await _createFreeSignupEvent(signupPostId, finalMemberId);
-        await _createPaidConversionEvent(conversionPostId, finalMemberId, finalSubscriptionId, mrr);
+        await _createFreeSignupEvent(signupPostId, finalMemberId, referrerSource);
+        await _createPaidConversionEvent(conversionPostId, finalMemberId, finalSubscriptionId, mrr, referrerSource);
+    }
+
+    async function _verifyDatabaseState() {
+        const posts = await db.select('*').from('posts');
+        const emails = await db.select('*').from('emails');
+        return {posts, emails};
     }
 
     before(async function () {
@@ -114,6 +150,12 @@ describe('PostsStatsService', function () {
         await db.schema.createTable('posts', function (table) {
             table.string('id').primary();
             table.string('title');
+            table.string('status');
+            table.string('slug');
+            table.string('feature_image');
+            table.dateTime('published_at');
+            table.string('uuid').unique();
+            table.string('newsletter_id');
         });
 
         await db.schema.createTable('members_created_events', function (table) {
@@ -122,6 +164,8 @@ describe('PostsStatsService', function () {
             table.string('attribution_id').index();
             table.string('attribution_type');
             table.dateTime('created_at');
+            table.string('referrer_source');
+            table.string('referrer_url');
         });
 
         await db.schema.createTable('members_subscription_created_events', function (table) {
@@ -131,6 +175,8 @@ describe('PostsStatsService', function () {
             table.string('attribution_id').index();
             table.string('attribution_type');
             table.dateTime('created_at');
+            table.string('referrer_source');
+            table.string('referrer_url');
         });
 
         await db.schema.createTable('members_paid_subscription_events', function (table) {
@@ -138,6 +184,14 @@ describe('PostsStatsService', function () {
             table.string('member_id');
             table.string('subscription_id');
             table.integer('mrr_delta');
+            table.dateTime('created_at');
+        });
+
+        await db.schema.createTable('emails', function (table) {
+            table.string('id').primary();
+            table.string('post_id');
+            table.integer('email_count');
+            table.integer('opened_count');
             table.dateTime('created_at');
         });
     });
@@ -153,6 +207,7 @@ describe('PostsStatsService', function () {
         await _createPost('post2', 'Post 2');
         await _createPost('post3', 'Post 3');
         await _createPost('post4', 'Post 4');
+        await _createPost('post5', 'Post 5', 'draft');
     });
 
     afterEach(async function () {
@@ -160,6 +215,7 @@ describe('PostsStatsService', function () {
         await db('members_created_events').truncate();
         await db('members_subscription_created_events').truncate();
         await db('members_paid_subscription_events').truncate();
+        await db('emails').truncate();
     });
 
     after(async function () {
@@ -189,11 +245,11 @@ describe('PostsStatsService', function () {
         });
 
         it('correctly ranks posts by free_members', async function () {
-            await _createFreeSignup('post1');
-            await _createFreeSignup('post2');
-            await _createPaidSignup('post1', 500);
-            await _createPaidSignup('post3', 1000);
-            await _createPaidConversion('post1', 'post2', 500);
+            await _createFreeSignup('post1', 'referrer_1');
+            await _createFreeSignup('post2', 'referrer_2');
+            await _createPaidSignup('post1', 500, 'referrer_1');
+            await _createPaidSignup('post3', 1000, 'referrer_3');
+            await _createPaidConversion('post1', 'post2', 500, 'referrer_1');
 
             const result = await service.getTopPosts({order: 'free_members desc'});
 
@@ -218,10 +274,10 @@ describe('PostsStatsService', function () {
         });
 
         it('correctly ranks posts by paid_members', async function () {
-            await _createFreeSignup('post3');
-            await _createPaidSignup('post1', 600);
-            await _createPaidConversion('post1', 'post2', 500);
-            await _createPaidConversion('post4', 'post2', 700);
+            await _createFreeSignup('post3', 'referrer_3');
+            await _createPaidSignup('post1', 600, 'referrer_1');
+            await _createPaidConversion('post1', 'post2', 500, 'referrer_1');
+            await _createPaidConversion('post4', 'post2', 700, 'referrer_4');
 
             const result = await service.getTopPosts({order: 'paid_members desc'});
 
@@ -246,10 +302,10 @@ describe('PostsStatsService', function () {
         });
 
         it('correctly ranks posts by mrr', async function () {
-            await _createFreeSignup('post3');
-            await _createPaidSignup('post1', 600);
-            await _createPaidConversion('post1', 'post2', 500);
-            await _createPaidConversion('post4', 'post2', 700);
+            await _createFreeSignup('post3', 'referrer_3');
+            await _createPaidSignup('post1', 600, 'referrer_1');
+            await _createPaidConversion('post1', 'post2', 500, 'referrer_1');
+            await _createPaidConversion('post4', 'post2', 700, 'referrer_4');
 
             const result = await service.getTopPosts({order: 'mrr desc'});
 
@@ -280,8 +336,8 @@ describe('PostsStatsService', function () {
             const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
 
             // Create events at different dates
-            await _createFreeSignupEvent('post1', 'member_past', tenDaysAgo);
-            await _createFreeSignupEvent('post2', 'member_future', thirtyDaysAgo);
+            await _createFreeSignupEvent('post1', 'member_past', 'referrer_past', tenDaysAgo);
+            await _createFreeSignupEvent('post2', 'member_future', 'referrer_future', thirtyDaysAgo);
 
             const lastFifteenDaysResult = await service.getTopPosts({
                 date_from: fifteenDaysAgo,
@@ -302,10 +358,10 @@ describe('PostsStatsService', function () {
         });
 
         it('respects the limit parameter', async function () {
-            await _createFreeSignup('post1');
-            await _createFreeSignup('post1');
-            await _createFreeSignup('post2');
-            await _createFreeSignup('post3');
+            await _createFreeSignup('post1', 'referrer_1');
+            await _createFreeSignup('post1', 'referrer_2');
+            await _createFreeSignup('post2', 'referrer_3');
+            await _createFreeSignup('post3', 'referrer_4');
 
             const result = await service.getTopPosts({
                 order: 'free_members desc',
@@ -318,6 +374,500 @@ describe('PostsStatsService', function () {
             // Verify that only the top 2 posts by free_members are returned
             assert.equal(result.data[0].post_id, 'post1');
             assert.equal(result.data[1].post_id, 'post2');
+        });
+    });
+
+    describe('getReferrersForPost', function () {
+        it('returns empty array when no events exist', async function () {
+            const result = await service.getReferrersForPost('post1');
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 0, 'Should return empty array when no events exist');
+        });
+
+        it('returns referrers for a post', async function () {
+            await _createFreeSignupEvent('post1', 'member_1', 'referrer_1', new Date());
+            await _createFreeSignupEvent('post1', 'member_2', 'referrer_2', new Date());
+            await _createFreeSignupEvent('post1', 'member_3', 'referrer_3', new Date());
+
+            const result = await service.getReferrersForPost('post1');
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 3, 'Should return 3 referrers');
+        });
+
+        it('correctly ranks referrers by free_members', async function () {
+            await _createFreeSignupEvent('post1', 'member_1_1', 'referrer_1');
+            await _createFreeSignupEvent('post1', 'member_1_2', 'referrer_1');
+            await _createPaidSignup('post1', 500, 'referrer_1', 'member_1_3');
+            await _createFreeSignupEvent('post1', 'member_2_1', 'referrer_2');
+            await _createPaidSignup('post1', 1000, 'referrer_3', 'member_3_1');
+            await _createPaidConversion('post1', 'post2', 500, 'referrer_4', 'member_4_1');
+
+            const result = await service.getReferrersForPost('post1', {order: 'free_members desc'});
+
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 4, 'Should return all 4 referrers for post1');
+
+            const expectedResults = [
+                {source: 'referrer_1', free_members: 2, paid_members: 1, mrr: 500, referrer_url: 'https://referrer_1'},
+                {source: 'referrer_2', free_members: 1, paid_members: 0, mrr: 0, referrer_url: 'https://referrer_2'},
+                {source: 'referrer_4', free_members: 1, paid_members: 0, mrr: 0, referrer_url: 'https://referrer_4'},
+                {source: 'referrer_3', free_members: 0, paid_members: 1, mrr: 1000, referrer_url: 'https://referrer_3'}
+            ];
+
+            const sortFn = (a, b) => {
+                if (b.free_members !== a.free_members) {
+                    return b.free_members - a.free_members;
+                }
+                return (a.source || '').localeCompare(b.source || '');
+            };
+
+            const sortedActual = result.data.sort(sortFn);
+            const sortedExpected = expectedResults.sort(sortFn);
+
+            assert.deepEqual(sortedActual, sortedExpected, 'Results should match expected order and counts for free_members desc');
+        });
+
+        it('correctly ranks referrers by paid_members', async function () {
+            await _createPaidSignup('post1', 500, 'referrer_1', 'member_1_1');
+            await _createPaidSignup('post1', 600, 'referrer_1', 'member_1_2');
+            await _createPaidConversion('post2', 'post1', 700, 'referrer_2', 'member_2_1');
+            await _createFreeSignupEvent('post1', 'member_3_1', 'referrer_3');
+            await _createPaidConversion('post1', 'post2', 800, 'referrer_4', 'member_4_1');
+
+            const result = await service.getReferrersForPost('post1', {order: 'paid_members desc'});
+
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 4, 'Should return all 4 referrers for post1');
+
+            const expectedResults = [
+                {source: 'referrer_1', free_members: 0, paid_members: 2, mrr: 1100, referrer_url: 'https://referrer_1'},
+                {source: 'referrer_2', free_members: 0, paid_members: 1, mrr: 700, referrer_url: 'https://referrer_2'},
+                {source: 'referrer_3', free_members: 1, paid_members: 0, mrr: 0, referrer_url: 'https://referrer_3'},
+                {source: 'referrer_4', free_members: 1, paid_members: 0, mrr: 0, referrer_url: 'https://referrer_4'}
+            ];
+
+            const sortFn = (a, b) => {
+                if (b.paid_members !== a.paid_members) {
+                    return b.paid_members - a.paid_members;
+                }
+                return (a.source || '').localeCompare(b.source || '');
+            };
+
+            const sortedActual = result.data.sort(sortFn);
+            const sortedExpected = expectedResults.sort(sortFn);
+
+            assert.deepEqual(sortedActual, sortedExpected, 'Results should match expected order and counts for paid_members desc');
+        });
+
+        it('correctly ranks referrers by mrr', async function () {
+            await _createPaidSignup('post1', 500, 'referrer_1', 'member_1_1');
+            await _createPaidSignup('post1', 600, 'referrer_1', 'member_1_2');
+            await _createPaidConversion('post2', 'post1', 1200, 'referrer_2', 'member_2_1');
+            await _createFreeSignupEvent('post1', 'member_3_1', 'referrer_3');
+            await _createPaidConversion('post1', 'post2', 800, 'referrer_4', 'member_4_1');
+
+            const result = await service.getReferrersForPost('post1', {order: 'mrr desc'});
+
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 4, 'Should return all 4 referrers for post1');
+
+            const expectedResults = [
+                {source: 'referrer_2', free_members: 0, paid_members: 1, mrr: 1200, referrer_url: 'https://referrer_2'},
+                {source: 'referrer_1', free_members: 0, paid_members: 2, mrr: 1100, referrer_url: 'https://referrer_1'},
+                {source: 'referrer_3', free_members: 1, paid_members: 0, mrr: 0, referrer_url: 'https://referrer_3'},
+                {source: 'referrer_4', free_members: 1, paid_members: 0, mrr: 0, referrer_url: 'https://referrer_4'}
+            ];
+
+            const sortFn = (a, b) => {
+                if (b.mrr !== a.mrr) {
+                    return b.mrr - a.mrr;
+                }
+                return (a.source || '').localeCompare(b.source || '');
+            };
+
+            const sortedActual = result.data.sort(sortFn);
+            const sortedExpected = expectedResults.sort(sortFn);
+
+            assert.deepEqual(sortedActual, sortedExpected, 'Results should match expected order and counts for mrr desc');
+        });
+
+        it('properly filters by date range', async function () {
+            const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
+            const fifteenDaysAgo = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+            const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+            const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+
+            // Create events at different dates
+            await _createFreeSignupEvent('post1', 'member_past', 'referrer_past', tenDaysAgo);
+            await _createFreeSignupEvent('post1', 'member_future', 'referrer_future', thirtyDaysAgo);
+
+            const lastFifteenDaysResult = await service.getReferrersForPost('post1', {
+                date_from: fifteenDaysAgo,
+                date_to: new Date()
+            });
+
+            // Make sure we have the result for referrer_past
+            const pastsResult = lastFifteenDaysResult.data.find(r => r.source === 'referrer_past');
+            assert.ok(pastsResult, 'Should have results for referrer_past');
+            assert.equal(pastsResult.free_members, 1, 'Recent referrer should have 1 free member');
+
+            // Test filtering to include both dates
+            const lastThirtyDaysResult = await service.getReferrersForPost('post1', {
+                date_from: sixtyDaysAgo,
+                date_to: new Date()
+            });
+
+            // Make sure we have results for both referrers
+            const pastResult = lastThirtyDaysResult.data.find(r => r.source === 'referrer_past');
+            const futureResult = lastThirtyDaysResult.data.find(r => r.source === 'referrer_future');
+            
+            assert.ok(pastResult, 'Should have results for referrer_past');
+            assert.equal(pastResult.free_members, 1, 'Recent referrer should have 1 free member');
+            
+            assert.ok(futureResult, 'Should have results for referrer_future');
+            assert.equal(futureResult.free_members, 1, 'Older referrer should have 1 free member');
+        });
+
+        it('respects the limit parameter', async function () {
+            await _createFreeSignupEvent('post1', 'member_1', 'referrer_1', new Date());
+            await _createFreeSignupEvent('post1', 'member_2', 'referrer_2', new Date());
+            await _createFreeSignupEvent('post1', 'member_3', 'referrer_3', new Date());
+
+            const result = await service.getReferrersForPost('post1', {
+                order: 'free_members desc',
+                limit: 2
+            });
+
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 2, 'Should return only 2 referrers');
+            
+            // All referrers have 1 free member, so we just check that we got 2 out of the 3 possible sources
+            const validSources = ['referrer_1', 'referrer_2', 'referrer_3'];
+            const returnedSources = result.data.map(item => item.source);
+            
+            // Both returned sources should be from our valid sources list
+            assert.equal(returnedSources.every(source => validSources.includes(source)), true, 
+                'All returned sources should be from our test data');
+                
+            // We should have exactly 2 different sources
+            assert.equal(new Set(returnedSources).size, 2, 'Should return 2 different sources');
+        });
+    });
+
+    describe('getGrowthStatsForPost', function () {
+        it('returns growth stats for a post', async function () {
+            await _createFreeSignup('post1', 'referrer_1');
+            await _createPaidSignup('post1', 500, 'referrer_1');
+            await _createPaidConversion('post1', 'post2', 500, 'referrer_1');
+
+            const result = await service.getGrowthStatsForPost('post1');
+
+            const expectedResults = [
+                {post_id: 'post1', free_members: 2, paid_members: 1, mrr: 500}
+            ];
+
+            assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
+        });
+    });
+
+    describe('getLatestPostStats', function () {
+        it('returns null when no published posts exist', async function () {
+            await db('posts').truncate();
+            const result = await service.getLatestPostStats();
+            assert.deepEqual(result, {data: []});
+        });
+
+        it('returns latest published post with zero stats when no events exist', async function () {
+            await db('posts').truncate();
+            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
+            await _createPostWithDetails('latest_post', 'Latest Post', 'published', {
+                published_at: publishedAt,
+                feature_image: 'https://example.com/image.jpg'
+            });
+
+            const result = await service.getLatestPostStats();
+            const stats = result.data[0];
+            
+            assert.equal(stats.id, 'latest_post');
+            assert.equal(stats.title, 'Latest Post');
+            assert.equal(stats.slug, 'latest-post-latest_post');
+            assert.equal(stats.feature_image, 'https://example.com/image.jpg');
+            assert.equal(new Date(stats.published_at).toISOString(), publishedAt.toISOString());
+            assert.equal(stats.recipient_count, null);
+            assert.equal(stats.opened_count, null);
+            assert.equal(stats.open_rate, null);
+            assert.equal(stats.member_delta, 0);
+            assert.equal(stats.visitors, 0);
+        });
+
+        it('returns latest published post with email stats', async function () {
+            await db('posts').truncate();
+            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
+            await _createPostWithDetails('latest_post', 'Latest Post', 'published', {
+                published_at: publishedAt
+            });
+            await _createEmailStats('latest_post', 100, 50);
+
+            const result = await service.getLatestPostStats();
+            const stats = result.data[0];
+            
+            assert.equal(stats.id, 'latest_post');
+            assert.equal(stats.title, 'Latest Post');
+            assert.equal(stats.slug, 'latest-post-latest_post');
+            assert.equal(stats.feature_image, null);
+            assert.equal(new Date(stats.published_at).toISOString(), publishedAt.toISOString());
+            assert.equal(stats.recipient_count, 100);
+            assert.equal(stats.opened_count, 50);
+            assert.equal(stats.open_rate, 50);
+            assert.equal(stats.member_delta, 0);
+            assert.equal(stats.visitors, 0);
+        });
+
+        it('returns latest published post with member stats', async function () {
+            await db('posts').truncate();
+            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
+            await _createPostWithDetails('latest_post', 'Latest Post', 'published', {
+                published_at: publishedAt
+            });
+            await _createFreeSignup('latest_post', 'twitter');
+            await _createFreeSignup('latest_post', 'facebook');
+            await _createPaidSignup('latest_post', 1000, 'google');
+
+            const result = await service.getLatestPostStats();
+            const stats = result.data[0];
+            
+            assert.equal(stats.id, 'latest_post');
+            assert.equal(stats.title, 'Latest Post');
+            assert.equal(stats.slug, 'latest-post-latest_post');
+            assert.equal(stats.feature_image, null);
+            assert.equal(new Date(stats.published_at).toISOString(), publishedAt.toISOString());
+            assert.equal(stats.recipient_count, null);
+            assert.equal(stats.opened_count, null);
+            assert.equal(stats.open_rate, null);
+            assert.equal(stats.member_delta, 3);
+            assert.equal(stats.visitors, 0);
+        });
+
+        it('returns latest published post with all stats', async function () {
+            await db('posts').truncate();
+            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
+            await _createPostWithDetails('latest_post', 'Latest Post', 'published', {
+                published_at: publishedAt,
+                feature_image: 'https://example.com/image.jpg'
+            });
+            await _createEmailStats('latest_post', 100, 50);
+            await _createFreeSignup('latest_post', 'twitter');
+            await _createFreeSignup('latest_post', 'facebook');
+            await _createPaidSignup('latest_post', 1000, 'google');
+
+            const result = await service.getLatestPostStats();
+            const stats = result.data[0];
+            
+            assert.equal(stats.id, 'latest_post');
+            assert.equal(stats.title, 'Latest Post');
+            assert.equal(stats.slug, 'latest-post-latest_post');
+            assert.equal(stats.feature_image, 'https://example.com/image.jpg');
+            assert.equal(new Date(stats.published_at).toISOString(), publishedAt.toISOString());
+            assert.equal(stats.recipient_count, 100);
+            assert.equal(stats.opened_count, 50);
+            assert.equal(stats.open_rate, 50);
+            assert.equal(stats.member_delta, 3);
+            assert.equal(stats.visitors, 0);
+        });
+
+        it('ignores draft posts when finding latest post', async function () {
+            await db('posts').truncate();
+            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
+            const draftAt = new Date('2025-01-02T00:00:00.000Z');
+            
+            await _createPostWithDetails('published_post', 'Published Post', 'published', {
+                published_at: publishedAt
+            });
+            await _createPostWithDetails('draft_post', 'Draft Post', 'draft', {
+                published_at: draftAt
+            });
+
+            const result = await service.getLatestPostStats();
+            assert.equal(result.data[0].id, 'published_post');
+        });
+
+        it('returns latest post by published_at date', async function () {
+            await db('posts').truncate();
+            const olderDate = new Date('2025-01-01T00:00:00.000Z');
+            const newerDate = new Date('2025-01-02T00:00:00.000Z');
+            
+            await _createPostWithDetails('older_post', 'Older Post', 'published', {
+                published_at: olderDate
+            });
+            await _createPostWithDetails('newer_post', 'Newer Post', 'published', {
+                published_at: newerDate
+            });
+
+            const result = await service.getLatestPostStats();
+            assert.equal(result.data[0].id, 'newer_post');
+        });
+    });
+
+    describe('getTopPostsViews', function () {
+        it('returns empty array when no Tinybird client exists', async function () {
+            service = new PostsStatsService({knex: db}); // No Tinybird client
+            const result = await service.getTopPostsViews({
+                date_from: '2025-01-01',
+                date_to: '2025-01-31',
+                timezone: 'UTC'
+            });
+            assert.deepEqual(result, []);
+        });
+
+        it('returns empty array when no views data exists', async function () {
+            const mockTinybirdClient = {
+                fetch: (endpoint) => {
+                    if (endpoint === 'api_top_pages') {
+                        return Promise.resolve([]);
+                    }
+                    return Promise.resolve([]);
+                }
+            };
+            service = new PostsStatsService({knex: db, tinybirdClient: mockTinybirdClient});
+
+            const result = await service.getTopPostsViews({
+                date_from: '2025-01-01',
+                date_to: '2025-01-31',
+                timezone: 'UTC'
+            });
+
+            assert.deepEqual(result, []);
+        });
+
+        it('returns empty array when views exist but no matching posts found', async function () {
+            const mockTinybirdClient = {
+                fetch: (endpoint) => {
+                    if (endpoint === 'api_top_pages') {
+                        return Promise.resolve([
+                            {post_uuid: 'unknown_uuid', visits: 100}
+                        ]);
+                    }
+                    return Promise.resolve([]);
+                }
+            };
+            service = new PostsStatsService({knex: db, tinybirdClient: mockTinybirdClient});
+
+            const result = await service.getTopPostsViews({
+                date_from: '2025-01-01',
+                date_to: '2025-01-31',
+                timezone: 'UTC'
+            });
+
+            assert.deepEqual(result, []);
+        });
+
+        it('returns correct stats when views and posts exist', async function () {
+            // Create posts with UUIDs
+            await db('posts').truncate();
+            await _createPostWithDetails('post1', 'Post 1', 'published', {
+                uuid: 'uuid1',
+                published_at: new Date('2025-01-15')
+            });
+            await _createPostWithDetails('post2', 'Post 2', 'published', {
+                uuid: 'uuid2',
+                published_at: new Date('2025-01-16')
+            });
+
+            // Add email stats
+            await _createEmailStats('post1', 100, 50);
+            await _createEmailStats('post2', 200, 150);
+
+            const mockTinybirdClient = {
+                fetch: (endpoint) => {
+                    if (endpoint === 'api_top_pages') {
+                        return Promise.resolve([
+                            {post_uuid: 'uuid1', visits: 1000},
+                            {post_uuid: 'uuid2', visits: 500}
+                        ]);
+                    }
+                    return Promise.resolve([]);
+                }
+            };
+
+            service = new PostsStatsService({knex: db, tinybirdClient: mockTinybirdClient});
+
+            // Verify database state
+            const dbState = await _verifyDatabaseState();
+            assert.equal(dbState.posts.length, 2, 'Should have 2 posts in database');
+            assert.equal(dbState.emails.length, 2, 'Should have 2 email records in database');
+            assert.equal(dbState.posts[0].uuid, 'uuid1', 'First post should have uuid1');
+            assert.equal(dbState.posts[1].uuid, 'uuid2', 'Second post should have uuid2');
+
+            const result = await service.getTopPostsViews({
+                date_from: '2025-01-01',
+                date_to: '2025-01-31',
+                timezone: 'UTC'
+            });
+
+            const expected = [
+                {
+                    post_id: 'post1',
+                    title: 'Post 1',
+                    published_at: new Date('2025-01-15').getTime(),
+                    views: 1000,
+                    open_rate: 50,
+                    members: 100
+                },
+                {
+                    post_id: 'post2',
+                    title: 'Post 2',
+                    published_at: new Date('2025-01-16').getTime(),
+                    views: 500,
+                    open_rate: 75,
+                    members: 200
+                }
+            ];
+
+            // Sort both arrays by post_id to ensure consistent ordering
+            const sortedResult = result.sort((a, b) => a.post_id.localeCompare(b.post_id));
+            const sortedExpected = expected.sort((a, b) => a.post_id.localeCompare(b.post_id));
+
+            assert.deepEqual(sortedResult, sortedExpected);
+        });
+
+        it('handles errors gracefully', async function () {
+            const mockTinybirdClient = {
+                fetch: () => Promise.reject(new Error('Tinybird error'))
+            };
+            service = new PostsStatsService({knex: db, tinybirdClient: mockTinybirdClient});
+
+            const result = await service.getTopPostsViews({
+                date_from: '2025-01-01',
+                date_to: '2025-01-31',
+                timezone: 'UTC'
+            });
+
+            assert.deepEqual(result, []);
+        });
+
+        it('passes correct parameters to Tinybird client', async function () {
+            let passedOptions = null;
+            const mockTinybirdClient = {
+                fetch: (endpoint, options) => {
+                    passedOptions = options;
+                    return Promise.resolve([]);
+                }
+            };
+            service = new PostsStatsService({knex: db, tinybirdClient: mockTinybirdClient});
+
+            await service.getTopPostsViews({
+                date_from: '2025-01-01',
+                date_to: '2025-01-31',
+                timezone: 'America/New_York',
+                limit: 10
+            });
+
+            assert.deepEqual(passedOptions, {
+                dateFrom: '2025-01-01',
+                dateTo: '2025-01-31',
+                timezone: 'America/New_York',
+                limit: 10
+            });
         });
     });
 });

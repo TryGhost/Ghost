@@ -21,7 +21,7 @@ module.exports = {
         colors: {
             transparent: 'transparent',
             current: 'currentColor',
-            accent: 'var(--accent-color, #ff0095)',
+            ghostaccent: 'var(--accent-color, #ff0095)',
             white: '#FFF',
             black: '#15171A',
 
@@ -102,6 +102,13 @@ module.exports = {
                 600: '#DC091E',
                 DEFAULT: '#F50B23'
             },
+            orange: {
+                100: '#FFEDD5',
+                400: '#FB923C',
+                500: '#F97316',
+                600: '#EA580C',
+                DEFAULT: '#F97316'
+            },
             yellow: {
                 100: '#FFF1D6',
                 400: '#FFC247',
@@ -142,7 +149,7 @@ module.exports = {
         },
         letterSpacing: {
             tightest: '-.05em',
-            tighter: '-.02em',
+            tighter: '-.025em',
             tight: '-.01em',
             normal: '0',
             wide: '.01em',

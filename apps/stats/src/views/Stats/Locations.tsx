@@ -1,22 +1,40 @@
 import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import DateRangeSelect from './components/DateRangeSelect';
-import React, {useState} from 'react';
+import React, {useMemo, useState} from 'react';
+import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, H1, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, cn, formatNumber, formatQueryDate} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, Flag, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, cn, formatNumber, formatQueryDate, getRangeDates, useSimplePagination} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
-import {getCountryFlag, getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
-import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
+import {getPeriodText} from '@src/utils/chart-helpers';
+import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
 countries.registerLocale(enLocale);
 const getCountryName = (label: string) => {
     return STATS_LABEL_MAPPINGS[label as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(label, 'en') || 'Unknown';
+};
+
+// Normalize country code for flag display
+const normalizeCountryCode = (code: string): string => {
+    // Common mappings for countries that might come through with full names
+    const mappings: Record<string, string> = {
+        'UNITED STATES': 'US',
+        'UNITED STATES OF AMERICA': 'US',
+        USA: 'US',
+        'UNITED KINGDOM': 'GB',
+        UK: 'GB',
+        'GREAT BRITAIN': 'GB',
+        NETHERLANDS: 'NL'
+    };
+
+    const upperCode = code.toUpperCase();
+    return mappings[upperCode] || (code.length > 2 ? code.substring(0, 2) : code);
 };
 
 interface TooltipData {
@@ -32,6 +50,7 @@ const Locations:React.FC = () => {
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
+    const ITEMS_PER_PAGE = 10;
 
     const params = {
         site_uuid: statsConfig?.id || '',
@@ -46,6 +65,22 @@ const Locations:React.FC = () => {
         token: getToken(statsConfig),
         params
     });
+
+    // Move "NULL" (uknown) location as the last item in the list
+    const sortedData = useMemo(() => {
+        if (!data) {
+            return null;
+        }
+        return [...data].sort((a, b) => {
+            if (a.location === 'ᴺᵁᴸᴸ') {
+                return 1;
+            }
+            if (b.location === 'ᴺᵁᴸᴸ') {
+                return -1;
+            }
+            return 0;
+        });
+    }, [data]);
 
     const isLoading = isConfigLoading || loading;
 
@@ -89,7 +124,7 @@ const Locations:React.FC = () => {
         }, {} as Record<string, TransformedLocationData>);
     };
 
-    const transformedData = transformData(data as LocationData[] | null);
+    const transformedData = transformData(sortedData as LocationData[] | null);
 
     const getLocationClassName = (location: {id: string, name: string}) => {
         const countryCode = location.id.toUpperCase();
@@ -136,14 +171,13 @@ const Locations:React.FC = () => {
     const handleLocationMouseOver = (e: React.MouseEvent<SVGPathElement>) => {
         const target = e.target as SVGPathElement;
         const countryCode = target.getAttribute('id')?.toUpperCase() || '';
-        const countryName = target.getAttribute('name') || '';
         const countryData = transformedData[countryCode];
 
         target.style.opacity = '0.75';
 
         setTooltipData({
             countryCode,
-            countryName,
+            countryName: getCountryName(countryCode),
             visits: countryData ? Number(countryData.visits) : 0,
             x: e.clientX,
             y: e.clientY
@@ -156,79 +190,95 @@ const Locations:React.FC = () => {
         setTooltipData(null);
     };
 
+    const {
+        currentPage,
+        totalPages,
+        paginatedData: tableData,
+        nextPage,
+        previousPage,
+        hasNextPage,
+        hasPreviousPage
+    } = useSimplePagination({
+        data: sortedData,
+        itemsPerPage: ITEMS_PER_PAGE
+    });
+
     return (
         <StatsLayout>
-            <ViewHeader>
-                <H1>Locations</H1>
-                <ViewHeaderActions>
-                    <AudienceSelect />
-                    <DateRangeSelect />
-                </ViewHeaderActions>
-            </ViewHeader>
+            <StatsHeader>
+                <AudienceSelect />
+                <DateRangeSelect />
+            </StatsHeader>
             <StatsView data={data} isLoading={isLoading}>
-                <Card variant='plain'>
-                    <CardContent className='border-none pt-8'>
-                        <div className='svg-map-container relative mx-auto max-w-[680px] [&_.svg-map]:stroke-background'>
-                            <SVGMap
-                                locationClassName={getLocationClassName}
-                                map={World}
-                                onLocationMouseOut={handleLocationMouseOut}
-                                onLocationMouseOver={handleLocationMouseOver}
-                            />
-                            {tooltipData && (
-                                <div
-                                    className="pointer-events-none fixed z-50 min-w-[120px] rounded-lg border bg-background px-3 py-2 text-sm text-foreground shadow-lg transition-all duration-150 ease-in-out"
-                                    style={{
-                                        left: tooltipData.x + 10,
-                                        top: tooltipData.y + 10,
-                                        transform: 'translate3d(0, 0, 0)'
-                                    }}
-                                >
-                                    <div className="flex gap-1">
-                                        <span>{getCountryFlag(tooltipData.countryCode)}</span>
-                                        <span className="font-medium">{tooltipData.countryName}</span>
-                                    </div>
-                                    <div className='flex grow items-center justify-between gap-3'>
-                                        <div className="text-sm text-muted-foreground">Visitors</div>
-                                        <div className="font-mono font-medium">{formatNumber(tooltipData.visits)}</div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
+                <Card className='p-0'>
+                    <CardHeader className='border-b'>
                         <CardTitle>Top Locations</CardTitle>
                         <CardDescription>A geographic breakdown of your readers {getPeriodText(range)}</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        {isLoading ? 'Loading' :
-                            <>
+                    <CardContent className='p-0'>
+                        <div className='grid grid-cols-3 items-stretch'>
+                            <div className='svg-map-container relative col-span-2 mx-auto w-full max-w-[680px] px-8 py-12 [&_.svg-map]:stroke-background'>
+                                <SVGMap
+                                    locationClassName={getLocationClassName}
+                                    map={World}
+                                    onLocationMouseOut={handleLocationMouseOut}
+                                    onLocationMouseOver={handleLocationMouseOver}
+                                />
+                                {tooltipData && (
+                                    <div
+                                        className="pointer-events-none fixed z-50 min-w-[120px] rounded-lg border bg-background px-3 py-2 text-sm text-foreground shadow-lg transition-all duration-150 ease-in-out"
+                                        style={{
+                                            left: tooltipData.x + 10,
+                                            top: tooltipData.y + 10,
+                                            transform: 'translate3d(0, 0, 0)'
+                                        }}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <Flag countryCode={`${normalizeCountryCode(tooltipData.countryCode)}`} height='12px' width='20px' />
+                                            <span className="font-medium">{tooltipData.countryName}</span>
+                                        </div>
+                                        <div className='mt-1 flex grow items-center justify-between gap-3'>
+                                            <div className="text-sm text-muted-foreground">Visitors</div>
+                                            <div className="font-mono font-medium">{formatNumber(tooltipData.visits)}</div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            <div className='border-l px-6'>
+                                <div className='flex items-center justify-between py-4 text-sm'>
+                                    <div className='font-medium text-muted-foreground'>Country</div>
+                                    <div className='text-right font-medium text-muted-foreground'>Visitors</div>
+                                </div>
                                 <Separator />
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className='w-[80%]'>Country</TableHead>
-                                            <TableHead className='w-[20%] text-right'>Visitors</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {data?.map((row) => {
-                                            const countryName = getCountryName(`${row.location}`) || 'Unknown';
-                                            return (
-                                                <TableRow key={row.location || 'unknown'}>
-                                                    <TableCell className="font-medium">
-                                                        <span title={countryName || 'Unknown'}>{getCountryFlag(`${row.location}`)} {countryName}</span>
-                                                    </TableCell>
-                                                    <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
-                                                </TableRow>
-                                            );
-                                        })}
-                                    </TableBody>
-                                </Table>
-                            </>
-                        }
+                                <div className='py-2'>
+                                    {tableData?.map((row) => {
+                                        const countryName = getCountryName(`${row.location}`) || 'Unknown';
+                                        return (
+                                            <div key={row.location || 'unknown'} className='flex items-center justify-between text-sm'>
+                                                <div className='flex items-center gap-3 py-2.5 font-medium'>
+                                                    <Flag countryCode={`${normalizeCountryCode(row.location as string)}`} />
+                                                    {countryName}
+                                                </div>
+                                                <div className='py-2.5 text-right font-mono'>{formatNumber(Number(row.visits))}</div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <SimplePagination>
+                                    <SimplePaginationPages currentPage={currentPage.toString()} totalPages={totalPages.toString()} />
+                                    <SimplePaginationNavigation>
+                                        <SimplePaginationPreviousButton
+                                            disabled={!hasPreviousPage}
+                                            onClick={previousPage}
+                                        />
+                                        <SimplePaginationNextButton
+                                            disabled={!hasNextPage}
+                                            onClick={nextPage}
+                                        />
+                                    </SimplePaginationNavigation>
+                                </SimplePagination>
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
             </StatsView>

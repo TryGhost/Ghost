@@ -79,16 +79,16 @@ function createApiInstance(config) {
                 const siteTitle = settingsCache.get('title');
                 switch (type) {
                 case 'subscribe':
-                    return `📫 ${t(`Confirm your subscription to {{siteTitle}}`, {siteTitle, interpolation: {escapeValue: false}})}`;
+                    return `📫 ${t(`Confirm your subscription to {siteTitle}`, {siteTitle, interpolation: {escapeValue: false}})}`;
                 case 'signup':
-                    return `🙌 ${t(`Complete your sign up to {{siteTitle}}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
+                    return `🙌 ${t(`Complete your sign up to {siteTitle}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
                 case 'signup-paid':
-                    return `🙌 ${t(`Thank you for signing up to {{siteTitle}}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
+                    return `🙌 ${t(`Thank you for signing up to {siteTitle}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
                 case 'updateEmail':
-                    return `📫 ${t(`Confirm your email update for {{siteTitle}}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
+                    return `📫 ${t(`Confirm your email update for {siteTitle}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
                 case 'signin':
                 default:
-                    return `🔑 ${t(`Secure sign in link for {{siteTitle}}`, {siteTitle, interpolation: {escapeValue: false}})}`;
+                    return `🔑 ${t(`Secure sign in link for {siteTitle}`, {siteTitle, interpolation: {escapeValue: false}})}`;
                 }
             },
             getText(url, type, email) {
@@ -98,7 +98,7 @@ function createApiInstance(config) {
                     return trimLeadingWhitespace`
                         ${t(`Hey there,`)}
 
-                        ${t('You\'re one tap away from subscribing to {{siteTitle}} — please confirm your email address with this link:', {siteTitle, interpolation: {escapeValue: false}})}
+                        ${t('You\'re one tap away from subscribing to {siteTitle} — please confirm your email address with this link:', {siteTitle, interpolation: {escapeValue: false}})}
 
                         ${url}
 
@@ -108,14 +108,14 @@ function createApiInstance(config) {
 
                         ---
 
-                        ${t('Sent to {{email}}', {email})}
+                        ${t('Sent to {email}', {email})}
                         ${t('If you did not make this request, you can simply delete this message.')} ${t('You will not be subscribed.')}
                         `;
                 case 'signup':
                     return trimLeadingWhitespace`
                         ${t(`Hey there,`)}
 
-                        ${t('Tap the link below to complete the signup process for {{siteTitle}}, and be automatically signed in:', {siteTitle, interpolation: {escapeValue: false}})}
+                        ${t('Tap the link below to complete the signup process for {siteTitle}, and be automatically signed in:', {siteTitle, interpolation: {escapeValue: false}})}
 
                         ${url}
 
@@ -125,14 +125,14 @@ function createApiInstance(config) {
 
                         ---
 
-                        ${t('Sent to {{email}}', {email})}
+                        ${t('Sent to {email}', {email})}
                         ${t('If you did not make this request, you can simply delete this message.')} ${t('You will not be signed up, and no account will be created for you.')}
                         `;
                 case 'signup-paid':
                     return trimLeadingWhitespace`
                         ${t(`Hey there,`)}
 
-                        ${t('Thank you for subscribing to {{siteTitle}}. Tap the link below to be automatically signed in:', {siteTitle, interpolation: {escapeValue: false}})}
+                        ${t('Thank you for subscribing to {siteTitle}. Tap the link below to be automatically signed in:', {siteTitle, interpolation: {escapeValue: false}})}
 
                         ${url}
 
@@ -142,8 +142,8 @@ function createApiInstance(config) {
 
                         ---
 
-                        ${t('Sent to {{email}}', {email})}
-                        ${t('Thank you for subscribing to {{siteTitle}}!', {siteTitle, interpolation: {escapeValue: false}})}
+                        ${t('Sent to {email}', {email})}
+                        ${t('Thank you for subscribing to {siteTitle}!', {siteTitle, interpolation: {escapeValue: false}})}
                         `;
                 case 'updateEmail':
                     return trimLeadingWhitespace`
@@ -157,7 +157,7 @@ function createApiInstance(config) {
 
                         ---
 
-                        ${t('Sent to {{email}}', {email})}
+                        ${t('Sent to {email}', {email})}
                         ${t('If you did not make this request, you can simply delete this message.')} ${t('This email address will not be used.')}
                         `;
                 case 'signin':
@@ -165,7 +165,7 @@ function createApiInstance(config) {
                     return trimLeadingWhitespace`
                         ${t(`Hey there,`)}
 
-                        ${t('Welcome back! Use this link to securely sign in to your {{siteTitle}} account:', {siteTitle, interpolation: {escapeValue: false}})}
+                        ${t('Welcome back! Use this link to securely sign in to your {siteTitle} account:', {siteTitle, interpolation: {escapeValue: false}})}
 
                         ${url}
 
@@ -175,7 +175,7 @@ function createApiInstance(config) {
 
                         ---
 
-                        ${t('Sent to {{email}}', {email})}
+                        ${t('Sent to {email}', {email})}
                         ${t('If you did not make this request, you can safely ignore this email.')}
                         `;
                 }

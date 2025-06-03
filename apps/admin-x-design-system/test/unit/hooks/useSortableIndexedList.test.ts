@@ -1,9 +1,10 @@
+import {describe, it} from 'vitest';
 import {expect} from 'chai';
 import {renderHook, act} from '@testing-library/react-hooks';
 import useSortableIndexedList from '../../../src/hooks/useSortableIndexedList';
 import sinon from 'sinon';
 
-describe('useSortableIndexedList', function () {
+describe('useSortableIndexedList', () => {
     // Mock initial items and blank item
     const initialItems = [{name: 'Item 1'}, {name: 'Item 2'}];
     const blankItem = {name: ''};
@@ -11,7 +12,7 @@ describe('useSortableIndexedList', function () {
     // Mock canAddNewItem function
     const canAddNewItem = (item: { name: string }) => !!item.name;
 
-    it('should initialize with the given items', function () {
+    it('should initialize with the given items', () => {
         const setItems = sinon.spy();
 
         const {result} = renderHook(() => useSortableIndexedList({
@@ -26,7 +27,7 @@ describe('useSortableIndexedList', function () {
         expect(result.current.items).to.deep.equal(initialItems.map((item, index) => ({item, id: index.toString()})));
     });
 
-    it('should add a new item', function () {
+    it('should add a new item', () => {
         let items = initialItems;
         const setItems = (newItems: any[]) => {
             items = newItems;
@@ -49,7 +50,7 @@ describe('useSortableIndexedList', function () {
         expect(items).to.deep.equal([...initialItems, {name: 'New Item'}]);
     });
 
-    it('should update an item', function () {
+    it('should update an item', () => {
         let items = initialItems;
         const setItems = (newItems: any[]) => {
             items = newItems;
@@ -71,7 +72,7 @@ describe('useSortableIndexedList', function () {
         expect(items[0]).to.deep.equal({name: 'Updated Item 1'});
     });
 
-    it('should remove an item', function () {
+    it('should remove an item', () => {
         let items = initialItems;
         const setItems = (newItems: any[]) => {
             items = newItems;
@@ -93,7 +94,7 @@ describe('useSortableIndexedList', function () {
         expect(items).to.deep.equal([initialItems[1]]);
     });
 
-    it('should move an item', function () {
+    it('should move an item', () => {
         let items = initialItems;
         const setItems = (newItems: any[]) => {
             items = newItems;
@@ -115,7 +116,7 @@ describe('useSortableIndexedList', function () {
         expect(items).to.deep.equal([initialItems[1], initialItems[0]]);
     });
 
-    it('should not setItems for deeply equal items regardless of property order', function () {
+    it('should not setItems for deeply equal items regardless of property order', () => {
         const setItems = sinon.spy();
         const initialItem = [{name: 'Item 1', url: 'http://example.com'}];
         const blankItem1 = {name: '', url: ''};

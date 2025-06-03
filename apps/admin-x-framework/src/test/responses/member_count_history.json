@@ -1,0 +1,51 @@
+{
+    "stats": [
+        {
+            "date": "2024-01-01",
+            "paid": 100,
+            "free": 500,
+            "comped": 10,
+            "paid_subscribed": 5,
+            "paid_canceled": 2
+        },
+        {
+            "date": "2024-01-02",
+            "paid": 103,
+            "free": 510,
+            "comped": 10,
+            "paid_subscribed": 3,
+            "paid_canceled": 0
+        },
+        {
+            "date": "2024-01-03",
+            "paid": 105,
+            "free": 520,
+            "comped": 11,
+            "paid_subscribed": 2,
+            "paid_canceled": 0
+        },
+        {
+            "date": "2024-01-04",
+            "paid": 108,
+            "free": 525,
+            "comped": 11,
+            "paid_subscribed": 3,
+            "paid_canceled": 0
+        },
+        {
+            "date": "2024-01-05",
+            "paid": 110,
+            "free": 530,
+            "comped": 12,
+            "paid_subscribed": 2,
+            "paid_canceled": 0
+        }
+    ],
+    "meta": {
+        "totals": {
+            "paid": 110,
+            "free": 530,
+            "comped": 12
+        }
+    }
+} 

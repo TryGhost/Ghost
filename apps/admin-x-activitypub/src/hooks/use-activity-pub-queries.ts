@@ -6,6 +6,8 @@ import {
     ActivityPubCollectionResponse,
     FollowAccount,
     type GetAccountFollowsResponse,
+    type Notification,
+    type Post,
     type SearchResults
 } from '../api/activitypub';
 import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
@@ -20,7 +22,7 @@ import {
 import {exploreSites} from '@src/lib/explore-sites';
 import {formatPendingActivityContent, generatePendingActivity, generatePendingActivityId} from '../utils/pending-activity';
 import {mapPostToActivity} from '../utils/posts';
-import {showToast} from '@tryghost/admin-x-design-system';
+import {toast} from 'sonner';
 import {useCallback} from 'react';
 
 export type ActivityPubCollectionQueryResult<TData> = UseInfiniteQueryResult<ActivityPubCollectionResponse<TData>>;
@@ -72,6 +74,8 @@ const QUERY_KEYS = {
     postsByAccount: ['account_posts'],
     postsLikedByAccount: ['account_liked_posts'],
     notifications: (handle: string) => ['notifications', handle],
+    blockedAccounts: (handle: string) => ['blocked_accounts', handle],
+    blockedDomains: (handle: string) => ['blocked_domains', handle],
     post: (id: string) => ['post', id]
 };
 
@@ -156,6 +160,142 @@ function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: stri
     });
 }
 
+function updateNotificationsLikedCache(queryClient: QueryClient, handle: string, id: string, liked: boolean) {
+    const notificationQueryKey = QUERY_KEYS.notifications(handle);
+    queryClient.setQueriesData(
+        {queryKey: notificationQueryKey},
+        (current?: {pages?: {notifications?: Notification[]}[]}) => {
+            if (!current || !current.pages) {
+                return current;
+            }
+
+            try {
+                return {
+                    ...current,
+                    pages: current.pages.map((page) => {
+                        if (!page || !page.notifications) {
+                            return page;
+                        }
+
+                        return {
+                            ...page,
+                            notifications: page.notifications.map((notification) => {
+                                if (!notification || !notification.post) {
+                                    return notification;
+                                }
+
+                                if (notification.post.id === id) {
+                                    return {
+                                        ...notification,
+                                        post: {
+                                            ...notification.post,
+                                            likedByMe: liked
+                                        }
+                                    };
+                                }
+                                return notification;
+                            })
+                        };
+                    })
+                };
+            } catch (error) {
+                return current;
+            }
+        }
+    );
+}
+
+function updateNotificationsRepostCache(queryClient: QueryClient, handle: string, id: string, reposted: boolean) {
+    const notificationQueryKey = QUERY_KEYS.notifications(handle);
+    queryClient.setQueriesData(
+        {queryKey: notificationQueryKey},
+        (current?: {pages?: {notifications?: Notification[]}[]}) => {
+            if (!current || !current.pages) {
+                return current;
+            }
+
+            try {
+                return {
+                    ...current,
+                    pages: current.pages.map((page) => {
+                        if (!page || !page.notifications) {
+                            return page;
+                        }
+
+                        return {
+                            ...page,
+                            notifications: page.notifications.map((notification) => {
+                                if (!notification || !notification.post) {
+                                    return notification;
+                                }
+
+                                if (notification.post.id === id) {
+                                    return {
+                                        ...notification,
+                                        post: {
+                                            ...notification.post,
+                                            repostedByMe: reposted,
+                                            repostCount: Math.max(reposted ? notification.post.repostCount + 1 : notification.post.repostCount - 1, 0)
+                                        }
+                                    };
+                                }
+                                return notification;
+                            })
+                        };
+                    })
+                };
+            } catch (error) {
+                return current;
+            }
+        }
+    );
+}
+
+function updateNotificationsReplyCountCache(queryClient: QueryClient, handle: string, id: string, delta: number) {
+    const notificationQueryKey = QUERY_KEYS.notifications(handle);
+    queryClient.setQueriesData(
+        {queryKey: notificationQueryKey},
+        (current?: {pages?: {notifications?: Notification[]}[]}) => {
+            if (!current || !current.pages) {
+                return current;
+            }
+
+            try {
+                return {
+                    ...current,
+                    pages: current.pages.map((page) => {
+                        if (!page || !page.notifications) {
+                            return page;
+                        }
+
+                        return {
+                            ...page,
+                            notifications: page.notifications.map((notification) => {
+                                if (!notification || !notification.post) {
+                                    return notification;
+                                }
+
+                                if (notification.post.id === id) {
+                                    return {
+                                        ...notification,
+                                        post: {
+                                            ...notification.post,
+                                            replyCount: Math.max((notification.post.replyCount ?? 0) + delta, 0)
+                                        }
+                                    };
+                                }
+                                return notification;
+                            })
+                        };
+                    })
+                };
+            } catch (error) {
+                return current;
+            }
+        }
+    );
+}
+
 function updateReplyCountInCache(queryClient: QueryClient, id: string, delta: number) {
     const queryKeys = [
         QUERY_KEYS.feed,
@@ -215,6 +355,38 @@ function updateReplyCountInCache(queryClient: QueryClient, id: string, delta: nu
     });
 }
 
+export function useBlockedAccountsForUser(handle: string) {
+    return useInfiniteQuery({
+        queryKey: QUERY_KEYS.blockedAccounts(handle),
+        refetchOnMount: 'always',
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.getBlockedAccounts(pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+}
+
+export function useBlockedDomainsForUser(handle: string) {
+    return useInfiniteQuery({
+        queryKey: QUERY_KEYS.blockedDomains(handle),
+        refetchOnMount: 'always',
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.getBlockedDomains(pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+}
+
 export function useLikeMutationForUser(handle: string) {
     const queryClient = useQueryClient();
 
@@ -230,6 +402,7 @@ export function useLikeMutationForUser(handle: string) {
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, true);
             updateLikedCache(queryClient, QUERY_KEYS.profilePosts('index'), id, true);
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, true);
+            updateNotificationsLikedCache(queryClient, handle, id, true);
 
             // Update account liked count
             queryClient.setQueryData(QUERY_KEYS.account('index'), (currentAccount?: Account) => {
@@ -247,6 +420,7 @@ export function useLikeMutationForUser(handle: string) {
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
             updateLikedCache(queryClient, QUERY_KEYS.profilePosts('index'), id, false);
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
+            updateNotificationsLikedCache(queryClient, handle, id, false);
 
             // Update account liked count
             queryClient.setQueryData(QUERY_KEYS.account('index'), (currentAccount?: Account) => {
@@ -260,10 +434,8 @@ export function useLikeMutationForUser(handle: string) {
             });
 
             if (error.statusCode === 403) {
-                showToast({
-                    title: 'Action failed',
-                    message: 'This user has restricted who can interact with their account.',
-                    type: 'error'
+                toast.error('Action failed', {
+                    description: 'This user has restricted who can interact with their account.'
                 });
             }
         }
@@ -285,6 +457,7 @@ export function useUnlikeMutationForUser(handle: string) {
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
             updateLikedCache(queryClient, QUERY_KEYS.profilePosts('index'), id, false);
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
+            updateNotificationsLikedCache(queryClient, handle, id, false);
 
             // Update account liked count
             queryClient.setQueryData(QUERY_KEYS.account(handle === 'me' ? 'index' : handle), (currentAccount?: Account) => {
@@ -296,6 +469,68 @@ export function useUnlikeMutationForUser(handle: string) {
                     likedCount: Math.max(0, currentAccount.likedCount - 1)
                 };
             });
+        }
+    });
+}
+
+export function useBlockDomainMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(data: {url: string, handle?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.blockDomain(new URL(data.url));
+        },
+        onMutate: (data: {url: string, handle?: string}) => {
+            if (!data.handle) {
+                return;
+            }
+            queryClient.setQueryData(
+                QUERY_KEYS.account(handle),
+                (currentAccount?: Account) => {
+                    if (!currentAccount) {
+                        return currentAccount;
+                    }
+                    return {
+                        ...currentAccount,
+                        domainBlockedByMe: true,
+                        followedByMe: false,
+                        followsMe: false
+                    };
+                }
+            );
+        }
+    });
+}
+
+export function useUnblockDomainMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(data: {url: string, handle?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.unblockDomain(new URL(data.url));
+        },
+        onMutate: (data: {url: string, handle?: string}) => {
+            if (!data.handle) {
+                return;
+            }
+            queryClient.setQueryData(
+                QUERY_KEYS.account(handle),
+                (currentAccount?: Account) => {
+                    if (!currentAccount) {
+                        return currentAccount;
+                    }
+                    return {
+                        ...currentAccount,
+                        domainBlockedByMe: false
+                    };
+                }
+            );
         }
     });
 }
@@ -325,6 +560,8 @@ export function useBlockMutationForUser(handle: string) {
                     };
                 }
             );
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.feed});
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.inbox});
         }
     });
 }
@@ -400,15 +637,15 @@ export function useRepostMutationForUser(handle: string) {
         onMutate: (id) => {
             updateRepostCache(queryClient, QUERY_KEYS.feed, id, true);
             updateRepostCache(queryClient, QUERY_KEYS.inbox, id, true);
+            updateNotificationsRepostCache(queryClient, handle, id, true);
         },
         onError(error: {message: string, statusCode: number}, id) {
             updateRepostCache(queryClient, QUERY_KEYS.feed, id, false);
             updateRepostCache(queryClient, QUERY_KEYS.inbox, id, false);
+            updateNotificationsRepostCache(queryClient, handle, id, false);
             if (error.statusCode === 403) {
-                showToast({
-                    title: 'Action failed',
-                    message: 'This user has restricted who can interact with their account.',
-                    type: 'error'
+                toast.error('Action failed', {
+                    description: 'This user has restricted who can interact with their account.'
                 });
             }
         }
@@ -428,6 +665,7 @@ export function useDerepostMutationForUser(handle: string) {
         onMutate: (id) => {
             updateRepostCache(queryClient, QUERY_KEYS.feed, id, false);
             updateRepostCache(queryClient, QUERY_KEYS.inbox, id, false);
+            updateNotificationsRepostCache(queryClient, handle, id, false);
         }
     });
 }
@@ -672,10 +910,8 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
             onError();
 
             if (error.statusCode === 403) {
-                showToast({
-                    title: 'Action failed',
-                    message: 'This user has restricted who can interact with their account.',
-                    type: 'error'
+                toast.error('Action failed', {
+                    description: 'This user has restricted who can interact with their account.'
                 });
             }
         }
@@ -689,6 +925,7 @@ export function useSearchForUser(handle: string, query: string) {
     const searchQuery = useQuery({
         queryKey,
         enabled: query.length > 0,
+        refetchOnMount: 'always',
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
@@ -843,15 +1080,23 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
+            // Get more handles than we need initially, since some might be filtered out as blocked
+            const fetchLimit = Math.min(limit * 2, suggestedHandles.length);
+
             return Promise.allSettled(
                 suggestedHandles
                     .sort(() => Math.random() - 0.5)
-                    .slice(0, limit)
+                    .slice(0, fetchLimit)
                     .map(suggestedHandle => api.getAccount(suggestedHandle))
             ).then((results) => {
-                return results
+                const accounts = results
                     .filter((result): result is PromiseFulfilledResult<Account> => result.status === 'fulfilled')
-                    .map(result => result.value);
+                    .map(result => result.value)
+                    // Filter out blocked accounts
+                    .filter(account => !account.blockedByMe && !account.domainBlockedByMe);
+
+                // Return only the requested limit of accounts after filtering
+                return accounts.slice(0, limit);
             });
         }
     });
@@ -1117,6 +1362,9 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
             // Increment the reply count of the inReplyTo post in the feed
             updateReplyCountInCache(queryClient, inReplyTo, 1);
 
+            // Update reply count in notifications
+            updateNotificationsReplyCountCache(queryClient, handle, inReplyTo, 1);
+
             // We do not need to increment the reply count of the inReplyTo post
             // in the thread as this is handled locally in the ArticleModal component
 
@@ -1141,20 +1389,18 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
             // Decrement the reply count of the inReplyTo post in the feed
             updateReplyCountInCache(queryClient, variables.inReplyTo, -1);
 
+            // Update reply count in notifications
+            updateNotificationsReplyCountCache(queryClient, handle, variables.inReplyTo, -1);
+
             // We do not need to decrement the reply count of the inReplyTo post
             // in the thread as this is handled locally in the ArticleModal component
 
             if (error.statusCode === 403) {
-                return showToast({
-                    title: 'Action failed',
-                    message: 'This user has restricted who can interact with their account.',
-                    type: 'error'
+                return toast.error('Action failed', {
+                    description: 'This user has restricted who can interact with their account.'
                 });
             }
-            showToast({
-                message: 'An error occurred while sending your reply.',
-                type: 'error'
-            });
+            toast.error('An error occurred while sending your reply.');
         }
     });
 }
@@ -1190,16 +1436,15 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
 
             return {id};
         },
-        onSuccess: (activity: Activity, _variables, context) => {
-            if (activity.id === undefined) {
-                throw new Error('Activity returned from API has no id');
+        onSuccess: (post: Post, _variables, context) => {
+            if (post.id === undefined) {
+                throw new Error('Post returned from API has no id');
             }
+            const activity = mapPostToActivity(post);
 
-            const preparedActivity = prepareNewActivity(activity);
-
-            updateActivityInPaginatedCollection(queryClient, queryKeyFeed, 'posts', context?.id ?? '', () => preparedActivity);
-            updateActivityInPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '', () => preparedActivity);
-            updateActivityInPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '', () => preparedActivity);
+            updateActivityInPaginatedCollection(queryClient, queryKeyFeed, 'posts', context?.id ?? '', () => activity);
+            updateActivityInPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '', () => activity);
+            updateActivityInPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '', () => activity);
         },
         onError(error, _variables, context) {
             // eslint-disable-next-line no-console
@@ -1209,10 +1454,7 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
             removeActivityFromPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '');
             removeActivityFromPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '');
 
-            showToast({
-                message: 'An error occurred while posting your note.',
-                type: 'error'
-            });
+            toast.error('An error occurred while posting your note.');
         }
     });
 }
@@ -1496,6 +1738,11 @@ export function useDeleteMutationForUser(handle: string) {
                         })
                 };
             });
+
+            // Update reply count in notifications if this was a reply
+            if (parentId) {
+                updateNotificationsReplyCountCache(queryClient, handle, parentId, -1);
+            }
 
             // Update the outbox cache:
             // - Remove the post from the outbox

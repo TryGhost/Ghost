@@ -1,0 +1,39 @@
+{
+    "stats": [
+        {
+            "date": "2024-01-01",
+            "mrr": 50000,
+            "currency": "usd"
+        },
+        {
+            "date": "2024-01-02",
+            "mrr": 51500,
+            "currency": "usd"
+        },
+        {
+            "date": "2024-01-03",
+            "mrr": 52500,
+            "currency": "usd"
+        },
+        {
+            "date": "2024-01-04",
+            "mrr": 54000,
+            "currency": "usd"
+        },
+        {
+            "date": "2024-01-05",
+            "mrr": 55000,
+            "currency": "usd"
+        }
+    ],
+    "meta": {
+        "pagination": {
+            "page": 1,
+            "limit": 200,
+            "pages": 1,
+            "total": 5,
+            "next": null,
+            "prev": null
+        }
+    }
+} 

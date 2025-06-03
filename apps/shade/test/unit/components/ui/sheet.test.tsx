@@ -30,7 +30,7 @@ describe('Sheet Components', () => {
                 </SheetContent>
             </Sheet>
         );
-        
+
         const trigger = screen.getByTestId('sheet-trigger');
         assert.ok(trigger, 'Sheet trigger should be rendered');
         assert.equal(trigger.textContent, 'Open Sheet', 'Trigger should have correct text');
@@ -48,7 +48,7 @@ describe('Sheet Components', () => {
                 </SheetContent>
             </Sheet>
         );
-        
+
         const header = screen.getByTestId('sheet-header');
         assert.ok(header.className.includes('custom-header-class'), 'Should have custom class');
         assert.ok(header.className.includes('flex flex-col'), 'Should have default styling');
@@ -66,7 +66,7 @@ describe('Sheet Components', () => {
                 </SheetContent>
             </Sheet>
         );
-        
+
         const footer = screen.getByTestId('sheet-footer');
         assert.ok(footer.className.includes('custom-footer-class'), 'Should have custom class');
     });
@@ -80,10 +80,10 @@ describe('Sheet Components', () => {
                 </SheetContent>
             </Sheet>
         );
-        
+
         const title = screen.getByTestId('sheet-title');
         assert.equal(title.textContent, 'Test Title', 'Should have correct text content');
-        assert.ok(title.className.includes('text-lg font-semibold'), 'Should have default styling');
+        assert.ok(title.className.includes('text-2xl font-semibold'), 'Should have default styling');
     });
 
     it('renders SheetDescription with correct styling', () => {
@@ -97,7 +97,7 @@ describe('Sheet Components', () => {
                 </SheetContent>
             </Sheet>
         );
-        
+
         const description = screen.getByTestId('sheet-description');
         assert.equal(description.textContent, 'Test Description', 'Should have correct text content');
         assert.ok(description.className.includes('text-sm text-muted-foreground'), 'Should have default styling');
@@ -120,7 +120,7 @@ describe('Sheet Components', () => {
                 </SheetContent>
             </Sheet>
         );
-        
+
         // Verify that all components render
         assert.ok(screen.getByTestId('sheet-content'), 'Sheet content should be rendered');
         assert.ok(screen.getByTestId('sheet-header'), 'Sheet header should be rendered');
@@ -128,4 +128,4 @@ describe('Sheet Components', () => {
         assert.ok(screen.getByTestId('sheet-description'), 'Sheet description should be rendered');
         assert.ok(screen.getByTestId('sheet-footer'), 'Sheet footer should be rendered');
     });
-}); 
+});
