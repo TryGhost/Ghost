@@ -232,42 +232,42 @@ describe('useGrowthStats', () => {
             it('calculates 0% change for recent ranges with no events (Last 7 days)', () => {
                 const last7Days = moment().subtract(6, 'days').format('YYYY-MM-DD');
                 const result = calculateTotals([], mockMrrData, last7Days);
-                expect(result.percentChanges.mrr).toBe('0.0%');
+                expect(result.percentChanges.mrr).toBe('0%');
                 expect(result.directions.mrr).toBe('same');
             });
 
             it('calculates 0% change for recent ranges with no events (Last 30 days)', () => {
                 const last30Days = moment().subtract(29, 'days').format('YYYY-MM-DD');
                 const result = calculateTotals([], mockMrrData, last30Days);
-                expect(result.percentChanges.mrr).toBe('0.0%');
+                expect(result.percentChanges.mrr).toBe('0%');
                 expect(result.directions.mrr).toBe('same');
             });
 
             it('calculates 100% increase for YTD starting from 0', () => {
                 const ytdStart = moment().startOf('year').format('YYYY-MM-DD');
                 const result = calculateTotals([], mockMrrData, ytdStart);
-                expect(result.percentChanges.mrr).toBe('100.0%');
+                expect(result.percentChanges.mrr).toBe('100%');
                 expect(result.directions.mrr).toBe('up');
             });
 
             it('handles ranges with actual data points correctly', () => {
                 const marchStart = '2025-03-05';
                 const result = calculateTotals([], mockMrrData, marchStart);
-                expect(result.percentChanges.mrr).toBe('0.0%'); // 416 to 416
+                expect(result.percentChanges.mrr).toBe('0%'); // 416 to 416
                 expect(result.directions.mrr).toBe('same');
             });
 
             it('ignores spikes in middle of range for recent periods', () => {
                 const marchStart = '2025-03-05';
                 const result = calculateTotals([], mockMrrDataWithSpike, marchStart);
-                expect(result.percentChanges.mrr).toBe('0.0%'); // Should use 416 as first actual point, not the spike
+                expect(result.percentChanges.mrr).toBe('0%'); // Should use 416 as first actual point, not the spike
                 expect(result.directions.mrr).toBe('same');
             });
 
             it('handles YTD with spikes correctly', () => {
                 const ytdStart = moment().startOf('year').format('YYYY-MM-DD');
                 const result = calculateTotals([], mockMrrDataWithSpike, ytdStart);
-                expect(result.percentChanges.mrr).toBe('100.0%'); // 0 to 416 (ignoring spike)
+                expect(result.percentChanges.mrr).toBe('100%'); // 0 to 416 (ignoring spike)
                 expect(result.directions.mrr).toBe('up');
             });
 
@@ -275,19 +275,19 @@ describe('useGrowthStats', () => {
                 // Test that current year start is detected as "from beginning"
                 const currentYearStart = moment().startOf('year').format('YYYY-MM-DD');
                 const result = calculateTotals([], mockMrrData, currentYearStart);
-                expect(result.percentChanges.mrr).toBe('100.0%'); // Starting from 0
+                expect(result.percentChanges.mrr).toBe('100%'); // Starting from 0
                 
                 // Test that previous year dates are detected as "from beginning"
                 const lastYear = moment().subtract(1, 'year').format('YYYY-MM-DD');
                 const result2 = calculateTotals([], mockMrrData, lastYear);
-                expect(result2.percentChanges.mrr).toBe('100.0%'); // Starting from 0
+                expect(result2.percentChanges.mrr).toBe('100%'); // Starting from 0
             });
 
             it('detects recent ranges correctly', () => {
                 // Test recent ranges don't assume starting from 0
                 const recentDate = moment().subtract(10, 'days').format('YYYY-MM-DD');
                 const result = calculateTotals([], mockMrrData, recentDate);
-                expect(result.percentChanges.mrr).toBe('0.0%'); // Carried forward, not from 0
+                expect(result.percentChanges.mrr).toBe('0%'); // Carried forward, not from 0
             });
         });
 
