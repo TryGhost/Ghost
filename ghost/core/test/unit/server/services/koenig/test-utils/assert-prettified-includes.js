@@ -1,19 +1,13 @@
 const assert = require('assert/strict');
+const minify = require('html-minifier').minify;
 const prettifyHTML = require('./prettify-html');
-
-function normalizeWhitespace(html) {
-    return html
-        .replace(/\s+/g, ' ') // Replace all whitespace sequences with a single space
-        .replace(/>\s+</g, '><') // Remove spaces between tags
-        .trim();
-}
 
 function assertPrettifiedIncludes(actual, expected) {
     const actualPrettified = prettifyHTML(actual);
     const expectedPrettified = prettifyHTML(expected);
 
-    const normalizedActual = normalizeWhitespace(actualPrettified);
-    const normalizedExpected = normalizeWhitespace(expectedPrettified);
+    const normalizedActual = minify(actualPrettified, {collapseWhitespace: true, collapseInlineTagWhitespace: true, minifyCSS: true});
+    const normalizedExpected = minify(expectedPrettified, {collapseWhitespace: true, collapseInlineTagWhitespace: true, minifyCSS: true});
 
     const message = [
         'Expected HTML to include substring:',
