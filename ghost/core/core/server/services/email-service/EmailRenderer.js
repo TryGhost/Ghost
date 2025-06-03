@@ -335,7 +335,8 @@ class EmailRenderer {
             linkStyle: newsletter?.get('link_style'),
             imageCorners: newsletter?.get('image_corners'),
             postTitleColor: newsletter?.get('post_title_color'),
-            sectionTitleColor: newsletter?.get('section_title_color')
+            sectionTitleColor: newsletter?.get('section_title_color'),
+            linkColor: newsletter?.get('link_color')
         };
 
         if (labs?.isSet('emailCustomization')) {
@@ -352,8 +353,7 @@ class EmailRenderer {
                 // TODO:
                 // if the other options have default values we should follow the same pattern
                 // as the divider color to avoid duplicating magic values in renderers
-                dividerColor: this.#getDividerColor(newsletter),
-                linkColor: newsletter?.get('link_color')
+                dividerColor: this.#getDividerColor(newsletter)
             };
         }
 
