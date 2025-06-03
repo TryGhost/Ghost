@@ -1007,5 +1007,135 @@ describe('PostsStatsService', function () {
 
             assert.deepEqual(result, expected);
         });
+
+        it('properly deduplicates members who signup free and convert to paid', async function () {
+            const mockTinybirdClient = {
+                fetch: (endpoint) => {
+                    if (endpoint === 'api_top_pages') {
+                        return Promise.resolve([
+                            {post_uuid: 'uuid1', visits: 1000}
+                        ]);
+                    }
+                    return Promise.resolve([]);
+                }
+            };
+            service = new PostsStatsService({knex: db, tinybirdClient: mockTinybirdClient});
+
+            // Create posts with UUIDs
+            await db('posts').truncate();
+            await _createPostWithDetails('post1', 'Post 1', 'published', {
+                uuid: 'uuid1',
+                published_at: new Date('2025-01-15'),
+                feature_image: 'https://example.com/image1.jpg'
+            });
+
+            // Add email stats
+            await _createEmailStats('post1', 100, 50);
+
+            // Create a member who signs up for free on post1 and then converts to paid on the same post
+            // This should count as 1 member, not 2
+            const memberId = 'test_member_123';
+            await _createFreeSignupEvent('post1', memberId, 'twitter', new Date('2025-01-10'));
+            await _createPaidConversionEvent('post1', memberId, 'sub_123', 1000, 'twitter', new Date('2025-01-12'));
+
+            // Also add a regular free signup
+            await _createFreeSignup('post1', 'facebook');
+
+            const result = await service.getTopPostsViews({
+                date_from: '2025-01-01',
+                date_to: '2025-01-31',
+                timezone: 'UTC',
+                limit: 5
+            });
+
+            // Should return 2 total members: 1 member who upgraded + 1 free member
+            const expected = [
+                {
+                    post_id: 'post1',
+                    title: 'Post 1',
+                    published_at: new Date('2025-01-15').getTime(),
+                    feature_image: 'https://example.com/image1.jpg',
+                    views: 1000,
+                    open_rate: 50,
+                    members: 2 // 1 member who converted + 1 free member (deduplicated properly)
+                }
+            ];
+
+            assert.deepEqual(result, expected);
+        });
+
+        it('properly handles cross-post member attribution scenarios', async function () {
+            const mockTinybirdClient = {
+                fetch: (endpoint) => {
+                    if (endpoint === 'api_top_pages') {
+                        return Promise.resolve([
+                            {post_uuid: 'uuid1', visits: 1000},
+                            {post_uuid: 'uuid2', visits: 500}
+                        ]);
+                    }
+                    return Promise.resolve([]);
+                }
+            };
+            service = new PostsStatsService({knex: db, tinybirdClient: mockTinybirdClient});
+
+            // Create posts with UUIDs
+            await db('posts').truncate();
+            await _createPostWithDetails('post1', 'Post 1', 'published', {
+                uuid: 'uuid1',
+                published_at: new Date('2025-01-15'),
+                feature_image: 'https://example.com/image1.jpg'
+            });
+            await _createPostWithDetails('post2', 'Post 2', 'published', {
+                uuid: 'uuid2',
+                published_at: new Date('2025-01-16'),
+                feature_image: 'https://example.com/image2.jpg'
+            });
+
+            // Add email stats
+            await _createEmailStats('post1', 100, 50);
+            await _createEmailStats('post2', 200, 150);
+
+            // Create scenario: Member signs up for free on post1, then converts to paid on post2
+            // post1 should get credit for free signup, post2 should get credit for paid conversion
+            const crossMemberId = 'cross_member_123';
+            await _createFreeSignupEvent('post1', crossMemberId, 'twitter', new Date('2025-01-10'));
+            await _createPaidConversionEvent('post2', crossMemberId, 'sub_123', 1000, 'twitter', new Date('2025-01-12'));
+
+            // Add regular signups
+            await _createFreeSignup('post1', 'facebook');
+            await _createPaidSignup('post2', 500, 'google');
+
+            const result = await service.getTopPostsViews({
+                date_from: '2025-01-01',
+                date_to: '2025-01-31',
+                timezone: 'UTC',
+                limit: 5
+            });
+
+            // post1: 1 cross-member free signup + 1 regular free signup = 2 members
+            // post2: 1 cross-member paid conversion + 1 regular paid signup = 2 members
+            const expected = [
+                {
+                    post_id: 'post1',
+                    title: 'Post 1',
+                    published_at: new Date('2025-01-15').getTime(),
+                    feature_image: 'https://example.com/image1.jpg',
+                    views: 1000,
+                    open_rate: 50,
+                    members: 2 // 1 cross-member free + 1 regular free
+                },
+                {
+                    post_id: 'post2',
+                    title: 'Post 2',
+                    published_at: new Date('2025-01-16').getTime(),
+                    feature_image: 'https://example.com/image2.jpg',
+                    views: 500,
+                    open_rate: 75,
+                    members: 2 // 1 cross-member paid + 1 regular paid (includes free signup)
+                }
+            ];
+
+            assert.deepEqual(result, expected);
+        });
     });
 });
