@@ -54,6 +54,12 @@ table td {
     width: 100%;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.body {
+    background-color: {{backgroundColor}} !important;
+}
+{{/hasFeature}}
+
 /* Set a max-width, and make it display as block so it will automatically stretch to that width, but will also shrink down on a phone or something */
 .container {
     display: block;
@@ -619,6 +625,12 @@ figure blockquote p {
     background-color: #ffffff;
     text-align: center;
 }
+
+{{#hasFeature "emailCustomizationAlpha"}}
+.feedback-buttons-container {
+    background-color: {{backgroundColor}};
+}
+{{/hasFeature}}
 
 .feedback-buttons {
     /*width: auto !important;*/
@@ -1982,6 +1994,12 @@ img.kg-cta-image {
     border-spacing: 20px 0;
     width: 100%;
 }
+
+{{#hasFeature "emailCustomizationAlpha"}}
+.main {
+    background-color: {{backgroundColor}} !important;
+}
+{{/hasFeature}}
 
 .wrapper {
     box-sizing: border-box;
