@@ -1,5 +1,6 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
+const urlUtils = require('../../../shared/url-utils');
 
 /**
  * @typedef {Object} StatsServiceOptions
@@ -658,7 +659,7 @@ class PostsStatsService {
                     id: latestPost.id,
                     title: latestPost.title,
                     slug: latestPost.slug,
-                    feature_image: latestPost.feature_image,
+                    feature_image: latestPost.feature_image ? urlUtils.transformReadyToAbsolute(latestPost.feature_image) : latestPost.feature_image,
                     published_at: latestPost.published_at,
                     recipient_count: latestPost.email_count,
                     opened_count: latestPost.opened_count,
@@ -729,7 +730,7 @@ class PostsStatsService {
                     post_id: post.post_id,
                     title: post.title,
                     published_at: post.published_at,
-                    feature_image: post.feature_image,
+                    feature_image: post.feature_image ? urlUtils.transformReadyToAbsolute(post.feature_image) : post.feature_image,
                     views: row.visits,
                     open_rate: post.email_count > 0 ? (post.opened_count / post.email_count) * 100 : null,
                     members: post.email_count || 0
@@ -765,7 +766,7 @@ class PostsStatsService {
                 post_id: post.post_id,
                 title: post.title,
                 published_at: post.published_at,
-                feature_image: post.feature_image,
+                feature_image: post.feature_image ? urlUtils.transformReadyToAbsolute(post.feature_image) : post.feature_image,
                 views: 0,
                 open_rate: post.email_count > 0 ? (post.opened_count / post.email_count) * 100 : null,
                 members: post.email_count || 0
