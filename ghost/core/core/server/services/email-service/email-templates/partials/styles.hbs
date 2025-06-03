@@ -703,11 +703,27 @@ h3.latest-posts-header {
 .manage-subscription {
     white-space: nowrap;
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 400;
     text-align: right;
     line-height: 1.45em;
     vertical-align: bottom;
+}
+
+.manage-subscription a {
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    color: {{linkColor}};
+    {{#if (eq linkStyle "regular")}}
+    text-decoration: none;
+    {{else if (eq linkStyle "bold")}}
+    text-decoration: none;
+    font-weight: 700;
+    {{else}}
+    text-decoration: underline;
+    {{/if}}
+    {{else}}
     color: {{accentColor}};
+    text-decoration: underline;
+    {{/hasFeature}}
 }
 
 /* -------------------------------------
