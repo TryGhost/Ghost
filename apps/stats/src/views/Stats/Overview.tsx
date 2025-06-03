@@ -388,7 +388,7 @@ const Overview: React.FC = () => {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead className='pl-0'>Post title</TableHead>
-                                        <TableHead className='text-right'>Views</TableHead>
+                                        <TableHead className='text-right'>Visitors</TableHead>
                                         <TableHead className='whitespace-nowrap text-right'>Open rate</TableHead>
                                         <TableHead className='text-right'>Members</TableHead>
                                     </TableRow>
