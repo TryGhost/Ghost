@@ -1,6 +1,6 @@
 import React from 'react';
 import {H1, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
-import {useFeatureFlag} from '@src/hooks/useFeatureFlag';
+// import {useFeatureFlag} from '@src/hooks/useFeatureFlag';
 import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
 
 interface StatsHeaderProps {
