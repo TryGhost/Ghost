@@ -5,6 +5,7 @@ interface TopPostViewsStats {
     post_id: string;
     title: string;
     published_at: string;
+    feature_image: string;
     views: number;
     open_rate: number | null;
     members: number;
