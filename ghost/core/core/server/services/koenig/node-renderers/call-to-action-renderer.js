@@ -1,3 +1,4 @@
+const {renderEmailButton} = require('../render-partials/email-button');
 const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
 const {renderWithVisibility} = require('../render-utils/visibility');
 const {getResizedImageDimensions} = require('../render-utils/get-resized-image-dimensions');
@@ -107,6 +108,13 @@ function emailCTATemplate(dataset, options = {}) {
     }
 
     if (options.feature?.emailCustomization || options.feature?.emailCustomizationAlpha) {
+        const buttonHtml = renderEmailButton({
+            url: dataset.buttonUrl,
+            text: dataset.buttonText,
+            color: dataset.buttonColor,
+            style: options?.design?.buttonStyle
+        });
+
         const renderContent = () => {
             if (dataset.layout === 'minimal') {
                 return `
@@ -131,18 +139,20 @@ function emailCTATemplate(dataset, options = {}) {
                                             ${showButton(dataset) ? `
                                             <tr>
                                                 <td class="kg-cta-button-container">
-                                                    <table border="0" cellpadding="0" cellspacing="0" class="btn">
-                                                        <tr>
-                                                            <td class="${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}" style="${buttonStyle}">
-                                                                <a href="${dataset.buttonUrl}"
-                                                                   class="${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}"
-                                                                   style="${buttonLinkStyle}"
-                                                                >
-                                                                    ${dataset.buttonText}
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
+                                                    ${options.feature.emailCustomizationAlpha ? buttonHtml : `
+                                                        <table border="0" cellpadding="0" cellspacing="0" class="btn">
+                                                            <tr>
+                                                                <td class="${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}" style="${buttonStyle}">
+                                                                    <a href="${dataset.buttonUrl}"
+                                                                    class="${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}"
+                                                                    style="${buttonLinkStyle}"
+                                                                    >
+                                                                        ${dataset.buttonText}
+                                                                    </a>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    `}
                                                 </td>
                                             </tr>
                                             ` : ''}
