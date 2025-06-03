@@ -772,9 +772,7 @@ class PostsStatsService {
             }));
 
             // Combine both sets of posts
-            const allPosts = [...postsWithViews, ...additionalPostsWithZeroViews];
-            console.log(`allPosts`, allPosts);
-            return allPosts;
+            return [...postsWithViews, ...additionalPostsWithZeroViews];
         } catch (error) {
             logging.error('Error fetching top posts views:', error);
             return [];
