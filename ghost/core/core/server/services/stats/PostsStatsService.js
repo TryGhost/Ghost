@@ -718,6 +718,14 @@ class PostsStatsService {
                 .leftJoin('emails', 'emails.post_id', 'p.id')
                 .whereIn('p.uuid', postUuids);
 
+            // Get member attribution counts for these posts
+            const memberAttributionCounts = await this.knex('members_created_events')
+                .select('attribution_id as post_id')
+                .count('id as member_count')
+                .where('attribution_type', 'post')
+                .whereIn('attribution_id', posts.map(p => p.post_id))
+                .groupBy('attribution_id');
+
             // Process posts with views
             const postsWithViews = viewsData.map((row) => {
                 const post = posts.find(p => p.post_uuid === row.post_uuid);
@@ -726,6 +734,10 @@ class PostsStatsService {
                     return null;
                 }
 
+                // Find the member attribution count for this post
+                const attributionCount = memberAttributionCounts.find(ac => ac.post_id === post.post_id);
+                const memberCount = attributionCount ? attributionCount.member_count : 0;
+
                 return {
                     post_id: post.post_id,
                     title: post.title,
@@ -733,7 +745,7 @@ class PostsStatsService {
                     feature_image: post.feature_image ? urlUtils.transformReadyToAbsolute(post.feature_image) : post.feature_image,
                     views: row.visits,
                     open_rate: post.email_count > 0 ? (post.opened_count / post.email_count) * 100 : null,
-                    members: post.email_count || 0
+                    members: memberCount
                 };
             }).filter(Boolean);
 
@@ -742,6 +754,7 @@ class PostsStatsService {
 
             // If we need more posts, get the latest ones excluding the ones we already have
             let additionalPosts = [];
+            let additionalMemberAttributionCounts = [];
             if (remainingCount > 0) {
                 additionalPosts = await this.knex('posts as p')
                     .select(
@@ -759,18 +772,34 @@ class PostsStatsService {
                     .whereNotNull('p.published_at')
                     .orderBy('p.published_at', 'desc')
                     .limit(remainingCount);
+
+                // Get member attribution counts for additional posts
+                if (additionalPosts.length > 0) {
+                    additionalMemberAttributionCounts = await this.knex('members_created_events')
+                        .select('attribution_id as post_id')
+                        .count('id as member_count')
+                        .where('attribution_type', 'post')
+                        .whereIn('attribution_id', additionalPosts.map(p => p.post_id))
+                        .groupBy('attribution_id');
+                }
             }
 
             // Process additional posts with 0 views
-            const additionalPostsWithZeroViews = additionalPosts.map(post => ({
-                post_id: post.post_id,
-                title: post.title,
-                published_at: post.published_at,
-                feature_image: post.feature_image ? urlUtils.transformReadyToAbsolute(post.feature_image) : post.feature_image,
-                views: 0,
-                open_rate: post.email_count > 0 ? (post.opened_count / post.email_count) * 100 : null,
-                members: post.email_count || 0
-            }));
+            const additionalPostsWithZeroViews = additionalPosts.map((post) => {
+                // Find the member attribution count for this post
+                const attributionCount = additionalMemberAttributionCounts.find(ac => ac.post_id === post.post_id);
+                const memberCount = attributionCount ? attributionCount.member_count : 0;
+
+                return {
+                    post_id: post.post_id,
+                    title: post.title,
+                    published_at: post.published_at,
+                    feature_image: post.feature_image ? urlUtils.transformReadyToAbsolute(post.feature_image) : post.feature_image,
+                    views: 0,
+                    open_rate: post.email_count > 0 ? (post.opened_count / post.email_count) * 100 : null,
+                    members: memberCount
+                };
+            });
 
             // Combine both sets of posts
             return [...postsWithViews, ...additionalPostsWithZeroViews];
