@@ -11,8 +11,8 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
             showDividers: true,
             buttonText: 'click me',
             buttonUrl: 'http://blog.com/post1',
-            buttonColor: 'none',
-            buttonTextColor: 'none',
+            buttonColor: '#000000',
+            buttonTextColor: '#ffffff',
             hasSponsorLabel: true,
             backgroundColor: 'none',
             imageUrl: 'http://blog.com/image1.jpg',
@@ -60,7 +60,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
                             <a
                                 href="http://blog.com/post1"
                                 class="kg-cta-button"
-                                style="background-color: none; color: none"
+                                style="background-color: #000000; color: #ffffff;"
                             >
                                 click me
                             </a>
@@ -114,8 +114,8 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
                                                                 <table border="0" cellpadding="0" cellspacing="0" class="kg-cta-button-wrapper">
                                                                     <tbody>
                                                                         <tr>
-                                                                            <td class="" style="background-color: none; color: none">
-                                                                                <a href="http://blog.com/post1" class="kg-cta-button" style="background-color: none; color: none">
+                                                                            <td class="" style="background-color: #000000; color: #ffffff;">
+                                                                                <a href="http://blog.com/post1" class="kg-cta-button" style="background-color: #000000; color: #ffffff;">
                                                                                     click me
                                                                                 </a>
                                                                             </td>
@@ -181,8 +181,8 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
                                                                 <table border="0" cellpadding="0" cellspacing="0" class="btn">
                                                                     <tbody>
                                                                         <tr>
-                                                                            <td class="" style="background-color: none; color: none">
-                                                                                <a href="http://blog.com/post1" class="" style="background-color: none; color: none">
+                                                                            <td class="" style="background-color: #000000; color: #ffffff;">
+                                                                                <a href="http://blog.com/post1" class="" style="background-color: #000000; color: #ffffff;">
                                                                                     click me
                                                                                 </a>
                                                                             </td>
@@ -248,8 +248,8 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
                                                                 <table border="0" cellpadding="0" cellspacing="0" class="btn">
                                                                     <tbody>
                                                                         <tr>
-                                                                            <td class="" style="background-color: none; color: none">
-                                                                                <a href="http://blog.com/post1" class="" style="background-color: none; color: none">
+                                                                            <td class="" style="background-color: #000000; color: #ffffff;">
+                                                                                <a href="http://blog.com/post1" class="" style="background-color: #000000; color: #ffffff;">
                                                                                     click me
                                                                                 </a>
                                                                             </td>
