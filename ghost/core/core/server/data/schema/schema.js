@@ -54,7 +54,7 @@ module.exports = {
         header_background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'transparent'},
         section_title_color: {type: 'string', maxlength: 50, nullable: true},
         divider_color: {type: 'string', maxlength: 50, nullable: true},
-        button_color: {type: 'string', maxlength: 50, nullable: true},
+        button_color: {type: 'string', maxlength: 50, nullable: true, defaultTo: 'accent'},
         link_color: {type: 'string', maxlength: 50, nullable: true}
     },
     posts: {
