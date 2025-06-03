@@ -128,7 +128,7 @@ services:
       context: .
       dockerfile: ./.docker/Dockerfile
       target: development
-    command: ["yarn", "knex-migrator", "migrate"]
+    command: sh -c "yarn knex-migrator init && yarn knex-migrator migrate"
     profiles: [ ghost, split ]
     tty: true
     depends_on:
