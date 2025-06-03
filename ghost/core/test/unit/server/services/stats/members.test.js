@@ -407,7 +407,9 @@ describe('MembersStatsService', function () {
 
             await setupDB();
 
-            // Test with yesterday as start date - should include day-before-yesterday as baseline, yesterday, and today
+            // Test with yesterday as start date
+            // Should include: baseline day (day before yesterday), yesterday, and today
+            // Complete range behavior fills all days from baseline to today
             const {data: results, meta} = await membersStatsService.getCountHistory({
                 startDate: yesterdayDate
             });
@@ -440,6 +442,62 @@ describe('MembersStatsService', function () {
                 }
             ]);
             assert.deepEqual(meta.totals, currentCounts);
+        });
+
+        it('Returns complete range with forward-filled gaps', async function () {
+            // Simple test: create events with a 1-day gap to verify forward-filling
+            const threeDaysAgoDate = moment.utc().subtract(3, 'days').toDate();
+            const oneDayAgoDate = moment.utc().subtract(1, 'days').toDate();
+
+            events = [
+                {
+                    date: threeDaysAgoDate,
+                    paid_subscribed: 1,
+                    paid_canceled: 0,
+                    free_delta: 1,
+                    comped_delta: 0
+                },
+                {
+                    date: oneDayAgoDate,
+                    paid_subscribed: 1,
+                    paid_canceled: 0,
+                    free_delta: 1,
+                    comped_delta: 0
+                }
+                // Note: No events on 2 days ago - should be forward-filled
+            ];
+
+            currentCounts.paid = 2;
+            currentCounts.free = 2;
+            currentCounts.comped = 0;
+
+            await setupDB();
+
+            // Test with 2 days ago as start date (this has no events)
+            const startDate = moment.utc().subtract(2, 'days').format('YYYY-MM-DD');
+            const {data: results} = await membersStatsService.getCountHistory({
+                startDate: startDate
+            });
+
+            // Should get 4 days: baseline (3 days ago) + 2 days ago + yesterday + today
+            assert.equal(results.length, 4);
+            
+            // Verify all dates are present (no gaps)
+            const dates = results.map(r => r.date).sort();
+            const expectedDates = [
+                moment.utc().subtract(3, 'days').format('YYYY-MM-DD'), // baseline
+                moment.utc().subtract(2, 'days').format('YYYY-MM-DD'), // start date (gap day)
+                moment.utc().subtract(1, 'days').format('YYYY-MM-DD'), // has event
+                moment.utc().format('YYYY-MM-DD') // today
+            ].sort();
+            assert.deepEqual(dates, expectedDates);
+
+            // Verify the gap day (2 days ago) has forward-filled data
+            const gapDay = results.find(r => r.date === moment.utc().subtract(2, 'days').format('YYYY-MM-DD'));
+            assert.ok(gapDay);
+            assert.equal(gapDay.paid_subscribed, 0); // No events on this day
+            assert.equal(gapDay.paid_canceled, 0); // No events on this day
+            assert.ok(typeof gapDay.paid === 'number'); // But has member counts (forward-filled)
         });
     });
 });
