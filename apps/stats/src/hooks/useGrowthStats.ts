@@ -200,9 +200,27 @@ export const useGrowthStats = (range: number) => {
         // HACK: We should do this filtering on the backend, but the API doesn't support it yet
         const dateFromMoment = moment(dateFrom).subtract(1, 'day');
         if (mrrHistoryResponse?.stats) {
-            return mrrHistoryResponse.stats.filter((item) => {
+            const filteredData = mrrHistoryResponse.stats.filter((item) => {
                 return moment(item.date).isSameOrAfter(dateFromMoment);
             });
+            
+            // If no data points in the range, find the most recent value before the range
+            if (filteredData.length === 0) {
+                const allData = [...mrrHistoryResponse.stats].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                const mostRecentBeforeRange = allData.find((item) => {
+                    return moment(item.date).isBefore(dateFromMoment);
+                });
+                
+                if (mostRecentBeforeRange) {
+                    // Create a synthetic data point at the start of the range with the last known value
+                    return [{
+                        ...mostRecentBeforeRange,
+                        date: dateFromMoment.format('YYYY-MM-DD')
+                    }];
+                }
+            }
+            
+            return filteredData;
         }
         return [];
     }, [mrrHistoryResponse, dateFrom]);
