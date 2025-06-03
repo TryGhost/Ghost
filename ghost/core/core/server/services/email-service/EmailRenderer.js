@@ -1049,21 +1049,18 @@ class EmailRenderer {
     }
 
     #getLinkColor(newsletter, accentColor) {
-        const labs = this.getLabs();
-        if (labs?.isSet('emailCustomizationAlpha')) {
-            const value = newsletter.get('link_color');
-            const validHex = /#([0-9a-f]{3}){1,2}$/i;
+        const value = newsletter.get('link_color');
+        const validHex = /#([0-9a-f]{3}){1,2}$/i;
 
-            if (value === 'accent') {
-                return accentColor;
-            }
-
-            if (validHex.test(value)) {
-                return value;
-            }
+        if (value === 'accent') {
+            return accentColor;
         }
 
-        return accentColor;
+        if (validHex.test(value)) {
+            return value;
+        }
+
+        return accentColor; // default to accent color
     }
     /**
      * @private

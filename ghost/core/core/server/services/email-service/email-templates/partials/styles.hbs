@@ -276,7 +276,7 @@ h6 {
     {{/if}}
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 /* Links in captions */
 .feature-image-caption a,
 figcaption a {
@@ -739,7 +739,7 @@ h3.latest-posts-header {
 
 .post-content a,
 .post-content-sans-serif a {
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     color: {{linkColor}};
     {{else}}
     color: {{accentColor}};
