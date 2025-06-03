@@ -79,7 +79,8 @@ describe('PostsStatsService', function () {
             attribution_type: 'post',
             referrer_source: referrerSource,
             referrer_url: referrerSource ? `https://${referrerSource}` : null,
-            created_at: createdAt
+            created_at: createdAt,
+            source: 'member'
         });
     }
 
@@ -160,6 +161,7 @@ describe('PostsStatsService', function () {
             table.dateTime('created_at');
             table.string('referrer_source');
             table.string('referrer_url');
+            table.string('source');
         });
 
         await db.schema.createTable('members_subscription_created_events', function (table) {
@@ -751,7 +753,7 @@ describe('PostsStatsService', function () {
                 limit: 5
             });
 
-            // Should return the 3 posts ordered by published_at desc with 0 views
+            // Should return the 3 posts ordered by published_at desc with 0 views and 0 members (no attribution events)
             const expected = [
                 {
                     post_id: 'post3',
@@ -760,7 +762,7 @@ describe('PostsStatsService', function () {
                     feature_image: null,
                     views: 0,
                     open_rate: 75,
-                    members: 300
+                    members: 0
                 },
                 {
                     post_id: 'post2',
@@ -769,7 +771,7 @@ describe('PostsStatsService', function () {
                     feature_image: null,
                     views: 0,
                     open_rate: 75,
-                    members: 200
+                    members: 0
                 },
                 {
                     post_id: 'post1',
@@ -778,7 +780,7 @@ describe('PostsStatsService', function () {
                     feature_image: null,
                     views: 0,
                     open_rate: 50,
-                    members: 100
+                    members: 0
                 }
             ];
 
@@ -836,7 +838,7 @@ describe('PostsStatsService', function () {
                 limit: 5
             });
 
-            // Should return 2 posts with views and 3 latest posts with 0 views
+            // Should return 2 posts with views and 3 latest posts with 0 views and 0 members (no attribution events)
             const expected = [
                 {
                     post_id: 'post1',
@@ -845,7 +847,7 @@ describe('PostsStatsService', function () {
                     feature_image: 'https://example.com/image1.jpg',
                     views: 1000,
                     open_rate: 50,
-                    members: 100
+                    members: 0
                 },
                 {
                     post_id: 'post2',
@@ -854,7 +856,7 @@ describe('PostsStatsService', function () {
                     feature_image: 'https://example.com/image2.jpg',
                     views: 500,
                     open_rate: 75,
-                    members: 200
+                    members: 0
                 },
                 {
                     post_id: 'post4',
@@ -863,7 +865,7 @@ describe('PostsStatsService', function () {
                     feature_image: 'https://example.com/image4.jpg',
                     views: 0,
                     open_rate: 75,
-                    members: 400
+                    members: 0
                 },
                 {
                     post_id: 'post3',
@@ -872,7 +874,7 @@ describe('PostsStatsService', function () {
                     feature_image: 'https://example.com/image3.jpg',
                     views: 0,
                     open_rate: 75,
-                    members: 300
+                    members: 0
                 }
             ];
 
@@ -918,6 +920,92 @@ describe('PostsStatsService', function () {
             });
 
             assert.deepEqual(result, []);
+        });
+
+        it('returns correct member attribution counts when member events exist', async function () {
+            const mockTinybirdClient = {
+                fetch: (endpoint) => {
+                    if (endpoint === 'api_top_pages') {
+                        return Promise.resolve([
+                            {post_uuid: 'uuid1', visits: 1000},
+                            {post_uuid: 'uuid2', visits: 500}
+                        ]);
+                    }
+                    return Promise.resolve([]);
+                }
+            };
+            service = new PostsStatsService({knex: db, tinybirdClient: mockTinybirdClient});
+
+            // Create posts with UUIDs
+            await db('posts').truncate();
+            await _createPostWithDetails('post1', 'Post 1', 'published', {
+                uuid: 'uuid1',
+                published_at: new Date('2025-01-15'),
+                feature_image: 'https://example.com/image1.jpg'
+            });
+            await _createPostWithDetails('post2', 'Post 2', 'published', {
+                uuid: 'uuid2',
+                published_at: new Date('2025-01-16'),
+                feature_image: 'https://example.com/image2.jpg'
+            });
+            await _createPostWithDetails('post3', 'Post 3', 'published', {
+                uuid: 'uuid3',
+                published_at: new Date('2025-01-17'),
+                feature_image: 'https://example.com/image3.jpg'
+            });
+
+            // Add email stats
+            await _createEmailStats('post1', 100, 50);
+            await _createEmailStats('post2', 200, 150);
+            await _createEmailStats('post3', 300, 225);
+
+            // Add member attribution events
+            await _createFreeSignup('post1', 'twitter');
+            await _createFreeSignup('post1', 'facebook');
+            await _createPaidSignup('post1', 1000, 'google');
+            await _createFreeSignup('post2', 'twitter');
+            await _createFreeSignup('post3', 'linkedin');
+            await _createFreeSignup('post3', 'reddit');
+
+            const result = await service.getTopPostsViews({
+                date_from: '2025-01-01',
+                date_to: '2025-01-31',
+                timezone: 'UTC',
+                limit: 5
+            });
+
+            // Should return posts with correct member attribution counts
+            const expected = [
+                {
+                    post_id: 'post1',
+                    title: 'Post 1',
+                    published_at: new Date('2025-01-15').getTime(),
+                    feature_image: 'https://example.com/image1.jpg',
+                    views: 1000,
+                    open_rate: 50,
+                    members: 3 // 2 free signups + 1 paid signup
+                },
+                {
+                    post_id: 'post2',
+                    title: 'Post 2',
+                    published_at: new Date('2025-01-16').getTime(),
+                    feature_image: 'https://example.com/image2.jpg',
+                    views: 500,
+                    open_rate: 75,
+                    members: 1 // 1 free signup
+                },
+                {
+                    post_id: 'post3',
+                    title: 'Post 3',
+                    published_at: new Date('2025-01-17').getTime(),
+                    feature_image: 'https://example.com/image3.jpg',
+                    views: 0,
+                    open_rate: 75,
+                    members: 2 // 2 free signups
+                }
+            ];
+
+            assert.deepEqual(result, expected);
         });
     });
 });
