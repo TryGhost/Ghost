@@ -718,14 +718,8 @@ class PostsStatsService {
                 .leftJoin('emails', 'emails.post_id', 'p.id')
                 .whereIn('p.uuid', postUuids);
 
-            // Get member attribution counts for these posts
-            const memberAttributionCounts = await this.knex('members_created_events')
-                .select('attribution_id as post_id')
-                .count('id as member_count')
-                .where('attribution_type', 'post')
-                .where('source', 'member')
-                .whereIn('attribution_id', posts.map(p => p.post_id))
-                .groupBy('attribution_id');
+            // Get member attribution counts for these posts (model after GrowthStats logic)
+            const memberAttributionCounts = await this._getMemberAttributionCounts(posts.map(p => p.post_id), options);
 
             // Process posts with views
             const postsWithViews = viewsData.map((row) => {
@@ -737,7 +731,7 @@ class PostsStatsService {
 
                 // Find the member attribution count for this post
                 const attributionCount = memberAttributionCounts.find(ac => ac.post_id === post.post_id);
-                const memberCount = attributionCount ? attributionCount.member_count : 0;
+                const memberCount = attributionCount ? (attributionCount.free_members + attributionCount.paid_members) : 0;
 
                 return {
                     post_id: post.post_id,
@@ -776,13 +770,7 @@ class PostsStatsService {
 
                 // Get member attribution counts for additional posts
                 if (additionalPosts.length > 0) {
-                    additionalMemberAttributionCounts = await this.knex('members_created_events')
-                        .select('attribution_id as post_id')
-                        .count('id as member_count')
-                        .where('attribution_type', 'post')
-                        .where('source', 'member')
-                        .whereIn('attribution_id', additionalPosts.map(p => p.post_id))
-                        .groupBy('attribution_id');
+                    additionalMemberAttributionCounts = await this._getMemberAttributionCounts(additionalPosts.map(p => p.post_id), options);
                 }
             }
 
@@ -790,7 +778,7 @@ class PostsStatsService {
             const additionalPostsWithZeroViews = additionalPosts.map((post) => {
                 // Find the member attribution count for this post
                 const attributionCount = additionalMemberAttributionCounts.find(ac => ac.post_id === post.post_id);
-                const memberCount = attributionCount ? attributionCount.member_count : 0;
+                const memberCount = attributionCount ? (attributionCount.free_members + attributionCount.paid_members) : 0;
 
                 return {
                     post_id: post.post_id,
@@ -808,6 +796,79 @@ class PostsStatsService {
         } catch (error) {
             logging.error('Error fetching top posts views:', error);
             return [];
+        }
+    }
+
+    /**
+     * Get member attribution counts for a set of post IDs, modeling after GrowthStats logic
+     * Properly handles both free and paid members with deduplication
+     * @private
+     * @param {string[]} postIds - Array of post IDs to get attribution counts for
+     * @param {Object} options - Date filter options
+     * @returns {Promise<Array<{post_id: string, free_members: number, paid_members: number}>>}
+     */
+    async _getMemberAttributionCounts(postIds, options = {}) {
+        if (!postIds.length) {
+            return [];
+        }
+
+        try {
+            // Build free members query (modeled after _buildFreeMembersSubquery)
+            // Members who signed up on post but paid elsewhere/never
+            let freeMembersQuery = this.knex('members_created_events as mce')
+                .select('mce.attribution_id as post_id')
+                .countDistinct('mce.member_id as free_members')
+                .leftJoin('members_subscription_created_events as msce', function () {
+                    this.on('mce.member_id', '=', 'msce.member_id')
+                        .andOn('mce.attribution_id', '=', 'msce.attribution_id')
+                        .andOnVal('msce.attribution_type', '=', 'post');
+                })
+                .where('mce.attribution_type', 'post')
+                .whereIn('mce.attribution_id', postIds)
+                .whereNull('msce.id')
+                .groupBy('mce.attribution_id');
+
+            // Apply date filter to free members query
+            this._applyDateFilter(freeMembersQuery, options, 'mce.created_at');
+
+            // Build paid members query (modeled after _buildPaidMembersSubquery)
+            // Members whose paid conversion was attributed to this post
+            let paidMembersQuery = this.knex('members_subscription_created_events as msce')
+                .select('msce.attribution_id as post_id')
+                .countDistinct('msce.member_id as paid_members')
+                .where('msce.attribution_type', 'post')
+                .whereIn('msce.attribution_id', postIds)
+                .groupBy('msce.attribution_id');
+
+            // Apply date filter to paid members query
+            this._applyDateFilter(paidMembersQuery, options, 'msce.created_at');
+
+            // Execute both queries
+            const [freeResults, paidResults] = await Promise.all([
+                freeMembersQuery,
+                paidMembersQuery
+            ]);
+
+            // Combine results for each post
+            const combinedResults = postIds.map((postId) => {
+                const freeResult = freeResults.find(r => r.post_id === postId);
+                const paidResult = paidResults.find(r => r.post_id === postId);
+
+                return {
+                    post_id: postId,
+                    free_members: freeResult ? freeResult.free_members : 0,
+                    paid_members: paidResult ? paidResult.paid_members : 0
+                };
+            });
+
+            return combinedResults;
+        } catch (error) {
+            logging.error('Error fetching member attribution counts:', error);
+            return postIds.map(postId => ({
+                post_id: postId,
+                free_members: 0,
+                paid_members: 0
+            }));
         }
     }
 }
