@@ -685,38 +685,40 @@ class PostsStatsService {
      */
     async getTopPostsViews(options) {
         try {
-            if (!this.tinybirdClient) {
-                return [];
+            const limit = options.limit || 5;
+            let viewsData = [];
+
+            if (this.tinybirdClient) {
+                const tinybirdOptions = {
+                    dateFrom: options.date_from,
+                    dateTo: options.date_to,
+                    timezone: options.timezone,
+                    post_type: 'post',
+                    limit: limit
+                };
+
+                viewsData = await this.tinybirdClient.fetch('api_top_pages', tinybirdOptions) || [];
             }
 
-            const tinybirdOptions = {
-                dateFrom: options.date_from,
-                dateTo: options.date_to,
-                timezone: options.timezone,
-                limit: options.limit
-            };
-
-            const viewsData = await this.tinybirdClient.fetch('api_top_pages', tinybirdOptions);
-
-            if (!viewsData?.length) {
-                return [];
-            }
-
-            const postUuids = viewsData.filter(row => row.post_uuid).map(row => row.post_uuid);
+            // Filter out any rows without post_uuid and get unique UUIDs
+            const postUuids = [...new Set(viewsData.filter(row => row.post_uuid).map(row => row.post_uuid))];
             
+            // Get posts data from Ghost DB for the posts we have views for
             const posts = await this.knex('posts as p')
                 .select(
                     'p.id as post_id',
                     'p.uuid as post_uuid',
                     'p.title',
                     'p.published_at',
+                    'p.feature_image',
                     'emails.email_count',
                     'emails.opened_count'
                 )
                 .leftJoin('emails', 'emails.post_id', 'p.id')
                 .whereIn('p.uuid', postUuids);
 
-            return viewsData.map((row) => {
+            // Process posts with views
+            const postsWithViews = viewsData.map((row) => {
                 const post = posts.find(p => p.post_uuid === row.post_uuid);
 
                 if (!post) {
@@ -727,11 +729,52 @@ class PostsStatsService {
                     post_id: post.post_id,
                     title: post.title,
                     published_at: post.published_at,
+                    feature_image: post.feature_image,
                     views: row.visits,
                     open_rate: post.email_count > 0 ? (post.opened_count / post.email_count) * 100 : null,
                     members: post.email_count || 0
                 };
             }).filter(Boolean);
+
+            // Calculate how many more posts we need - we want to always return 5 posts
+            const remainingCount = limit - postsWithViews.length;
+
+            // If we need more posts, get the latest ones excluding the ones we already have
+            let additionalPosts = [];
+            if (remainingCount > 0) {
+                additionalPosts = await this.knex('posts as p')
+                    .select(
+                        'p.id as post_id',
+                        'p.uuid as post_uuid',
+                        'p.title',
+                        'p.published_at',
+                        'p.feature_image',
+                        'emails.email_count',
+                        'emails.opened_count'
+                    )
+                    .leftJoin('emails', 'emails.post_id', 'p.id')
+                    .whereNotIn('p.uuid', postUuids)
+                    .where('p.status', 'published')
+                    .whereNotNull('p.published_at')
+                    .orderBy('p.published_at', 'desc')
+                    .limit(remainingCount);
+            }
+
+            // Process additional posts with 0 views
+            const additionalPostsWithZeroViews = additionalPosts.map(post => ({
+                post_id: post.post_id,
+                title: post.title,
+                published_at: post.published_at,
+                feature_image: post.feature_image,
+                views: 0,
+                open_rate: post.email_count > 0 ? (post.opened_count / post.email_count) * 100 : null,
+                members: post.email_count || 0
+            }));
+
+            // Combine both sets of posts
+            const allPosts = [...postsWithViews, ...additionalPostsWithZeroViews];
+            console.log(`allPosts`, allPosts);
+            return allPosts;
         } catch (error) {
             logging.error('Error fetching top posts views:', error);
             return [];
