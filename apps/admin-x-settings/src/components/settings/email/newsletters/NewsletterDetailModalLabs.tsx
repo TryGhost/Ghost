@@ -274,7 +274,7 @@ const Sidebar: React.FC<{
                             >
                                 <Icon colorClass='text-grey-700 dark:text-grey-300' name='picture' />
                             </ImageUpload>
-                            <Hint>1200x600, optional</Hint>
+                            <Hint>1200×600 recommended. Use a transparent PNG for best results on any background.</Hint>
                         </div>
                     </div>
                     <ToggleGroup>
