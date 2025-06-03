@@ -113,52 +113,34 @@ const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
                                    moment(dateFrom).year() < moment().year();
         
         let firstMrr = 0;
-        let firstPointDate = actualStartDate;
         
         if (firstActualPoint) {
             // Check if the first actual point is exactly at the start date
             if (moment(firstActualPoint.date).isSame(actualStartDate, 'day')) {
                 firstMrr = firstActualPoint.mrr;
-                firstPointDate = firstActualPoint.date;
             } else {
                 // First actual point is later than start date
                 if (isFromBeginningRange) {
                     // For YTD/beginning ranges, assume started from 0
                     firstMrr = 0;
-                    firstPointDate = actualStartDate + ' (start of range, assumed $0)';
                 } else {
                     // For recent ranges, use the most recent MRR before the range
                     // This should be the same as current MRR (flat line scenario)
                     firstMrr = totalMrr;
-                    firstPointDate = actualStartDate + ' (carried forward)';
                 }
             }
         } else if (isFromBeginningRange) {
             // No data points in range, and it's a from-beginning range
             firstMrr = 0;
-            firstPointDate = actualStartDate + ' (start of range, assumed $0)';
         } else {
             // No data points in recent range, carry forward current MRR
             firstMrr = totalMrr;
-            firstPointDate = actualStartDate + ' (carried forward)';
         }
         
         if (firstMrr >= 0) { // Allow 0 as a valid starting point
             const mrrChange = firstMrr === 0 
                 ? (totalMrr > 0 ? 100 : 0) // If starting from 0, any positive value is 100% increase
                 : ((totalMrr - firstMrr) / firstMrr) * 100;
-            
-            // Debug logging
-            // eslint-disable-next-line no-console
-            console.log('MRR Percentage Calculation:');
-            // eslint-disable-next-line no-console
-            console.log('Is from beginning range:', isFromBeginningRange);
-            // eslint-disable-next-line no-console
-            console.log('First MRR value:', firstMrr, 'from:', firstPointDate);
-            // eslint-disable-next-line no-console
-            console.log('Last MRR value:', totalMrr);
-            // eslint-disable-next-line no-console
-            console.log('Calculated change:', mrrChange);
             
             percentChanges.mrr = `${Math.abs(mrrChange).toFixed(1)}%`;
             directions.mrr = mrrChange > 0 ? 'up' : mrrChange < 0 ? 'down' : 'same';
@@ -289,24 +271,6 @@ export const useGrowthStats = (range: number) => {
             }
             
             const finalResult = result.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-            
-            // Debug logging
-            // eslint-disable-next-line no-console
-            console.log('MRR Debug Info:');
-            // eslint-disable-next-line no-console
-            console.log('Date range:', dateFrom, 'to', dateToMoment.format('YYYY-MM-DD'));
-            // eslint-disable-next-line no-console
-            console.log('Original data points:', mrrHistoryResponse.stats.length);
-            // eslint-disable-next-line no-console
-            console.log('Filtered data points:', filteredData.length);
-            // eslint-disable-next-line no-console
-            console.log('Final result points:', finalResult.length);
-            // eslint-disable-next-line no-console
-            console.log('First point:', finalResult[0]);
-            // eslint-disable-next-line no-console
-            console.log('Last point:', finalResult[finalResult.length - 1]);
-            // eslint-disable-next-line no-console
-            console.log('All points:', finalResult.map(p => ({date: p.date, mrr: p.mrr})));
             
             return finalResult;
         }
