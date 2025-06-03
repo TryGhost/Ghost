@@ -26,13 +26,13 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
             <Navbar className='sticky top-0 z-50 items-center border-none bg-white/70 py-8 backdrop-blur-md dark:bg-black'>
                 <Tabs className="w-full" defaultValue={location.pathname} variant='pill'>
                     <TabsList>
-                        <TabsTrigger value="/overview/" onClick={() => {
-                            navigate('/overview/');
+                        <TabsTrigger value="/" onClick={() => {
+                            navigate('/');
                         }}>
                             Overview
                         </TabsTrigger>
-                        <TabsTrigger value="/" onClick={() => {
-                            navigate('/');
+                        <TabsTrigger value="/web/" onClick={() => {
+                            navigate('/web/');
                         }}>
                         Web traffic
                         </TabsTrigger>
