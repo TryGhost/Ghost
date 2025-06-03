@@ -14,10 +14,6 @@ export const APP_ROUTE_PREFIX = '/stats';
 
 export const routes: RouteObject[] = [
     {
-        path: '/overview/',
-        element: <Overview />
-    },
-    {
         path: '/',
         index: true,
         element: <Overview />
@@ -33,8 +29,7 @@ export const routes: RouteObject[] = [
     {
         path: '/growth/',
         element: <Growth />
-    }
-    ,
+    },
     {
         path: '/newsletters/',
         element: <Newsletters />
