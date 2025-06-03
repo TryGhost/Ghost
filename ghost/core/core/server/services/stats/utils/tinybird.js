@@ -16,6 +16,7 @@ const create = ({config, request}) => {
      * @param {string} [options.dateTo] - End date in YYYY-MM-DD format
      * @param {string} [options.timezone] - Timezone for the query
      * @param {string} [options.memberStatus] - Member status filter (defaults to 'all')
+     * @param {string} [options.postType] - Post type filter
      * @param {string} [options.tbVersion] - Tinybird version for API URL
      * @returns {Object} Object with URL and request options
      */
@@ -50,8 +51,10 @@ const create = ({config, request}) => {
         if (options.memberStatus) {
             searchParams.member_status = options.memberStatus;
         }
-        
-        // Add any other options that might be needed (like post_uuid)
+        if (options.postType) {
+            searchParams.post_type = options.postType;
+        }
+        // Add any other options that might be needed
         Object.entries(options).forEach(([key, value]) => {
             if (!['dateFrom', 'dateTo', 'timezone', 'memberStatus'].includes(key)) {
                 searchParams[key] = value;
