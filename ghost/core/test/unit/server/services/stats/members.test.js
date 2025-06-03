@@ -496,7 +496,7 @@ describe('MembersStatsService', function () {
             const gapDay = results.find(r => r.date === moment.utc().subtract(2, 'days').format('YYYY-MM-DD'));
             assert.ok(gapDay);
             assert.equal(gapDay.paid_subscribed, 0); // No events on this day
-            assert.equal(gapDay.paid_canceled, 0);   // No events on this day
+            assert.equal(gapDay.paid_canceled, 0); // No events on this day
             assert.ok(typeof gapDay.paid === 'number'); // But has member counts (forward-filled)
         });
     });
