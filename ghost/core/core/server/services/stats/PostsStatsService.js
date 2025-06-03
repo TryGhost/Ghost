@@ -723,6 +723,7 @@ class PostsStatsService {
                 .select('attribution_id as post_id')
                 .count('id as member_count')
                 .where('attribution_type', 'post')
+                .where('source', 'member')
                 .whereIn('attribution_id', posts.map(p => p.post_id))
                 .groupBy('attribution_id');
 
@@ -779,6 +780,7 @@ class PostsStatsService {
                         .select('attribution_id as post_id')
                         .count('id as member_count')
                         .where('attribution_type', 'post')
+                        .where('source', 'member')
                         .whereIn('attribution_id', additionalPosts.map(p => p.post_id))
                         .groupBy('attribution_id');
                 }
