@@ -65,7 +65,7 @@ class MembersStatsService {
             ) as free_delta`))
             .where('created_at', '>=', formattedStartDate)
             .groupByRaw('DATE(created_at)');
-        return rows;
+        return /** @type {MemberStatusDelta[]} */ (/** @type {unknown} */ (rows));
     }
 
     /**
@@ -83,20 +83,12 @@ class MembersStatsService {
         // Get today in UTC (consistent with frontend)
         const today = moment.utc().format('YYYY-MM-DD');
 
-        // When startDate is provided, check if we should return complete range
-        // Only do this for reasonable frontend date ranges (7-90 days)
+        // When startDate is provided, always return complete range
         if (options.startDate) {
-            const startDateMoment = moment.utc(options.startDate).startOf('day');
-            const daysDiff = moment().diff(startDateMoment, 'days');
-            
-            // Use complete range for frontend requests (7-90 days)
-            // Use sparse range for tests and other short-term queries
-            if (daysDiff >= 7 && daysDiff <= 90) {
-                return this._generateCompleteRange(rows, totals, options.startDate, today);
-            }
+            return this._generateCompleteRange(rows, totals, options.startDate, today);
         }
         
-        // Use original sparse logic for backward compatibility and short ranges
+        // Use original sparse logic only for default case (no startDate)
         return this._generateSparseRange(rows, totals, today);
     }
 
@@ -153,9 +145,9 @@ class MembersStatsService {
             runningComped -= row.comped_delta;
         }
 
-        // Generate complete date range from startDate to today
+        // Generate complete date range from day before startDate to today (includes baseline)
         const results = [];
-        const currentDate = moment(startDateMoment);
+        const currentDate = moment(startDateMoment).subtract(1, 'day');
         
         // Track the last known values for forward-filling
         let lastKnownTotals = {
