@@ -433,7 +433,7 @@ export const Reader: React.FC<ReaderProps> = ({
 
     const {data: post, isLoading: isLoadingPost} = usePostForUser('index', postId);
     const activityData = post;
-    const activityId = activityData?.object?.id;
+    const activityId = activityData?.id;
     const object = activityData?.object;
     const actor = activityData?.actor;
     const authors = activityData?.object?.metadata?.ghostAuthors;
