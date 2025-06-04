@@ -48,15 +48,22 @@ test.describe('Inbox', async () => {
                 path: '/inbox',
                 response: inboxFixture
             },
-            getPost: {
+            getReplies: {
                 method: 'GET',
-                path: `/post/${encodeURIComponent(postFixture.id)}`,
+                path: `/replies/${encodeURIComponent(postFixture.id)}`,
                 response: {
-                    ...postFixture,
-                    // TODO: Add metadata to the post fixture
-                    metadata: {
-                        ghostAuthors: []
-                    }
+                    post: {
+                        ...postFixture,
+                        metadata: {
+                            ghostAuthors: []
+                        }
+                    },
+                    ancestors: {
+                        chain: [],
+                        next: null
+                    },
+                    children: [],
+                    next: null
                 }
             }
         }, options: {useActivityPub: true}});
