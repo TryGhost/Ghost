@@ -7,7 +7,7 @@ class AdminDashboardPage extends AdminPage {
      * @param {import('@playwright/test').Page} page - playwright page object
      */
     constructor(page) {
-        super(page);
+        super(page, '/ghost');
 
         this.siteTitle = page.locator('.gh-nav-menu');
     }
