@@ -517,7 +517,7 @@ const Sidebar: React.FC<{
                             onChange={color => updateNewsletter({section_title_color: color})}
                         />
                     </div>
-                    {/* <div className='mb-1'>
+                    <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
                             eyedropper={true}
@@ -537,7 +537,7 @@ const Sidebar: React.FC<{
                             value={newsletter.button_color}
                             onChange={color => updateNewsletter({button_color: color})}
                         />
-                    </div> */}
+                    </div>
                     <div className='flex w-full justify-between'>
                         <div>Button style</div>
                         <ButtonGroup activeKey={newsletter.button_style || 'fill'} buttons={[

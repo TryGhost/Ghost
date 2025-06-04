@@ -59,9 +59,9 @@ function emailTemplate(node, options, document) {
     } else if (options.feature?.emailCustomizationAlpha) {
         const buttonHtml = renderEmailButton({
             alignment: node.alignment,
-            color: 'accent',
             url: buttonUrl,
-            text: buttonText
+            text: buttonText,
+            color: options.feature?.emailCustomizationAlpha ? undefined : 'accent'
         });
 
         cardHtml = html`
