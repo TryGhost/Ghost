@@ -4668,7 +4668,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
 <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">A paragraph inside an HTML card.</p>
 <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">And another one, with some <b>bold</b> text.</p>
 <!--kg-card-end: html-->
-<hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"><div class=\\"kg-card kg-gallery-card kg-width-wide kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><div class=\\"kg-gallery-container\\" style=\\"margin-top: -20px;\\"><div class=\\"kg-gallery-row\\"><div class=\\"kg-gallery-image\\"><img src=\\"https://plus.unsplash.com/premium_photo-1700558685152-81f821a40724?q=80&amp;w=2070&amp;auto=format&amp;fit=crop&amp;ixlib=rb-4.0.3&amp;ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\\" width=\\"600\\" height=\\"400\\" loading=\\"lazy\\" alt style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; padding-top: 20px; width: 100%; height: auto;\\"></div></div></div><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">A gallery.</span></p></div></div><div>
+<table class=\\"kg-card kg-hr-card\\" role=\\"presentation\\" width=\\"100%\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; margin: 0; padding-top: 1.5em; padding-bottom: 3em; font-size: 17px;\\" valign=\\"top\\"><!--[if !mso]><!-- --><hr style=\\"position: relative; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb; display: none;\\"><!--<![endif]--><table class=\\"kg-hr\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; padding-top: 1.5em; padding-bottom: 3em; margin: 0; padding: 0; border-top: 1px solid #e0e7eb; font-size: 0; line-height: 0;\\" valign=\\"top\\">&#xA0;</td></tr></tbody></table></td></tr></tbody></table><div class=\\"kg-card kg-gallery-card kg-width-wide kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><div class=\\"kg-gallery-container\\" style=\\"margin-top: -20px;\\"><div class=\\"kg-gallery-row\\"><div class=\\"kg-gallery-image\\"><img src=\\"https://plus.unsplash.com/premium_photo-1700558685152-81f821a40724?q=80&amp;w=2070&amp;auto=format&amp;fit=crop&amp;ixlib=rb-4.0.3&amp;ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\\" width=\\"600\\" height=\\"400\\" loading=\\"lazy\\" alt style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; padding-top: 20px; width: 100%; height: auto;\\"></div></div></div><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">A gallery.</span></p></div></div><div>
         <!--[if !mso !vml]-->
             <div class=\\"kg-card kg-bookmark-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0; width: 100%; background: #ffffff;\\">
                 <a class=\\"kg-bookmark-container\\" href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"display: flex; min-height: 148px; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; border-radius: 3px; border: 1px solid #e0e7eb; overflow-wrap: anywhere; color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\">
@@ -5110,6 +5110,8 @@ And another one, with some bold text.
 
 
 ----------------------------------------
+
+ 
 
 A gallery.
 
@@ -5946,6 +5948,8 @@ And another one, with some bold text.
 
 ----------------------------------------
 
+&#xA0;
+
 A gallery.
 
 
@@ -5954,7 +5958,7 @@ A gallery.
 
 
 Ghost: Independent technology for modern publishing
-Beautiful, modern publishing with newsletters and premium subscriptions built-in. Used by Sky, 40</span>
+Beautiful, modern publishing with newsletters and premium subscriptions built-in. Used by Sky,</span>
         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #fff; width: 100%;\\" bgcolor=\\"#fff\\">
             <!-- Outlook doesn't respect max-width so we need an extra centered table -->
             <!--[if mso]>
@@ -6031,7 +6035,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
 <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">A paragraph inside an HTML card.</p>
 <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">And another one, with some <b>bold</b> text.</p>
 <!--kg-card-end: html-->
-<hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb;\\"><div class=\\"kg-card kg-gallery-card kg-width-wide kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><div class=\\"kg-gallery-container\\" style=\\"margin-top: -20px;\\"><div class=\\"kg-gallery-row\\"><div class=\\"kg-gallery-image\\"><img src=\\"https://plus.unsplash.com/premium_photo-1700558685152-81f821a40724?q=80&amp;w=2070&amp;auto=format&amp;fit=crop&amp;ixlib=rb-4.0.3&amp;ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\\" width=\\"600\\" height=\\"400\\" loading=\\"lazy\\" alt style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; padding-top: 20px; width: 100%; height: auto;\\"></div></div></div><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">A gallery.</span></p></div></div><div>
+<table class=\\"kg-card kg-hr-card\\" role=\\"presentation\\" width=\\"100%\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; margin: 0; padding-top: 1.5em; padding-bottom: 3em; font-size: 17px;\\" valign=\\"top\\"><!--[if !mso]><!-- --><hr style=\\"position: relative; width: 100%; margin: 3em 0; padding: 0; height: 1px; background-color: transparent; border: 0; border-top: 1px solid #e0e7eb; display: none;\\"><!--<![endif]--><table class=\\"kg-hr\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; padding-top: 1.5em; padding-bottom: 3em; margin: 0; padding: 0; border-top: 1px solid #e0e7eb; font-size: 0; line-height: 0;\\" valign=\\"top\\">&#xA0;</td></tr></tbody></table></td></tr></tbody></table><div class=\\"kg-card kg-gallery-card kg-width-wide kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><div class=\\"kg-gallery-container\\" style=\\"margin-top: -20px;\\"><div class=\\"kg-gallery-row\\"><div class=\\"kg-gallery-image\\"><img src=\\"https://plus.unsplash.com/premium_photo-1700558685152-81f821a40724?q=80&amp;w=2070&amp;auto=format&amp;fit=crop&amp;ixlib=rb-4.0.3&amp;ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\\" width=\\"600\\" height=\\"400\\" loading=\\"lazy\\" alt style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; padding-top: 20px; width: 100%; height: auto;\\"></div></div></div><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">A gallery.</span></p></div></div><div>
         <!--[if !mso !vml]-->
             <div class=\\"kg-card kg-bookmark-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0; width: 100%; background: #ffffff;\\">
                 <a class=\\"kg-bookmark-container\\" href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"display: flex; min-height: 148px; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; border-radius: 3px; border: 1px solid #e0e7eb; overflow-wrap: anywhere; color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\">
@@ -6473,6 +6477,8 @@ And another one, with some bold text.
 
 
 ----------------------------------------
+
+ 
 
 A gallery.
 

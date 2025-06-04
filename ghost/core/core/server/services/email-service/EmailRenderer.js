@@ -1039,7 +1039,7 @@ class EmailRenderer {
     #getDividerColor(newsletter) {
         const labs = this.getLabs();
 
-        if (labs?.isSet('emailCustomizationAlpha')) {
+        if (labs?.isSet('emailCustomization') || labs?.isSet('emailCustomizationAlpha')) {
             const value = newsletter?.get('divider_color');
 
             if (value === 'accent') {
