@@ -65,6 +65,29 @@ describe('AdapterManager', function () {
         }
     });
 
+    it('getAdapter can handle looking up from node_modules', function () {
+        const pathsToAdapters = [
+            '', // node_modules
+            'first/path'
+        ];
+
+        const loadAdapterFromPath = sinon.stub();
+        const adapterManager = new AdapterManager({
+            loadAdapterFromPath,
+            pathsToAdapters
+        });
+
+        adapterManager.registerAdapter('mail', BaseMailAdapter);
+
+        try {
+            adapterManager.getAdapter('mail', 'some-node-module-adapter');
+        } catch (err) {
+            should.ok(err); // We don't care about the error, we just want to check `loadAdapterFromPath`
+        }
+
+        loadAdapterFromPath.calledWith('some-node-module-adapter').should.equal(true);
+    });
+
     it('Loads registered adapters in the order defined by the paths', function () {
         const pathsToAdapters = [
             'first/path',
