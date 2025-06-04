@@ -1136,7 +1136,7 @@ class EmailRenderer {
         const titleWeight = this.#getTitleWeight(newsletter);
         const titleStrongWeight = this.#getTitleStrongWeight(titleWeight);
         const textColor = textColorForBackgroundColor(backgroundColor).hex(); // this is used by the header background color so keeping it separate from the content text color
-        const contentTextColor = this.#getContentTextColor(newsletter, DEFAULT_ACCENT_COLOR);
+        const contentTextColor = this.#getContentTextColor(newsletter, DEFAULT_ACCENT_COLOR); // this is dependent on the background color
         const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
         const linkColor = hasAnyEmailCustomization ? this.#getLinkColor(newsletter, accentColor) : backgroundIsDark ? '#ffffff' : accentColor;
         const hasRoundedImageCorners = hasAnyEmailCustomization ? this.#getImageCorners(newsletter) : false;
