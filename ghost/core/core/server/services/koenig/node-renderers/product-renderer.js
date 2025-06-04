@@ -94,8 +94,7 @@ function emailCardTemplate({data, feature}) {
         const buttonHtml = renderEmailButton({
             text: data.productButton,
             url: data.productUrl,
-            buttonWidth: '100%',
-            color: feature?.emailCustomizationAlpha ? undefined : 'accent'
+            buttonWidth: '100%'
         });
 
         return (

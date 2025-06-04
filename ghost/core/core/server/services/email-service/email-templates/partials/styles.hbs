@@ -2020,7 +2020,6 @@ table.btn {
     width: auto;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
 table.btn td {
     padding: 8px 20px 9px;
     {{#if hasOutlineButtons}}
@@ -2048,27 +2047,6 @@ table.btn a {
     margin: 0;
     text-decoration: none;
 }
-{{else}}
-table.btn td {
-    padding: 8px 20px 9px;
-    background-color: #ffffff;
-    border-radius: {{buttonBorderRadius}};
-    text-align: center;
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-}
-
-table.btn a {
-    border-radius: {{buttonBorderRadius}};
-    box-sizing: border-box;
-    color: #15212A;
-    cursor: pointer;
-    display: inline-block;
-    font-size: 15px;
-    font-weight: 600;
-    margin: 0;
-    text-decoration: none;
-}
-{{/hasFeature}}
 
 table.btn-accent td {
     {{#if hasOutlineButtons}}

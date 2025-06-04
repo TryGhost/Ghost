@@ -178,11 +178,11 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
                                                         </tr>
                                                         <tr>
                                                             <td class="kg-cta-button-container">
-                                                                <table border="0" cellpadding="0" cellspacing="0" class="btn">
+                                                                <table class="btn" border="0" cellspacing="0" cellpadding="0">
                                                                     <tbody>
                                                                         <tr>
-                                                                            <td class="" style="background-color: #000000; color: #ffffff;">
-                                                                                <a href="http://blog.com/post1" class="" style="background-color: #000000; color: #ffffff;">
+                                                                            <td align="center" style="background-color: #000000;">
+                                                                                <a href="http://blog.com/post1" style="color: #ffffff !important;">
                                                                                     click me
                                                                                 </a>
                                                                             </td>
