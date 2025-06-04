@@ -8,6 +8,7 @@ import {
     type GetAccountFollowsResponse,
     type Notification,
     type Post,
+    type ReplyChainResponse,
     type SearchResults
 } from '../api/activitypub';
 import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
@@ -68,6 +69,12 @@ const QUERY_KEYS = {
             return ['thread'];
         }
         return ['thread', id];
+    },
+    replyChain: (id: string | null) => {
+        if (id === null) {
+            return ['reply_chain'];
+        }
+        return ['reply_chain', id];
     },
     feed: ['feed'],
     inbox: ['inbox'],
@@ -1986,6 +1993,24 @@ export function usePostForUser(handle: string, id: string | null) {
             return api.getPost(id).then((response) => {
                 return mapPostToActivity(response);
             });
+        }
+    });
+}
+
+export function useReplyChainForUser(handle: string, postApId: string | null) {
+    return useQuery<ReplyChainResponse>({
+        queryKey: QUERY_KEYS.replyChain(postApId || ''),
+        refetchOnMount: 'always',
+        enabled: Boolean(postApId),
+        async queryFn() {
+            if (!postApId) {
+                throw new Error('Post AP ID is required');
+            }
+
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.getReplies(postApId);
         }
     });
 }
