@@ -159,7 +159,7 @@ const TopContentTable: React.FC<TopContentCardTableProps> = ({data}) => {
 
                 {data?.map((row: TopContentData) => {
                     return (
-                        <DataListRow key={row.pathname} className={row.post_id && 'group/row hover:cursor-pointer'} onClick={() => {
+                        <DataListRow key={row.pathname} className={`${row.post_id && 'group/row hover:cursor-pointer'}`} onClick={() => {
                             if (row.post_id) {
                                 navigate(`/posts/analytics/beta/${row.post_id}`, {crossApp: true});
                             }
