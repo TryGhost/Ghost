@@ -23,7 +23,7 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...pr
     }
 
     return (
-        <div ref={containerRef} className={`h-screen w-full ${isOnboarded && 'overflow-y-auto'}`}>
+        <div ref={containerRef} className={`h-screen w-full ${isOnboarded && 'overflow-y-auto'}`} data-scrollable-container>
             <ScrollRestoration containerRef={containerRef} />
             <div className='relative mx-auto flex max-w-page flex-col' {...props}>
                 {isOnboarded ?
