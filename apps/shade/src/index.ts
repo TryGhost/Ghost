@@ -6,6 +6,7 @@ export * from './components/ui/breadcrumb';
 export * from './components/ui/button';
 export * from './components/ui/card';
 export * from './components/ui/chart';
+export * from './components/ui/data-list';
 export * from './components/ui/dialog';
 export * from './components/ui/dropdown-menu';
 export * from './components/ui/flag';

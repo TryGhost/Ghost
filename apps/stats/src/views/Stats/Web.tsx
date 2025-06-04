@@ -4,7 +4,7 @@ import React, {useMemo, useState} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, GhAreaChart, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange, isValidDomain} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListRow, GhAreaChart, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange, isValidDomain} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {SourceRow} from './Sources';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
@@ -149,18 +149,18 @@ interface TopContentCardProps {
 const TopContentTable: React.FC<TopContentCardProps> = ({data}) => {
     const navigate = useNavigate();
     return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Content</TableHead>
-                    <TableHead className='text-right'>Visitors</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
+        <DataList>
+            <DataListHeader>
+                <DataListHead>Post</DataListHead>
+                <DataListHead>Visitors</DataListHead>
+            </DataListHeader>
+            <DataListBody>
+
                 {data?.map((row: TopContentData) => {
                     return (
-                        <TableRow key={row.pathname}>
-                            <TableCell className="font-medium">
+
+                        <DataListRow key={row.pathname}>
+                            <DataListItemContent>
                                 <div className='group/link inline-flex items-center gap-2'>
                                     {row.post_id ?
                                         <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
@@ -173,17 +173,19 @@ const TopContentTable: React.FC<TopContentCardProps> = ({data}) => {
                                             {row.title || row.pathname}
                                         </>
                                     }
-                                    <a className='-mx-2 inline-flex min-h-6 items-center gap-1 rounded-sm px-2 opacity-0 hover:underline group-hover/link:opacity-75' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
+                                    {/* <a className='-mx-2 inline-flex min-h-6 items-center gap-1 rounded-sm px-2 opacity-0 hover:underline group-hover/link:opacity-75' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
                                         <LucideIcon.SquareArrowOutUpRight size={12} strokeWidth={2.5} />
-                                    </a>
+                                    </a> */}
                                 </div>
-                            </TableCell>
-                            <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
-                        </TableRow>
+                            </DataListItemContent>
+                            <DataListItemValue>
+                                <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
+                            </DataListItemValue>
+                        </DataListRow>
                     );
                 })}
-            </TableBody>
-        </Table>
+            </DataListBody>
+        </DataList>
     );
 };
 
