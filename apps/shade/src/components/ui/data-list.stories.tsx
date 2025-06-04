@@ -18,7 +18,7 @@ export const Default: Story = {
                 <DataListHead>Title</DataListHead>
                 <DataListHead>Visitors</DataListHead>
             </DataListHeader>,
-            <DataListBody className='group'>
+            <DataListBody className='group/data'>
                 <DataListRow>
                     <DataListBar className='opacity-20' style={{
                         backgroundColor: 'hsl(var(--chart-blue))'
