@@ -599,8 +599,8 @@ class PostsStatsService {
     }
 
     /**
-     * Get stats for the latest published post including open rate, member delta, and visitor count
-     * @returns {Promise<{data: Object|null, errors?: Array<{message: string}>}>}
+     * Get stats for the latest published post including open rate, member attribution counts, and visitor count
+     * @returns {Promise<{data: Array<{id: string, title: string, slug: string, feature_image: string|null, published_at: string, recipient_count: number|null, opened_count: number|null, open_rate: number|null, member_delta: number, free_members: number, paid_members: number, visitors: number}>}>}
      */
     async getLatestPostStats() {
         try {
@@ -626,12 +626,13 @@ class PostsStatsService {
                 return {data: []};
             }
 
-            // Get member delta from members_created_events
-            const memberDelta = await this.knex('members_created_events')
-                .count('id as count')
-                .where('attribution_id', latestPost.id)
-                .where('attribution_type', 'post')
-                .first();
+            // Get member attribution counts using the same logic as other methods
+            const memberAttributionCounts = await this._getMemberAttributionCounts([latestPost.id]);
+            const attributionCount = memberAttributionCounts.find(ac => ac.post_id === latestPost.id);
+            
+            const freeMembers = attributionCount ? attributionCount.free_members : 0;
+            const paidMembers = attributionCount ? attributionCount.paid_members : 0;
+            const totalMembers = freeMembers + paidMembers;
 
             // Calculate open rate
             const openRate = latestPost.email_count ? 
@@ -664,7 +665,9 @@ class PostsStatsService {
                     recipient_count: latestPost.email_count,
                     opened_count: latestPost.opened_count,
                     open_rate: openRate,
-                    member_delta: memberDelta.count,
+                    member_delta: totalMembers,
+                    free_members: freeMembers,
+                    paid_members: paidMembers,
                     visitors: visitors
                 }]
             };
