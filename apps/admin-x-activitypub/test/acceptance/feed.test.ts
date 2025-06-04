@@ -10,8 +10,6 @@ test.describe('Feed', async () => {
     });
 
     test('I can publish a note', async ({page}) => {
-        expect(true).toBe(false);
-
         const {lastApiRequests} = await mockApi({page, requests: {
             getFeed: {
                 method: 'GET',
