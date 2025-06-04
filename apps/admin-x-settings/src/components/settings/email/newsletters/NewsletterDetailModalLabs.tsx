@@ -72,7 +72,7 @@ const Sidebar: React.FC<{
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const limiter = useLimiter();
     const {settings, config, siteData} = useGlobalData();
-    const [defaultEmailAddress] = getSettingValues<string>(settings, ['default_email_address']);
+    const [icon, defaultEmailAddress] = getSettingValues<string>(settings, ['icon', 'default_email_address']);
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
     const {localSettings} = useSettingGroup();
@@ -277,6 +277,12 @@ const Sidebar: React.FC<{
                         </div>
                     </div>
                     <ToggleGroup>
+                        {icon && <Toggle
+                            checked={newsletter.show_header_icon}
+                            direction="rtl"
+                            label='Publication icon'
+                            onChange={e => updateNewsletter({show_header_icon: e.target.checked})}
+                        />}
                         <Toggle
                             checked={newsletter.show_header_title}
                             direction="rtl"
