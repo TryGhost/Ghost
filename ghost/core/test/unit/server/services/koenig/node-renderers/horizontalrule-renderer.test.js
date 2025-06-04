@@ -51,7 +51,9 @@ describe('services/koenig/node-renderers/horizontalrule-renderer', function () {
                     <tbody>
                         <tr>
                             <td>
+                                <!--[if !mso]><!-- -->
                                 <hr style="display: none;" />
+                                <!--<![endif]-->
                                 <table class="kg-hr" role="presentation" border="0" cellpadding="0" cellspacing="0">
                                     <tbody>
                                         <tr>
