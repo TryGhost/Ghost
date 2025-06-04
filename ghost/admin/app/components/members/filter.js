@@ -163,10 +163,17 @@ export default class MembersFilter extends Component {
     ]);
 
     newsletters;
+    tiersList;
+    offers;
 
     @tracked isLoading = false;
 
     get filterProperties() {
+        // Ensure we have all required data before proceeding
+        if (!this.newsletters || !this.tiersList || !this.offers) {
+            return [];
+        }
+
         let availableFilters = FILTER_PROPERTIES;
 
         // Convert the method filters to properties
