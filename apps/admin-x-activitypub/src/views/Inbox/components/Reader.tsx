@@ -1,12 +1,11 @@
 import Customizer, {COLOR_OPTIONS, type ColorOption, type FontSize, useCustomizerSettings} from './Customizer';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import ShowRepliesButton from '@src/components/global/ShowRepliesButton';
 import getUsername from '../../../utils/get-username';
 import {LoadingIndicator, Skeleton} from '@tryghost/shade';
 
 import {renderTimestamp} from '../../../utils/render-timestamp';
-import {useReplyChainForUser} from '@hooks/use-activity-pub-queries';
-import {useReplyChainLogic} from '@hooks/use-reply-chain-logic';
+import {useReplyChainForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '@src/components/global/APAvatar';
 import APReplyBox from '@src/components/global/APReplyBox';
@@ -23,6 +22,7 @@ import {isPendingActivity} from '../../../utils/pending-activity';
 import {mapPostToActivity} from '@src/utils/posts';
 import {openLinksInNewTab} from '@src/utils/content-formatters';
 import {useDebounce} from 'use-debounce';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface IframeWindow extends Window {
@@ -415,6 +415,7 @@ export const Reader: React.FC<ReaderProps> = ({
     postId = null,
     onClose
 }) => {
+    const {isEnabled} = useFeatureFlags();
     const {
         backgroundColor,
         currentFontSizeIndex,
@@ -436,9 +437,43 @@ export const Reader: React.FC<ReaderProps> = ({
     const activityData = post;
     const object = activityData?.object;
     const actor = activityData?.actor;
-    const authors = activityData?.object.metadata.ghostAuthors;
+    const authors = activityData?.object?.metadata?.ghostAuthors;
 
-    const {threadChildren, toggleChain} = useReplyChainLogic(replyChain);
+    const shouldUseReplyChain = isEnabled('reply-chain');
+
+    const {data: thread} = useThreadForUser('index', postId || undefined);
+    const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === postId);
+    const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
+
+    const [expandedChains, setExpandedChains] = useState<Set<string>>(new Set());
+
+    const processedReplies = useMemo(() => {
+        if (!shouldUseReplyChain || !threadChildren.length) {
+            return threadChildren;
+        }
+
+        return threadChildren.map((topLevelReply) => {
+            const chainData = replyChain?.children?.find(child => child.post.id === topLevelReply.id);
+            const chainItems = chainData?.chain ? chainData.chain.map(mapPostToActivity) : [];
+
+            return {
+                mainReply: topLevelReply,
+                chain: chainItems
+            };
+        });
+    }, [shouldUseReplyChain, threadChildren, replyChain?.children]);
+
+    function toggleChain(chainId: string) {
+        setExpandedChains((prev) => {
+            const newSet = new Set(prev);
+            if (newSet.has(chainId)) {
+                newSet.delete(chainId);
+            } else {
+                newSet.add(chainId);
+            }
+            return newSet;
+        });
+    }
 
     const isLoadingThread = isLoadingPost;
 
@@ -702,39 +737,139 @@ export const Reader: React.FC<ReaderProps> = ({
                                     {isLoadingThread && <LoadingIndicator size='lg' />}
 
                                     <div ref={repliesRef} className='mx-auto w-full' style={{maxWidth: currentGridWidth}}>
-                                        {threadChildren.map((item: {activity: Activity, isChainContinuation: boolean, chainId?: string, showRepliesButton?: boolean, remainingCount?: number}, index: number) => {
-                                            const nextItem = threadChildren[index + 1];
-                                            const showDivider = index !== threadChildren.length - 1 && !(nextItem?.isChainContinuation);
-                                            const isLastItem = index === threadChildren.length - 1 || (nextItem && !nextItem.isChainContinuation);
+                                        {!shouldUseReplyChain ? (
+                                            threadChildren.map((item, index) => {
+                                                const showDivider = index !== threadChildren.length - 1;
 
-                                            return (
-                                                <React.Fragment key={item.activity.id}>
-                                                    <FeedItem
-                                                        actor={item.activity.actor}
-                                                        allowDelete={item.activity.object.authored}
-                                                        commentCount={item.activity.object.replyCount ?? 0}
-                                                        isPending={isPendingActivity(item.activity.id)}
-                                                        last={isLastItem}
-                                                        layout='reply'
-                                                        object={item.activity.object}
-                                                        parentId={object.id}
-                                                        repostCount={item.activity.object.repostCount ?? 0}
-                                                        type='Note'
-                                                        onClick={() => {
-                                                            navigate(`/feed/${encodeURIComponent(item.activity.object.id)}`);
-                                                        }}
-                                                        onDelete={() => decrementReplyCount()}
-                                                    />
-                                                    {item.showRepliesButton && (
-                                                        <ShowRepliesButton
-                                                            count={item.remainingCount!}
-                                                            onClick={() => toggleChain(item.chainId!)}
+                                                return (
+                                                    <React.Fragment key={item.id}>
+                                                        <FeedItem
+                                                            actor={item.actor}
+                                                            allowDelete={item.object.authored}
+                                                            commentCount={item.object.replyCount ?? 0}
+                                                            isPending={isPendingActivity(item.id)}
+                                                            last={true}
+                                                            layout='reply'
+                                                            object={item.object}
+                                                            parentId={object.id}
+                                                            repostCount={item.object.repostCount ?? 0}
+                                                            type='Note'
+                                                            onClick={() => {
+                                                                navigate(`/feed/${encodeURIComponent(item.id)}`);
+                                                            }}
+                                                            onDelete={() => decrementReplyCount()}
                                                         />
-                                                    )}
-                                                    {showDivider && <FeedItemDivider />}
-                                                </React.Fragment>
-                                            );
-                                        })}
+                                                        {showDivider && <FeedItemDivider />}
+                                                    </React.Fragment>
+                                                );
+                                            })
+                                        ) : (
+                                            processedReplies.map((replyGroup, groupIndex) => {
+                                                if ('id' in replyGroup) {
+                                                    const showDivider = groupIndex !== processedReplies.length - 1;
+                                                    return (
+                                                        <React.Fragment key={replyGroup.id}>
+                                                            <FeedItem
+                                                                actor={replyGroup.actor}
+                                                                allowDelete={replyGroup.object.authored}
+                                                                commentCount={replyGroup.object.replyCount ?? 0}
+                                                                isPending={isPendingActivity(replyGroup.id)}
+                                                                last={true}
+                                                                layout='reply'
+                                                                object={replyGroup.object}
+                                                                parentId={object.id}
+                                                                repostCount={replyGroup.object.repostCount ?? 0}
+                                                                type='Note'
+                                                                onClick={() => {
+                                                                    navigate(`/feed/${encodeURIComponent(replyGroup.id)}`);
+                                                                }}
+                                                                onDelete={() => decrementReplyCount()}
+                                                            />
+                                                            {showDivider && <FeedItemDivider />}
+                                                        </React.Fragment>
+                                                    );
+                                                } else {
+                                                    const isLastGroup = groupIndex === processedReplies.length - 1;
+                                                    const chainId = replyGroup.mainReply.id;
+                                                    const isExpanded = expandedChains.has(chainId);
+                                                    const hasChain = replyGroup.chain.length > 0;
+
+                                                    return (
+                                                        <React.Fragment key={replyGroup.mainReply.id}>
+                                                            <FeedItem
+                                                                actor={replyGroup.mainReply.actor}
+                                                                allowDelete={replyGroup.mainReply.object.authored}
+                                                                commentCount={replyGroup.mainReply.object.replyCount ?? 0}
+                                                                isPending={isPendingActivity(replyGroup.mainReply.id)}
+                                                                last={!hasChain}
+                                                                layout='reply'
+                                                                object={replyGroup.mainReply.object}
+                                                                parentId={object.id}
+                                                                repostCount={replyGroup.mainReply.object.repostCount ?? 0}
+                                                                type='Note'
+                                                                onClick={() => {
+                                                                    navigate(`/feed/${encodeURIComponent(replyGroup.mainReply.id)}`);
+                                                                }}
+                                                                onDelete={() => decrementReplyCount()}
+                                                            />
+
+                                                            {hasChain && replyGroup.chain[0] && (
+                                                                <FeedItem
+                                                                    key={replyGroup.chain[0].id}
+                                                                    actor={replyGroup.chain[0].actor}
+                                                                    allowDelete={replyGroup.chain[0].object.authored}
+                                                                    commentCount={replyGroup.chain[0].object.replyCount ?? 0}
+                                                                    isPending={isPendingActivity(replyGroup.chain[0].id)}
+                                                                    last={replyGroup.chain.length === 1 || !isExpanded}
+                                                                    layout='reply'
+                                                                    object={replyGroup.chain[0].object}
+                                                                    parentId={object.id}
+                                                                    repostCount={replyGroup.chain[0].object.repostCount ?? 0}
+                                                                    type='Note'
+                                                                    onClick={() => {
+                                                                        navigate(`/feed/${encodeURIComponent(replyGroup.chain[0].id)}`);
+                                                                    }}
+                                                                    onDelete={() => decrementReplyCount()}
+                                                                />
+                                                            )}
+
+                                                            {hasChain && isExpanded && replyGroup.chain.slice(1).map((chainItem: Activity, chainIndex: number) => {
+                                                                const isLastChainItem = chainIndex === replyGroup.chain.slice(1).length - 1;
+
+                                                                return (
+                                                                    <FeedItem
+                                                                        key={chainItem.id}
+                                                                        actor={chainItem.actor}
+                                                                        allowDelete={chainItem.object.authored}
+                                                                        commentCount={chainItem.object.replyCount ?? 0}
+                                                                        isPending={isPendingActivity(chainItem.id)}
+                                                                        last={isLastChainItem}
+                                                                        layout='reply'
+                                                                        object={chainItem.object}
+                                                                        parentId={object.id}
+                                                                        repostCount={chainItem.object.repostCount ?? 0}
+                                                                        type='Note'
+                                                                        onClick={() => {
+                                                                            navigate(`/feed/${encodeURIComponent(chainItem.id)}`);
+                                                                        }}
+                                                                        onDelete={() => decrementReplyCount()}
+                                                                    />
+                                                                );
+                                                            })}
+
+                                                            {hasChain && replyGroup.chain.length > 1 && !isExpanded && (
+                                                                <ShowRepliesButton
+                                                                    count={replyGroup.chain.length - 1}
+                                                                    onClick={() => toggleChain(chainId)}
+                                                                />
+                                                            )}
+
+                                                            {!isLastGroup && <FeedItemDivider />}
+                                                        </React.Fragment>
+                                                    );
+                                                }
+                                            })
+                                        )}
                                     </div>
                                 </div>
                             </div>}
