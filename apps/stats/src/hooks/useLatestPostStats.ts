@@ -10,6 +10,8 @@ interface LatestPostStats {
     opened_count: number | null;
     open_rate: number | null;
     member_delta: number;
+    free_members: number;
+    paid_members: number;
     visitors: number;
 }
 
