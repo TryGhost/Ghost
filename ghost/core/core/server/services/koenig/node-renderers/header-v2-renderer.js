@@ -72,34 +72,11 @@ function emailTemplate(nodeData, options) {
     const backgroundAccent = nodeData.backgroundColor === 'accent' ? `background-color: ${nodeData.accentColor};` : '';
     let buttonAccent = nodeData.buttonColor === 'accent' ? `background-color: ${nodeData.accentColor};` : nodeData.buttonColor;
     let buttonStyle = nodeData.buttonColor !== 'accent' ? `background-color: ${nodeData.buttonColor};` : '';
-    let buttonTextColor = nodeData.buttonTextColor;
     const alignment = nodeData.alignment === 'center' ? 'text-align: center;' : '';
     const backgroundImageStyle = nodeData.backgroundImageSrc ? (nodeData.layout !== 'split' ? `background-image: url(${nodeData.backgroundImageSrc}); background-size: cover; background-position: center center;` : `background-color: ${nodeData.backgroundColor};`) : `background-color: ${nodeData.backgroundColor};`;
     const splitImageStyle = `background-image: url(${nodeData.backgroundImageSrc}); background-size: ${nodeData.backgroundSize !== 'contain' ? 'cover' : '50%'}; background-position: center`;
 
     const showButton = nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '';
-
-    if (
-        (options?.feature?.emailCustomization || options?.feature?.emailCustomizationAlpha) &&
-        options?.design?.buttonStyle === 'outline'
-    ) {
-        if (nodeData.buttonColor === 'accent') {
-            buttonAccent = '';
-            buttonStyle = `
-                border: 1px solid ${nodeData.accentColor};
-                background-color: transparent;
-                color: ${nodeData.accentColor} !important;
-            `;
-            buttonTextColor = nodeData.accentColor;
-        } else {
-            buttonStyle = `
-                border: 1px solid ${nodeData.buttonColor};
-                background-color: transparent;
-                color: ${nodeData.buttonColor} !important;
-            `;
-            buttonTextColor = nodeData.buttonColor;
-        }
-    }
 
     const buttonHtml = renderEmailButton({
         url: nodeData.buttonUrl,
@@ -137,15 +114,7 @@ function emailTemplate(nodeData, options) {
                                 <tr>
                                     ${showButton ? `
                                         <td class="kg-header-button-wrapper">
-                                            ${options.feature?.emailCustomizationAlpha ? buttonHtml : `
-                                                <table class="btn" border="0" cellspacing="0" cellpadding="0" align="${nodeData.alignment}">
-                                                    <tr>
-                                                        <td align="center" style="${buttonStyle} ${buttonAccent}">
-                                                            <a href="${nodeData.buttonUrl}" style="color: ${buttonTextColor};">${nodeData.buttonText}</a>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            `}
+                                            ${buttonHtml}
                                         </td>
                                     ` : ''}
                                 </tr>
