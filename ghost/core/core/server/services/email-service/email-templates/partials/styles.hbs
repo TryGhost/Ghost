@@ -88,7 +88,8 @@ hr {
     border: 0;
     border-top: 1px solid {{dividerColor}};
 }
-.kg-hr-card td {
+.kg-hr-card td,
+.kg-paywall-hr td {
     margin: 0;
     padding-top: 1.5em; /* account for elements above having bottom padding, we want 3em total */
     padding-bottom: 3em;
@@ -287,7 +288,13 @@ h2:has(+ .kg-hr-card),
 h3:has(+ .kg-hr-card),
 h4:has(+ .kg-hr-card),
 h5:has(+ .kg-hr-card),
-h6:has(+ .kg-hr-card) {
+h6:has(+ .kg-hr-card),
+h1:has(+ .kg-paywall),
+h2:has(+ .kg-paywall),
+h3:has(+ .kg-paywall),
+h4:has(+ .kg-paywall),
+h5:has(+ .kg-paywall),
+h6:has(+ .kg-paywall) {
     margin-bottom: 0;
 }
 
@@ -296,7 +303,13 @@ h2 + .kg-hr-card td,
 h3 + .kg-hr-card td,
 h4 + .kg-hr-card td,
 h5 + .kg-hr-card td,
-h6 + .kg-hr-card td {
+h6 + .kg-hr-card td,
+h1 + .kg-paywall .kg-paywall-hr td,
+h2 + .kg-paywall .kg-paywall-hr td,
+h3 + .kg-paywall .kg-paywall-hr td,
+h4 + .kg-paywall .kg-paywall-hr td,
+h5 + .kg-paywall .kg-paywall-hr td,
+h6 + .kg-paywall .kg-paywall-hr td {
     padding-top: 3em;
 }
 
@@ -305,7 +318,8 @@ h6 + .kg-hr-card td {
 .kg-hr-card + h3,
 .kg-hr-card + h4,
 .kg-hr-card + h5,
-.kg-hr-card + h6 {
+.kg-hr-card + h6,
+.kg-paywall-hr + h3 {
     margin-top: 0;
 }
 
@@ -1953,6 +1967,7 @@ img.kg-cta-image {
 
 .kg-paywall p {
     max-width: 440px;
+    margin: 0 auto 1.5em auto;
     text-wrap: pretty;
 }
 {{/hasFeature}}
