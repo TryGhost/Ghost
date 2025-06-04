@@ -4,57 +4,22 @@ import DeletedFeedItem from '@src/components/feed/DeletedFeedItem';
 import FeedItem from '@components/feed/FeedItem';
 import Layout from '@src/components/layout/Layout';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
+import ShowRepliesButton from '@src/components/global/ShowRepliesButton';
 import getUsername from '@src/utils/get-username';
 import {Activity} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, LucideIcon, Skeleton} from '@tryghost/shade';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
-import {Post} from '@src/api/activitypub';
+import {LucideIcon, Skeleton} from '@tryghost/shade';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {mapPostToActivity} from '@src/utils/posts';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 import {useReplyChainForUser} from '@hooks/use-activity-pub-queries';
+import {useReplyChainLogic} from '@hooks/use-reply-chain-logic';
 
 const FeedItemDivider: React.FC = () => (
     <div className="h-px bg-gray-200 dark:bg-gray-950"></div>
 );
-
-const ShowRepliesButton: React.FC<{count: number, onClick: () => void}> = ({count, onClick}) => {
-    const buttonRef = useRef<HTMLDivElement>(null);
-
-    const handleClick = () => {
-        const container = document.querySelector('[data-scrollable-container]') as HTMLElement;
-        const scrollTop = container ? container.scrollTop : window.scrollY;
-
-        onClick();
-
-        setTimeout(() => {
-            if (container) {
-                container.scrollTop = scrollTop;
-            } else {
-                window.scrollTo(0, scrollTop);
-            }
-        }, 0);
-    };
-
-    return (
-        <div ref={buttonRef} className="flex items-center justify-center py-3">
-            <Button
-                className="hover:text-blue-800 text-sm font-medium text-blue-600"
-                variant="ghost"
-                onClick={(e: React.MouseEvent<HTMLElement>) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    (e.target as HTMLElement).blur();
-                    handleClick();
-                }}
-            >
-                Show {count} more {count === 1 ? 'reply' : 'replies'}
-            </Button>
-        </div>
-    );
-};
 
 const Note = () => {
     const {postId} = useParams();
@@ -67,7 +32,8 @@ const Note = () => {
     const object = post?.object;
 
     const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
-    const [expandedChains, setExpandedChains] = useState<Set<string>>(new Set());
+
+    const {threadChildren, toggleChain} = useReplyChainLogic(replyChain);
 
     useEffect(() => {
         if (object?.replyCount !== undefined) {
@@ -78,60 +44,6 @@ const Note = () => {
     const threadParents = useMemo(() => {
         return replyChain?.ancestors.chain.map(mapPostToActivity) ?? [];
     }, [replyChain?.ancestors.chain]);
-
-    const threadChildren: Array<{activity: Activity, isChainContinuation: boolean, chainId?: string, showRepliesButton?: boolean, remainingCount?: number}> = [];
-
-    replyChain?.children.forEach((child: {post: Post, chain: Post[]}, childIndex: number) => {
-        const childActivity = mapPostToActivity(child.post);
-        const chainId = `chain-${childIndex}`;
-        const isChainExpanded = expandedChains.has(chainId);
-
-        threadChildren.push({
-            activity: childActivity,
-            isChainContinuation: false,
-            chainId
-        });
-
-        if (child.chain.length > 0) {
-            if (child.chain.length === 1 || isChainExpanded) {
-                child.chain.forEach((chainPost: Post) => {
-                    threadChildren.push({
-                        activity: mapPostToActivity(chainPost),
-                        isChainContinuation: true,
-                        chainId
-                    });
-                });
-            } else {
-                threadChildren.push({
-                    activity: mapPostToActivity(child.chain[0]),
-                    isChainContinuation: true,
-                    chainId,
-                    showRepliesButton: true,
-                    remainingCount: child.chain.length - 1
-                });
-            }
-        }
-    });
-
-    const toggleChain = (chainId: string) => {
-        setExpandedChains((prev) => {
-            const newSet = new Set(prev);
-            if (newSet.has(chainId)) {
-                newSet.delete(chainId);
-            } else {
-                newSet.add(chainId);
-            }
-            return newSet;
-        });
-    };
-
-    function handleReplyCountChange(increment: number) {
-        setReplyCount((current: number) => current + increment);
-    }
-
-    function handleDelete() {
-        handleReplyCountChange(-1);
-    }
 
     const repliesRef = useRef<HTMLDivElement>(null);
     const postRef = useRef<HTMLDivElement>(null);
@@ -145,6 +57,14 @@ const Note = () => {
             });
         }
     }, [threadParents]);
+
+    function handleReplyCountChange(increment: number) {
+        setReplyCount((current: number) => current + increment);
+    }
+
+    function handleDelete() {
+        handleReplyCountChange(-1);
+    }
 
     return (
         <Layout>
@@ -205,7 +125,7 @@ const Note = () => {
                                                 </React.Fragment>
                                             );
                                         })}
-                                        <div ref={postRef} className={`${canGoBack ? 'scroll-mt-[10px]' : 'scroll-mt-[124px]'}`}>
+                                        <div ref={postRef} className={`${canGoBack ? 'scroll-mt-[12px]' : 'scroll-mt-[124px]'}`}>
                                             <div className={`${threadParents.length > 0 && 'min-h-[calc(100vh-52px)]'}`}>
                                                 <FeedItem
                                                     actor={post.actor}

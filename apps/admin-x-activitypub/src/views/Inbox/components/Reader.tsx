@@ -1,10 +1,12 @@
 import Customizer, {COLOR_OPTIONS, type ColorOption, type FontSize, useCustomizerSettings} from './Customizer';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
+import ShowRepliesButton from '@src/components/global/ShowRepliesButton';
 import getUsername from '../../../utils/get-username';
 import {LoadingIndicator, Skeleton} from '@tryghost/shade';
 
 import {renderTimestamp} from '../../../utils/render-timestamp';
-import {usePostForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
+import {useReplyChainForUser} from '@hooks/use-activity-pub-queries';
+import {useReplyChainLogic} from '@hooks/use-reply-chain-logic';
 
 import APAvatar from '@src/components/global/APAvatar';
 import APReplyBox from '@src/components/global/APReplyBox';
@@ -15,8 +17,10 @@ import FeedItemStats from '@src/components/feed/FeedItemStats';
 import TableOfContents, {TOCItem} from '@src/components/feed/TableOfContents';
 import articleBodyStyles from '@src/components/articleBodyStyles';
 import getReadingTime from '../../../utils/get-reading-time';
+import {Activity} from '@src/api/activitypub';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '../../../utils/pending-activity';
+import {mapPostToActivity} from '@src/utils/posts';
 import {openLinksInNewTab} from '@src/utils/content-formatters';
 import {useDebounce} from 'use-debounce';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -426,16 +430,17 @@ export const Reader: React.FC<ReaderProps> = ({
     const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
     const [isTOCOpen, setIsTOCOpen] = useState(false);
 
-    const {data: post, isLoading: isLoadingPost} = usePostForUser('index', postId);
+    const {data: replyChain, isLoading: isLoadingPost} = useReplyChainForUser('index', postId);
+
+    const post = replyChain?.post ? mapPostToActivity(replyChain.post) : null;
     const activityData = post;
-    const activityId = activityData?.id;
     const object = activityData?.object;
     const actor = activityData?.actor;
     const authors = activityData?.object.metadata.ghostAuthors;
 
-    const {data: thread, isLoading: isLoadingThread} = useThreadForUser('index', activityId);
-    const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
-    const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
+    const {threadChildren, toggleChain} = useReplyChainLogic(replyChain);
+
+    const isLoadingThread = isLoadingPost;
 
     const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
 
@@ -697,27 +702,35 @@ export const Reader: React.FC<ReaderProps> = ({
                                     {isLoadingThread && <LoadingIndicator size='lg' />}
 
                                     <div ref={repliesRef} className='mx-auto w-full' style={{maxWidth: currentGridWidth}}>
-                                        {threadChildren.map((item, index) => {
-                                            const showDivider = index !== threadChildren.length - 1;
+                                        {threadChildren.map((item: {activity: Activity, isChainContinuation: boolean, chainId?: string, showRepliesButton?: boolean, remainingCount?: number}, index: number) => {
+                                            const nextItem = threadChildren[index + 1];
+                                            const showDivider = index !== threadChildren.length - 1 && !(nextItem?.isChainContinuation);
+                                            const isLastItem = index === threadChildren.length - 1 || (nextItem && !nextItem.isChainContinuation);
 
                                             return (
-                                                <React.Fragment key={item.id}>
+                                                <React.Fragment key={item.activity.id}>
                                                     <FeedItem
-                                                        actor={item.actor}
-                                                        allowDelete={item.object.authored}
-                                                        commentCount={item.object.replyCount ?? 0}
-                                                        isPending={isPendingActivity(item.id)}
-                                                        last={true}
+                                                        actor={item.activity.actor}
+                                                        allowDelete={item.activity.object.authored}
+                                                        commentCount={item.activity.object.replyCount ?? 0}
+                                                        isPending={isPendingActivity(item.activity.id)}
+                                                        last={isLastItem}
                                                         layout='reply'
-                                                        object={item.object}
+                                                        object={item.activity.object}
                                                         parentId={object.id}
-                                                        repostCount={item.object.repostCount ?? 0}
+                                                        repostCount={item.activity.object.repostCount ?? 0}
                                                         type='Note'
                                                         onClick={() => {
-                                                            navigate(`/feed/${encodeURIComponent(item.object.id)}`);
+                                                            navigate(`/feed/${encodeURIComponent(item.activity.object.id)}`);
                                                         }}
                                                         onDelete={() => decrementReplyCount()}
                                                     />
+                                                    {item.showRepliesButton && (
+                                                        <ShowRepliesButton
+                                                            count={item.remainingCount!}
+                                                            onClick={() => toggleChain(item.chainId!)}
+                                                        />
+                                                    )}
                                                     {showDivider && <FeedItemDivider />}
                                                 </React.Fragment>
                                             );
