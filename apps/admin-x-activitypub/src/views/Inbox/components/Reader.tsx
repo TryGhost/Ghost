@@ -5,7 +5,7 @@ import getUsername from '../../../utils/get-username';
 import {LoadingIndicator, Skeleton} from '@tryghost/shade';
 
 import {renderTimestamp} from '../../../utils/render-timestamp';
-import {useReplyChainForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
+import {usePostForUser, useReplyChainForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '@src/components/global/APAvatar';
 import APReplyBox from '@src/components/global/APReplyBox';
@@ -431,24 +431,24 @@ export const Reader: React.FC<ReaderProps> = ({
     const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
     const [isTOCOpen, setIsTOCOpen] = useState(false);
 
-    const {data: replyChain, isLoading: isLoadingPost} = useReplyChainForUser('index', postId);
-
-    const post = replyChain?.post ? mapPostToActivity(replyChain.post) : null;
+    const {data: post, isLoading: isLoadingPost} = usePostForUser('index', postId);
     const activityData = post;
+    const activityId = activityData?.object?.id;
     const object = activityData?.object;
     const actor = activityData?.actor;
     const authors = activityData?.object?.metadata?.ghostAuthors;
 
-    const shouldUseReplyChain = isEnabled('reply-chain');
-
-    const {data: thread} = useThreadForUser('index', postId || undefined);
-    const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === postId);
+    const {data: thread, isLoading: isLoadingThreadData} = useThreadForUser('index', activityId);
+    const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
     const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
+
+    const shouldFetchReplyChain = isEnabled('reply-chain');
+    const {data: replyChain} = useReplyChainForUser('index', activityId);
 
     const [expandedChains, setExpandedChains] = useState<Set<string>>(new Set());
 
     const processedReplies = useMemo(() => {
-        if (!shouldUseReplyChain || !threadChildren.length) {
+        if (!shouldFetchReplyChain || !threadChildren.length) {
             return threadChildren;
         }
 
@@ -461,7 +461,7 @@ export const Reader: React.FC<ReaderProps> = ({
                 chain: chainItems
             };
         });
-    }, [shouldUseReplyChain, threadChildren, replyChain?.children]);
+    }, [shouldFetchReplyChain, threadChildren, replyChain?.children]);
 
     function toggleChain(chainId: string) {
         setExpandedChains((prev) => {
@@ -475,7 +475,7 @@ export const Reader: React.FC<ReaderProps> = ({
         });
     }
 
-    const isLoadingThread = isLoadingPost;
+    const isLoadingThread = isLoadingPost || isLoadingThreadData;
 
     const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
 
@@ -737,7 +737,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                     {isLoadingThread && <LoadingIndicator size='lg' />}
 
                                     <div ref={repliesRef} className='mx-auto w-full' style={{maxWidth: currentGridWidth}}>
-                                        {!shouldUseReplyChain ? (
+                                        {!shouldFetchReplyChain ? (
                                             threadChildren.map((item, index) => {
                                                 const showDivider = index !== threadChildren.length - 1;
 
@@ -755,7 +755,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                             repostCount={item.object.repostCount ?? 0}
                                                             type='Note'
                                                             onClick={() => {
-                                                                navigate(`/feed/${encodeURIComponent(item.id)}`);
+                                                                navigate(`/feed/${encodeURIComponent(item.object.id)}`);
                                                             }}
                                                             onDelete={() => decrementReplyCount()}
                                                         />
@@ -781,7 +781,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                 repostCount={replyGroup.object.repostCount ?? 0}
                                                                 type='Note'
                                                                 onClick={() => {
-                                                                    navigate(`/feed/${encodeURIComponent(replyGroup.id)}`);
+                                                                    navigate(`/feed/${encodeURIComponent(replyGroup.object.id)}`);
                                                                 }}
                                                                 onDelete={() => decrementReplyCount()}
                                                             />
@@ -808,7 +808,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                 repostCount={replyGroup.mainReply.object.repostCount ?? 0}
                                                                 type='Note'
                                                                 onClick={() => {
-                                                                    navigate(`/feed/${encodeURIComponent(replyGroup.mainReply.id)}`);
+                                                                    navigate(`/feed/${encodeURIComponent(replyGroup.mainReply.object.id)}`);
                                                                 }}
                                                                 onDelete={() => decrementReplyCount()}
                                                             />
@@ -827,7 +827,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                     repostCount={replyGroup.chain[0].object.repostCount ?? 0}
                                                                     type='Note'
                                                                     onClick={() => {
-                                                                        navigate(`/feed/${encodeURIComponent(replyGroup.chain[0].id)}`);
+                                                                        navigate(`/feed/${encodeURIComponent(replyGroup.chain[0].object.id)}`);
                                                                     }}
                                                                     onDelete={() => decrementReplyCount()}
                                                                 />
@@ -850,7 +850,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                         repostCount={chainItem.object.repostCount ?? 0}
                                                                         type='Note'
                                                                         onClick={() => {
-                                                                            navigate(`/feed/${encodeURIComponent(chainItem.id)}`);
+                                                                            navigate(`/feed/${encodeURIComponent(chainItem.object.id)}`);
                                                                         }}
                                                                         onDelete={() => decrementReplyCount()}
                                                                     />
