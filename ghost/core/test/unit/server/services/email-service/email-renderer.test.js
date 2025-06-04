@@ -2823,6 +2823,29 @@ describe('Email renderer', function () {
                 await testButtonColor(settingValue, expectedValue, expectedTextValue, otherSettings, {labsEnabled: true});
             });
         });
+
+        function testContentTextColor(backgroundColorSetting, expectedContentTextColor) {
+            return testDataProperty({
+                background_color: backgroundColorSetting
+            }, 'contentTextColor', expectedContentTextColor);
+        }
+
+        it('sets contentTextColor to white for dark backgrounds', async function () {
+            await testContentTextColor('#15212A', '#ffffff'); // dark background
+            await testContentTextColor('#000000', '#ffffff'); // black background
+            await testContentTextColor('dark', '#ffffff'); // dark setting
+        });
+
+        it('sets contentTextColor to default for light backgrounds', async function () {
+            await testContentTextColor('#ffffff', '#15212A'); // white background
+            await testContentTextColor('#f0f0f0', '#15212A'); // light gray background
+            await testContentTextColor('light', '#15212A'); // light setting
+        });
+
+        it('sets contentTextColor to default for invalid background colors', async function () {
+            await testContentTextColor('#invalid', '#15212A'); // invalid hex
+            await testContentTextColor(null, '#15212A'); // null value
+        });
     });
 
     describe('createUnsubscribeUrl', function () {
