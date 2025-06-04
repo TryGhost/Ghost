@@ -114,7 +114,7 @@ describe('services/koenig/node-renderers/button-renderer', function () {
                     <tbody>
                         <tr>
                             <td class="kg-card-spacing">
-                                <table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0" align="center">
+                                <table class="btn" border="0" cellspacing="0" cellpadding="0" align="center">
                                     <tbody>
                                         <tr>
                                             <td align="center">

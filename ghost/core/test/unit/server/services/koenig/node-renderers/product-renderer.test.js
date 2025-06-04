@@ -245,7 +245,7 @@ describe('services/koenig/node-renderers/product-renderer', function () {
                                         <tr>
                                             <td class="kg-product-button-wrapper">
                                                 <table
-                                                    class="btn btn-accent"
+                                                    class="btn"
                                                     border="0"
                                                     cellspacing="0"
                                                     cellpadding="0">

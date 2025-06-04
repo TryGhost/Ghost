@@ -2236,7 +2236,7 @@ describe('Email renderer', function () {
             const tests = [
                 {input: 'Invalid Color', expected: '#ffffff'},
                 {input: '#BADA55', expected: '#BADA55'},
-                {input: 'dark', expected: '#15212a'},
+                {input: 'dark', expected: '#15212A'},
                 {input: 'light', expected: '#ffffff'},
                 {input: null, expected: '#ffffff'}
             ];
@@ -2664,7 +2664,7 @@ describe('Email renderer', function () {
                 ...newsletterSettings
             });
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
-            assert.equal(data[property], expectedValue);
+            assert.equal(data[property], expectedValue, property);
         }
 
         async function testButtonBorderRadius(buttonCorners, expectedRadius) {
@@ -2750,7 +2750,7 @@ describe('Email renderer', function () {
             });
         });
 
-        function testLinkStyle(settingValue, expectedValue, options = {labsEnabled: true}) {
+        async function testLinkStyle(settingValue, expectedValue, options = {labsEnabled: true}) {
             testDataProperty({
                 link_style: settingValue
             }, 'linkStyle', expectedValue, options);
@@ -2768,7 +2768,7 @@ describe('Email renderer', function () {
             await testLinkStyle('normal', 'normal', {labsEnabled: false});
         });
 
-        function testDividerColor(settingValue, expectedValue, options = {labsEnabled: true}) {
+        async function testDividerColor(settingValue, expectedValue, options = {labsEnabled: true}) {
             testDataProperty({
                 divider_color: settingValue
             }, 'dividerColor', expectedValue, options);
@@ -2797,6 +2797,31 @@ describe('Email renderer', function () {
 
         it('sets dividerColor to default value if invalid value is provided (emailCustomizationAlpha)', async function () {
             await testDividerColor('#nothex', '#e0e7eb');
+        });
+
+        async function testButtonColor(settingValue, expectedValue, expectedTextValue, otherSettings = {}, options = {labsEnabled: true}) {
+            await testDataProperty({
+                ...otherSettings,
+                button_color: settingValue
+            }, 'buttonColor', expectedValue, options);
+            await testDataProperty({
+                ...otherSettings,
+                button_color: settingValue
+            }, 'buttonTextColor', expectedTextValue, options);
+        }
+
+        [
+            // button_color, expectedButtonColor, expectedButtonTextColor, otherSettings
+            [null, '#15212A', '#FFFFFF'],
+            ['accent', '#15212A', '#FFFFFF'],
+            ['auto', '#000000', '#FFFFFF', {background_color: '#dddddd'}], // light bg
+            ['auto', '#FFFFFF', '#000000', {background_color: '#222222'}], // dark bg
+            ['#BADA55', '#BADA55', '#000000'],
+            ['#nothex', '#15212A', '#FFFFFF']
+        ].forEach(([settingValue, expectedValue, expectedTextValue, otherSettings]) => {
+            it(`sets buttonColor/buttonTextColor to correct value for ${settingValue}${otherSettings ? ` with ${JSON.stringify(otherSettings)}` : ''} (emailCustomizationAlpha)`, async function () {
+                await testButtonColor(settingValue, expectedValue, expectedTextValue, otherSettings, {labsEnabled: true});
+            });
         });
     });
 

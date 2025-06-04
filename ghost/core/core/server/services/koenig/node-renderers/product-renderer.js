@@ -92,10 +92,10 @@ function emailCardTemplate({data, feature}) {
 
     if (feature?.emailCustomization || feature?.emailCustomizationAlpha) {
         const buttonHtml = renderEmailButton({
-            color: 'accent',
             text: data.productButton,
             url: data.productUrl,
-            buttonWidth: '100%'
+            buttonWidth: '100%',
+            color: feature?.emailCustomizationAlpha ? undefined : 'accent'
         });
 
         return (

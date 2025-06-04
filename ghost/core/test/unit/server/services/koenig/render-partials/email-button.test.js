@@ -10,7 +10,7 @@ describe('koenig/services/render-partials/email-button', function () {
                 text: '',
                 alignment: '',
                 buttonWidth: '',
-                color: 'accent',
+                color: '',
                 style: 'fill'
             });
         });
@@ -32,7 +32,7 @@ describe('koenig/services/render-partials/email-button', function () {
                 text: '',
                 alignment: '',
                 buttonWidth: '',
-                color: 'accent',
+                color: '',
                 style: 'fill'
             });
         });

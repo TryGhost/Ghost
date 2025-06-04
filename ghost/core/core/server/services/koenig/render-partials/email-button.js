@@ -9,7 +9,7 @@ const stylex = require('../render-utils/stylex.js');
  * @property {string} [text=''] - The text displayed on the button
  * @property {string} [alignment] - The alignment of the button
  * @property {string} [buttonWidth=''] - The width of the button
- * @property {string} [color='accent'] - The color of the button
+ * @property {string} [color=''] - The color of the button, no color defaults to newsletter button color setting
  * @property {'fill'|'outline'} [style='fill'] - The style of the button
  */
 
@@ -18,7 +18,7 @@ const defaultOptions = {
     text: '',
     alignment: '',
     buttonWidth: '',
-    color: 'accent',
+    color: '',
     style: /** @type {'fill'|'outline'} */ ('fill')
 };
 
@@ -67,7 +67,7 @@ function renderEmailButton(buttonOptions = {}) {
  * @returns {boolean}
  */
 function _isColoredFill({color, style}) {
-    return color !== 'accent' && color !== 'transparent' && style === 'fill';
+    return color && color !== 'accent' && color !== 'transparent' && style === 'fill';
 }
 
 /**
@@ -75,7 +75,7 @@ function _isColoredFill({color, style}) {
  * @returns {boolean}
  */
 function _isColoredOutline({color, style}) {
-    return color !== 'accent' && style === 'outline';
+    return color && color !== 'accent' && style === 'outline';
 }
 
 /**
