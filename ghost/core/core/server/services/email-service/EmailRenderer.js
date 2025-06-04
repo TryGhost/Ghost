@@ -345,7 +345,14 @@ class EmailRenderer {
             imageCorners: newsletter?.get('image_corners'),
             postTitleColor: newsletter?.get('post_title_color'),
             sectionTitleColor: newsletter?.get('section_title_color'),
-            linkColor: newsletter?.get('link_color')
+            linkColor: newsletter?.get('link_color'),
+            // TODO:
+            // if the other options above have default or calculated values we
+            // should follow the same pattern as the options below to avoid
+            //duplicating magic values or logic in renderers
+            dividerColor: this.#getDividerColor(newsletter),
+            buttonColor: this.#getButtonColor(newsletter, accentColor),
+            buttonTextColor: this.#getButtonTextColor(newsletter, accentColor)
         };
 
         if (labs?.isSet('emailCustomization')) {
@@ -358,13 +365,7 @@ class EmailRenderer {
         if (labs?.isSet('emailCustomizationAlpha')) {
             renderOptions.design = {
                 ...renderOptions.design,
-                ...betaDesignOptions,
-                // TODO:
-                // if the other options have default values we should follow the same pattern
-                // as the divider color to avoid duplicating magic values in renderers
-                dividerColor: this.#getDividerColor(newsletter),
-                buttonColor: this.#getButtonColor(newsletter, accentColor),
-                buttonTextColor: this.#getButtonTextColor(newsletter, accentColor)
+                ...betaDesignOptions
             };
         }
 

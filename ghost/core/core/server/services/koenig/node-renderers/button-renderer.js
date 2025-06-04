@@ -37,31 +37,11 @@ function emailTemplate(node, options, document) {
     const {buttonUrl, buttonText} = node;
 
     let cardHtml;
-    if (options.feature?.emailCustomization) {
-        cardHtml = html`
-        <table border="0" cellpadding="0" cellspacing="0">
-            <tr>
-                <td>
-                    <table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0" align="${node.alignment}">
-                        <tr>
-                            <td align="center">
-                                <a href="${buttonUrl}">${buttonText}</a>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-        </table>`;
-
-        const element = document.createElement('p');
-        element.innerHTML = cardHtml;
-        return {element};
-    } else if (options.feature?.emailCustomizationAlpha) {
+    if (options.feature?.emailCustomization || options.feature?.emailCustomizationAlpha) {
         const buttonHtml = renderEmailButton({
             alignment: node.alignment,
             url: buttonUrl,
-            text: buttonText,
-            color: options.feature?.emailCustomizationAlpha ? undefined : 'accent'
+            text: buttonText
         });
 
         cardHtml = html`

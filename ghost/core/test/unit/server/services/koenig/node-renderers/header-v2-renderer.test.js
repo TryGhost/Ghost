@@ -172,8 +172,8 @@ describe('services/koenig/node-renderers/header-v2-renderer', function () {
                                                             <tr>
                                                                 <td
                                                                     align="center"
-                                                                    style="background-color: #ffffff; #ffffff">
-                                                                    <a href="https://example.com/" style="color: #000000">The button</a>
+                                                                    style="background-color: #ffffff;">
+                                                                    <a href="https://example.com/" style="color: #000000 !important;">The button</a>
                                                                 </td>
                                                             </tr>
                                                         </tbody>
