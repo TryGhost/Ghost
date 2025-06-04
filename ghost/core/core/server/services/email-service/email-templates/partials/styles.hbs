@@ -341,6 +341,50 @@ h6 + .kg-paywall .kg-paywall-hr td {
     {{/if}}
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.post-content-row > td > p,
+.post-content-row .post-content > p,
+.post-content-row .post-content-sans-serif > p,
+.post-content-row > td > blockquote,
+.post-content-row .post-content > blockquote,
+.post-content-row .post-content-sans-serif > blockquote,
+.post-content-row > td > blockquote p,
+.post-content-row .post-content > blockquote p,
+.post-content-row .post-content-sans-serif > blockquote p,
+
+.post-content-row .kg-product-description-wrapper p,
+.post-content-row .kg-cta-bg-none .kg-cta-text p,
+.post-content-row .kg-file-title,
+.post-content-row .kg-file-description,
+.post-content-row .kg-file-meta,
+
+.post-content-row .kg-toggle-content p,
+.post-content-row .kg-file-name {
+    color: {{contentTextColor}} !important;
+}
+
+/* Exclude paragraphs inside cards from custom text color (except CTA cards which are handled separately) */
+.post-content-row .kg-card:not(.kg-cta-card) p,
+
+.post-content-row .kg-callout-text,
+.post-content-row .latest-post p,
+.post-content-row .footer p {
+    color: inherit !important;
+}
+
+/* Exclude CTA cards with colored backgrounds from custom text color, but allow transparent ones */
+.post-content-row .kg-cta-bg-white .kg-cta-text p,
+.post-content-row .kg-cta-bg-grey .kg-cta-text p,
+.post-content-row .kg-cta-bg-blue .kg-cta-text p,
+.post-content-row .kg-cta-bg-green .kg-cta-text p,
+.post-content-row .kg-cta-bg-yellow .kg-cta-text p,
+.post-content-row .kg-cta-bg-red .kg-cta-text p,
+.post-content-row .kg-cta-bg-pink .kg-cta-text p,
+.post-content-row .kg-cta-bg-purple .kg-cta-text p {
+    color: inherit !important;
+}
+{{/hasFeature}}
+
 {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 /* Links in captions */
 .feature-image-caption a,
@@ -457,6 +501,12 @@ figure blockquote p {
 .site-title {
     color: #15212A;
 }
+
+{{#hasFeature "emailCustomizationAlpha"}}
+.site-title {
+    color: {{contentTextColor}};
+}
+{{/hasFeature}}
 
 .site-subtitle {
     color: #73818c;
@@ -647,7 +697,11 @@ figure blockquote p {
 .feedback-button-text {
     display: inline-block;
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{contentTextColor}};
+    {{else}}
     color: #15212A;
+    {{/hasFeature}}
     font-size: 13px !important;
     font-weight: 500;
     margin: 1em 0 0 0;
@@ -667,7 +721,11 @@ figure blockquote p {
 h3.latest-posts-header {
     margin: 0;
     padding: 8px 0 8px;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{contentTextColor}};
+    {{else}}
     color: #15212A;
+    {{/hasFeature}}
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 13px;
     font-weight: 600;
@@ -746,7 +804,7 @@ h3.latest-posts-header {
 .subscription-box {
     padding: 32px 0;
     border-bottom: 1px solid {{dividerColor}};
-    color: #15212A;
+    color: {{contentTextColor}};
 }
 
 .subscription-box h3 {
@@ -766,8 +824,14 @@ h3.latest-posts-header {
     text-decoration: none;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.subscription-box p {
+    color: {{contentTextColor}} !important;
+}
+{{/hasFeature}}
+
 .subscription-box p a {
-    color: #15212A !important;
+    color: {{linkColor}} !important;
     text-decoration: none;
 }
 

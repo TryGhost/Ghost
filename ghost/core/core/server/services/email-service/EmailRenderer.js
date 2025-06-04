@@ -1097,6 +1097,16 @@ class EmailRenderer {
         return textColorForBackgroundColor(buttonColor).hex();
     }
 
+    #getContentTextColor(newsletter, defaultTextColor) {
+        const backgroundColor = this.#getBackgroundColor(newsletter);
+        const backgroundIsDark = textColorForBackgroundColor(backgroundColor).hex().toLowerCase() === '#ffffff';
+
+        if (backgroundIsDark) {
+            return '#ffffff';
+        }
+        return defaultTextColor;
+    }
+
     /**
      * @private
      */
@@ -1125,7 +1135,8 @@ class EmailRenderer {
         const postTitleColor = this.#getPostTitleColor(newsletter, accentColor);
         const titleWeight = this.#getTitleWeight(newsletter);
         const titleStrongWeight = this.#getTitleStrongWeight(titleWeight);
-        const textColor = textColorForBackgroundColor(backgroundColor).hex();
+        const textColor = textColorForBackgroundColor(backgroundColor).hex(); // this is used by the header background color so keeping it separate from the content text color
+        const contentTextColor = this.#getContentTextColor(newsletter, DEFAULT_ACCENT_COLOR);
         const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
         const linkColor = hasAnyEmailCustomization ? this.#getLinkColor(newsletter, accentColor) : backgroundIsDark ? '#ffffff' : accentColor;
         const hasRoundedImageCorners = hasAnyEmailCustomization ? this.#getImageCorners(newsletter) : false;
@@ -1287,6 +1298,7 @@ class EmailRenderer {
             titleWeight,
             titleStrongWeight,
             textColor,
+            contentTextColor,
             secondaryTextColor,
             linkColor,
             hasRoundedImageCorners,
