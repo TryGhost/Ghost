@@ -365,7 +365,6 @@ h6 + .kg-paywall .kg-paywall-hr td {
 .post-content-row .kg-file-description,
 .post-content-row .kg-file-meta,
 .post-content-row .kg-file-name,
-.post-content-row .latest-post p,
 .post-content-row .footer p {
     color: inherit !important;
 }
@@ -401,6 +400,8 @@ figcaption a {
     color: {{linkColor}} !important;
 }
 {{/hasFeature}}
+
+
 
 h1 strong,
 h2 strong,
@@ -794,6 +795,16 @@ h3.latest-posts-header {
     color: {{sectionTitleColor}} !important;
     {{/if}}
 }
+
+{{#hasFeature "emailCustomizationAlpha"}}
+/* Override latest post text colors with custom content color */
+.latest-post-excerpt,
+.latest-post-excerpt a,
+.latest-post p,
+.latest-post p a {
+    color: {{contentTextColor}} !important;
+}
+{{/hasFeature}}
 
 /* -------------------------------------
     SUBSCRIPTION DETAILS BOX
