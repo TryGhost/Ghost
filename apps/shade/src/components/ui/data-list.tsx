@@ -117,7 +117,7 @@ const DataListBar = React.forwardRef<HTMLDivElement, DataListBarProps>(({childre
     return (
         <div
             ref={ref}
-            className={cn('absolute inset-0 -z-10 h-full origin-left rounded-md bg-blue-100', className)}
+            className={cn('absolute inset-0 z-0 h-full origin-left rounded-md', className)}
             {...props}
         >
             {children}
@@ -138,7 +138,7 @@ const DataListItemContent = React.forwardRef<HTMLDivElement, DataListItemContent
     return (
         <div
             ref={ref}
-            className={cn('text-sm px-2 font-medium relative z-10 flex min-w-0 max-w-[calc(100%-32px)] items-center py-1.5 transition-[max-width] duration-300 ease-in-out group-hover:max-w-[calc(100%-160px)]', className)}
+            className={cn('text-sm px-2 font-medium relative z-10 flex min-w-0 max-w-[calc(100%-32px)] items-center py-1.5 transition-[max-width] duration-300 ease-in-out group-hover:max-w-[calc(100%-100px)]', className)}
             {...props}
         >
             {children}

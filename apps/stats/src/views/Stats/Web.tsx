@@ -4,7 +4,7 @@ import React, {useMemo, useState} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListRow, GhAreaChart, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange, isValidDomain} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, GhAreaChart, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange, isValidDomain} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {SourceRow} from './Sources';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
@@ -21,6 +21,7 @@ interface TopContentData {
     title?: string;
     post_uuid?: string;
     post_id?: string;
+    percentage?: number;
 }
 
 interface KpiDataItem {
@@ -141,12 +142,12 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range}) => {
     );
 };
 
-interface TopContentCardProps {
+interface TopContentCardTableProps {
     data: TopContentData[] | null;
     range: number;
 }
 
-const TopContentTable: React.FC<TopContentCardProps> = ({data}) => {
+const TopContentTable: React.FC<TopContentCardTableProps> = ({data}) => {
     const navigate = useNavigate();
     return (
         <DataList>
@@ -158,11 +159,22 @@ const TopContentTable: React.FC<TopContentCardProps> = ({data}) => {
 
                 {data?.map((row: TopContentData) => {
                     return (
-
-                        <DataListRow key={row.pathname}>
+                        <DataListRow key={row.pathname} className={row.post_id && 'group/row hover:cursor-pointer'} onClick={() => {
+                            if (row.post_id) {
+                                navigate(`/posts/analytics/beta/${row.post_id}`, {crossApp: true});
+                            }
+                        }}>
+                            <DataListBar className='opacity-15 transition-all group-hover/row:opacity-30' style={{
+                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
+                                backgroundColor: 'hsl(var(--chart-purple))'
+                            }} />
                             <DataListItemContent>
-                                <div className='group/link inline-flex items-center gap-2'>
-                                    {row.post_id ?
+                                <div className='flex items-center space-x-4 overflow-hidden'>
+                                    <div className='truncate font-medium group-hover/row:underline'>
+                                        {row.title || row.pathname}
+                                    </div>
+                                </div>
+                                {/* {row.post_id ?
                                         <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
                                             navigate(`/posts/analytics/beta/${row.post_id}`, {crossApp: true});
                                         }}>
@@ -172,14 +184,14 @@ const TopContentTable: React.FC<TopContentCardProps> = ({data}) => {
                                         <>
                                             {row.title || row.pathname}
                                         </>
-                                    }
-                                    {/* <a className='-mx-2 inline-flex min-h-6 items-center gap-1 rounded-sm px-2 opacity-0 hover:underline group-hover/link:opacity-75' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
+                                    } */}
+                                {/* <a className='-mx-2 inline-flex min-h-6 items-center gap-1 rounded-sm px-2 opacity-0 hover:underline group-hover/link:opacity-75' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
                                         <LucideIcon.SquareArrowOutUpRight size={12} strokeWidth={2.5} />
                                     </a> */}
-                                </div>
                             </DataListItemContent>
                             <DataListItemValue>
                                 <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
+                                <DataListItemValuePerc>{formatPercentage(row.percentage || 0)}</DataListItemValuePerc>
                             </DataListItemValue>
                         </DataListRow>
                     );
@@ -189,11 +201,23 @@ const TopContentTable: React.FC<TopContentCardProps> = ({data}) => {
     );
 };
 
-const TopContentCard: React.FC<TopContentCardProps> = ({data, range}) => {
-    const topContent = data?.slice(0, 10) || [];
+interface TopContentCardProps {
+    totalVisitors: number;
+    data: TopContentData[] | null;
+    range: number;
+}
+
+const TopContentCard: React.FC<TopContentCardProps> = ({totalVisitors, data, range}) => {
+    // Extend entire data array with percentage values
+    const extendedData = data?.map(item => ({
+        ...item,
+        percentage: totalVisitors > 0 ? (Number(item.visits) / totalVisitors) : 0
+    })) || [];
+
+    const topContent = extendedData.slice(0, 10);
 
     return (
-        <Card>
+        <Card className='group'>
             <CardHeader>
                 <CardTitle>Top content</CardTitle>
                 <CardDescription>Your highest viewed posts or pages {getPeriodText(range)}</CardDescription>
@@ -205,14 +229,16 @@ const TopContentCard: React.FC<TopContentCardProps> = ({data, range}) => {
             <CardFooter>
                 <Sheet>
                     <SheetTrigger asChild>
-                        <Button variant='outline'>View all <LucideIcon.Maximize /></Button>
+                        <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                     </SheetTrigger>
                     <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
                         <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
                             <SheetTitle>Top content</SheetTitle>
                             <SheetDescription>Your highest viewed posts or pages {getPeriodText(range)}</SheetDescription>
                         </SheetHeader>
-                        <TopContentTable data={data} range={range} />
+                        <div className='group'>
+                            <TopContentTable data={extendedData} range={range} />
+                        </div>
                     </SheetContent>
                 </Sheet>
             </CardFooter>
@@ -274,7 +300,7 @@ const SourcesCard: React.FC<SourcesCardProps> = ({data, range}) => {
             <CardFooter>
                 <Sheet>
                     <SheetTrigger asChild>
-                        <Button variant='outline'>View all <LucideIcon.Maximize /></Button>
+                        <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                     </SheetTrigger>
                     <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
                         <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
@@ -331,6 +357,9 @@ const Web: React.FC = () => {
         params
     });
 
+    // Get total visitors for table
+    const totalVisitors = kpiData?.length ? kpiData.reduce((sum, item) => sum + Number(item.visits), 0) : 0;
+
     // Calculate combined loading state
     const isLoading = isConfigLoading || kpiLoading || topContentLoading || sourcesLoading;
 
@@ -347,7 +376,7 @@ const Web: React.FC = () => {
                     </CardContent>
                 </Card>
                 <div className='grid grid-cols-2 gap-8'>
-                    <TopContentCard data={topContentData?.stats || null} range={range} />
+                    <TopContentCard data={topContentData?.stats || null} range={range} totalVisitors={totalVisitors} />
                     <SourcesCard data={sourcesData as SourcesData[] | null} range={range} />
                 </div>
             </StatsView>
