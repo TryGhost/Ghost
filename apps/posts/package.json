@@ -28,7 +28,7 @@
         "test": "yarn test:unit --coverage"
     },
     "devDependencies": {
-        "@tanstack/react-query": "4.36.1",
+        "@tanstack/react-query": "4.39.0",
         "@testing-library/react": "14.3.1",
         "@types/jest": "29.5.14",
         "@types/react": "18.3.23",
