@@ -143,30 +143,6 @@ function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: stri
             queryClient.invalidateQueries({queryKey: QUERY_KEYS.postsLikedByAccount});
         }
     }
-
-    // Update the thread cache
-    const threadQueryKey = QUERY_KEYS.thread(null);
-    queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
-        if (!current) {
-            return current;
-        }
-
-        return {
-            posts: current.posts.map((activity) => {
-                if (activity.object.id === id) {
-                    return {
-                        ...activity,
-                        object: {
-                            ...activity.object,
-                            liked,
-                            likeCount: Math.max(liked ? (activity.object.likeCount || 0) + 1 : (activity.object.likeCount || 0) - 1, 0)
-                        }
-                    };
-                }
-                return activity;
-            })
-        };
-    });
 }
 
 function updateNotificationsLikedCache(queryClient: QueryClient, handle: string, id: string, liked: boolean) {
@@ -431,6 +407,30 @@ export function useLikeMutationForUser(handle: string) {
                 };
             });
 
+            // Update the thread cache (used by Note.tsx)
+            const threadQueryKey = QUERY_KEYS.thread(null);
+            queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
+                if (!current) {
+                    return current;
+                }
+
+                return {
+                    posts: current.posts.map((activity) => {
+                        if (activity.object.id === id) {
+                            return {
+                                ...activity,
+                                object: {
+                                    ...activity.object,
+                                    liked: true,
+                                    likeCount: Math.max((activity.object.likeCount || 0) + 1, 0)
+                                }
+                            };
+                        }
+                        return activity;
+                    })
+                };
+            });
+
             // Update account liked count
             queryClient.setQueryData(QUERY_KEYS.account('index'), (currentAccount?: Account) => {
                 if (!currentAccount) {
@@ -463,6 +463,30 @@ export function useLikeMutationForUser(handle: string) {
                         liked: false,
                         likeCount: Math.max((current.object.likeCount || 0) - 1, 0)
                     }
+                };
+            });
+
+            // Revert the thread cache (used by Note.tsx)
+            const threadQueryKey = QUERY_KEYS.thread(null);
+            queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
+                if (!current) {
+                    return current;
+                }
+
+                return {
+                    posts: current.posts.map((activity) => {
+                        if (activity.object.id === id) {
+                            return {
+                                ...activity,
+                                object: {
+                                    ...activity.object,
+                                    liked: false,
+                                    likeCount: Math.max((activity.object.likeCount || 0) - 1, 0)
+                                }
+                            };
+                        }
+                        return activity;
+                    })
                 };
             });
 
@@ -517,6 +541,30 @@ export function useUnlikeMutationForUser(handle: string) {
                         liked: false,
                         likeCount: Math.max((current.object.likeCount || 0) - 1, 0)
                     }
+                };
+            });
+
+            // Update the thread cache (used by Note.tsx)
+            const threadQueryKey = QUERY_KEYS.thread(null);
+            queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
+                if (!current) {
+                    return current;
+                }
+
+                return {
+                    posts: current.posts.map((activity) => {
+                        if (activity.object.id === id) {
+                            return {
+                                ...activity,
+                                object: {
+                                    ...activity.object,
+                                    liked: false,
+                                    likeCount: Math.max((activity.object.likeCount || 0) - 1, 0)
+                                }
+                            };
+                        }
+                        return activity;
+                    })
                 };
             });
 
