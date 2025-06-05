@@ -75,6 +75,11 @@ const Note = () => {
     const {postId} = useParams();
     const {canGoBack} = useNavigationStack();
 
+    const [expandedChains, setExpandedChains] = useState<Set<string>>(new Set());
+    const repliesRef = useRef<HTMLDivElement>(null);
+    const postRef = useRef<HTMLDivElement>(null);
+    const navigate = useNavigate();
+
     const {
         threadParents,
         post: currentPost,
@@ -92,7 +97,15 @@ const Note = () => {
         }
     }, [object?.replyCount]);
 
-    const [expandedChains, setExpandedChains] = useState<Set<string>>(new Set());
+    useEffect(() => {
+        if (postRef.current && threadParents.length > 0) {
+            postRef.current.scrollIntoView({
+                behavior: 'instant',
+                block: 'start'
+            });
+        }
+    }, [threadParents]);
+
 
     function handleReplyCountChange(increment: number) {
         setReplyCount((current: number) => current + increment);
@@ -113,19 +126,6 @@ const Note = () => {
             return newSet;
         });
     }
-
-    const repliesRef = useRef<HTMLDivElement>(null);
-    const postRef = useRef<HTMLDivElement>(null);
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        if (postRef.current && threadParents.length > 0) {
-            postRef.current.scrollIntoView({
-                behavior: 'instant',
-                block: 'start'
-            });
-        }
-    }, [threadParents]);
 
     return (
         <Layout>
