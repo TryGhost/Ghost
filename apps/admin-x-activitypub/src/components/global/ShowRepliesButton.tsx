@@ -25,9 +25,14 @@ const ShowRepliesButton: React.FC<ShowRepliesButtonProps> = ({count, onClick}) =
     };
 
     return (
-        <div ref={buttonRef} className="flex items-center justify-center py-3">
+        <div ref={buttonRef} className='mt-[-7px] flex items-center pb-3'>
+            <div className='flex w-10 flex-col items-center justify-center gap-1'>
+                <div className='size-0.5 rounded-sm bg-gray-300'></div>
+                <div className='size-0.5 rounded-sm bg-gray-300'></div>
+                <div className='size-0.5 rounded-sm bg-gray-300'></div>
+            </div>
             <Button
-                className="hover:text-blue-800 text-sm font-medium text-blue-600"
+                className='hover:text-blue-800 text-sm font-medium text-blue-600'
                 variant="ghost"
                 onClick={(e: React.MouseEvent<HTMLElement>) => {
                     e.preventDefault();
