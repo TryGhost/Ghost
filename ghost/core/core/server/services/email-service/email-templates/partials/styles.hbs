@@ -361,7 +361,7 @@ h6 + .kg-paywall .kg-paywall-hr td {
 .post-content-row .post-content > blockquote p,
 .post-content-row .post-content-sans-serif > blockquote p,
 .post-content-row .kg-cta-bg-none .kg-cta-text p {
-    color: {{contentTextColor}} !important;
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
 }
 
 /* Exclude paragraphs inside cards from custom text color (except CTA cards which are handled separately) */
@@ -386,6 +386,12 @@ h6 + .kg-paywall .kg-paywall-hr td {
 .post-content-row .kg-cta-bg-pink .kg-cta-text p,
 .post-content-row .kg-cta-bg-purple .kg-cta-text p {
     color: inherit !important;
+}
+{{/hasFeature}}
+
+{{#hasFeature "emailCustomizationAlpha"}}
+.kg-cta-bg-none .kg-cta-sponsor-label span {
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
 }
 {{/hasFeature}}
 
@@ -872,7 +878,7 @@ h3.latest-posts-header {
 .latest-post-excerpt a,
 .latest-post p,
 .latest-post p a {
-    color: {{contentTextColor}} !important;
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}} !important;
 }
 {{/hasFeature}}
 
@@ -883,19 +889,13 @@ h3.latest-posts-header {
 .subscription-box {
     padding: 32px 0;
     border-bottom: 1px solid {{dividerColor}};
-    color: {{contentTextColor}};
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    {{else}}
+    color: #15212A;
+    {{/hasFeature}}
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
-.subscription-box h3 {
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    text-transform: uppercase;
-    margin: 0 0 18px;
-    color: {{contentTextColor}};
-}
-{{else}}
 .subscription-box h3 {
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 14px;
@@ -903,12 +903,11 @@ h3.latest-posts-header {
     text-transform: uppercase;
     margin: 0 0 18px;
 }
-{{/hasFeature}}
 
 {{#hasFeature "emailCustomizationAlpha"}}
 .subscription-box p {
     margin-bottom: 0;
-    color: {{contentTextColor}} !important;
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
     font-size: 15px;
     font-weight: 400;
     line-height: 1.45em;
@@ -925,11 +924,15 @@ h3.latest-posts-header {
 }
 {{/hasFeature}}
 
+
 .subscription-box p a {
-    color: {{linkColor}} !important;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{else}}
+    color: #15212A !important;
+    {{/hasFeature}}
     text-decoration: none;
 }
-
 .manage-subscription {
     white-space: nowrap;
     font-size: 15px;
@@ -2004,6 +2007,11 @@ img.kg-cta-image {
     margin: 0 auto 1.5em;
     border-radius: 3px;
     border: 1px solid #e0e7eb;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#unless backgroundIsDark}}
+    border-color: rgba(0, 0, 0, .12);
+    {{/unless}}
+    {{/hasFeature}}
 }
 .kg-audio-title {
     display: block;
@@ -2014,14 +2022,22 @@ img.kg-cta-image {
     font-weight: 600;
     line-height: 18px;
     text-decoration: none !important;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{else}}
     color: #15212A !important;
+    {{/hasFeature}}
 }
 .kg-audio-play-button {
     display: block;
     box-sizing: border-box;
     width: 16px;
     height: 16px;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{else}}
     color: #15212A !important;
+    {{/hasFeature}}
     border-style: solid;
     border-width: 8px 0px 8px 16px;
     border-color: transparent transparent transparent currentColor;
@@ -2030,10 +2046,18 @@ img.kg-cta-image {
     display: block;
     text-decoration: none !important;
     font-size: 13px;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{else}}
     color: #15171A !important;
+    {{/hasFeature}}
 }
 .kg-audio-link {
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}} !important;
+    {{else}}
     color: #73818c !important;
+    {{/hasFeature}}
 }
 .kg-file-card {
     width: auto;
