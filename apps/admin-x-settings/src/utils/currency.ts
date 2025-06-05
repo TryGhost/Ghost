@@ -60,6 +60,7 @@ export const currencies: CurrencyOption[] = [
     {isoCode: 'INR', name: 'Indian rupee'},
     {isoCode: 'ISK', name: 'Icelandic króna'},
     {isoCode: 'JMD', name: 'Jamaican dollar'},
+    {isoCode: 'JPY', name: 'Japanese yen'},
     {isoCode: 'KES', name: 'Kenyan shilling'},
     {isoCode: 'KGS', name: 'Kyrgyzstani som'},
     {isoCode: 'KHR', name: 'Cambodian riel'},
@@ -152,12 +153,24 @@ export function getSymbol(currency: string): string {
     return Intl.NumberFormat('en', {currency, style: 'currency'}).format(0).replace(/[\d\s.]/g, '');
 }
 
-// We currently only support decimal currencies
-export function currencyToDecimal(integerAmount: number): number {
+// Zero-decimal currencies don't use minor units
+const zeroDecimalCurrencies = ['BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF'];
+
+export function isZeroDecimalCurrency(currency: string): boolean {
+    return zeroDecimalCurrencies.includes(currency?.toUpperCase());
+}
+
+export function currencyToDecimal(integerAmount: number, currency?: string): number {
+    if (currency && isZeroDecimalCurrency(currency)) {
+        return integerAmount;
+    }
     return integerAmount / 100;
 }
 
-export function currencyFromDecimal(decimalAmount: number): number {
+export function currencyFromDecimal(decimalAmount: number, currency?: string): number {
+    if (currency && isZeroDecimalCurrency(currency)) {
+        return decimalAmount;
+    }
     return decimalAmount * 100;
 }
 
