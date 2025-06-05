@@ -1,7 +1,7 @@
 import React, {useMemo} from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, Icon, Separator, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, Icon, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, formatNumber, formatPercentage} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
@@ -41,6 +41,51 @@ interface ProcessedLocationData {
     visits: number;
     percentage: number;
 }
+
+interface LocationsTableProps {
+    data: ProcessedLocationData[];
+}
+
+const LocationsTable: React.FC<LocationsTableProps> = ({data}) => {
+    return (
+        <DataList>
+            <DataListHeader>
+                <DataListHead>Country</DataListHead>
+                <DataListHead>Visitors</DataListHead>
+            </DataListHeader>
+            <DataListBody>
+                {data.map((row) => {
+                    const countryName = getCountryName(`${row.location}`) || 'Unknown';
+                    return (
+                        <DataListRow key={row.location || 'unknown'}>
+                            <DataListBar className='opacity-10 transition-all group-hover/row:opacity-20' style={{
+                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
+                                backgroundColor: 'hsl(var(--chart-purple))'
+                            }} />
+                            <DataListItemContent className='group-hover/data:max-w-[calc(100%-140px)]'>
+                                <div className='flex items-center space-x-3 overflow-hidden' title={countryName || 'Unknown'}>
+                                    <Flag
+                                        countryCode={`${normalizeCountryCode(row.location as string)}`}
+                                        fallback={
+                                            <span className='flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-black text-white'>
+                                                <Icon.SkullAndBones className='size-3' />
+                                            </span>
+                                        }
+                                    />
+                                    <div className='truncate font-medium'>{countryName}</div>
+                                </div>
+                            </DataListItemContent>
+                            <DataListItemValue>
+                                <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
+                                <DataListItemValuePerc>{formatPercentage(row.percentage)}</DataListItemValuePerc>
+                            </DataListItemValue>
+                        </DataListRow>
+                    );
+                })}
+            </DataListBody>
+        </DataList>
+    );
+};
 
 const Locations:React.FC<LocationsProps> = ({queryParams}) => {
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
@@ -94,43 +139,26 @@ const Locations:React.FC<LocationsProps> = ({queryParams}) => {
                     </CardHeader>
                     <CardContent>
                         <Separator />
-                        <DataList>
-                            <DataListHeader>
-                                <DataListHead>Country</DataListHead>
-                                <DataListHead>Visitors</DataListHead>
-                            </DataListHeader>
-                            <DataListBody>
-                                {processedData.map((row) => {
-                                    const countryName = getCountryName(`${row.location}`) || 'Unknown';
-                                    return (
-                                        <DataListRow key={row.location || 'unknown'}>
-                                            <DataListBar className='opacity-10 transition-all group-hover/row:opacity-20' style={{
-                                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
-                                                backgroundColor: 'hsl(var(--chart-purple))'
-                                            }} />
-                                            <DataListItemContent className='group-hover/data:max-w-[calc(100%-140px)]'>
-                                                <div className='flex items-center space-x-3 overflow-hidden' title={countryName || 'Unknown'}>
-                                                    <Flag
-                                                        countryCode={`${normalizeCountryCode(row.location as string)}`}
-                                                        fallback={
-                                                            <span className='flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-black text-white'>
-                                                                <Icon.SkullAndBones className='size-3' />
-                                                            </span>
-                                                        }
-                                                    />
-                                                    <div className='truncate font-medium'>{countryName}</div>
-                                                </div>
-                                            </DataListItemContent>
-                                            <DataListItemValue>
-                                                <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
-                                                <DataListItemValuePerc>{formatPercentage(row.percentage)}</DataListItemValuePerc>
-                                            </DataListItemValue>
-                                        </DataListRow>
-                                    );
-                                })}
-                            </DataListBody>
-                        </DataList>
+                        <LocationsTable data={processedData} />
                     </CardContent>
+                    {processedData!.length > 10 &&
+                        <CardFooter>
+                            <Sheet>
+                                <SheetTrigger asChild>
+                                    <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
+                                </SheetTrigger>
+                                <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
+                                    <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
+                                        <SheetTitle>Top locations</SheetTitle>
+                                        <SheetDescription>Where are the readers of this post</SheetDescription>
+                                    </SheetHeader>
+                                    <div className='group/datalist'>
+                                        <LocationsTable data={processedData} />
+                                    </div>
+                                </SheetContent>
+                            </Sheet>
+                        </CardFooter>
+                    }
                 </Card>
                     }
                 </>
