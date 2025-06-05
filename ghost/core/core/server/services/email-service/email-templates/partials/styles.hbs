@@ -2009,8 +2009,10 @@ img.kg-cta-image {
     border: 1px solid #e0e7eb;
     {{#hasFeature "emailCustomizationAlpha"}}
     {{#if backgroundIsDark}}
+    border-color: #ffffff;
     border-color: rgba(255, 255, 255, .12);
     {{else}}
+    border-color: #e0e7eb;
     border-color: rgba(0, 0, 0, .12);
     {{/if}}
     {{/hasFeature}}
@@ -2025,7 +2027,13 @@ img.kg-cta-image {
     line-height: 18px;
     text-decoration: none !important;
     {{#hasFeature "emailCustomizationAlpha"}}
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{#if backgroundIsDark}}
+    color: #ffffff !important;
+    color: rgba(255, 255, 255, .6) !important;
+    {{else}}
+    color: #15212A !important;
+    border-color: rgba(0, 0, 0, .6);
+    {{/if}}
     {{else}}
     color: #15212A !important;
     {{/hasFeature}}
@@ -2036,7 +2044,13 @@ img.kg-cta-image {
     width: 16px;
     height: 16px;
     {{#hasFeature "emailCustomizationAlpha"}}
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{#if backgroundIsDark}}
+    color: #ffffff !important;
+    color: rgba(255, 255, 255, .6) !important;
+    {{else}}
+    color: #15212A !important;
+    border-color: rgba(0, 0, 0, .6);
+    {{/if}}
     {{else}}
     color: #15212A !important;
     {{/hasFeature}}
@@ -2049,14 +2063,26 @@ img.kg-cta-image {
     text-decoration: none !important;
     font-size: 13px;
     {{#hasFeature "emailCustomizationAlpha"}}
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{#if backgroundIsDark}}
+    color: #ffffff !important;
+    color: rgba(255, 255, 255, .6) !important;
     {{else}}
-    color: #15171A !important;
+    color: #73818c !important;
+    border-color: rgba(0, 0, 0, .6);
+    {{/if}}
+    {{else}}
+    color: #73818c !important;
     {{/hasFeature}}
 }
 .kg-audio-link {
     {{#hasFeature "emailCustomizationAlpha"}}
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}} !important;
+    {{#if backgroundIsDark}}
+    color: #ffffff !important;
+    color: rgba(255, 255, 255, .6) !important;
+    {{else}}
+    color: #73818c !important;
+    border-color: rgba(0, 0, 0, .6) !important;
+    {{/if}}
     {{else}}
     color: #73818c !important;
     {{/hasFeature}}
@@ -2068,7 +2094,13 @@ img.kg-cta-image {
     border-radius: 3px;
     border: 1px solid #e0e7eb;
     {{#hasFeature "emailCustomizationAlpha"}}
-    border: 1px solid {{#if backgroundIsDark}}rgba(255,255,255,.12){{else}}rgba(0,0,0,.12){{/if}};
+    {{#if backgroundIsDark}}
+    border-color: #ffffff;
+    border-color: rgba(255, 255, 255, .12);
+    {{else}}
+    border-color: #e0e7eb;
+    border-color: rgba(0, 0, 0, .12);
+    {{/if}}
     {{/hasFeature}}
 }
 .kg-file-title {
@@ -2081,7 +2113,13 @@ img.kg-cta-image {
     line-height: 1.3em;
     text-decoration: none !important;
     {{#hasFeature "emailCustomizationAlpha"}}
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{#if backgroundIsDark}}
+    color: #ffffff !important;
+    color: rgba(255, 255, 255, .6) !important;
+    {{else}}
+    color: #15212A !important;
+    border-color: rgba(0, 0, 0, .6);
+    {{/if}}
     {{else}}
     color: #15212A !important;
     {{/hasFeature}}
@@ -2095,7 +2133,12 @@ img.kg-cta-image {
     line-height: 1.4em;
     text-decoration: none !important;
     {{#hasFeature "emailCustomizationAlpha"}}
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}} !important;
+    {{#if backgroundIsDark}}
+    color: #ffffff !important;
+    color: rgba(255, 255, 255, .6) !important;
+    {{else}}
+    color: #73818c !important;
+    {{/if}}
     {{else}}
     color: #73818c !important;
     {{/hasFeature}}
@@ -2110,15 +2153,25 @@ img.kg-cta-image {
     line-height: 1.4em;
     text-decoration: none !important;
     {{#hasFeature "emailCustomizationAlpha"}}
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}} !important;
+    {{#if backgroundIsDark}}
+    color: #73818c !important;
+    color: rgba(255, 255, 255, .6) !important;
     {{else}}
     color: #73818c !important;
+    {{/if}}
+    {{else}}
+    color: #73818c;
     {{/hasFeature}}
 }
 .kg-file-name {
     font-weight: 500;
     {{#hasFeature "emailCustomizationAlpha"}}
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{#if backgroundIsDark}}
+    color: #ffffff !important;
+    color: rgba(255, 255, 255, .6) !important;
+    {{else}}
+    color: #15212A !important;
+    {{/if}}
     {{else}}
     color: #15212A !important;
     {{/hasFeature}}
