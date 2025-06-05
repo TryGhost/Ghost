@@ -7,6 +7,7 @@ import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
+import skullAndBonesIcon from '@src/assets/icons/skull-and-bones.svg?url';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, Flag, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, cn, formatNumber, formatQueryDate, getRangeDates, useSimplePagination} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
@@ -256,7 +257,14 @@ const Locations:React.FC = () => {
                                         return (
                                             <div key={row.location || 'unknown'} className='flex items-center justify-between text-sm'>
                                                 <div className='flex items-center gap-3 py-2.5 font-medium'>
-                                                    <Flag countryCode={`${normalizeCountryCode(row.location as string)}`} />
+                                                    <Flag
+                                                        countryCode={`${normalizeCountryCode(row.location as string)}`}
+                                                        fallback={
+                                                            <span className='flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-black text-white'>
+                                                                <img alt="Unknown location" className="size-3" src={skullAndBonesIcon} />
+                                                            </span>
+                                                        }
+                                                    />
                                                     {countryName}
                                                 </div>
                                                 <div className='py-2.5 text-right font-mono'>{formatNumber(Number(row.visits))}</div>
