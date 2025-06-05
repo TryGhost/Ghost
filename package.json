@@ -84,8 +84,8 @@
     "inquirer": "8.2.6",
     "lint-staged": "15.5.2",
     "nx": "20.8.2",
-    "patch-package": "^8.0.0",
-    "postinstall-postinstall": "^2.1.0",
+    "patch-package": "8.0.0",
+    "postinstall-postinstall": "2.1.0",
     "rimraf": "5.0.10",
     "typescript": "5.8.3"
   }
