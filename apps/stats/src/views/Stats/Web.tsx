@@ -6,6 +6,7 @@ import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, GhAreaChart, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange, isValidDomain} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
+import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
 
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
@@ -32,6 +33,7 @@ const SOURCE_DOMAIN_MAP: Record<string, string> = {
     Flipboard: 'flipboard.com',
     Substack: 'substack.com',
     Ghost: 'ghost.org',
+    'Ghost Explore': 'ghost.org',
     Buffer: 'buffer.com',
     Taboola: 'taboola.com',
     AppNexus: 'appnexus.com',
@@ -40,7 +42,16 @@ const SOURCE_DOMAIN_MAP: Record<string, string> = {
     Memeorandum: 'memeorandum.com',
     'Ground News': 'ground.news',
     'Apple News': 'apple.com',
-    SmartNews: 'smartnews.com'
+    SmartNews: 'smartnews.com',
+    'Hacker News': 'news.ycombinator.com',
+    // Search engines
+    Google: 'google.com',
+    'Google News': 'news.google.com',
+    Bing: 'bing.com',
+    DuckDuckGo: 'duckduckgo.com',
+    // Email/Newsletter
+    'newsletter-email': 'static.ghost.org',
+    newsletter: 'static.ghost.org'
 };
 
 // Helper function to extract domain from URL
@@ -370,7 +381,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data, siteUrl}) => {
                                                     className="size-4"
                                                     src={`https://www.faviconextractor.com/favicon/${faviconDomain}?larger=true`}
                                                     onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                        e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiByeD0iMiIgZmlsbD0iIzZCNzI4MCIvPgo8L3N2Zz4K';
+                                                        e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
                                                     }} />
                                                 <span className='group-hover/link:underline'>{displayName}</span>
                                             </a>
@@ -378,7 +389,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data, siteUrl}) => {
                                             <span className='flex items-center gap-2'>
                                                 <img
                                                     className="size-4"
-                                                    src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiByeD0iMiIgZmlsbD0iIzZCNzI4MCIvPgo8L3N2Zz4K' />
+                                                    src={STATS_DEFAULT_SOURCE_ICON_URL} />
                                                 <span>{displayName}</span>
                                             </span>
                                         }
