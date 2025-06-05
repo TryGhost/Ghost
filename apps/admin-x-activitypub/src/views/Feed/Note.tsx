@@ -63,7 +63,12 @@ const Note = () => {
 
     const processedReplies = useMemo(() => {
         if (!shouldFetchReplyChain) {
-            return threadChildren;
+            return threadChildren.map((item) => {
+                return {
+                    mainReply: item,
+                    chain: []
+                };
+            });
         }
 
         return (replyChain?.children ?? []).map((childData) => {
@@ -190,34 +195,7 @@ const Note = () => {
                                                 />
                                                 <FeedItemDivider />
                                                 <div ref={repliesRef}>
-                                                    {!shouldFetchReplyChain ? (
-                                                        threadChildren.map((item, index) => {
-                                                            const showDivider = index !== threadChildren.length - 1;
-
-                                                            return (
-                                                                <React.Fragment key={item.id}>
-                                                                    <FeedItem
-                                                                        actor={item.actor}
-                                                                        allowDelete={item.object.authored}
-                                                                        commentCount={item.object.replyCount ?? 0}
-                                                                        isPending={isPendingActivity(item.id)}
-                                                                        last={true}
-                                                                        layout='reply'
-                                                                        likeCount={item.object.likeCount ?? 0}
-                                                                        object={item.object}
-                                                                        parentId={object.id}
-                                                                        repostCount={item.object.repostCount ?? 0}
-                                                                        type='Note'
-                                                                        onClick={() => {
-                                                                            navigate(`/feed/${encodeURIComponent(item.id)}`);
-                                                                        }}
-                                                                        onDelete={handleDelete}
-                                                                    />
-                                                                    {showDivider && <FeedItemDivider />}
-                                                                </React.Fragment>
-                                                            );
-                                                        })
-                                                    ) : (
+                                                    {
                                                         processedReplies.map((replyGroup, groupIndex) => {
                                                             if ('id' in replyGroup) {
                                                                 const showDivider = groupIndex !== processedReplies.length - 1;
@@ -330,7 +308,7 @@ const Note = () => {
                                                                 );
                                                             }
                                                         })
-                                                    )}
+                                                    }
                                                 </div>
                                             </div>
                                         </div>
