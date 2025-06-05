@@ -16,7 +16,7 @@ env:
     ${{ github.workspace }}/ghost/*/node_modules
     ~/.cache/ms-playwright/
   NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
-  NODE_VERSION: 20.11.1
+  NODE_VERSION: 22.16.0
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -431,7 +431,7 @@ jobs:
     if: needs.job_setup.outputs.changed_any_code == 'true'
     strategy:
       matrix:
-        node: [ '20.11.1', '22.13.1' ]
+        node: [ '20.11.1', '22.16.0' ]
     name: Unit tests (Node ${{ matrix.node }})
     steps:
       - uses: actions/checkout@v4
@@ -478,7 +478,7 @@ jobs:
     if: needs.job_setup.outputs.changed_core == 'true'
     strategy:
       matrix:
-        node: [ '20.11.1', '22.13.1' ]
+        node: [ '20.11.1', '22.16.0' ]
         env:
           - DB: mysql8
             NODE_ENV: testing-mysql
