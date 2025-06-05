@@ -4,108 +4,15 @@ import React, {useMemo, useState} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, GhAreaChart, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange, isValidDomain} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, GhAreaChart, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
 
+import {extractDomain, getFaviconDomain, getStatEndpointUrl, getToken, useNavigate} from '@tryghost/admin-x-framework';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useNavigate} from '@tryghost/admin-x-framework';
 import {useQuery} from '@tinybirdco/charts';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
-
-// Add this mapping near the top of the file, after the imports
-const SOURCE_DOMAIN_MAP: Record<string, string> = {
-    Reddit: 'reddit.com',
-    Facebook: 'facebook.com',
-    Twitter: 'twitter.com',
-    Bluesky: 'bsky.app',
-    Instagram: 'instagram.com',
-    LinkedIn: 'linkedin.com',
-    Threads: 'threads.net',
-    'Brave Search': 'search.brave.com',
-    Ecosia: 'ecosia.org',
-    Gmail: 'gmail.com',
-    Outlook: 'outlook.com',
-    'Yahoo!': 'yahoo.com',
-    'AOL Mail': 'aol.com',
-    Flipboard: 'flipboard.com',
-    Substack: 'substack.com',
-    Ghost: 'ghost.org',
-    'Ghost Explore': 'ghost.org',
-    Buffer: 'buffer.com',
-    Taboola: 'taboola.com',
-    AppNexus: 'appnexus.com',
-    Wikipedia: 'wikipedia.org',
-    Mastodon: 'mastodon.social',
-    Memeorandum: 'memeorandum.com',
-    'Ground News': 'ground.news',
-    'Apple News': 'apple.com',
-    SmartNews: 'smartnews.com',
-    'Hacker News': 'news.ycombinator.com',
-    // Search engines
-    Google: 'google.com',
-    'Google News': 'news.google.com',
-    Bing: 'bing.com',
-    DuckDuckGo: 'duckduckgo.com',
-    // Email/Newsletter
-    'newsletter-email': 'static.ghost.org',
-    newsletter: 'static.ghost.org'
-};
-
-// Helper function to extract domain from URL
-const extractDomain = (url: string): string | null => {
-    try {
-        const domain = new URL(url.startsWith('http') ? url : `https://${url}`).hostname;
-        return domain.replace(/^www\./, '');
-    } catch {
-        return null;
-    }
-};
-
-// Helper function to check if a domain is the same or a subdomain
-const isDomainOrSubdomain = (sourceDomain: string, siteDomain: string): boolean => {
-    // Exact match
-    if (sourceDomain === siteDomain) {
-        return true;
-    }
-    
-    // Subdomain check: source should end with ".siteDomain"
-    return sourceDomain.endsWith(`.${siteDomain}`);
-};
-
-// Add helper function to get favicon domain
-const getFaviconDomain = (source: string | number | undefined, siteUrl?: string): {domain: string | null, isDirectTraffic: boolean} => {
-    if (!source || typeof source !== 'string') {
-        return {domain: null, isDirectTraffic: false};
-    }
-    
-    // Extract site domain for comparison
-    const siteDomain = siteUrl ? extractDomain(siteUrl) : null;
-    
-    // Check if source matches site domain or is a subdomain (treat as direct traffic)
-    if (siteDomain) {
-        const sourceDomain = extractDomain(source);
-        if (sourceDomain && isDomainOrSubdomain(sourceDomain, siteDomain)) {
-            return {domain: siteDomain, isDirectTraffic: true};
-        }
-        
-        // Also check the source string directly (in case it's already just a domain)
-        if (isDomainOrSubdomain(source, siteDomain)) {
-            return {domain: siteDomain, isDirectTraffic: true};
-        }
-    }
-    
-    // Check if it's already a domain
-    if (isValidDomain(source)) {
-        return {domain: source, isDirectTraffic: false};
-    }
-    
-    // Check our mapping
-    const mappedDomain = SOURCE_DOMAIN_MAP[source];
-    return {domain: mappedDomain || null, isDirectTraffic: false};
-};
 
 // Define types for our page data
 interface TopContentData {
@@ -418,7 +325,9 @@ interface SourcesCardProps {
 const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range, siteUrl}) => {
     // Process and group sources data
     const processedData = React.useMemo(() => {
-        if (!data) return [];
+        if (!data) {
+            return [];
+        }
         
         const sourceMap = new Map<string, {source: string, visits: number, isDirectTraffic: boolean, faviconDomain?: string}>();
         let directTrafficTotal = 0;
@@ -510,10 +419,6 @@ const Web: React.FC = () => {
     
     // Get site URL for domain comparison  
     const siteUrl = data?.url as string | undefined;
-    
-    // TEMPORARY: For testing levernews.com direct traffic grouping
-    // Remove this line when done testing
-    const testingSiteUrl = siteUrl || 'https://levernews.com';
 
     // Prepare query parameters
     const params = {
@@ -573,7 +478,7 @@ const Web: React.FC = () => {
                 </Card>
                 <div className='grid grid-cols-2 gap-8'>
                     <TopContentCard data={topContentData?.stats || null} range={range} totalVisitors={totalVisitors} />
-                    <SourcesCard data={sourcesData as SourcesData[] | null} range={range} siteUrl={testingSiteUrl} totalVisitors={totalVisitors} />
+                    <SourcesCard data={sourcesData as SourcesData[] | null} range={range} siteUrl={siteUrl} totalVisitors={totalVisitors} />
                 </div>
             </StatsView>
         </StatsLayout>

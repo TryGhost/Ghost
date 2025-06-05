@@ -8,6 +8,9 @@ export {getStatEndpointUrl, getToken} from './utils/stats-config';
 // Post utilities
 export {hasBeenEmailed} from './utils/post-utils';
 
+// Source utilities
+export {SOURCE_DOMAIN_MAP, extractDomain, isDomainOrSubdomain, getFaviconDomain} from './utils/source-utils';
+
 // Routing
 export type {RouteObject} from 'react-router';
 export type {RouterProviderProps} from './providers/RouterProvider';
