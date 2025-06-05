@@ -3,7 +3,7 @@ import APReplyBox from '@src/components/global/APReplyBox';
 import DeletedFeedItem from '@src/components/feed/DeletedFeedItem';
 import FeedItem from '@components/feed/FeedItem';
 import Layout from '@src/components/layout/Layout';
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import ShowRepliesButton from '@src/components/global/ShowRepliesButton';
 import getUsername from '@src/utils/get-username';
 import {Activity} from '@tryghost/admin-x-framework/api/activitypub';
@@ -20,6 +20,56 @@ import {usePostForUser, useReplyChainForUser, useThreadForUser} from '@hooks/use
 const FeedItemDivider: React.FC = () => (
     <div className="h-px bg-gray-200 dark:bg-gray-950"></div>
 );
+
+function useReplyChainData(postId: string) {
+    const {isEnabled} = useFeatureFlags();
+
+    const shouldFetchReplyChain = isEnabled('reply-chain');
+
+    const {data: replyChain, isLoading: isReplyChainLoading} = useReplyChainForUser('index', shouldFetchReplyChain ? postId : '');
+    const {data: post, isLoading} = usePostForUser('index', shouldFetchReplyChain ? '' : postId);
+    const {data: thread} = useThreadForUser('index', shouldFetchReplyChain ? '' : postId);
+
+    if (shouldFetchReplyChain) {
+        const threadParents = replyChain?.ancestors?.chain?.map(mapPostToActivity) || [];
+        const threadPost = replyChain?.post ? mapPostToActivity(replyChain.post) : undefined;
+        const processedReplies = (replyChain?.children ?? []).map((childData) => {
+            const mainReply = mapPostToActivity(childData.post);
+            const chainItems = childData.chain ? childData.chain.map(mapPostToActivity) : [];
+
+            return {
+                mainReply,
+                chain: chainItems
+            };
+        });
+
+        return {
+            threadParents,
+            post: threadPost,
+            processedReplies,
+            isLoading: isReplyChainLoading
+        };
+    } else {
+        const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === postId);
+
+        const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
+        const threadParents = (thread?.posts ?? []).slice(0, threadPostIdx);
+
+        const processedReplies = threadChildren.map((item) => {
+            return {
+                mainReply: item,
+                chain: []
+            };
+        });
+
+        return {
+            threadParents,
+            post,
+            processedReplies,
+            isLoading
+        };
+    }
+}
 
 const Note = () => {
     const {isEnabled} = useFeatureFlags();
