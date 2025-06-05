@@ -1,6 +1,7 @@
 // Source domain mapping for favicons
 export const SOURCE_DOMAIN_MAP: Record<string, string> = {
     Reddit: 'reddit.com',
+    'www.reddit.com': 'reddit.com',
     Facebook: 'facebook.com',
     Twitter: 'twitter.com',
     Bluesky: 'bsky.app',
@@ -90,7 +91,9 @@ export const getFaviconDomain = (source: string | number | undefined, siteUrl?: 
     // If not in mapping, check if it's already a domain
     const isDomain = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(source);
     if (isDomain) {
-        return {domain: source, isDirectTraffic: false};
+        // Clean up the domain by removing www. prefix
+        const cleanDomain = source.replace(/^www\./, '');
+        return {domain: cleanDomain, isDirectTraffic: false};
     }
     
     // No domain found
