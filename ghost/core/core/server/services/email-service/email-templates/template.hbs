@@ -9,6 +9,144 @@
     </head>
     <body>
         <span class="preheader">{{preheader}}</span>
+        
+        <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="header" width="100%">
+            <!-- Outlook doesn't respect max-width so we need an extra centered table -->
+            <!--[if mso]>
+            <tr>
+                <td>
+                    <center>
+                        <table border="0" cellpadding="0" cellspacing="0" width="600">
+            <![endif]-->
+            <tr>
+                <td class="header-bg" align="center">
+                    <!-- Header content constrained to 600px -->
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="header-container" width="600">
+                        <tr>
+                            <td class="header-content" style="padding: 0 20px;">
+                                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    {{#if headerImage}}
+                                        <tr class="header-image-row">
+                                            <td class="header-image" width="100%" align="center">
+                                                <a href="{{site.url}}">
+                                                    <img
+                                                        src="{{headerImage}}"
+                                                        {{#if headerImageWidth}}
+                                                            width="{{headerImageWidth}}"
+                                                        {{/if}}
+                                                    >
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {{/if}}
+
+                                    {{#if (or showHeaderIcon showHeaderTitle showHeaderName) }}
+                                        <tr class="site-info-row">
+                                            <td class="site-info" width="100%" align="center">
+                                                <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                                    {{#if (and showHeaderIcon site.iconUrl) }}
+                                                        <tr>
+                                                            <td class="site-icon"><a href="{{site.url}}"><img src="{{site.iconUrl}}" alt="{{site.title}}" border="0" width="48" height="48"></a></td>
+                                                        </tr>
+                                                    {{/if}}
+                                                    {{#if showHeaderTitle }}
+                                                        <tr>
+                                                            <td class="site-url {{#unless showHeaderName}}site-url-bottom-padding{{/unless}}"><div style="width: 100% !important;"><a href="{{site.url}}" class="site-title">{{site.title}}</a></div></td>
+                                                        </tr>
+                                                    {{/if}}
+                                                    {{#if (and showHeaderName showHeaderTitle) }}
+                                                        <tr>
+                                                            <td class="site-url site-url-bottom-padding"><div style="width: 100% !important;"><a href="{{site.url}}" class="site-subtitle">{{newsletter.name}}</a></div></td>
+                                                        </tr>
+                                                    {{/if}}
+                                                    {{#if (and showHeaderName (not showHeaderTitle)) }}
+                                                        <tr>
+                                                            <td class="site-url site-url-bottom-padding"><div style="width: 100% !important;"><a href="{{site.url}}" class="site-title">{{newsletter.name}}</a></div></td>
+                                                        </tr>
+                                                    {{/if}}
+
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    {{/if}}
+
+                                    {{#if newsletter.showPostTitleSection}}
+                                        <tr>
+                                            <td class="{{classes.title}}">
+                                                <a href="{{post.url}}" class="{{classes.titleLink}}">{{post.title}}</a>
+                                            </td>
+                                        </tr>
+                                        {{#if (and newsletter.showExcerpt post.customExcerpt)}}
+                                            <tr>
+                                                <td class="post-excerpt-wrapper" style="width: 100%">
+                                                    <p class="{{classes.excerpt}}">{{post.customExcerpt}}</p>
+                                                </td>
+                                            </tr>
+                                        {{/if}}
+                                        <tr>
+                                            <td style="width: 100%">
+                                                <table class="post-meta-wrapper" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-bottom: 32px;">
+                                                    <tr>
+                                                        <td height="20" class="{{classes.meta}}" style="padding: 0;">
+                                                            {{{t 'By {authors}' authors=post.authors }}} • <span class="post-meta-date">{{t '{date}' date=post.publishedAt}} </span>
+                                                        </td>
+                                                        <td class="{{classes.meta}} view-online desktop">
+                                                            <a href="{{post.url}}" class="view-online-link">{{t 'View in browser'}}</a>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="{{classes.meta}} view-online-mobile">
+                                                        <td height="20" class="view-online">
+                                                            <a href="{{post.url}}" class="view-online-link">{{t 'View in browser'}}</a>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    {{/if}}
+
+                                    {{#if showFeatureImage }}
+                                        <tr class="feature-image-row">
+                                            <td class="feature-image
+                                                {{#if post.feature_image_caption }}
+                                                    feature-image-with-caption
+                                                {{/if}}
+                                            " align="center"><img
+                                                src="{{post.feature_image}}"
+                                                {{#if post.feature_image_width }}
+                                                    width="{{post.feature_image_width}}"
+                                                {{/if}}
+                                                {{#if post.feature_image_alt }}
+                                                    alt="{{post.feature_image_alt}}"
+                                                {{/if}}
+                                            ></td>
+                                        </tr>
+
+                                         {{#if post.feature_image_caption }}
+                                            <tr>
+                                                <td align="center">
+                                                    <div class="feature-image-caption">
+                                                        {{{post.feature_image_caption}}}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {{/if}}
+                                    {{/if}}
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <!--[if mso]>
+                        </table>
+                    </center>
+                </td>
+            </tr>
+            <![endif]-->
+        </table>
+
+        <!-- MAIN CONTENT AREA -->
         <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body" width="100%">
             <!-- Outlook doesn't respect max-width so we need an extra centered table -->
             <!--[if mso]>
@@ -21,123 +159,6 @@
                 <td>&nbsp;</td>
                 <td class="{{classes.container}}">
                     <div class="content">
-                        <!-- START CENTERED WHITE CONTAINER -->
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="header" width="100%">
-
-                            <!-- START MAIN CONTENT AREA -->
-                            <tr>
-                                <td class="wrapper">
-                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        {{#if headerImage}}
-                                            <tr class="header-image-row">
-                                                <td class="header-image" width="100%" align="center">
-                                                    <a href="{{site.url}}">
-                                                        <img
-                                                            src="{{headerImage}}"
-                                                            {{#if headerImageWidth}}
-                                                                width="{{headerImageWidth}}"
-                                                            {{/if}}
-                                                        >
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        {{/if}}
-
-                                        {{#if (or showHeaderIcon showHeaderTitle showHeaderName) }}
-                                            <tr class="site-info-row">
-                                                <td class="site-info" width="100%" align="center">
-                                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                                                        {{#if (and showHeaderIcon site.iconUrl) }}
-                                                            <tr>
-                                                                <td class="site-icon"><a href="{{site.url}}"><img src="{{site.iconUrl}}" alt="{{site.title}}" border="0" width="48" height="48"></a></td>
-                                                            </tr>
-                                                        {{/if}}
-                                                        {{#if showHeaderTitle }}
-                                                            <tr>
-                                                                <td class="site-url {{#unless showHeaderName}}site-url-bottom-padding{{/unless}}"><div style="width: 100% !important;"><a href="{{site.url}}" class="site-title">{{site.title}}</a></div></td>
-                                                            </tr>
-                                                        {{/if}}
-                                                        {{#if (and showHeaderName showHeaderTitle) }}
-                                                            <tr>
-                                                                <td class="site-url site-url-bottom-padding"><div style="width: 100% !important;"><a href="{{site.url}}" class="site-subtitle">{{newsletter.name}}</a></div></td>
-                                                            </tr>
-                                                        {{/if}}
-                                                        {{#if (and showHeaderName (not showHeaderTitle)) }}
-                                                            <tr>
-                                                                <td class="site-url site-url-bottom-padding"><div style="width: 100% !important;"><a href="{{site.url}}" class="site-title">{{newsletter.name}}</a></div></td>
-                                                            </tr>
-                                                        {{/if}}
-
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        {{/if}}
-
-                                        {{#if newsletter.showPostTitleSection}}
-                                            <tr>
-                                                <td class="{{classes.title}}">
-                                                    <a href="{{post.url}}" class="{{classes.titleLink}}">{{post.title}}</a>
-                                                </td>
-                                            </tr>
-                                            {{#if (and newsletter.showExcerpt post.customExcerpt)}}
-                                                <tr>
-                                                    <td class="post-excerpt-wrapper" style="width: 100%">
-                                                        <p class="{{classes.excerpt}}">{{post.customExcerpt}}</p>
-                                                    </td>
-                                                </tr>
-                                            {{/if}}
-                                            <tr>
-                                                <td style="width: 100%">
-                                                    <table class="post-meta-wrapper" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-bottom: 32px;">
-                                                        <tr>
-                                                            <td height="20" class="{{classes.meta}}" style="padding: 0;">
-                                                                {{{t 'By {authors}' authors=post.authors }}} • <span class="post-meta-date">{{t '{date}' date=post.publishedAt}} </span>
-                                                            </td>
-                                                            <td class="{{classes.meta}} view-online desktop">
-                                                                <a href="{{post.url}}" class="view-online-link">{{t 'View in browser'}}</a>
-                                                            </td>
-                                                        </tr>
-                                                        <tr class="{{classes.meta}} view-online-mobile">
-                                                            <td height="20" class="view-online">
-                                                                <a href="{{post.url}}" class="view-online-link">{{t 'View in browser'}}</a>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        {{/if}}
-
-                                        {{#if showFeatureImage }}
-                                            <tr class="feature-image-row">
-                                                <td class="feature-image
-                                                    {{#if post.feature_image_caption }}
-                                                        feature-image-with-caption
-                                                    {{/if}}
-                                                " align="center"><img
-                                                    src="{{post.feature_image}}"
-                                                    {{#if post.feature_image_width }}
-                                                        width="{{post.feature_image_width}}"
-                                                    {{/if}}
-                                                    {{#if post.feature_image_alt }}
-                                                        alt="{{post.feature_image_alt}}"
-                                                    {{/if}}
-                                                ></td>
-                                            </tr>
-
-                                             {{#if post.feature_image_caption }}
-                                                <tr>
-                                                    <td align="center">
-                                                        <div class="feature-image-caption">
-                                                            {{{post.feature_image_caption}}}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            {{/if}}
-                                        {{/if}}
-                                    </table>
-                                </td>
-                            </tr>
-                        </table>
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="main" width="100%">
                             <tr>
                                 <td class="wrapper">
