@@ -138,7 +138,7 @@ const DataListItemContent = React.forwardRef<HTMLDivElement, DataListItemContent
     return (
         <div
             ref={ref}
-            className={cn('text-sm px-2 font-medium relative z-10 flex min-w-0 max-w-[calc(100%-32px)] items-center py-1.5 transition-[max-width] duration-300 ease-in-out group-hover/data:max-w-[calc(100%-100px)]', className)}
+            className={cn('text-sm px-2 font-medium relative z-10 flex min-w-0 max-w-[calc(100%-32px)] items-center py-1.5 transition-[max-width] duration-300 ease-in-out group-hover/datalist:max-w-[calc(100%-100px)]', className)}
             {...props}
         >
             {children}
@@ -166,8 +166,8 @@ const DataListItemValue = React.forwardRef<HTMLDivElement, DataListItemValueProp
             className={cn(
                 'z-10 flex items-center',
                 // Apply animation styles when there are multiple children
-                hasMultipleChildren && '[&>[data-type="value-abs"]]:transition-transform [&>[data-type="value-abs"]]:duration-300 [&>[data-type="value-abs"]]:group-hover/data:-translate-x-14',
-                hasMultipleChildren && '[&>[data-type="value-perc"]]:invisible [&>[data-type="value-perc"]]:absolute [&>[data-type="value-perc"]]:right-0 [&>[data-type="value-perc"]]:translate-x-14 [&>[data-type="value-perc"]]:opacity-0 [&>[data-type="value-perc"]]:transition-all [&>[data-type="value-perc"]]:duration-300 [&>[data-type="value-perc"]]:group-hover/data:visible [&>[data-type="value-perc"]]:group-hover/data:translate-x-0 [&>[data-type="value-perc"]]:group-hover/data:opacity-100',
+                hasMultipleChildren && '[&>[data-type="value-abs"]]:transition-transform [&>[data-type="value-abs"]]:duration-300 [&>[data-type="value-abs"]]:group-hover/datalist:-translate-x-14',
+                hasMultipleChildren && '[&>[data-type="value-perc"]]:invisible [&>[data-type="value-perc"]]:absolute [&>[data-type="value-perc"]]:right-0 [&>[data-type="value-perc"]]:translate-x-14 [&>[data-type="value-perc"]]:opacity-0 [&>[data-type="value-perc"]]:transition-all [&>[data-type="value-perc"]]:duration-300 [&>[data-type="value-perc"]]:group-hover/datalist:visible [&>[data-type="value-perc"]]:group-hover/datalist:translate-x-0 [&>[data-type="value-perc"]]:group-hover/datalist:opacity-100',
                 className
             )}
             {...props}

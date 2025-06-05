@@ -169,7 +169,7 @@ const TopContentTable: React.FC<TopContentTableProps> = ({data}) => {
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
                                 backgroundColor: 'hsl(var(--chart-purple))'
                             }} />
-                            <DataListItemContent className='group-hover/data:max-w-[calc(100%-140px)]'>
+                            <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
                                 <div className='flex items-center space-x-4 overflow-hidden'>
                                     <div className={`truncate font-medium ${row.post_id && 'group-hover/row:underline'}`}>
                                         {row.title || row.pathname}
@@ -218,7 +218,7 @@ const TopContentCard: React.FC<TopContentCardProps> = ({totalVisitors, data, ran
     const topContent = extendedData.slice(0, 10);
 
     return (
-        <Card className='group/data'>
+        <Card className='group/datalist'>
             <CardHeader>
                 <CardTitle>Top content</CardTitle>
                 <CardDescription>Your highest viewed posts or pages {getPeriodText(range)}</CardDescription>
@@ -237,7 +237,7 @@ const TopContentCard: React.FC<TopContentCardProps> = ({totalVisitors, data, ran
                             <SheetTitle>Top content</SheetTitle>
                             <SheetDescription>Your highest viewed posts or pages {getPeriodText(range)}</SheetDescription>
                         </SheetHeader>
-                        <div className='group/data'>
+                        <div className='group/datalist'>
                             <TopContentTable data={extendedData} range={range} />
                         </div>
                     </SheetContent>
@@ -267,7 +267,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data}) => {
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
                                 backgroundColor: 'hsl(var(--chart-orange))'
                             }} />
-                            <DataListItemContent className='group-hover/data:max-w-[calc(100%-140px)]'>
+                            <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
                                 <div className='flex items-center space-x-4 overflow-hidden'>
                                     <div className={`truncate font-medium`}>
                                         {row.source && typeof row.source === 'string' && isValidDomain(row.source) ?
@@ -310,7 +310,7 @@ const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range}) =
     const topSources = extendedData.slice(0, 10);
 
     return (
-        <Card className='group/data'>
+        <Card className='group/datalist'>
             <CardHeader>
                 <CardTitle>Top Sources</CardTitle>
                 <CardDescription>How readers found your site {getPeriodText(range)}</CardDescription>
@@ -329,7 +329,7 @@ const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range}) =
                             <SheetTitle>Top sources</SheetTitle>
                             <SheetDescription>How readers found your site {getPeriodText(range)}</SheetDescription>
                         </SheetHeader>
-                        <div className='group/data'>
+                        <div className='group/datalist'>
                             <SourcesTable data={extendedData} range={range} />
                         </div>
                     </SheetContent>

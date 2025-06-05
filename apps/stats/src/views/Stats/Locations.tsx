@@ -7,7 +7,7 @@ import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, Flag, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, cn, formatNumber, formatQueryDate, getRangeDates, useSimplePagination} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, cn, formatNumber, formatPercentage, formatQueryDate, getRangeDates, useSimplePagination} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {ReactComponent as SkullAndBones} from '@src/assets/icons/skull-and-bones.svg';
@@ -20,6 +20,9 @@ countries.registerLocale(enLocale);
 const getCountryName = (label: string) => {
     return STATS_LABEL_MAPPINGS[label as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(label, 'en') || 'Unknown';
 };
+
+// Array of values that represent unknown locations
+const UNKNOWN_LOCATIONS = ['NULL', 'ᴺᵁᴸᴸ', ''];
 
 // Normalize country code for flag display
 const normalizeCountryCode = (code: string): string => {
@@ -46,6 +49,16 @@ interface TooltipData {
     y: number;
 }
 
+interface LocationData {
+    location: string;
+    visits: string;
+    percentage: number;
+}
+
+interface TransformedLocationData extends LocationData {
+    relativeValue: number;
+}
+
 const Locations:React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
@@ -67,16 +80,42 @@ const Locations:React.FC = () => {
         params
     });
 
-    // Move "NULL" (uknown) location as the last item in the list
     const sortedData = useMemo(() => {
         if (!data) {
             return null;
         }
-        return [...data].sort((a, b) => {
-            if (a.location === 'ᴺᵁᴸᴸ') {
+
+        const typedData = data as unknown as Array<{location: string; visits: string}>;
+
+        // Separate known and unknown locations
+        const knownLocations = typedData.filter(item => !UNKNOWN_LOCATIONS.includes(item.location));
+        const unknownLocations = typedData.filter(item => UNKNOWN_LOCATIONS.includes(item.location));
+
+        // Calculate total visits (excluding unknown locations)
+        const totalVisits = knownLocations.reduce((sum, item) => sum + Number(item.visits), 0);
+
+        // Calculate total unknown visits
+        const totalUnknownVisits = unknownLocations.reduce((sum, item) => sum + Number(item.visits), 0);
+
+        // Create combined unknown location record if there are any unknown locations
+        const combinedUnknownRecord = totalUnknownVisits > 0 ? [{
+            location: 'ᴺᵁᴸᴸ',
+            visits: totalUnknownVisits.toString(),
+            percentage: 0
+        }] : [];
+
+        // Add percentage to known locations and combine with unknown
+        return [
+            ...knownLocations.map(item => ({
+                ...item,
+                percentage: Number(item.visits) / totalVisits
+            })),
+            ...combinedUnknownRecord
+        ].sort((a, b) => {
+            if (UNKNOWN_LOCATIONS.includes(a.location)) {
                 return 1;
             }
-            if (b.location === 'ᴺᵁᴸᴸ') {
+            if (UNKNOWN_LOCATIONS.includes(b.location)) {
                 return -1;
             }
             return 0;
@@ -85,29 +124,21 @@ const Locations:React.FC = () => {
 
     const isLoading = isConfigLoading || loading;
 
-    interface LocationData {
-        location: string;
-        visits: string;
-    }
-
-    interface TransformedLocationData extends LocationData {
-        relativeValue: number;
-    }
-
     const transformData = (rawData: LocationData[] | null): Record<string, TransformedLocationData> => {
         if (!rawData) {
             return {};
         }
 
-        // Filter out "ᴺᵁᴸᴸ" entries for calculations
-        const validData = rawData.filter(item => item.location !== 'ᴺᵁᴸᴸ');
+        // Filter out unknown location entries for calculations
+        const validData = rawData.filter(item => !UNKNOWN_LOCATIONS.includes(item.location));
 
         // Find the maximum number of visits
         const maxVisits = validData.reduce((max, item) => Math.max(max, Number(item.visits)), 0);
 
         // Transform all data into an object with location codes as keys
         return rawData.reduce((acc, item) => {
-            if (item.location === 'ᴺᵁᴸᴸ') {
+            if (UNKNOWN_LOCATIONS.includes(item.location)) {
+                // Skip individual unknown locations as they're combined in the sortedData
                 return acc;
             }
 
@@ -218,7 +249,7 @@ const Locations:React.FC = () => {
                     </CardHeader>
                     <CardContent className='p-0'>
                         <div className='grid grid-cols-3 items-stretch'>
-                            <div className='svg-map-container relative col-span-2 mx-auto w-full max-w-[680px] px-8 py-12 [&_.svg-map]:stroke-background'>
+                            <div className='svg-map-container relative col-span-2 mx-auto w-full max-w-[740px] px-8 py-12 [&_.svg-map]:stroke-background'>
                                 <SVGMap
                                     locationClassName={getLocationClassName}
                                     map={World}
@@ -245,34 +276,46 @@ const Locations:React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                            <div className='border-l px-6'>
-                                <div className='flex items-center justify-between py-4 text-sm'>
-                                    <div className='font-medium text-muted-foreground'>Country</div>
-                                    <div className='text-right font-medium text-muted-foreground'>Visitors</div>
-                                </div>
-                                <Separator />
-                                <div className='py-2'>
-                                    {tableData?.map((row) => {
-                                        const countryName = getCountryName(`${row.location}`) || 'Unknown';
-                                        return (
-                                            <div key={row.location || 'unknown'} className='flex items-center justify-between text-sm'>
-                                                <div className='flex items-center gap-3 py-2.5 font-medium'>
-                                                    <Flag
-                                                        countryCode={`${normalizeCountryCode(row.location as string)}`}
-                                                        fallback={
-                                                            <span className='flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-black text-white'>
-                                                                <SkullAndBones className="size-3" />
-                                                            </span>
+                            <div className='group/datalist flex flex-col justify-between border-l px-6'>
+                                <DataList>
+                                    <DataListHeader className='py-4'>
+                                        <DataListHead>Source</DataListHead>
+                                        <DataListHead>Visitors</DataListHead>
+                                    </DataListHeader>
+                                    <DataListBody>
+                                        {tableData?.map((row) => {
+                                            const countryName = getCountryName(`${row.location}`) || 'Unknown';
+                                            return (
+                                                <DataListRow key={row.location || 'unknown'}>
+                                                    <DataListBar className='opacity-15 transition-all group-hover/row:opacity-30' style={{
+                                                        width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
+                                                        backgroundColor: 'hsl(var(--chart-blue))'
+                                                    }} />
+                                                    <DataListItemContent className='group-hover/data:max-w-[calc(100%-140px)]'>
+                                                        <div className='flex items-center space-x-4 overflow-hidden'>
+                                                            <Flag
+                                                                countryCode={`${normalizeCountryCode(row.location as string)}`}
+                                                                fallback={
+                                                                    <span className='flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-black text-white'>
+                                                                        <SkullAndBones className="size-3" />
+                                                                    </span>
+                                                                }
+                                                            />
+                                                            <div className='truncate font-medium'>{countryName}</div>
+                                                        </div>
+                                                    </DataListItemContent>
+                                                    <DataListItemValue>
+                                                        <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
+                                                        {!UNKNOWN_LOCATIONS.includes(row.location) &&
+                                                            <DataListItemValuePerc>{formatPercentage(row.percentage)}</DataListItemValuePerc>
                                                         }
-                                                    />
-                                                    {countryName}
-                                                </div>
-                                                <div className='py-2.5 text-right font-mono'>{formatNumber(Number(row.visits))}</div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                                <SimplePagination>
+                                                    </DataListItemValue>
+                                                </DataListRow>
+                                            );
+                                        })}
+                                    </DataListBody>
+                                </DataList>
+                                <SimplePagination className='mt-5'>
                                     <SimplePaginationPages currentPage={currentPage.toString()} totalPages={totalPages.toString()} />
                                     <SimplePaginationNavigation>
                                         <SimplePaginationPreviousButton
