@@ -59,7 +59,7 @@ Object {
 }
 .kg-audio-link {
   color: #73818c !important;
-  border-color: rgba(0, 0, 0, .6) !important;
+  color: rgba(0, 0, 0, .6) !important;
 }
 @media only screen and (max-width: 620px) {
   table.body {
@@ -743,7 +743,7 @@ Object {
 }
 .kg-audio-link {
   color: #73818c !important;
-  border-color: rgba(0, 0, 0, .6) !important;
+  color: rgba(0, 0, 0, .6) !important;
 }
 @media only screen and (max-width: 620px) {
   table.body {
@@ -6867,7 +6867,7 @@ Object {
 }
 .kg-audio-link {
   color: #73818c !important;
-  border-color: rgba(0, 0, 0, .6) !important;
+  color: rgba(0, 0, 0, .6) !important;
 }
 @media only screen and (max-width: 620px) {
   table.body {
@@ -7441,7 +7441,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                     <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                         <tbody><tr>
                                             <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-title\\" style=\\"display: block; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; font-size: 16px; font-weight: 600; line-height: 18px; border-color: rgba(0, 0, 0, .6); overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">Sample</a>
+                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-title\\" style=\\"display: block; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; font-size: 16px; font-weight: 600; line-height: 18px; overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">Sample</a>
                                             </td>
                                         </tr>
                                         <tr>
@@ -7449,10 +7449,10 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                                 <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                                     <tbody><tr>
                                                         <td width=\\"24\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; color: #15212A; vertical-align: middle;\\" valign=\\"middle\\">
-                                                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-play-button\\" style=\\"display: block; box-sizing: border-box; width: 16px; height: 16px; border-color: rgba(0, 0, 0, .6); border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor; overflow-wrap: anywhere; text-decoration: underline; color: #15212A;\\" target=\\"_blank\\"></a>
+                                                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-play-button\\" style=\\"display: block; box-sizing: border-box; width: 16px; height: 16px; border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor; overflow-wrap: anywhere; text-decoration: underline; color: #15212A;\\" target=\\"_blank\\"></a>
                                                         </td>
                                                         <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; color: #15212A; vertical-align: middle;\\" valign=\\"middle\\">
-                                                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-duration\\" style=\\"display: block; font-size: 13px; border-color: rgba(0, 0, 0, .6); overflow-wrap: anywhere; text-decoration: none; color: #73818c;\\" target=\\"_blank\\">1:45<span class=\\"kg-audio-link\\" style=\\"color: #73818c; border-color: rgba(0, 0, 0, .6);\\"> &#x2022; Click to play audio</span></a>
+                                                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-duration\\" style=\\"display: block; font-size: 13px; overflow-wrap: anywhere; text-decoration: none; color: #73818c;\\" target=\\"_blank\\">1:45<span class=\\"kg-audio-link\\" style=\\"color: #73818c; color: rgba(0, 0, 0, .6);\\"> &#x2022; Click to play audio</span></a>
                                                         </td>
                                                     </tr>
                                                 </tbody></table>
@@ -7579,7 +7579,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                             <td valign=\\"middle\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; color: #15212A; vertical-align: middle;\\">
                                 
                                 <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-file-title\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 8px; font-size: 17px; font-weight: bold; line-height: 1.3em; border-color: rgba(0, 0, 0, .6); overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">test</a>
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-file-title\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 8px; font-size: 17px; font-weight: bold; line-height: 1.3em; overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">test</a>
                                 </td></tr></tbody></table>
                                 
                                 
@@ -8201,7 +8201,7 @@ Object {
 }
 .kg-audio-link {
   color: #73818c !important;
-  border-color: rgba(0, 0, 0, .6) !important;
+  color: rgba(0, 0, 0, .6) !important;
 }
 @media only screen and (max-width: 620px) {
   table.body {
@@ -8789,7 +8789,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                     <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                         <tbody><tr>
                                             <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-title\\" style=\\"display: block; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; font-size: 16px; font-weight: 600; line-height: 18px; border-color: rgba(0, 0, 0, .6); overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">Sample</a>
+                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-title\\" style=\\"display: block; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; font-size: 16px; font-weight: 600; line-height: 18px; overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">Sample</a>
                                             </td>
                                         </tr>
                                         <tr>
@@ -8797,10 +8797,10 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                                 <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                                     <tbody><tr>
                                                         <td width=\\"24\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; color: #15212A; vertical-align: middle;\\" valign=\\"middle\\">
-                                                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-play-button\\" style=\\"display: block; box-sizing: border-box; width: 16px; height: 16px; border-color: rgba(0, 0, 0, .6); border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor; overflow-wrap: anywhere; text-decoration: underline; color: #15212A;\\" target=\\"_blank\\"></a>
+                                                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-play-button\\" style=\\"display: block; box-sizing: border-box; width: 16px; height: 16px; border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor; overflow-wrap: anywhere; text-decoration: underline; color: #15212A;\\" target=\\"_blank\\"></a>
                                                         </td>
                                                         <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; color: #15212A; vertical-align: middle;\\" valign=\\"middle\\">
-                                                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-duration\\" style=\\"display: block; font-size: 13px; border-color: rgba(0, 0, 0, .6); overflow-wrap: anywhere; text-decoration: none; color: #73818c;\\" target=\\"_blank\\">1:45<span class=\\"kg-audio-link\\" style=\\"color: #73818c; border-color: rgba(0, 0, 0, .6);\\"> &#x2022; Click to play audio</span></a>
+                                                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-duration\\" style=\\"display: block; font-size: 13px; overflow-wrap: anywhere; text-decoration: none; color: #73818c;\\" target=\\"_blank\\">1:45<span class=\\"kg-audio-link\\" style=\\"color: #73818c; color: rgba(0, 0, 0, .6);\\"> &#x2022; Click to play audio</span></a>
                                                         </td>
                                                     </tr>
                                                 </tbody></table>
@@ -8927,7 +8927,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                             <td valign=\\"middle\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; color: #15212A; vertical-align: middle;\\">
                                 
                                 <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-file-title\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 8px; font-size: 17px; font-weight: bold; line-height: 1.3em; border-color: rgba(0, 0, 0, .6); overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">test</a>
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-file-title\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 8px; font-size: 17px; font-weight: bold; line-height: 1.3em; overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">test</a>
                                 </td></tr></tbody></table>
                                 
                                 
