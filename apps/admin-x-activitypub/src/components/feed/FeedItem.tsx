@@ -192,6 +192,7 @@ interface FeedItemProps {
     type: string;
     commentCount?: number;
     repostCount?: number;
+    likeCount?: number;
     showHeader?: boolean;
     last?: boolean;
     isLoading?: boolean;
@@ -215,6 +216,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
     type,
     commentCount = 0,
     repostCount = 0,
+    likeCount = 0,
     showHeader = true,
     last,
     isLoading,
@@ -406,7 +408,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 commentCount={commentCount}
                                                 disabled={isPending}
                                                 layout={layout}
-                                                likeCount={1}
+                                                likeCount={likeCount}
                                                 object={object}
                                                 repostCount={repostCount}
                                                 onLikeClick={onLikeClick}
@@ -469,7 +471,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 actor={author}
                                                 commentCount={commentCount}
                                                 layout={layout}
-                                                likeCount={1}
+                                                likeCount={likeCount}
                                                 object={object}
                                                 repostCount={repostCount}
                                                 onLikeClick={onLikeClick}
@@ -543,7 +545,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 commentCount={commentCount}
                                                 disabled={isPending}
                                                 layout={layout}
-                                                likeCount={1}
+                                                likeCount={likeCount}
                                                 object={object}
                                                 repostCount={repostCount}
                                                 onLikeClick={onLikeClick}
@@ -619,7 +621,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         actor={author}
                                         commentCount={commentCount}
                                         layout={layout}
-                                        likeCount={1}
+                                        likeCount={likeCount}
                                         object={object}
                                         repostCount={repostCount}
                                         onLikeClick={onLikeClick}

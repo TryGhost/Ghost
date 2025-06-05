@@ -102,6 +102,7 @@ export function mapPostToActivity(post: Post): Activity {
         // These are used in the app, but are not part of the ObjectProperties type
         id: post.id,
         replyCount: post.replyCount,
+        likeCount: post.likeCount,
         liked: post.likedByMe,
         reposted: post.repostedByMe,
         repostCount: post.repostCount,

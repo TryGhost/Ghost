@@ -76,6 +76,7 @@ const Posts: React.FC<PostsProps> = ({
                             commentCount={activity.object.replyCount}
                             isLoading={isLoading}
                             layout='feed'
+                            likeCount={activity.object.likeCount}
                             object={activity.object}
                             repostCount={activity.object.repostCount}
                             type={activity.type}
