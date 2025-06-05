@@ -1022,6 +1022,10 @@ td.kg-card-spacing {
 
 .kg-bookmark-card {
     width: 100%;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    {{else}}
+    background: #ffffff;
+    {{/hasFeature}}
 }
 
 .kg-bookmark-card a {
@@ -1054,7 +1058,9 @@ td.kg-card-spacing {
     text-decoration: none;
     border-radius: 3px;
     border: 1px solid #e0e7eb;
+    {{#hasFeature "emailCustomizationAlpha"}}
     background: #ffffff;
+    {{/hasFeature}}
 }
 
 .kg-bookmark-content {
