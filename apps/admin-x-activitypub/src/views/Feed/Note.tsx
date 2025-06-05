@@ -120,6 +120,19 @@ const Note = () => {
         );
     }
 
+    if (!currentPost) {
+        return (
+            <Layout>
+                <div className='mx-auto mt-4 flex w-full max-w-[620px] flex-col items-center'>
+                    <EmptyViewIndicator>
+                        <EmptyViewIcon><LucideIcon.Hash /></EmptyViewIcon>
+                        <div>Error loading note.</div>
+                    </EmptyViewIndicator>
+                </div>
+            </Layout>
+        );
+    }
+
     function handleReplyCountChange(increment: number) {
         setReplyCount((current: number) => current + increment);
     }
@@ -142,179 +155,168 @@ const Note = () => {
 
     return (
         <Layout>
-            <>
-                {currentPost ?
-                    <div className='mx-auto flex h-full max-w-[620px] flex-col'>
-                        <div className='relative flex-1'>
-                            <div className='grow overflow-y-auto'>
-                                <div className={`mx-auto px-8 pb-10 pt-5`}>
-                                    {!threadParents.length &&
-                                    <div className={`col-[2/3] mx-auto flex w-full items-center gap-3 ${canGoBack ? 'pt-10' : 'pt-5'}`}>
-                                        <div className='relative z-10 pt-[3px]'>
-                                            <APAvatar author={currentPost.actor}/>
-                                        </div>
-                                        <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
-                                            handleProfileClick(currentPost.actor, navigate, e);
-                                        }}>
-                                            <div className='flex w-full'>
-                                                <span className='min-w-0 truncate whitespace-nowrap font-semibold hover:underline'>{currentPost.actor.name}</span>
-                                            </div>
-                                            <div className='flex w-full'>
-                                                <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(currentPost.actor)}</span>
-                                                <span className='text-gray-700'>{renderTimestamp(object, !object.authored)}</span>
-                                            </div>
-                                        </div>
+            <div className='mx-auto flex h-full max-w-[620px] flex-col'>
+                <div className='relative flex-1'>
+                    <div className='grow overflow-y-auto'>
+                        <div className={`mx-auto px-8 pb-10 pt-5`}>
+                            {!threadParents.length &&
+                            <div className={`col-[2/3] mx-auto flex w-full items-center gap-3 ${canGoBack ? 'pt-10' : 'pt-5'}`}>
+                                <div className='relative z-10 pt-[3px]'>
+                                    <APAvatar author={currentPost.actor}/>
+                                </div>
+                                <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
+                                    handleProfileClick(currentPost.actor, navigate, e);
+                                }}>
+                                    <div className='flex w-full'>
+                                        <span className='min-w-0 truncate whitespace-nowrap font-semibold hover:underline'>{currentPost.actor.name}</span>
                                     </div>
-                                    }
+                                    <div className='flex w-full'>
+                                        <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(currentPost.actor)}</span>
+                                        <span className='text-gray-700'>{renderTimestamp(object, !object.authored)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            }
 
-                                    {threadParents.map((item) => {
-                                        return (
-                                            item.object.type === 'Tombstone' ? (
-                                                <DeletedFeedItem last={false} />
-                                            ) : (
-                                                <FeedItem
-                                                    actor={item.actor}
-                                                    allowDelete={false}
-                                                    commentCount={item.object.replyCount ?? 0}
-                                                    last={false}
-                                                    layout='reply'
-                                                    likeCount={item.object.likeCount ?? 0}
-                                                    object={item.object}
-                                                    repostCount={item.object.repostCount ?? 0}
-                                                    type='Note'
-                                                    onClick={() => {
-                                                        navigate(`/${item.object.type === 'Article' ? 'inbox' : 'feed'}/${encodeURIComponent(item.object.id)}`);
-                                                    }}
-                                                />
-                                            )
-                                        );
-                                    })}
-                                    <div ref={postRef} className={`${canGoBack ? 'scroll-mt-[12px]' : 'scroll-mt-[124px]'}`}>
-                                        <div className={`${threadParents.length > 0 && 'min-h-[calc(100vh-52px)]'}`}>
-                                            <FeedItem
-                                                actor={currentPost.actor}
-                                                allowDelete={false}
-                                                commentCount={replyCount}
-                                                last={true}
-                                                layout={'modal'}
-                                                likeCount={object.likeCount ?? 0}
-                                                object={object}
-                                                repostCount={object.repostCount}
-                                                showHeader={threadParents.length > 0}
-                                                showStats={true}
-                                                type='Note'
-                                            />
-                                            <APReplyBox
-                                                object={object}
-                                                onReply={() => handleReplyCountChange(1)}
-                                                onReplyError={() => handleReplyCountChange(-1)}
-                                            />
-                                            <FeedItemDivider />
-                                            <div ref={repliesRef}>
-                                                {
-                                                    processedReplies.map((replyGroup, groupIndex) => {
-                                                        const isLastGroup = groupIndex === processedReplies.length - 1;
-                                                        const chainId = replyGroup.mainReply.id;
-                                                        const isExpanded = expandedChains.has(chainId);
-                                                        const hasChain = replyGroup.chain.length > 0;
+                            {threadParents.map((item) => {
+                                return (
+                                    item.object.type === 'Tombstone' ? (
+                                        <DeletedFeedItem last={false} />
+                                    ) : (
+                                        <FeedItem
+                                            actor={item.actor}
+                                            allowDelete={false}
+                                            commentCount={item.object.replyCount ?? 0}
+                                            last={false}
+                                            layout='reply'
+                                            likeCount={item.object.likeCount ?? 0}
+                                            object={item.object}
+                                            repostCount={item.object.repostCount ?? 0}
+                                            type='Note'
+                                            onClick={() => {
+                                                navigate(`/${item.object.type === 'Article' ? 'inbox' : 'feed'}/${encodeURIComponent(item.object.id)}`);
+                                            }}
+                                        />
+                                    )
+                                );
+                            })}
+                            <div ref={postRef} className={`${canGoBack ? 'scroll-mt-[12px]' : 'scroll-mt-[124px]'}`}>
+                                <div className={`${threadParents.length > 0 && 'min-h-[calc(100vh-52px)]'}`}>
+                                    <FeedItem
+                                        actor={currentPost.actor}
+                                        allowDelete={false}
+                                        commentCount={replyCount}
+                                        last={true}
+                                        layout={'modal'}
+                                        likeCount={object.likeCount ?? 0}
+                                        object={object}
+                                        repostCount={object.repostCount}
+                                        showHeader={threadParents.length > 0}
+                                        showStats={true}
+                                        type='Note'
+                                    />
+                                    <APReplyBox
+                                        object={object}
+                                        onReply={() => handleReplyCountChange(1)}
+                                        onReplyError={() => handleReplyCountChange(-1)}
+                                    />
+                                    <FeedItemDivider />
+                                    <div ref={repliesRef}>
+                                        {
+                                            processedReplies.map((replyGroup, groupIndex) => {
+                                                const isLastGroup = groupIndex === processedReplies.length - 1;
+                                                const chainId = replyGroup.mainReply.id;
+                                                const isExpanded = expandedChains.has(chainId);
+                                                const hasChain = replyGroup.chain.length > 0;
 
-                                                        return (
-                                                            <React.Fragment key={replyGroup.mainReply.id}>
+                                                return (
+                                                    <React.Fragment key={replyGroup.mainReply.id}>
+                                                        <FeedItem
+                                                            actor={replyGroup.mainReply.actor}
+                                                            allowDelete={replyGroup.mainReply.object.authored}
+                                                            commentCount={replyGroup.mainReply.object.replyCount ?? 0}
+                                                            isChainParent={hasChain}
+                                                            isPending={isPendingActivity(replyGroup.mainReply.id)}
+                                                            last={!hasChain}
+                                                            layout='reply'
+                                                            likeCount={replyGroup.mainReply.object.likeCount ?? 0}
+                                                            object={replyGroup.mainReply.object}
+                                                            parentId={object.id}
+                                                            repostCount={replyGroup.mainReply.object.repostCount ?? 0}
+                                                            type='Note'
+                                                            onClick={() => {
+                                                                navigate(`/feed/${encodeURIComponent(replyGroup.mainReply.id)}`);
+                                                            }}
+                                                            onDelete={handleDelete}
+                                                        />
+
+                                                        {hasChain && replyGroup.chain[0] && (
+                                                            <FeedItem
+                                                                key={replyGroup.chain[0].id}
+                                                                actor={replyGroup.chain[0].actor}
+                                                                allowDelete={replyGroup.chain[0].object.authored}
+                                                                commentCount={replyGroup.chain[0].object.replyCount ?? 0}
+                                                                isChainContinuation={true}
+                                                                isPending={isPendingActivity(replyGroup.chain[0].id)}
+                                                                last={replyGroup.chain.length === 1}
+                                                                layout='reply'
+                                                                likeCount={replyGroup.chain[0].object.likeCount ?? 0}
+                                                                object={replyGroup.chain[0].object}
+                                                                parentId={object.id}
+                                                                repostCount={replyGroup.chain[0].object.repostCount ?? 0}
+                                                                type='Note'
+                                                                onClick={() => {
+                                                                    navigate(`/feed/${encodeURIComponent(replyGroup.chain[0].id)}`);
+                                                                }}
+                                                                onDelete={handleDelete}
+                                                            />
+                                                        )}
+
+                                                        {hasChain && isExpanded && replyGroup.chain.slice(1).map((chainItem: Activity, chainIndex: number) => {
+                                                            const isLastChainItem = chainIndex === replyGroup.chain.slice(1).length - 1;
+
+                                                            return (
                                                                 <FeedItem
-                                                                    actor={replyGroup.mainReply.actor}
-                                                                    allowDelete={replyGroup.mainReply.object.authored}
-                                                                    commentCount={replyGroup.mainReply.object.replyCount ?? 0}
-                                                                    isChainParent={hasChain}
-                                                                    isPending={isPendingActivity(replyGroup.mainReply.id)}
-                                                                    last={!hasChain}
+                                                                    key={chainItem.id}
+                                                                    actor={chainItem.actor}
+                                                                    allowDelete={chainItem.object.authored}
+                                                                    commentCount={chainItem.object.replyCount ?? 0}
+                                                                    isChainContinuation={true}
+                                                                    isPending={isPendingActivity(chainItem.id)}
+                                                                    last={isLastChainItem}
                                                                     layout='reply'
-                                                                    likeCount={replyGroup.mainReply.object.likeCount ?? 0}
-                                                                    object={replyGroup.mainReply.object}
+                                                                    likeCount={chainItem.object.likeCount ?? 0}
+                                                                    object={chainItem.object}
                                                                     parentId={object.id}
-                                                                    repostCount={replyGroup.mainReply.object.repostCount ?? 0}
+                                                                    repostCount={chainItem.object.repostCount ?? 0}
                                                                     type='Note'
                                                                     onClick={() => {
-                                                                        navigate(`/feed/${encodeURIComponent(replyGroup.mainReply.id)}`);
+                                                                        navigate(`/feed/${encodeURIComponent(chainItem.id)}`);
                                                                     }}
                                                                     onDelete={handleDelete}
                                                                 />
+                                                            );
+                                                        })}
 
-                                                                {hasChain && replyGroup.chain[0] && (
-                                                                    <FeedItem
-                                                                        key={replyGroup.chain[0].id}
-                                                                        actor={replyGroup.chain[0].actor}
-                                                                        allowDelete={replyGroup.chain[0].object.authored}
-                                                                        commentCount={replyGroup.chain[0].object.replyCount ?? 0}
-                                                                        isChainContinuation={true}
-                                                                        isPending={isPendingActivity(replyGroup.chain[0].id)}
-                                                                        last={replyGroup.chain.length === 1}
-                                                                        layout='reply'
-                                                                        likeCount={replyGroup.chain[0].object.likeCount ?? 0}
-                                                                        object={replyGroup.chain[0].object}
-                                                                        parentId={object.id}
-                                                                        repostCount={replyGroup.chain[0].object.repostCount ?? 0}
-                                                                        type='Note'
-                                                                        onClick={() => {
-                                                                            navigate(`/feed/${encodeURIComponent(replyGroup.chain[0].id)}`);
-                                                                        }}
-                                                                        onDelete={handleDelete}
-                                                                    />
-                                                                )}
+                                                        {hasChain && replyGroup.chain.length > 1 && !isExpanded && (
+                                                            <ShowRepliesButton
+                                                                count={replyGroup.chain.length - 1}
+                                                                onClick={() => toggleChain(chainId)}
+                                                            />
+                                                        )}
 
-                                                                {hasChain && isExpanded && replyGroup.chain.slice(1).map((chainItem: Activity, chainIndex: number) => {
-                                                                    const isLastChainItem = chainIndex === replyGroup.chain.slice(1).length - 1;
-
-                                                                    return (
-                                                                        <FeedItem
-                                                                            key={chainItem.id}
-                                                                            actor={chainItem.actor}
-                                                                            allowDelete={chainItem.object.authored}
-                                                                            commentCount={chainItem.object.replyCount ?? 0}
-                                                                            isChainContinuation={true}
-                                                                            isPending={isPendingActivity(chainItem.id)}
-                                                                            last={isLastChainItem}
-                                                                            layout='reply'
-                                                                            likeCount={chainItem.object.likeCount ?? 0}
-                                                                            object={chainItem.object}
-                                                                            parentId={object.id}
-                                                                            repostCount={chainItem.object.repostCount ?? 0}
-                                                                            type='Note'
-                                                                            onClick={() => {
-                                                                                navigate(`/feed/${encodeURIComponent(chainItem.id)}`);
-                                                                            }}
-                                                                            onDelete={handleDelete}
-                                                                        />
-                                                                    );
-                                                                })}
-
-                                                                {hasChain && replyGroup.chain.length > 1 && !isExpanded && (
-                                                                    <ShowRepliesButton
-                                                                        count={replyGroup.chain.length - 1}
-                                                                        onClick={() => toggleChain(chainId)}
-                                                                    />
-                                                                )}
-
-                                                                {!isLastGroup && <FeedItemDivider />}
-                                                            </React.Fragment>
-                                                        );
-                                                    })
-                                                }
-                                            </div>
-                                        </div>
+                                                        {!isLastGroup && <FeedItemDivider />}
+                                                    </React.Fragment>
+                                                );
+                                            })
+                                        }
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    :
-                    <div className='mx-auto mt-4 flex w-full max-w-[620px] flex-col items-center'>
-                        <EmptyViewIndicator>
-                            <EmptyViewIcon><LucideIcon.Hash /></EmptyViewIcon>
-                            <div>Error loading note.</div>
-                        </EmptyViewIndicator>
-                    </div>
-                }
-            </>
+                </div>
+            </div>
         </Layout>
     );
 };
