@@ -24,7 +24,7 @@ import {exploreSites} from '@src/lib/explore-sites';
 import {formatPendingActivityContent, generatePendingActivity, generatePendingActivityId} from '../utils/pending-activity';
 import {mapPostToActivity} from '../utils/posts';
 import {toast} from 'sonner';
-import {useCallback} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 
 export type ActivityPubCollectionQueryResult<TData> = UseInfiniteQueryResult<ActivityPubCollectionResponse<TData>>;
 export type AccountFollowsQueryResult = UseInfiniteQueryResult<GetAccountFollowsResponse>;
@@ -2100,21 +2100,149 @@ export function usePostForUser(handle: string, id: string | null) {
 }
 
 export function useReplyChainForUser(handle: string, postApId: string | null) {
-    return useQuery<ReplyChainResponse>({
-        queryKey: QUERY_KEYS.replyChain(postApId || ''),
-        refetchOnMount: 'always',
-        enabled: Boolean(postApId),
-        async queryFn() {
-            if (!postApId) {
-                throw new Error('Post AP ID is required');
-            }
+    const [replyChain, setReplyChain] = useState<ReplyChainResponse | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
 
+    useEffect(() => {
+        if (!postApId) {
+            setIsLoading(false);
+            return;
+        }
+
+        let cancelled = false;
+
+        async function fetchReplyChain() {
+            try {
+                setIsLoading(true);
+                setError(null);
+
+                const siteUrl = await getSiteUrl();
+                const api = createActivityPubAPI(handle, siteUrl);
+                const response = await api.getReplies(postApId!);
+
+                if (!cancelled) {
+                    setReplyChain(response);
+                    setIsLoading(false);
+                }
+            } catch (err) {
+                if (!cancelled) {
+                    setError(err instanceof Error ? err : new Error('Failed to fetch reply chain'));
+                    setIsLoading(false);
+                }
+            }
+        }
+
+        fetchReplyChain();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [handle, postApId]);
+
+    const loadMoreAncestors = useCallback(async () => {
+        if (!replyChain?.ancestors.next || !replyChain?.ancestors.chain[0]) {
+            return;
+        }
+
+        try {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.getReplies(postApId);
+            const nextPage = await api.getReplies(replyChain.ancestors.chain[0].id);
+
+            setReplyChain((prev) => {
+                if (!prev) {
+                    return prev;
+                }
+                return {
+                    ...prev,
+                    ancestors: {
+                        chain: [...nextPage.ancestors.chain, ...prev.ancestors.chain],
+                        next: nextPage.ancestors.next
+                    }
+                };
+            });
+        } catch (err) {
+            setError(err instanceof Error ? err : new Error('Failed to load more ancestors'));
         }
-    });
+    }, [handle, replyChain?.ancestors.next, replyChain?.ancestors.chain]);
+
+    const loadMoreChildren = useCallback(async () => {
+        if (!replyChain?.next) {
+            return;
+        }
+        if (!postApId) {
+            return;
+        }
+
+        try {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            const nextPage = await api.getReplies(postApId, replyChain.next);
+
+            setReplyChain((prev) => {
+                if (!prev) {
+                    return prev;
+                }
+                return {
+                    ...prev,
+                    children: [...prev.children, ...nextPage.children],
+                    next: nextPage.next
+                };
+            });
+        } catch (err) {
+            setError(err instanceof Error ? err : new Error('Failed to load more children'));
+        }
+    }, [handle, replyChain?.next, postApId]);
+
+    const loadMoreChildReplies = useCallback(async (childIndex: number) => {
+        if (!replyChain?.children[childIndex]?.next) {
+            return;
+        }
+
+        try {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            const child = replyChain.children[childIndex];
+            const lastReplyInChain = child.chain[child.chain.length - 1];
+
+            const nextPage = await api.getReplies(lastReplyInChain.id);
+
+            const moreReplies = [nextPage.children[0].post, ...nextPage.children[0].chain];
+
+            setReplyChain((prev) => {
+                if (!prev) {
+                    return prev;
+                }
+                const newChildren = [...prev.children];
+                newChildren[childIndex] = {
+                    ...child,
+                    chain: [...child.chain, ...moreReplies],
+                    next: nextPage.children[0].next
+                };
+                return {
+                    ...prev,
+                    children: newChildren
+                };
+            });
+        } catch (err) {
+            setError(err instanceof Error ? err : new Error('Failed to load more child replies'));
+        }
+    }, [handle, replyChain]);
+
+    return {
+        data: replyChain,
+        isLoading,
+        error,
+        loadMoreAncestors,
+        loadMoreChildren,
+        loadMoreChildReplies,
+        hasMoreAncestors: !!replyChain?.ancestors.next,
+        hasMoreChildren: !!replyChain?.next,
+        hasMoreChildReplies: (childIndex: number) => !!replyChain?.children[childIndex]?.next
+    };
 }
 
 export function useUpdateAccountMutationForUser(handle: string) {
