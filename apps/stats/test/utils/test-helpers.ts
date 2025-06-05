@@ -109,6 +109,23 @@ export const applyMocksToModules = (mocks: ReturnType<typeof setupStatsAppMocks>
     }));
 };
 
+// Mock sources data with for testing traffic
+export const createMockSourcesData = () => [
+    {source: 'Reddit', visits: 120},
+    {source: 'Google', visits: 100},
+    {source: 'twitter.com', visits: 80},
+    {source: 'ghost.org', visits: 60},
+    {source: '', visits: 50} // Already direct traffic
+];
+
+// Helper to create mock global data with custom site URL
+export const createMockGlobalData = (siteUrl = 'https://ghost.org') => ({
+    ...defaultMockData.globalData,
+    data: {
+        url: siteUrl
+    }
+});
+
 // Legacy compatibility
 export const setupUniversalMocks = setupStatsAppMocks;
 export const setupDefaultStatsMocks = setupStatsAppMocks; 

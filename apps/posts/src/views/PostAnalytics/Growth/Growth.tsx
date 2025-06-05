@@ -2,8 +2,9 @@ import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import {BarChartLoadingIndicator, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber} from '@tryghost/shade';
-import {SourceRow} from '../Web/components/Sources';
-import {useParams} from '@tryghost/admin-x-framework';
+import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
+import {getFaviconDomain, useParams} from '@tryghost/admin-x-framework';
+import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
 
 export const centsToDollars = (value : number) => {
@@ -27,9 +28,16 @@ const hasLinkableUrl = (url: string | undefined): boolean => {
 interface postAnalyticsProps {}
 
 const Growth: React.FC<postAnalyticsProps> = () => {
-    // const {isLoading: isConfigLoading} = useGlobalData();
+    const {data: globalData} = useGlobalData();
     const {postId} = useParams();
     const {stats: postReferrers, totals, isLoading} = usePostReferrers(postId || '');
+    
+    // Get site URL from global data
+    const siteUrl = globalData?.url as string | undefined;
+    
+    // TEMPORARY: For testing levernews.com direct traffic grouping
+    // Remove this line when done testing  
+    const testingSiteUrl = siteUrl || 'https://levernews.com';
 
     return (
         <>
@@ -97,24 +105,38 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {postReferrers?.map(row => (
-                                                <TableRow key={row.source}>
-                                                    <TableCell>
-                                                        {row.source && row.referrer_url && hasLinkableUrl(row.referrer_url) ?
-                                                            <a className='group flex items-center gap-1' href={row.referrer_url} rel="noreferrer" target="_blank">
-                                                                <SourceRow className='group-hover:underline' source={row.source} />
-                                                            </a>
-                                                            :
-                                                            <span className='flex items-center gap-1'>
-                                                                <SourceRow source={row.source} />
-                                                            </span>
-                                                        }
-                                                    </TableCell>
-                                                    <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.free_members)}</TableCell>
-                                                    <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.paid_members)}</TableCell>
-                                                    <TableCell className='text-right font-mono text-sm'>+${centsToDollars(row.mrr)}</TableCell>
-                                                </TableRow>
-                                            ))}
+                                            {postReferrers?.map((row) => {
+                                                const {domain, isDirectTraffic} = getFaviconDomain(row.source, testingSiteUrl);
+                                                const displayName = isDirectTraffic ? 'Direct' : (row.source || 'Direct');
+                                                
+                                                return (
+                                                    <TableRow key={row.source}>
+                                                        <TableCell>
+                                                            {row.source && row.referrer_url && hasLinkableUrl(row.referrer_url) ?
+                                                                <a className='group flex items-center gap-2' href={row.referrer_url} rel="noreferrer" target="_blank">
+                                                                    <img
+                                                                        className="size-4"
+                                                                        src={domain ? `https://www.faviconextractor.com/favicon/${domain}?larger=true` : STATS_DEFAULT_SOURCE_ICON_URL}
+                                                                        onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                                                                            e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
+                                                                        }} />
+                                                                    <span className='group-hover:underline'>{displayName}</span>
+                                                                </a>
+                                                                :
+                                                                <span className='flex items-center gap-2'>
+                                                                    <img
+                                                                        className="size-4"
+                                                                        src={STATS_DEFAULT_SOURCE_ICON_URL} />
+                                                                    <span>{displayName}</span>
+                                                                </span>
+                                                            }
+                                                        </TableCell>
+                                                        <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.free_members)}</TableCell>
+                                                        <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.paid_members)}</TableCell>
+                                                        <TableCell className='text-right font-mono text-sm'>+${centsToDollars(row.mrr)}</TableCell>
+                                                    </TableRow>
+                                                );
+                                            })}
                                         </TableBody>
                                     </Table>
                                     :

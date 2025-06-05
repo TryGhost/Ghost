@@ -4,13 +4,13 @@ import React, {useMemo, useState} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, GhAreaChart, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange, isValidDomain} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, GhAreaChart, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
-import {SourceRow} from './Sources';
+import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
+
+import {extractDomain, getFaviconDomain, getStatEndpointUrl, getToken, useNavigate} from '@tryghost/admin-x-framework';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useNavigate} from '@tryghost/admin-x-framework';
 import {useQuery} from '@tinybirdco/charts';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
@@ -252,9 +252,10 @@ const TopContentCard: React.FC<TopContentCardProps> = ({totalVisitors, data, ran
 interface SourcesTableProps {
     data: SourcesData[] | null;
     range: number;
+    siteUrl?: string;
 }
 
-const SourcesTable: React.FC<SourcesTableProps> = ({data}) => {
+const SourcesTable: React.FC<SourcesTableProps> = ({data, siteUrl}) => {
     return (
         <DataList>
             <DataListHeader>
@@ -263,8 +264,17 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data}) => {
             </DataListHeader>
             <DataListBody>
                 {data?.map((row) => {
+                    // Use precomputed values if available (from processed data), otherwise compute
+                    const faviconDomain = 'faviconDomain' in row && row.faviconDomain 
+                        ? row.faviconDomain 
+                        : getFaviconDomain(row.source, siteUrl).domain;
+                    const isDirectTraffic = 'isDirectTraffic' in row 
+                        ? row.isDirectTraffic 
+                        : getFaviconDomain(row.source, siteUrl).isDirectTraffic;
+                    const displayName = isDirectTraffic ? 'Direct' : (row.source || 'Direct');
+                    
                     return (
-                        <DataListRow key={row.source || 'direct'} className='group/row'>
+                        <DataListRow key={displayName} className='group/row'>
                             <DataListBar className='opacity-15 transition-all group-hover/row:opacity-30' style={{
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
                                 backgroundColor: 'hsl(var(--chart-orange))'
@@ -272,13 +282,22 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data}) => {
                             <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
                                 <div className='flex items-center space-x-4 overflow-hidden'>
                                     <div className={`truncate font-medium`}>
-                                        {row.source && typeof row.source === 'string' && isValidDomain(row.source) ?
-                                            <a className='group/link flex items-center gap-2' href={`https://${row.source}`} rel="noreferrer" target="_blank">
-                                                <SourceRow className='group-hover/link:underline' source={row.source} />
+                                        {faviconDomain ?
+                                            <a className='group/link flex items-center gap-2' href={`https://${faviconDomain}`} rel="noreferrer" target="_blank">
+                                                <img
+                                                    className="size-4"
+                                                    src={`https://www.faviconextractor.com/favicon/${faviconDomain}?larger=true`}
+                                                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                                                        e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
+                                                    }} />
+                                                <span className='group-hover/link:underline'>{displayName}</span>
                                             </a>
                                             :
                                             <span className='flex items-center gap-2'>
-                                                <SourceRow source={row.source} />
+                                                <img
+                                                    className="size-4"
+                                                    src={STATS_DEFAULT_SOURCE_ICON_URL} />
+                                                <span>{displayName}</span>
                                             </span>
                                         }
                                     </div>
@@ -300,14 +319,65 @@ interface SourcesCardProps {
     totalVisitors: number;
     data: SourcesData[] | null;
     range: number;
+    siteUrl?: string;
 }
 
-const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range}) => {
-    // Extend entire data array with percentage values
-    const extendedData = data?.map(item => ({
+const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range, siteUrl}) => {
+    // Process and group sources data
+    const processedData = React.useMemo(() => {
+        if (!data) {
+            return [];
+        }
+        
+        const sourceMap = new Map<string, {source: string, visits: number, isDirectTraffic: boolean, faviconDomain?: string}>();
+        let directTrafficTotal = 0;
+        
+        // Process each source and group direct traffic
+        data.forEach((item) => {
+            const {domain: faviconDomain, isDirectTraffic} = getFaviconDomain(item.source, siteUrl);
+            const visits = Number(item.visits);
+            
+            if (isDirectTraffic || !item.source || item.source === '') {
+                // Accumulate all direct traffic
+                directTrafficTotal += visits;
+            } else {
+                // Keep other sources as-is
+                const sourceKey = String(item.source);
+                if (sourceMap.has(sourceKey)) {
+                    const existing = sourceMap.get(sourceKey)!;
+                    existing.visits += visits;
+                } else {
+                    sourceMap.set(sourceKey, {
+                        source: sourceKey,
+                        visits,
+                        isDirectTraffic: false,
+                        faviconDomain: faviconDomain || undefined
+                    });
+                }
+            }
+        });
+        
+        // Add consolidated direct traffic entry if there's any
+        if (directTrafficTotal > 0) {
+            const siteDomain = siteUrl ? extractDomain(siteUrl) : null;
+            sourceMap.set('Direct', {
+                source: 'Direct',
+                visits: directTrafficTotal,
+                isDirectTraffic: true,
+                faviconDomain: siteDomain || undefined
+            });
+        }
+        
+        // Convert back to array and sort by visits
+        return Array.from(sourceMap.values())
+            .sort((a, b) => b.visits - a.visits);
+    }, [data, siteUrl]);
+    
+    // Extend processed data with percentage values
+    const extendedData = processedData.map(item => ({
         ...item,
-        percentage: totalVisitors > 0 ? (Number(item.visits) / totalVisitors) : 0
-    })) || [];
+        percentage: totalVisitors > 0 ? (item.visits / totalVisitors) : 0
+    }));
 
     const topSources = extendedData.slice(0, 10);
 
@@ -319,7 +389,7 @@ const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range}) =
             </CardHeader>
             <CardContent>
                 <Separator />
-                <SourcesTable data={topSources || null} range={range} />
+                <SourcesTable data={topSources || null} range={range} siteUrl={siteUrl} />
             </CardContent>
             {extendedData.length > 10 &&
                 <CardFooter>
@@ -333,7 +403,7 @@ const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range}) =
                                 <SheetDescription>How readers found your site {getPeriodText(range)}</SheetDescription>
                             </SheetHeader>
                             <div className='group/datalist'>
-                                <SourcesTable data={extendedData} range={range} />
+                                <SourcesTable data={extendedData} range={range} siteUrl={siteUrl} />
                             </div>
                         </SheetContent>
                     </Sheet>
@@ -344,8 +414,11 @@ const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range}) =
 };
 
 const Web: React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading, range, audience} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
+    
+    // Get site URL for domain comparison  
+    const siteUrl = data?.url as string | undefined;
 
     // Prepare query parameters
     const params = {
@@ -405,7 +478,7 @@ const Web: React.FC = () => {
                 </Card>
                 <div className='grid grid-cols-2 gap-8'>
                     <TopContentCard data={topContentData?.stats || null} range={range} totalVisitors={totalVisitors} />
-                    <SourcesCard data={sourcesData as SourcesData[] | null} range={range} totalVisitors={totalVisitors} />
+                    <SourcesCard data={sourcesData as SourcesData[] | null} range={range} siteUrl={siteUrl} totalVisitors={totalVisitors} />
                 </div>
             </StatsView>
         </StatsLayout>
