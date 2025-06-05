@@ -30,6 +30,7 @@ export default defineConfig((config) => {
             exclude: []
         },
         optimizeDeps: {
+            include: ['flexsearch', 'flexsearch/lang/en', 'flexsearch/lang/fr', 'flexsearch/lang/de'],
             esbuildOptions: {
                 plugins: [
                     {
