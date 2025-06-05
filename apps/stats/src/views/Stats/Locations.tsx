@@ -49,13 +49,10 @@ interface TooltipData {
     y: number;
 }
 
-interface LocationData {
+interface ProcessedLocationData {
     location: string;
-    visits: string;
+    visits: number;
     percentage: number;
-}
-
-interface TransformedLocationData extends LocationData {
     relativeValue: number;
 }
 
@@ -80,87 +77,67 @@ const Locations:React.FC = () => {
         params
     });
 
-    const sortedData = useMemo(() => {
-        if (!data) {
-            return null;
-        }
+    const totalVisits = useMemo(() => data?.reduce((sum, row) => sum + Number(row.visits), 0) || 0,
+        [data]
+    );
 
-        const typedData = data as unknown as Array<{location: string; visits: string}>;
+    const processedData = useMemo<ProcessedLocationData[]>(() => {
+        // First calculate total visits for known locations only
+        const knownTotalVisits = data?.reduce((sum, row) => (UNKNOWN_LOCATIONS.includes(String(row.location)) ? sum : sum + Number(row.visits)), 0) || 0;
+
+        const processed = data?.map(row => ({
+            location: String(row.location),
+            visits: Number(row.visits),
+            percentage: totalVisits > 0 ? (Number(row.visits) / totalVisits) : 0,
+            relativeValue: UNKNOWN_LOCATIONS.includes(String(row.location)) ? 0 :
+                Math.min(100, Math.max(10, Math.ceil((Number(row.visits) / knownTotalVisits) * 100 / 10) * 10)),
+            isUnknown: UNKNOWN_LOCATIONS.includes(String(row.location))
+        })) || [];
 
         // Separate known and unknown locations
-        const knownLocations = typedData.filter(item => !UNKNOWN_LOCATIONS.includes(item.location));
-        const unknownLocations = typedData.filter(item => UNKNOWN_LOCATIONS.includes(item.location));
+        const knownLocations = processed.filter(item => !item.isUnknown);
+        const unknownLocations = processed.filter(item => item.isUnknown);
 
-        // Calculate total visits (excluding unknown locations)
-        const totalVisits = knownLocations.reduce((sum, item) => sum + Number(item.visits), 0);
-
-        // Calculate total unknown visits
-        const totalUnknownVisits = unknownLocations.reduce((sum, item) => sum + Number(item.visits), 0);
-
-        // Create combined unknown location record if there are any unknown locations
-        const combinedUnknownRecord = totalUnknownVisits > 0 ? [{
-            location: 'ᴺᵁᴸᴸ',
-            visits: totalUnknownVisits.toString(),
-            percentage: 0
+        // Combine unknown locations into a single entry
+        const combinedUnknown = unknownLocations.length > 0 ? [{
+            location: 'Unknown',
+            visits: unknownLocations.reduce((sum, item) => sum + item.visits, 0),
+            percentage: unknownLocations.reduce((sum, item) => sum + item.percentage, 0),
+            relativeValue: 0
         }] : [];
 
-        // Add percentage to known locations and combine with unknown
-        return [
-            ...knownLocations.map(item => ({
-                ...item,
-                percentage: Number(item.visits) / totalVisits
-            })),
-            ...combinedUnknownRecord
-        ].sort((a, b) => {
-            if (UNKNOWN_LOCATIONS.includes(a.location)) {
+        // Combine and sort data
+        return [...knownLocations, ...combinedUnknown].sort((a, b) => {
+            if (a.location === 'Unknown' && b.location !== 'Unknown') {
                 return 1;
             }
-            if (UNKNOWN_LOCATIONS.includes(b.location)) {
+            if (a.location !== 'Unknown' && b.location === 'Unknown') {
                 return -1;
             }
             return 0;
         });
-    }, [data]);
+    }, [data, totalVisits]);
 
     const isLoading = isConfigLoading || loading;
 
-    const transformData = (rawData: LocationData[] | null): Record<string, TransformedLocationData> => {
-        if (!rawData) {
-            return {};
-        }
-
-        // Filter out unknown location entries for calculations
-        const validData = rawData.filter(item => !UNKNOWN_LOCATIONS.includes(item.location));
-
-        // Find the maximum number of visits
-        const maxVisits = validData.reduce((max, item) => Math.max(max, Number(item.visits)), 0);
-
-        // Transform all data into an object with location codes as keys
-        return rawData.reduce((acc, item) => {
-            if (UNKNOWN_LOCATIONS.includes(item.location)) {
-                // Skip individual unknown locations as they're combined in the sortedData
-                return acc;
-            }
-
-            // Calculate percentage relative to max visits
-            const percentage = (Number(item.visits) / maxVisits) * 100;
-            // Map percentage to 10-100 scale in increments of 10
-            const relativeValue = Math.min(100, Math.max(10, Math.ceil(percentage / 10) * 10));
-
-            acc[item.location] = {
-                ...item,
-                relativeValue
-            };
-
-            return acc;
-        }, {} as Record<string, TransformedLocationData>);
-    };
-
-    const transformedData = transformData(sortedData as LocationData[] | null);
+    const {
+        currentPage,
+        totalPages,
+        paginatedData: tableData,
+        nextPage,
+        previousPage,
+        hasNextPage,
+        hasPreviousPage
+    } = useSimplePagination({
+        data: processedData,
+        itemsPerPage: ITEMS_PER_PAGE
+    });
 
     const getLocationClassName = (location: {id: string, name: string}) => {
         const countryCode = location.id.toUpperCase();
-        const currentData = transformedData[countryCode];
+
+        // find currentData from processedData based on countryCode (location)
+        const currentData = processedData.find(item => normalizeCountryCode(item.location) === countryCode);
         if (currentData) {
             let opacity = '';
 
@@ -194,7 +171,7 @@ const Locations:React.FC = () => {
                 opacity = 'opacity-90';
                 break;
             }
-            return cn('fill-[hsl(var(--chart-purple))]', opacity);
+            return cn('fill-[hsl(var(--chart-blue))]', opacity);
         }
 
         return 'fill-gray-300 dark:fill-gray-900/75';
@@ -203,14 +180,14 @@ const Locations:React.FC = () => {
     const handleLocationMouseOver = (e: React.MouseEvent<SVGPathElement>) => {
         const target = e.target as SVGPathElement;
         const countryCode = target.getAttribute('id')?.toUpperCase() || '';
-        const countryData = transformedData[countryCode];
+        const countryData = processedData.find(item => normalizeCountryCode(item.location) === countryCode);
 
         target.style.opacity = '0.75';
 
         setTooltipData({
             countryCode,
             countryName: getCountryName(countryCode),
-            visits: countryData ? Number(countryData.visits) : 0,
+            visits: countryData ? countryData.visits : 0,
             x: e.clientX,
             y: e.clientY
         });
@@ -221,19 +198,6 @@ const Locations:React.FC = () => {
         target.style.opacity = '';
         setTooltipData(null);
     };
-
-    const {
-        currentPage,
-        totalPages,
-        paginatedData: tableData,
-        nextPage,
-        previousPage,
-        hasNextPage,
-        hasPreviousPage
-    } = useSimplePagination({
-        data: sortedData,
-        itemsPerPage: ITEMS_PER_PAGE
-    });
 
     return (
         <StatsLayout>
@@ -289,7 +253,7 @@ const Locations:React.FC = () => {
                                                 <DataListRow key={row.location || 'unknown'}>
                                                     <DataListBar className='opacity-10 transition-all group-hover/row:opacity-20' style={{
                                                         width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
-                                                        backgroundColor: 'hsl(var(--chart-purple))'
+                                                        backgroundColor: 'hsl(var(--chart-blue))'
                                                     }} />
                                                     <DataListItemContent className='group-hover/data:max-w-[calc(100%-140px)]'>
                                                         <div className='flex items-center space-x-3 overflow-hidden'>
@@ -306,9 +270,7 @@ const Locations:React.FC = () => {
                                                     </DataListItemContent>
                                                     <DataListItemValue>
                                                         <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
-                                                        {!UNKNOWN_LOCATIONS.includes(row.location) &&
-                                                            <DataListItemValuePerc>{formatPercentage(row.percentage)}</DataListItemValuePerc>
-                                                        }
+                                                        <DataListItemValuePerc>{formatPercentage(row.percentage)}</DataListItemValuePerc>
                                                     </DataListItemValue>
                                                 </DataListRow>
                                             );
