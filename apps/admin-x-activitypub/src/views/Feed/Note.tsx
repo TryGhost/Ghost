@@ -72,22 +72,17 @@ function useReplyChainData(postId: string) {
 }
 
 const Note = () => {
-    const {isEnabled} = useFeatureFlags();
     const {postId} = useParams();
     const {canGoBack} = useNavigationStack();
 
-    const activityId = postId ? decodeURIComponent(postId) : '';
-    const shouldFetchReplyChain = isEnabled('reply-chain');
+    const {
+        threadParents,
+        post: currentPost,
+        processedReplies,
+        isLoading
+    } = useReplyChainData(decodeURIComponent(postId ?? ''));
 
-    const {data: post, isLoading: isPostLoading} = usePostForUser('index', shouldFetchReplyChain ? null : postId!);
-    const {data: thread} = useThreadForUser('index', shouldFetchReplyChain ? '' : activityId);
-    const {data: replyChain, isLoading: isReplyChainLoading} = useReplyChainForUser('index', shouldFetchReplyChain ? activityId : '');
-
-    const currentPost = shouldFetchReplyChain
-        ? (replyChain?.post ? mapPostToActivity(replyChain.post) : undefined)
-        : post;
     const object = currentPost?.object;
-    const isLoading = shouldFetchReplyChain ? isReplyChainLoading : isPostLoading;
 
     const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
 
@@ -97,40 +92,7 @@ const Note = () => {
         }
     }, [object?.replyCount]);
 
-    const threadPostIdx = shouldFetchReplyChain ? -1 : (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
-
-    const threadChildren = useMemo(() => {
-        return shouldFetchReplyChain ? [] : (thread?.posts ?? []).slice(threadPostIdx + 1);
-    }, [shouldFetchReplyChain, thread?.posts, threadPostIdx]);
-
-    const threadParents = useMemo(() => {
-        return shouldFetchReplyChain
-            ? (replyChain?.ancestors?.chain?.map(mapPostToActivity) ?? [])
-            : (thread?.posts ?? []).slice(0, threadPostIdx);
-    }, [shouldFetchReplyChain, replyChain?.ancestors?.chain, thread?.posts, threadPostIdx]);
-
     const [expandedChains, setExpandedChains] = useState<Set<string>>(new Set());
-
-    const processedReplies = useMemo(() => {
-        if (!shouldFetchReplyChain) {
-            return threadChildren.map((item) => {
-                return {
-                    mainReply: item,
-                    chain: []
-                };
-            });
-        }
-
-        return (replyChain?.children ?? []).map((childData) => {
-            const mainReply = mapPostToActivity(childData.post);
-            const chainItems = childData.chain ? childData.chain.map(mapPostToActivity) : [];
-
-            return {
-                mainReply,
-                chain: chainItems
-            };
-        });
-    }, [shouldFetchReplyChain, threadChildren, replyChain?.children]);
 
     function handleReplyCountChange(increment: number) {
         setReplyCount((current: number) => current + increment);
