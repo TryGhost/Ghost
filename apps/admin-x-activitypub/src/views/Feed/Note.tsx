@@ -144,6 +144,7 @@ const Note = () => {
                                                         commentCount={item.object.replyCount ?? 0}
                                                         last={false}
                                                         layout='reply'
+                                                        likeCount={item.object.likeCount ?? 0}
                                                         object={item.object}
                                                         repostCount={item.object.repostCount ?? 0}
                                                         type='Note'
@@ -162,6 +163,7 @@ const Note = () => {
                                                     commentCount={replyCount}
                                                     last={true}
                                                     layout={'modal'}
+                                                    likeCount={object.likeCount ?? 0}
                                                     object={object}
                                                     repostCount={object.repostCount}
                                                     showHeader={threadParents.length > 0}
@@ -188,6 +190,7 @@ const Note = () => {
                                                                         isPending={isPendingActivity(item.id)}
                                                                         last={true}
                                                                         layout='reply'
+                                                                        likeCount={item.object.likeCount ?? 0}
                                                                         object={item.object}
                                                                         parentId={object.id}
                                                                         repostCount={item.object.repostCount ?? 0}
@@ -214,6 +217,7 @@ const Note = () => {
                                                                             isPending={isPendingActivity(replyGroup.id)}
                                                                             last={true}
                                                                             layout='reply'
+                                                                            likeCount={replyGroup.object.likeCount ?? 0}
                                                                             object={replyGroup.object}
                                                                             parentId={object.id}
                                                                             repostCount={replyGroup.object.repostCount ?? 0}
@@ -241,6 +245,7 @@ const Note = () => {
                                                                             isPending={isPendingActivity(replyGroup.mainReply.id)}
                                                                             last={!hasChain}
                                                                             layout='reply'
+                                                                            likeCount={replyGroup.mainReply.object.likeCount ?? 0}
                                                                             object={replyGroup.mainReply.object}
                                                                             parentId={object.id}
                                                                             repostCount={replyGroup.mainReply.object.repostCount ?? 0}
@@ -260,6 +265,7 @@ const Note = () => {
                                                                                 isPending={isPendingActivity(replyGroup.chain[0].id)}
                                                                                 last={replyGroup.chain.length === 1 || !isExpanded}
                                                                                 layout='reply'
+                                                                                likeCount={replyGroup.chain[0].object.likeCount ?? 0}
                                                                                 object={replyGroup.chain[0].object}
                                                                                 parentId={object.id}
                                                                                 repostCount={replyGroup.chain[0].object.repostCount ?? 0}
@@ -283,6 +289,7 @@ const Note = () => {
                                                                                     isPending={isPendingActivity(chainItem.id)}
                                                                                     last={isLastChainItem}
                                                                                     layout='reply'
+                                                                                    likeCount={chainItem.object.likeCount ?? 0}
                                                                                     object={chainItem.object}
                                                                                     parentId={object.id}
                                                                                     repostCount={chainItem.object.repostCount ?? 0}

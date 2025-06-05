@@ -115,7 +115,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
                     }}
                 >
                     <LucideIcon.Heart className={`${isLiked && 'fill-pink-500 text-pink-500'}`} />
-                    {false && likeCount}
+                    {!(likeCount === 0 || (layout === 'inbox')) && new Intl.NumberFormat().format(likeCount)}
                 </Button>
                 <Button
                     className={`${buttonClass}`}
