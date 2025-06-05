@@ -194,7 +194,7 @@ const Locations:React.FC = () => {
                 opacity = 'opacity-90';
                 break;
             }
-            return cn('fill-[hsl(var(--chart-1))]', opacity);
+            return cn('fill-[hsl(var(--chart-purple))]', opacity);
         }
 
         return 'fill-gray-300 dark:fill-gray-900/75';
@@ -287,9 +287,9 @@ const Locations:React.FC = () => {
                                             const countryName = getCountryName(`${row.location}`) || 'Unknown';
                                             return (
                                                 <DataListRow key={row.location || 'unknown'}>
-                                                    <DataListBar className='opacity-15 transition-all group-hover/row:opacity-30' style={{
+                                                    <DataListBar className='opacity-10 transition-all group-hover/row:opacity-20' style={{
                                                         width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
-                                                        backgroundColor: 'hsl(var(--chart-blue))'
+                                                        backgroundColor: 'hsl(var(--chart-purple))'
                                                     }} />
                                                     <DataListItemContent className='group-hover/data:max-w-[calc(100%-140px)]'>
                                                         <div className='flex items-center space-x-4 overflow-hidden'>
