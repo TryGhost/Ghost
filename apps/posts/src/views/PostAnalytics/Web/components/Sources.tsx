@@ -1,29 +1,10 @@
 import React from 'react';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, formatNumber, formatPercentage, isValidDomain} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, formatNumber, formatPercentage} from '@tryghost/shade';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
+import {getFaviconDomain, getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useQuery} from '@tinybirdco/charts';
-
-interface SourceRowProps {
-    className?: string;
-    source?: string | number;
-}
-
-export const SourceRow: React.FC<SourceRowProps> = ({className, source}) => {
-    return (
-        <>
-            <img
-                className="size-4"
-                src={`https://www.faviconextractor.com/favicon/${source || 'direct'}?larger=true`}
-                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                    e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
-                }} />
-            <span className={className}>{source || 'Direct'}</span>
-        </>
-    );
-};
 
 interface SourcesProps {
     queryParams: Record<string, string | number>
@@ -41,9 +22,10 @@ interface SourceDataWithPercentage extends SourceData {
 interface SourcesTableProps {
     data: SourceDataWithPercentage[] | null;
     range: number;
+    siteUrl?: string;
 }
 
-const SourcesTable: React.FC<SourcesTableProps> = ({data}) => {
+const SourcesTable: React.FC<SourcesTableProps> = ({data, siteUrl}) => {
     return (
         <DataList>
             <DataListHeader>
@@ -52,6 +34,9 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data}) => {
             </DataListHeader>
             <DataListBody>
                 {data?.map((row) => {
+                    const {domain, isDirectTraffic} = getFaviconDomain(row.source, siteUrl);
+                    const displayName = isDirectTraffic ? 'Direct' : (row.source || 'Direct');
+                    
                     return (
                         <DataListRow key={row.source || 'direct'} className='group/row'>
                             <DataListBar className='opacity-15 transition-all group-hover/row:opacity-30' style={{
@@ -61,13 +46,22 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data}) => {
                             <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
                                 <div className='flex items-center space-x-4 overflow-hidden'>
                                     <div className={`truncate font-medium`}>
-                                        {row.source && typeof row.source === 'string' && isValidDomain(row.source) ?
-                                            <a className='group/link flex items-center gap-2' href={`https://${row.source}`} rel="noreferrer" target="_blank">
-                                                <SourceRow className='group-hover/link:underline' source={row.source} />
+                                        {domain && !isDirectTraffic ?
+                                            <a className='group/link flex items-center gap-2' href={`https://${domain}`} rel="noreferrer" target="_blank">
+                                                <img
+                                                    className="size-4"
+                                                    src={`https://www.faviconextractor.com/favicon/${domain}?larger=true`}
+                                                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                                                        e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
+                                                    }} />
+                                                <span className='group-hover/link:underline'>{displayName}</span>
                                             </a>
                                             :
                                             <span className='flex items-center gap-2'>
-                                                <SourceRow source={row.source} />
+                                                <img
+                                                    className="size-4"
+                                                    src={STATS_DEFAULT_SOURCE_ICON_URL} />
+                                                <span>{displayName}</span>
                                             </span>
                                         }
                                     </div>
@@ -86,7 +80,14 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data}) => {
 };
 
 const Sources:React.FC<SourcesProps> = ({queryParams}) => {
-    const {statsConfig, isLoading: isConfigLoading, range} = useGlobalData();
+    const {statsConfig, data: globalData, isLoading: isConfigLoading, range} = useGlobalData();
+    
+    // Get site URL from global data
+    const siteUrl = globalData?.url as string | undefined;
+    
+    // TEMPORARY: For testing levernews.com direct traffic grouping
+    // Remove this line when done testing
+    const testingSiteUrl = siteUrl || 'https://levernews.com';
 
     const {data, loading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
@@ -101,15 +102,59 @@ const Sources:React.FC<SourcesProps> = ({queryParams}) => {
         return (data as unknown as SourceData[]).reduce((sum: number, source: SourceData) => sum + Number(source.visits), 0);
     }, [data]);
 
-    const dataWithPercentages = React.useMemo(() => {
+    // Process and group sources data with direct traffic consolidation
+    const processedData = React.useMemo(() => {
         if (!data) {
             return [];
         }
-        return (data as unknown as SourceData[]).map((source: SourceData) => ({
-            ...source,
-            percentage: Number(source.visits) / totalVisits
+        
+        const sourceMap = new Map<string, {source: string, visits: number, isDirectTraffic: boolean}>();
+        let directTrafficTotal = 0;
+        
+        // Process each source and group direct traffic
+        (data as unknown as SourceData[]).forEach((item) => {
+            const {isDirectTraffic} = getFaviconDomain(item.source, testingSiteUrl);
+            const visits = Number(item.visits);
+            
+            if (isDirectTraffic || !item.source || item.source === '') {
+                // Accumulate all direct traffic
+                directTrafficTotal += visits;
+            } else {
+                // Keep other sources as-is
+                const sourceKey = String(item.source);
+                if (sourceMap.has(sourceKey)) {
+                    const existing = sourceMap.get(sourceKey)!;
+                    existing.visits += visits;
+                } else {
+                    sourceMap.set(sourceKey, {
+                        source: sourceKey,
+                        visits,
+                        isDirectTraffic: false
+                    });
+                }
+            }
+        });
+        
+        // Add consolidated direct traffic entry if there's any
+        if (directTrafficTotal > 0) {
+            sourceMap.set('Direct', {
+                source: 'Direct',
+                visits: directTrafficTotal,
+                isDirectTraffic: true
+            });
+        }
+        
+        // Convert back to array and sort by visits
+        return Array.from(sourceMap.values())
+            .sort((a, b) => b.visits - a.visits);
+    }, [data, testingSiteUrl]);
+
+    const dataWithPercentages = React.useMemo(() => {
+        return processedData.map(item => ({
+            ...item,
+            percentage: totalVisits > 0 ? (item.visits / totalVisits) : 0
         })) as SourceDataWithPercentage[];
-    }, [data, totalVisits]);
+    }, [processedData, totalVisits]);
 
     const isLoading = isConfigLoading || loading;
 
@@ -117,7 +162,7 @@ const Sources:React.FC<SourcesProps> = ({queryParams}) => {
         <>
             {isLoading ? '' :
                 <>
-                    {data!.length > 0 &&
+                    {dataWithPercentages.length > 0 &&
                         <Card className='group/datalist'>
                             <CardHeader>
                                 <CardTitle>Top Sources</CardTitle>
@@ -125,9 +170,9 @@ const Sources:React.FC<SourcesProps> = ({queryParams}) => {
                             </CardHeader>
                             <CardContent>
                                 <Separator />
-                                <SourcesTable data={dataWithPercentages} range={range} />
+                                <SourcesTable data={dataWithPercentages} range={range} siteUrl={testingSiteUrl} />
                             </CardContent>
-                            {data!.length > 10 &&
+                            {dataWithPercentages.length > 10 &&
                                 <CardFooter>
                                     <Sheet>
                                         <SheetTrigger asChild>
@@ -139,7 +184,7 @@ const Sources:React.FC<SourcesProps> = ({queryParams}) => {
                                                 <SheetDescription>How readers found this post {getPeriodText(range)}</SheetDescription>
                                             </SheetHeader>
                                             <div className='group/datalist'>
-                                                <SourcesTable data={dataWithPercentages} range={range} />
+                                                <SourcesTable data={dataWithPercentages} range={range} siteUrl={testingSiteUrl} />
                                             </div>
                                         </SheetContent>
                                     </Sheet>
