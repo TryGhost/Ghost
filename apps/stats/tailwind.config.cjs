@@ -1,10 +1,10 @@
 const shadePreset = require('@tryghost/shade/tailwind.cjs');
+const sharedContent = require('@tryghost/shade/shared-content.cjs');
 
 module.exports = {
     presets: [shadePreset('.shade')],
-    content: [
+    content: sharedContent.getAllContent([
         './index.html',
-        '../../node_modules/@tryghost/shade/es/**/*.{js,ts,jsx,tsx}',
-        ...shadePreset('.shade').appsContent
-    ]
+        './src/**/*.{js,ts,jsx,tsx}'
+    ])
 };
