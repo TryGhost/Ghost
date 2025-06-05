@@ -39,9 +39,9 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data, siteUrl}) => {
                     
                     return (
                         <DataListRow key={row.source || 'direct'} className='group/row'>
-                            <DataListBar className='opacity-15 transition-all group-hover/row:opacity-30' style={{
-                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
-                                backgroundColor: 'hsl(var(--chart-orange))'
+                            <DataListBar className='bg-gradient-to-r from-muted-foreground/30 to-muted-foreground/60 opacity-20 transition-all group-hover/row:opacity-40' style={{
+                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
+                                // backgroundColor: 'hsl(var(--chart-blue))'
                             }} />
                             <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
                                 <div className='flex items-center space-x-4 overflow-hidden'>

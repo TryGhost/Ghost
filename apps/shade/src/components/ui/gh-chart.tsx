@@ -148,7 +148,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
                     fillOpacity={0.2}
                     isAnimationActive={false}
                     stroke={color}
-                    strokeWidth={2}
+                    strokeWidth={1.5}
                     type="linear"
                 />
             </AreaChart>
