@@ -4,7 +4,7 @@ import React, {useMemo, useState} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, GhAreaChart, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange, isValidDomain} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, GhAreaChart, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange, isValidDomain} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {SourceRow} from './Sources';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
@@ -21,6 +21,7 @@ interface TopContentData {
     title?: string;
     post_uuid?: string;
     post_id?: string;
+    percentage?: number;
 }
 
 interface KpiDataItem {
@@ -32,6 +33,7 @@ interface SourcesData {
     source?: string | number;
     visits: string | number;
     [key: string]: unknown;
+    percentage?: number;
 }
 
 const KPI_METRICS: Record<string, KpiMetric> = {
@@ -121,10 +123,10 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range}) => {
         <Tabs defaultValue="visits" variant='kpis'>
             <TabsList className="-mx-6 grid grid-cols-2">
                 <KpiTabTrigger value="visits" onClick={() => setCurrentTab('visits')}>
-                    <KpiTabValue color={KPI_METRICS.visits.chartColor} label="Unique visitors" value={kpiValues.visits} />
+                    <KpiTabValue icon="MousePointer" label="Unique visitors" value={kpiValues.visits} />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="views" onClick={() => setCurrentTab('views')}>
-                    <KpiTabValue color={KPI_METRICS.views.chartColor} label="Total views" value={kpiValues.views} />
+                    <KpiTabValue icon="Eye" label="Total views" value={kpiValues.views} />
                 </KpiTabTrigger>
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
@@ -141,28 +143,39 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range}) => {
     );
 };
 
-interface TopContentCardProps {
+interface TopContentTableProps {
     data: TopContentData[] | null;
     range: number;
 }
 
-const TopContentTable: React.FC<TopContentCardProps> = ({data}) => {
+const TopContentTable: React.FC<TopContentTableProps> = ({data}) => {
     const navigate = useNavigate();
     return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Content</TableHead>
-                    <TableHead className='text-right'>Visitors</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
+        <DataList>
+            <DataListHeader>
+                <DataListHead>Post</DataListHead>
+                <DataListHead>Visitors</DataListHead>
+            </DataListHeader>
+            <DataListBody>
+
                 {data?.map((row: TopContentData) => {
                     return (
-                        <TableRow key={row.pathname}>
-                            <TableCell className="font-medium">
-                                <div className='group/link inline-flex items-center gap-2'>
-                                    {row.post_id ?
+                        <DataListRow key={row.pathname} className={`group/row ${row.post_id && 'hover:cursor-pointer'}`} onClick={() => {
+                            if (row.post_id) {
+                                navigate(`/posts/analytics/beta/${row.post_id}`, {crossApp: true});
+                            }
+                        }}>
+                            <DataListBar className='opacity-10 transition-all group-hover/row:opacity-20' style={{
+                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
+                                backgroundColor: 'hsl(var(--chart-purple))'
+                            }} />
+                            <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
+                                <div className='flex items-center space-x-4 overflow-hidden'>
+                                    <div className={`truncate font-medium ${row.post_id && 'group-hover/row:underline'}`}>
+                                        {row.title || row.pathname}
+                                    </div>
+                                </div>
+                                {/* {row.post_id ?
                                         <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
                                             navigate(`/posts/analytics/beta/${row.post_id}`, {crossApp: true});
                                         }}>
@@ -172,26 +185,40 @@ const TopContentTable: React.FC<TopContentCardProps> = ({data}) => {
                                         <>
                                             {row.title || row.pathname}
                                         </>
-                                    }
-                                    <a className='-mx-2 inline-flex min-h-6 items-center gap-1 rounded-sm px-2 opacity-0 hover:underline group-hover/link:opacity-75' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
+                                    } */}
+                                {/* <a className='-mx-2 inline-flex min-h-6 items-center gap-1 rounded-sm px-2 opacity-0 hover:underline group-hover/link:opacity-75' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
                                         <LucideIcon.SquareArrowOutUpRight size={12} strokeWidth={2.5} />
-                                    </a>
-                                </div>
-                            </TableCell>
-                            <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
-                        </TableRow>
+                                    </a> */}
+                            </DataListItemContent>
+                            <DataListItemValue>
+                                <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
+                                <DataListItemValuePerc>{formatPercentage(row.percentage || 0)}</DataListItemValuePerc>
+                            </DataListItemValue>
+                        </DataListRow>
                     );
                 })}
-            </TableBody>
-        </Table>
+            </DataListBody>
+        </DataList>
     );
 };
 
-const TopContentCard: React.FC<TopContentCardProps> = ({data, range}) => {
-    const topContent = data?.slice(0, 10) || [];
+interface TopContentCardProps {
+    totalVisitors: number;
+    data: TopContentData[] | null;
+    range: number;
+}
+
+const TopContentCard: React.FC<TopContentCardProps> = ({totalVisitors, data, range}) => {
+    // Extend entire data array with percentage values
+    const extendedData = data?.map(item => ({
+        ...item,
+        percentage: totalVisitors > 0 ? (Number(item.visits) / totalVisitors) : 0
+    })) || [];
+
+    const topContent = extendedData.slice(0, 10);
 
     return (
-        <Card>
+        <Card className='group/datalist'>
             <CardHeader>
                 <CardTitle>Top content</CardTitle>
                 <CardDescription>Your highest viewed posts or pages {getPeriodText(range)}</CardDescription>
@@ -203,14 +230,16 @@ const TopContentCard: React.FC<TopContentCardProps> = ({data, range}) => {
             <CardFooter>
                 <Sheet>
                     <SheetTrigger asChild>
-                        <Button variant='outline'>View all <LucideIcon.Maximize /></Button>
+                        <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                     </SheetTrigger>
                     <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
                         <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
                             <SheetTitle>Top content</SheetTitle>
                             <SheetDescription>Your highest viewed posts or pages {getPeriodText(range)}</SheetDescription>
                         </SheetHeader>
-                        <TopContentTable data={data} range={range} />
+                        <div className='group/datalist'>
+                            <TopContentTable data={extendedData} range={range} />
+                        </div>
                     </SheetContent>
                 </Sheet>
             </CardFooter>
@@ -218,49 +247,70 @@ const TopContentCard: React.FC<TopContentCardProps> = ({data, range}) => {
     );
 };
 
-interface SourcesCardProps {
+interface SourcesTableProps {
     data: SourcesData[] | null;
     range: number;
 }
 
-const SourcesTable: React.FC<SourcesCardProps> = ({data}) => {
+const SourcesTable: React.FC<SourcesTableProps> = ({data}) => {
     return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Source</TableHead>
-                    <TableHead className='text-right'>Visitors</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
+        <DataList>
+            <DataListHeader>
+                <DataListHead>Source</DataListHead>
+                <DataListHead>Visitors</DataListHead>
+            </DataListHeader>
+            <DataListBody>
                 {data?.map((row) => {
                     return (
-                        <TableRow key={row.source || 'direct'}>
-                            <TableCell className="font-medium">
-                                {row.source && typeof row.source === 'string' && isValidDomain(row.source) ?
-                                    <a className='group flex items-center gap-1' href={`https://${row.source}`} rel="noreferrer" target="_blank">
-                                        <SourceRow className='group-hover:underline' source={row.source} />
-                                    </a>
-                                    :
-                                    <span className='flex items-center gap-1'>
-                                        <SourceRow source={row.source} />
-                                    </span>
-                                }
-                            </TableCell>
-                            <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
-                        </TableRow>
+                        <DataListRow key={row.source || 'direct'} className='group/row'>
+                            <DataListBar className='opacity-15 transition-all group-hover/row:opacity-30' style={{
+                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
+                                backgroundColor: 'hsl(var(--chart-orange))'
+                            }} />
+                            <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
+                                <div className='flex items-center space-x-4 overflow-hidden'>
+                                    <div className={`truncate font-medium`}>
+                                        {row.source && typeof row.source === 'string' && isValidDomain(row.source) ?
+                                            <a className='group/link flex items-center gap-2' href={`https://${row.source}`} rel="noreferrer" target="_blank">
+                                                <SourceRow className='group-hover/link:underline' source={row.source} />
+                                            </a>
+                                            :
+                                            <span className='flex items-center gap-2'>
+                                                <SourceRow source={row.source} />
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </DataListItemContent>
+                            <DataListItemValue>
+                                <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
+                                <DataListItemValuePerc>{formatPercentage(row.percentage || 0)}</DataListItemValuePerc>
+                            </DataListItemValue>
+                        </DataListRow>
                     );
                 })}
-            </TableBody>
-        </Table>
+            </DataListBody>
+        </DataList>
     );
 };
 
-const SourcesCard: React.FC<SourcesCardProps> = ({data, range}) => {
-    const topSources = data?.slice(0, 10);
+interface SourcesCardProps {
+    totalVisitors: number;
+    data: SourcesData[] | null;
+    range: number;
+}
+
+const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range}) => {
+    // Extend entire data array with percentage values
+    const extendedData = data?.map(item => ({
+        ...item,
+        percentage: totalVisitors > 0 ? (Number(item.visits) / totalVisitors) : 0
+    })) || [];
+
+    const topSources = extendedData.slice(0, 10);
 
     return (
-        <Card>
+        <Card className='group/datalist'>
             <CardHeader>
                 <CardTitle>Top Sources</CardTitle>
                 <CardDescription>How readers found your site {getPeriodText(range)}</CardDescription>
@@ -272,14 +322,16 @@ const SourcesCard: React.FC<SourcesCardProps> = ({data, range}) => {
             <CardFooter>
                 <Sheet>
                     <SheetTrigger asChild>
-                        <Button variant='outline'>View all <LucideIcon.Maximize /></Button>
+                        <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                     </SheetTrigger>
                     <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
                         <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
                             <SheetTitle>Top sources</SheetTitle>
                             <SheetDescription>How readers found your site {getPeriodText(range)}</SheetDescription>
                         </SheetHeader>
-                        <SourcesTable data={data} range={range} />
+                        <div className='group/datalist'>
+                            <SourcesTable data={extendedData} range={range} />
+                        </div>
                     </SheetContent>
                 </Sheet>
             </CardFooter>
@@ -329,6 +381,9 @@ const Web: React.FC = () => {
         params
     });
 
+    // Get total visitors for table
+    const totalVisitors = kpiData?.length ? kpiData.reduce((sum, item) => sum + Number(item.visits), 0) : 0;
+
     // Calculate combined loading state
     const isLoading = isConfigLoading || kpiLoading || topContentLoading || sourcesLoading;
 
@@ -345,8 +400,8 @@ const Web: React.FC = () => {
                     </CardContent>
                 </Card>
                 <div className='grid grid-cols-2 gap-8'>
-                    <TopContentCard data={topContentData?.stats || null} range={range} />
-                    <SourcesCard data={sourcesData as SourcesData[] | null} range={range} />
+                    <TopContentCard data={topContentData?.stats || null} range={range} totalVisitors={totalVisitors} />
+                    <SourcesCard data={sourcesData as SourcesData[] | null} range={range} totalVisitors={totalVisitors} />
                 </div>
             </StatsView>
         </StatsLayout>

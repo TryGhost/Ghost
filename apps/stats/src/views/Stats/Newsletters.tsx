@@ -164,7 +164,7 @@ const NewsletterKPIs: React.FC<{
                     setCurrentTab('total-subscribers');
                 }}>
                     <KpiTabValue
-                        color={tabConfig['total-subscribers'].color}
+                        icon="UserPlus"
                         label="Total subscribers"
                         value={formatNumber(totalSubscribers)}
                     />
@@ -173,7 +173,7 @@ const NewsletterKPIs: React.FC<{
                     setCurrentTab('avg-open-rate');
                 }}>
                     <KpiTabValue
-                        color={tabConfig['avg-open-rate'].color}
+                        icon="MailOpen"
                         label="Avg. open rate"
                         value={formatPercentage(avgOpenRate)}
                     />
@@ -182,7 +182,7 @@ const NewsletterKPIs: React.FC<{
                     setCurrentTab('avg-click-rate');
                 }}>
                     <KpiTabValue
-                        color={tabConfig['avg-click-rate'].color}
+                        icon="MousePointerClick"
                         label="Avg. click rate"
                         value={formatPercentage(avgClickRate)}
                     />

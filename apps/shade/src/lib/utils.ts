@@ -200,7 +200,15 @@ export const formatDuration = (seconds: number): string => {
 
 // Format a fraction to percentage
 export const formatPercentage = (value: number) => {
-    return `${Math.round(value * 100)}%`;
+    const percentage = value * 100;
+    if (percentage === 0) {
+        return '0%';
+    } else if (percentage < 0.1) {
+        return `${percentage.toFixed(2)}%`;
+    } else if (percentage < 1) {
+        return `${percentage.toFixed(1)}%`;
+    }
+    return `${Math.round(percentage)}%`;
 };
 
 // Format cents to Dollars
