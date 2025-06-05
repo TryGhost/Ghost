@@ -292,7 +292,7 @@ const Locations:React.FC = () => {
                                                         backgroundColor: 'hsl(var(--chart-purple))'
                                                     }} />
                                                     <DataListItemContent className='group-hover/data:max-w-[calc(100%-140px)]'>
-                                                        <div className='flex items-center space-x-4 overflow-hidden'>
+                                                        <div className='flex items-center space-x-3 overflow-hidden'>
                                                             <Flag
                                                                 countryCode={`${normalizeCountryCode(row.location as string)}`}
                                                                 fallback={
