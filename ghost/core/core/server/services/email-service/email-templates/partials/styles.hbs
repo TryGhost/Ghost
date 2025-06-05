@@ -368,11 +368,7 @@ h6 + .kg-paywall .kg-paywall-hr td {
 .post-content-row .kg-card:not(.kg-cta-card) p,
 .post-content-row .kg-toggle-content p,
 .post-content-row .kg-callout-text,
-.post-content-row .kg-product-description-wrapper p,
-.post-content-row .kg-file-title,
-.post-content-row .kg-file-description,
-.post-content-row .kg-file-meta,
-.post-content-row .kg-file-name {
+.post-content-row .kg-product-description-wrapper p {
     color: inherit !important;
 }
 
@@ -413,8 +409,6 @@ figcaption a {
     color: {{linkColor}} !important;
 }
 {{/hasFeature}}
-
-
 
 h1 strong,
 h2 strong,
@@ -2014,9 +2008,11 @@ img.kg-cta-image {
     border-radius: 3px;
     border: 1px solid #e0e7eb;
     {{#hasFeature "emailCustomizationAlpha"}}
-    {{#unless backgroundIsDark}}
+    {{#if backgroundIsDark}}
+    border-color: rgba(255, 255, 255, .12);
+    {{else}}
     border-color: rgba(0, 0, 0, .12);
-    {{/unless}}
+    {{/if}}
     {{/hasFeature}}
 }
 .kg-audio-title {
@@ -2070,9 +2066,10 @@ img.kg-cta-image {
     width: 100%;
     margin: 0 0 1.5em 0;
     border-radius: 3px;
-    border: 1px solid #e0e7eb;
     {{#hasFeature "emailCustomizationAlpha"}}
-    background-color: #FFFFFF;
+    border: 1px solid {{#if backgroundIsDark}}rgba(255,255,255,.12){{else}}rgba(0,0,0,.12){{/if}};
+    {{else}}
+    border: 1px solid #e0e7eb;
     {{/hasFeature}}
 }
 .kg-file-title {
@@ -2084,7 +2081,11 @@ img.kg-cta-image {
     font-weight: bold;
     line-height: 1.3em;
     text-decoration: none !important;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{else}}
     color: #15212A !important;
+    {{/hasFeature}}
 }
 .kg-file-description {
     display: block;
@@ -2094,7 +2095,11 @@ img.kg-cta-image {
     font-size: 15px;
     line-height: 1.4em;
     text-decoration: none !important;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}} !important;
+    {{else}}
     color: #73818c !important;
+    {{/hasFeature}}
 }
 .kg-file-meta {
     display: block;
@@ -2105,11 +2110,19 @@ img.kg-cta-image {
     font-size: 13px;
     line-height: 1.4em;
     text-decoration: none !important;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}} !important;
+    {{else}}
     color: #73818c !important;
+    {{/hasFeature}}
 }
 .kg-file-name {
     font-weight: 500;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{else}}
     color: #15212A !important;
+    {{/hasFeature}}
 }
 .kg-file-thumbnail {
     position: relative;
