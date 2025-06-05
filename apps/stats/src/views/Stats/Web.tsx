@@ -43,19 +43,57 @@ const SOURCE_DOMAIN_MAP: Record<string, string> = {
     SmartNews: 'smartnews.com'
 };
 
-// Add helper function to get favicon domain
-const getFaviconDomain = (source: string | number | undefined): string | null => {
-    if (!source || typeof source !== 'string') {
+// Helper function to extract domain from URL
+const extractDomain = (url: string): string | null => {
+    try {
+        const domain = new URL(url.startsWith('http') ? url : `https://${url}`).hostname;
+        return domain.replace(/^www\./, '');
+    } catch {
         return null;
+    }
+};
+
+// Helper function to check if a domain is the same or a subdomain
+const isDomainOrSubdomain = (sourceDomain: string, siteDomain: string): boolean => {
+    // Exact match
+    if (sourceDomain === siteDomain) {
+        return true;
+    }
+    
+    // Subdomain check: source should end with ".siteDomain"
+    return sourceDomain.endsWith(`.${siteDomain}`);
+};
+
+// Add helper function to get favicon domain
+const getFaviconDomain = (source: string | number | undefined, siteUrl?: string): {domain: string | null, isDirectTraffic: boolean} => {
+    if (!source || typeof source !== 'string') {
+        return {domain: null, isDirectTraffic: false};
+    }
+    
+    // Extract site domain for comparison
+    const siteDomain = siteUrl ? extractDomain(siteUrl) : null;
+    
+    // Check if source matches site domain or is a subdomain (treat as direct traffic)
+    if (siteDomain) {
+        const sourceDomain = extractDomain(source);
+        if (sourceDomain && isDomainOrSubdomain(sourceDomain, siteDomain)) {
+            return {domain: siteDomain, isDirectTraffic: true};
+        }
+        
+        // Also check the source string directly (in case it's already just a domain)
+        if (isDomainOrSubdomain(source, siteDomain)) {
+            return {domain: siteDomain, isDirectTraffic: true};
+        }
     }
     
     // Check if it's already a domain
     if (isValidDomain(source)) {
-        return source;
+        return {domain: source, isDirectTraffic: false};
     }
     
     // Check our mapping
-    return SOURCE_DOMAIN_MAP[source] || null;
+    const mappedDomain = SOURCE_DOMAIN_MAP[source];
+    return {domain: mappedDomain || null, isDirectTraffic: false};
 };
 
 // Define types for our page data
@@ -296,9 +334,10 @@ const TopContentCard: React.FC<TopContentCardProps> = ({totalVisitors, data, ran
 interface SourcesTableProps {
     data: SourcesData[] | null;
     range: number;
+    siteUrl?: string;
 }
 
-const SourcesTable: React.FC<SourcesTableProps> = ({data}) => {
+const SourcesTable: React.FC<SourcesTableProps> = ({data, siteUrl}) => {
     return (
         <DataList>
             <DataListHeader>
@@ -307,8 +346,14 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data}) => {
             </DataListHeader>
             <DataListBody>
                 {data?.map((row) => {
-                    const faviconDomain = getFaviconDomain(row.source);
-                    const displayName = row.source || 'Direct';
+                    // Use precomputed values if available (from processed data), otherwise compute
+                    const faviconDomain = 'faviconDomain' in row && row.faviconDomain 
+                        ? row.faviconDomain 
+                        : getFaviconDomain(row.source, siteUrl).domain;
+                    const isDirectTraffic = 'isDirectTraffic' in row 
+                        ? row.isDirectTraffic 
+                        : getFaviconDomain(row.source, siteUrl).isDirectTraffic;
+                    const displayName = isDirectTraffic ? 'Direct' : (row.source || 'Direct');
                     
                     return (
                         <DataListRow key={displayName} className='group/row'>
@@ -356,14 +401,63 @@ interface SourcesCardProps {
     totalVisitors: number;
     data: SourcesData[] | null;
     range: number;
+    siteUrl?: string;
 }
 
-const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range}) => {
-    // Extend entire data array with percentage values
-    const extendedData = data?.map(item => ({
+const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range, siteUrl}) => {
+    // Process and group sources data
+    const processedData = React.useMemo(() => {
+        if (!data) return [];
+        
+        const sourceMap = new Map<string, {source: string, visits: number, isDirectTraffic: boolean, faviconDomain?: string}>();
+        let directTrafficTotal = 0;
+        
+        // Process each source and group direct traffic
+        data.forEach((item) => {
+            const {domain: faviconDomain, isDirectTraffic} = getFaviconDomain(item.source, siteUrl);
+            const visits = Number(item.visits);
+            
+            if (isDirectTraffic || !item.source || item.source === '') {
+                // Accumulate all direct traffic
+                directTrafficTotal += visits;
+            } else {
+                // Keep other sources as-is
+                const sourceKey = String(item.source);
+                if (sourceMap.has(sourceKey)) {
+                    const existing = sourceMap.get(sourceKey)!;
+                    existing.visits += visits;
+                } else {
+                    sourceMap.set(sourceKey, {
+                        source: sourceKey,
+                        visits,
+                        isDirectTraffic: false,
+                        faviconDomain: faviconDomain || undefined
+                    });
+                }
+            }
+        });
+        
+        // Add consolidated direct traffic entry if there's any
+        if (directTrafficTotal > 0) {
+            const siteDomain = siteUrl ? extractDomain(siteUrl) : null;
+            sourceMap.set('Direct', {
+                source: 'Direct',
+                visits: directTrafficTotal,
+                isDirectTraffic: true,
+                faviconDomain: siteDomain || undefined
+            });
+        }
+        
+        // Convert back to array and sort by visits
+        return Array.from(sourceMap.values())
+            .sort((a, b) => b.visits - a.visits);
+    }, [data, siteUrl]);
+    
+    // Extend processed data with percentage values
+    const extendedData = processedData.map(item => ({
         ...item,
-        percentage: totalVisitors > 0 ? (Number(item.visits) / totalVisitors) : 0
-    })) || [];
+        percentage: totalVisitors > 0 ? (item.visits / totalVisitors) : 0
+    }));
 
     const topSources = extendedData.slice(0, 10);
 
@@ -375,7 +469,7 @@ const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range}) =
             </CardHeader>
             <CardContent>
                 <Separator />
-                <SourcesTable data={topSources || null} range={range} />
+                <SourcesTable data={topSources || null} range={range} siteUrl={siteUrl} />
             </CardContent>
             {extendedData.length > 10 &&
                 <CardFooter>
@@ -389,7 +483,7 @@ const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range}) =
                                 <SheetDescription>How readers found your site {getPeriodText(range)}</SheetDescription>
                             </SheetHeader>
                             <div className='group/datalist'>
-                                <SourcesTable data={extendedData} range={range} />
+                                <SourcesTable data={extendedData} range={range} siteUrl={siteUrl} />
                             </div>
                         </SheetContent>
                     </Sheet>
@@ -400,8 +494,15 @@ const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range}) =
 };
 
 const Web: React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading, range, audience} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
+    
+    // Get site URL for domain comparison  
+    const siteUrl = data?.url as string | undefined;
+    
+    // TEMPORARY: For testing levernews.com direct traffic grouping
+    // Remove this line when done testing
+    const testingSiteUrl = siteUrl || 'https://levernews.com';
 
     // Prepare query parameters
     const params = {
@@ -461,7 +562,7 @@ const Web: React.FC = () => {
                 </Card>
                 <div className='grid grid-cols-2 gap-8'>
                     <TopContentCard data={topContentData?.stats || null} range={range} totalVisitors={totalVisitors} />
-                    <SourcesCard data={sourcesData as SourcesData[] | null} range={range} totalVisitors={totalVisitors} />
+                    <SourcesCard data={sourcesData as SourcesData[] | null} range={range} siteUrl={testingSiteUrl} totalVisitors={totalVisitors} />
                 </div>
             </StatsView>
         </StatsLayout>
