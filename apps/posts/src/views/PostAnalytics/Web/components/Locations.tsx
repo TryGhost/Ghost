@@ -1,7 +1,7 @@
 import React, {useMemo} from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, Icon, Separator, formatNumber, formatPercentage} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
@@ -67,19 +67,19 @@ const Locations:React.FC<LocationsProps> = ({queryParams}) => {
             isUnknown: UNKNOWN_LOCATIONS.includes(String(row.location))
         })) || [];
 
-        // Sort the data to put unknown locations at the end
-        return processed.sort((a, b) => {
-            if (a.isUnknown && !b.isUnknown) {
-                return 1;
-            }
-            if (!a.isUnknown && b.isUnknown) {
-                return -1;
-            }
-            return 0;
-        }).map(({isUnknown, ...rest}) => ({
-            ...rest,
-            location: isUnknown ? 'Unknown' : rest.location
-        }));
+        // Separate known and unknown locations
+        const knownLocations = processed.filter(item => !item.isUnknown);
+        const unknownLocations = processed.filter(item => item.isUnknown);
+
+        // Combine unknown locations into a single entry
+        const combinedUnknown = unknownLocations.length > 0 ? [{
+            location: 'Unknown',
+            visits: unknownLocations.reduce((sum, item) => sum + item.visits, 0),
+            percentage: unknownLocations.reduce((sum, item) => sum + item.percentage, 0)
+        }] : [];
+
+        // Return combined array with known locations first, followed by the combined unknown entry
+        return [...knownLocations, ...combinedUnknown];
     }, [data, totalVisits]);
 
     return (
@@ -93,9 +93,10 @@ const Locations:React.FC<LocationsProps> = ({queryParams}) => {
                         <CardDescription>Where are the readers of this post</CardDescription>
                     </CardHeader>
                     <CardContent>
+                        <Separator />
                         <DataList>
-                            <DataListHeader className='py-4'>
-                                <DataListHead>Source</DataListHead>
+                            <DataListHeader>
+                                <DataListHead>Country</DataListHead>
                                 <DataListHead>Visitors</DataListHead>
                             </DataListHeader>
                             <DataListBody>
@@ -113,7 +114,7 @@ const Locations:React.FC<LocationsProps> = ({queryParams}) => {
                                                         countryCode={`${normalizeCountryCode(row.location as string)}`}
                                                         fallback={
                                                             <span className='flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-black text-white'>
-                                                                {/* <SkullAndBones className="size-3" /> */}
+                                                                <Icon.SkullAndBones className='size-3' />
                                                             </span>
                                                         }
                                                     />

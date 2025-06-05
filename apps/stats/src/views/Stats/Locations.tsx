@@ -7,10 +7,9 @@ import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, cn, formatNumber, formatPercentage, formatQueryDate, getRangeDates, useSimplePagination} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, Icon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, cn, formatNumber, formatPercentage, formatQueryDate, getRangeDates, useSimplePagination} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
-import {ReactComponent as SkullAndBones} from '@src/assets/icons/skull-and-bones.svg';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -243,7 +242,7 @@ const Locations:React.FC = () => {
                             <div className='group/datalist flex flex-col justify-between border-l px-6'>
                                 <DataList>
                                     <DataListHeader className='py-4'>
-                                        <DataListHead>Source</DataListHead>
+                                        <DataListHead>Country</DataListHead>
                                         <DataListHead>Visitors</DataListHead>
                                     </DataListHeader>
                                     <DataListBody>
@@ -261,7 +260,7 @@ const Locations:React.FC = () => {
                                                                 countryCode={`${normalizeCountryCode(row.location as string)}`}
                                                                 fallback={
                                                                     <span className='flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-black text-white'>
-                                                                        <SkullAndBones className="size-3" />
+                                                                        <Icon.SkullAndBones className='size-3' />
                                                                     </span>
                                                                 }
                                                             />
