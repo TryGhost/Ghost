@@ -170,7 +170,11 @@ dt {
     float: left;
     margin: 0 20px 0 0;
     width: 120px;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    {{else}}
     color: #15212A;
+    {{/hasFeature}}
     font-weight: 500;
     text-align: right;
 }
@@ -195,7 +199,11 @@ blockquote.kg-blockquote-alt {
     text-align: center;
     font-size: 1.2em;
     font-style: italic;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}};
+    {{else}}
     color: #73818c;
+    {{/hasFeature}}
 }
 
 blockquote p {
@@ -352,8 +360,6 @@ h6 + .kg-paywall .kg-paywall-hr td {
 .post-content-row > td > blockquote p,
 .post-content-row .post-content > blockquote p,
 .post-content-row .post-content-sans-serif > blockquote p,
-.post-content-row .kg-card-figcaption,
-.post-content-row .kg-card-figcaption span,
 .post-content-row .kg-cta-bg-none .kg-cta-text p {
     color: {{contentTextColor}} !important;
 }
@@ -429,7 +435,11 @@ figcaption {
     padding-top: 10px;
     padding-bottom: 10px;
     line-height: 1.5em;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}};
+    {{else}}
     color: #73818c;
+    {{/hasFeature}}
 }
 
 figcaption a {
@@ -485,6 +495,18 @@ figure blockquote p {
     padding-top: 32px;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+
+.site-url {
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    font-size: 16px;
+    letter-spacing: -0.1px;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+{{else}}
 .site-url {
     color: #15212A;
     font-size: 16px;
@@ -494,13 +516,15 @@ figure blockquote p {
     text-align: center;
 }
 
+{{/hasFeature}}
+
 .site-url-bottom-padding {
     padding-bottom: 12px;
 }
 
 {{#hasFeature "emailCustomizationAlpha"}}
 .site-title {
-    color: {{contentTextColor}};
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
 }
 {{else}}
 .site-title {
@@ -510,7 +534,7 @@ figure blockquote p {
 
 {{#hasFeature "emailCustomizationAlpha"}}
 .site-subtitle {
-    color: {{contentTextColor}};
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}};
     font-size: 13px;
     font-weight: 400;
     text-transform: none;
@@ -605,7 +629,7 @@ figure blockquote p {
 {{#hasFeature "emailCustomizationAlpha"}}
 .post-meta,
 .view-online {
-    color: {{contentTextColor}};
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}};
     font-size: 13px;
     font-weight: 400;
     text-align: center;
@@ -649,7 +673,7 @@ figure blockquote p {
 .view-online-link {
     word-wrap: none;
     white-space: nowrap;
-    color: {{contentTextColor}};
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}};
     text-decoration: underline !important;
 }
 {{else}}
@@ -726,7 +750,7 @@ figure blockquote p {
 .feedback-button-text {
     display: inline-block;
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-    color: {{contentTextColor}};
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
     font-size: 13px !important;
     font-weight: 500;
     margin: 1em 0 0 0;
@@ -759,7 +783,7 @@ figure blockquote p {
 h3.latest-posts-header {
     margin: 0;
     padding: 8px 0 8px;
-    color: {{contentTextColor}};
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 13px;
     font-weight: 600;
@@ -2157,7 +2181,7 @@ img.kg-cta-image {
 
 {{#hasFeature "emailCustomizationAlpha"}}
 .footer {
-    color: {{contentTextColor}};
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}};
     margin-top: 20px;
     text-align: center;
     font-size: 13px!important;
@@ -2169,7 +2193,7 @@ img.kg-cta-image {
 }
 
 .footer a {
-    color: {{contentTextColor}};
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}};
     text-decoration: underline;
     font-size: 13px;
 }
