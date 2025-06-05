@@ -103,7 +103,8 @@ function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: stri
                                 ...item,
                                 object: {
                                     ...item.object,
-                                    liked: liked
+                                    liked: liked,
+                                    likeCount: Math.max(liked ? (item.object.likeCount || 0) + 1 : (item.object.likeCount || 0) - 1, 0)
                                 }
                             };
                         }
@@ -157,7 +158,8 @@ function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: stri
                         ...activity,
                         object: {
                             ...activity.object,
-                            liked
+                            liked,
+                            likeCount: Math.max(liked ? (activity.object.likeCount || 0) + 1 : (activity.object.likeCount || 0) - 1, 0)
                         }
                     };
                 }
@@ -196,7 +198,8 @@ function updateNotificationsLikedCache(queryClient: QueryClient, handle: string,
                                         ...notification,
                                         post: {
                                             ...notification.post,
-                                            likedByMe: liked
+                                            likedByMe: liked,
+                                            likeCount: Math.max(liked ? notification.post.likeCount + 1 : notification.post.likeCount - 1, 0)
                                         }
                                     };
                                 }
@@ -411,6 +414,23 @@ export function useLikeMutationForUser(handle: string) {
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, true);
             updateNotificationsLikedCache(queryClient, handle, id, true);
 
+            // Update the individual post cache (used by Reader)
+            const postQueryKey = QUERY_KEYS.post(id);
+            queryClient.setQueryData(postQueryKey, (current?: Activity) => {
+                if (!current || current.object.id !== id) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    object: {
+                        ...current.object,
+                        liked: true,
+                        likeCount: Math.max((current.object.likeCount || 0) + 1, 0)
+                    }
+                };
+            });
+
             // Update account liked count
             queryClient.setQueryData(QUERY_KEYS.account('index'), (currentAccount?: Account) => {
                 if (!currentAccount) {
@@ -428,6 +448,23 @@ export function useLikeMutationForUser(handle: string) {
             updateLikedCache(queryClient, QUERY_KEYS.profilePosts('index'), id, false);
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
             updateNotificationsLikedCache(queryClient, handle, id, false);
+
+            // Revert the individual post cache (used by Reader)
+            const postQueryKey = QUERY_KEYS.post(id);
+            queryClient.setQueryData(postQueryKey, (current?: Activity) => {
+                if (!current || current.object.id !== id) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    object: {
+                        ...current.object,
+                        liked: false,
+                        likeCount: Math.max((current.object.likeCount || 0) - 1, 0)
+                    }
+                };
+            });
 
             // Update account liked count
             queryClient.setQueryData(QUERY_KEYS.account('index'), (currentAccount?: Account) => {
@@ -465,6 +502,23 @@ export function useUnlikeMutationForUser(handle: string) {
             updateLikedCache(queryClient, QUERY_KEYS.profilePosts('index'), id, false);
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
             updateNotificationsLikedCache(queryClient, handle, id, false);
+
+            // Update the individual post cache (used by Reader)
+            const postQueryKey = QUERY_KEYS.post(id);
+            queryClient.setQueryData(postQueryKey, (current?: Activity) => {
+                if (!current || current.object.id !== id) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    object: {
+                        ...current.object,
+                        liked: false,
+                        likeCount: Math.max((current.object.likeCount || 0) - 1, 0)
+                    }
+                };
+            });
 
             // Update account liked count
             queryClient.setQueryData(QUERY_KEYS.account(handle === 'me' ? 'index' : handle), (currentAccount?: Account) => {

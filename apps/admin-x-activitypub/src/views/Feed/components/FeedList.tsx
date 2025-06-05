@@ -86,6 +86,7 @@ const FeedList:React.FC<FeedListProps> = ({
                                                         isLoading={isLoading}
                                                         isPending={isPendingActivity(activity.id)}
                                                         layout={'feed'}
+                                                        likeCount={activity.object.likeCount ?? 0}
                                                         object={activity.object}
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}

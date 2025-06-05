@@ -286,6 +286,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                         commentCount={replyTo.object.replyCount ?? 0}
                         isCompact={true}
                         layout='reply'
+                        likeCount={replyTo.object.likeCount ?? 0}
                         object={replyTo.object}
                         repostCount={replyTo.object.repostCount ?? 0}
                         type={replyTo.object.type === 'Article' ? 'Article' : 'Note'}
