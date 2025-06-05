@@ -308,7 +308,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     <KpiCard className='relative grow'>
                                         <FunnelArrow />
                                         <KpiCardLabel>
-                                            <div className='size-2.5 rounded-[2px] bg-purple/30'></div>
+                                            <div className='ml-0.5 size-[9px] rounded-full border-[2px] border-purple bg-purple'></div>
                                             {/* <LucideIcon.Send strokeWidth={1.5} /> */}
                                             Sent
                                         </KpiCardLabel>
@@ -319,7 +319,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     <KpiCard className='relative grow'>
                                         <FunnelArrow />
                                         <KpiCardLabel>
-                                            <div className='size-2.5 rounded-[2px] bg-blue/30'></div>
+                                            <div className='ml-0.5 size-[9px] rounded-full border-[2px] border-blue bg-blue'></div>
                                             {/* <LucideIcon.Eye strokeWidth={1.5} /> */}
                                             Opened
                                         </KpiCardLabel>
@@ -329,7 +329,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     </KpiCard>
                                     <KpiCard className='grow'>
                                         <KpiCardLabel>
-                                            <div className='size-2.5 rounded-[2px] bg-green/30'></div>
+                                            <div className='ml-0.5 size-[9px] rounded-full border-[2px] border-green bg-green'></div>
                                             {/* <LucideIcon.MousePointer strokeWidth={1.5} /> */}
                                             Clicked
                                         </KpiCardLabel>

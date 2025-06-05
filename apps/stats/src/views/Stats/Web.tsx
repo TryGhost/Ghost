@@ -227,22 +227,24 @@ const TopContentCard: React.FC<TopContentCardProps> = ({totalVisitors, data, ran
                 <Separator />
                 <TopContentTable data={topContent} range={range} />
             </CardContent>
-            <CardFooter>
-                <Sheet>
-                    <SheetTrigger asChild>
-                        <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
-                    </SheetTrigger>
-                    <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                        <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
-                            <SheetTitle>Top content</SheetTitle>
-                            <SheetDescription>Your highest viewed posts or pages {getPeriodText(range)}</SheetDescription>
-                        </SheetHeader>
-                        <div className='group/datalist'>
-                            <TopContentTable data={extendedData} range={range} />
-                        </div>
-                    </SheetContent>
-                </Sheet>
-            </CardFooter>
+            {extendedData.length > 10 &&
+                <CardFooter>
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
+                        </SheetTrigger>
+                        <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
+                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
+                                <SheetTitle>Top content</SheetTitle>
+                                <SheetDescription>Your highest viewed posts or pages {getPeriodText(range)}</SheetDescription>
+                            </SheetHeader>
+                            <div className='group/datalist'>
+                                <TopContentTable data={extendedData} range={range} />
+                            </div>
+                        </SheetContent>
+                    </Sheet>
+                </CardFooter>
+            }
         </Card>
     );
 };
@@ -319,22 +321,24 @@ const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range}) =
                 <Separator />
                 <SourcesTable data={topSources || null} range={range} />
             </CardContent>
-            <CardFooter>
-                <Sheet>
-                    <SheetTrigger asChild>
-                        <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
-                    </SheetTrigger>
-                    <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                        <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
-                            <SheetTitle>Top sources</SheetTitle>
-                            <SheetDescription>How readers found your site {getPeriodText(range)}</SheetDescription>
-                        </SheetHeader>
-                        <div className='group/datalist'>
-                            <SourcesTable data={extendedData} range={range} />
-                        </div>
-                    </SheetContent>
-                </Sheet>
-            </CardFooter>
+            {extendedData.length > 10 &&
+                <CardFooter>
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
+                        </SheetTrigger>
+                        <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
+                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
+                                <SheetTitle>Top sources</SheetTitle>
+                                <SheetDescription>How readers found your site {getPeriodText(range)}</SheetDescription>
+                            </SheetHeader>
+                            <div className='group/datalist'>
+                                <SourcesTable data={extendedData} range={range} />
+                            </div>
+                        </SheetContent>
+                    </Sheet>
+                </CardFooter>
+            }
         </Card>
     );
 };
