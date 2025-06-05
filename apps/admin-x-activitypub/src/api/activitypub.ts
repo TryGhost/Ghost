@@ -522,8 +522,11 @@ export class ActivityPubAPI {
         return json as Post;
     }
 
-    async getReplies(postApId: string): Promise<ReplyChainResponse> {
+    async getReplies(postApId: string, next?: string): Promise<ReplyChainResponse> {
         const url = new URL(`.ghost/activitypub/replies/${encodeURIComponent(postApId)}`, this.apiUrl);
+        if (next) {
+            url.searchParams.set('next', next);
+        }
         const json = await this.fetchJSON(url);
         return json as ReplyChainResponse;
     }
