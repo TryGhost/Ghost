@@ -82,12 +82,12 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
                                         <KpiTabTrigger value="visits" onClick={() => {
                                             setCurrentTab('visits');
                                         }}>
-                                            <KpiTabValue color={KPI_METRICS.visits.color} label="Unique visitors" value={kpiValues.visits} />
+                                            <KpiTabValue icon="MousePointer" label="Unique visitors" value={kpiValues.visits} />
                                         </KpiTabTrigger>
                                         <KpiTabTrigger value="views" onClick={() => {
                                             setCurrentTab('views');
                                         }}>
-                                            <KpiTabValue color={KPI_METRICS.views.color} label="Total views" value={kpiValues.views} />
+                                            <KpiTabValue icon="Eye" label="Total views" value={kpiValues.views} />
                                         </KpiTabTrigger>
                                     </TabsList>
                                     <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>

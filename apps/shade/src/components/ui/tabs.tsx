@@ -190,7 +190,7 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({color, icon: iconName, label, 
     return (
         <div className='group flex w-full flex-col items-start gap-2'>
             <div className='flex h-[22px] items-center gap-1.5 text-base font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                {color && <div className='ml-1 size-[9px] rounded-[2px] opacity-50' style={{backgroundColor: color}}></div>}
+                {color && <div className='ml-1 size-2 rounded-full' style={{backgroundColor: color}}></div>}
                 {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
                 {label}
             </div>
