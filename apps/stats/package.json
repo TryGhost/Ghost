@@ -30,14 +30,15 @@
     },
     "devDependencies": {
         "@tanstack/react-query": "4.36.1",
-        "@testing-library/react": "14.3.1",
         "@testing-library/jest-dom": "5.17.0",
+        "@testing-library/react": "14.3.1",
         "@types/jest": "29.5.14",
         "@types/react": "18.3.23",
         "@types/react-svg-map": "2.1.4",
         "@vitejs/plugin-react": "4.5.0",
         "msw": "2.8.3",
         "vite": "4.5.14",
+        "vite-plugin-svgr": "^4.3.0",
         "vitest": "0.34.3"
     },
     "dependencies": {
@@ -46,11 +47,11 @@
         "@tryghost/admin-x-framework": "0.0.0",
         "@tryghost/shade": "0.0.0",
         "i18n-iso-countries": "7.14.0",
+        "moment": "2.24.0",
+        "moment-timezone": "0.5.45",
         "react": "18.3.1",
         "react-dom": "18.3.1",
-        "react-svg-map": "2.2.0",
-        "moment": "2.24.0",
-        "moment-timezone": "0.5.45"
+        "react-svg-map": "2.2.0"
     },
     "nx": {
         "targets": {

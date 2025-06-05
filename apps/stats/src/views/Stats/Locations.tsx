@@ -7,10 +7,10 @@ import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import skullAndBonesIcon from '@src/assets/icons/skull-and-bones.svg?url';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, Flag, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, cn, formatNumber, formatQueryDate, getRangeDates, useSimplePagination} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
+import {ReactComponent as SkullAndBones} from '@src/assets/icons/skull-and-bones.svg';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -261,7 +261,7 @@ const Locations:React.FC = () => {
                                                         countryCode={`${normalizeCountryCode(row.location as string)}`}
                                                         fallback={
                                                             <span className='flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-black text-white'>
-                                                                <img alt="Unknown location" className="size-3" src={skullAndBonesIcon} />
+                                                                <SkullAndBones className="size-3" />
                                                             </span>
                                                         }
                                                     />
