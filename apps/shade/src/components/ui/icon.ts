@@ -5,10 +5,10 @@ import {cn, kebabToPascalCase} from '@/lib/utils';
 const iconVariants = cva('', {
     variants: {
         size: {
-            sm: 'h-3 w-3',
-            md: 'h-4 w-4',
-            lg: 'h-6 w-6',
-            xl: 'h-8 w-8'
+            sm: 'size-3',
+            md: 'size-4',
+            lg: 'size-6',
+            xl: 'size-8'
         }
     },
     defaultVariants: {

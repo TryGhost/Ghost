@@ -141,9 +141,9 @@ const GrowthKPIs: React.FC<{
                     setCurrentTab('total-members');
                 }}>
                     <KpiTabValue
-                        color={tabConfig['total-members'].color}
                         diffDirection={directions.total}
                         diffValue={percentChanges.total}
+                        icon="Users"
                         label="Total members"
                         value={formatNumber(totalMembers)}
                     />
@@ -152,9 +152,9 @@ const GrowthKPIs: React.FC<{
                     setCurrentTab('free-members');
                 }}>
                     <KpiTabValue
-                        color={tabConfig['free-members'].color}
                         diffDirection={directions.free}
                         diffValue={percentChanges.free}
+                        icon="User"
                         label="Free members"
                         value={formatNumber(freeMembers)}
                     />
@@ -163,9 +163,9 @@ const GrowthKPIs: React.FC<{
                     setCurrentTab('paid-members');
                 }}>
                     <KpiTabValue
-                        color={tabConfig['paid-members'].color}
                         diffDirection={directions.paid}
                         diffValue={percentChanges.paid}
+                        icon="WalletCards"
                         label="Paid members"
                         value={formatNumber(paidMembers)}
                     />
@@ -174,9 +174,9 @@ const GrowthKPIs: React.FC<{
                     setCurrentTab('mrr');
                 }}>
                     <KpiTabValue
-                        color={tabConfig.mrr.color}
                         diffDirection={directions.mrr}
                         diffValue={percentChanges.mrr}
+                        icon="DollarSign"
                         label="MRR"
                         value={`$${formatNumber(centsToDollars(mrr))}`}
                     />

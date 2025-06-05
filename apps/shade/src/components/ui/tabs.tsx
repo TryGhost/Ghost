@@ -3,7 +3,8 @@ import * as TabsPrimitive from '@radix-ui/react-tabs';
 
 import {cn} from '@/lib/utils';
 import {cva} from 'class-variance-authority';
-import {TrendingDown, TrendingUp} from 'lucide-react';
+import {TrendingDown, TrendingUp, type LucideIcon} from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 
 type TabsVariant = 'segmented' | 'button' | 'underline' | 'navbar' | 'pill' | 'kpis';
 
@@ -170,13 +171,16 @@ const KpiTabTrigger: React.FC<KpiTabTriggerProps> = ({children, ...props}) => {
 
 interface KpiTabValueProps {
     color?: string;
+    icon?: keyof typeof LucideIcons;
     label: string;
     value: string | number;
     diffDirection?: 'up' | 'down' | 'same';
     diffValue?: string | number;
 }
 
-const KpiTabValue: React.FC<KpiTabValueProps> = ({color, label, value, diffDirection, diffValue}) => {
+const KpiTabValue: React.FC<KpiTabValueProps> = ({color, icon: iconName, label, value, diffDirection, diffValue}) => {
+    const IconComponent = iconName ? LucideIcons[iconName] as LucideIcon : null;
+
     const diffContainerClassName = cn(
         'hidden xl:!flex xl:!visible items-center gap-1 text-xs -mb-1 h-[18px]',
         diffDirection === 'up' && 'text-green-600',
@@ -185,8 +189,9 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({color, label, value, diffDirec
     );
     return (
         <div className='group flex w-full flex-col items-start gap-2'>
-            <div className='flex h-[22px] items-center gap-2 text-base font-medium text-muted-foreground transition-all group-hover:text-foreground'>
+            <div className='flex h-[22px] items-center gap-1.5 text-base font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                 {color && <div className='ml-1 size-[9px] rounded-[2px] opacity-50' style={{backgroundColor: color}}></div>}
+                {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
                 {label}
             </div>
             <div className='flex flex-col items-start gap-1'>
