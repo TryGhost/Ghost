@@ -4,6 +4,7 @@ export const SOURCE_DOMAIN_MAP: Record<string, string> = {
     Facebook: 'facebook.com',
     Twitter: 'twitter.com',
     Bluesky: 'bsky.app',
+    'go.bsky.app': 'bsky.app',
     Instagram: 'instagram.com',
     LinkedIn: 'linkedin.com',
     Threads: 'threads.net',

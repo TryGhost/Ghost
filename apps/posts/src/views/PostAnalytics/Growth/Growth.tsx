@@ -126,7 +126,10 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                                                 <span className='flex items-center gap-2'>
                                                                     <img
                                                                         className="size-4"
-                                                                        src={STATS_DEFAULT_SOURCE_ICON_URL} />
+                                                                        src={domain ? `https://www.faviconextractor.com/favicon/${domain}?larger=true` : STATS_DEFAULT_SOURCE_ICON_URL}
+                                                                        onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                                                                            e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
+                                                                        }} />
                                                                     <span>{displayName}</span>
                                                                 </span>
                                                             }
