@@ -255,6 +255,7 @@ const Note = () => {
                                                                             actor={replyGroup.mainReply.actor}
                                                                             allowDelete={replyGroup.mainReply.object.authored}
                                                                             commentCount={replyGroup.mainReply.object.replyCount ?? 0}
+                                                                            isChainParent={hasChain}
                                                                             isPending={isPendingActivity(replyGroup.mainReply.id)}
                                                                             last={!hasChain}
                                                                             layout='reply'
@@ -275,8 +276,9 @@ const Note = () => {
                                                                                 actor={replyGroup.chain[0].actor}
                                                                                 allowDelete={replyGroup.chain[0].object.authored}
                                                                                 commentCount={replyGroup.chain[0].object.replyCount ?? 0}
+                                                                                isChainContinuation={true}
                                                                                 isPending={isPendingActivity(replyGroup.chain[0].id)}
-                                                                                last={replyGroup.chain.length === 1 || !isExpanded}
+                                                                                last={replyGroup.chain.length === 1}
                                                                                 layout='reply'
                                                                                 likeCount={replyGroup.chain[0].object.likeCount ?? 0}
                                                                                 object={replyGroup.chain[0].object}
@@ -299,6 +301,7 @@ const Note = () => {
                                                                                     actor={chainItem.actor}
                                                                                     allowDelete={chainItem.object.authored}
                                                                                     commentCount={chainItem.object.replyCount ?? 0}
+                                                                                    isChainContinuation={true}
                                                                                     isPending={isPendingActivity(chainItem.id)}
                                                                                     last={isLastChainItem}
                                                                                     layout='reply'
