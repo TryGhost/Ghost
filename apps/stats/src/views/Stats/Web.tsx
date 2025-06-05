@@ -6,13 +6,57 @@ import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, GhAreaChart, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange, isValidDomain} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
-import {SourceRow} from './Sources';
+
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useQuery} from '@tinybirdco/charts';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
+
+// Add this mapping near the top of the file, after the imports
+const SOURCE_DOMAIN_MAP: Record<string, string> = {
+    Reddit: 'reddit.com',
+    Facebook: 'facebook.com',
+    Twitter: 'twitter.com',
+    Bluesky: 'bsky.app',
+    Instagram: 'instagram.com',
+    LinkedIn: 'linkedin.com',
+    Threads: 'threads.net',
+    'Brave Search': 'search.brave.com',
+    Ecosia: 'ecosia.org',
+    Gmail: 'gmail.com',
+    Outlook: 'outlook.com',
+    'Yahoo!': 'yahoo.com',
+    'AOL Mail': 'aol.com',
+    Flipboard: 'flipboard.com',
+    Substack: 'substack.com',
+    Ghost: 'ghost.org',
+    Buffer: 'buffer.com',
+    Taboola: 'taboola.com',
+    AppNexus: 'appnexus.com',
+    Wikipedia: 'wikipedia.org',
+    Mastodon: 'mastodon.social',
+    Memeorandum: 'memeorandum.com',
+    'Ground News': 'ground.news',
+    'Apple News': 'apple.com',
+    SmartNews: 'smartnews.com'
+};
+
+// Add helper function to get favicon domain
+const getFaviconDomain = (source: string | number | undefined): string | null => {
+    if (!source || typeof source !== 'string') {
+        return null;
+    }
+    
+    // Check if it's already a domain
+    if (isValidDomain(source)) {
+        return source;
+    }
+    
+    // Check our mapping
+    return SOURCE_DOMAIN_MAP[source] || null;
+};
 
 // Define types for our page data
 interface TopContentData {
@@ -263,8 +307,11 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data}) => {
             </DataListHeader>
             <DataListBody>
                 {data?.map((row) => {
+                    const faviconDomain = getFaviconDomain(row.source);
+                    const displayName = row.source || 'Direct';
+                    
                     return (
-                        <DataListRow key={row.source || 'direct'} className='group/row'>
+                        <DataListRow key={displayName} className='group/row'>
                             <DataListBar className='opacity-15 transition-all group-hover/row:opacity-30' style={{
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
                                 backgroundColor: 'hsl(var(--chart-orange))'
@@ -272,13 +319,22 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data}) => {
                             <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
                                 <div className='flex items-center space-x-4 overflow-hidden'>
                                     <div className={`truncate font-medium`}>
-                                        {row.source && typeof row.source === 'string' && isValidDomain(row.source) ?
-                                            <a className='group/link flex items-center gap-2' href={`https://${row.source}`} rel="noreferrer" target="_blank">
-                                                <SourceRow className='group-hover/link:underline' source={row.source} />
+                                        {faviconDomain ?
+                                            <a className='group/link flex items-center gap-2' href={`https://${faviconDomain}`} rel="noreferrer" target="_blank">
+                                                <img
+                                                    className="size-4"
+                                                    src={`https://www.faviconextractor.com/favicon/${faviconDomain}?larger=true`}
+                                                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                                                        e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiByeD0iMiIgZmlsbD0iIzZCNzI4MCIvPgo8L3N2Zz4K';
+                                                    }} />
+                                                <span className='group-hover/link:underline'>{displayName}</span>
                                             </a>
                                             :
                                             <span className='flex items-center gap-2'>
-                                                <SourceRow source={row.source} />
+                                                <img
+                                                    className="size-4"
+                                                    src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiByeD0iMiIgZmlsbD0iIzZCNzI4MCIvPgo8L3N2Zz4K' />
+                                                <span>{displayName}</span>
                                             </span>
                                         }
                                     </div>
