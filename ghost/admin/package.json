@@ -46,7 +46,7 @@
     "@sentry/replay": "7.116.0",
     "@tryghost/color-utils": "0.2.6",
     "@tryghost/ember-promise-modals": "2.0.1",
-    "@tryghost/helpers": "1.1.94",
+    "@tryghost/helpers": "1.1.95",
     "@tryghost/kg-clean-basic-html": "4.2.5",
     "@tryghost/kg-converters": "1.1.5",
     "@tryghost/koenig-lexical": "1.6.25",

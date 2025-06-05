@@ -7690,10 +7690,10 @@
     mime-types "^3.0.1"
     reqresnext "^1.7.0"
 
-"@tryghost/helpers@1.1.94":
-  version "1.1.94"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.94.tgz#c57a525d19fd303e939c8de9e72bc7aa4463766b"
-  integrity sha512-Cwo5Ev8JVCb3cYQawtXTMAroBMPblcj6K2wSv30o/lVRhiDitJSe4kR7YgThR04T1YZxxkYEAXWxjv2IWxGUSA==
+"@tryghost/helpers@1.1.95":
+  version "1.1.95"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.95.tgz#6acbea62d4e140b6d6a107f789667975e0a505b0"
+  integrity sha512-nCKAea1fR9d9x7QHijzgWlfndk/JxeQQdt99Dqf3dsMxa+ied5tXv+2lVL9PhmHKYw9q+bCK/KHs25NGjfBhmw==
   dependencies:
     lodash-es "^4.17.11"
 
