@@ -342,6 +342,7 @@ h6 + .kg-paywall .kg-paywall-hr td {
 }
 
 {{#hasFeature "emailCustomizationAlpha"}}
+/* Apply custom content text color to main content elements */
 .post-content-row > td > p,
 .post-content-row .post-content > p,
 .post-content-row .post-content-sans-serif > p,
@@ -351,7 +352,6 @@ h6 + .kg-paywall .kg-paywall-hr td {
 .post-content-row > td > blockquote p,
 .post-content-row .post-content > blockquote p,
 .post-content-row .post-content-sans-serif > blockquote p,
-
 .post-content-row .kg-card-figcaption,
 .post-content-row .kg-card-figcaption span,
 .post-content-row .kg-cta-bg-none .kg-cta-text p {
@@ -366,8 +366,7 @@ h6 + .kg-paywall .kg-paywall-hr td {
 .post-content-row .kg-file-title,
 .post-content-row .kg-file-description,
 .post-content-row .kg-file-meta,
-.post-content-row .kg-file-name,
-.post-content-row .footer p {
+.post-content-row .kg-file-name {
     color: inherit !important;
 }
 
@@ -499,22 +498,31 @@ figure blockquote p {
     padding-bottom: 12px;
 }
 
-.site-title {
-    color: #15212A;
-}
-
 {{#hasFeature "emailCustomizationAlpha"}}
 .site-title {
     color: {{contentTextColor}};
 }
+{{else}}
+.site-title {
+    color: #15212A;
+}
 {{/hasFeature}}
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.site-subtitle {
+    color: {{contentTextColor}};
+    font-size: 13px;
+    font-weight: 400;
+    text-transform: none;
+}
+{{else}}
 .site-subtitle {
     color: #73818c;
     font-size: 13px;
     font-weight: 400;
     text-transform: none;
 }
+{{/hasFeature}}
 
 .post-title {
     font-size: 36px;
@@ -594,6 +602,15 @@ figure blockquote p {
     text-align: left;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.post-meta,
+.view-online {
+    color: {{contentTextColor}};
+    font-size: 13px;
+    font-weight: 400;
+    text-align: center;
+}
+{{else}}
 .post-meta,
 .view-online {
     color: #73818c;
@@ -601,6 +618,7 @@ figure blockquote p {
     font-weight: 400;
     text-align: center;
 }
+{{/hasFeature}}
 
 .post-meta-left {
     text-align: left;
@@ -627,12 +645,21 @@ figure blockquote p {
     white-space: nowrap;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.view-online-link {
+    word-wrap: none;
+    white-space: nowrap;
+    color: {{contentTextColor}};
+    text-decoration: underline !important;
+}
+{{else}}
 .view-online-link {
     word-wrap: none;
     white-space: nowrap;
     color: #73818c;
     text-decoration: underline !important;
 }
+{{/hasFeature}}
 
 .feature-image {
     padding-bottom: 30px;
@@ -695,20 +722,29 @@ figure blockquote p {
     vertical-align: middle;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
 .feedback-button-text {
     display: inline-block;
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-    {{#hasFeature "emailCustomizationAlpha"}}
     color: {{contentTextColor}};
-    {{else}}
-    color: #15212A;
-    {{/hasFeature}}
     font-size: 13px !important;
     font-weight: 500;
     margin: 1em 0 0 0;
     line-height: 1.4em;
     word-break: break-word;
 }
+{{else}}
+.feedback-button-text {
+    display: inline-block;
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    color: #15212A;
+    font-size: 13px !important;
+    font-weight: 500;
+    margin: 1em 0 0 0;
+    line-height: 1.4em;
+    word-break: break-word;
+}
+{{/hasFeature}}
 
 /* -------------------------------------
     LATEST POSTS TABLE
@@ -719,19 +755,27 @@ figure blockquote p {
     border-bottom: 1px solid {{dividerColor}};
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
 h3.latest-posts-header {
     margin: 0;
     padding: 8px 0 8px;
-    {{#hasFeature "emailCustomizationAlpha"}}
     color: {{contentTextColor}};
-    {{else}}
-    color: #15212A;
-    {{/hasFeature}}
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 13px;
     font-weight: 600;
     text-transform: uppercase;
 }
+{{else}}
+h3.latest-posts-header {
+    margin: 0;
+    padding: 8px 0 8px;
+    color: #15212A;
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+{{/hasFeature}}
 
 .latest-post {
     max-width: 600px !important;
@@ -806,23 +850,6 @@ h3.latest-posts-header {
 .latest-post p a {
     color: {{contentTextColor}} !important;
 }
-
-.footer p,
-
-.footer td,
-.footer a {
-    color: {{contentTextColor}} !important;
-}
-
-.site-subtitle {
-    color: {{contentTextColor}} !important;
-}
-
-.post-meta-wrapper td,
-.post-meta-wrapper span,
-.post-meta-wrapper .view-online a {
-    color: {{contentTextColor}} !important;
- }
 {{/hasFeature}}
 
 /* -------------------------------------
@@ -835,6 +862,16 @@ h3.latest-posts-header {
     color: {{contentTextColor}};
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.subscription-box h3 {
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin: 0 0 18px;
+    color: {{contentTextColor}};
+}
+{{else}}
 .subscription-box h3 {
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 14px;
@@ -842,7 +879,18 @@ h3.latest-posts-header {
     text-transform: uppercase;
     margin: 0 0 18px;
 }
+{{/hasFeature}}
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.subscription-box p {
+    margin-bottom: 0;
+    color: {{contentTextColor}} !important;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.45em;
+    text-decoration: none;
+}
+{{else}}
 .subscription-box p {
     margin-bottom: 0;
     color: #15212A !important;
@@ -850,11 +898,6 @@ h3.latest-posts-header {
     font-weight: 400;
     line-height: 1.45em;
     text-decoration: none;
-}
-
-{{#hasFeature "emailCustomizationAlpha"}}
-.subscription-box p {
-    color: {{contentTextColor}} !important;
 }
 {{/hasFeature}}
 
@@ -952,7 +995,6 @@ td.kg-card-spacing {
 
 .kg-bookmark-card {
     width: 100%;
-    background: #ffffff;
 }
 
 .kg-bookmark-card a {
@@ -985,6 +1027,7 @@ td.kg-card-spacing {
     text-decoration: none;
     border-radius: 3px;
     border: 1px solid #e0e7eb;
+    background: #ffffff;
 }
 
 .kg-bookmark-content {
@@ -2112,6 +2155,25 @@ img.kg-cta-image {
     padding-top: 10px;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.footer {
+    color: {{contentTextColor}};
+    margin-top: 20px;
+    text-align: center;
+    font-size: 13px!important;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    padding-left: 30px;
+    padding-right: 30px;
+    line-height: 1.5em;
+}
+
+.footer a {
+    color: {{contentTextColor}};
+    text-decoration: underline;
+    font-size: 13px;
+}
+{{else}}
 .footer {
     color: #73818c;
     margin-top: 20px;
@@ -2129,6 +2191,7 @@ img.kg-cta-image {
     text-decoration: underline;
     font-size: 13px;
 }
+{{/hasFeature}}
 
 /* -------------------------------------
     BUTTONS
