@@ -7,7 +7,7 @@ const NumberFlow = lazy(() => import('@number-flow/react'));
 // Create a wrapper that preserves the original functionality
 const AnimatedNumber = (props: ComponentProps<typeof NumberFlow>) => {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<div></div>}>
             <NumberFlow {...props} />
         </Suspense>
     );
