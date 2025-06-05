@@ -27,8 +27,17 @@ const Note = () => {
     const {canGoBack} = useNavigationStack();
 
     const activityId = postId ? decodeURIComponent(postId) : '';
-    const {data: post, isLoading: isPostLoading} = usePostForUser('index', postId!);
-    const object = post?.object;
+    const shouldFetchReplyChain = isEnabled('reply-chain');
+
+    const {data: post, isLoading: isPostLoading} = usePostForUser('index', shouldFetchReplyChain ? null : postId!);
+    const {data: thread} = useThreadForUser('index', shouldFetchReplyChain ? '' : activityId);
+    const {data: replyChain, isLoading: isReplyChainLoading} = useReplyChainForUser('index', shouldFetchReplyChain ? activityId : '');
+
+    const currentPost = shouldFetchReplyChain
+        ? (replyChain?.post ? mapPostToActivity(replyChain.post) : undefined)
+        : post;
+    const object = currentPost?.object;
+    const isLoading = shouldFetchReplyChain ? isReplyChainLoading : isPostLoading;
 
     const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
 
@@ -38,27 +47,31 @@ const Note = () => {
         }
     }, [object?.replyCount]);
 
-    const {data: thread} = useThreadForUser('index', activityId);
-    const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
-    const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
-    const threadParents = (thread?.posts ?? []).slice(0, threadPostIdx);
+    const threadPostIdx = shouldFetchReplyChain ? -1 : (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
 
-    const shouldFetchReplyChain = isEnabled('reply-chain');
-    const {data: replyChain} = useReplyChainForUser('index', activityId);
+    const threadChildren = useMemo(() => {
+        return shouldFetchReplyChain ? [] : (thread?.posts ?? []).slice(threadPostIdx + 1);
+    }, [shouldFetchReplyChain, thread?.posts, threadPostIdx]);
+
+    const threadParents = useMemo(() => {
+        return shouldFetchReplyChain
+            ? (replyChain?.ancestors?.chain?.map(mapPostToActivity) ?? [])
+            : (thread?.posts ?? []).slice(0, threadPostIdx);
+    }, [shouldFetchReplyChain, replyChain?.ancestors?.chain, thread?.posts, threadPostIdx]);
 
     const [expandedChains, setExpandedChains] = useState<Set<string>>(new Set());
 
     const processedReplies = useMemo(() => {
-        if (!shouldFetchReplyChain || !threadChildren.length) {
+        if (!shouldFetchReplyChain) {
             return threadChildren;
         }
 
-        return threadChildren.map((topLevelReply) => {
-            const chainData = replyChain?.children?.find(child => child.post.id === topLevelReply.id);
-            const chainItems = chainData?.chain ? chainData.chain.map(mapPostToActivity) : [];
+        return (replyChain?.children ?? []).map((childData) => {
+            const mainReply = mapPostToActivity(childData.post);
+            const chainItems = childData.chain ? childData.chain.map(mapPostToActivity) : [];
 
             return {
-                mainReply: topLevelReply,
+                mainReply,
                 chain: chainItems
             };
         });
@@ -99,7 +112,7 @@ const Note = () => {
 
     return (
         <Layout>
-            {isPostLoading ?
+            {isLoading ?
                 <div className='mx-auto mt-8 flex max-w-[620px] items-center gap-3 px-8 pt-7'>
                     <Skeleton className='size-10 rounded-full' />
                     <div className='grow pt-1'>
@@ -109,7 +122,7 @@ const Note = () => {
                 </div>
                 :
                 <>
-                    {post ?
+                    {currentPost ?
                         <div className='mx-auto flex h-full max-w-[620px] flex-col'>
                             <div className='relative flex-1'>
                                 <div className='grow overflow-y-auto'>
@@ -117,16 +130,16 @@ const Note = () => {
                                         {!threadParents.length &&
                                         <div className={`col-[2/3] mx-auto flex w-full items-center gap-3 ${canGoBack ? 'pt-10' : 'pt-5'}`}>
                                             <div className='relative z-10 pt-[3px]'>
-                                                <APAvatar author={post.actor}/>
+                                                <APAvatar author={currentPost.actor}/>
                                             </div>
                                             <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
-                                                handleProfileClick(post.actor, navigate, e);
+                                                handleProfileClick(currentPost.actor, navigate, e);
                                             }}>
                                                 <div className='flex w-full'>
-                                                    <span className='min-w-0 truncate whitespace-nowrap font-semibold hover:underline'>{post.actor.name}</span>
+                                                    <span className='min-w-0 truncate whitespace-nowrap font-semibold hover:underline'>{currentPost.actor.name}</span>
                                                 </div>
                                                 <div className='flex w-full'>
-                                                    <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(post.actor)}</span>
+                                                    <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(currentPost.actor)}</span>
                                                     <span className='text-gray-700'>{renderTimestamp(object, !object.authored)}</span>
                                                 </div>
                                             </div>
@@ -157,7 +170,7 @@ const Note = () => {
                                         <div ref={postRef} className={`${canGoBack ? 'scroll-mt-[12px]' : 'scroll-mt-[124px]'}`}>
                                             <div className={`${threadParents.length > 0 && 'min-h-[calc(100vh-52px)]'}`}>
                                                 <FeedItem
-                                                    actor={post.actor}
+                                                    actor={currentPost.actor}
                                                     allowDelete={false}
                                                     commentCount={replyCount}
                                                     last={true}

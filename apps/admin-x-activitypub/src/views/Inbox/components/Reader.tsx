@@ -431,33 +431,40 @@ export const Reader: React.FC<ReaderProps> = ({
     const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
     const [isTOCOpen, setIsTOCOpen] = useState(false);
 
-    const {data: post, isLoading: isLoadingPost} = usePostForUser('index', postId);
-    const activityData = post;
+    const shouldFetchReplyChain = isEnabled('reply-chain');
+
+    const {data: post, isLoading: isLoadingPost} = usePostForUser('index', shouldFetchReplyChain ? null : postId);
+    const {data: thread, isLoading: isLoadingThreadData} = useThreadForUser('index', shouldFetchReplyChain ? '' : (post?.id ?? ''));
+    const {data: replyChain, isLoading: isReplyChainLoading} = useReplyChainForUser('index', shouldFetchReplyChain ? postId : '');
+
+    const currentPost = shouldFetchReplyChain
+        ? (replyChain?.post ? mapPostToActivity(replyChain.post) : undefined)
+        : post;
+    const activityData = currentPost;
     const activityId = activityData?.id;
     const object = activityData?.object;
     const actor = activityData?.actor;
     const authors = activityData?.object?.metadata?.ghostAuthors;
 
-    const {data: thread, isLoading: isLoadingThreadData} = useThreadForUser('index', activityId);
-    const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
-    const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
+    const threadPostIdx = shouldFetchReplyChain ? -1 : (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
 
-    const shouldFetchReplyChain = isEnabled('reply-chain');
-    const {data: replyChain} = useReplyChainForUser('index', activityId);
+    const threadChildren = useMemo(() => {
+        return shouldFetchReplyChain ? [] : (thread?.posts ?? []).slice(threadPostIdx + 1);
+    }, [shouldFetchReplyChain, thread?.posts, threadPostIdx]);
 
     const [expandedChains, setExpandedChains] = useState<Set<string>>(new Set());
 
     const processedReplies = useMemo(() => {
-        if (!shouldFetchReplyChain || !threadChildren.length) {
+        if (!shouldFetchReplyChain) {
             return threadChildren;
         }
 
-        return threadChildren.map((topLevelReply) => {
-            const chainData = replyChain?.children?.find(child => child.post.id === topLevelReply.id);
-            const chainItems = chainData?.chain ? chainData.chain.map(mapPostToActivity) : [];
+        return (replyChain?.children ?? []).map((childData) => {
+            const mainReply = mapPostToActivity(childData.post);
+            const chainItems = childData.chain ? childData.chain.map(mapPostToActivity) : [];
 
             return {
-                mainReply: topLevelReply,
+                mainReply,
                 chain: chainItems
             };
         });
@@ -475,7 +482,8 @@ export const Reader: React.FC<ReaderProps> = ({
         });
     }
 
-    const isLoadingThread = isLoadingPost || isLoadingThreadData;
+    const isLoadingThread = shouldFetchReplyChain ? isReplyChainLoading : (isLoadingPost || isLoadingThreadData);
+    const isLoadingMainPost = shouldFetchReplyChain ? isReplyChainLoading : isLoadingPost;
 
     const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
 
@@ -660,11 +668,11 @@ export const Reader: React.FC<ReaderProps> = ({
                                     </div>
                                     <div className='relative z-10 mt-0.5 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => handleProfileClick(actor, navigate, e)}>
                                         <div className='flex w-full'>
-                                            <span className='min-w-0 truncate whitespace-nowrap font-semibold text-black hover:underline dark:text-white'>{isLoadingPost ? <Skeleton className='w-20' /> : actor.name}</span>
+                                            <span className='min-w-0 truncate whitespace-nowrap font-semibold text-black hover:underline dark:text-white'>{isLoadingMainPost ? <Skeleton className='w-20' /> : actor.name}</span>
                                         </div>
                                         <div className='flex w-full'>
-                                            {!isLoadingPost && <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>}
-                                            <span className='text-gray-700'>{isLoadingPost ? <Skeleton className='w-[120px]' /> : renderTimestamp(object, !object.authored)}</span>
+                                            {!isLoadingMainPost && <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>}
+                                            <span className='text-gray-700'>{isLoadingMainPost ? <Skeleton className='w-[120px]' /> : renderTimestamp(object, !object.authored)}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -690,7 +698,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                 tocItems={tocItems}
                                 onOpenChange={setIsTOCOpen}
                             />
-                            {!isLoadingPost && <div className='grow overflow-y-auto'>
+                            {!isLoadingMainPost && <div className='grow overflow-y-auto'>
                                 <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
                                     <div className='flex flex-col items-center pb-8' id='object-content'>
                                         <ArticleBody
@@ -875,7 +883,7 @@ export const Reader: React.FC<ReaderProps> = ({
                             </div>}
                         </div>
                     </div>
-                    {!isLoadingPost && <div className='pointer-events-none !visible sticky bottom-0 hidden items-end justify-between px-10 pb-[42px] lg:!flex'>
+                    {!isLoadingMainPost && <div className='pointer-events-none !visible sticky bottom-0 hidden items-end justify-between px-10 pb-[42px] lg:!flex'>
                         <div className='pointer-events-auto text-gray-600'>
                             {getReadingTime(object.content ?? '')}
                         </div>
