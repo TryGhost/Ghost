@@ -534,29 +534,33 @@ class PostsStatsService {
      */
     async getNewsletterSubscriberStats(newsletterId, options = {}) {
         try {
-            // Get total subscriber count, filtering out members with email disabled
+            // Smart optimization: Use NOT IN with disabled members (much smaller set)
+            const disabledMemberIds = await this.knex('members')
+                .select('id')
+                .where('email_disabled', 1)
+                .pluck('id');
+
+            // Get total subscriber count, filtering out disabled members efficiently
             const totalResult = await this.knex('members_newsletters as mn')
-                .countDistinct('mn.member_id as total')
-                .join('members as m', 'm.id', 'mn.member_id')
+                .count('mn.id as total')
                 .where('mn.newsletter_id', newsletterId)
-                .where('m.email_disabled', 0);
+                .whereNotIn('mn.member_id', disabledMemberIds);
 
             const totalValue = totalResult[0] ? totalResult[0].total : 0;
             const total = parseInt(String(totalValue), 10);
 
-            // Get daily deltas within date range for the specific newsletter
+            // Get daily deltas, excluding disabled members with NOT IN (much more efficient)
             let deltasQuery = this.knex('members_subscribe_events as mse')
                 .select(
                     this.knex.raw(`DATE(mse.created_at) as date`),
                     this.knex.raw(`SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as value`)
                 )
-                .join('members as m', 'm.id', 'mse.member_id')
                 .where('mse.newsletter_id', newsletterId)
-                .where('m.email_disabled', 0) // Only include events for members with emails enabled
+                .whereNotIn('mse.member_id', disabledMemberIds)
                 .groupByRaw('DATE(mse.created_at)')
                 .orderBy('date', 'asc');
 
-            // Apply date filters
+            // Apply date filters for better index usage
             if (options.date_from) {
                 deltasQuery.where('mse.created_at', '>=', options.date_from);
             }
@@ -566,20 +570,12 @@ class PostsStatsService {
 
             const rawDeltas = await deltasQuery;
 
-            // Transform raw database results to properly typed objects
-            const deltas = [];
-            for (const row of rawDeltas) {
-                if (row) {
-                    // @ts-ignore
-                    const dateValue = row.date || '';
-                    // @ts-ignore
-                    const deltaValue = row.value || 0;
-                    deltas.push({
-                        date: String(dateValue),
-                        value: parseInt(String(deltaValue), 10)
-                    });
-                }
-            }
+            const deltas = rawDeltas.map(row => ({
+                // @ts-ignore
+                date: String(row.date || ''),
+                // @ts-ignore
+                value: parseInt(String(row.value || 0), 10)
+            }));
 
             return {
                 data: [{
