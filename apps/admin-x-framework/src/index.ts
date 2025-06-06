@@ -10,6 +10,7 @@ export {hasBeenEmailed} from './utils/post-utils';
 
 // Source utilities
 export {SOURCE_DOMAIN_MAP, extractDomain, isDomainOrSubdomain, getFaviconDomain} from './utils/source-utils';
+export {SourcesCard} from './components/Sources/SourcesCard';
 
 // Routing
 export type {RouteObject} from 'react-router';
