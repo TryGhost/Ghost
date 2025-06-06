@@ -1,7 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { getCountryForTimezone } from 'countries-and-timezones';
 import { getReferrer, parseReferrer } from '../utils/url-attribution';
-import { getSessionId, setSessionId, getStorageObject } from '../utils/session-storage';
 import { processPayload } from '../utils/privacy';
 import { BrowserService } from './browser-service';
 
@@ -12,12 +11,7 @@ import { BrowserService } from './browser-service';
  */
 
 // Configuration constants
-const STORAGE_KEY = 'session-id';
 const DEFAULT_DATASOURCE = 'analytics_events';
-const STORAGE_METHODS = {
-    localStorage: 'localStorage',
-    sessionStorage: 'sessionStorage',
-};
 
 // Runtime configuration
 let config = {
@@ -25,7 +19,6 @@ let config = {
     token: null,
     domain: null,
     datasource: DEFAULT_DATASOURCE,
-    storageMethod: STORAGE_METHODS.localStorage,
     stringifyPayload: true,
     globalAttributes: {}
 };
@@ -53,7 +46,6 @@ export class GhostStats {
         
         // Get optional parameters
         config.datasource = currentScript.getAttribute('data-datasource') || config.datasource;
-        config.storageMethod = currentScript.getAttribute('data-storage') || config.storageMethod;
         config.stringifyPayload = currentScript.getAttribute('data-stringify-payload') !== 'false';
         
         // Get global attributes
@@ -74,20 +66,16 @@ export class GhostStats {
                 throw new Error('Missing required configuration (host or token)');
             }
 
-            // Set or update session ID
-            setSessionId(STORAGE_KEY, getStorageObject(config.storageMethod));
             const url = `${config.host}?name=${encodeURIComponent(config.datasource)}&token=${encodeURIComponent(config.token)}`;
 
             // Process the payload, masking sensitive data
             const processedPayload = processPayload(payload, config.globalAttributes, config.stringifyPayload);
-            const session_id = getSessionId(STORAGE_KEY, getStorageObject(config.storageMethod)) || uuidv4();
 
             // Prepare request data
             const data = {
                 timestamp: new Date().toISOString(),
                 action: name,
                 version: '1',
-                session_id,
                 payload: processedPayload,
             };
 
