@@ -136,7 +136,8 @@ const Note = () => {
                 try {
                     await loadMoreChildren();
                 } catch (error) {
-
+                    // eslint-disable-next-line no-console
+                    console.error('Failed to load more top-level replies:', error);
                 } finally {
                     setIsLoadingMoreTopLevelReplies(false);
                 }
