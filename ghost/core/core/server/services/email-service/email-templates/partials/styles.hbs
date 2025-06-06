@@ -200,9 +200,15 @@ blockquote.kg-blockquote-alt {
     font-size: 1.2em;
     font-style: italic;
     {{#hasFeature "emailCustomizationAlpha"}}
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}};
+        {{#if backgroundIsDark}}
+            color: #8f9aa3
+            color: rgba(255, 255, 255, .6)
+        {{else}}
+            color: #73818c
+            color: rgba(0, 0, 0, .6)
+        {{/if}};
     {{else}}
-    color: #73818c;
+        color: #73818c;
     {{/hasFeature}}
 }
 
@@ -436,9 +442,15 @@ figcaption {
     padding-bottom: 10px;
     line-height: 1.5em;
     {{#hasFeature "emailCustomizationAlpha"}}
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}};
+        {{#if backgroundIsDark}}
+            color: #8f9aa3
+            color: rgba(255, 255, 255, .6)
+        {{else}}
+            color: #73818c
+            color: rgba(0, 0, 0, .6)
+        {{/if}};
     {{else}}
-    color: #73818c;
+        color: #73818c;
     {{/hasFeature}}
 }
 
@@ -534,7 +546,13 @@ figure blockquote p {
 
 {{#hasFeature "emailCustomizationAlpha"}}
 .site-subtitle {
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}};
+    {{#if backgroundIsDark}}
+        color: #8f9aa3;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #73818c
+        color: rgba(0, 0, 0, .6);
+    {{/if}};
     font-size: 13px;
     font-weight: 400;
     text-transform: none;
@@ -629,7 +647,13 @@ figure blockquote p {
 {{#hasFeature "emailCustomizationAlpha"}}
 .post-meta,
 .view-online {
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}};
+    {{#if backgroundIsDark}}
+        color: #8f9aa3;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #73818c
+        color: rgba(0, 0, 0, .6);
+    {{/if}};
     font-size: 13px;
     font-weight: 400;
     text-align: center;
@@ -673,7 +697,13 @@ figure blockquote p {
 .view-online-link {
     word-wrap: none;
     white-space: nowrap;
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}};
+    {{#if backgroundIsDark}}
+        color: #8f9aa3;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #73818c
+        color: rgba(0, 0, 0, .6);
+    {{/if}};
     text-decoration: underline !important;
 }
 {{else}}
@@ -2278,7 +2308,13 @@ img.kg-cta-image {
 
 {{#hasFeature "emailCustomizationAlpha"}}
 .footer {
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}};
+    {{#if backgroundIsDark}}
+        color: #8f9aa3;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #73818c
+        color: rgba(0, 0, 0, .6);
+    {{/if}};
     margin-top: 20px;
     text-align: center;
     font-size: 13px!important;
@@ -2290,7 +2326,13 @@ img.kg-cta-image {
 }
 
 .footer a {
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}};
+    {{#if backgroundIsDark}}
+        color: #8f9aa3;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #73818c
+        color: rgba(0, 0, 0, .6);
+    {{/if}};
     text-decoration: underline;
     font-size: 13px;
 }
