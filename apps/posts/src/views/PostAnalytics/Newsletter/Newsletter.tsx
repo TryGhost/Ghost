@@ -549,8 +549,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                 <CardTitle>Feedback</CardTitle>
                                 <CardDescription>What did your readers think?</CardDescription>
                             </CardHeader>
-                            <CardContent className='pb-3'>
-                                {feedbackStats.totalFeedback ?
+                            {feedbackStats.totalFeedback > 0 ?
+                                <CardContent className='pb-3'>
                                     <Tabs defaultValue="more-like-this" variant='underline'>
                                         <TabsList className="flex w-full">
                                             <TabsTrigger className='h-12 justify-start px-3' value="more-like-this">
@@ -607,35 +607,37 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             </Table>
                                         </TabsContent>
                                     </Tabs>
-                                    :
-                                    <div className='flex-col items-center text-center'>
-                                        <h4>No members have given feedback yet</h4>
-                                        <p>When someone does, you&apos;ll see their response here.</p>
+                                </CardContent>
+                                :
+                                <CardContent className='text-muted-foreground flex grow flex-col items-center justify-center text-center text-sm'>
+                                    <div>No members have given feedback yet</div>
+                                    <div>When someone does, you&apos;ll see their response here.</div>
+                                </CardContent>
+                            }
+                            {feedbackStats.totalFeedback > 0 &&
+                                <CardFooter className='grow-0'>
+                                    <div className='flex w-full items-center justify-between gap-3'>
+                                        <Button size='sm' variant='outline'>
+                                        View all
+                                            <LucideIcon.TableOfContents />
+                                        </Button>
+                                        {feedbackTotalPages > 1 &&
+                                            <SimplePagination className='pb-0'>
+                                                <SimplePaginationNavigation>
+                                                    <SimplePaginationPreviousButton
+                                                        disabled={!feedbackHasPreviousPage}
+                                                        onClick={feedbackPreviousPage}
+                                                    />
+                                                    <SimplePaginationNextButton
+                                                        disabled={!feedbackHasNextPage}
+                                                        onClick={feedbackNextPage}
+                                                    />
+                                                </SimplePaginationNavigation>
+                                            </SimplePagination>
+                                        }
                                     </div>
-                                }
-                            </CardContent>
-                            <CardFooter>
-                                <div className='flex w-full items-center justify-between gap-3'>
-                                    <Button size='sm' variant='outline'>
-                                    View all
-                                        <LucideIcon.TableOfContents />
-                                    </Button>
-                                    {feedbackTotalPages > 1 &&
-                                        <SimplePagination className='pb-0'>
-                                            <SimplePaginationNavigation>
-                                                <SimplePaginationPreviousButton
-                                                    disabled={!feedbackHasPreviousPage}
-                                                    onClick={feedbackPreviousPage}
-                                                />
-                                                <SimplePaginationNextButton
-                                                    disabled={!feedbackHasNextPage}
-                                                    onClick={feedbackNextPage}
-                                                />
-                                            </SimplePaginationNavigation>
-                                        </SimplePagination>
-                                    }
-                                </div>
-                            </CardFooter>
+                                </CardFooter>
+                            }
                         </Card>
                         <Card>
                             <CardHeader className='pb-3'>
