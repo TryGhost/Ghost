@@ -16226,10 +16226,10 @@ ember-modifier@^3.0.0, ember-modifier@^3.2.7:
     ember-cli-typescript "^5.0.0"
     ember-compatibility-helpers "^1.2.5"
 
-ember-moment@10.0.1:
-  version "10.0.1"
-  resolved "https://registry.yarnpkg.com/ember-moment/-/ember-moment-10.0.1.tgz#aecc2afec1aa214763069f9c7f1e755dbe567eb5"
-  integrity sha512-Es5PaFBRF6djyb0zwmcCMqWjLhyKrCWs5Ug6iaZoKxDgEc8incVCTv3ED2Z4oCcNDY2gKTqXY5VTsP1J9hUPcg==
+ember-moment@10.0.2:
+  version "10.0.2"
+  resolved "https://registry.yarnpkg.com/ember-moment/-/ember-moment-10.0.2.tgz#e1fabb0f14d2038015ae29ef63b074f19594544d"
+  integrity sha512-qIus/0u/E80Ab7jVnvIIKaFy98JBz1Nq19vhe9/alTIn/euusk29n6O38Yv3C/uAG4/n9bYHYpWIrWJgfCa2QA==
   dependencies:
     "@embroider/addon-shim" "^1.8.9"
 
