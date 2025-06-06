@@ -10,7 +10,7 @@ const Feedback: React.FC = () => {
     const ITEMS_PER_PAGE = 5;
 
     // Get feedback data from the main hook
-    const {feedbackStats, feedbackMembers, isLoading} = usePostNewsletterStats(postId || '');
+    const {feedbackStats, isLoading} = usePostNewsletterStats(postId || '');
 
     // Helper function to format member names with fallback to email
     const formatMemberName = (member: {name?: string; email?: string}) => {
@@ -71,22 +71,22 @@ const Feedback: React.FC = () => {
     };
 
     // Get current feedback data based on active tab
-    const currentFeedbackData = activeFeedbackTab === 'more-like-this'
-        ? feedbackMembers.positive
-        : feedbackMembers.negative;
+    // const currentFeedbackData = activeFeedbackTab === 'more-like-this'
+    //     ? feedbackMembers.positive
+    //     : feedbackMembers.negative;
 
     // Single pagination for current feedback data
-    const {
-        totalPages,
-        paginatedData: paginatedFeedbackData,
-        nextPage,
-        previousPage,
-        hasNextPage,
-        hasPreviousPage
-    } = useSimplePagination({
-        data: currentFeedbackData,
-        itemsPerPage: ITEMS_PER_PAGE
-    });
+    // const {
+    //     totalPages,
+    //     paginatedData: paginatedFeedbackData,
+    //     nextPage,
+    //     previousPage,
+    //     hasNextPage,
+    //     hasPreviousPage
+    // } = useSimplePagination({
+    //     data: currentFeedbackData,
+    //     itemsPerPage: ITEMS_PER_PAGE
+    // });
 
     // Show loading state
     if (isLoading) {
@@ -131,7 +131,7 @@ const Feedback: React.FC = () => {
                     </Tabs>
                     <Table>
                         <TableBody>
-                            {paginatedFeedbackData?.map(member => (
+                            {/* {paginatedFeedbackData?.map(member => (
                                 <TableRow key={`${member.id}`} className='border-none hover:cursor-pointer' onClick={() => {
                                     navigate(`/members/${member.id}`, {crossApp: true});
                                 }}>
@@ -145,7 +145,7 @@ const Feedback: React.FC = () => {
                                     </TableCell>
                                     <TableCell className='text-muted-foreground w-[120px] text-right'>{formatTimestamp(member.timestamp)}</TableCell>
                                 </TableRow>
-                            ))}
+                            ))} */}
                         </TableBody>
                     </Table>
                 </CardContent>
@@ -162,7 +162,7 @@ const Feedback: React.FC = () => {
                         View all
                             <LucideIcon.TableOfContents />
                         </Button>
-                        {totalPages > 1 &&
+                        {/* {totalPages > 1 &&
                             <SimplePagination className='pb-0'>
                                 <SimplePaginationNavigation>
                                     <SimplePaginationPreviousButton
@@ -175,7 +175,7 @@ const Feedback: React.FC = () => {
                                     />
                                 </SimplePaginationNavigation>
                             </SimplePagination>
-                        }
+                        } */}
                     </div>
                 </CardFooter>
             }
