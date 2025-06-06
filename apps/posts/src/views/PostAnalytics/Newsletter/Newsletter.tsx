@@ -3,7 +3,7 @@ import Feedback from './components/Feedback';
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsContent, calculateYAxisWidth, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, Tabs, TabsContent, calculateYAxisWidth, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {getLinkById} from '@src/utils/link-helpers';
 import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -499,18 +499,17 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                 <CardTitle>Newsletter clicks</CardTitle>
                                 <CardDescription>Which links resonated with your readers</CardDescription>
                             </CardHeader>
-                            <CardContent className='pb-3'>
+                            <CardContent className='pb-0'>
                                 {topLinks.length > 0
                                     ?
                                     <>
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow className='border-b border-t-0 !border-border'>
-                                                    <TableHead className='h-12 w-full'>Link</TableHead>
-                                                    <TableHead className='h-12 w-[0%] text-nowrap text-right'>No. of members</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
+
+                                        <div className='flex w-full flex-col'>
+                                            <div className='flex h-12 w-full items-center justify-between border-b text-sm text-muted-foreground'>
+                                                <div>Link</div>
+                                                <div>No. of members</div>
+                                            </div>
+                                            <div className='flex w-full flex-col py-3'>
                                                 {paginatedTopLinks?.map((row) => {
                                                     const linkId = row.link.link_id;
                                                     const title = row.link.title;
@@ -518,56 +517,56 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                     const edited = row.link.edited;
 
                                                     return (
-                                                        <TableRow key={linkId} className='border-none'>
-                                                            <TableCell className='h-12 max-w-0 border-none'>
-                                                                <div className='flex items-center gap-2'>
-                                                                    {editingLinkId === linkId ? (
-                                                                        <div ref={containerRef} className='flex w-full items-center gap-2'>
-                                                                            <Input
-                                                                                ref={inputRef}
-                                                                                className="h-7 w-full border-border bg-background text-sm"
-                                                                                value={editedUrl}
-                                                                                onChange={e => setEditedUrl(e.target.value)}
-                                                                            />
-                                                                            <Button
-                                                                                size='sm'
-                                                                                onClick={handleUpdate}
-                                                                            >
+                                                        <div key={linkId} className='flex h-10 w-full items-center justify-between gap-3 rounded-sm border-none px-2 text-sm hover:cursor-pointer hover:bg-accent'>
+                                                            <div className='flex grow items-center gap-2 overflow-hidden'>
+                                                                {editingLinkId === linkId ? (
+                                                                    <div ref={containerRef} className='flex w-full items-center gap-2'>
+                                                                        <Input
+                                                                            ref={inputRef}
+                                                                            className="h-7 w-full border-border bg-background text-sm"
+                                                                            value={editedUrl}
+                                                                            onChange={e => setEditedUrl(e.target.value)}
+                                                                        />
+                                                                        <Button
+                                                                            size='sm'
+                                                                            onClick={handleUpdate}
+                                                                        >
                                                                             Update
-                                                                            </Button>
-                                                                        </div>
-                                                                    ) : (
-                                                                        <>
-                                                                            <Button
-                                                                                className='shrink-0 bg-background'
-                                                                                size='sm'
-                                                                                variant='outline'
-                                                                                onClick={() => handleEdit(linkId)}
-                                                                            >
-                                                                                <LucideIcon.Pen />
-                                                                            </Button>
-                                                                            <a
-                                                                                className='block truncate font-medium hover:underline'
-                                                                                href={url}
-                                                                                rel="noreferrer"
-                                                                                target='_blank'
-                                                                                title={title}
-                                                                            >
-                                                                                {title}
-                                                                            </a>
-                                                                            {edited && (
-                                                                                <span className='text-xs text-gray-500'>(edited)</span>
-                                                                            )}
-                                                                        </>
-                                                                    )}
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell className='h-12 border-none text-right font-mono text-sm'>{formatNumber(row.count)}</TableCell>
-                                                        </TableRow>
+                                                                        </Button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <>
+                                                                        <Button
+                                                                            className='shrink-0 bg-background'
+                                                                            size='sm'
+                                                                            variant='outline'
+                                                                            onClick={() => handleEdit(linkId)}
+                                                                        >
+                                                                            <LucideIcon.Pen />
+                                                                        </Button>
+                                                                        <a
+                                                                            className='block truncate font-medium hover:underline'
+                                                                            href={url}
+                                                                            rel="noreferrer"
+                                                                            target='_blank'
+                                                                            title={title}
+                                                                        >
+                                                                            {title}
+                                                                        </a>
+                                                                        {edited && (
+                                                                            <span className='text-xs text-gray-500'>(edited)</span>
+                                                                        )}
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                            <div className='font-mono'>
+                                                                {formatNumber(row.count)}
+                                                            </div>
+                                                        </div>
                                                     );
                                                 })}
-                                            </TableBody>
-                                        </Table>
+                                            </div>
+                                        </div>
                                     </>
                                     :
                                     <div className='py-20 text-center text-sm text-gray-700'>
@@ -578,7 +577,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             {topLinks.length > 1 &&
                                 <CardFooter>
                                     <div className='flex w-full items-start justify-between gap-3'>
-                                        <div className='mt-1 flex items-start gap-2 pl-4 text-green'>
+                                        <div className='mt-1 flex items-start gap-2 pl-4 text-sm text-green'>
                                             <LucideIcon.ArrowUp size={20} strokeWidth={1.5} />
                                             Sent a broken link? You can update it!
                                         </div>

@@ -1,4 +1,4 @@
-import {Avatar, AvatarFallback, AvatarImage, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, Table, TableBody, TableCell, TableRow, Tabs, TabsList, TabsTrigger, formatMemberName, formatPercentage, formatTimestamp, getMemberInitials, stringToHslColor, useSimplePagination} from '@tryghost/shade';
+import {Avatar, AvatarFallback, AvatarImage, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, Tabs, TabsList, TabsTrigger, formatMemberName, formatPercentage, formatTimestamp, getMemberInitials, stringToHslColor, useSimplePagination} from '@tryghost/shade';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {usePostFeedback} from '@src/hooks/usePostFeedback';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
@@ -74,30 +74,26 @@ const Feedback: React.FC = () => {
                         </TabsList>
                     </Tabs>
                     {paginatedFeedback && paginatedFeedback.length > 0 ? (
-                        <Table>
-                            <TableBody>
-                                {paginatedFeedback.map(item => (
-                                    <TableRow key={item.id} className='border-none hover:cursor-pointer' onClick={() => {
-                                        navigate(`/members/${item.member.id}`, {crossApp: true});
-                                    }}>
-                                        <TableCell className='h-12 max-w-0 border-none'>
-                                            <div className='flex items-center gap-2 font-medium'>
-                                                <Avatar className='size-7'>
-                                                    <AvatarImage></AvatarImage>
-                                                    <AvatarFallback className='text-white' style={{
-                                                        backgroundColor: `${stringToHslColor(formatMemberName(item.member), 75, 55)}`
-                                                    }}>{getMemberInitials(item.member)}</AvatarFallback>
-                                                </Avatar>
-                                                {formatMemberName(item.member)}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className='w-[120px] text-right text-muted-foreground'>
-                                            {formatTimestamp(item.created_at)}
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                        <div className='flex w-full flex-col py-3'>
+                            {paginatedFeedback.map(item => (
+                                <div key={item.id} className='flex h-10 w-full items-center justify-between gap-3 rounded-sm border-none px-2 text-sm hover:cursor-pointer hover:bg-accent' onClick={() => {
+                                    navigate(`/members/${item.member.id}`, {crossApp: true});
+                                }}>
+                                    <div className='flex items-center gap-2 font-medium'>
+                                        <Avatar className='size-7'>
+                                            <AvatarImage></AvatarImage>
+                                            <AvatarFallback className='text-white' style={{
+                                                backgroundColor: `${stringToHslColor(formatMemberName(item.member), 75, 55)}`
+                                            }}>{getMemberInitials(item.member)}</AvatarFallback>
+                                        </Avatar>
+                                        {formatMemberName(item.member)}
+                                    </div>
+                                    <div className='whitespace-nowrap text-muted-foreground'>
+                                        {formatTimestamp(item.created_at)}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     ) : (
                         <div className='py-8 text-center text-sm text-muted-foreground'>
                             <div>No {activeFeedbackTab === 'positive' ? 'positive' : 'negative'} feedback yet</div>
