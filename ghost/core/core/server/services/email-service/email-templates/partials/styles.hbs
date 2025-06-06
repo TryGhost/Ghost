@@ -61,7 +61,7 @@ table td {
 {{/hasFeature}}
 
 /* Set a max-width, and make it display as block so it will automatically stretch to that width, but will also shrink down on a phone or something */
-.container {
+.body .container {
     display: block;
     margin: 0 auto !important;
     /* makes it centered */
@@ -2244,7 +2244,6 @@ img.kg-cta-image {
 {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .header {
     width: 100%;
-    table-layout: fixed;
     border-spacing: 0;
     border-collapse: collapse;
 }
@@ -2265,6 +2264,7 @@ img.kg-cta-image {
 
 .header-content {
     padding: 0 20px;
+    margin: 0 auto !important;
 }
 
 .main {
@@ -2538,6 +2538,15 @@ table.btn-accent a {
     table.header {
         width: 100% !important;
         min-width: 100% !important;
+    }
+
+    table.header .header-container {
+        width: 100% !important;
+        margin: 0 auto !important;
+    }
+
+    table.header .header-container table {
+        width: 100% !important;
     }
 
     table.header .header-content {
