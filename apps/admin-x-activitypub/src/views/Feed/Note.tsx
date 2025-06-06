@@ -83,6 +83,8 @@ const Note = () => {
     const [isLoadingMoreTopLevelReplies, setIsLoadingMoreTopLevelReplies] = useState(false);
     const repliesRef = useRef<HTMLDivElement>(null);
     const postRef = useRef<HTMLDivElement>(null);
+    const observerRef = useRef<IntersectionObserver | null>(null);
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
     const navigate = useNavigate();
 
     const {
@@ -113,25 +115,18 @@ const Note = () => {
         }
     }, [threadParents]);
 
-    // Scroll detection for loading more top-level replies
     useEffect(() => {
+        if (observerRef.current) {
+            observerRef.current.disconnect();
+        }
+
         const container = document.querySelector('[data-scrollable-container]') as HTMLElement;
         if (!container) {
             return;
         }
 
-        const handleScroll = async () => {
-            if (!repliesRef.current || isLoadingMoreTopLevelReplies || !hasMoreChildren) {
-                return;
-            }
-
-            const containerRect = container.getBoundingClientRect();
-            const repliesRect = repliesRef.current.getBoundingClientRect();
-
-            const threshold = 200;
-            const isNearBottom = (repliesRect.bottom - containerRect.bottom) <= threshold;
-
-            if (isNearBottom) {
+        observerRef.current = new IntersectionObserver(async (entries) => {
+            if (entries[0].isIntersecting && hasMoreChildren && !isLoadingMoreTopLevelReplies) {
                 setIsLoadingMoreTopLevelReplies(true);
                 try {
                     await loadMoreChildren();
@@ -142,11 +137,21 @@ const Note = () => {
                     setIsLoadingMoreTopLevelReplies(false);
                 }
             }
-        };
+        }, {
+            root: container,
+            rootMargin: '200px'
+        });
 
-        container.addEventListener('scroll', handleScroll);
-        return () => container.removeEventListener('scroll', handleScroll);
-    }, [loadMoreChildren, hasMoreChildren, isLoadingMoreTopLevelReplies]);
+        if (loadMoreRef.current) {
+            observerRef.current.observe(loadMoreRef.current);
+        }
+
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+            }
+        };
+    }, [hasMoreChildren, isLoadingMoreTopLevelReplies, loadMoreChildren]);
 
     if (isLoading) {
         return (
@@ -359,6 +364,8 @@ const Note = () => {
                                             </div>
                                         )}
                                     </div>
+
+                                    {hasMoreChildren && <div ref={loadMoreRef} className='h-1'></div>}
                                 </div>
                             </div>
                         </div>
