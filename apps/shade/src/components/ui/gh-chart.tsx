@@ -33,7 +33,7 @@ const GhCustomTooltipContent = ({active, payload, range, color}: TooltipProps) =
         <div className="min-w-[120px] rounded-lg border bg-background px-3 py-2 shadow-lg">
             {date && <div className="text-sm text-foreground">{formatDisplayDateWithRange(date, range || 0)}</div>}
             <div className='flex items-center gap-2'>
-                <span className='inline-block size-[9px] rounded-[2px] opacity-50' style={{backgroundColor: color || 'hsl(var(--chart-1))'}}></span>
+                <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color || 'hsl(var(--chart-blue))'}}></span>
                 <div className='flex grow items-center justify-between gap-3'>
                     {label && <div className="text-sm text-muted-foreground">{label}</div>}
                     <div className="font-mono font-medium">{displayValue}</div>
@@ -60,6 +60,7 @@ interface GhAreaChartProps {
     syncId?: string;
     allowDataOverflow?: boolean;
     showYAxisValues?: boolean;
+    showHorizontalLines?: boolean;
     dataFormatter?: (value: number) => string;
 }
 
@@ -73,6 +74,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
     syncId,
     allowDataOverflow = false,
     showYAxisValues = true,
+    showHorizontalLines = true,
     dataFormatter = formatNumber
 }) => {
     const yRange = yAxisRange || [getYRange(data).min, getYRange(data).max];
@@ -85,6 +87,11 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
     // Use yRange as domain and set baseValue to the minimum
     const baseValue = yRange[0];
 
+    // Calculate midpoint and create ticks array
+    const midValue = (yRange[0] + yRange[1]) / 2;
+    const isWholeMid = Number.isInteger(midValue);
+    const yTicks = isWholeMid ? [yRange[0], midValue, yRange[1]] : yRange;
+
     return (
         <ChartContainer className={
             cn('w-full', className)
@@ -94,11 +101,11 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
                 margin={{
                     left: 4,
                     right: 4,
-                    top: 4
+                    top: showHorizontalLines ? 24 : 4
                 }}
                 syncId={syncId}
             >
-                <CartesianGrid horizontal={false} vertical={false} />
+                <CartesianGrid horizontal={showHorizontalLines} vertical={false} />
                 <XAxis
                     axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
                     dataKey="date"
@@ -118,7 +125,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
                         return dataFormatter(value);
                     }}
                     tickLine={false}
-                    ticks={yRange}
+                    ticks={yTicks}
                     width={showYAxisValues ? calculateYAxisWidth(yRange, dataFormatter) : 0}
                 />
                 <ChartTooltip
@@ -148,7 +155,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
                     fillOpacity={0.2}
                     isAnimationActive={false}
                     stroke={color}
-                    strokeWidth={2}
+                    strokeWidth={1.5}
                     type="linear"
                 />
             </AreaChart>

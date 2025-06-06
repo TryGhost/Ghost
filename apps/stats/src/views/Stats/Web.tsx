@@ -46,19 +46,19 @@ const KPI_METRICS: Record<string, KpiMetric> = {
     views: {
         dataKey: 'pageviews',
         label: 'Pageviews',
-        chartColor: 'hsl(var(--chart-green))',
+        chartColor: 'hsl(var(--chart-teal))',
         formatter: formatNumber
     },
     'bounce-rate': {
         dataKey: 'bounce_rate',
         label: 'Bounce rate',
-        chartColor: 'hsl(var(--chart-green))',
+        chartColor: 'hsl(var(--chart-teal))',
         formatter: formatPercentage
     },
     'visit-duration': {
         dataKey: 'avg_session_sec',
         label: 'Visit duration',
-        chartColor: 'hsl(var(--chart-green))',
+        chartColor: 'hsl(var(--chart-teal))',
         formatter: formatDuration
     }
 };
@@ -123,10 +123,10 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range}) => {
         <Tabs defaultValue="visits" variant='kpis'>
             <TabsList className="-mx-6 grid grid-cols-2">
                 <KpiTabTrigger value="visits" onClick={() => setCurrentTab('visits')}>
-                    <KpiTabValue icon="MousePointer" label="Unique visitors" value={kpiValues.visits} />
+                    <KpiTabValue color='hsl(var(--chart-blue))' label="Unique visitors" value={kpiValues.visits} />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="views" onClick={() => setCurrentTab('views')}>
-                    <KpiTabValue icon="Eye" label="Total views" value={kpiValues.views} />
+                    <KpiTabValue color='hsl(var(--chart-teal))' label="Total views" value={kpiValues.views} />
                 </KpiTabTrigger>
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
@@ -165,9 +165,9 @@ const TopContentTable: React.FC<TopContentTableProps> = ({data}) => {
                                 navigate(`/posts/analytics/beta/${row.post_id}`, {crossApp: true});
                             }
                         }}>
-                            <DataListBar className='opacity-10 transition-all group-hover/row:opacity-20' style={{
-                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
-                                backgroundColor: 'hsl(var(--chart-purple))'
+                            <DataListBar className='bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/60 opacity-20 transition-all group-hover/row:opacity-40' style={{
+                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
+                                // backgroundColor: 'hsl(var(--chart-blue))'
                             }} />
                             <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
                                 <div className='flex items-center space-x-4 overflow-hidden'>
@@ -265,19 +265,19 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data, siteUrl}) => {
             <DataListBody>
                 {data?.map((row) => {
                     // Use precomputed values if available (from processed data), otherwise compute
-                    const faviconDomain = 'faviconDomain' in row && row.faviconDomain 
-                        ? row.faviconDomain 
+                    const faviconDomain = 'faviconDomain' in row && row.faviconDomain
+                        ? row.faviconDomain
                         : getFaviconDomain(row.source, siteUrl).domain;
-                    const isDirectTraffic = 'isDirectTraffic' in row 
-                        ? row.isDirectTraffic 
+                    const isDirectTraffic = 'isDirectTraffic' in row
+                        ? row.isDirectTraffic
                         : getFaviconDomain(row.source, siteUrl).isDirectTraffic;
                     const displayName = isDirectTraffic ? 'Direct' : (row.source || 'Direct');
-                    
+
                     return (
-                        <DataListRow key={displayName} className='group/row'>
-                            <DataListBar className='opacity-15 transition-all group-hover/row:opacity-30' style={{
-                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
-                                backgroundColor: 'hsl(var(--chart-orange))'
+                        <DataListRow key={row.source || 'direct'} className='group/row'>
+                            <DataListBar className='bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/60 opacity-20 transition-all group-hover/row:opacity-40' style={{
+                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
+                                // backgroundColor: 'hsl(var(--chart-blue))'
                             }} />
                             <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
                                 <div className='flex items-center space-x-4 overflow-hidden'>
@@ -328,15 +328,15 @@ const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range, si
         if (!data) {
             return [];
         }
-        
+
         const sourceMap = new Map<string, {source: string, visits: number, isDirectTraffic: boolean, faviconDomain?: string}>();
         let directTrafficTotal = 0;
-        
+
         // Process each source and group direct traffic
         data.forEach((item) => {
             const {domain: faviconDomain, isDirectTraffic} = getFaviconDomain(item.source, siteUrl);
             const visits = Number(item.visits);
-            
+
             if (isDirectTraffic || !item.source || item.source === '') {
                 // Accumulate all direct traffic
                 directTrafficTotal += visits;
@@ -356,7 +356,7 @@ const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range, si
                 }
             }
         });
-        
+
         // Add consolidated direct traffic entry if there's any
         if (directTrafficTotal > 0) {
             const siteDomain = siteUrl ? extractDomain(siteUrl) : null;
@@ -367,12 +367,12 @@ const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range, si
                 faviconDomain: siteDomain || undefined
             });
         }
-        
+
         // Convert back to array and sort by visits
         return Array.from(sourceMap.values())
             .sort((a, b) => b.visits - a.visits);
     }, [data, siteUrl]);
-    
+
     // Extend processed data with percentage values
     const extendedData = processedData.map(item => ({
         ...item,
@@ -416,8 +416,8 @@ const SourcesCard: React.FC<SourcesCardProps> = ({totalVisitors, data, range, si
 const Web: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
-    
-    // Get site URL for domain comparison  
+
+    // Get site URL for domain comparison
     const siteUrl = data?.url as string | undefined;
 
     // Prepare query parameters
