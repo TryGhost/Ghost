@@ -1,4 +1,4 @@
-import {Avatar, AvatarFallback, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, Table, TableBody, TableCell, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, formatPercentage, useSimplePagination} from '@tryghost/shade';
+import {Avatar, AvatarFallback, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, Table, TableBody, TableCell, TableRow, Tabs, TabsList, TabsTrigger, formatPercentage, useSimplePagination} from '@tryghost/shade';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useState} from 'react';
 
@@ -92,29 +92,21 @@ const Feedback: React.FC<FeedbackProps> = ({feedbackStats, feedbackMembers}) => 
         return colors[Math.abs(hash) % colors.length];
     };
 
-    // Pagination for positive feedback members
-    const {
-        totalPages: positiveFeedbackTotalPages,
-        paginatedData: paginatedPositiveFeedback,
-        nextPage: positiveFeedbackNextPage,
-        previousPage: positiveFeedbackPreviousPage,
-        hasNextPage: positiveFeedbackHasNextPage,
-        hasPreviousPage: positiveFeedbackHasPreviousPage
-    } = useSimplePagination({
-        data: feedbackMembers.positive,
-        itemsPerPage: ITEMS_PER_PAGE
-    });
+    // Get current feedback data based on active tab
+    const currentFeedbackData = activeFeedbackTab === 'more-like-this'
+        ? feedbackMembers.positive
+        : feedbackMembers.negative;
 
-    // Pagination for negative feedback members
+    // Single pagination for current feedback data
     const {
-        totalPages: negativeFeedbackTotalPages,
-        paginatedData: paginatedNegativeFeedback,
-        nextPage: negativeFeedbackNextPage,
-        previousPage: negativeFeedbackPreviousPage,
-        hasNextPage: negativeFeedbackHasNextPage,
-        hasPreviousPage: negativeFeedbackHasPreviousPage
+        totalPages,
+        paginatedData: paginatedFeedbackData,
+        nextPage,
+        previousPage,
+        hasNextPage,
+        hasPreviousPage
     } = useSimplePagination({
-        data: feedbackMembers.negative,
+        data: currentFeedbackData,
         itemsPerPage: ITEMS_PER_PAGE
     });
 
@@ -143,49 +135,26 @@ const Feedback: React.FC<FeedbackProps> = ({feedbackStats, feedbackMembers}) => 
                                 </div>
                             </TabsTrigger>
                         </TabsList>
-                        <TabsContent value="more-like-this">
-                            <Table>
-                                <TableBody>
-                                    {paginatedPositiveFeedback?.map(member => (
-                                        <TableRow key={`${member.id}`} className='border-none hover:cursor-pointer' onClick={() => {
-                                            navigate(`/members/${member.id}`, {crossApp: true});
-                                        }}>
-                                            <TableCell className='h-12 max-w-0 border-none'>
-                                                <div className='flex items-center gap-2 font-medium'>
-                                                    <Avatar className='size-7'>
-                                                        <AvatarFallback className={getAvatarClass(member.email || '')}>{getMemberInitials(member)}</AvatarFallback>
-                                                    </Avatar>
-                                                    {formatMemberName(member)}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className='text-muted-foreground w-[120px] text-right'>{formatTimestamp(member.timestamp)}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TabsContent>
-                        <TabsContent value="less-like-this">
-                            <Table>
-                                <TableBody>
-                                    {paginatedNegativeFeedback?.map(member => (
-                                        <TableRow key={`${member.id}`} className='border-none hover:cursor-pointer' onClick={() => {
-                                            navigate(`/members/${member.id}`, {crossApp: true});
-                                        }}>
-                                            <TableCell className='h-12 max-w-0 border-none'>
-                                                <div className='flex items-center gap-2 font-medium'>
-                                                    <Avatar className='size-7'>
-                                                        <AvatarFallback className={getAvatarClass(member.email || '')}>{getMemberInitials(member)}</AvatarFallback>
-                                                    </Avatar>
-                                                    {formatMemberName(member)}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className='text-muted-foreground w-[120px] text-right'>{formatTimestamp(member.timestamp)}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TabsContent>
                     </Tabs>
+                    <Table>
+                        <TableBody>
+                            {paginatedFeedbackData?.map(member => (
+                                <TableRow key={`${member.id}`} className='border-none hover:cursor-pointer' onClick={() => {
+                                    navigate(`/members/${member.id}`, {crossApp: true});
+                                }}>
+                                    <TableCell className='h-12 max-w-0 border-none'>
+                                        <div className='flex items-center gap-2 font-medium'>
+                                            <Avatar className='size-7'>
+                                                <AvatarFallback className={getAvatarClass(member.email || '')}>{getMemberInitials(member)}</AvatarFallback>
+                                            </Avatar>
+                                            {formatMemberName(member)}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className='text-muted-foreground w-[120px] text-right'>{formatTimestamp(member.timestamp)}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
                 </CardContent>
                 :
                 <CardContent className='text-muted-foreground flex grow flex-col items-center justify-center text-center text-sm'>
@@ -200,25 +169,16 @@ const Feedback: React.FC<FeedbackProps> = ({feedbackStats, feedbackMembers}) => 
                         View all
                             <LucideIcon.TableOfContents />
                         </Button>
-                        {((activeFeedbackTab === 'more-like-this' && positiveFeedbackTotalPages > 1) ||
-                            (activeFeedbackTab === 'less-like-this' && negativeFeedbackTotalPages > 1)) &&
+                        {totalPages > 1 &&
                             <SimplePagination className='pb-0'>
                                 <SimplePaginationNavigation>
                                     <SimplePaginationPreviousButton
-                                        disabled={activeFeedbackTab === 'more-like-this'
-                                            ? !positiveFeedbackHasPreviousPage
-                                            : !negativeFeedbackHasPreviousPage}
-                                        onClick={activeFeedbackTab === 'more-like-this'
-                                            ? positiveFeedbackPreviousPage
-                                            : negativeFeedbackPreviousPage}
+                                        disabled={!hasPreviousPage}
+                                        onClick={previousPage}
                                     />
                                     <SimplePaginationNextButton
-                                        disabled={activeFeedbackTab === 'more-like-this'
-                                            ? !positiveFeedbackHasNextPage
-                                            : !negativeFeedbackHasNextPage}
-                                        onClick={activeFeedbackTab === 'more-like-this'
-                                            ? positiveFeedbackNextPage
-                                            : negativeFeedbackNextPage}
+                                        disabled={!hasNextPage}
+                                        onClick={nextPage}
                                     />
                                 </SimplePaginationNavigation>
                             </SimplePagination>
