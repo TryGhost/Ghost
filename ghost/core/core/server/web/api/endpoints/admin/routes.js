@@ -370,5 +370,8 @@ module.exports = function apiRoutes() {
     // Incoming recommendations
     router.get('/incoming_recommendations', mw.authAdminApi, http(api.incomingRecommendations.browse));
 
+    // Feedback
+    router.get('/feedback/:id', mw.authAdminApi, http(api.feedbackMembers.browse));
+
     return router;
 };
