@@ -96,7 +96,7 @@ const Feedback: React.FC = () => {
                     <CardTitle>Feedback</CardTitle>
                     <CardDescription>What did your readers think?</CardDescription>
                 </CardHeader>
-                <CardContent className='text-muted-foreground flex grow flex-col items-center justify-center text-center text-sm'>
+                <CardContent className='flex grow flex-col items-center justify-center text-center text-sm text-muted-foreground'>
                     <div>Loading feedback...</div>
                 </CardContent>
             </Card>
@@ -129,7 +129,7 @@ const Feedback: React.FC = () => {
                             </TabsTrigger>
                         </TabsList>
                     </Tabs>
-                                        {paginatedFeedback && paginatedFeedback.length > 0 ? (
+                    {paginatedFeedback && paginatedFeedback.length > 0 ? (
                         <Table>
                             <TableBody>
                                 {paginatedFeedback.map(item => (
@@ -142,7 +142,7 @@ const Feedback: React.FC = () => {
                                                 {formatMemberName(item.member)}
                                             </div>
                                         </TableCell>
-                                        <TableCell className='text-muted-foreground w-[120px] text-right'>
+                                        <TableCell className='w-[120px] text-right text-muted-foreground'>
                                             {formatTimestamp(item.created_at)}
                                         </TableCell>
                                     </TableRow>
@@ -150,13 +150,13 @@ const Feedback: React.FC = () => {
                             </TableBody>
                         </Table>
                     ) : (
-                        <div className='text-muted-foreground py-8 text-center text-sm'>
+                        <div className='py-8 text-center text-sm text-muted-foreground'>
                             <div>No {activeFeedbackTab === 'positive' ? 'positive' : 'negative'} feedback yet</div>
                         </div>
                     )}
                 </CardContent>
                 :
-                <CardContent className='text-muted-foreground flex grow flex-col items-center justify-center text-center text-sm'>
+                <CardContent className='flex grow flex-col items-center justify-center text-center text-sm text-muted-foreground'>
                     <div>No members have given feedback yet</div>
                     <div>When someone does, you&apos;ll see their response here.</div>
                 </CardContent>

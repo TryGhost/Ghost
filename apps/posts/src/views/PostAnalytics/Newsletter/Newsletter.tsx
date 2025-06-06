@@ -126,7 +126,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                             return (
                                 <div className='flex items-center gap-1'>
                                     <div className='size-2 rounded-full opacity-50' style={{backgroundColor: props.payload?.color}}></div>
-                                    <div className='text-muted-foreground text-xs'>{props.payload?.datatype}</div>
+                                    <div className='text-xs text-muted-foreground'>{props.payload?.datatype}</div>
                                     <div className='ml-3 font-mono text-xs'>{formatPercentage(value)}</div>
                                 </div>
                             );
@@ -144,7 +144,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
 
 const FunnelArrow: React.FC = () => {
     return (
-        <div className='bg-background text-muted-foreground absolute -right-4 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border'>
+        <div className='absolute -right-4 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground'>
             <LucideIcon.ChevronRight className='ml-0.5' size={16} strokeWidth={1.5}/>
         </div>
     );
@@ -343,7 +343,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     <KpiCard className='relative grow'>
                                         <FunnelArrow />
                                         <KpiCardLabel>
-                                            <div className='bg-chart-purple ml-0.5 size-[9px] rounded-full opacity-50'></div>
+                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-purple opacity-50'></div>
                                             {/* <LucideIcon.Send strokeWidth={1.5} /> */}
                                             Sent
                                         </KpiCardLabel>
@@ -354,7 +354,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     <KpiCard className='relative grow'>
                                         <FunnelArrow />
                                         <KpiCardLabel>
-                                            <div className='bg-chart-blue ml-0.5 size-[9px] rounded-full opacity-50'></div>
+                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-blue opacity-50'></div>
                                             {/* <LucideIcon.Eye strokeWidth={1.5} /> */}
                                             Opened
                                         </KpiCardLabel>
@@ -364,7 +364,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     </KpiCard>
                                     <KpiCard className='grow'>
                                         <KpiCardLabel>
-                                            <div className='bg-chart-teal ml-0.5 size-[9px] rounded-full opacity-50'></div>
+                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-teal opacity-50'></div>
                                             {/* <LucideIcon.MousePointer strokeWidth={1.5} /> */}
                                             Clicked
                                         </KpiCardLabel>
@@ -448,7 +448,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                                 style={{backgroundColor: color}}
                                                                             />
                                                                             {barChartConfig[name as keyof typeof barChartConfig]?.label || name}
-                                                                            <div className="text-foreground ml-auto flex items-baseline gap-0.5 pl-2 font-mono font-medium tabular-nums">
+                                                                            <div className="ml-auto flex items-baseline gap-0.5 pl-2 font-mono font-medium tabular-nums text-foreground">
                                                                                 {formatPercentage(value)}
                                                                             </div>
                                                                         </>
@@ -505,7 +505,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     <>
                                         <Table>
                                             <TableHeader>
-                                                <TableRow className='!border-border border-b border-t-0'>
+                                                <TableRow className='border-b border-t-0 !border-border'>
                                                     <TableHead className='h-12 w-full'>Link</TableHead>
                                                     <TableHead className='h-12 w-[0%] text-nowrap text-right'>No. of members</TableHead>
                                                 </TableRow>
@@ -525,7 +525,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                         <div ref={containerRef} className='flex w-full items-center gap-2'>
                                                                             <Input
                                                                                 ref={inputRef}
-                                                                                className="border-border bg-background h-7 w-full text-sm"
+                                                                                className="h-7 w-full border-border bg-background text-sm"
                                                                                 value={editedUrl}
                                                                                 onChange={e => setEditedUrl(e.target.value)}
                                                                             />
@@ -539,7 +539,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                     ) : (
                                                                         <>
                                                                             <Button
-                                                                                className='bg-background shrink-0'
+                                                                                className='shrink-0 bg-background'
                                                                                 size='sm'
                                                                                 variant='outline'
                                                                                 onClick={() => handleEdit(linkId)}
@@ -578,7 +578,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             {topLinks.length > 1 &&
                                 <CardFooter>
                                     <div className='flex w-full items-start justify-between gap-3'>
-                                        <div className='text-green mt-1 flex items-start gap-2 pl-4'>
+                                        <div className='mt-1 flex items-start gap-2 pl-4 text-green'>
                                             <LucideIcon.ArrowUp size={20} strokeWidth={1.5} />
                                             Sent a broken link? You can update it!
                                         </div>
