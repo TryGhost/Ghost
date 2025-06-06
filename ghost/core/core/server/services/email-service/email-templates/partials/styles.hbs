@@ -1976,11 +1976,34 @@ img.kg-cta-image {
 /* -------------------------------------
     HEADER, FOOTER, MAIN
 ------------------------------------- */
+.header {
+    width: 100%;
+    table-layout: fixed;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+.header-bg {
+    padding: 0;
+    /* Background color for the header */
+    background-color: #fbf0df;
+}
+
+.header-container {
+    width: 600px;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+.header-content {
+    padding: 0 20px;
+}
+
 .main {
-    background: #ffffff;
-    border-radius: 3px;
     border-spacing: 20px 0;
     width: 100%;
+    max-width: 600px;
+    background: #ffffff;
 }
 
 .wrapper {
@@ -2197,6 +2220,15 @@ table.btn-accent a {
         min-width: 100%;
     }
 
+    table.header-container {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+
+    table.body .header-content {
+        padding: 0 10px !important;
+    }
+
     .hide-mobile {
         display: none;
     }
@@ -2247,7 +2279,8 @@ table.btn-accent a {
         width: 100% !important;
     }
 
-    table.body .main {
+    table.body .main,
+    table.body .header-content {
         border-spacing: 10px 0 !important;
         border-left-width: 0 !important;
         border-radius: 0 !important;
