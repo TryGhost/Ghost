@@ -9,7 +9,7 @@ const NewsletterOverview:React.FC = () => {
     const {stats, topLinks, isLoading: isNewsletterStatsLoading} = usePostNewsletterStats(postId || '');
 
     const opensChartData = [
-        {opens: stats.opened, openrate: stats.openedRate, fill: 'var(--color-openrate)'}
+        {opens: stats.opened, openrate: stats.openedRate, fill: 'url(#gradientBlue)'}
     ];
     const opensChartConfig = {
         openrate: {
@@ -19,7 +19,7 @@ const NewsletterOverview:React.FC = () => {
     } satisfies ChartConfig;
 
     const clicksChartData = [
-        {clicks: stats.clicked, clickrate: stats.clickedRate, fill: 'var(--color-clickrate)'}
+        {clicks: stats.clicked, clickrate: stats.clickedRate, fill: 'url(#gradientTeal)'}
     ];
     const clickschartConfig = {
         clickrate: {
@@ -67,6 +67,12 @@ const NewsletterOverview:React.FC = () => {
                                         outerRadius={110}
                                         startAngle={90}
                                     >
+                                        <defs>
+                                            <radialGradient cx="30%" cy="30%" id="gradientBlue" r="70%">
+                                                <stop offset="0%" stopColor="hsl(var(--chart-blue))" stopOpacity={0.5} />
+                                                <stop offset="100%" stopColor="hsl(var(--chart-blue))" stopOpacity={1} />
+                                            </radialGradient>
+                                        </defs>
                                         <Recharts.RadialBar
                                             cornerRadius={10}
                                             dataKey="openrate"
@@ -131,6 +137,12 @@ const NewsletterOverview:React.FC = () => {
                                         outerRadius={110}
                                         startAngle={90}
                                     >
+                                        <defs>
+                                            <radialGradient cx="30%" cy="30%" id="gradientTeal" r="70%">
+                                                <stop offset="0%" stopColor="hsl(var(--chart-teal))" stopOpacity={0.5} />
+                                                <stop offset="100%" stopColor="hsl(var(--chart-teal))" stopOpacity={1} />
+                                            </radialGradient>
+                                        </defs>
                                         <Recharts.RadialBar
                                             cornerRadius={10}
                                             dataKey="clickrate"

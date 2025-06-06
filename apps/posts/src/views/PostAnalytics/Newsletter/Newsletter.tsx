@@ -15,7 +15,8 @@ interface postAnalyticsProps {}
 type NewsletterRadialChartData = {
     datatype: string,
     value: number,
-    fill: string
+    fill: string,
+    color: string
 }
 
 interface NewsletterRadialChartProps {
@@ -30,7 +31,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
     data,
     percentageValue
 }) => {
-    const barWidth = 42;
+    const barWidth = 46;
     const innerRadiusStart = data.length > 1 ? 72 : 89;
 
     const chartComponentConfig = {
@@ -52,6 +53,25 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                 outerRadius={chartComponentConfig.outerRadius}
                 startAngle={chartComponentConfig.startAngle}
             >
+                <defs>
+                    {/* Define gradients for each data type */}
+                    <radialGradient cx="30%" cy="30%" id="gradientPurple" r="70%">
+                        <stop offset="0%" stopColor="hsl(var(--chart-purple))" stopOpacity={0.5} />
+                        <stop offset="100%" stopColor="hsl(var(--chart-purple))" stopOpacity={1} />
+                    </radialGradient>
+                    <radialGradient cx="30%" cy="30%" id="gradientBlue" r="70%">
+                        <stop offset="0%" stopColor="hsl(var(--chart-blue))" stopOpacity={0.5} />
+                        <stop offset="100%" stopColor="hsl(var(--chart-blue))" stopOpacity={1} />
+                    </radialGradient>
+                    <radialGradient cx="30%" cy="30%" id="gradientTeal" r="70%">
+                        <stop offset="0%" stopColor="hsl(var(--chart-teal))" stopOpacity={0.5} />
+                        <stop offset="100%" stopColor="hsl(var(--chart-teal))" stopOpacity={1} />
+                    </radialGradient>
+                    <radialGradient cx="30%" cy="30%" id="gradientGray" r="70%">
+                        <stop offset="0%" stopColor="hsl(var(--chart-gray))" stopOpacity={0.5} />
+                        <stop offset="100%" stopColor="hsl(var(--chart-gray))" stopOpacity={1} />
+                    </radialGradient>
+                </defs>
                 <Recharts.PolarAngleAxis angleAxisId={0} domain={[0, 1]} tick={false} type="number" />
                 <Recharts.RadialBar
                     cornerRadius={10}
@@ -104,7 +124,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                         formatter={(value, _, props) => {
                             return (
                                 <div className='flex items-center gap-1'>
-                                    <div className='size-2 rounded-full opacity-50' style={{backgroundColor: props.payload?.fill}}></div>
+                                    <div className='size-2 rounded-full opacity-50' style={{backgroundColor: props.payload?.color}}></div>
                                     <div className='text-xs text-muted-foreground'>{props.payload?.datatype}</div>
                                     <div className='ml-3 font-mono text-xs'>{formatPercentage(value)}</div>
                                 </div>
@@ -303,7 +323,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     // "Sent" Chart
     const sentChartData: NewsletterRadialChartData[] = [
-        {datatype: 'Sent', value: 1, fill: 'hsl(var(--chart-purple))'}
+        {datatype: 'Sent', value: 1, fill: 'url(#gradientPurple)', color: 'hsl(var(--chart-purple))'}
     ];
 
     const sentChartConfig = {
@@ -320,8 +340,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     // "Opened" Chart
     const openedChartData: NewsletterRadialChartData[] = [
-        {datatype: 'Average', value: averageStats.openedRate, fill: 'hsl(var(--chart-gray))'},
-        {datatype: 'This newsletter', value: stats.openedRate, fill: 'hsl(var(--chart-blue))'}
+        {datatype: 'Average', value: averageStats.openedRate, fill: 'url(#gradientGray)', color: 'hsl(var(--chart-gray))'},
+        {datatype: 'This newsletter', value: stats.openedRate, fill: 'url(#gradientBlue)', color: 'hsl(var(--chart-blue))'}
     ];
 
     const openedChartConfig = {
@@ -338,8 +358,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     // "Clicked" Chart
     const clickedChartData: NewsletterRadialChartData[] = [
-        {datatype: 'Average', value: averageStats.clickedRate, fill: 'hsl(var(--chart-gray))'},
-        {datatype: 'This newsletter', value: stats.clickedRate, fill: 'hsl(var(--chart-teal))'}
+        {datatype: 'Average', value: averageStats.clickedRate, fill: 'url(#gradientGray)', color: 'hsl(var(--chart-gray))'},
+        {datatype: 'This newsletter', value: stats.clickedRate, fill: 'url(#gradientTeal)', color: 'hsl(var(--chart-teal))'}
     ];
 
     const clickedChartConfig = {
