@@ -2,7 +2,7 @@
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, calculateYAxisWidth, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Avatar, AvatarFallback, AvatarImage, BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, calculateYAxisWidth, formatNumber, formatPercentage} from '@tryghost/shade';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {getLinkById} from '@src/utils/link-helpers';
 import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -288,6 +288,45 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         }
     } satisfies ChartConfig;
 
+    const mockUsers = [
+        {
+            initials: 'LC',
+            name: 'Lincoln Calzoni',
+            feedbackDate: '3 minutes ago',
+            avatarClass: 'bg-orange text-white'
+        },
+        {
+            initials: 'LG',
+            name: 'Leo George',
+            feedbackDate: '5 minutes ago',
+            avatarClass: 'bg-pink text-white'
+        },
+        {
+            initials: 'LD',
+            name: 'Livia Dorwart',
+            feedbackDate: '1 hour ago',
+            avatarClass: 'bg-blue text-white'
+        },
+        {
+            initials: 'MC',
+            name: 'Miracle Curtis',
+            feedbackDate: 'Yesterday',
+            avatarClass: 'bg-green text-white'
+        },
+        {
+            initials: 'HD',
+            name: 'Hanna Dias',
+            feedbackDate: '12 May',
+            avatarClass: 'bg-purple text-white'
+        },
+        {
+            initials: 'AN',
+            name: 'Abel Nagg',
+            feedbackDate: '2 Dec 2024',
+            avatarClass: 'bg-gray-800 text-white'
+        }
+    ];
+
     return (
         <>
             <PostAnalyticsHeader currentTab='Newsletter' />
@@ -297,8 +336,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                         <BarChartLoadingIndicator />
                     </div>
                     :
-                    <div className='flex flex-col items-stretch gap-6'>
-                        <Card>
+                    <div className='grid grid-cols-2 gap-8'>
+                        <Card className='col-span-2'>
                             <CardHeader className='hidden'>
                                 <CardTitle>Newsletters</CardTitle>
                                 <CardDescription>How did this post perform</CardDescription>
@@ -370,20 +409,6 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                 />
                                             </div>
                                         </div>
-                                        {/* <div className='flex flex-wrap items-center justify-center gap-6 p-6 text-xs text-muted-foreground'>
-                                            <div className='flex items-center gap-1'>
-                                                <div className='size-2.5 rounded-sm bg-blue'></div>
-                                                <span>Opened this newsletter</span>
-                                            </div>
-                                            <div className='flex items-center gap-1'>
-                                                <div className='size-2.5 rounded-sm bg-green'></div>
-                                                <span>Clicked this newsletter</span>
-                                            </div>
-                                            <div className='flex items-center gap-1'>
-                                                <div className='size-2.5 rounded-[3px] bg-gray-500'></div>
-                                                <span>Average</span>
-                                            </div>
-                                        </div> */}
                                     </TabsContent>
                                     <TabsContent value="bar">
                                         <div>
@@ -474,18 +499,91 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                         </Card>
                         <Card>
                             <CardHeader>
+                                <CardTitle>Feedback</CardTitle>
+                                <CardDescription>What did your readers think?</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <Tabs className='border-t' defaultValue="more-like-this" variant='underline'>
+                                    <TabsList className="flex w-full gap-0">
+                                        <TabsTrigger className='h-12 justify-start px-4' value="more-like-this">
+                                            <div className='flex items-center gap-1.5'>
+                                                <LucideIcon.ThumbsUp />
+                                                <span className='text-[1.5rem] font-semibold tracking-tight'>89%</span>
+                                                <span className='font-medium'>More like this</span>
+                                            </div>
+                                        </TabsTrigger>
+                                        <TabsTrigger className='h-12 justify-start px-4' value="less-like-this">
+                                            <div className='flex items-center gap-1.5'>
+                                                <LucideIcon.ThumbsDown />
+                                                <span className='text-[1.5rem] font-semibold tracking-tight'>11%</span>
+                                                <span className='font-medium'>Less like this</span>
+                                            </div>
+                                        </TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent value="more-like-this">
+                                        <Table>
+                                            <TableBody>
+                                                {mockUsers.map(user => (
+                                                    <TableRow key={`${user.initials}-${user.name}`} className='border-none'>
+                                                        <TableCell className='h-12 max-w-0 border-none'>
+                                                            <div className='flex items-center gap-2 font-medium'>
+                                                                <Avatar className='size-7'>
+                                                                    <AvatarFallback className={user.avatarClass}>{user.initials}</AvatarFallback>
+                                                                </Avatar>
+                                                                {user.name}
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className='w-[120px] text-right text-muted-foreground'>{user.feedbackDate}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                            <TableFooter className='!border-none bg-transparent'>
+                                                <TableRow className='!border-none'>
+                                                    <TableCell className='h-12 group-hover:bg-transparent' colSpan={2}>
+                                                        <Button size='sm' variant='outline'>
+                                                            View all
+                                                            <LucideIcon.TableOfContents />
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            </TableFooter>
+                                        </Table>
+                                    </TabsContent>
+                                    <TabsContent value="less-like-this">
+                                        <Table>
+                                            <TableBody>
+                                                {mockUsers.map(user => (
+                                                    <TableRow key={`${user.initials}-${user.name}`} className='border-none'>
+                                                        <TableCell className='h-12 max-w-0 border-none'>
+                                                            <div className='flex items-center gap-2 font-medium'>
+                                                                <Avatar className='size-7'>
+                                                                    <AvatarFallback className={user.avatarClass}>{user.initials}</AvatarFallback>
+                                                                </Avatar>
+                                                                {user.name}
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className='w-[120px] text-right text-muted-foreground'>{user.feedbackDate}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </TabsContent>
+                                </Tabs>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
                                 <CardTitle>Newsletter clicks</CardTitle>
                                 <CardDescription>Which links resonated with your readers</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <Separator />
                                 {topLinks.length > 0
                                     ?
                                     <Table>
                                         <TableHeader>
-                                            <TableRow>
-                                                <TableHead className='w-full'>Link</TableHead>
-                                                <TableHead className='w-[0%] text-nowrap text-right'>No. of members</TableHead>
+                                            <TableRow className='border-b !border-border'>
+                                                <TableHead className='h-12 w-full'>Link</TableHead>
+                                                <TableHead className='h-12 w-[0%] text-nowrap text-right'>No. of members</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -496,8 +594,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                 const edited = row.link.edited;
 
                                                 return (
-                                                    <TableRow key={linkId}>
-                                                        <TableCell className='max-w-0'>
+                                                    <TableRow key={linkId} className='border-none'>
+                                                        <TableCell className='h-12 max-w-0 border-none'>
                                                             <div className='flex items-center gap-2'>
                                                                 {editingLinkId === linkId ? (
                                                                     <div ref={containerRef} className='flex w-full items-center gap-2'>
@@ -540,14 +638,14 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                 )}
                                                             </div>
                                                         </TableCell>
-                                                        <TableCell className='text-right font-mono text-sm'>{formatNumber(row.count)}</TableCell>
+                                                        <TableCell className='h-12 border-none text-right font-mono text-sm'>{formatNumber(row.count)}</TableCell>
                                                     </TableRow>
                                                 );
                                             })}
                                         </TableBody>
-                                        <TableFooter className='bg-transparent'>
-                                            <TableRow>
-                                                <TableCell className='group-hover:bg-transparent' colSpan={2}>
+                                        <TableFooter className='!border-none bg-transparent'>
+                                            <TableRow className='!border-none'>
+                                                <TableCell className='h-12 group-hover:bg-transparent' colSpan={2}>
                                                     <div className='ml-2 mt-1 flex items-center gap-2 text-green'>
                                                         <LucideIcon.ArrowUp size={20} strokeWidth={1.5} />
                                                         Sent a broken link? You can update it!
