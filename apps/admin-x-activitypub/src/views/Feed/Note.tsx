@@ -8,7 +8,7 @@ import ShowRepliesButton from '@src/components/global/ShowRepliesButton';
 import getUsername from '@src/utils/get-username';
 import {Activity} from '@tryghost/admin-x-framework/api/activitypub';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
-import {LucideIcon, Skeleton} from '@tryghost/shade';
+import {LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {mapPostToActivity} from '@src/utils/posts';
@@ -26,7 +26,7 @@ function useReplyChainData(postId: string) {
 
     const shouldFetchReplyChain = isEnabled('reply-chain');
 
-    const {data: replyChain, isLoading: isReplyChainLoading} = useReplyChainForUser('index', shouldFetchReplyChain ? postId : '');
+    const {data: replyChain, isLoading: isReplyChainLoading, loadMoreChildren, hasMoreChildren} = useReplyChainForUser('index', shouldFetchReplyChain ? postId : '');
     const {data: post, isLoading} = usePostForUser('index', shouldFetchReplyChain ? '' : postId);
     const {data: thread} = useThreadForUser('index', shouldFetchReplyChain ? '' : postId);
 
@@ -47,7 +47,9 @@ function useReplyChainData(postId: string) {
             threadParents,
             post: threadPost,
             processedReplies,
-            isLoading: isReplyChainLoading
+            isLoading: isReplyChainLoading,
+            loadMoreChildren,
+            hasMoreChildren
         };
     } else {
         const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === postId);
@@ -66,7 +68,9 @@ function useReplyChainData(postId: string) {
             threadParents,
             post,
             processedReplies,
-            isLoading
+            isLoading,
+            loadMoreChildren: () => Promise.resolve(),
+            hasMoreChildren: false
         };
     }
 }
@@ -76,6 +80,7 @@ const Note = () => {
     const {canGoBack} = useNavigationStack();
 
     const [expandedChains, setExpandedChains] = useState<Set<string>>(new Set());
+    const [isLoadingMoreTopLevelReplies, setIsLoadingMoreTopLevelReplies] = useState(false);
     const repliesRef = useRef<HTMLDivElement>(null);
     const postRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
@@ -84,7 +89,9 @@ const Note = () => {
         threadParents,
         post: currentPost,
         processedReplies,
-        isLoading
+        isLoading,
+        loadMoreChildren,
+        hasMoreChildren
     } = useReplyChainData(decodeURIComponent(postId ?? ''));
 
     const object = currentPost?.object;
@@ -105,6 +112,40 @@ const Note = () => {
             });
         }
     }, [threadParents]);
+
+    // Scroll detection for loading more top-level replies
+    useEffect(() => {
+        const container = document.querySelector('[data-scrollable-container]') as HTMLElement;
+        if (!container) {
+            return;
+        }
+
+        const handleScroll = async () => {
+            if (!repliesRef.current || isLoadingMoreTopLevelReplies || !hasMoreChildren) {
+                return;
+            }
+
+            const containerRect = container.getBoundingClientRect();
+            const repliesRect = repliesRef.current.getBoundingClientRect();
+
+            const threshold = 200;
+            const isNearBottom = (repliesRect.bottom - containerRect.bottom) <= threshold;
+
+            if (isNearBottom) {
+                setIsLoadingMoreTopLevelReplies(true);
+                try {
+                    await loadMoreChildren();
+                } catch (error) {
+
+                } finally {
+                    setIsLoadingMoreTopLevelReplies(false);
+                }
+            }
+        };
+
+        container.addEventListener('scroll', handleScroll);
+        return () => container.removeEventListener('scroll', handleScroll);
+    }, [loadMoreChildren, hasMoreChildren, isLoadingMoreTopLevelReplies]);
 
     if (isLoading) {
         return (
@@ -310,6 +351,12 @@ const Note = () => {
                                                 );
                                             })
                                         }
+
+                                        {isLoadingMoreTopLevelReplies && (
+                                            <div className='flex flex-col items-center justify-center text-center'>
+                                                <LoadingIndicator size='md' />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
