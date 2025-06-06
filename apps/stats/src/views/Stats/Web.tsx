@@ -165,7 +165,7 @@ const TopContentTable: React.FC<TopContentTableProps> = ({data}) => {
                                 navigate(`/posts/analytics/beta/${row.post_id}`, {crossApp: true});
                             }
                         }}>
-                            <DataListBar className='bg-gradient-to-r from-muted-foreground/30 to-muted-foreground/50 opacity-20 transition-all group-hover/row:opacity-40' style={{
+                            <DataListBar className='bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/60 opacity-20 transition-all group-hover/row:opacity-40' style={{
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
                                 // backgroundColor: 'hsl(var(--chart-blue))'
                             }} />
@@ -275,7 +275,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data, siteUrl}) => {
 
                     return (
                         <DataListRow key={row.source || 'direct'} className='group/row'>
-                            <DataListBar className='bg-gradient-to-r from-muted-foreground/30 to-muted-foreground/50 opacity-20 transition-all group-hover/row:opacity-40' style={{
+                            <DataListBar className='bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/60 opacity-20 transition-all group-hover/row:opacity-40' style={{
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
                                 // backgroundColor: 'hsl(var(--chart-blue))'
                             }} />

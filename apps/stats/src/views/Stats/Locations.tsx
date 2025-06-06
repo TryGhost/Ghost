@@ -251,7 +251,7 @@ const Locations:React.FC = () => {
                                             return (
                                                 <DataListRow key={row.location || 'unknown'}>
                                                     <DataListBar
-                                                        className='bg-gradient-to-r from-[hsl(var(--chart-blue))]/20 to-[hsl(var(--chart-blue))]/50  opacity-20 transition-all group-hover/row:opacity-40'
+                                                        className='bg-gradient-to-r from-[hsl(var(--chart-blue))]/40 to-[hsl(var(--chart-blue))]/80  opacity-20 transition-all'
                                                         style={{
                                                             width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
                                                         }}
