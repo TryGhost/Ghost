@@ -509,14 +509,14 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             <div className='flex items-center gap-1.5'>
                                                 <LucideIcon.ThumbsUp />
                                                 <span className='text-[1.5rem] font-semibold tracking-tight'>89%</span>
-                                                <span className='font-medium'>More like this</span>
+                                                <span className='text-sm font-medium'>More like this</span>
                                             </div>
                                         </TabsTrigger>
                                         <TabsTrigger className='h-12 justify-start px-1' value="less-like-this">
                                             <div className='flex items-center gap-1.5'>
                                                 <LucideIcon.ThumbsDown />
                                                 <span className='text-[1.5rem] font-semibold tracking-tight'>11%</span>
-                                                <span className='font-medium'>Less like this</span>
+                                                <span className='text-sm font-medium'>Less like this</span>
                                             </div>
                                         </TabsTrigger>
                                     </TabsList>
