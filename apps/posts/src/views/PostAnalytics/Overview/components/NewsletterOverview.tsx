@@ -100,14 +100,14 @@ const NewsletterOverview:React.FC = () => {
                                                                     x={viewBox.cx}
                                                                     y={(viewBox.cy || 0) - 4}
                                                                 >
-                                                                    {formatNumber(opensChartData[0].opens)}
+                                                                    {formatPercentage(opensChartData[0].openrate)}
                                                                 </tspan>
                                                                 <tspan
                                                                     className="text-base font-medium"
                                                                     x={viewBox.cx}
                                                                     y={(viewBox.cy || 0) + 18}
                                                                 >
-                                                                    {formatPercentage(opensChartData[0].openrate)}
+                                                                    {formatNumber(opensChartData[0].opens)}
                                                                 </tspan>
                                                             </text>
                                                         );
@@ -171,14 +171,14 @@ const NewsletterOverview:React.FC = () => {
                                                                     x={viewBox.cx}
                                                                     y={(viewBox.cy || 0) - 4}
                                                                 >
-                                                                    {formatNumber(clicksChartData[0].clicks)}
+                                                                    {formatPercentage(clicksChartData[0].clickrate)}
                                                                 </tspan>
                                                                 <tspan
                                                                     className="text-base font-medium"
                                                                     x={viewBox.cx}
                                                                     y={(viewBox.cy || 0) + 18}
                                                                 >
-                                                                    {formatPercentage(clicksChartData[0].clickrate)}
+                                                                    {formatNumber(clicksChartData[0].clicks)}
                                                                 </tspan>
                                                             </text>
                                                         );
