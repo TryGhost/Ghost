@@ -18,7 +18,7 @@ permissions:
   contents: write
 jobs:
   create-branch:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - run: echo "BASE_REF=main" >> $GITHUB_ENV
         if: inputs.base-ref == 'latest'
