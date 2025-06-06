@@ -1,5 +1,5 @@
 import React from 'react';
-import {getStatEndpointUrl, getToken, SourcesCard} from '@tryghost/admin-x-framework';
+import {SourcesCard, getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -10,8 +10,9 @@ interface SourcesProps {
 const Sources: React.FC<SourcesProps> = ({queryParams}) => {
     const {statsConfig, data: globalData, isLoading: isConfigLoading, range} = useGlobalData();
 
-    // Get site URL from global data
+    // Get site URL and icon from global data
     const siteUrl = globalData?.url as string | undefined;
+    const siteIcon = globalData?.icon as string | undefined;
 
     // TEMPORARY: For testing levernews.com direct traffic grouping
     // Remove this line when done testing
@@ -45,6 +46,7 @@ const Sources: React.FC<SourcesProps> = ({queryParams}) => {
             description="How readers found your post"
             mode="visits"
             range={range}
+            siteIcon={siteIcon}
             siteUrl={testingSiteUrl}
             totalVisitors={totalVisits}
         />

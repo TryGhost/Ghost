@@ -18,8 +18,9 @@ const Growth: React.FC<postAnalyticsProps> = () => {
     const {postId} = useParams();
     const {stats: postReferrers, totals, isLoading} = usePostReferrers(postId || '');
     
-    // Get site URL from global data
+    // Get site URL and icon from global data
     const siteUrl = globalData?.url as string | undefined;
+    const siteIcon = globalData?.icon as string | undefined;
     
     // TEMPORARY: For testing levernews.com direct traffic grouping
     // Remove this line when done testing  
@@ -75,6 +76,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                         <SourcesCard 
                             data={postReferrers}
                             mode="growth"
+                            siteIcon={siteIcon}
                             siteUrl={testingSiteUrl}
                         />
                     </div>
