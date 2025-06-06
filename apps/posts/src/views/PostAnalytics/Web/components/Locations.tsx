@@ -58,7 +58,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({data}) => {
                     const countryName = getCountryName(`${row.location}`) || 'Unknown';
                     return (
                         <DataListRow key={row.location || 'unknown'}>
-                            <DataListBar className='bg-gradient-to-r from-muted-foreground/30 to-muted-foreground/60 opacity-20 transition-all group-hover/row:opacity-40' style={{
+                            <DataListBar className='bg-gradient-to-r from-blue-600/30 to-blue-500/60 opacity-20 transition-all group-hover/row:opacity-40' style={{
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
                             }} />
                             <DataListItemContent className='group-hover/data:max-w-[calc(100%-140px)]'>

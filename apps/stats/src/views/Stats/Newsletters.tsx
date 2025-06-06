@@ -152,7 +152,7 @@ const NewsletterKPIs: React.FC<{
             datakey: 'open_rate'
         },
         'avg-click-rate': {
-            color: 'hsl(var(--chart-green))',
+            color: 'hsl(var(--chart-teal))',
             datakey: 'click_rate'
         }
     };
@@ -164,7 +164,7 @@ const NewsletterKPIs: React.FC<{
                     setCurrentTab('total-subscribers');
                 }}>
                     <KpiTabValue
-                        icon="UserPlus"
+                        color={tabConfig['total-subscribers'].color}
                         label="Total subscribers"
                         value={formatNumber(totalSubscribers)}
                     />
@@ -173,7 +173,7 @@ const NewsletterKPIs: React.FC<{
                     setCurrentTab('avg-open-rate');
                 }}>
                     <KpiTabValue
-                        icon="MailOpen"
+                        color={tabConfig['avg-open-rate'].color}
                         label="Avg. open rate"
                         value={formatPercentage(avgOpenRate)}
                     />
@@ -182,7 +182,7 @@ const NewsletterKPIs: React.FC<{
                     setCurrentTab('avg-click-rate');
                 }}>
                     <KpiTabValue
-                        icon="MousePointerClick"
+                        color={tabConfig['avg-click-rate'].color}
                         label="Avg. click rate"
                         value={formatPercentage(avgClickRate)}
                     />
@@ -218,6 +218,12 @@ const NewsletterKPIs: React.FC<{
                                 setIsHoveringClickable(!!(e.activePayload && e.activePayload[0].payload.post_id));
                             }}
                         >
+                            <defs>
+                                <linearGradient id="barGradient" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stopColor={tabConfig[currentTab].color} stopOpacity={0.8} />
+                                    <stop offset="100%" stopColor={tabConfig[currentTab].color} stopOpacity={0.3} />
+                                </linearGradient>
+                            </defs>
                             <Recharts.CartesianGrid horizontal={false} vertical={false} />
                             <Recharts.XAxis
                                 axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
@@ -244,12 +250,12 @@ const NewsletterKPIs: React.FC<{
                             <Recharts.Bar
                                 activeBar={{fillOpacity: 1}}
                                 dataKey={tabConfig[currentTab].datakey}
-                                fill={tabConfig[currentTab].color}
+                                fill='url(#barGradient)'
                                 fillOpacity={0.6}
                                 isAnimationActive={false}
                                 maxBarSize={32}
-                                minPointSize={2}
-                                radius={0}
+                                minPointSize={3}
+                                radius={4}
                             />
                         </Recharts.BarChart>
                     </ChartContainer>

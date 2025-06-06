@@ -104,7 +104,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                         formatter={(value, _, props) => {
                             return (
                                 <div className='flex items-center gap-1'>
-                                    <div className='size-2.5 rounded-[2px]' style={{backgroundColor: props.payload?.fill}}></div>
+                                    <div className='size-2 rounded-full opacity-50' style={{backgroundColor: props.payload?.fill}}></div>
                                     <div className='text-xs text-muted-foreground'>{props.payload?.datatype}</div>
                                     <div className='ml-3 font-mono text-xs'>{formatPercentage(value)}</div>
                                 </div>
@@ -225,7 +225,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const barChartConfig = {
         current: {
             label: 'This newsletter',
-            color: 'hsl(var(--chart-1))'
+            color: 'hsl(var(--chart-blue))'
         },
         average: {
             label: 'Average',
@@ -273,7 +273,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     // "Clicked" Chart
     const clickedChartData: NewsletterRadialChartData[] = [
         {datatype: 'Average', value: averageStats.clickedRate, fill: 'hsl(var(--chart-gray))'},
-        {datatype: 'This newsletter', value: stats.clickedRate, fill: 'hsl(var(--chart-green))'}
+        {datatype: 'This newsletter', value: stats.clickedRate, fill: 'hsl(var(--chart-teal))'}
     ];
 
     const clickedChartConfig = {
@@ -308,7 +308,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     <KpiCard className='relative grow'>
                                         <FunnelArrow />
                                         <KpiCardLabel>
-                                            <div className='ml-0.5 size-[9px] rounded-full border-[2px] border-purple bg-purple'></div>
+                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-purple opacity-50'></div>
                                             {/* <LucideIcon.Send strokeWidth={1.5} /> */}
                                             Sent
                                         </KpiCardLabel>
@@ -319,7 +319,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     <KpiCard className='relative grow'>
                                         <FunnelArrow />
                                         <KpiCardLabel>
-                                            <div className='ml-0.5 size-[9px] rounded-full border-[2px] border-blue bg-blue'></div>
+                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-blue opacity-50'></div>
                                             {/* <LucideIcon.Eye strokeWidth={1.5} /> */}
                                             Opened
                                         </KpiCardLabel>
@@ -329,7 +329,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     </KpiCard>
                                     <KpiCard className='grow'>
                                         <KpiCardLabel>
-                                            <div className='ml-0.5 size-[9px] rounded-full border-[2px] border-green bg-green'></div>
+                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-teal opacity-50'></div>
                                             {/* <LucideIcon.MousePointer strokeWidth={1.5} /> */}
                                             Clicked
                                         </KpiCardLabel>
@@ -417,7 +417,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                         metric === 'Sent' ? 'hsl(var(--chart-purple))' :
                                                                             metric === 'Opened' ? 'hsl(var(--chart-blue))' :
                                                                                 metric === 'Clicked' ? 'hsl(var(--chart-green))' :
-                                                                                    'hsl(var(--chart-1))'
+                                                                                    'hsl(var(--chart-blue))'
                                                                     );
 
                                                                     return (
@@ -441,7 +441,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                     <Recharts.Bar
                                                         barSize={48}
                                                         dataKey="current"
-                                                        fill="hsl(var(--chart-1))"
+                                                        fill="hsl(var(--chart-blue))"
                                                         minPointSize={2}
                                                         radius={0}
                                                     >
@@ -452,7 +452,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                     entry.metric === 'Sent' ? 'hsl(var(--chart-purple))' :
                                                                         entry.metric === 'Opened' ? 'hsl(var(--chart-blue))' :
                                                                             entry.metric === 'Clicked' ? 'hsl(var(--chart-green))' :
-                                                                                'hsl(var(--chart-1))'
+                                                                                'hsl(var(--chart-blue))'
                                                                 }
                                                             />
                                                         ))}

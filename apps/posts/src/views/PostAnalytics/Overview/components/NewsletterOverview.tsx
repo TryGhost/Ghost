@@ -24,7 +24,7 @@ const NewsletterOverview:React.FC = () => {
     const clickschartConfig = {
         clickrate: {
             label: 'Clicks',
-            color: 'hsl(var(--chart-green))'
+            color: 'hsl(var(--chart-teal))'
         }
     } satisfies ChartConfig;
 

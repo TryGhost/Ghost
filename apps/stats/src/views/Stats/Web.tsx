@@ -46,19 +46,19 @@ const KPI_METRICS: Record<string, KpiMetric> = {
     views: {
         dataKey: 'pageviews',
         label: 'Pageviews',
-        chartColor: 'hsl(var(--chart-green))',
+        chartColor: 'hsl(var(--chart-teal))',
         formatter: formatNumber
     },
     'bounce-rate': {
         dataKey: 'bounce_rate',
         label: 'Bounce rate',
-        chartColor: 'hsl(var(--chart-green))',
+        chartColor: 'hsl(var(--chart-teal))',
         formatter: formatPercentage
     },
     'visit-duration': {
         dataKey: 'avg_session_sec',
         label: 'Visit duration',
-        chartColor: 'hsl(var(--chart-green))',
+        chartColor: 'hsl(var(--chart-teal))',
         formatter: formatDuration
     }
 };
@@ -123,10 +123,10 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range}) => {
         <Tabs defaultValue="visits" variant='kpis'>
             <TabsList className="-mx-6 grid grid-cols-2">
                 <KpiTabTrigger value="visits" onClick={() => setCurrentTab('visits')}>
-                    <KpiTabValue icon="MousePointer" label="Unique visitors" value={kpiValues.visits} />
+                    <KpiTabValue color='hsl(var(--chart-blue))' label="Unique visitors" value={kpiValues.visits} />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="views" onClick={() => setCurrentTab('views')}>
-                    <KpiTabValue icon="Eye" label="Total views" value={kpiValues.views} />
+                    <KpiTabValue color='hsl(var(--chart-teal))' label="Total views" value={kpiValues.views} />
                 </KpiTabTrigger>
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
@@ -165,7 +165,7 @@ const TopContentTable: React.FC<TopContentTableProps> = ({data}) => {
                                 navigate(`/posts/analytics/beta/${row.post_id}`, {crossApp: true});
                             }
                         }}>
-                            <DataListBar className='bg-gradient-to-r from-muted-foreground/30 to-muted-foreground/60 opacity-20 transition-all group-hover/row:opacity-40' style={{
+                            <DataListBar className='bg-gradient-to-r from-muted-foreground/30 to-muted-foreground/50 opacity-20 transition-all group-hover/row:opacity-40' style={{
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
                                 // backgroundColor: 'hsl(var(--chart-blue))'
                             }} />
@@ -275,7 +275,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data, siteUrl}) => {
 
                     return (
                         <DataListRow key={row.source || 'direct'} className='group/row'>
-                            <DataListBar className='bg-gradient-to-r from-muted-foreground/30 to-muted-foreground/60 opacity-20 transition-all group-hover/row:opacity-40' style={{
+                            <DataListBar className='bg-gradient-to-r from-muted-foreground/30 to-muted-foreground/50 opacity-20 transition-all group-hover/row:opacity-40' style={{
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
                                 // backgroundColor: 'hsl(var(--chart-blue))'
                             }} />
