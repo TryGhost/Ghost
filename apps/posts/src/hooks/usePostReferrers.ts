@@ -3,114 +3,115 @@ import {useMemo} from 'react';
 import {usePostGrowthStats as usePostGrowthStatsAPI, usePostReferrers as usePostReferrersAPI} from '@tryghost/admin-x-framework/api/stats';
 
 // Source normalization mapping - matches Tinybird's mv_hits.pipe logic
+// Using Map for O(1) lookup performance
+const SOURCE_MAPPING = new Map<string, string>([
+    // Social Media Consolidation
+    ['facebook', 'Facebook'],
+    ['www.facebook.com', 'Facebook'],
+    ['l.facebook.com', 'Facebook'],
+    ['lm.facebook.com', 'Facebook'],
+    ['m.facebook.com', 'Facebook'],
+    ['twitter', 'Twitter'],
+    ['x.com', 'Twitter'],
+    ['com.twitter.android', 'Twitter'],
+    ['go.bsky.app', 'Bluesky'],
+    ['bsky', 'Bluesky'],
+    ['bsky.app', 'Bluesky'],
+    ['linkedin', 'LinkedIn'],
+    ['www.linkedin.com', 'LinkedIn'],
+    ['linkedin.com', 'LinkedIn'],
+    ['instagram', 'Instagram'],
+    ['www.instagram.com', 'Instagram'],
+    ['instagram.com', 'Instagram'],
+    ['youtube', 'YouTube'],
+    ['www.youtube.com', 'YouTube'],
+    ['youtube.com', 'YouTube'],
+    ['m.youtube.com', 'YouTube'],
+    ['threads', 'Threads'],
+    ['www.threads.net', 'Threads'],
+    ['threads.net', 'Threads'],
+    ['tiktok', 'TikTok'],
+    ['www.tiktok.com', 'TikTok'],
+    ['tiktok.com', 'TikTok'],
+    ['pinterest', 'Pinterest'],
+    ['www.pinterest.com', 'Pinterest'],
+    ['pinterest.com', 'Pinterest'],
+    ['reddit', 'Reddit'],
+    ['www.reddit.com', 'Reddit'],
+    ['reddit.com', 'Reddit'],
+    ['whatsapp', 'WhatsApp'],
+    ['whatsapp.com', 'WhatsApp'],
+    ['www.whatsapp.com', 'WhatsApp'],
+    ['telegram', 'Telegram'],
+    ['telegram.org', 'Telegram'],
+    ['www.telegram.org', 'Telegram'],
+    ['t.me', 'Telegram'],
+    ['news.ycombinator.com', 'Hacker News'],
+    ['substack', 'Substack'],
+    ['substack.com', 'Substack'],
+    ['www.substack.com', 'Substack'],
+    ['medium', 'Medium'],
+    ['medium.com', 'Medium'],
+    ['www.medium.com', 'Medium'],
+    
+    // Search Engines
+    ['google', 'Google'],
+    ['www.google.com', 'Google'],
+    ['google.com', 'Google'],
+    ['bing', 'Bing'],
+    ['www.bing.com', 'Bing'],
+    ['bing.com', 'Bing'],
+    ['yahoo', 'Yahoo'],
+    ['www.yahoo.com', 'Yahoo'],
+    ['yahoo.com', 'Yahoo'],
+    ['search.yahoo.com', 'Yahoo'],
+    ['duckduckgo', 'DuckDuckGo'],
+    ['duckduckgo.com', 'DuckDuckGo'],
+    ['www.duckduckgo.com', 'DuckDuckGo'],
+    ['search.brave.com', 'Brave Search'],
+    ['yandex', 'Yandex'],
+    ['yandex.com', 'Yandex'],
+    ['www.yandex.com', 'Yandex'],
+    ['baidu', 'Baidu'],
+    ['baidu.com', 'Baidu'],
+    ['www.baidu.com', 'Baidu'],
+    ['ecosia', 'Ecosia'],
+    ['www.ecosia.org', 'Ecosia'],
+    ['ecosia.org', 'Ecosia'],
+    
+    // Email Platforms
+    ['gmail', 'Gmail'],
+    ['mail.google.com', 'Gmail'],
+    ['gmail.com', 'Gmail'],
+    ['outlook', 'Outlook'],
+    ['outlook.live.com', 'Outlook'],
+    ['outlook.com', 'Outlook'],
+    ['hotmail.com', 'Outlook'],
+    ['mail.yahoo.com', 'Yahoo Mail'],
+    ['ymail.com', 'Yahoo Mail'],
+    ['icloud.com', 'Apple Mail'],
+    ['me.com', 'Apple Mail'],
+    ['mac.com', 'Apple Mail'],
+    
+    // News Aggregators
+    ['news.google.com', 'Google News'],
+    ['apple.news', 'Apple News'],
+    ['flipboard', 'Flipboard'],
+    ['flipboard.com', 'Flipboard'],
+    ['www.flipboard.com', 'Flipboard'],
+    ['smartnews', 'SmartNews'],
+    ['smartnews.com', 'SmartNews'],
+    ['www.smartnews.com', 'SmartNews']
+]);
+
 const normalizeSource = (source: string): string => {
     if (!source || source === '') {
         return '';
     }
     
-    // Social Media Consolidation
-    if (['Facebook', 'www.facebook.com', 'l.facebook.com', 'lm.facebook.com', 'm.facebook.com', 'facebook'].includes(source)) {
-        return 'Facebook';
-    }
-    if (['Twitter', 'x.com', 'com.twitter.android'].includes(source)) {
-        return 'Twitter';
-    }
-    if (['go.bsky.app', 'bsky', 'bsky.app'].includes(source)) {
-        return 'Bluesky';
-    }
-    if (['LinkedIn', 'www.linkedin.com', 'linkedin.com'].includes(source)) {
-        return 'LinkedIn';
-    }
-    if (['Instagram', 'www.instagram.com', 'instagram.com'].includes(source)) {
-        return 'Instagram';
-    }
-    if (['YouTube', 'www.youtube.com', 'youtube.com', 'm.youtube.com'].includes(source)) {
-        return 'YouTube';
-    }
-    if (['Threads', 'www.threads.net', 'threads.net'].includes(source)) {
-        return 'Threads';
-    }
-    if (['TikTok', 'www.tiktok.com', 'tiktok.com'].includes(source)) {
-        return 'TikTok';
-    }
-    if (['Pinterest', 'www.pinterest.com', 'pinterest.com'].includes(source)) {
-        return 'Pinterest';
-    }
-    if (['Reddit', 'www.reddit.com', 'reddit.com'].includes(source)) {
-        return 'Reddit';
-    }
-    if (['WhatsApp', 'whatsapp.com', 'www.whatsapp.com'].includes(source)) {
-        return 'WhatsApp';
-    }
-    if (['Telegram', 'telegram.org', 'www.telegram.org', 't.me'].includes(source)) {
-        return 'Telegram';
-    }
-    if (['Hacker News', 'news.ycombinator.com'].includes(source)) {
-        return 'Hacker News';
-    }
-    if (['Substack', 'substack.com', 'www.substack.com'].includes(source)) {
-        return 'Substack';
-    }
-    if (['Medium', 'medium.com', 'www.medium.com'].includes(source)) {
-        return 'Medium';
-    }
-    
-    // Search Engines
-    if (['Google', 'www.google.com', 'google.com'].includes(source)) {
-        return 'Google';
-    }
-    if (['Bing', 'www.bing.com', 'bing.com'].includes(source)) {
-        return 'Bing';
-    }
-    if (['Yahoo', 'www.yahoo.com', 'yahoo.com', 'search.yahoo.com'].includes(source)) {
-        return 'Yahoo';
-    }
-    if (['DuckDuckGo', 'duckduckgo.com', 'www.duckduckgo.com'].includes(source)) {
-        return 'DuckDuckGo';
-    }
-    if (['Brave Search', 'search.brave.com'].includes(source)) {
-        return 'Brave Search';
-    }
-    if (['Yandex', 'yandex.com', 'www.yandex.com'].includes(source)) {
-        return 'Yandex';
-    }
-    if (['Baidu', 'baidu.com', 'www.baidu.com'].includes(source)) {
-        return 'Baidu';
-    }
-    if (['Ecosia', 'www.ecosia.org', 'ecosia.org'].includes(source)) {
-        return 'Ecosia';
-    }
-    
-    // Email Platforms
-    if (['Gmail', 'mail.google.com', 'gmail.com'].includes(source)) {
-        return 'Gmail';
-    }
-    if (['Outlook', 'outlook.live.com', 'outlook.com', 'hotmail.com'].includes(source)) {
-        return 'Outlook';
-    }
-    if (['Yahoo Mail', 'mail.yahoo.com', 'ymail.com'].includes(source)) {
-        return 'Yahoo Mail';
-    }
-    if (['Apple Mail', 'icloud.com', 'me.com', 'mac.com'].includes(source)) {
-        return 'Apple Mail';
-    }
-    
-    // News Aggregators
-    if (['Google News', 'news.google.com'].includes(source)) {
-        return 'Google News';
-    }
-    if (['Apple News', 'apple.news'].includes(source)) {
-        return 'Apple News';
-    }
-    if (['Flipboard', 'flipboard.com', 'www.flipboard.com'].includes(source)) {
-        return 'Flipboard';
-    }
-    if (['SmartNews', 'smartnews.com', 'www.smartnews.com'].includes(source)) {
-        return 'SmartNews';
-    }
-    
-    // If no match found, return original source
-    return source;
+    // Case-insensitive lookup
+    const lowerSource = source.toLowerCase();
+    return SOURCE_MAPPING.get(lowerSource) || source;
 };
 
 // Helper function to convert range to date parameters
