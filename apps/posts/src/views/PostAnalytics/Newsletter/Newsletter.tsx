@@ -2,7 +2,7 @@
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {Avatar, AvatarFallback, BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, calculateYAxisWidth, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Avatar, AvatarFallback, BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, calculateYAxisWidth, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {getLinkById} from '@src/utils/link-helpers';
 import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -136,6 +136,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const [editedUrl, setEditedUrl] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const ITEMS_PER_PAGE = 5;
 
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
@@ -158,6 +159,71 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId || '');
     const {editLinks} = useEditLinks();
+
+    const mockUsers = [
+        {
+            initials: 'LC',
+            name: 'Lincoln Calzoni',
+            feedbackDate: '3 minutes ago',
+            avatarClass: 'bg-orange text-white'
+        },
+        {
+            initials: 'LG',
+            name: 'Leo George',
+            feedbackDate: '5 minutes ago',
+            avatarClass: 'bg-pink text-white'
+        },
+        {
+            initials: 'LD',
+            name: 'Livia Dorwart',
+            feedbackDate: '1 hour ago',
+            avatarClass: 'bg-blue text-white'
+        },
+        {
+            initials: 'MC',
+            name: 'Miracle Curtis',
+            feedbackDate: 'Yesterday',
+            avatarClass: 'bg-green text-white'
+        },
+        {
+            initials: 'HD',
+            name: 'Hanna Dias',
+            feedbackDate: '12 May',
+            avatarClass: 'bg-purple text-white'
+        },
+        {
+            initials: 'AN',
+            name: 'Abel Nagg',
+            feedbackDate: '2 Dec 2024',
+            avatarClass: 'bg-gray-800 text-white'
+        }
+    ];
+
+    // Pagination for topLinks
+    const {
+        totalPages,
+        paginatedData: paginatedTopLinks,
+        nextPage,
+        previousPage,
+        hasNextPage,
+        hasPreviousPage
+    } = useSimplePagination({
+        data: topLinks,
+        itemsPerPage: ITEMS_PER_PAGE
+    });
+
+    // Pagination for mockUsers (Feedback section)
+    const {
+        totalPages: feedbackTotalPages,
+        paginatedData: paginatedMockUsers,
+        nextPage: feedbackNextPage,
+        previousPage: feedbackPreviousPage,
+        hasNextPage: feedbackHasNextPage,
+        hasPreviousPage: feedbackHasPreviousPage
+    } = useSimplePagination({
+        data: mockUsers,
+        itemsPerPage: ITEMS_PER_PAGE
+    });
 
     const handleEdit = (linkId: string) => {
         const link = getLinkById(topLinks, linkId);
@@ -287,45 +353,6 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
             label: 'This newsletter'
         }
     } satisfies ChartConfig;
-
-    const mockUsers = [
-        {
-            initials: 'LC',
-            name: 'Lincoln Calzoni',
-            feedbackDate: '3 minutes ago',
-            avatarClass: 'bg-orange text-white'
-        },
-        {
-            initials: 'LG',
-            name: 'Leo George',
-            feedbackDate: '5 minutes ago',
-            avatarClass: 'bg-pink text-white'
-        },
-        {
-            initials: 'LD',
-            name: 'Livia Dorwart',
-            feedbackDate: '1 hour ago',
-            avatarClass: 'bg-blue text-white'
-        },
-        {
-            initials: 'MC',
-            name: 'Miracle Curtis',
-            feedbackDate: 'Yesterday',
-            avatarClass: 'bg-green text-white'
-        },
-        {
-            initials: 'HD',
-            name: 'Hanna Dias',
-            feedbackDate: '12 May',
-            avatarClass: 'bg-purple text-white'
-        },
-        {
-            initials: 'AN',
-            name: 'Abel Nagg',
-            feedbackDate: '2 Dec 2024',
-            avatarClass: 'bg-gray-800 text-white'
-        }
-    ];
 
     return (
         <>
@@ -498,11 +525,11 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader className='pb-2'>
+                            <CardHeader className='pb-3'>
                                 <CardTitle>Feedback</CardTitle>
                                 <CardDescription>What did your readers think?</CardDescription>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className='pb-3'>
                                 <Tabs defaultValue="more-like-this" variant='underline'>
                                     <TabsList className="flex w-full">
                                         <TabsTrigger className='h-12 justify-start px-3' value="more-like-this">
@@ -523,7 +550,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     <TabsContent value="more-like-this">
                                         <Table>
                                             <TableBody>
-                                                {mockUsers.map(user => (
+                                                {paginatedMockUsers?.map(user => (
                                                     <TableRow key={`${user.initials}-${user.name}`} className='border-none'>
                                                         <TableCell className='h-12 max-w-0 border-none'>
                                                             <div className='flex items-center gap-2 font-medium'>
@@ -537,22 +564,12 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                     </TableRow>
                                                 ))}
                                             </TableBody>
-                                            <TableFooter className='!border-none bg-transparent'>
-                                                <TableRow className='!border-none'>
-                                                    <TableCell className='h-12 group-hover:bg-transparent' colSpan={2}>
-                                                        <Button size='sm' variant='outline'>
-                                                            View all
-                                                            <LucideIcon.TableOfContents />
-                                                        </Button>
-                                                    </TableCell>
-                                                </TableRow>
-                                            </TableFooter>
                                         </Table>
                                     </TabsContent>
                                     <TabsContent value="less-like-this">
                                         <Table>
                                             <TableBody>
-                                                {mockUsers.map(user => (
+                                                {paginatedMockUsers?.map(user => (
                                                     <TableRow key={`${user.initials}-${user.name}`} className='border-none'>
                                                         <TableCell className='h-12 max-w-0 border-none'>
                                                             <div className='flex items-center gap-2 font-medium'>
@@ -570,96 +587,134 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     </TabsContent>
                                 </Tabs>
                             </CardContent>
+                            <CardFooter>
+                                <div className='flex w-full items-center justify-between gap-3'>
+                                    <Button size='sm' variant='outline'>
+                                    View all
+                                        <LucideIcon.TableOfContents />
+                                    </Button>
+                                    {feedbackTotalPages > 1 &&
+                                        <SimplePagination className='pb-0'>
+                                            <SimplePaginationNavigation>
+                                                <SimplePaginationPreviousButton
+                                                    disabled={!feedbackHasPreviousPage}
+                                                    onClick={feedbackPreviousPage}
+                                                />
+                                                <SimplePaginationNextButton
+                                                    disabled={!feedbackHasNextPage}
+                                                    onClick={feedbackNextPage}
+                                                />
+                                            </SimplePaginationNavigation>
+                                        </SimplePagination>
+                                    }
+                                </div>
+                            </CardFooter>
                         </Card>
                         <Card>
-                            <CardHeader className='pb-2'>
+                            <CardHeader className='pb-3'>
                                 <CardTitle>Newsletter clicks</CardTitle>
                                 <CardDescription>Which links resonated with your readers</CardDescription>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className='pb-3'>
                                 {topLinks.length > 0
                                     ?
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow className='border-b border-t-0 !border-border'>
-                                                <TableHead className='h-12 w-full pl-0'>Link</TableHead>
-                                                <TableHead className='h-12 w-[0%] text-nowrap text-right'>No. of members</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {topLinks.map((row) => {
-                                                const linkId = row.link.link_id;
-                                                const title = row.link.title;
-                                                const url = row.link.to;
-                                                const edited = row.link.edited;
+                                    <>
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow className='border-b border-t-0 !border-border'>
+                                                    <TableHead className='h-12 w-full'>Link</TableHead>
+                                                    <TableHead className='h-12 w-[0%] text-nowrap text-right'>No. of members</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {paginatedTopLinks?.map((row) => {
+                                                    const linkId = row.link.link_id;
+                                                    const title = row.link.title;
+                                                    const url = row.link.to;
+                                                    const edited = row.link.edited;
 
-                                                return (
-                                                    <TableRow key={linkId} className='border-none'>
-                                                        <TableCell className='h-12 max-w-0 border-none'>
-                                                            <div className='flex items-center gap-2'>
-                                                                {editingLinkId === linkId ? (
-                                                                    <div ref={containerRef} className='flex w-full items-center gap-2'>
-                                                                        <Input
-                                                                            ref={inputRef}
-                                                                            className="h-7 w-full border-border bg-background text-sm"
-                                                                            value={editedUrl}
-                                                                            onChange={e => setEditedUrl(e.target.value)}
-                                                                        />
-                                                                        <Button
-                                                                            size='sm'
-                                                                            onClick={handleUpdate}
-                                                                        >
+                                                    return (
+                                                        <TableRow key={linkId} className='border-none'>
+                                                            <TableCell className='h-12 max-w-0 border-none'>
+                                                                <div className='flex items-center gap-2'>
+                                                                    {editingLinkId === linkId ? (
+                                                                        <div ref={containerRef} className='flex w-full items-center gap-2'>
+                                                                            <Input
+                                                                                ref={inputRef}
+                                                                                className="h-7 w-full border-border bg-background text-sm"
+                                                                                value={editedUrl}
+                                                                                onChange={e => setEditedUrl(e.target.value)}
+                                                                            />
+                                                                            <Button
+                                                                                size='sm'
+                                                                                onClick={handleUpdate}
+                                                                            >
                                                                             Update
-                                                                        </Button>
-                                                                    </div>
-                                                                ) : (
-                                                                    <>
-                                                                        <Button
-                                                                            className='shrink-0 bg-background'
-                                                                            size='sm'
-                                                                            variant='outline'
-                                                                            onClick={() => handleEdit(linkId)}
-                                                                        >
-                                                                            <LucideIcon.Pen />
-                                                                        </Button>
-                                                                        <a
-                                                                            className='block truncate font-medium hover:underline'
-                                                                            href={url}
-                                                                            rel="noreferrer"
-                                                                            target='_blank'
-                                                                            title={title}
-                                                                        >
-                                                                            {title}
-                                                                        </a>
-                                                                        {edited && (
-                                                                            <span className='text-xs text-gray-500'>(edited)</span>
-                                                                        )}
-                                                                    </>
-                                                                )}
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell className='h-12 border-none text-right font-mono text-sm'>{formatNumber(row.count)}</TableCell>
-                                                    </TableRow>
-                                                );
-                                            })}
-                                        </TableBody>
-                                        <TableFooter className='!border-none bg-transparent'>
-                                            <TableRow className='!border-none'>
-                                                <TableCell className='h-12 group-hover:bg-transparent' colSpan={2}>
-                                                    <div className='ml-2 mt-1 flex items-center gap-2 text-green'>
-                                                        <LucideIcon.ArrowUp size={20} strokeWidth={1.5} />
-                                                        Sent a broken link? You can update it!
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        </TableFooter>
-                                    </Table>
+                                                                            </Button>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <>
+                                                                            <Button
+                                                                                className='shrink-0 bg-background'
+                                                                                size='sm'
+                                                                                variant='outline'
+                                                                                onClick={() => handleEdit(linkId)}
+                                                                            >
+                                                                                <LucideIcon.Pen />
+                                                                            </Button>
+                                                                            <a
+                                                                                className='block truncate font-medium hover:underline'
+                                                                                href={url}
+                                                                                rel="noreferrer"
+                                                                                target='_blank'
+                                                                                title={title}
+                                                                            >
+                                                                                {title}
+                                                                            </a>
+                                                                            {edited && (
+                                                                                <span className='text-xs text-gray-500'>(edited)</span>
+                                                                            )}
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell className='h-12 border-none text-right font-mono text-sm'>{formatNumber(row.count)}</TableCell>
+                                                        </TableRow>
+                                                    );
+                                                })}
+                                            </TableBody>
+                                        </Table>
+                                    </>
                                     :
                                     <div className='py-20 text-center text-sm text-gray-700'>
                                     You have no links in your post.
                                     </div>
                                 }
                             </CardContent>
+                            {topLinks.length > 1 &&
+                                <CardFooter>
+                                    <div className='flex w-full items-start justify-between gap-3'>
+                                        <div className='mt-1 flex items-start gap-2 pl-4 text-green'>
+                                            <LucideIcon.ArrowUp size={20} strokeWidth={1.5} />
+                                            Sent a broken link? You can update it!
+                                        </div>
+                                        {totalPages > 1 && (
+                                            <SimplePagination className='pb-0'>
+                                                <SimplePaginationNavigation>
+                                                    <SimplePaginationPreviousButton
+                                                        disabled={!hasPreviousPage}
+                                                        onClick={previousPage}
+                                                    />
+                                                    <SimplePaginationNextButton
+                                                        disabled={!hasNextPage}
+                                                        onClick={nextPage}
+                                                    />
+                                                </SimplePaginationNavigation>
+                                            </SimplePagination>
+                                        )}
+                                    </div>
+                                </CardFooter>
+                            }
                         </Card>
                     </div>
                 }
