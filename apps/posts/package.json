@@ -22,6 +22,7 @@
         "test:unit": "vitest run test/unit",
         "lint": "yarn run lint:code && yarn run lint:test",
         "lint:code": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
+        "lint:code:fix": "eslint --ext .js,.ts,.cjs,.tsx --cache --fix src",
         "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx --cache test",
         "lint:fix": "eslint --ext .js,.ts,.cjs,.tsx --cache src --fix",
         "preview": "vite preview",
