@@ -2260,16 +2260,16 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                         <tr>
                                             <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #73818c; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #73818c; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
-
+                                        
                                             <tr>
                                                 <td class=\\"footer-powered\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; text-align: center; padding-top: 70px; padding-bottom: 40px;\\" valign=\\"top\\" align=\\"center\\"><a href=\\"https://ghost.org/?via=pbg-newsletter&amp;ref=127.0.0.1\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v4.0.0/images/powered.png\\" border=\\"0\\" width=\\"142\\" height=\\"30\\" class=\\"gh-powered\\" alt=\\"Powered by Ghost\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 142px; height: 30px;\\"></a></td>
                                             </tr>
                                     </table>
                                 </td>
                             </tr>
-
                         </table>
                         <!-- END CENTERED WHITE CONTAINER -->
+
                     </div>
                 </td>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
@@ -2283,8 +2283,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
             <![endif]-->
         </table>
     </body>
-</html>
-",
+</html>",
   "plaintext": "
 
 
@@ -3640,16 +3639,16 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                         <tr>
                                             <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #73818c; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #73818c; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
-
+                                        
                                             <tr>
                                                 <td class=\\"footer-powered\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; text-align: center; padding-top: 70px; padding-bottom: 40px;\\" valign=\\"top\\" align=\\"center\\"><a href=\\"https://ghost.org/?via=pbg-newsletter&amp;ref=127.0.0.1\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v4.0.0/images/powered.png\\" border=\\"0\\" width=\\"142\\" height=\\"30\\" class=\\"gh-powered\\" alt=\\"Powered by Ghost\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 142px; height: 30px;\\"></a></td>
                                             </tr>
                                     </table>
                                 </td>
                             </tr>
-
                         </table>
                         <!-- END CENTERED WHITE CONTAINER -->
+
                     </div>
                 </td>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
@@ -3663,8 +3662,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
             <![endif]-->
         </table>
     </body>
-</html>
-",
+</html>",
   "plaintext": "
 
 
@@ -4188,6 +4186,24 @@ Object {
     min-width: 100%;
   }
 
+  table.header {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  table.header .header-container {
+    width: 100% !important;
+    margin: 0 auto !important;
+  }
+
+  table.header .header-container table {
+    width: 100% !important;
+  }
+
+  table.header .header-content {
+    padding: 0 10px !important;
+  }
+
   .hide-mobile {
     display: none;
   }
@@ -4211,7 +4227,7 @@ table.body td {
     font-size: 16px;
   }
 
-  table.body .post-excerpt {
+  table.header .post-excerpt {
     font-size: 16px !important;
   }
 
@@ -4238,7 +4254,8 @@ table.body td {
     width: 100% !important;
   }
 
-  table.body .main {
+  table.body .main,
+table.header .header-container {
     border-spacing: 10px 0 !important;
     border-left-width: 0 !important;
     border-radius: 0 !important;
@@ -4251,64 +4268,64 @@ table.body td {
     width: auto !important;
   }
 
-  table.body .site-icon {
+  table.header .site-icon {
     padding-top: 0 !important;
   }
 
-  table.body .site-info {
+  table.header .site-info {
     padding-top: 24px !important;
   }
 
-  table.body .post-title-link {
+  table.header .post-title-link {
     margin-top: 24px !important;
   }
 
-  table.body .post-meta-wrapper {
+  table.header .post-meta-wrapper {
     padding-bottom: 24px !important;
   }
 
-  table.body .site-icon img {
+  table.header .site-icon img {
     width: 36px !important;
     height: 36px !important;
   }
 
-  table.body .site-url a {
+  table.header .site-url a {
     font-size: 13px !important;
     padding-bottom: 16px !important;
   }
 
-  table.body .post-meta,
-table.body .post-meta-date {
+  table.header .post-meta,
+table.header .post-meta-date {
     white-space: normal !important;
     font-size: 13px !important;
     line-height: 1.2em;
   }
 
-  table.body .post-meta,
-table.body .view-online {
+  table.header .post-meta,
+table.header .view-online {
     width: 100% !important;
   }
 
-  table.body .post-meta-left,
-table.body .post-meta-left.view-online {
+  table.header .post-meta-left,
+table.header .post-meta-left.view-online {
     width: 100% !important;
     text-align: left !important;
   }
 
-  table.body .post-meta.view-online-mobile {
+  table.header .post-meta.view-online-mobile {
     display: table-row !important;
   }
 
-  table.body .post-meta-left.view-online-mobile,
-table.body .post-meta-left.view-online-mobile .view-online {
+  table.header .post-meta-left.view-online-mobile,
+table.header .post-meta-left.view-online-mobile .view-online {
     text-align: left !important;
   }
 
-  table.body .post-meta.view-online.desktop {
+  table.header .post-meta.view-online.desktop {
     display: none !important;
   }
 
-  table.body .view-online {
+  table.header .view-online {
     text-decoration: underline;
   }
 
@@ -4317,13 +4334,13 @@ table.body .footer p span {
     font-size: 13px !important;
   }
 
-  table.body .view-online-link,
+  table.header .view-online-link,
 table.body .footer,
 table.body .footer a {
     font-size: 13px !important;
   }
 
-  table.body .post-title a {
+  table.header .post-title a {
     font-size: 26px !important;
     line-height: 1.1em !important;
   }
@@ -4607,7 +4624,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                 <td class=\\"container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -4661,7 +4678,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                             </tr>
 
                                         <tr class=\\"post-content-row\\">
-                                            <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
+                                            <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; padding-top: 32px; max-width: 600px;\\" valign=\\"top\\">
                                                 <!-- POST CONTENT START -->
                                                 <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #73818c;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">A heading</h1>
 <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">and a paragraph (in markdown!)</p>
@@ -4968,16 +4985,16 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                         <tr>
                                             <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #73818c; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #73818c; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
-
+                                        
                                             <tr>
                                                 <td class=\\"footer-powered\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; text-align: center; padding-top: 70px; padding-bottom: 40px;\\" valign=\\"top\\" align=\\"center\\"><a href=\\"https://ghost.org/?via=pbg-newsletter&amp;ref=127.0.0.1\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v4.0.0/images/powered.png\\" border=\\"0\\" width=\\"142\\" height=\\"30\\" class=\\"gh-powered\\" alt=\\"Powered by Ghost\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 142px; height: 30px;\\"></a></td>
                                             </tr>
                                     </table>
                                 </td>
                             </tr>
-
                         </table>
                         <!-- END CENTERED WHITE CONTAINER -->
+
                     </div>
                 </td>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
@@ -4991,8 +5008,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
             <![endif]-->
         </table>
     </body>
-</html>
-",
+</html>",
   "plaintext": "
 
 
@@ -5521,6 +5537,24 @@ Object {
     min-width: 100%;
   }
 
+  table.header {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  table.header .header-container {
+    width: 100% !important;
+    margin: 0 auto !important;
+  }
+
+  table.header .header-container table {
+    width: 100% !important;
+  }
+
+  table.header .header-content {
+    padding: 0 10px !important;
+  }
+
   .hide-mobile {
     display: none;
   }
@@ -5544,7 +5578,7 @@ table.body td {
     font-size: 16px;
   }
 
-  table.body .post-excerpt {
+  table.header .post-excerpt {
     font-size: 16px !important;
   }
 
@@ -5571,7 +5605,8 @@ table.body td {
     width: 100% !important;
   }
 
-  table.body .main {
+  table.body .main,
+table.header .header-container {
     border-spacing: 10px 0 !important;
     border-left-width: 0 !important;
     border-radius: 0 !important;
@@ -5584,64 +5619,64 @@ table.body td {
     width: auto !important;
   }
 
-  table.body .site-icon {
+  table.header .site-icon {
     padding-top: 0 !important;
   }
 
-  table.body .site-info {
+  table.header .site-info {
     padding-top: 24px !important;
   }
 
-  table.body .post-title-link {
+  table.header .post-title-link {
     margin-top: 24px !important;
   }
 
-  table.body .post-meta-wrapper {
+  table.header .post-meta-wrapper {
     padding-bottom: 24px !important;
   }
 
-  table.body .site-icon img {
+  table.header .site-icon img {
     width: 36px !important;
     height: 36px !important;
   }
 
-  table.body .site-url a {
+  table.header .site-url a {
     font-size: 13px !important;
     padding-bottom: 16px !important;
   }
 
-  table.body .post-meta,
-table.body .post-meta-date {
+  table.header .post-meta,
+table.header .post-meta-date {
     white-space: normal !important;
     font-size: 13px !important;
     line-height: 1.2em;
   }
 
-  table.body .post-meta,
-table.body .view-online {
+  table.header .post-meta,
+table.header .view-online {
     width: 100% !important;
   }
 
-  table.body .post-meta-left,
-table.body .post-meta-left.view-online {
+  table.header .post-meta-left,
+table.header .post-meta-left.view-online {
     width: 100% !important;
     text-align: left !important;
   }
 
-  table.body .post-meta.view-online-mobile {
+  table.header .post-meta.view-online-mobile {
     display: table-row !important;
   }
 
-  table.body .post-meta-left.view-online-mobile,
-table.body .post-meta-left.view-online-mobile .view-online {
+  table.header .post-meta-left.view-online-mobile,
+table.header .post-meta-left.view-online-mobile .view-online {
     text-align: left !important;
   }
 
-  table.body .post-meta.view-online.desktop {
+  table.header .post-meta.view-online.desktop {
     display: none !important;
   }
 
-  table.body .view-online {
+  table.header .view-online {
     text-decoration: underline;
   }
 
@@ -5650,13 +5685,13 @@ table.body .footer p span {
     font-size: 13px !important;
   }
 
-  table.body .view-online-link,
+  table.header .view-online-link,
 table.body .footer,
 table.body .footer a {
     font-size: 13px !important;
   }
 
-  table.body .post-title a {
+  table.header .post-title a {
     font-size: 26px !important;
     line-height: 1.1em !important;
   }
@@ -5954,7 +5989,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                 <td class=\\"container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
                     <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff;\\">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -6008,7 +6043,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                             </tr>
 
                                         <tr class=\\"post-content-row\\">
-                                            <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; max-width: 600px;\\" valign=\\"top\\">
+                                            <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e0e7eb; padding-top: 32px; max-width: 600px;\\" valign=\\"top\\">
                                                 <!-- POST CONTENT START -->
                                                 <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #73818c;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #73818c; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px; font-family: Georgia, serif; letter-spacing: -0.01em;\\">A heading</h1>
 <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">and a paragraph (in markdown!)</p>
@@ -6315,16 +6350,16 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                         <tr>
                                             <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #73818c; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #73818c; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
-
+                                        
                                             <tr>
                                                 <td class=\\"footer-powered\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; text-align: center; padding-top: 70px; padding-bottom: 40px;\\" valign=\\"top\\" align=\\"center\\"><a href=\\"https://ghost.org/?via=pbg-newsletter&amp;ref=127.0.0.1\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v4.0.0/images/powered.png\\" border=\\"0\\" width=\\"142\\" height=\\"30\\" class=\\"gh-powered\\" alt=\\"Powered by Ghost\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 142px; height: 30px;\\"></a></td>
                                             </tr>
                                     </table>
                                 </td>
                             </tr>
-
                         </table>
                         <!-- END CENTERED WHITE CONTAINER -->
+
                     </div>
                 </td>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
@@ -6338,8 +6373,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
             <![endif]-->
         </table>
     </body>
-</html>
-",
+</html>",
   "plaintext": "
 
 
@@ -10388,16 +10422,16 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                         <tr>
                                             <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #73818c; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #73818c; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
-
+                                        
                                             <tr>
                                                 <td class=\\"footer-powered\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; text-align: center; padding-top: 70px; padding-bottom: 40px;\\" valign=\\"top\\" align=\\"center\\"><a href=\\"https://ghost.org/?via=pbg-newsletter&amp;ref=127.0.0.1\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v4.0.0/images/powered.png\\" border=\\"0\\" width=\\"142\\" height=\\"30\\" class=\\"gh-powered\\" alt=\\"Powered by Ghost\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 142px; height: 30px;\\"></a></td>
                                             </tr>
                                     </table>
                                 </td>
                             </tr>
-
                         </table>
                         <!-- END CENTERED WHITE CONTAINER -->
+
                     </div>
                 </td>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
@@ -10411,8 +10445,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
             <![endif]-->
         </table>
     </body>
-</html>
-",
+</html>",
   "plaintext": "
 
 
@@ -11768,16 +11801,16 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                         <tr>
                                             <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #73818c; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #73818c; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
-
+                                        
                                             <tr>
                                                 <td class=\\"footer-powered\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; text-align: center; padding-top: 70px; padding-bottom: 40px;\\" valign=\\"top\\" align=\\"center\\"><a href=\\"https://ghost.org/?via=pbg-newsletter&amp;ref=127.0.0.1\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v4.0.0/images/powered.png\\" border=\\"0\\" width=\\"142\\" height=\\"30\\" class=\\"gh-powered\\" alt=\\"Powered by Ghost\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 142px; height: 30px;\\"></a></td>
                                             </tr>
                                     </table>
                                 </td>
                             </tr>
-
                         </table>
                         <!-- END CENTERED WHITE CONTAINER -->
+
                     </div>
                 </td>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
@@ -11791,8 +11824,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
             <![endif]-->
         </table>
     </body>
-</html>
-",
+</html>",
   "plaintext": "
 
 
