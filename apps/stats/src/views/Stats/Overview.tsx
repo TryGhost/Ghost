@@ -243,7 +243,7 @@ const Overview: React.FC = () => {
                         linkto='/web/'
                         title='Unique visitors'
                         onClick={() => {
-                            navigate('/');
+                            navigate('/web/');
                         }}
                     >
                         <GhAreaChart
@@ -252,6 +252,7 @@ const Overview: React.FC = () => {
                             data={visitorsChartData}
                             id="visitors"
                             range={range}
+                            showHorizontalLines={false}
                             showYAxisValues={false}
                             syncId="overview-charts"
                             yAxisRange={visitorsYRange}
@@ -276,6 +277,7 @@ const Overview: React.FC = () => {
                             data={membersChartData}
                             id="members"
                             range={range}
+                            showHorizontalLines={false}
                             showYAxisValues={false}
                             syncId="overview-charts"
                         />
@@ -299,6 +301,7 @@ const Overview: React.FC = () => {
                             data={mrrChartData}
                             id="mrr"
                             range={range}
+                            showHorizontalLines={false}
                             showYAxisValues={false}
                             syncId="overview-charts"
                         />
