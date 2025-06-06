@@ -1,30 +1,27 @@
 import {type CleanedLink, cleanTrackedUrl} from '@src/utils/link-helpers';
-import {getPost} from '@tryghost/admin-x-framework/api/posts';
+import {type Post, getPost} from '@tryghost/admin-x-framework/api/posts';
 import {useMemo} from 'react';
 import {useNewsletterStatsByNewsletterId} from '@tryghost/admin-x-framework/api/stats';
 import {useTopLinks} from '@tryghost/admin-x-framework/api/links';
 
 // Extend the Post type to include newsletter property
-type PostWithNewsletter = {
+type PostWithNewsletter = Post & {
     newsletter?: {
         id: string;
     };
-    email?: {
-        email_count: number;
-        opened_count: number;
-    };
-    count?: {
-        clicks: number;
-    };
-    // Use unknown instead of any for the index signature
-    [key: string]: unknown;
 };
 
 export const usePostNewsletterStats = (postId: string) => {
-    const {data: postResponse, isLoading: isPostLoading} = getPost(postId);
+    // Fetch the post with feedback count relations included
+    const {data: postResponse, isLoading: isPostLoading} = getPost(postId, {
+        searchParams: {
+            include: 'count.positive_feedback,count.negative_feedback'
+        }
+    });
 
     // Fetch the post to get top level stats
     const post = useMemo(() => postResponse?.posts[0] as PostWithNewsletter | undefined, [postResponse]);
+
     const stats = useMemo(() => {
         if (!post) {
             return {
@@ -42,6 +39,27 @@ export const usePostNewsletterStats = (postId: string) => {
             clicked: post.count?.clicks || 0,
             openedRate: post.email?.opened_count ? (post.email.opened_count / post.email.email_count) : 0,
             clickedRate: post.count?.clicks && post.email?.email_count ? (post.count.clicks / post.email.email_count) : 0
+        };
+    }, [post]);
+
+    // Calculate feedback stats similar to Ember implementation
+    const feedbackStats = useMemo(() => {
+        if (!post?.count) {
+            return {
+                positiveFeedback: 0,
+                negativeFeedback: 0,
+                totalFeedback: 0
+            };
+        }
+
+        const positiveFeedback = post.count.positive_feedback || 0;
+        const negativeFeedback = post.count.negative_feedback || 0;
+        const totalFeedback = positiveFeedback + negativeFeedback;
+
+        return {
+            positiveFeedback,
+            negativeFeedback,
+            totalFeedback
         };
     }, [post]);
 
@@ -133,6 +151,7 @@ export const usePostNewsletterStats = (postId: string) => {
     return {
         post,
         stats,
+        feedbackStats,
         averageStats,
         topLinks,
         refetchTopLinks,

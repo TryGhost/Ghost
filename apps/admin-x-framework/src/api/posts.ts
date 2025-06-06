@@ -15,6 +15,8 @@ export type Post = {
     feature_image?: string;
     count?: {
         clicks?: number;
+        positive_feedback?: number;
+        negative_feedback?: number;
     };
     email?: Email;
     status?: string;

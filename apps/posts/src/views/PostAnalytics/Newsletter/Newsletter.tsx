@@ -125,7 +125,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                             return (
                                 <div className='flex items-center gap-1'>
                                     <div className='size-2 rounded-full opacity-50' style={{backgroundColor: props.payload?.color}}></div>
-                                    <div className='text-xs text-muted-foreground'>{props.payload?.datatype}</div>
+                                    <div className='text-muted-foreground text-xs'>{props.payload?.datatype}</div>
                                     <div className='ml-3 font-mono text-xs'>{formatPercentage(value)}</div>
                                 </div>
                             );
@@ -143,7 +143,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
 
 const FunnelArrow: React.FC = () => {
     return (
-        <div className='absolute -right-4 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground'>
+        <div className='bg-background text-muted-foreground absolute -right-4 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border'>
             <LucideIcon.ChevronRight className='ml-0.5' size={16} strokeWidth={1.5}/>
         </div>
     );
@@ -177,7 +177,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         }
     }, [navigate, postId, isPostLoading, showNewsletterSection]);
 
-    const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId || '');
+    const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks, feedbackStats} = usePostNewsletterStats(postId || '');
     const {editLinks} = useEditLinks();
 
     const mockUsers = [
@@ -394,7 +394,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     <KpiCard className='relative grow'>
                                         <FunnelArrow />
                                         <KpiCardLabel>
-                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-purple opacity-50'></div>
+                                            <div className='bg-chart-purple ml-0.5 size-[9px] rounded-full opacity-50'></div>
                                             {/* <LucideIcon.Send strokeWidth={1.5} /> */}
                                             Sent
                                         </KpiCardLabel>
@@ -405,7 +405,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     <KpiCard className='relative grow'>
                                         <FunnelArrow />
                                         <KpiCardLabel>
-                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-blue opacity-50'></div>
+                                            <div className='bg-chart-blue ml-0.5 size-[9px] rounded-full opacity-50'></div>
                                             {/* <LucideIcon.Eye strokeWidth={1.5} /> */}
                                             Opened
                                         </KpiCardLabel>
@@ -415,7 +415,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     </KpiCard>
                                     <KpiCard className='grow'>
                                         <KpiCardLabel>
-                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-teal opacity-50'></div>
+                                            <div className='bg-chart-teal ml-0.5 size-[9px] rounded-full opacity-50'></div>
                                             {/* <LucideIcon.MousePointer strokeWidth={1.5} /> */}
                                             Clicked
                                         </KpiCardLabel>
@@ -499,7 +499,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                                 style={{backgroundColor: color}}
                                                                             />
                                                                             {barChartConfig[name as keyof typeof barChartConfig]?.label || name}
-                                                                            <div className="ml-auto flex items-baseline gap-0.5 pl-2 font-mono font-medium tabular-nums text-foreground">
+                                                                            <div className="text-foreground ml-auto flex items-baseline gap-0.5 pl-2 font-mono font-medium tabular-nums">
                                                                                 {formatPercentage(value)}
                                                                             </div>
                                                                         </>
@@ -550,62 +550,69 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                 <CardDescription>What did your readers think?</CardDescription>
                             </CardHeader>
                             <CardContent className='pb-3'>
-                                <Tabs defaultValue="more-like-this" variant='underline'>
-                                    <TabsList className="flex w-full">
-                                        <TabsTrigger className='h-12 justify-start px-3' value="more-like-this">
-                                            <div className='flex items-center gap-1.5'>
-                                                <LucideIcon.ThumbsUp />
-                                                <span className='font-semibold tracking-tight'>89%</span>
-                                                <span className='text-sm font-medium'>More like this</span>
-                                            </div>
-                                        </TabsTrigger>
-                                        <TabsTrigger className='h-12 justify-start px-3' value="less-like-this">
-                                            <div className='flex items-center gap-1.5'>
-                                                <LucideIcon.ThumbsDown />
-                                                <span className='font-semibold tracking-tight'>11%</span>
-                                                <span className='text-sm font-medium'>Less like this</span>
-                                            </div>
-                                        </TabsTrigger>
-                                    </TabsList>
-                                    <TabsContent value="more-like-this">
-                                        <Table>
-                                            <TableBody>
-                                                {paginatedMockUsers?.map(user => (
-                                                    <TableRow key={`${user.initials}-${user.name}`} className='border-none'>
-                                                        <TableCell className='h-12 max-w-0 border-none'>
-                                                            <div className='flex items-center gap-2 font-medium'>
-                                                                <Avatar className='size-7'>
-                                                                    <AvatarFallback className={user.avatarClass}>{user.initials}</AvatarFallback>
-                                                                </Avatar>
-                                                                {user.name}
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell className='w-[120px] text-right text-muted-foreground'>{user.feedbackDate}</TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </TabsContent>
-                                    <TabsContent value="less-like-this">
-                                        <Table>
-                                            <TableBody>
-                                                {paginatedMockUsers?.map(user => (
-                                                    <TableRow key={`${user.initials}-${user.name}`} className='border-none'>
-                                                        <TableCell className='h-12 max-w-0 border-none'>
-                                                            <div className='flex items-center gap-2 font-medium'>
-                                                                <Avatar className='size-7'>
-                                                                    <AvatarFallback className={user.avatarClass}>{user.initials}</AvatarFallback>
-                                                                </Avatar>
-                                                                {user.name}
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell className='w-[120px] text-right text-muted-foreground'>{user.feedbackDate}</TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </TabsContent>
-                                </Tabs>
+                                {feedbackStats.totalFeedback ?
+                                    <Tabs defaultValue="more-like-this" variant='underline'>
+                                        <TabsList className="flex w-full">
+                                            <TabsTrigger className='h-12 justify-start px-3' value="more-like-this">
+                                                <div className='flex items-center gap-1.5'>
+                                                    <LucideIcon.ThumbsUp />
+                                                    <span className='font-semibold tracking-tight'>{formatPercentage(feedbackStats.positiveFeedback / feedbackStats.totalFeedback)}</span>
+                                                    <span className='text-sm font-medium'>More like this</span>
+                                                </div>
+                                            </TabsTrigger>
+                                            <TabsTrigger className='h-12 justify-start px-3' value="less-like-this">
+                                                <div className='flex items-center gap-1.5'>
+                                                    <LucideIcon.ThumbsDown />
+                                                    <span className='font-semibold tracking-tight'>{formatPercentage(feedbackStats.negativeFeedback / feedbackStats.totalFeedback)}</span>
+                                                    <span className='text-sm font-medium'>Less like this</span>
+                                                </div>
+                                            </TabsTrigger>
+                                        </TabsList>
+                                        <TabsContent value="more-like-this">
+                                            <Table>
+                                                <TableBody>
+                                                    {paginatedMockUsers?.map(user => (
+                                                        <TableRow key={`${user.initials}-${user.name}`} className='border-none'>
+                                                            <TableCell className='h-12 max-w-0 border-none'>
+                                                                <div className='flex items-center gap-2 font-medium'>
+                                                                    <Avatar className='size-7'>
+                                                                        <AvatarFallback className={user.avatarClass}>{user.initials}</AvatarFallback>
+                                                                    </Avatar>
+                                                                    {user.name}
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell className='text-muted-foreground w-[120px] text-right'>{user.feedbackDate}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </TabsContent>
+                                        <TabsContent value="less-like-this">
+                                            <Table>
+                                                <TableBody>
+                                                    {paginatedMockUsers?.map(user => (
+                                                        <TableRow key={`${user.initials}-${user.name}`} className='border-none'>
+                                                            <TableCell className='h-12 max-w-0 border-none'>
+                                                                <div className='flex items-center gap-2 font-medium'>
+                                                                    <Avatar className='size-7'>
+                                                                        <AvatarFallback className={user.avatarClass}>{user.initials}</AvatarFallback>
+                                                                    </Avatar>
+                                                                    {user.name}
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell className='text-muted-foreground w-[120px] text-right'>{user.feedbackDate}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </TabsContent>
+                                    </Tabs>
+                                    :
+                                    <div className='flex-col items-center text-center'>
+                                        <h4>No members have given feedback yet</h4>
+                                        <p>When someone does, you&apos;ll see their response here.</p>
+                                    </div>
+                                }
                             </CardContent>
                             <CardFooter>
                                 <div className='flex w-full items-center justify-between gap-3'>
@@ -641,7 +648,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     <>
                                         <Table>
                                             <TableHeader>
-                                                <TableRow className='border-b border-t-0 !border-border'>
+                                                <TableRow className='!border-border border-b border-t-0'>
                                                     <TableHead className='h-12 w-full'>Link</TableHead>
                                                     <TableHead className='h-12 w-[0%] text-nowrap text-right'>No. of members</TableHead>
                                                 </TableRow>
@@ -661,7 +668,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                         <div ref={containerRef} className='flex w-full items-center gap-2'>
                                                                             <Input
                                                                                 ref={inputRef}
-                                                                                className="h-7 w-full border-border bg-background text-sm"
+                                                                                className="border-border bg-background h-7 w-full text-sm"
                                                                                 value={editedUrl}
                                                                                 onChange={e => setEditedUrl(e.target.value)}
                                                                             />
@@ -675,7 +682,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                     ) : (
                                                                         <>
                                                                             <Button
-                                                                                className='shrink-0 bg-background'
+                                                                                className='bg-background shrink-0'
                                                                                 size='sm'
                                                                                 variant='outline'
                                                                                 onClick={() => handleEdit(linkId)}
@@ -714,7 +721,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             {topLinks.length > 1 &&
                                 <CardFooter>
                                     <div className='flex w-full items-start justify-between gap-3'>
-                                        <div className='mt-1 flex items-start gap-2 pl-4 text-green'>
+                                        <div className='text-green mt-1 flex items-start gap-2 pl-4'>
                                             <LucideIcon.ArrowUp size={20} strokeWidth={1.5} />
                                             Sent a broken link? You can update it!
                                         </div>
