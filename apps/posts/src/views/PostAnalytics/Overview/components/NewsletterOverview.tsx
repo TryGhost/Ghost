@@ -207,7 +207,7 @@ const NewsletterOverview:React.FC = () => {
                                     <TableHead className='w-full' colSpan={2}>
                                         <div className='flex items-center justify-between gap-6'>
                                             <span>Link</span>
-                                            <span>No. of members clicked</span>
+                                            <span>No. of members</span>
                                         </div>
                                     </TableHead>
                                 </TableRow>
