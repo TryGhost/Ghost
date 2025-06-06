@@ -2535,12 +2535,12 @@ table.btn-accent a {
     }
 
     {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
-    table.header-container {
+    table.header {
         width: 100% !important;
         min-width: 100% !important;
     }
 
-    table.body .header-content {
+    table.header .header-content {
         padding: 0 10px !important;
     }
     {{/hasFeature}}
@@ -2568,9 +2568,15 @@ table.btn-accent a {
         font-size: 16px;
     }
 
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    table.header .post-excerpt {
+        font-size: 16px !important;
+    }
+    {{else}}
     table.body .post-excerpt {
         font-size: 16px !important;
     }
+    {{/hasFeature}}
 
     table.body .kg-callout-card {
         padding: 16px 24px !important;
@@ -2597,7 +2603,7 @@ table.btn-accent a {
 
     {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     table.body .main,
-    table.body .header-content {
+    table.header .header-container {
         border-spacing: 10px 0 !important;
         border-left-width: 0 !important;
         border-radius: 0 !important;
@@ -2629,7 +2635,85 @@ table.btn-accent a {
         width: auto !important;
     }
 
-    table.body .site-icon {
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    table.header .site-icon {
+        padding-top: 0 !important;
+    }
+
+    table.header .site-info {
+        padding-top: 24px !important;
+    }
+
+    table.header .post-title-link {
+        margin-top: 24px !important;
+    }
+
+    table.header .post-meta-wrapper {
+        padding-bottom: 24px !important;
+    }
+
+    table.header .site-icon img {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    table.header .site-url a {
+        font-size: 13px !important;
+        padding-bottom: 16px !important;
+    }
+
+    table.header .post-meta,
+    table.header .post-meta-date {
+        white-space: normal !important;
+        font-size: 13px !important;
+        line-height: 1.2em;
+    }
+
+    table.header .post-meta,
+    table.header .view-online {
+        width: 100% !important;
+    }
+
+    table.header .post-meta-left,
+    table.header .post-meta-left.view-online {
+        width: 100% !important;
+        text-align: left !important;
+    }
+
+    table.header .post-meta.view-online-mobile {
+        display: table-row !important;
+    }
+
+    table.header .post-meta-left.view-online-mobile,
+    table.header .post-meta-left.view-online-mobile .view-online {
+        text-align: left !important;
+    }
+
+    table.header .post-meta.view-online.desktop {
+        display: none !important;
+    }
+
+    table.header .view-online {
+        text-decoration: underline;
+    }
+
+    table.body .footer p, 
+    table.body .footer p span {
+        font-size: 13px !important;
+    }
+
+    table.header .view-online-link,
+    table.body .footer,
+    table.body .footer a {
+        font-size: 13px !important;
+    }
+
+    table.header .post-title a {
+        font-size: 26px !important;
+        line-height: 1.1em !important;
+    }
+    {{else}}
+        table.body .site-icon {
         padding-top: 0 !important;
     }
 
@@ -2705,6 +2789,7 @@ table.btn-accent a {
         font-size: 26px !important;
         line-height: 1.1em !important;
     }
+    {{/hasFeature}}
 
     table.feedback-buttons {
         display: table !important;
@@ -2728,7 +2813,8 @@ table.btn-accent a {
         padding-right: 8px !important;
     }
 
-    table.body .latest-post h4, table.body .latest-post h4 span {
+    table.body .latest-post h4, 
+    table.body .latest-post h4 span {
         padding: 4px 0 6px !important;
         font-size: 15px !important;
     }
