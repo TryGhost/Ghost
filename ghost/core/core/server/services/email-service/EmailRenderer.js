@@ -876,7 +876,11 @@ class EmailRenderer {
         this.#handlebars.registerPartial('latestPosts', latestPostsPartial);
 
         // Actual template
-        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template.hbs`), 'utf8');
+        let templateName = 'template.hbs';
+        if (labs.isSet('emailCustomizationAlpha')) {
+            templateName = 'template-emailCustomization.hbs';
+        }
+        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', templateName), 'utf8');
         this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
 
         return this.#renderTemplate(data);
@@ -1097,7 +1101,6 @@ class EmailRenderer {
     }
 
     #getHeaderBackgroundColor(newsletter, accentColor) {
-        console.log('newsletter', newsletter.toJSON());
         const value = newsletter.get('header_background_color');
         if (value === 'transparent') {
             return null;
@@ -1287,6 +1290,16 @@ class EmailRenderer {
                 showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag,
                 showSubscriptionDetails: newsletter.get('show_subscription_details')
             },
+            
+            hasHeaderContent: !!(
+                headerImage || 
+                (newsletter.get('show_header_icon') && this.#settingsCache.get('icon')) || 
+                newsletter.get('show_header_title') || 
+                newsletter.get('show_header_name') || 
+                newsletter.get('show_post_title_section') || 
+                (newsletter.get('show_feature_image') && !!postFeatureImage)
+            ),
+            
             latestPosts,
             latestPostsHasImages,
 
