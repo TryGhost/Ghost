@@ -54,14 +54,17 @@ const backup = async function backup(options = {}) {
     logging.info('Creating database backup');
 
     const filename = await exporter.fileName(options);
+    logging.info(`[Deleting staff user] Filename: ${filename}`);
     const data = await exporter.doExport(options);
+    logging.info(`[Deleting staff user] Data: ${JSON.stringify(data)}`);
 
     const filePath = await writeExportFile({
         data,
         filename
     });
+    logging.info(`[Deleting staff user] File path: ${filePath}`);
 
-    logging.info(`Database backup written to ${filePath}`);
+    logging.info(`[Deleting staff user] Database backup written to ${filePath}`);
     return filePath;
 };
 
