@@ -366,7 +366,8 @@ class EmailRenderer {
             renderOptions.design = {
                 ...renderOptions.design,
                 ...betaDesignOptions,
-                backgroundColor: newsletter?.get('background_color')
+                backgroundColor: newsletter?.get('background_color'),
+                headerBackgroundColor: this.#getHeaderBackgroundColor(newsletter, accentColor)
             };
         }
 
@@ -1093,6 +1094,20 @@ class EmailRenderer {
         return textColorForBackgroundColor(buttonColor).hex();
     }
 
+    #getHeaderBackgroundColor(newsletter, accentColor) {
+        console.log('newsletter', newsletter.toJSON());
+        const value = newsletter.get('header_background_color');
+        if (value === 'transparent') {
+            return null;
+        }
+
+        if (value === 'accent') {
+            return accentColor;
+        }
+
+        return value;
+    }
+
     /**
      * @private
      */
@@ -1128,6 +1143,7 @@ class EmailRenderer {
         const dividerColor = this.#getDividerColor(newsletter);
         const buttonColor = this.#getButtonColor(newsletter, adjustedAccentColor);
         const buttonTextColor = this.#getButtonTextColor(newsletter, adjustedAccentColor);
+        const headerBackgroundColor = this.#getHeaderBackgroundColor(newsletter, accentColor);
 
         let buttonBorderRadius = '6px';
         if (hasAnyEmailCustomization) {
@@ -1292,6 +1308,7 @@ class EmailRenderer {
             dividerColor,
             buttonColor,
             buttonTextColor,
+            headerBackgroundColor,
 
             // TODO: consider moving these to newsletter property
             showHeaderTitle: newsletter.get('show_header_title'),

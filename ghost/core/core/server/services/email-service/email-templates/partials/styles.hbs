@@ -2229,7 +2229,9 @@ img.kg-cta-image {
 .header-bg {
     padding: 0;
     /* Background color for the header */
-    background-color: #fbf0df;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    background-color: {{headerBackgroundColor}};
+    {{/hasFeature}}
 }
 
 .header-container {
