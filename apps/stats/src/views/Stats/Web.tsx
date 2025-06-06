@@ -14,14 +14,6 @@ import {useQuery} from '@tinybirdco/charts';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
 // Define types for our page data
-interface TopContentData {
-    pathname: string;
-    visits: number;
-    title?: string;
-    post_uuid?: string;
-    post_id?: string;
-    percentage?: number;
-}
 
 // Unified data structure for content
 interface UnifiedContentData {
@@ -231,38 +223,53 @@ const TopContentTable: React.FC<TopContentTableProps> = ({data, contentType}) =>
 };
 
 interface TopContentCardProps {
-    data: TopContentData[] | null;
     range: number;
 }
 
-const TopContentCard: React.FC<TopContentCardProps> = ({data, range}) => {
+const TopContentCard: React.FC<TopContentCardProps> = ({range}) => {
+    const {audience} = useGlobalData();
+    const {startDate, endDate, timezone} = getRangeDates(range);
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS);
 
-    // Transform and filter data based on selected content type
+    // Prepare query parameters based on selected content type
+    const queryParams = useMemo(() => {
+        const params: Record<string, string> = {
+            date_from: formatQueryDate(startDate),
+            date_to: formatQueryDate(endDate),
+            member_status: getAudienceQueryParam(audience)
+        };
+
+        if (timezone) {
+            params.timezone = timezone;
+        }
+
+        // Add post_type filter based on selected content type
+        if (selectedContentType === CONTENT_TYPES.POSTS) {
+            params.post_type = 'post';
+        } else if (selectedContentType === CONTENT_TYPES.PAGES) {
+            params.post_type = 'page';
+        }
+        // For POSTS_AND_PAGES, don't add post_type filter to get both
+
+        return params;
+    }, [startDate, endDate, timezone, audience, selectedContentType]);
+
+    // Get filtered content data
+    const {data: topContentData, isLoading: topContentLoading} = useTopContent({
+        searchParams: queryParams
+    });
+
+    // Transform data for display
     const transformedData = useMemo((): UnifiedContentData[] | null => {
+        const data = topContentData?.stats || null;
         if (!data) {
             return null;
         }
         
-        // Filter content data based on type
-        let filteredData: TopContentData[];
-        switch (selectedContentType) {
-        case CONTENT_TYPES.POSTS:
-            filteredData = data.filter(item => item.post_uuid && item.post_uuid.trim() !== '');
-            break;
-        case CONTENT_TYPES.PAGES:
-            filteredData = data.filter(item => !item.post_uuid || item.post_uuid.trim() === '');
-            break;
-        case CONTENT_TYPES.POSTS_AND_PAGES:
-        default:
-            filteredData = data;
-            break;
-        }
-        
         // Calculate total visits for the filtered dataset
-        const filteredTotalVisits = filteredData.reduce((sum, item) => sum + Number(item.visits), 0);
+        const filteredTotalVisits = data.reduce((sum, item) => sum + Number(item.visits), 0);
         
-        return filteredData.map(item => ({
+        return data.map(item => ({
             pathname: item.pathname,
             title: item.title || item.pathname,
             visits: item.visits,
@@ -270,7 +277,7 @@ const TopContentCard: React.FC<TopContentCardProps> = ({data, range}) => {
             post_uuid: item.post_uuid,
             post_id: item.post_id
         }));
-    }, [data, selectedContentType]);
+    }, [topContentData]);
 
     const topContent = transformedData?.slice(0, 10) || [];
 
@@ -278,6 +285,32 @@ const TopContentCard: React.FC<TopContentCardProps> = ({data, range}) => {
         const option = CONTENT_TYPE_OPTIONS.find(opt => opt.value === selectedContentType);
         return option ? option.label : 'Posts & pages';
     };
+
+    const getContentTitle = () => {
+        switch (selectedContentType) {
+        case CONTENT_TYPES.POSTS:
+            return 'Top performing posts';
+        case CONTENT_TYPES.PAGES:
+            return 'Top performing pages';
+        default:
+            return 'Top performing posts';
+        }
+    };
+
+    if (topContentLoading) {
+        return (
+            <Card className='group/datalist'>
+                <CardHeader>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle>{getContentTitle()}</CardTitle>
+                            <CardDescription>Loading...</CardDescription>
+                        </div>
+                    </div>
+                </CardHeader>
+            </Card>
+        );
+    }
 
     const getContentDescription = () => {
         switch (selectedContentType) {
@@ -295,7 +328,7 @@ const TopContentCard: React.FC<TopContentCardProps> = ({data, range}) => {
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <div>
-                        <CardTitle>Top performing posts</CardTitle>
+                        <CardTitle>{getContentTitle()}</CardTitle>
                         <CardDescription>{getContentDescription()}</CardDescription>
                     </div>
                     <DropdownMenu>
@@ -386,11 +419,6 @@ const Web: React.FC = () => {
         params
     });
 
-    // Get top content data
-    const {data: topContentData, isLoading: topContentLoading} = useTopContent({
-        searchParams: queryParams
-    });
-
     // Get top sources data
     const {data: sourcesData, loading: sourcesLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
@@ -401,8 +429,8 @@ const Web: React.FC = () => {
     // Get total visitors for table
     const totalVisitors = kpiData?.length ? kpiData.reduce((sum, item) => sum + Number(item.visits), 0) : 0;
 
-    // Calculate combined loading state
-    const isLoading = isConfigLoading || kpiLoading || topContentLoading || sourcesLoading;
+    // Calculate combined loading state  
+    const isLoading = isConfigLoading || kpiLoading || sourcesLoading;
 
     return (
         <StatsLayout>
@@ -418,7 +446,6 @@ const Web: React.FC = () => {
                 </Card>
                 <div className='grid grid-cols-2 gap-8'>
                     <TopContentCard 
-                        data={topContentData?.stats || null} 
                         range={range} 
                     />
                     <SourcesCard 

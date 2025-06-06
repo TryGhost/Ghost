@@ -145,7 +145,8 @@ const controller = {
             'limit',
             'date_from',
             'date_to',
-            'timezone'
+            'timezone',
+            'post_type'
         ],
         permissions: {
             docName: 'posts',
@@ -160,7 +161,8 @@ const controller = {
                     limit: frame.options.limit,
                     date_from: frame.options.date_from,
                     date_to: frame.options.date_to,
-                    timezone: frame.options.timezone
+                    timezone: frame.options.timezone,
+                    post_type: frame.options.post_type
                 }
             };
         },

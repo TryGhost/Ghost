@@ -4,12 +4,39 @@ import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, KpiTabTrigger, KpiTabValue, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, centsToDollars, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, centsToDollars, formatNumber} from '@tryghost/shade';
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
+
+// Define content types
+const CONTENT_TYPES = {
+    POSTS: 'posts',
+    PAGES: 'pages', 
+    POSTS_AND_PAGES: 'posts_and_pages'
+} as const;
+
+type ContentType = typeof CONTENT_TYPES[keyof typeof CONTENT_TYPES];
+
+const CONTENT_TYPE_OPTIONS: Array<{value: ContentType; label: string}> = [
+    {value: CONTENT_TYPES.POSTS, label: 'Posts'},
+    {value: CONTENT_TYPES.PAGES, label: 'Pages'},
+    {value: CONTENT_TYPES.POSTS_AND_PAGES, label: 'Posts & pages'}
+];
+
+// Type for unified content data that combines top content with growth metrics
+interface UnifiedGrowthContentData {
+    pathname?: string;
+    title: string;
+    post_id?: string;
+    post_uuid?: string;
+    free_members: number;
+    paid_members: number;
+    mrr: number;
+    percentage?: number;
+}
 
 type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
 
@@ -204,14 +231,75 @@ const GrowthKPIs: React.FC<{
 const Growth: React.FC = () => {
     const {range} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopPostsOrder>('free_members desc');
+    const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS);
     const navigate = useNavigate();
 
     // Get stats from custom hook once
     const {isLoading, chartData, totals} = useGrowthStats(range);
 
-    const {data: topPostsData} = useTopPostsStatsWithRange(range, sortBy);
+    // Get growth data with post_type filtering
+    const {data: topPostsData} = useTopPostsStatsWithRange(range, sortBy, selectedContentType as 'posts' | 'pages' | 'posts_and_pages');
 
-    const topPosts = topPostsData?.stats || [];
+    // Transform data for display
+    const transformedTopPosts = useMemo((): UnifiedGrowthContentData[] => {
+        const growthData = topPostsData?.stats || [];
+        const filteredData = growthData;
+
+        // Calculate total metrics for the filtered dataset for percentage calculation
+        const totalFreeMembers = filteredData.reduce((sum, item) => sum + item.free_members, 0);
+        const totalPaidMembers = filteredData.reduce((sum, item) => sum + item.paid_members, 0);
+        const totalMrr = filteredData.reduce((sum, item) => sum + item.mrr, 0);
+
+        // Add percentage based on current sort
+        return filteredData.map((item) => {
+            let percentage = 0;
+            if (sortBy.includes('free_members') && totalFreeMembers > 0) {
+                percentage = item.free_members / totalFreeMembers;
+            } else if (sortBy.includes('paid_members') && totalPaidMembers > 0) {
+                percentage = item.paid_members / totalPaidMembers;
+            } else if (sortBy.includes('mrr') && totalMrr > 0) {
+                percentage = item.mrr / totalMrr;
+            }
+            
+            return {
+                title: item.title,
+                post_id: item.post_id,
+                free_members: item.free_members,
+                paid_members: item.paid_members,
+                mrr: item.mrr,
+                percentage
+            };
+        });
+    }, [topPostsData, sortBy, selectedContentType]);
+
+    const getContentTypeLabel = () => {
+        const option = CONTENT_TYPE_OPTIONS.find(opt => opt.value === selectedContentType);
+        return option ? option.label : 'Posts & pages';
+    };
+
+    const getContentTitle = () => {
+        switch (selectedContentType) {
+        case CONTENT_TYPES.POSTS:
+            return 'Top performing posts';
+        case CONTENT_TYPES.PAGES:
+            return 'Top performing pages';
+        default:
+            return 'Top performing posts & pages';
+        }
+    };
+
+    const getContentDescription = () => {
+        switch (selectedContentType) {
+        case CONTENT_TYPES.POSTS:
+            return `Which posts drove the most growth ${getPeriodText(range)}`;
+        case CONTENT_TYPES.PAGES:
+            return `Which pages drove the most growth ${getPeriodText(range)}`;
+        case CONTENT_TYPES.POSTS_AND_PAGES:
+            return `Which posts or pages drove the most growth ${getPeriodText(range)}`;
+        default:
+            return `Which posts drove the most growth ${getPeriodText(range)}`;
+        }
+    };
 
     return (
         <StatsLayout>
@@ -226,8 +314,30 @@ const Growth: React.FC = () => {
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Top performing posts</CardTitle>
-                        <CardDescription>Which posts drove the most growth {getPeriodText(range)}</CardDescription>
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <CardTitle>{getContentTitle()}</CardTitle>
+                                <CardDescription>{getContentDescription()}</CardDescription>
+                            </div>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button className="gap-1 text-sm" size="sm" variant="outline">
+                                        {getContentTypeLabel()}
+                                        <LucideIcon.ChevronDown className="size-3" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    {CONTENT_TYPE_OPTIONS.map(option => (
+                                        <DropdownMenuItem 
+                                            key={option.value}
+                                            onClick={() => setSelectedContentType(option.value)}
+                                        >
+                                            {option.label}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <Separator/>
@@ -255,7 +365,7 @@ const Growth: React.FC = () => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {topPosts.map(post => (
+                                {transformedTopPosts.map(post => (
                                     <TableRow key={post.post_id}>
                                         <TableCell className="font-medium">
                                             <div className='group/link inline-flex items-center gap-2'>
@@ -283,7 +393,7 @@ const Growth: React.FC = () => {
                                         </TableCell>
                                         <TableCell className='text-right font-mono text-sm'>
                                             {/* TODO: Update to use actual currency */}
-                                            {(post.mrr > 0 && '+')}${(post.mrr / 100).toFixed(0)}
+                                            {(post.mrr > 0 && '+')}{centsToDollars(post.mrr).toFixed(0)}
                                         </TableCell>
                                     </TableRow>
                                 ))}
