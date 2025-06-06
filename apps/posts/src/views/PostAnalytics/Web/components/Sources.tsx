@@ -26,7 +26,9 @@ const Sources: React.FC<SourcesProps> = ({queryParams}) => {
 
     // Calculate total visits for percentage calculation
     const totalVisits = React.useMemo(() => {
-        if (!data) return 0;
+        if (!data) {
+            return 0;
+        }
         return data.reduce((sum, source) => sum + Number(source.visits || 0), 0);
     }, [data]);
 
