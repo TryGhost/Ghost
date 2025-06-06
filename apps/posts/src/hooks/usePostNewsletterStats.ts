@@ -1,5 +1,6 @@
 import {type CleanedLink, cleanTrackedUrl} from '@src/utils/link-helpers';
 import {type Post, getPost} from '@tryghost/admin-x-framework/api/posts';
+import {useFeedbackMembers} from '@tryghost/admin-x-framework/api/memberEvents';
 import {useMemo} from 'react';
 import {useNewsletterStatsByNewsletterId} from '@tryghost/admin-x-framework/api/stats';
 import {useTopLinks} from '@tryghost/admin-x-framework/api/links';
@@ -76,12 +77,60 @@ export const usePostNewsletterStats = (postId: string) => {
         }
     });
 
+    // Get feedback events for this post (similar to Ember post-activity-feed)
+    const {data: feedbackResponse, isLoading: isFeedbackLoading, refetch: refetchFeedback} = useFeedbackMembers({
+        searchParams: {
+            filter: `type:feedback_event+data.post_id:'${postId}'`,
+            limit: '100' // Get more events to have a good sample of members
+        }
+    });
+
     const links = useMemo(() => {
         return clicksResponse?.links.map(link => ({
             link: link.link,
             count: link.count?.clicks || 0
         })) || [];
     }, [clicksResponse]);
+
+    // Process feedback events to separate positive and negative feedback members
+    const feedbackMembers = useMemo(() => {
+        if (!feedbackResponse?.events) {
+            return {
+                positive: [],
+                negative: [],
+                all: []
+            };
+        }
+
+        const positiveMembers = feedbackResponse.events
+            .filter(event => event.data.score === 1)
+            .map(event => ({
+                ...event.data.member,
+                feedbackId: event.data.id,
+                timestamp: event.data.created_at,
+                score: event.data.score
+            }));
+
+        const negativeMembers = feedbackResponse.events
+            .filter(event => event.data.score === 0)
+            .map(event => ({
+                ...event.data.member,
+                feedbackId: event.data.id,
+                timestamp: event.data.created_at,
+                score: event.data.score
+            }));
+
+        return {
+            positive: positiveMembers,
+            negative: negativeMembers,
+            all: feedbackResponse.events.map(event => ({
+                ...event.data.member,
+                feedbackId: event.data.id,
+                timestamp: event.data.created_at,
+                score: event.data.score
+            }))
+        };
+    }, [feedbackResponse]);
 
     // Calculate average open and click rates across newsletters
     const averages = useMemo(() => {
@@ -152,9 +201,11 @@ export const usePostNewsletterStats = (postId: string) => {
         post,
         stats,
         feedbackStats,
+        feedbackMembers,
         averageStats,
         topLinks,
         refetchTopLinks,
-        isLoading: isPostLoading || isNewsletterStatsLoading || isClicksLoading
+        refetchFeedback,
+        isLoading: isPostLoading || isNewsletterStatsLoading || isClicksLoading || isFeedbackLoading
     };
 };

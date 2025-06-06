@@ -154,6 +154,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const navigate = useNavigate();
     const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
     const [editedUrl, setEditedUrl] = useState('');
+    const [activeFeedbackTab, setActiveFeedbackTab] = useState('more-like-this');
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const ITEMS_PER_PAGE = 5;
@@ -177,47 +178,66 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         }
     }, [navigate, postId, isPostLoading, showNewsletterSection]);
 
-    const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks, feedbackStats} = usePostNewsletterStats(postId || '');
+    const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks, feedbackStats, feedbackMembers} = usePostNewsletterStats(postId || '');
     const {editLinks} = useEditLinks();
 
-    const mockUsers = [
-        {
-            initials: 'LC',
-            name: 'Lincoln Calzoni',
-            feedbackDate: '3 minutes ago',
-            avatarClass: 'bg-orange text-white'
-        },
-        {
-            initials: 'LG',
-            name: 'Leo George',
-            feedbackDate: '5 minutes ago',
-            avatarClass: 'bg-pink text-white'
-        },
-        {
-            initials: 'LD',
-            name: 'Livia Dorwart',
-            feedbackDate: '1 hour ago',
-            avatarClass: 'bg-blue text-white'
-        },
-        {
-            initials: 'MC',
-            name: 'Miracle Curtis',
-            feedbackDate: 'Yesterday',
-            avatarClass: 'bg-green text-white'
-        },
-        {
-            initials: 'HD',
-            name: 'Hanna Dias',
-            feedbackDate: '12 May',
-            avatarClass: 'bg-purple text-white'
-        },
-        {
-            initials: 'AN',
-            name: 'Abel Nagg',
-            feedbackDate: '2 Dec 2024',
-            avatarClass: 'bg-gray-800 text-white'
+    // Helper function to format member names with fallback to email
+    const formatMemberName = (member: {name?: string; email?: string}) => {
+        return member.name || member.email || 'Unknown Member';
+    };
+
+    // Helper function to get member initials
+    const getMemberInitials = (member: {name?: string; email?: string}) => {
+        const name = formatMemberName(member);
+        const words = name.split(' ');
+        if (words.length >= 2) {
+            return (words[0][0] + words[1][0]).toUpperCase();
         }
-    ];
+        return name.substring(0, 2).toUpperCase();
+    };
+
+    // Helper function to format timestamp
+    const formatTimestamp = (timestamp: string) => {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffMins = Math.floor(diffMs / (1000 * 60));
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+        if (diffMins < 60) {
+            return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+        } else if (diffHours < 24) {
+            return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+        } else if (diffDays === 1) {
+            return 'Yesterday';
+        } else if (diffDays < 30) {
+            return `${diffDays} days ago`;
+        } else {
+            return date.toLocaleDateString('en-US', {
+                day: 'numeric',
+                month: 'short',
+                year: diffDays > 365 ? 'numeric' : undefined
+            });
+        }
+    };
+
+    // Generate avatar background colors consistently
+    const getAvatarClass = (memberId: string) => {
+        const colors = [
+            'bg-orange-500 text-white',
+            'bg-pink-500 text-white',
+            'bg-blue-500 text-white',
+            'bg-green-500 text-white',
+            'bg-purple-500 text-white',
+            'bg-gray-800 text-white'
+        ];
+        const hash = memberId.split('').reduce((a, b) => {
+            a = ((a << 5) - a) + b.charCodeAt(0);
+            return a & a;
+        }, 0);
+        return colors[Math.abs(hash) % colors.length];
+    };
 
     // Pagination for topLinks
     const {
@@ -232,16 +252,29 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         itemsPerPage: ITEMS_PER_PAGE
     });
 
-    // Pagination for mockUsers (Feedback section)
+    // Pagination for positive feedback members
     const {
-        totalPages: feedbackTotalPages,
-        paginatedData: paginatedMockUsers,
-        nextPage: feedbackNextPage,
-        previousPage: feedbackPreviousPage,
-        hasNextPage: feedbackHasNextPage,
-        hasPreviousPage: feedbackHasPreviousPage
+        totalPages: positiveFeedbackTotalPages,
+        paginatedData: paginatedPositiveFeedback,
+        nextPage: positiveFeedbackNextPage,
+        previousPage: positiveFeedbackPreviousPage,
+        hasNextPage: positiveFeedbackHasNextPage,
+        hasPreviousPage: positiveFeedbackHasPreviousPage
     } = useSimplePagination({
-        data: mockUsers,
+        data: feedbackMembers.positive,
+        itemsPerPage: ITEMS_PER_PAGE
+    });
+
+    // Pagination for negative feedback members
+    const {
+        totalPages: negativeFeedbackTotalPages,
+        paginatedData: paginatedNegativeFeedback,
+        nextPage: negativeFeedbackNextPage,
+        previousPage: negativeFeedbackPreviousPage,
+        hasNextPage: negativeFeedbackHasNextPage,
+        hasPreviousPage: negativeFeedbackHasPreviousPage
+    } = useSimplePagination({
+        data: feedbackMembers.negative,
         itemsPerPage: ITEMS_PER_PAGE
     });
 
@@ -551,7 +584,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             </CardHeader>
                             {feedbackStats.totalFeedback > 0 ?
                                 <CardContent className='pb-3'>
-                                    <Tabs defaultValue="more-like-this" variant='underline'>
+                                    <Tabs defaultValue="more-like-this" value={activeFeedbackTab} variant='underline' onValueChange={setActiveFeedbackTab}>
                                         <TabsList className="flex w-full">
                                             <TabsTrigger className='h-12 justify-start px-3' value="more-like-this">
                                                 <div className='flex items-center gap-1.5'>
@@ -571,17 +604,19 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         <TabsContent value="more-like-this">
                                             <Table>
                                                 <TableBody>
-                                                    {paginatedMockUsers?.map(user => (
-                                                        <TableRow key={`${user.initials}-${user.name}`} className='border-none'>
+                                                    {paginatedPositiveFeedback?.map(member => (
+                                                        <TableRow key={`${member.id}`} className='border-none hover:cursor-pointer' onClick={() => {
+                                                            navigate(`/members/${member.id}`, {crossApp: true});
+                                                        }}>
                                                             <TableCell className='h-12 max-w-0 border-none'>
                                                                 <div className='flex items-center gap-2 font-medium'>
                                                                     <Avatar className='size-7'>
-                                                                        <AvatarFallback className={user.avatarClass}>{user.initials}</AvatarFallback>
+                                                                        <AvatarFallback className={getAvatarClass(member.email || '')}>{getMemberInitials(member)}</AvatarFallback>
                                                                     </Avatar>
-                                                                    {user.name}
+                                                                    {formatMemberName(member)}
                                                                 </div>
                                                             </TableCell>
-                                                            <TableCell className='text-muted-foreground w-[120px] text-right'>{user.feedbackDate}</TableCell>
+                                                            <TableCell className='text-muted-foreground w-[120px] text-right'>{formatTimestamp(member.timestamp)}</TableCell>
                                                         </TableRow>
                                                     ))}
                                                 </TableBody>
@@ -590,17 +625,19 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         <TabsContent value="less-like-this">
                                             <Table>
                                                 <TableBody>
-                                                    {paginatedMockUsers?.map(user => (
-                                                        <TableRow key={`${user.initials}-${user.name}`} className='border-none'>
+                                                    {paginatedNegativeFeedback?.map(member => (
+                                                        <TableRow key={`${member.id}`} className='border-none hover:cursor-pointer' onClick={() => {
+                                                            navigate(`/members/${member.id}`, {crossApp: true});
+                                                        }}>
                                                             <TableCell className='h-12 max-w-0 border-none'>
                                                                 <div className='flex items-center gap-2 font-medium'>
                                                                     <Avatar className='size-7'>
-                                                                        <AvatarFallback className={user.avatarClass}>{user.initials}</AvatarFallback>
+                                                                        <AvatarFallback className={getAvatarClass(member.email || '')}>{getMemberInitials(member)}</AvatarFallback>
                                                                     </Avatar>
-                                                                    {user.name}
+                                                                    {formatMemberName(member)}
                                                                 </div>
                                                             </TableCell>
-                                                            <TableCell className='text-muted-foreground w-[120px] text-right'>{user.feedbackDate}</TableCell>
+                                                            <TableCell className='text-muted-foreground w-[120px] text-right'>{formatTimestamp(member.timestamp)}</TableCell>
                                                         </TableRow>
                                                     ))}
                                                 </TableBody>
@@ -621,16 +658,25 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         View all
                                             <LucideIcon.TableOfContents />
                                         </Button>
-                                        {feedbackTotalPages > 1 &&
+                                        {((activeFeedbackTab === 'more-like-this' && positiveFeedbackTotalPages > 1) ||
+                                            (activeFeedbackTab === 'less-like-this' && negativeFeedbackTotalPages > 1)) &&
                                             <SimplePagination className='pb-0'>
                                                 <SimplePaginationNavigation>
                                                     <SimplePaginationPreviousButton
-                                                        disabled={!feedbackHasPreviousPage}
-                                                        onClick={feedbackPreviousPage}
+                                                        disabled={activeFeedbackTab === 'more-like-this'
+                                                            ? !positiveFeedbackHasPreviousPage
+                                                            : !negativeFeedbackHasPreviousPage}
+                                                        onClick={activeFeedbackTab === 'more-like-this'
+                                                            ? positiveFeedbackPreviousPage
+                                                            : negativeFeedbackPreviousPage}
                                                     />
                                                     <SimplePaginationNextButton
-                                                        disabled={!feedbackHasNextPage}
-                                                        onClick={feedbackNextPage}
+                                                        disabled={activeFeedbackTab === 'more-like-this'
+                                                            ? !positiveFeedbackHasNextPage
+                                                            : !negativeFeedbackHasNextPage}
+                                                        onClick={activeFeedbackTab === 'more-like-this'
+                                                            ? positiveFeedbackNextPage
+                                                            : negativeFeedbackNextPage}
                                                     />
                                                 </SimplePaginationNavigation>
                                             </SimplePagination>
