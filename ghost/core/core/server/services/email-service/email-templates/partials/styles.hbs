@@ -54,6 +54,12 @@ table td {
     width: 100%;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.body {
+    background-color: {{backgroundColor}} !important;
+}
+{{/hasFeature}}
+
 /* Set a max-width, and make it display as block so it will automatically stretch to that width, but will also shrink down on a phone or something */
 .container {
     display: block;
@@ -164,7 +170,11 @@ dt {
     float: left;
     margin: 0 20px 0 0;
     width: 120px;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    {{else}}
     color: #15212A;
+    {{/hasFeature}}
     font-weight: 500;
     text-align: right;
 }
@@ -189,7 +199,17 @@ blockquote.kg-blockquote-alt {
     text-align: center;
     font-size: 1.2em;
     font-style: italic;
-    color: #73818c;
+    {{#hasFeature "emailCustomizationAlpha"}}
+        {{#if backgroundIsDark}}
+            color: #8f9aa3
+            color: rgba(255, 255, 255, .6)
+        {{else}}
+            color: #73818c
+            color: rgba(0, 0, 0, .6)
+        {{/if}};
+    {{else}}
+        color: #73818c;
+    {{/hasFeature}}
 }
 
 blockquote p {
@@ -335,6 +355,48 @@ h6 + .kg-paywall .kg-paywall-hr td {
     {{/if}}
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+/* Apply custom content text color to main content elements */
+.post-content-row > td > p,
+.post-content-row .post-content > p,
+.post-content-row .post-content-sans-serif > p,
+.post-content-row > td > blockquote,
+.post-content-row .post-content > blockquote,
+.post-content-row .post-content-sans-serif > blockquote,
+.post-content-row > td > blockquote p,
+.post-content-row .post-content > blockquote p,
+.post-content-row .post-content-sans-serif > blockquote p,
+.post-content-row .kg-cta-bg-none .kg-cta-text p {
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+}
+
+/* Exclude paragraphs inside cards from custom text color (except CTA cards which are handled separately) */
+.post-content-row .kg-card:not(.kg-cta-card) p,
+.post-content-row .kg-toggle-content p,
+.post-content-row .kg-callout-text,
+.post-content-row .kg-product-description-wrapper p {
+    color: inherit !important;
+}
+
+/* Exclude CTA cards with colored backgrounds from custom text color, but allow transparent ones */
+.post-content-row .kg-cta-bg-white .kg-cta-text p,
+.post-content-row .kg-cta-bg-grey .kg-cta-text p,
+.post-content-row .kg-cta-bg-blue .kg-cta-text p,
+.post-content-row .kg-cta-bg-green .kg-cta-text p,
+.post-content-row .kg-cta-bg-yellow .kg-cta-text p,
+.post-content-row .kg-cta-bg-red .kg-cta-text p,
+.post-content-row .kg-cta-bg-pink .kg-cta-text p,
+.post-content-row .kg-cta-bg-purple .kg-cta-text p {
+    color: inherit !important;
+}
+{{/hasFeature}}
+
+{{#hasFeature "emailCustomizationAlpha"}}
+.kg-cta-bg-none .kg-cta-sponsor-label span {
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+}
+{{/hasFeature}}
+
 {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 /* Links in captions */
 .feature-image-caption a,
@@ -379,7 +441,17 @@ figcaption {
     padding-top: 10px;
     padding-bottom: 10px;
     line-height: 1.5em;
-    color: #73818c;
+    {{#hasFeature "emailCustomizationAlpha"}}
+        {{#if backgroundIsDark}}
+            color: #8f9aa3
+            color: rgba(255, 255, 255, .6)
+        {{else}}
+            color: #73818c
+            color: rgba(0, 0, 0, .6)
+        {{/if}};
+    {{else}}
+        color: #73818c;
+    {{/hasFeature}}
 }
 
 figcaption a {
@@ -435,6 +507,18 @@ figure blockquote p {
     padding-top: 32px;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+
+.site-url {
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    font-size: 16px;
+    letter-spacing: -0.1px;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+{{else}}
 .site-url {
     color: #15212A;
     font-size: 16px;
@@ -444,20 +528,43 @@ figure blockquote p {
     text-align: center;
 }
 
+{{/hasFeature}}
+
 .site-url-bottom-padding {
     padding-bottom: 12px;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.site-title {
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+}
+{{else}}
 .site-title {
     color: #15212A;
 }
+{{/hasFeature}}
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.site-subtitle {
+    {{#if backgroundIsDark}}
+        color: #8f9aa3;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #73818c
+        color: rgba(0, 0, 0, .6);
+    {{/if}};
+    font-size: 13px;
+    font-weight: 400;
+    text-transform: none;
+}
+{{else}}
 .site-subtitle {
     color: #73818c;
     font-size: 13px;
     font-weight: 400;
     text-transform: none;
 }
+{{/hasFeature}}
 
 .post-title {
     font-size: 36px;
@@ -537,6 +644,21 @@ figure blockquote p {
     text-align: left;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.post-meta,
+.view-online {
+    {{#if backgroundIsDark}}
+        color: #8f9aa3;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #73818c
+        color: rgba(0, 0, 0, .6);
+    {{/if}};
+    font-size: 13px;
+    font-weight: 400;
+    text-align: center;
+}
+{{else}}
 .post-meta,
 .view-online {
     color: #73818c;
@@ -544,6 +666,7 @@ figure blockquote p {
     font-weight: 400;
     text-align: center;
 }
+{{/hasFeature}}
 
 .post-meta-left {
     text-align: left;
@@ -570,12 +693,27 @@ figure blockquote p {
     white-space: nowrap;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.view-online-link {
+    word-wrap: none;
+    white-space: nowrap;
+    {{#if backgroundIsDark}}
+        color: #8f9aa3;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #73818c
+        color: rgba(0, 0, 0, .6);
+    {{/if}};
+    text-decoration: underline !important;
+}
+{{else}}
 .view-online-link {
     word-wrap: none;
     white-space: nowrap;
     color: #73818c;
     text-decoration: underline !important;
 }
+{{/hasFeature}}
 
 .feature-image {
     padding-bottom: 30px;
@@ -620,6 +758,12 @@ figure blockquote p {
     text-align: center;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.feedback-buttons-container {
+    background-color: {{backgroundColor}};
+}
+{{/hasFeature}}
+
 .feedback-buttons {
     /*width: auto !important;*/
     width: 100% !important;
@@ -632,6 +776,18 @@ figure blockquote p {
     vertical-align: middle;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.feedback-button-text {
+    display: inline-block;
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    font-size: 13px !important;
+    font-weight: 500;
+    margin: 1em 0 0 0;
+    line-height: 1.4em;
+    word-break: break-word;
+}
+{{else}}
 .feedback-button-text {
     display: inline-block;
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
@@ -642,6 +798,7 @@ figure blockquote p {
     line-height: 1.4em;
     word-break: break-word;
 }
+{{/hasFeature}}
 
 /* -------------------------------------
     LATEST POSTS TABLE
@@ -652,6 +809,17 @@ figure blockquote p {
     border-bottom: 1px solid {{dividerColor}};
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+h3.latest-posts-header {
+    margin: 0;
+    padding: 8px 0 8px;
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+{{else}}
 h3.latest-posts-header {
     margin: 0;
     padding: 8px 0 8px;
@@ -661,6 +829,7 @@ h3.latest-posts-header {
     font-weight: 600;
     text-transform: uppercase;
 }
+{{/hasFeature}}
 
 .latest-post {
     max-width: 600px !important;
@@ -727,6 +896,16 @@ h3.latest-posts-header {
     {{/if}}
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+/* Override latest post text colors with custom content color */
+.latest-post-excerpt,
+.latest-post-excerpt a,
+.latest-post p,
+.latest-post p a {
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}} !important;
+}
+{{/hasFeature}}
+
 /* -------------------------------------
     SUBSCRIPTION DETAILS BOX
 ------------------------------------- */
@@ -734,7 +913,11 @@ h3.latest-posts-header {
 .subscription-box {
     padding: 32px 0;
     border-bottom: 1px solid {{dividerColor}};
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    {{else}}
     color: #15212A;
+    {{/hasFeature}}
 }
 
 .subscription-box h3 {
@@ -745,6 +928,16 @@ h3.latest-posts-header {
     margin: 0 0 18px;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.subscription-box p {
+    margin-bottom: 0;
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.45em;
+    text-decoration: none;
+}
+{{else}}
 .subscription-box p {
     margin-bottom: 0;
     color: #15212A !important;
@@ -753,12 +946,17 @@ h3.latest-posts-header {
     line-height: 1.45em;
     text-decoration: none;
 }
+{{/hasFeature}}
+
 
 .subscription-box p a {
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{else}}
     color: #15212A !important;
+    {{/hasFeature}}
     text-decoration: none;
 }
-
 .manage-subscription {
     white-space: nowrap;
     font-size: 15px;
@@ -848,7 +1046,10 @@ td.kg-card-spacing {
 
 .kg-bookmark-card {
     width: 100%;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    {{else}}
     background: #ffffff;
+    {{/hasFeature}}
 }
 
 .kg-bookmark-card a {
@@ -881,6 +1082,9 @@ td.kg-card-spacing {
     text-decoration: none;
     border-radius: 3px;
     border: 1px solid #e0e7eb;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    background: #ffffff;
+    {{/hasFeature}}
 }
 
 .kg-bookmark-content {
@@ -1687,6 +1891,10 @@ img.kg-cta-image {
         border-radius: 0;
     {{/if}}
     border: 1px solid #e9e9e9;
+
+    {{#hasFeature "emailCustomizationAlpha"}}
+    background-color: #FFFFFF;
+    {{/hasFeature}}
 }
 
 .kg-product-card-container {
@@ -1829,6 +2037,7 @@ img.kg-cta-image {
     margin: 0 auto 1.5em;
     border-radius: 3px;
     border: 1px solid #e0e7eb;
+    background-color: #ffffff;
 }
 .kg-audio-title {
     display: block;
@@ -1855,7 +2064,7 @@ img.kg-cta-image {
     display: block;
     text-decoration: none !important;
     font-size: 13px;
-    color: #15171A !important;
+    color: #73818c !important;
 }
 .kg-audio-link {
     color: #73818c !important;
@@ -1866,6 +2075,7 @@ img.kg-cta-image {
     margin: 0 0 1.5em 0;
     border-radius: 3px;
     border: 1px solid #e0e7eb;
+    background-color: #ffffff;
 }
 .kg-file-title {
     display: block;
@@ -1897,7 +2107,7 @@ img.kg-cta-image {
     font-size: 13px;
     line-height: 1.4em;
     text-decoration: none !important;
-    color: #73818c !important;
+    color: #73818c;
 }
 .kg-file-name {
     font-weight: 500;
@@ -1924,6 +2134,9 @@ img.kg-cta-image {
     border-radius: 4px;
     margin-bottom: 24px;
     width: 100%;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    background-color: #FFFFFF;
+    {{/hasFeature}}
 }
 
 .kg-toggle-heading {
@@ -1983,6 +2196,12 @@ img.kg-cta-image {
     width: 100%;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.main {
+    background-color: {{backgroundColor}} !important;
+}
+{{/hasFeature}}
+
 .wrapper {
     box-sizing: border-box;
 }
@@ -1992,6 +2211,37 @@ img.kg-cta-image {
     padding-top: 10px;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.footer {
+    {{#if backgroundIsDark}}
+        color: #8f9aa3;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #73818c
+        color: rgba(0, 0, 0, .6);
+    {{/if}};
+    margin-top: 20px;
+    text-align: center;
+    font-size: 13px!important;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    padding-left: 30px;
+    padding-right: 30px;
+    line-height: 1.5em;
+}
+
+.footer a {
+    {{#if backgroundIsDark}}
+        color: #8f9aa3;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #73818c
+        color: rgba(0, 0, 0, .6);
+    {{/if}};
+    text-decoration: underline;
+    font-size: 13px;
+}
+{{else}}
 .footer {
     color: #73818c;
     margin-top: 20px;
@@ -2009,6 +2259,7 @@ img.kg-cta-image {
     text-decoration: underline;
     font-size: 13px;
 }
+{{/hasFeature}}
 
 /* -------------------------------------
     BUTTONS
