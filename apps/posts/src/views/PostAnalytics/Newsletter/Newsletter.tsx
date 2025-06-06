@@ -504,18 +504,18 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             </CardHeader>
                             <CardContent>
                                 <Tabs defaultValue="more-like-this" variant='underline'>
-                                    <TabsList className="grid w-full grid-cols-2 gap-0">
-                                        <TabsTrigger className='h-12 justify-start px-1' value="more-like-this">
+                                    <TabsList className="flex w-full">
+                                        <TabsTrigger className='h-12 justify-start px-3' value="more-like-this">
                                             <div className='flex items-center gap-1.5'>
                                                 <LucideIcon.ThumbsUp />
-                                                <span className='text-[1.5rem] font-semibold tracking-tight'>89%</span>
+                                                <span className='font-semibold tracking-tight'>89%</span>
                                                 <span className='text-sm font-medium'>More like this</span>
                                             </div>
                                         </TabsTrigger>
-                                        <TabsTrigger className='h-12 justify-start px-1' value="less-like-this">
+                                        <TabsTrigger className='h-12 justify-start px-3' value="less-like-this">
                                             <div className='flex items-center gap-1.5'>
                                                 <LucideIcon.ThumbsDown />
-                                                <span className='text-[1.5rem] font-semibold tracking-tight'>11%</span>
+                                                <span className='font-semibold tracking-tight'>11%</span>
                                                 <span className='text-sm font-medium'>Less like this</span>
                                             </div>
                                         </TabsTrigger>
