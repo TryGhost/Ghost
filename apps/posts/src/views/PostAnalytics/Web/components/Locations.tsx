@@ -126,6 +126,8 @@ const Locations:React.FC<LocationsProps> = ({queryParams}) => {
         return [...knownLocations, ...combinedUnknown];
     }, [data, totalVisits]);
 
+    const topLocations = processedData.slice(0, 10);
+
     return (
         <>
             {isLoading ? '' :
@@ -138,7 +140,7 @@ const Locations:React.FC<LocationsProps> = ({queryParams}) => {
                     </CardHeader>
                     <CardContent>
                         <Separator />
-                        <LocationsTable data={processedData} />
+                        <LocationsTable data={topLocations} />
                     </CardContent>
                     {processedData!.length > 10 &&
                         <CardFooter>
