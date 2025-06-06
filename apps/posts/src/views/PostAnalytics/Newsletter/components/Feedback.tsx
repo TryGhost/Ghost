@@ -1,4 +1,4 @@
-import {Avatar, AvatarFallback, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, Table, TableBody, TableCell, TableRow, Tabs, TabsList, TabsTrigger, formatPercentage} from '@tryghost/shade';
+import {Avatar, AvatarFallback, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, Table, TableBody, TableCell, TableRow, Tabs, TabsList, TabsTrigger, formatPercentage, useSimplePagination} from '@tryghost/shade';
 import {useParams} from '@tryghost/admin-x-framework';
 import {usePostFeedback} from '@src/hooks/usePostFeedback';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
@@ -7,13 +7,27 @@ import {useState} from 'react';
 const Feedback: React.FC = () => {
     const {postId} = useParams();
     const [activeFeedbackTab, setActiveFeedbackTab] = useState<'positive' | 'negative'>('positive');
+    const ITEMS_PER_PAGE = 5;
 
     // Get feedback data from the main hook for counts
     const {feedbackStats, isLoading: isStatsLoading} = usePostNewsletterStats(postId || '');
     
-    // Get detailed feedback data for the active tab
+    // Get detailed feedback data for the active tab (all data, not limited)
     const score = activeFeedbackTab === 'positive' ? 1 : 0;
     const {feedback, isLoading: isFeedbackLoading} = usePostFeedback(postId || '', score);
+
+    // Pagination for feedback
+    const {
+        totalPages,
+        paginatedData: paginatedFeedback,
+        nextPage,
+        previousPage,
+        hasNextPage,
+        hasPreviousPage
+    } = useSimplePagination({
+        data: feedback,
+        itemsPerPage: ITEMS_PER_PAGE
+    });
 
     // Helper function to format member names with fallback to email
     const formatMemberName = (member: {name?: string; email?: string}) => {
@@ -115,10 +129,10 @@ const Feedback: React.FC = () => {
                             </TabsTrigger>
                         </TabsList>
                     </Tabs>
-                    {feedback.length > 0 ? (
+                                        {paginatedFeedback && paginatedFeedback.length > 0 ? (
                         <Table>
-                                                        <TableBody>
-                                {feedback.map(item => (
+                            <TableBody>
+                                {paginatedFeedback.map(item => (
                                     <TableRow key={item.id} className='border-none'>
                                         <TableCell className='h-12 max-w-0 border-none'>
                                             <div className='flex items-center gap-2 font-medium'>
@@ -154,7 +168,7 @@ const Feedback: React.FC = () => {
                         View all
                             <LucideIcon.TableOfContents />
                         </Button>
-                        {/* {totalPages > 1 &&
+                        {totalPages > 1 && (
                             <SimplePagination className='pb-0'>
                                 <SimplePaginationNavigation>
                                     <SimplePaginationPreviousButton
@@ -167,7 +181,7 @@ const Feedback: React.FC = () => {
                                     />
                                 </SimplePaginationNavigation>
                             </SimplePagination>
-                        } */}
+                        )}
                     </div>
                 </CardFooter>
             }
