@@ -81,7 +81,7 @@ const Feedback: React.FC = () => {
                                 }}>
                                     <div className='flex items-center gap-2 font-medium'>
                                         <Avatar className='size-7'>
-                                            <AvatarImage></AvatarImage>
+                                            <AvatarImage src={item.member?.avatar_image}></AvatarImage>
                                             <AvatarFallback className='text-white' style={{
                                                 backgroundColor: `${stringToHslColor(formatMemberName(item.member), 75, 55)}`
                                             }}>{getMemberInitials(item.member)}</AvatarFallback>

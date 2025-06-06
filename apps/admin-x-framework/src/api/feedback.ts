@@ -5,6 +5,7 @@ export type FeedbackMember = {
     uuid: string;
     name?: string;
     email?: string;
+    avatar_image?: string;
 };
 
 export type FeedbackItem = {
@@ -24,4 +25,4 @@ const dataType = 'FeedbackResponseType';
 export const getPostFeedback = createQueryWithId<FeedbackResponseType>({
     dataType,
     path: id => `/feedback/${id}/`
-}); 
+});
