@@ -4,6 +4,36 @@ const feedbackService = require('../../services/audience-feedback');
 const controller = {
     docName: 'feedback',
 
+    browse: {
+        headers: {
+            cacheInvalidate: false
+        },
+        data: [
+            'id'
+        ],
+        options: [
+            'limit',
+            'page',
+            'order',
+            'score'
+        ],
+        validation: {
+            data: {
+                id: {
+                    type: 'string',
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        query(frame) {
+            return feedbackService.controller.browse(frame);
+        }
+    },
+
     add: {
         statusCode: 201,
         headers: {

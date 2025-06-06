@@ -64,4 +64,36 @@ module.exports = class FeedbackRepository {
     async getPostById(id) {
         return await this.#Post.findOne({id, status: 'all'});
     }
+
+    async getForPost(postId, options = {}) {
+        // Build filter string
+        let filter = `post_id:'${postId}'`;
+        if (options.score !== undefined) {
+            filter += `+score:${options.score}`;
+        }
+
+        const findOptions = {
+            limit: options.limit || 10,
+            page: options.page || 1,
+            order: 'created_at DESC',
+            withRelated: ['member'],
+            filter: filter
+        };
+
+        // Use findPage with filter
+        const results = await this.#MemberFeedback.findPage(findOptions);
+        
+        return {
+            data: results.data.map((model) => {
+                const feedback = model.toJSON();
+                return {
+                    id: feedback.id,
+                    score: feedback.score,
+                    created_at: feedback.created_at,
+                    member: feedback.member
+                };
+            }),
+            meta: results.meta
+        };
+    }
 };

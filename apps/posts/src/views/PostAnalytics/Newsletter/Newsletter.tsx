@@ -1,8 +1,9 @@
 // import AudienceSelect from './components/AudienceSelect';
+import Feedback from './components/Feedback';
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, calculateYAxisWidth, formatNumber, formatPercentage} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, Tabs, TabsContent, calculateYAxisWidth, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {getLinkById} from '@src/utils/link-helpers';
 import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -15,7 +16,8 @@ interface postAnalyticsProps {}
 type NewsletterRadialChartData = {
     datatype: string,
     value: number,
-    fill: string
+    fill: string,
+    color: string
 }
 
 interface NewsletterRadialChartProps {
@@ -30,7 +32,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
     data,
     percentageValue
 }) => {
-    const barWidth = 42;
+    const barWidth = 46;
     const innerRadiusStart = data.length > 1 ? 72 : 89;
 
     const chartComponentConfig = {
@@ -52,6 +54,25 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                 outerRadius={chartComponentConfig.outerRadius}
                 startAngle={chartComponentConfig.startAngle}
             >
+                <defs>
+                    {/* Define gradients for each data type */}
+                    <radialGradient cx="30%" cy="30%" id="gradientPurple" r="70%">
+                        <stop offset="0%" stopColor="hsl(var(--chart-purple))" stopOpacity={0.5} />
+                        <stop offset="100%" stopColor="hsl(var(--chart-purple))" stopOpacity={1} />
+                    </radialGradient>
+                    <radialGradient cx="30%" cy="30%" id="gradientBlue" r="70%">
+                        <stop offset="0%" stopColor="hsl(var(--chart-blue))" stopOpacity={0.5} />
+                        <stop offset="100%" stopColor="hsl(var(--chart-blue))" stopOpacity={1} />
+                    </radialGradient>
+                    <radialGradient cx="30%" cy="30%" id="gradientTeal" r="70%">
+                        <stop offset="0%" stopColor="hsl(var(--chart-teal))" stopOpacity={0.5} />
+                        <stop offset="100%" stopColor="hsl(var(--chart-teal))" stopOpacity={1} />
+                    </radialGradient>
+                    <radialGradient cx="30%" cy="30%" id="gradientGray" r="70%">
+                        <stop offset="0%" stopColor="hsl(var(--chart-gray))" stopOpacity={0.5} />
+                        <stop offset="100%" stopColor="hsl(var(--chart-gray))" stopOpacity={1} />
+                    </radialGradient>
+                </defs>
                 <Recharts.PolarAngleAxis angleAxisId={0} domain={[0, 1]} tick={false} type="number" />
                 <Recharts.RadialBar
                     cornerRadius={10}
@@ -104,7 +125,7 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                         formatter={(value, _, props) => {
                             return (
                                 <div className='flex items-center gap-1'>
-                                    <div className='size-2 rounded-full opacity-50' style={{backgroundColor: props.payload?.fill}}></div>
+                                    <div className='size-2 rounded-full opacity-50' style={{backgroundColor: props.payload?.color}}></div>
                                     <div className='text-xs text-muted-foreground'>{props.payload?.datatype}</div>
                                     <div className='ml-3 font-mono text-xs'>{formatPercentage(value)}</div>
                                 </div>
@@ -136,6 +157,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const [editedUrl, setEditedUrl] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const ITEMS_PER_PAGE = 5;
 
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
@@ -194,6 +216,19 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         });
     };
 
+    // Pagination for topLinks
+    const {
+        totalPages,
+        paginatedData: paginatedTopLinks,
+        nextPage,
+        previousPage,
+        hasNextPage,
+        hasPreviousPage
+    } = useSimplePagination({
+        data: topLinks,
+        itemsPerPage: ITEMS_PER_PAGE
+    });
+
     useEffect(() => {
         if (editingLinkId && inputRef.current) {
             inputRef.current.focus();
@@ -237,7 +272,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     // "Sent" Chart
     const sentChartData: NewsletterRadialChartData[] = [
-        {datatype: 'Sent', value: 1, fill: 'hsl(var(--chart-purple))'}
+        {datatype: 'Sent', value: 1, fill: 'url(#gradientPurple)', color: 'hsl(var(--chart-purple))'}
     ];
 
     const sentChartConfig = {
@@ -254,8 +289,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     // "Opened" Chart
     const openedChartData: NewsletterRadialChartData[] = [
-        {datatype: 'Average', value: averageStats.openedRate, fill: 'hsl(var(--chart-gray))'},
-        {datatype: 'This newsletter', value: stats.openedRate, fill: 'hsl(var(--chart-blue))'}
+        {datatype: 'Average', value: averageStats.openedRate, fill: 'url(#gradientGray)', color: 'hsl(var(--chart-gray))'},
+        {datatype: 'This newsletter', value: stats.openedRate, fill: 'url(#gradientBlue)', color: 'hsl(var(--chart-blue))'}
     ];
 
     const openedChartConfig = {
@@ -272,8 +307,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     // "Clicked" Chart
     const clickedChartData: NewsletterRadialChartData[] = [
-        {datatype: 'Average', value: averageStats.clickedRate, fill: 'hsl(var(--chart-gray))'},
-        {datatype: 'This newsletter', value: stats.clickedRate, fill: 'hsl(var(--chart-teal))'}
+        {datatype: 'Average', value: averageStats.clickedRate, fill: 'url(#gradientGray)', color: 'hsl(var(--chart-gray))'},
+        {datatype: 'This newsletter', value: stats.clickedRate, fill: 'url(#gradientTeal)', color: 'hsl(var(--chart-teal))'}
     ];
 
     const clickedChartConfig = {
@@ -297,8 +332,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                         <BarChartLoadingIndicator />
                     </div>
                     :
-                    <div className='flex flex-col items-stretch gap-6'>
-                        <Card>
+                    <div className='grid grid-cols-2 gap-8'>
+                        <Card className='col-span-2'>
                             <CardHeader className='hidden'>
                                 <CardTitle>Newsletters</CardTitle>
                                 <CardDescription>How did this post perform</CardDescription>
@@ -370,20 +405,6 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                 />
                                             </div>
                                         </div>
-                                        {/* <div className='flex flex-wrap items-center justify-center gap-6 p-6 text-xs text-muted-foreground'>
-                                            <div className='flex items-center gap-1'>
-                                                <div className='size-2.5 rounded-sm bg-blue'></div>
-                                                <span>Opened this newsletter</span>
-                                            </div>
-                                            <div className='flex items-center gap-1'>
-                                                <div className='size-2.5 rounded-sm bg-green'></div>
-                                                <span>Clicked this newsletter</span>
-                                            </div>
-                                            <div className='flex items-center gap-1'>
-                                                <div className='size-2.5 rounded-[3px] bg-gray-500'></div>
-                                                <span>Average</span>
-                                            </div>
-                                        </div> */}
                                     </TabsContent>
                                     <TabsContent value="bar">
                                         <div>
@@ -472,33 +493,32 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                 </Tabs>
                             </CardContent>
                         </Card>
+                        <Feedback />
                         <Card>
-                            <CardHeader>
+                            <CardHeader className='pb-3'>
                                 <CardTitle>Newsletter clicks</CardTitle>
                                 <CardDescription>Which links resonated with your readers</CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                <Separator />
+                            <CardContent className='pb-0'>
                                 {topLinks.length > 0
                                     ?
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead className='w-full'>Link</TableHead>
-                                                <TableHead className='w-[0%] text-nowrap text-right'>No. of members</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {topLinks.map((row) => {
-                                                const linkId = row.link.link_id;
-                                                const title = row.link.title;
-                                                const url = row.link.to;
-                                                const edited = row.link.edited;
+                                    <>
 
-                                                return (
-                                                    <TableRow key={linkId}>
-                                                        <TableCell className='max-w-0'>
-                                                            <div className='flex items-center gap-2'>
+                                        <div className='flex w-full flex-col'>
+                                            <div className='flex h-12 w-full items-center justify-between border-b text-sm text-muted-foreground'>
+                                                <div>Link</div>
+                                                <div>No. of members</div>
+                                            </div>
+                                            <div className='flex w-full flex-col py-3'>
+                                                {paginatedTopLinks?.map((row) => {
+                                                    const linkId = row.link.link_id;
+                                                    const title = row.link.title;
+                                                    const url = row.link.to;
+                                                    const edited = row.link.edited;
+
+                                                    return (
+                                                        <div key={linkId} className='flex h-10 w-full items-center justify-between gap-3 rounded-sm border-none px-2 text-sm hover:cursor-pointer hover:bg-accent'>
+                                                            <div className='flex grow items-center gap-2 overflow-hidden'>
                                                                 {editingLinkId === linkId ? (
                                                                     <div ref={containerRef} className='flex w-full items-center gap-2'>
                                                                         <Input
@@ -539,29 +559,45 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                     </>
                                                                 )}
                                                             </div>
-                                                        </TableCell>
-                                                        <TableCell className='text-right font-mono text-sm'>{formatNumber(row.count)}</TableCell>
-                                                    </TableRow>
-                                                );
-                                            })}
-                                        </TableBody>
-                                        <TableFooter className='bg-transparent'>
-                                            <TableRow>
-                                                <TableCell className='group-hover:bg-transparent' colSpan={2}>
-                                                    <div className='ml-2 mt-1 flex items-center gap-2 text-green'>
-                                                        <LucideIcon.ArrowUp size={20} strokeWidth={1.5} />
-                                                        Sent a broken link? You can update it!
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        </TableFooter>
-                                    </Table>
+                                                            <div className='font-mono'>
+                                                                {formatNumber(row.count)}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    </>
                                     :
                                     <div className='py-20 text-center text-sm text-gray-700'>
                                     You have no links in your post.
                                     </div>
                                 }
                             </CardContent>
+                            {topLinks.length > 1 &&
+                                <CardFooter>
+                                    <div className='flex w-full items-start justify-between gap-3'>
+                                        <div className='mt-1 flex items-start gap-2 pl-4 text-sm text-green'>
+                                            <LucideIcon.ArrowUp size={20} strokeWidth={1.5} />
+                                            Sent a broken link? You can update it!
+                                        </div>
+                                        {totalPages > 1 && (
+                                            <SimplePagination className='pb-0'>
+                                                <SimplePaginationNavigation>
+                                                    <SimplePaginationPreviousButton
+                                                        disabled={!hasPreviousPage}
+                                                        onClick={previousPage}
+                                                    />
+                                                    <SimplePaginationNextButton
+                                                        disabled={!hasNextPage}
+                                                        onClick={nextPage}
+                                                    />
+                                                </SimplePaginationNavigation>
+                                            </SimplePagination>
+                                        )}
+                                    </div>
+                                </CardFooter>
+                            }
                         </Card>
                     </div>
                 }

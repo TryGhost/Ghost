@@ -1,30 +1,31 @@
 import {type CleanedLink, cleanTrackedUrl} from '@src/utils/link-helpers';
-import {getPost} from '@tryghost/admin-x-framework/api/posts';
+import {type Post, getPost} from '@tryghost/admin-x-framework/api/posts';
 import {useMemo} from 'react';
 import {useNewsletterStatsByNewsletterId} from '@tryghost/admin-x-framework/api/stats';
 import {useTopLinks} from '@tryghost/admin-x-framework/api/links';
 
 // Extend the Post type to include newsletter property
-type PostWithNewsletter = {
+type PostWithNewsletter = Post & {
     newsletter?: {
         id: string;
     };
-    email?: {
-        email_count: number;
-        opened_count: number;
-    };
-    count?: {
-        clicks: number;
-    };
-    // Use unknown instead of any for the index signature
-    [key: string]: unknown;
 };
 
 export const usePostNewsletterStats = (postId: string) => {
+    // Fetch the post with main stats (email, clicks)
     const {data: postResponse, isLoading: isPostLoading} = getPost(postId);
+
+    // Fetch the post with feedback count relations
+    const {data: feedbackPostResponse, isLoading: isFeedbackPostLoading} = getPost(postId, {
+        searchParams: {
+            include: 'count.positive_feedback,count.negative_feedback'
+        }
+    });
 
     // Fetch the post to get top level stats
     const post = useMemo(() => postResponse?.posts[0] as PostWithNewsletter | undefined, [postResponse]);
+    const feedbackPost = useMemo(() => feedbackPostResponse?.posts[0] as PostWithNewsletter | undefined, [feedbackPostResponse]);
+
     const stats = useMemo(() => {
         if (!post) {
             return {
@@ -44,6 +45,27 @@ export const usePostNewsletterStats = (postId: string) => {
             clickedRate: post.count?.clicks && post.email?.email_count ? (post.count.clicks / post.email.email_count) : 0
         };
     }, [post]);
+
+    // Calculate feedback stats from the separate feedback post fetch
+    const feedbackStats = useMemo(() => {
+        if (!feedbackPost?.count) {
+            return {
+                positiveFeedback: 0,
+                negativeFeedback: 0,
+                totalFeedback: 0
+            };
+        }
+
+        const positiveFeedback = feedbackPost.count.positive_feedback || 0;
+        const negativeFeedback = feedbackPost.count.negative_feedback || 0;
+        const totalFeedback = positiveFeedback + negativeFeedback;
+
+        return {
+            positiveFeedback,
+            negativeFeedback,
+            totalFeedback
+        };
+    }, [feedbackPost]);
 
     // Get the newsletter_id from the post
     const newsletterId = useMemo(() => post?.newsletter?.id, [post]);
@@ -133,9 +155,10 @@ export const usePostNewsletterStats = (postId: string) => {
     return {
         post,
         stats,
+        feedbackStats,
         averageStats,
         topLinks,
         refetchTopLinks,
-        isLoading: isPostLoading || isNewsletterStatsLoading || isClicksLoading
+        isLoading: isPostLoading || isFeedbackPostLoading || isNewsletterStatsLoading || isClicksLoading
     };
 };

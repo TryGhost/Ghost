@@ -13,7 +13,8 @@ const messages = {
  * @prop {(feedback: Feedback) => Promise<void>} add
  * @prop {(feedback: Feedback) => Promise<void>} edit
  * @prop {(postId, memberId) => Promise<Feedback>} get
- * @prop {(id: string) => Promise<Post|undefined>} getPostById
+ * @prop {(id: string) => Promise<object|undefined>} getPostById
+ * @prop {(postId: string, options?: object) => Promise<{data: object[], meta: object}>} getForPost
  */
 
 class AudienceFeedbackController {
@@ -79,6 +80,22 @@ class AudienceFeedbackController {
         });
         await this.#repository.add(feedback);
         return feedback;
+    }
+
+    async browse(frame) {
+        const postId = frame.data.id;
+        const options = {
+            limit: frame.options.limit || 10,
+            page: frame.options.page || 1
+        };
+
+        // Add score filter if specified
+        if (frame.options.score !== undefined) {
+            options.score = parseInt(frame.options.score);
+        }
+
+        const result = await this.#repository.getForPost(postId, options);
+        return result;
     }
 }
 
