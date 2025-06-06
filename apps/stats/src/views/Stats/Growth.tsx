@@ -121,16 +121,16 @@ const GrowthKPIs: React.FC<{
 
     const tabConfig = {
         'total-members': {
-            color: 'hsl(var(--chart-blue))'
+            color: 'hsl(var(--chart-teal))'
         },
         'free-members': {
-            color: 'hsl(var(--chart-green))'
+            color: 'hsl(var(--chart-blue))'
         },
         'paid-members': {
-            color: 'hsl(var(--chart-purple))'
+            color: 'hsl(var(--chart-yellow))'
         },
         mrr: {
-            color: 'hsl(var(--chart-orange))'
+            color: 'hsl(var(--chart-purple))'
         }
     };
 
@@ -141,9 +141,9 @@ const GrowthKPIs: React.FC<{
                     setCurrentTab('total-members');
                 }}>
                     <KpiTabValue
+                        color='hsl(var(--chart-teal))'
                         diffDirection={directions.total}
                         diffValue={percentChanges.total}
-                        icon="Users"
                         label="Total members"
                         value={formatNumber(totalMembers)}
                     />
@@ -152,9 +152,9 @@ const GrowthKPIs: React.FC<{
                     setCurrentTab('free-members');
                 }}>
                     <KpiTabValue
+                        color='hsl(var(--chart-blue))'
                         diffDirection={directions.free}
                         diffValue={percentChanges.free}
-                        icon="User"
                         label="Free members"
                         value={formatNumber(freeMembers)}
                     />
@@ -163,9 +163,9 @@ const GrowthKPIs: React.FC<{
                     setCurrentTab('paid-members');
                 }}>
                     <KpiTabValue
+                        color='hsl(var(--chart-yellow))'
                         diffDirection={directions.paid}
                         diffValue={percentChanges.paid}
-                        icon="WalletCards"
                         label="Paid members"
                         value={formatNumber(paidMembers)}
                     />
@@ -174,9 +174,9 @@ const GrowthKPIs: React.FC<{
                     setCurrentTab('mrr');
                 }}>
                     <KpiTabValue
+                        color='hsl(var(--chart-purple))'
                         diffDirection={directions.mrr}
                         diffValue={percentChanges.mrr}
-                        icon="DollarSign"
                         label="MRR"
                         value={`$${formatNumber(centsToDollars(mrr))}`}
                     />

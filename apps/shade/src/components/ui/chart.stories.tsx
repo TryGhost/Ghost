@@ -31,11 +31,11 @@ export const Default = {
             },
             chrome: {
                 label: 'More like this',
-                color: 'hsl(var(--chart-1))'
+                color: 'hsl(var(--chart-blue))'
             },
             safari: {
                 label: 'Less like this',
-                color: 'hsl(var(--chart-5))'
+                color: 'hsl(var(--chart-orange))'
             }
         } satisfies ChartConfig;
 

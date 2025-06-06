@@ -36,12 +36,12 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data, siteUrl}) => {
                 {data?.map((row) => {
                     const {domain, isDirectTraffic} = getFaviconDomain(row.source, siteUrl);
                     const displayName = isDirectTraffic ? 'Direct' : (row.source || 'Direct');
-                    
+
                     return (
                         <DataListRow key={row.source || 'direct'} className='group/row'>
-                            <DataListBar className='opacity-15 transition-all group-hover/row:opacity-30' style={{
-                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
-                                backgroundColor: 'hsl(var(--chart-orange))'
+                            <DataListBar className='bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/60 opacity-20 transition-all' style={{
+                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
+                                // backgroundColor: 'hsl(var(--chart-blue))'
                             }} />
                             <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
                                 <div className='flex items-center space-x-4 overflow-hidden'>
@@ -81,10 +81,10 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data, siteUrl}) => {
 
 const Sources:React.FC<SourcesProps> = ({queryParams}) => {
     const {statsConfig, data: globalData, isLoading: isConfigLoading, range} = useGlobalData();
-    
+
     // Get site URL from global data
     const siteUrl = globalData?.url as string | undefined;
-    
+
     // TEMPORARY: For testing levernews.com direct traffic grouping
     // Remove this line when done testing
     const testingSiteUrl = siteUrl || 'https://levernews.com';
@@ -107,15 +107,15 @@ const Sources:React.FC<SourcesProps> = ({queryParams}) => {
         if (!data) {
             return [];
         }
-        
+
         const sourceMap = new Map<string, {source: string, visits: number, isDirectTraffic: boolean}>();
         let directTrafficTotal = 0;
-        
+
         // Process each source and group direct traffic
         (data as unknown as SourceData[]).forEach((item) => {
             const {isDirectTraffic} = getFaviconDomain(item.source, testingSiteUrl);
             const visits = Number(item.visits);
-            
+
             if (isDirectTraffic || !item.source || item.source === '') {
                 // Accumulate all direct traffic
                 directTrafficTotal += visits;
@@ -134,7 +134,7 @@ const Sources:React.FC<SourcesProps> = ({queryParams}) => {
                 }
             }
         });
-        
+
         // Add consolidated direct traffic entry if there's any
         if (directTrafficTotal > 0) {
             sourceMap.set('Direct', {
@@ -143,7 +143,7 @@ const Sources:React.FC<SourcesProps> = ({queryParams}) => {
                 isDirectTraffic: true
             });
         }
-        
+
         // Convert back to array and sort by visits
         return Array.from(sourceMap.values())
             .sort((a, b) => b.visits - a.visits);
