@@ -2,7 +2,7 @@
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {Avatar, AvatarFallback, AvatarImage, BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, calculateYAxisWidth, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Avatar, AvatarFallback, BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, calculateYAxisWidth, formatNumber, formatPercentage} from '@tryghost/shade';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {getLinkById} from '@src/utils/link-helpers';
 import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -498,21 +498,21 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader>
+                            <CardHeader className='pb-2'>
                                 <CardTitle>Feedback</CardTitle>
                                 <CardDescription>What did your readers think?</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <Tabs className='border-t' defaultValue="more-like-this" variant='underline'>
-                                    <TabsList className="flex w-full gap-0">
-                                        <TabsTrigger className='h-12 justify-start px-4' value="more-like-this">
+                                <Tabs defaultValue="more-like-this" variant='underline'>
+                                    <TabsList className="grid w-full grid-cols-2 gap-0">
+                                        <TabsTrigger className='h-12 justify-start px-1' value="more-like-this">
                                             <div className='flex items-center gap-1.5'>
                                                 <LucideIcon.ThumbsUp />
                                                 <span className='text-[1.5rem] font-semibold tracking-tight'>89%</span>
                                                 <span className='font-medium'>More like this</span>
                                             </div>
                                         </TabsTrigger>
-                                        <TabsTrigger className='h-12 justify-start px-4' value="less-like-this">
+                                        <TabsTrigger className='h-12 justify-start px-1' value="less-like-this">
                                             <div className='flex items-center gap-1.5'>
                                                 <LucideIcon.ThumbsDown />
                                                 <span className='text-[1.5rem] font-semibold tracking-tight'>11%</span>
@@ -572,7 +572,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader>
+                            <CardHeader className='pb-2'>
                                 <CardTitle>Newsletter clicks</CardTitle>
                                 <CardDescription>Which links resonated with your readers</CardDescription>
                             </CardHeader>
@@ -581,8 +581,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     ?
                                     <Table>
                                         <TableHeader>
-                                            <TableRow className='border-b !border-border'>
-                                                <TableHead className='h-12 w-full'>Link</TableHead>
+                                            <TableRow className='border-b border-t-0 !border-border'>
+                                                <TableHead className='h-12 w-full pl-0'>Link</TableHead>
                                                 <TableHead className='h-12 w-[0%] text-nowrap text-right'>No. of members</TableHead>
                                             </TableRow>
                                         </TableHeader>
