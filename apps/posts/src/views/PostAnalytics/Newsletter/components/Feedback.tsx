@@ -1,38 +1,16 @@
 import {Avatar, AvatarFallback, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, Table, TableBody, TableCell, TableRow, Tabs, TabsList, TabsTrigger, formatPercentage, useSimplePagination} from '@tryghost/shade';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 import {useState} from 'react';
 
-interface FeedbackMember {
-    id: string;
-    uuid: string;
-    name?: string;
-    email?: string;
-    feedbackId: string;
-    timestamp: string;
-    score: number;
-}
-
-interface FeedbackStats {
-    positiveFeedback: number;
-    negativeFeedback: number;
-    totalFeedback: number;
-}
-
-interface FeedbackMembers {
-    positive: FeedbackMember[];
-    negative: FeedbackMember[];
-    all: FeedbackMember[];
-}
-
-interface FeedbackProps {
-    feedbackStats: FeedbackStats;
-    feedbackMembers: FeedbackMembers;
-}
-
-const Feedback: React.FC<FeedbackProps> = ({feedbackStats, feedbackMembers}) => {
+const Feedback: React.FC = () => {
+    const {postId} = useParams();
     const navigate = useNavigate();
     const [activeFeedbackTab, setActiveFeedbackTab] = useState('more-like-this');
     const ITEMS_PER_PAGE = 5;
+
+    // Get feedback data from the main hook
+    const {feedbackStats, feedbackMembers, isLoading} = usePostNewsletterStats(postId || '');
 
     // Helper function to format member names with fallback to email
     const formatMemberName = (member: {name?: string; email?: string}) => {
@@ -109,6 +87,21 @@ const Feedback: React.FC<FeedbackProps> = ({feedbackStats, feedbackMembers}) => 
         data: currentFeedbackData,
         itemsPerPage: ITEMS_PER_PAGE
     });
+
+    // Show loading state
+    if (isLoading) {
+        return (
+            <Card>
+                <CardHeader className='pb-3'>
+                    <CardTitle>Feedback</CardTitle>
+                    <CardDescription>What did your readers think?</CardDescription>
+                </CardHeader>
+                <CardContent className='text-muted-foreground flex grow flex-col items-center justify-center text-center text-sm'>
+                    <div>Loading feedback...</div>
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
         <Card>

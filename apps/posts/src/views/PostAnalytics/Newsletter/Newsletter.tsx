@@ -178,7 +178,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         }
     }, [navigate, postId, isPostLoading, showNewsletterSection]);
 
-    const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks, feedbackStats, feedbackMembers} = usePostNewsletterStats(postId || '');
+    const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId || '');
     const {editLinks} = useEditLinks();
 
     // Pagination for topLinks
@@ -458,10 +458,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                 </Tabs>
                             </CardContent>
                         </Card>
-                        <Feedback
-                            feedbackMembers={feedbackMembers}
-                            feedbackStats={feedbackStats}
-                        />
+                        <Feedback />
                         <Card>
                             <CardHeader className='pb-3'>
                                 <CardTitle>Newsletter clicks</CardTitle>
