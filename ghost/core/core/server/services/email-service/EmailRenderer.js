@@ -365,7 +365,8 @@ class EmailRenderer {
         if (labs?.isSet('emailCustomizationAlpha')) {
             renderOptions.design = {
                 ...renderOptions.design,
-                ...betaDesignOptions
+                ...betaDesignOptions,
+                backgroundColor: newsletter?.get('background_color')
             };
         }
 
@@ -1124,8 +1125,7 @@ class EmailRenderer {
         const postTitleColor = this.#getPostTitleColor(newsletter, accentColor);
         const titleWeight = this.#getTitleWeight(newsletter);
         const titleStrongWeight = this.#getTitleStrongWeight(titleWeight);
-        const textColor = textColorForBackgroundColor(backgroundColor).hex();
-        const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
+        const textColor = textColorForBackgroundColor(backgroundColor).hex(); // this is used by the header background color so keeping it separate from the content text color
         const linkColor = hasAnyEmailCustomization ? this.#getLinkColor(newsletter, accentColor) : backgroundIsDark ? '#ffffff' : accentColor;
         const hasRoundedImageCorners = hasAnyEmailCustomization ? this.#getImageCorners(newsletter) : false;
         const sectionTitleColor = hasAnyEmailCustomization ? this.#getSectionTitleColor(newsletter, accentColor) : null;
@@ -1286,7 +1286,6 @@ class EmailRenderer {
             titleWeight,
             titleStrongWeight,
             textColor,
-            secondaryTextColor,
             linkColor,
             hasRoundedImageCorners,
             buttonBorderRadius,
