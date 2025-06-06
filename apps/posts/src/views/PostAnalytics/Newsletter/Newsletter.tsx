@@ -181,6 +181,41 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId || '');
     const {editLinks} = useEditLinks();
 
+    const handleEdit = (linkId: string) => {
+        const link = getLinkById(topLinks, linkId);
+        if (link) {
+            setEditingLinkId(linkId);
+            setEditedUrl(link.link.to);
+        }
+    };
+
+    const handleUpdate = () => {
+        if (!editingLinkId) {
+            return;
+        }
+        const link = getLinkById(topLinks, editingLinkId);
+        if (!link) {
+            return;
+        }
+        const trimmedUrl = editedUrl.trim();
+        if (trimmedUrl === '' || trimmedUrl === link.link.to) {
+            setEditingLinkId(null);
+            setEditedUrl('');
+            return;
+        }
+        editLinks({
+            originalUrl: link.link.originalTo,
+            editedUrl: editedUrl,
+            postId: postId || ''
+        }, {
+            onSuccess: () => {
+                setEditingLinkId(null);
+                setEditedUrl('');
+                refetchTopLinks();
+            }
+        });
+    };
+
     // Pagination for topLinks
     const {
         totalPages,
@@ -496,21 +531,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                             />
                                                                             <Button
                                                                                 size='sm'
-                                                                                onClick={() => {
-                                                                                    if (editingLinkId) {
-                                                                                        editLinks({
-                                                                                            originalUrl: getLinkById(topLinks, editingLinkId)?.link.originalTo || '',
-                                                                                            editedUrl: editedUrl,
-                                                                                            postId: postId || ''
-                                                                                        }, {
-                                                                                            onSuccess: () => {
-                                                                                                setEditingLinkId(null);
-                                                                                                setEditedUrl('');
-                                                                                                refetchTopLinks();
-                                                                                            }
-                                                                                        });
-                                                                                    }
-                                                                                }}
+                                                                                onClick={handleUpdate}
                                                                             >
                                                                             Update
                                                                             </Button>
@@ -521,7 +542,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                                 className='bg-background shrink-0'
                                                                                 size='sm'
                                                                                 variant='outline'
-                                                                                onClick={() => setEditingLinkId(linkId)}
+                                                                                onClick={() => handleEdit(linkId)}
                                                                             >
                                                                                 <LucideIcon.Pen />
                                                                             </Button>
