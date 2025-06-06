@@ -39,7 +39,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data, siteUrl}) => {
 
                     return (
                         <DataListRow key={row.source || 'direct'} className='group/row'>
-                            <DataListBar className='bg-gradient-to-r from-blue-600/30 to-blue-500/60 opacity-20 transition-all group-hover/row:opacity-40' style={{
+                            <DataListBar className='bg-gradient-to-r from-muted-foreground/30 to-muted-foreground/50 opacity-20 transition-all' style={{
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
                                 // backgroundColor: 'hsl(var(--chart-blue))'
                             }} />
