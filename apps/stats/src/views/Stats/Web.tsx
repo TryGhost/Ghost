@@ -205,7 +205,7 @@ const TopContentTable: React.FC<TopContentTableProps> = ({data, contentType}) =>
                             }} />
                             <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
                                 <div className='flex items-center space-x-4 overflow-hidden'>
-                                    <div className={`font-medium truncate ${isClickable && 'group-hover/row:underline'}`}>
+                                    <div className={`truncate font-medium ${isClickable && 'group-hover/row:underline'}`}>
                                         {row.title}
                                     </div>
                                 </div>
