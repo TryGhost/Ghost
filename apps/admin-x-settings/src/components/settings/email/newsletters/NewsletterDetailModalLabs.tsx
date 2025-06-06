@@ -1,6 +1,7 @@
 import NewsletterPreview from './NewsletterPreview';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
+import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
 import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, SelectOption, Separator, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
@@ -66,7 +67,7 @@ const Sidebar: React.FC<{
     errors: ErrorMessages;
     clearError: (field: string) => void;
 }> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
-    // const hasEmailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
+    const hasEmailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
 
     const {updateRoute} = useRouting();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
@@ -432,22 +433,24 @@ const Sidebar: React.FC<{
                     </div>
                 </Form>
                 <Form className='mt-6' gap='xs' margins='lg' title='Header'>
-                    {/* <div className='mb-1'>
-                        <ColorPickerField
-                            direction='rtl'
-                            eyedropper={true}
-                            swatches={[
-                                {
-                                    value: 'transparent',
-                                    title: 'Transparent',
-                                    hex: '#00000000'
-                                }
-                            ]}
-                            title='Header background color'
-                            value={newsletter.header_background_color || 'transparent'}
-                            onChange={color => updateNewsletter({header_background_color: color!})}
-                        />
-                    </div> */}
+                    {hasEmailCustomizationAlpha && (
+                        <div className='mb-1'>
+                            <ColorPickerField
+                                direction='rtl'
+                                eyedropper={true}
+                                swatches={[
+                                    {
+                                        value: 'transparent',
+                                        title: 'Transparent',
+                                        hex: '#00000000'
+                                    }
+                                ]}
+                                title='Header background color'
+                                value={newsletter.header_background_color || 'transparent'}
+                                onChange={color => updateNewsletter({header_background_color: color!})}
+                            />
+                        </div>
+                    )}
                     <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
