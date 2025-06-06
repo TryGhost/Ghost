@@ -177,6 +177,48 @@ export const formatDisplayDate = (dateString: string): string => {
     return isCurrentYear ? `${day} ${month}` : `${day} ${month} ${year}`;
 };
 
+// Helper function to format timestamp
+export const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+
+    // Handle invalid dates
+    if (isNaN(date.getTime())) {
+        return 'Unknown';
+    }
+
+    // Both dates are now in the same timezone context (local)
+    // The timestamp from DB is UTC but Date constructor handles the conversion
+    const diffMs = now.getTime() - date.getTime();
+
+    // Handle negative differences (future dates)
+    if (diffMs < 0) {
+        return 'Just now';
+    }
+
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMins < 1) {
+        return 'Just now';
+    } else if (diffMins < 60) {
+        return `${diffMins} min ago`;
+    } else if (diffHours < 24) {
+        return `${diffHours} hr ago`;
+    } else if (diffDays === 1) {
+        return 'Yesterday';
+    } else if (diffDays < 7) {
+        return `${diffDays} days ago`;
+    } else {
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: diffDays > 365 ? 'numeric' : undefined
+        });
+    }
+};
+
 // Add thousands indicator to numbers
 export const formatNumber = (value: number): string => {
     return new Intl.NumberFormat('en-US').format(Math.round(value));
@@ -496,4 +538,33 @@ export const formatDisplayDateWithRange = (date: string, range: number): string 
         return `Week of ${formatDisplayDate(date)}`;
     }
     return formatDisplayDate(date);
+};
+
+/**
+ * Member formatters
+ */
+
+// Helper function to format member names with fallback to email
+export const formatMemberName = (member: {name?: string; email?: string}) => {
+    return member.name || member.email || 'Unknown Member';
+};
+
+// Helper function to get member initials
+export const getMemberInitials = (member: {name?: string; email?: string}) => {
+    const name = formatMemberName(member);
+    const words = name.split(' ');
+    if (words.length >= 2) {
+        return (words[0][0] + words[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+};
+
+export const stringToHslColor = (str: string, saturation:string, lightness:string) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    const h = hash % 360;
+    return 'hsl(' + h + ', ' + saturation + '%, ' + lightness + '%)';
 };

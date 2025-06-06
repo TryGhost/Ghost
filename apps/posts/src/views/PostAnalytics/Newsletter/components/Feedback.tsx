@@ -1,17 +1,18 @@
-import {Avatar, AvatarFallback, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, Table, TableBody, TableCell, TableRow, Tabs, TabsList, TabsTrigger, formatPercentage, useSimplePagination} from '@tryghost/shade';
-import {useParams} from '@tryghost/admin-x-framework';
+import {Avatar, AvatarFallback, AvatarImage, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, Table, TableBody, TableCell, TableRow, Tabs, TabsList, TabsTrigger, formatMemberName, formatPercentage, formatTimestamp, getMemberInitials, stringToHslColor, useSimplePagination} from '@tryghost/shade';
+import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {usePostFeedback} from '@src/hooks/usePostFeedback';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 import {useState} from 'react';
 
 const Feedback: React.FC = () => {
     const {postId} = useParams();
+    const navigate = useNavigate();
     const [activeFeedbackTab, setActiveFeedbackTab] = useState<'positive' | 'negative'>('positive');
     const ITEMS_PER_PAGE = 5;
 
     // Get feedback data from the main hook for counts
     const {feedbackStats, isLoading: isStatsLoading} = usePostNewsletterStats(postId || '');
-    
+
     // Get detailed feedback data for the active tab (all data, not limited)
     const score = activeFeedbackTab === 'positive' ? 1 : 0;
     const {feedback, isLoading: isFeedbackLoading} = usePostFeedback(postId || '', score);
@@ -28,63 +29,6 @@ const Feedback: React.FC = () => {
         data: feedback,
         itemsPerPage: ITEMS_PER_PAGE
     });
-
-    // Helper function to format member names with fallback to email
-    const formatMemberName = (member: {name?: string; email?: string}) => {
-        return member.name || member.email || 'Unknown Member';
-    };
-
-    // Helper function to get member initials
-    const getMemberInitials = (member: {name?: string; email?: string}) => {
-        const name = formatMemberName(member);
-        const words = name.split(' ');
-        if (words.length >= 2) {
-            return (words[0][0] + words[1][0]).toUpperCase();
-        }
-        return name.substring(0, 2).toUpperCase();
-    };
-
-    // Helper function to format timestamp
-    const formatTimestamp = (timestamp: string) => {
-        const date = new Date(timestamp);
-        const now = new Date();
-        
-        // Handle invalid dates
-        if (isNaN(date.getTime())) {
-            return 'Unknown';
-        }
-        
-        // Both dates are now in the same timezone context (local)
-        // The timestamp from DB is UTC but Date constructor handles the conversion
-        const diffMs = now.getTime() - date.getTime();
-        
-        // Handle negative differences (future dates)
-        if (diffMs < 0) {
-            return 'Just now';
-        }
-        
-        const diffMins = Math.floor(diffMs / (1000 * 60));
-        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-        if (diffMins < 1) {
-            return 'Just now';
-        } else if (diffMins < 60) {
-            return `${diffMins} min ago`;
-        } else if (diffHours < 24) {
-            return `${diffHours} hr ago`;
-        } else if (diffDays === 1) {
-            return 'Yesterday';
-        } else if (diffDays < 7) {
-            return `${diffDays} days ago`;
-        } else {
-            return date.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: diffDays > 365 ? 'numeric' : undefined
-            });
-        }
-    };
 
     const isLoading = isStatsLoading || isFeedbackLoading;
 
@@ -133,11 +77,16 @@ const Feedback: React.FC = () => {
                         <Table>
                             <TableBody>
                                 {paginatedFeedback.map(item => (
-                                    <TableRow key={item.id} className='border-none'>
+                                    <TableRow key={item.id} className='border-none hover:cursor-pointer' onClick={() => {
+                                        navigate(`/members/${item.member.id}`, {crossApp: true});
+                                    }}>
                                         <TableCell className='h-12 max-w-0 border-none'>
                                             <div className='flex items-center gap-2 font-medium'>
                                                 <Avatar className='size-7'>
-                                                    <AvatarFallback>{getMemberInitials(item.member)}</AvatarFallback>
+                                                    <AvatarImage></AvatarImage>
+                                                    <AvatarFallback className='text-white' style={{
+                                                        backgroundColor: `${stringToHslColor(formatMemberName(item.member), 75, 55)}`
+                                                    }}>{getMemberInitials(item.member)}</AvatarFallback>
                                                 </Avatar>
                                                 {formatMemberName(item.member)}
                                             </div>
@@ -164,8 +113,15 @@ const Feedback: React.FC = () => {
             {feedbackStats.totalFeedback > 0 &&
                 <CardFooter className='grow-0'>
                     <div className='flex w-full items-center justify-between gap-3'>
-                        <Button size='sm' variant='outline'>
-                        View all
+                        <Button size='sm' variant='outline' onClick={() => {
+                            const positiveFilter = `(feedback.post_id:'${postId}'+feedback.score:1)`;
+                            const negativeFilter = `(feedback.post_id:'${postId}'+feedback.score:0)`;
+                            const positiveFilterParam = `${encodeURIComponent(positiveFilter)}&post=${postId}`;
+                            const negativeFilterParam = `${encodeURIComponent(negativeFilter)}&post=${postId}`;
+
+                            navigate(`/members?filter=${activeFeedbackTab === 'positive' ? positiveFilterParam : negativeFilterParam}`, {crossApp: true});
+                        }}>
+                            View all
                             <LucideIcon.TableOfContents />
                         </Button>
                         {totalPages > 1 && (
