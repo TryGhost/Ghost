@@ -198,7 +198,7 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({color, icon: iconName, label, 
                 <div className='text-[2.3rem] font-semibold leading-none tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>
                     {value}
                 </div>
-                {diffDirection !== 'hidden' &&
+                {diffDirection && diffDirection !== 'hidden' &&
                     <>
                         <div className={diffContainerClassName}>
                             {diffDirection === 'up' &&
