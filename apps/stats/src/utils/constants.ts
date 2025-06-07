@@ -1,4 +1,4 @@
-export const STATS_RANGE_KV = {
+export const STATS_RANGES = {
     today: {
         name: 'Today',
         value: 1
@@ -29,7 +29,7 @@ export const STATS_RANGE_KV = {
     }
 };
 
-export const STATS_RANGE_OPTIONS = Object.values(STATS_RANGE_KV);
+export const STATS_RANGE_OPTIONS = Object.values(STATS_RANGES);
 
 export const STATS_DEFAULT_RANGE_KEY = 2;
 

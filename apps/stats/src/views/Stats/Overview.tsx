@@ -5,7 +5,7 @@ import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, cn, formatDisplayDate, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
-import {STATS_RANGE_KV} from '@src/utils/constants';
+import {STATS_RANGES} from '@src/utils/constants';
 import {getAudienceQueryParam} from './components/AudienceSelect';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken, useNavigate} from '@tryghost/admin-x-framework';
@@ -57,7 +57,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
                     {title}
                 </KpiCardHeaderLabel>
                 <KpiCardHeaderValue
-                    diffDirection={range === STATS_RANGE_KV.allTime.value ? 'hidden' : diffDirection}
+                    diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : diffDirection}
                     diffValue={diffValue}
                     value={formattedValue}
                 />

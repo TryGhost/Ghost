@@ -6,7 +6,7 @@ import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, centsToDollars, formatNumber} from '@tryghost/shade';
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
-import {STATS_RANGE_KV} from '@src/utils/constants';
+import {STATS_RANGES} from '@src/utils/constants';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -170,7 +170,7 @@ const GrowthKPIs: React.FC<{
                 }}>
                     <KpiTabValue
                         color='hsl(var(--chart-teal))'
-                        diffDirection={range === STATS_RANGE_KV.allTime.value ? 'hidden' : directions.total}
+                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
                         diffValue={percentChanges.total}
                         label="Total members"
                         value={formatNumber(totalMembers)}
@@ -181,7 +181,7 @@ const GrowthKPIs: React.FC<{
                 }}>
                     <KpiTabValue
                         color='hsl(var(--chart-blue))'
-                        diffDirection={range === STATS_RANGE_KV.allTime.value ? 'hidden' : directions.total}
+                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
                         diffValue={percentChanges.free}
                         label="Free members"
                         value={formatNumber(freeMembers)}
@@ -192,7 +192,7 @@ const GrowthKPIs: React.FC<{
                 }}>
                     <KpiTabValue
                         color='hsl(var(--chart-yellow))'
-                        diffDirection={range === STATS_RANGE_KV.allTime.value ? 'hidden' : directions.total}
+                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
                         diffValue={percentChanges.paid}
                         label="Paid members"
                         value={formatNumber(paidMembers)}
@@ -203,7 +203,7 @@ const GrowthKPIs: React.FC<{
                 }}>
                     <KpiTabValue
                         color='hsl(var(--chart-purple))'
-                        diffDirection={range === STATS_RANGE_KV.allTime.value ? 'hidden' : directions.total}
+                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
                         diffValue={percentChanges.mrr}
                         label="MRR"
                         value={`$${formatNumber(centsToDollars(mrr))}`}
