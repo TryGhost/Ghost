@@ -30,6 +30,6 @@ module.exports = addSetting({
     key: 'site_uuid',
     value: siteUuid,
     type: 'string',
-    group: 'core',
+    group: 'site',
     flags: 'PUBLIC,RO'
 });
