@@ -6,6 +6,7 @@ import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, centsToDollars, formatNumber} from '@tryghost/shade';
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
+import {STATS_RANGE_KV} from '@src/utils/constants';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -14,7 +15,7 @@ import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 // Define content types
 const CONTENT_TYPES = {
     POSTS: 'posts',
-    PAGES: 'pages', 
+    PAGES: 'pages',
     POSTS_AND_PAGES: 'posts_and_pages'
 } as const;
 
@@ -169,7 +170,7 @@ const GrowthKPIs: React.FC<{
                 }}>
                     <KpiTabValue
                         color='hsl(var(--chart-teal))'
-                        diffDirection={directions.total}
+                        diffDirection={range === STATS_RANGE_KV.allTime.value ? 'hidden' : directions.total}
                         diffValue={percentChanges.total}
                         label="Total members"
                         value={formatNumber(totalMembers)}
@@ -180,7 +181,7 @@ const GrowthKPIs: React.FC<{
                 }}>
                     <KpiTabValue
                         color='hsl(var(--chart-blue))'
-                        diffDirection={directions.free}
+                        diffDirection={range === STATS_RANGE_KV.allTime.value ? 'hidden' : directions.total}
                         diffValue={percentChanges.free}
                         label="Free members"
                         value={formatNumber(freeMembers)}
@@ -191,7 +192,7 @@ const GrowthKPIs: React.FC<{
                 }}>
                     <KpiTabValue
                         color='hsl(var(--chart-yellow))'
-                        diffDirection={directions.paid}
+                        diffDirection={range === STATS_RANGE_KV.allTime.value ? 'hidden' : directions.total}
                         diffValue={percentChanges.paid}
                         label="Paid members"
                         value={formatNumber(paidMembers)}
@@ -202,7 +203,7 @@ const GrowthKPIs: React.FC<{
                 }}>
                     <KpiTabValue
                         color='hsl(var(--chart-purple))'
-                        diffDirection={directions.mrr}
+                        diffDirection={range === STATS_RANGE_KV.allTime.value ? 'hidden' : directions.total}
                         diffValue={percentChanges.mrr}
                         label="MRR"
                         value={`$${formatNumber(centsToDollars(mrr))}`}
@@ -260,7 +261,7 @@ const Growth: React.FC = () => {
             } else if (sortBy.includes('mrr') && totalMrr > 0) {
                 percentage = item.mrr / totalMrr;
             }
-            
+
             return {
                 title: item.title,
                 post_id: item.post_id,
@@ -270,7 +271,7 @@ const Growth: React.FC = () => {
                 percentage
             };
         });
-    }, [topPostsData, sortBy, selectedContentType]);
+    }, [topPostsData, sortBy]);
 
     const getContentTypeLabel = () => {
         const option = CONTENT_TYPE_OPTIONS.find(opt => opt.value === selectedContentType);
@@ -328,7 +329,7 @@ const Growth: React.FC = () => {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
                                     {CONTENT_TYPE_OPTIONS.map(option => (
-                                        <DropdownMenuItem 
+                                        <DropdownMenuItem
                                             key={option.value}
                                             onClick={() => setSelectedContentType(option.value)}
                                         >
