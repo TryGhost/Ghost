@@ -5,6 +5,7 @@ import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, cn, formatDisplayDate, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
+import {STATS_RANGES} from '@src/utils/constants';
 import {getAudienceQueryParam} from './components/AudienceSelect';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken, useNavigate} from '@tryghost/admin-x-framework';
@@ -40,6 +41,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     onClick
 }) => {
     // const navigate = useNavigate();
+    const {range} = useGlobalData();
     const IconComponent = iconName && LucideIcon[iconName] as LucideIcon.LucideIcon;
 
     return (
@@ -55,7 +57,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
                     {title}
                 </KpiCardHeaderLabel>
                 <KpiCardHeaderValue
-                    diffDirection={diffDirection}
+                    diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : diffDirection}
                     diffValue={diffValue}
                     value={formattedValue}
                 />

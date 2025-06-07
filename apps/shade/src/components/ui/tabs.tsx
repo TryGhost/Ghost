@@ -174,7 +174,7 @@ interface KpiTabValueProps {
     icon?: keyof typeof LucideIcons;
     label: string;
     value: string | number;
-    diffDirection?: 'up' | 'down' | 'same';
+    diffDirection?: 'up' | 'down' | 'same' | 'hidden';
     diffValue?: string | number;
 }
 
@@ -198,7 +198,7 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({color, icon: iconName, label, 
                 <div className='text-[2.3rem] font-semibold leading-none tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>
                     {value}
                 </div>
-                {diffValue &&
+                {diffDirection && diffDirection !== 'hidden' &&
                     <>
                         <div className={diffContainerClassName}>
                             {diffDirection === 'up' &&
