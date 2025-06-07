@@ -114,7 +114,7 @@
     "@tryghost/social-urls": "0.1.50",
     "@tryghost/string": "0.2.16",
     "@tryghost/tpl": "0.1.35",
-    "@tryghost/url-utils": "4.4.12",
+    "@tryghost/url-utils": "4.4.13",
     "@tryghost/validator": "0.2.17",
     "@tryghost/version": "0.1.33",
     "@tryghost/zip": "1.1.49",
