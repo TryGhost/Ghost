@@ -275,6 +275,26 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Install specific Chrome version (137.0.7151.55)
+        run: |
+          # Fix for keyboard shortcut test failures on Blacksmith runners
+          # Blacksmith uses Chrome 135.0.7049.52 while GitHub Actions uses 137.0.7151.55
+          # This version difference causes keyboard event handling issues in admin tests
+          # Installing the same version as GitHub Actions to verify this is the root cause
+
+          # Remove existing Chrome installations
+          sudo apt-get remove -y google-chrome-stable google-chrome-beta google-chrome-unstable chromium-browser || true
+
+          # Download and install Chrome 137.0.7151.55
+          CHROME_VERSION="137.0.7151.55-1"
+          wget -q "https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb"
+          sudo dpkg -i "google-chrome-stable_${CHROME_VERSION}_amd64.deb" || sudo apt-get install -f -y
+
+          # Verify installation
+          google-chrome --version
+          echo "Chrome installation completed"
+
+
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
