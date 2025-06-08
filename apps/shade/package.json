@@ -57,7 +57,7 @@
         "@dnd-kit/sortable": "7.0.2",
         "@ebay/nice-modal-react": "1.2.13",
         "@hookform/resolvers": "5.1.0",
-        "@number-flow/react": "0.5.9",
+        "@number-flow/react": "0.5.10",
         "@radix-ui/react-alert-dialog": "1.1.13",
         "@radix-ui/react-avatar": "1.1.9",
         "@radix-ui/react-checkbox": "1.3.1",
