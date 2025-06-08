@@ -75,16 +75,15 @@ suites.forEach((suite) => {
 
         it('opens search icon when pressing Ctrl/Cmd+K', async function () {
             await visit('/dashboard');
-            expect(find('[data-test-modal="search"]'), 'search modal').to.not.exist;
 
-            // Test the keyboard shortcut by simulating it on the application root
-            // where the nav component with shortcuts is mounted
-            const appElement = document.querySelector('.gh-app') || document.body;
-            await triggerKeyEvent(appElement, 'keydown', 'K', {
+            // Wait for nav component to fully render and register shortcuts
+            await waitFor('[data-test-nav-menu="main"]');
+
+            expect(find('[data-test-modal="search"]'), 'search modal').to.not.exist;
+            await triggerKeyEvent(document, 'keydown', 'K', {
                 metaKey: ctrlOrCmd === 'command',
                 ctrlKey: ctrlOrCmd === 'ctrl'
             });
-            await waitFor('[data-test-modal="search"]');
             expect(find('[data-test-modal="search"]'), 'search modal').to.exist;
         });
 
