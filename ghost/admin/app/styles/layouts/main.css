@@ -1171,10 +1171,12 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     max-width: var(--main-layout-content-maxwidth);
 }
 
-.gh-nav-hidden + .gh-main .gh-canvas {
+/* This block was causing issues with the posts admin page
+   when the nav was hidden, so it was commented out. */
+/* .gh-nav-hidden + .gh-main .gh-canvas {
     padding-left: 80px;
     padding-right: 80px;
-}
+} */
 
 .gh-canvas.gh-canvas-sticky {
     padding-bottom: 0; /* No padding needed when tables are sticky */
