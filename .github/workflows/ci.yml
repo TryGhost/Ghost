@@ -274,7 +274,29 @@ jobs:
       - uses: useblacksmith/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
-
+      - name: Environment Detection
+        run: |
+          echo "=== ENVIRONMENT DEBUG ==="
+          echo "OS: $(uname -a)"
+          echo "Node version: $(node --version)"
+          echo "Yarn version: $(yarn --version)"
+          echo "Chrome version: $(google-chrome --version || chromium --version || echo 'Chrome not found')"
+          echo "Display: $DISPLAY"
+          echo "Headless env vars:"
+          echo "  MOZ_HEADLESS: $MOZ_HEADLESS"
+          echo "  CI: $CI"
+          echo "Runner info:"
+          echo "  Runner OS: $RUNNER_OS"
+          echo "  Runner name: $RUNNER_NAME"
+          echo "Blacksmith detection:"
+          echo "  Runner image: blacksmith-4vcpu-ubuntu-2404"
+          echo "  Is Blacksmith: $(echo $RUNNER_NAME | grep -q blacksmith && echo 'true' || echo 'false')"
+          echo "Available browsers:"
+          which google-chrome || echo "google-chrome not found"
+          which chromium || echo "chromium not found"
+          which chromium-browser || echo "chromium-browser not found"
+          echo "Chrome process info:"
+          ps aux | grep -i chrome | head -5 || echo "No chrome processes"
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
