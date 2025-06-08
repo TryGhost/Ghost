@@ -1,6 +1,6 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import {authenticateSession} from 'ember-simple-auth/test-support';
-import {click, currentURL, find, findAll, triggerKeyEvent, visit} from '@ember/test-helpers';
+import {click, currentURL, find, findAll, triggerKeyEvent, visit, waitFor, waitUntil} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {getPosts} from '../../mirage/config/posts';
@@ -80,6 +80,7 @@ suites.forEach((suite) => {
                 metaKey: ctrlOrCmd === 'command',
                 ctrlKey: ctrlOrCmd === 'ctrl'
             });
+            await waitFor('[data-test-modal="search"]');
             expect(find('[data-test-modal="search"]'), 'search modal').to.exist;
         });
 
@@ -88,6 +89,7 @@ suites.forEach((suite) => {
             await click('[data-test-button="search"]');
             expect(find('[data-test-modal="search"]'), 'search modal').to.exist;
             await triggerKeyEvent(document, 'keydown', 'Escape');
+            await waitUntil(() => !find('[data-test-modal="search"]'));
             expect(find('[data-test-modal="search"]'), 'search modal').to.not.exist;
         });
 
@@ -96,6 +98,7 @@ suites.forEach((suite) => {
             await click('[data-test-button="search"]');
             expect(find('[data-test-modal="search"]'), 'search modal').to.exist;
             await click('.epm-backdrop');
+            await waitUntil(() => !find('[data-test-modal="search"]'));
             expect(find('[data-test-modal="search"]'), 'search modal').to.not.exist;
         });
 
