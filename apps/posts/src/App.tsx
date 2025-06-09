@@ -11,6 +11,7 @@ interface AppProps {
 
 interface AppContextType {
     fromAnalytics: boolean;
+    externalNavigate: (url: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -25,7 +26,10 @@ export const useAppContext = () => {
 
 const App: React.FC<AppProps> = ({framework, designSystem, fromAnalytics = false}) => {
     const appContextValue: AppContextType = {
-        fromAnalytics
+        fromAnalytics,
+        externalNavigate: (url: string) => {
+            window.location.href = url;
+        }
     };
 
     return (

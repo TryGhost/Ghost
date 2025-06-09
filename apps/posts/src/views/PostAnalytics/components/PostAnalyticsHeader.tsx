@@ -1,9 +1,10 @@
-import React from 'react';
+import React, {useState} from 'react';
 import moment from 'moment-timezone';
-import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
-import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
+import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
+import {Post, useBrowsePosts, useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useAppContext} from '../../../App';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 interface PostWithPublishedAt extends Post {
     published_at?: string;
@@ -21,6 +22,9 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const {postId} = useParams();
     const navigate = useNavigate();
     const {fromAnalytics} = useAppContext();
+    const {mutateAsync: deletePost} = useDeletePost();
+    const handleError = useHandleError();
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
@@ -33,6 +37,26 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const typedPost = post as PostWithPublishedAt;
     // Use the utility function from admin-x-framework
     const showNewsletterTab = hasBeenEmailed(typedPost);
+
+    const handleDeletePost = () => {
+        if (!post) {
+            return;
+        }
+        
+        // We'll implement this as a controlled AlertDialog with React state
+        setShowDeleteDialog(true);
+    };
+
+    const performDelete = async () => {
+        try {
+            await deletePost(postId as string);
+            setShowDeleteDialog(false);
+            // Navigate back to posts list
+            navigate('/posts/', {crossApp: true});
+        } catch (e) {
+            handleError(e);
+        }
+    };
 
     return (
         <>
@@ -78,6 +102,15 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                             }}>
                                                 Edit post
                                                 {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
+                                            </DropdownMenuItem>
+                                        </DropdownMenuGroup>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuItem 
+                                                className='text-red-600 focus:text-red-600'
+                                                onClick={handleDeletePost}
+                                            >
+                                                Delete post
                                             </DropdownMenuItem>
                                         </DropdownMenuGroup>
                                     </DropdownMenuContent>
@@ -138,6 +171,29 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     {children}
                 </NavbarActions>
             </Navbar>
+
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Are you sure you want to delete this post?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            You&apos;re about to delete &quot;<strong>{post?.title}</strong>&quot;.
+                            This is permanent! We warned you, k?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                            className="hover:bg-red-700 bg-red-600 text-white"
+                            onClick={performDelete}
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </>
     );
 };

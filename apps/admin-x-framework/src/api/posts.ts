@@ -1,4 +1,4 @@
-import {Meta, createQuery, createQueryWithId} from '../utils/api/hooks';
+import {Meta, createQuery, createQueryWithId, createMutation} from '../utils/api/hooks';
 
 export type Email = {
     opened_count: number;
@@ -51,4 +51,9 @@ export const getPost = createQueryWithId<PostsResponseType>({
 export const usePostsExports = createQuery<string>({
     dataType,
     path: '/posts/export/'
+});
+
+export const useDeletePost = createMutation<unknown, string>({
+    method: 'DELETE',
+    path: id => `/posts/${id}/`
 });
