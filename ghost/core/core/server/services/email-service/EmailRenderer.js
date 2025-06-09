@@ -1099,7 +1099,8 @@ class EmailRenderer {
     }
 
     #getHeaderBackgroundColor(newsletter, accentColor) {
-        const value = newsletter.get('header_background_color');
+        const value = newsletter?.get('header_background_color');
+
         if (value === 'transparent') {
             return null;
         }
@@ -1108,7 +1109,11 @@ class EmailRenderer {
             return accentColor;
         }
 
-        return value;
+        if (VALID_HEX_REGEX.test(value)) {
+            return value;
+        }
+
+        return null;
     }
 
     /**
@@ -1287,16 +1292,16 @@ class EmailRenderer {
                 showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag,
                 showSubscriptionDetails: newsletter.get('show_subscription_details')
             },
-            
+
             hasHeaderContent: !!(
-                headerImage || 
-                (newsletter.get('show_header_icon') && this.#settingsCache.get('icon')) || 
-                newsletter.get('show_header_title') || 
-                newsletter.get('show_header_name') || 
-                newsletter.get('show_post_title_section') || 
+                headerImage ||
+                (newsletter.get('show_header_icon') && this.#settingsCache.get('icon')) ||
+                newsletter.get('show_header_title') ||
+                newsletter.get('show_header_name') ||
+                newsletter.get('show_post_title_section') ||
                 (newsletter.get('show_feature_image') && !!postFeatureImage)
             ),
-            
+
             latestPosts,
             latestPostsHasImages,
 
