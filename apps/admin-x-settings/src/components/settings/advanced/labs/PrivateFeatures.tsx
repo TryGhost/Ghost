@@ -12,6 +12,10 @@ const features = [{
     description: 'Enables traffic analytics',
     flag: 'trafficAnalytics'
 }, {
+    title: 'Traffic Analytics (alpha)',
+    description: 'Enables alpha stage analytics features',
+    flag: 'trafficAnalyticsAlpha'
+}, {
     title: 'Email customization (internal alpha)',
     description: 'Adds customization settings to newsletter design screen. NB: must have beta flag enabled too.',
     flag: 'emailCustomizationAlpha'
@@ -24,9 +28,9 @@ const features = [{
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
 }, {
-    title: 'Analytics Alpha',
-    description: 'Enables alpha stage analytics features',
-    flag: 'trafficAnalyticsAlpha'
+    title: 'Updated main navigation (internal alpha)',
+    description: 'Enables simplified main navigation',
+    flag: 'updatedMainNav'
 }, {
     title: 'Explore',
     description: 'Enables keeping in touch with the new Explore API',
