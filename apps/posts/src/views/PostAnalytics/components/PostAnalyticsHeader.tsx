@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import moment from 'moment-timezone';
-import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
-import {Post, useBrowsePosts, useDeletePost} from '@tryghost/admin-x-framework/api/posts';
+import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
+import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useAppContext} from '../../../App';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -130,7 +130,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                     {post?.title}
                                 </H1>
                                 {typedPost && typedPost.published_at && (
-                                    <div className='text-muted-foreground mt-0.5 flex items-center justify-start text-sm leading-[1.65em]'>
+                                    <div className='mt-0.5 flex items-center justify-start text-sm leading-[1.65em] text-muted-foreground'>
                             Published on your site on {moment.utc(typedPost.published_at).format('D MMM YYYY')} at {moment.utc(typedPost.published_at).format('HH:mm')}
                                     </div>
                                 )}
@@ -186,7 +186,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction 
-                            className="bg-red-600 text-white hover:bg-red-700"
+                            className="hover:bg-red-700 bg-red-600 text-white"
                             onClick={performDelete}
                         >
                             Delete
