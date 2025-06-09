@@ -20,15 +20,18 @@ interface LatestPostStatsResponse {
 }
 
 export const useLatestPostStats = () => {
-    const {data, isLoading, error} = useQuery<LatestPostStatsResponse>({
+    const {data, isLoading, error} = useQuery({
         queryKey: ['stats', 'latest-post'],
-        queryFn: async () => {
+        queryFn: async (): Promise<LatestPostStatsResponse> => {
             const response = await fetch('/ghost/api/admin/stats/latest-post/');
             if (!response.ok) {
                 throw new Error('Failed to fetch latest post stats');
             }
             return response.json();
-        }
+        },
+        staleTime: 30 * 1000, // Consider data stale after 30 seconds
+        refetchOnMount: true, // Always refetch when component mounts
+        refetchOnWindowFocus: true // Refetch when window gains focus
     });
 
     return {
