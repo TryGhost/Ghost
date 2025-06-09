@@ -11,71 +11,13 @@ import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyVie
 import {LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '@src/utils/pending-activity';
-import {mapPostToActivity} from '@src/utils/posts';
 import {renderTimestamp} from '@src/utils/render-timestamp';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
-import {usePostForUser, useReplyChainForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
+import {useReplyChainData} from '@hooks/use-reply-chain-data';
 
 const FeedItemDivider: React.FC = () => (
     <div className="h-px bg-gray-200 dark:bg-gray-950"></div>
 );
-
-function useReplyChainData(postId: string) {
-    const {isEnabled} = useFeatureFlags();
-
-    const shouldFetchReplyChain = isEnabled('reply-chain');
-
-    const {data: replyChain, isLoading: isReplyChainLoading, loadMoreChildren, loadMoreChildReplies, hasMoreChildren, hasMoreChildReplies} = useReplyChainForUser('index', shouldFetchReplyChain ? postId : '');
-    const {data: post, isLoading} = usePostForUser('index', shouldFetchReplyChain ? '' : postId);
-    const {data: thread} = useThreadForUser('index', shouldFetchReplyChain ? '' : postId);
-
-    if (shouldFetchReplyChain) {
-        const threadParents = replyChain?.ancestors?.chain?.map(mapPostToActivity) || [];
-        const threadPost = replyChain?.post ? mapPostToActivity(replyChain.post) : undefined;
-        const processedReplies = (replyChain?.children ?? []).map((childData) => {
-            const mainReply = mapPostToActivity(childData.post);
-            const chainItems = childData.chain ? childData.chain.map(mapPostToActivity) : [];
-
-            return {
-                mainReply,
-                chain: chainItems
-            };
-        });
-
-        return {
-            threadParents,
-            post: threadPost,
-            processedReplies,
-            isLoading: isReplyChainLoading,
-            loadMoreChildren,
-            loadMoreChildReplies,
-            hasMoreChildren,
-            hasMoreChildReplies
-        };
-    } else {
-        const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === postId);
-
-        const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
-        const threadParents = (thread?.posts ?? []).slice(0, threadPostIdx);
-
-        const processedReplies = threadChildren.map((item) => {
-            return {
-                mainReply: item,
-                chain: []
-            };
-        });
-
-        return {
-            threadParents,
-            post,
-            processedReplies,
-            isLoading,
-            loadMoreChildren: () => Promise.resolve(),
-            hasMoreChildren: false
-        };
-    }
-}
 
 const Note = () => {
     const {postId} = useParams();
@@ -100,7 +42,7 @@ const Note = () => {
         loadMoreChildReplies,
         hasMoreChildren,
         hasMoreChildReplies
-    } = useReplyChainData(decodeURIComponent(postId ?? ''));
+    } = useReplyChainData(decodeURIComponent(postId ?? ''), {includeAncestors: true});
 
     const object = currentPost?.object;
 
