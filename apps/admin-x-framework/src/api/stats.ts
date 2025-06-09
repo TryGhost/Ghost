@@ -8,6 +8,7 @@ export type TopContentItem = {
     title?: string;
     post_uuid?: string;
     post_id?: string;
+    post_type?: string;
 }
 
 export type TopContentResponseType = {
