@@ -1,5 +1,5 @@
 import DateRangeSelect from './components/DateRangeSelect';
-import React, {useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
@@ -9,7 +9,7 @@ import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {STATS_RANGES} from '@src/utils/constants';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 
 // Define content types
@@ -74,9 +74,15 @@ type Totals = {
 const GrowthKPIs: React.FC<{
     chartData: ChartDataItem[];
     totals: Totals;
-}> = ({chartData: allChartData, totals}) => {
-    const [currentTab, setCurrentTab] = useState('total-members');
+    initialTab?: string;
+}> = ({chartData: allChartData, totals, initialTab = 'total-members'}) => {
+    const [currentTab, setCurrentTab] = useState(initialTab);
     const {range} = useGlobalData();
+
+    // Update current tab if initialTab changes
+    useEffect(() => {
+        setCurrentTab(initialTab);
+    }, [initialTab]);
 
     const {totalMembers, freeMembers, paidMembers, mrr, percentChanges, directions} = totals;
 
@@ -163,7 +169,7 @@ const GrowthKPIs: React.FC<{
     };
 
     return (
-        <Tabs defaultValue="total-members" variant='kpis'>
+        <Tabs defaultValue={initialTab} variant='kpis'>
             <TabsList className="-mx-6 grid grid-cols-4">
                 <KpiTabTrigger value="total-members" onClick={() => {
                     setCurrentTab('total-members');
@@ -234,6 +240,10 @@ const Growth: React.FC = () => {
     const [sortBy, setSortBy] = useState<TopPostsOrder>('free_members desc');
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
+    // Get the initial tab from URL search parameters
+    const initialTab = searchParams.get('tab') || 'total-members';
 
     // Get stats from custom hook once
     const {isLoading, chartData, totals} = useGrowthStats(range);
@@ -310,7 +320,7 @@ const Growth: React.FC = () => {
             <StatsView data={chartData} isLoading={isLoading}>
                 <Card>
                     <CardContent>
-                        <GrowthKPIs chartData={chartData} totals={totals} />
+                        <GrowthKPIs chartData={chartData} initialTab={initialTab} totals={totals} />
                     </CardContent>
                 </Card>
                 <Card>

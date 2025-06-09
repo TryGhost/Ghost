@@ -270,7 +270,7 @@ const Overview: React.FC = () => {
                         linkto='/growth/'
                         title='Members'
                         onClick={() => {
-                            navigate('/growth/');
+                            navigate('/growth/?tab=total-members');
                         }}
                     >
                         <GhAreaChart
@@ -294,7 +294,7 @@ const Overview: React.FC = () => {
                         linkto='/growth/'
                         title='MRR'
                         onClick={() => {
-                            navigate('/growth/');
+                            navigate('/growth/?tab=mrr');
                         }}
                     >
                         <GhAreaChart
