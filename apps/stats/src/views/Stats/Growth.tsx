@@ -4,7 +4,7 @@ import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, centsToDollars, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiTabTrigger, KpiTabValue, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, centsToDollars, formatNumber} from '@tryghost/shade';
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {STATS_RANGES} from '@src/utils/constants';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
@@ -232,7 +232,7 @@ const GrowthKPIs: React.FC<{
 const Growth: React.FC = () => {
     const {range} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopPostsOrder>('free_members desc');
-    const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS);
+    const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
     const navigate = useNavigate();
 
     // Get stats from custom hook once
@@ -281,11 +281,11 @@ const Growth: React.FC = () => {
     const getContentTitle = () => {
         switch (selectedContentType) {
         case CONTENT_TYPES.POSTS:
-            return 'Top performing posts';
+            return 'Top posts';
         case CONTENT_TYPES.PAGES:
-            return 'Top performing pages';
+            return 'Top pages';
         default:
-            return 'Top performing posts & pages';
+            return 'Top content';
         }
     };
 
@@ -314,32 +314,27 @@ const Growth: React.FC = () => {
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <CardTitle>{getContentTitle()}</CardTitle>
-                                <CardDescription>{getContentDescription()}</CardDescription>
-                            </div>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button className="gap-1 text-sm" size="sm" variant="outline">
-                                        {getContentTypeLabel()}
-                                        <LucideIcon.ChevronDown className="size-3" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    {CONTENT_TYPE_OPTIONS.map(option => (
-                                        <DropdownMenuItem
-                                            key={option.value}
-                                            onClick={() => setSelectedContentType(option.value)}
-                                        >
-                                            {option.label}
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                    </CardHeader>
+                    <div className="flex items-start justify-between">
+                        <CardHeader>
+                            <CardTitle>{getContentTitle()}</CardTitle>
+                            <CardDescription>{getContentDescription()}</CardDescription>
+                        </CardHeader>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger className='mr-6 mt-6' asChild>
+                                <Button variant="dropdown">{getContentTypeLabel()}</Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align='end'>
+                                {CONTENT_TYPE_OPTIONS.map(option => (
+                                    <DropdownMenuItem
+                                        key={option.value}
+                                        onClick={() => setSelectedContentType(option.value)}
+                                    >
+                                        {option.label}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                     <CardContent>
                         <Separator/>
                         <Table>
