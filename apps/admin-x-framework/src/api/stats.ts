@@ -79,9 +79,17 @@ export type MrrHistoryItem = {
     mrr: number;
     currency: string;
 };
+
+export type MrrTotalItem = {
+    currency: string;
+    mrr: number;
+};
+
 export type MrrHistoryResponseType = {
     stats: MrrHistoryItem[];
-    meta: Meta;
+    meta: {
+        totals: MrrTotalItem[];
+    };
 };
 
 export type NewsletterStatItem = {

@@ -6,6 +6,14 @@ import {useMemo} from 'react';
 // Type for direction values
 export type DiffDirection = 'up' | 'down' | 'same';
 
+// Currency symbol utility (same as in admin-x-settings)
+function getSymbol(currency: string): string {
+    if (!currency) {
+        return '';
+    }
+    return Intl.NumberFormat('en', {currency, style: 'currency'}).format(0).replace(/[\d\s.]/g, '');
+}
+
 // Helper function to convert range to date parameters
 export const getRangeDates = (rangeInDays: number) => {
     // Always use UTC to stay aligned with the backend's date arithmetic
@@ -229,17 +237,35 @@ export const useGrowthStats = (range: number) => {
         return [];
     }, [memberCountResponse]);
 
-    const mrrData = useMemo(() => {
+    const {mrrData, selectedCurrency} = useMemo(() => {
         // HACK: We should do this filtering on the backend, but the API doesn't support it yet
         const dateFromMoment = moment(dateFrom).subtract(1, 'day');
         const dateToMoment = moment().startOf('day'); // Today
         
-        if (mrrHistoryResponse?.stats) {
-            const filteredData = mrrHistoryResponse.stats.filter((item) => {
+        if (mrrHistoryResponse?.stats && mrrHistoryResponse?.meta?.totals) {
+            // Select the currency with the highest total MRR value (same logic as Dashboard)
+            const totals = mrrHistoryResponse.meta.totals;
+            let currentMax = totals[0];
+            if (!currentMax) {
+                return {mrrData: [], selectedCurrency: 'usd'};
+            }
+
+            for (const total of totals) {
+                if (total.mrr > currentMax.mrr) {
+                    currentMax = total;
+                }
+            }
+
+            const useCurrency = currentMax.currency;
+            
+            // Filter MRR data to only include the selected currency
+            const currencyFilteredData = mrrHistoryResponse.stats.filter(d => d.currency === useCurrency);
+            
+            const filteredData = currencyFilteredData.filter((item) => {
                 return moment(item.date).isSameOrAfter(dateFromMoment);
             });
             
-            const allData = [...mrrHistoryResponse.stats].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            const allData = [...currencyFilteredData].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
             const result = [...filteredData];
             
             // Always ensure we have a data point at the start of the range
@@ -272,9 +298,9 @@ export const useGrowthStats = (range: number) => {
             
             const finalResult = result.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
             
-            return finalResult;
+            return {mrrData: finalResult, selectedCurrency: useCurrency};
         }
-        return [];
+        return {mrrData: [], selectedCurrency: 'usd'};
     }, [mrrHistoryResponse, dateFrom]);
 
     // Calculate totals
@@ -282,6 +308,11 @@ export const useGrowthStats = (range: number) => {
 
     // Format chart data
     const chartData = useMemo(() => formatChartData(memberData, mrrData), [memberData, mrrData]);
+
+    // Get currency symbol
+    const currencySymbol = useMemo(() => {
+        return getSymbol(selectedCurrency);
+    }, [selectedCurrency]);
 
     const isLoading = useMemo(() => isMemberCountLoading || isMrrLoading, [isMemberCountLoading, isMrrLoading]);
 
@@ -292,6 +323,8 @@ export const useGrowthStats = (range: number) => {
         dateFrom,
         endDate,
         totals: totalsData,
-        chartData
+        chartData,
+        selectedCurrency,
+        currencySymbol
     };
 };
