@@ -712,7 +712,7 @@ describe('PostsStatsService', function () {
                 date_to: '2025-01-31',
                 timezone: 'UTC'
             });
-            assert.deepEqual(result, []);
+            assert.deepEqual(result, {data: []});
         });
 
         it('returns latest posts with zero views when no views data exists', async function () {
@@ -784,7 +784,7 @@ describe('PostsStatsService', function () {
                 }
             ];
 
-            assert.deepEqual(result, expected);
+            assert.deepEqual(result, {data: expected});
         });
 
         it('backfills with latest posts when not enough views data', async function () {
@@ -878,7 +878,7 @@ describe('PostsStatsService', function () {
                 }
             ];
 
-            assert.deepEqual(result, expected);
+            assert.deepEqual(result, {data: expected});
         });
 
         it('passes correct parameters to Tinybird client', async function () {
@@ -919,7 +919,7 @@ describe('PostsStatsService', function () {
                 timezone: 'UTC'
             });
 
-            assert.deepEqual(result, []);
+            assert.deepEqual(result, {data: []});
         });
 
         it('returns correct member attribution counts when member events exist', async function () {
@@ -979,15 +979,15 @@ describe('PostsStatsService', function () {
             });
 
             // Basic verification that the method works and returns expected structure
-            assert.ok(Array.isArray(result), 'Result should be an array');
+            assert.ok(result.data && Array.isArray(result.data), 'Result should have data array');
             
             // With current implementation and date filtering issues, we expect posts but with 0 members
             // This test mainly verifies the method structure works correctly
-            if (result.length > 0) {
-                assert.ok(result[0].hasOwnProperty('post_id'), 'Results should have post_id');
-                assert.ok(result[0].hasOwnProperty('title'), 'Results should have title');
-                assert.ok(result[0].hasOwnProperty('views'), 'Results should have views');
-                assert.ok(result[0].hasOwnProperty('members'), 'Results should have members');
+            if (result.data.length > 0) {
+                assert.ok(result.data[0].hasOwnProperty('post_id'), 'Results should have post_id');
+                assert.ok(result.data[0].hasOwnProperty('title'), 'Results should have title');
+                assert.ok(result.data[0].hasOwnProperty('views'), 'Results should have views');
+                assert.ok(result.data[0].hasOwnProperty('members'), 'Results should have members');
             }
         });
 
@@ -1033,12 +1033,12 @@ describe('PostsStatsService', function () {
             });
 
             // Basic verification that the method works
-            assert.ok(Array.isArray(result), 'Result should be an array');
+            assert.ok(result.data && Array.isArray(result.data), 'Result should have data array');
             
             // This test verifies that the method handles the free + paid member scenario
             // The current implementation counts them separately (no deduplication)
-            if (result.length > 0) {
-                assert.ok(result[0].hasOwnProperty('members'), 'Results should have members property');
+            if (result.data.length > 0) {
+                assert.ok(result.data[0].hasOwnProperty('members'), 'Results should have members property');
             }
         });
 
@@ -1093,13 +1093,13 @@ describe('PostsStatsService', function () {
             });
 
             // Basic verification that the method works for cross-post scenarios
-            assert.ok(Array.isArray(result), 'Result should be an array');
+            assert.ok(result.data && Array.isArray(result.data), 'Result should have data array');
             
             // This test verifies cross-post attribution handling
             // post1: should get credit for free signups
             // post2: should get credit for paid conversions
-            if (result.length > 0) {
-                assert.ok(result[0].hasOwnProperty('members'), 'Results should have members property');
+            if (result.data.length > 0) {
+                assert.ok(result.data[0].hasOwnProperty('members'), 'Results should have members property');
             }
         });
     });
