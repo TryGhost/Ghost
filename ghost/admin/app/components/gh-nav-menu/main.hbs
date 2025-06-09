@@ -30,7 +30,7 @@
                 <ul class="gh-nav-list gh-nav-main">
                     {{#if (and (feature "ActivityPub") this.session.user.isAdmin)}}
                         <li>
-                            <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "ap-network"}}Network</LinkTo>
+                            <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "ap-network" class="gh-icon-ap-network"}}Network</LinkTo>
                         </li>
                     {{/if}}
                     {{#if (and (gh-user-can-admin this.session.user) this.config.stats (feature "trafficAnalytics"))}}
