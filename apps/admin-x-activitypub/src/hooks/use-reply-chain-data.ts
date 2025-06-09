@@ -64,8 +64,19 @@ export function useReplyChainData(postId: string, options: UseReplyChainDataOpti
                 hasMoreChildReplies: () => false
             };
         } else {
-            // Reader case - just process all thread posts as replies
-            const processedReplies = (thread?.posts ?? []).map((item) => {
+            // Reader case - filter out the main post and process only replies
+            const mainPostId = post?.id;
+            const mainObjectId = post?.object?.id;
+
+            const replyPosts = (thread?.posts ?? []).filter((item) => {
+                // Filter out the main post by comparing both activity ID and object ID
+                return item.id !== mainPostId &&
+                    item.object.id !== mainObjectId &&
+                    item.id !== postId &&
+                    item.object.id !== postId;
+            });
+
+            const processedReplies = replyPosts.map((item) => {
                 return {
                     mainReply: item,
                     chain: []

@@ -459,11 +459,16 @@ export const Reader: React.FC<ReaderProps> = ({
     }, [object?.replyCount]);
 
     useEffect(() => {
+        // Only set up infinite scroll if pagination is supported (reply-chain feature flag enabled)
+        if (!hasMoreChildren) {
+            return;
+        }
+
         if (observerRef.current) {
             observerRef.current.disconnect();
         }
 
-        const container = document.querySelector('[data-scrollable-container]') as HTMLElement;
+        const container = modalRef.current;
         if (!container) {
             return;
         }
