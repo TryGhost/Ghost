@@ -6,7 +6,7 @@ import {ShadeApp, ShadeAppProps} from '@tryghost/shade';
 interface AppProps {
     framework: TopLevelFrameworkProps;
     designSystem: ShadeAppProps;
-    fromAnalytics: boolean;
+    fromAnalytics?: boolean;
 }
 
 interface AppContextType {
@@ -23,7 +23,7 @@ export const useAppContext = () => {
     return context;
 };
 
-const App: React.FC<AppProps> = ({framework, designSystem, fromAnalytics}) => {
+const App: React.FC<AppProps> = ({framework, designSystem, fromAnalytics = false}) => {
     const appContextValue: AppContextType = {
         fromAnalytics
     };
