@@ -36,10 +36,6 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
             return value;
         }
 
-        if (value === 'dark') {
-            return '#15212a';
-        }
-
         return '#ffffff';
     };
 
