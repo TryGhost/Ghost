@@ -28,10 +28,7 @@ export const useLatestPostStats = () => {
                 throw new Error('Failed to fetch latest post stats');
             }
             return response.json();
-        },
-        staleTime: 30 * 1000, // Consider data stale after 30 seconds
-        refetchOnMount: true, // Always refetch when component mounts
-        refetchOnWindowFocus: true // Refetch when window gains focus
+        }
     });
 
     return {
