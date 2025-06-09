@@ -26,7 +26,7 @@ function useReplyChainData(postId: string) {
 
     const shouldFetchReplyChain = isEnabled('reply-chain');
 
-    const {data: replyChain, isLoading: isReplyChainLoading, loadMoreChildren, hasMoreChildren} = useReplyChainForUser('index', shouldFetchReplyChain ? postId : '');
+    const {data: replyChain, isLoading: isReplyChainLoading, loadMoreChildren, loadMoreChildReplies, hasMoreChildren, hasMoreChildReplies} = useReplyChainForUser('index', shouldFetchReplyChain ? postId : '');
     const {data: post, isLoading} = usePostForUser('index', shouldFetchReplyChain ? '' : postId);
     const {data: thread} = useThreadForUser('index', shouldFetchReplyChain ? '' : postId);
 
@@ -49,7 +49,9 @@ function useReplyChainData(postId: string) {
             processedReplies,
             isLoading: isReplyChainLoading,
             loadMoreChildren,
-            hasMoreChildren
+            loadMoreChildReplies,
+            hasMoreChildren,
+            hasMoreChildReplies
         };
     } else {
         const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === postId);
@@ -80,6 +82,8 @@ const Note = () => {
     const {canGoBack} = useNavigationStack();
 
     const [expandedChains, setExpandedChains] = useState<Set<string>>(new Set());
+    const [fullyExpandedChains, setFullyExpandedChains] = useState<Set<string>>(new Set());
+    const [loadingChains, setLoadingChains] = useState<Set<string>>(new Set());
     const [isLoadingMoreTopLevelReplies, setIsLoadingMoreTopLevelReplies] = useState(false);
     const repliesRef = useRef<HTMLDivElement>(null);
     const postRef = useRef<HTMLDivElement>(null);
@@ -93,7 +97,9 @@ const Note = () => {
         processedReplies,
         isLoading,
         loadMoreChildren,
-        hasMoreChildren
+        loadMoreChildReplies,
+        hasMoreChildren,
+        hasMoreChildReplies
     } = useReplyChainData(decodeURIComponent(postId ?? ''));
 
     const object = currentPost?.object;
@@ -195,9 +201,37 @@ const Note = () => {
                 newSet.delete(chainId);
             } else {
                 newSet.add(chainId);
+                setFullyExpandedChains((fullyExpanded) => {
+                    const newFullyExpanded = new Set(fullyExpanded);
+                    newFullyExpanded.add(chainId);
+                    return newFullyExpanded;
+                });
             }
             return newSet;
         });
+    }
+
+    async function loadMoreForChain(chainId: string, childIndex: number) {
+        if (loadingChains.has(chainId)) {
+            return;
+        }
+
+        setLoadingChains(prev => new Set(prev).add(chainId));
+
+        try {
+            if (loadMoreChildReplies) {
+                await loadMoreChildReplies(childIndex);
+            }
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to load more replies for chain:', error);
+        } finally {
+            setLoadingChains((prev) => {
+                const newSet = new Set(prev);
+                newSet.delete(chainId);
+                return newSet;
+            });
+        }
     }
 
     return (
@@ -274,6 +308,8 @@ const Note = () => {
                                                 const isLastGroup = groupIndex === processedReplies.length - 1;
                                                 const chainId = replyGroup.mainReply.id;
                                                 const isExpanded = expandedChains.has(chainId);
+                                                const isFullyExpanded = fullyExpandedChains.has(chainId);
+                                                const isChainLoading = loadingChains.has(chainId);
                                                 const hasChain = replyGroup.chain.length > 0;
 
                                                 return (
@@ -321,6 +357,8 @@ const Note = () => {
 
                                                         {hasChain && isExpanded && replyGroup.chain.slice(1).map((chainItem: Activity, chainIndex: number) => {
                                                             const isLastChainItem = chainIndex === replyGroup.chain.slice(1).length - 1;
+                                                            const hasMoreReplies = hasMoreChildReplies && hasMoreChildReplies(groupIndex);
+                                                            const shouldShowConnector = isLastChainItem && hasMoreReplies;
 
                                                             return (
                                                                 <FeedItem
@@ -330,7 +368,7 @@ const Note = () => {
                                                                     commentCount={chainItem.object.replyCount ?? 0}
                                                                     isChainContinuation={true}
                                                                     isPending={isPendingActivity(chainItem.id)}
-                                                                    last={isLastChainItem}
+                                                                    last={isLastChainItem && !shouldShowConnector}
                                                                     layout='reply'
                                                                     likeCount={chainItem.object.likeCount ?? 0}
                                                                     object={chainItem.object}
@@ -347,8 +385,16 @@ const Note = () => {
 
                                                         {hasChain && replyGroup.chain.length > 1 && !isExpanded && (
                                                             <ShowRepliesButton
-                                                                count={replyGroup.chain.length - 1}
+                                                                variant='expand'
                                                                 onClick={() => toggleChain(chainId)}
+                                                            />
+                                                        )}
+
+                                                        {hasChain && isExpanded && isFullyExpanded && hasMoreChildReplies && hasMoreChildReplies(groupIndex) && (
+                                                            <ShowRepliesButton
+                                                                loading={isChainLoading}
+                                                                variant='loadMore'
+                                                                onClick={() => loadMoreForChain(chainId, groupIndex)}
                                                             />
                                                         )}
 

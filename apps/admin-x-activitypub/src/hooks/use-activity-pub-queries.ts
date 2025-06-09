@@ -2206,11 +2206,16 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
             const child = replyChain.children[childIndex];
-            const lastReplyInChain = child.chain[child.chain.length - 1];
 
-            const nextPage = await api.getReplies(lastReplyInChain.id);
+            // Use the second-to-last reply as the starting point for pagination
+            // This ensures we get proper continuity without gaps
+            const replyForPagination = child.chain.length > 1
+                ? child.chain[child.chain.length - 2]
+                : child.post;
 
-            const moreReplies = [nextPage.children[0].post, ...nextPage.children[0].chain];
+            const nextPage = await api.getReplies(replyForPagination.id);
+
+            const moreReplies = nextPage.children[0].chain;
 
             setReplyChain((prev) => {
                 if (!prev) {
