@@ -22,7 +22,6 @@ const ShowRepliesButton: React.FC<ShowRepliesButtonProps> = ({count, onClick, va
             return 'Show replies';
         case 'loadMore':
             return 'Show more replies';
-        case 'default':
         default:
             return 'Show replies';
         }
