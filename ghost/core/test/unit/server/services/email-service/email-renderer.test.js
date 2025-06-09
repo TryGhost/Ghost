@@ -2236,7 +2236,7 @@ describe('Email renderer', function () {
             const tests = [
                 {input: 'Invalid Color', expected: '#ffffff'},
                 {input: '#BADA55', expected: '#BADA55'},
-                {input: 'dark', expected: '#15212A'},
+                {input: 'dark', expected: '#ffffff'}, // not a valid hex color, first iteration of email customization had light/dark
                 {input: 'light', expected: '#ffffff'},
                 {input: null, expected: '#ffffff'}
             ];
