@@ -1,3 +1,4 @@
+import React, {createContext, useContext} from 'react';
 import {APP_ROUTE_PREFIX, routes} from '@src/routes';
 import {FrameworkProvider, Outlet, RouterProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
 import {ShadeApp, ShadeAppProps} from '@tryghost/shade';
@@ -5,11 +6,30 @@ import {ShadeApp, ShadeAppProps} from '@tryghost/shade';
 interface AppProps {
     framework: TopLevelFrameworkProps;
     designSystem: ShadeAppProps;
+    fromAnalytics?: boolean;
 }
 
-const App: React.FC<AppProps> = ({framework, designSystem}) => {
+interface AppContextType {
+    fromAnalytics: boolean;
+}
+
+const AppContext = createContext<AppContextType | undefined>(undefined);
+
+export const useAppContext = () => {
+    const context = useContext(AppContext);
+    if (context === undefined) {
+        throw new Error('useAppContext must be used within an AppProvider');
+    }
+    return context;
+};
+
+const App: React.FC<AppProps> = ({framework, designSystem, fromAnalytics = false}) => {
+    const appContextValue: AppContextType = {
+        fromAnalytics
+    };
+
     return (
-        <FrameworkProvider 
+        <FrameworkProvider
             {...framework}
             queryClientOptions={{
                 staleTime: 0, // Always consider data stale (matches Ember admin route behavior)
@@ -17,11 +37,13 @@ const App: React.FC<AppProps> = ({framework, designSystem}) => {
                 refetchOnWindowFocus: false // Disable window focus refetch (Ember admin doesn't have this)
             }}
         >
-            <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
-                <ShadeApp darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
-                    <Outlet />
-                </ShadeApp>
-            </RouterProvider>
+            <AppContext.Provider value={appContextValue}>
+                <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
+                    <ShadeApp darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
+                        <Outlet />
+                    </ShadeApp>
+                </RouterProvider>
+            </AppContext.Provider>
         </FrameworkProvider>
     );
 };

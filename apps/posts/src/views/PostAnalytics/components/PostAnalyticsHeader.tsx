@@ -3,6 +3,7 @@ import moment from 'moment-timezone';
 import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {useAppContext} from '../../../App';
 
 interface PostWithPublishedAt extends Post {
     published_at?: string;
@@ -19,6 +20,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
 }) => {
     const {postId} = useParams();
     const navigate = useNavigate();
+    const {fromAnalytics} = useAppContext();
 
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
@@ -40,15 +42,20 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                         <div className='flex w-full items-center justify-between'>
                             <Breadcrumb>
                                 <BreadcrumbList>
-                                    <BreadcrumbItem>
-                                        <BreadcrumbLink className='cursor-pointer leading-[24px]' onClick={() => navigate('/posts/', {crossApp: true})}>
-                                    Posts
-                                        </BreadcrumbLink>
-                                    </BreadcrumbItem>
+                                    {fromAnalytics
+                                        ?
+                                        <BreadcrumbItem>
+                                            <BreadcrumbLink className='cursor-pointer leading-[24px]' onClick={() => navigate('/analytics/', {crossApp: true})}>Analytics</BreadcrumbLink>
+                                        </BreadcrumbItem>
+                                        :
+                                        <BreadcrumbItem>
+                                            <BreadcrumbLink className='cursor-pointer leading-[24px]' onClick={() => navigate('/posts/', {crossApp: true})}>Posts</BreadcrumbLink>
+                                        </BreadcrumbItem>
+                                    }
                                     <BreadcrumbSeparator />
                                     <BreadcrumbItem>
                                         <BreadcrumbPage className='leading-[24px]'>
-                                        Analytics
+                                        Post analytics
                                         </BreadcrumbPage>
                                     </BreadcrumbItem>
                                 </BreadcrumbList>

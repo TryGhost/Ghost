@@ -335,7 +335,7 @@ const Overview: React.FC = () => {
                                 <>
                                     <div className='flex flex-col items-stretch'>
                                         {latestPostStats.feature_image ?
-                                            <div className='aspect-video w-full rounded-md bg-cover' style={{
+                                            <div className='aspect-video w-full rounded-md bg-cover bg-center' style={{
                                                 backgroundImage: `url(${latestPostStats.feature_image})`
                                             }}></div>
                                             :
@@ -389,11 +389,11 @@ const Overview: React.FC = () => {
                             </CardTitle>
                             <CardDescription className='hidden'>Most viewed posts in this period</CardDescription>
                         </CardHeader>
-                        <CardContent className='-mt-4'>
+                        <CardContent>
                             <Table>
                                 <TableHeader>
-                                    <TableRow>
-                                        <TableHead className='pl-0'>Post title</TableHead>
+                                    <TableRow className='border-b !border-border'>
+                                        <TableHead>Post title</TableHead>
                                         <TableHead className='text-right'>Visitors</TableHead>
                                         <TableHead className='whitespace-nowrap text-right'>Open rate</TableHead>
                                         <TableHead className='text-right'>Members</TableHead>
@@ -401,13 +401,13 @@ const Overview: React.FC = () => {
                                 </TableHeader>
                                 <TableBody>
                                     {topPostsData?.stats?.[0]?.map((post: TopPostViewsStats) => (
-                                        <TableRow key={post.post_id} className='hover:cursor-pointer' onClick={() => {
+                                        <TableRow key={post.post_id} className='border-t-0 hover:cursor-pointer' onClick={() => {
                                             navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
                                         }}>
                                             <TableCell className='font-'>
                                                 <div className='flex items-center gap-4'>
                                                     {post.feature_image ?
-                                                        <div className='aspect-[4/3] w-20 shrink-0 rounded-md bg-cover' style={{
+                                                        <div className='aspect-[4/3] w-20 shrink-0 rounded-md bg-cover bg-center' style={{
                                                             backgroundImage: `url(${post.feature_image})`
                                                         }}></div>
                                                         :
