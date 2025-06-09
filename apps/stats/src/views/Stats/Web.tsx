@@ -323,7 +323,7 @@ const TopContentCard: React.FC<TopContentCardProps> = ({range}) => {
     };
 
     return (
-        <Card>
+        <Card className='group/datalist'>
             <div className='flex items-start justify-between'>
                 <CardHeader className='relative'>
                     <CardTitle>{getContentTitle()}</CardTitle>
@@ -345,7 +345,7 @@ const TopContentCard: React.FC<TopContentCardProps> = ({range}) => {
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-            <CardContent className='group/datalist'>
+            <CardContent>
                 <Separator />
                 <TopContentTable
                     contentType={selectedContentType}
