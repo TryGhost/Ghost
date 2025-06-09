@@ -321,7 +321,7 @@ const Growth: React.FC = () => {
             <StatsView data={chartData} isLoading={isLoading}>
                 <Card>
                     <CardContent>
-                        <GrowthKPIs chartData={chartData} initialTab={initialTab} totals={totals} currencySymbol={currencySymbol} />
+                        <GrowthKPIs chartData={chartData} currencySymbol={currencySymbol} initialTab={initialTab} totals={totals} />
                     </CardContent>
                 </Card>
                 <Card>

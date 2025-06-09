@@ -18,7 +18,7 @@ const Overview: React.FC = () => {
     const {postId} = useParams();
     const navigate = useNavigate();
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    const {totals, isLoading} = usePostReferrers(postId || '');
+    const {totals, isLoading, currencySymbol} = usePostReferrers(postId || '');
     const {startDate, endDate, timezone} = getRangeDates(STATS_RANGES.ALL_TIME.value);
 
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
@@ -124,7 +124,7 @@ const Overview: React.FC = () => {
                                     MRR impact
                                     </KpiCardLabel>
                                     <KpiCardContent>
-                                        <KpiCardValue>${centsToDollars(totals?.mrr || 0)}</KpiCardValue>
+                                        <KpiCardValue>{currencySymbol}{centsToDollars(totals?.mrr || 0)}</KpiCardValue>
                                     </KpiCardContent>
                                 </KpiCard>
                             </>
