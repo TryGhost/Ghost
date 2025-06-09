@@ -132,7 +132,7 @@ const Overview: React.FC = () => {
                     </CardContent>
                 </Card>
                 {showNewsletterSection && (
-                    <NewsletterOverview />
+                    <NewsletterOverview post={typedPost} />
                 )}
                 <Card className='group/card'>
                     <div className='flex items-center justify-between gap-6'>
