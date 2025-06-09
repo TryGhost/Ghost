@@ -103,9 +103,6 @@ const Sidebar: React.FC<{
     ];
 
     const backgroundColorIsDark = () => {
-        if (newsletter.background_color === 'dark') {
-            return true;
-        }
         if (newsletter.background_color === 'light') {
             return false;
         }
