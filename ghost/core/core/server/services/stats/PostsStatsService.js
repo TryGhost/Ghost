@@ -727,20 +727,21 @@ class PostsStatsService {
      * @param {Object} options
      * @param {string} options.date_from - Start date in YYYY-MM-DD format
      * @param {string} options.date_to - End date in YYYY-MM-DD format
-     * @param {string} options.timezone - Timezone to use for date interpretation
+     * @param {string} [options.timezone] - Timezone to use for date interpretation (default: 'UTC')
      * @param {number} [options.limit] - Maximum number of posts to return (default: 5)
      * @returns {Promise<Object>} Top posts with view counts and additional Ghost data
      */
     async getTopPostsViews(options) {
         try {
             const limit = options.limit || 5;
+            const timezone = options.timezone || 'UTC';
             let viewsData = [];
 
             if (this.tinybirdClient) {
                 const tinybirdOptions = {
                     dateFrom: options.date_from,
                     dateTo: options.date_to,
-                    timezone: options.timezone,
+                    timezone: timezone,
                     post_type: 'post',
                     limit: limit
                 };
@@ -839,10 +840,10 @@ class PostsStatsService {
             });
 
             // Combine both sets of posts
-            return [...postsWithViews, ...additionalPostsWithZeroViews];
+            return {data: [...postsWithViews, ...additionalPostsWithZeroViews]};
         } catch (error) {
             logging.error('Error fetching top posts views:', error);
-            return [];
+            return {data: []};
         }
     }
 
