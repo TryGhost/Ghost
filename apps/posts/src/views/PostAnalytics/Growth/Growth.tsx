@@ -16,7 +16,7 @@ interface postAnalyticsProps {}
 const Growth: React.FC<postAnalyticsProps> = () => {
     const {data: globalData} = useGlobalData();
     const {postId} = useParams();
-    const {stats: postReferrers, totals, isLoading} = usePostReferrers(postId || '');
+    const {stats: postReferrers, totals, isLoading, currencySymbol} = usePostReferrers(postId || '');
     
     // Get site URL and icon from global data
     const siteUrl = globalData?.url as string | undefined;
@@ -67,7 +67,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                             MRR
                                         </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardValue>+${centsToDollars(totals?.mrr || 0)}</KpiCardValue>
+                                            <KpiCardValue>+{currencySymbol}{centsToDollars(totals?.mrr || 0)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
                                 </div>

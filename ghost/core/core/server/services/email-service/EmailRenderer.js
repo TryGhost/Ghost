@@ -943,18 +943,14 @@ class EmailRenderer {
     }
 
     #getBackgroundColor(newsletter) {
-        /** @type {'light' | 'dark' | string | null} */
+        /** @type {'light' | string | null} */
         const value = newsletter.get('background_color');
 
         if (VALID_HEX_REGEX.test(value)) {
             return value;
         }
 
-        if (value === 'dark') {
-            return DEFAULT_ACCENT_COLOR;
-        }
-
-        // value === dark, value === null, value is not valid hex
+        // value === null, value is not valid hex
         return '#ffffff';
     }
 

@@ -6,14 +6,13 @@ import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, cn, formatDisplayDate, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {STATS_RANGES} from '@src/utils/constants';
+import {TopPostViewsStats, useLatestPostStats, useTopPostsViews} from '@tryghost/admin-x-framework/api/stats';
 import {getAudienceQueryParam} from './components/AudienceSelect';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
-import {useLatestPostStats} from '@src/hooks/useLatestPostStats';
 import {useQuery} from '@tinybirdco/charts';
-import {useTopPostsViews} from '@src/hooks/useTopPostsViews';
 
 interface OverviewKPICardProps {
     linkto: string;
@@ -116,24 +115,22 @@ type GrowthChartDataItem = {
     label?: string;
 };
 
-interface TopPostViewsStats {
-    post_id: string;
-    title: string;
-    published_at: string;
-    views: number;
-    open_rate: number | null;
-    members: number;
-    feature_image: string;
-}
-
 const Overview: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
-    const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals} = useGrowthStats(range);
-    const {isLoading: isLatestPostLoading, stats: latestPostStats} = useLatestPostStats();
+    const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals, currencySymbol} = useGrowthStats(range);
+    const {isLoading: isLatestPostLoading, data: latestPostStatsData} = useLatestPostStats();
+    const latestPostStats = latestPostStatsData?.stats?.[0] || null;
     const navigate = useNavigate();
-    const {data: topPostsData, isLoading: isTopPostsLoading} = useTopPostsViews({startDate, endDate, limit: 5, timezone});
+    const {data: topPostsData, isLoading: isTopPostsLoading} = useTopPostsViews({
+        searchParams: {
+            date_from: startDate,
+            date_to: endDate,
+            limit: '5',
+            timezone
+        }
+    });
 
     /* Get visitors
     /* ---------------------------------------------------------------------- */
@@ -205,7 +202,7 @@ const Overview: React.FC = () => {
         const processedData: GhAreaChartDataItem[] = sanitizedData.map(item => ({
             date: item.date,
             value: centsToDollars(item.mrr),
-            formattedValue: `$${formatNumber(centsToDollars(item.mrr))}`,
+            formattedValue: `${currencySymbol}${formatNumber(centsToDollars(item.mrr))}`,
             label: 'MRR'
         }));
 
@@ -270,7 +267,7 @@ const Overview: React.FC = () => {
                         linkto='/growth/'
                         title='Members'
                         onClick={() => {
-                            navigate('/growth/');
+                            navigate('/growth/?tab=total-members');
                         }}
                     >
                         <GhAreaChart
@@ -290,11 +287,11 @@ const Overview: React.FC = () => {
                         description='Monthly recurring revenue changes over time'
                         diffDirection={growthTotals.directions.mrr}
                         diffValue={growthTotals.percentChanges.mrr}
-                        formattedValue={`$${formatNumber(centsToDollars(growthTotals.mrr))}`}
+                        formattedValue={`${currencySymbol}${formatNumber(centsToDollars(growthTotals.mrr))}`}
                         linkto='/growth/'
                         title='MRR'
                         onClick={() => {
-                            navigate('/growth/');
+                            navigate('/growth/?tab=mrr');
                         }}
                     >
                         <GhAreaChart
@@ -335,7 +332,7 @@ const Overview: React.FC = () => {
                                 <>
                                     <div className='flex flex-col items-stretch'>
                                         {latestPostStats.feature_image ?
-                                            <div className='aspect-video w-full rounded-md bg-cover' style={{
+                                            <div className='aspect-video w-full rounded-md bg-cover bg-center' style={{
                                                 backgroundImage: `url(${latestPostStats.feature_image})`
                                             }}></div>
                                             :
@@ -389,25 +386,25 @@ const Overview: React.FC = () => {
                             </CardTitle>
                             <CardDescription className='hidden'>Most viewed posts in this period</CardDescription>
                         </CardHeader>
-                        <CardContent className='-mt-4'>
+                        <CardContent>
                             <Table>
                                 <TableHeader>
-                                    <TableRow>
-                                        <TableHead className='pl-0'>Post title</TableHead>
+                                    <TableRow className='border-b !border-border'>
+                                        <TableHead>Post title</TableHead>
                                         <TableHead className='text-right'>Visitors</TableHead>
                                         <TableHead className='whitespace-nowrap text-right'>Open rate</TableHead>
                                         <TableHead className='text-right'>Members</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {topPostsData?.stats?.[0]?.map((post: TopPostViewsStats) => (
-                                        <TableRow key={post.post_id} className='hover:cursor-pointer' onClick={() => {
+                                    {topPostsData?.stats?.map((post: TopPostViewsStats) => (
+                                        <TableRow key={post.post_id} className='border-t-0 hover:cursor-pointer' onClick={() => {
                                             navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
                                         }}>
                                             <TableCell className='font-'>
                                                 <div className='flex items-center gap-4'>
                                                     {post.feature_image ?
-                                                        <div className='aspect-[4/3] w-20 shrink-0 rounded-md bg-cover' style={{
+                                                        <div className='aspect-[4/3] w-20 shrink-0 rounded-md bg-cover bg-center' style={{
                                                             backgroundImage: `url(${post.feature_image})`
                                                         }}></div>
                                                         :
@@ -430,7 +427,7 @@ const Overview: React.FC = () => {
                                             </TableCell>
                                         </TableRow>
                                     ))}
-                                    {(!topPostsData?.stats?.[0] || topPostsData.stats?.[0].length === 0) && (
+                                    {(!topPostsData?.stats || topPostsData.stats.length === 0) && (
                                         <TableRow>
                                             <TableHead
                                                 className='text-center font-normal text-muted-foreground'

@@ -4,7 +4,7 @@ import React, {useMemo, useState} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, KpiTabTrigger, KpiTabValue, LoadingIndicator, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
 import {SourcesCard, getStatEndpointUrl, getToken, useNavigate} from '@tryghost/admin-x-framework';
@@ -23,6 +23,7 @@ interface UnifiedContentData {
     percentage?: number;
     post_uuid?: string;
     post_id?: string;
+    post_type?: string;
 }
 
 interface KpiDataItem {
@@ -167,7 +168,7 @@ interface TopContentTableProps {
 
 const TopContentTable: React.FC<TopContentTableProps> = ({data, contentType}) => {
     const navigate = useNavigate();
-    
+
     const getTableHeader = () => {
         switch (contentType) {
         case CONTENT_TYPES.POSTS:
@@ -187,17 +188,18 @@ const TopContentTable: React.FC<TopContentTableProps> = ({data, contentType}) =>
             </DataListHeader>
             <DataListBody>
                 {data?.map((row: UnifiedContentData) => {
-                    const isClickable = row.post_id;
+                    // Only make posts clickable (not pages), since there's no analytics route for pages
+                    const isClickable = row.post_id && row.post_type === 'post';
                     const handleClick = () => {
-                        if (row.post_id) {
+                        if (isClickable) {
                             navigate(`/posts/analytics/beta/${row.post_id}`, {crossApp: true});
                         }
                     };
 
                     return (
-                        <DataListRow 
-                            key={row.pathname} 
-                            className={`group/row ${isClickable && 'hover:cursor-pointer'}`} 
+                        <DataListRow
+                            key={row.pathname}
+                            className={`group/row ${isClickable && 'hover:cursor-pointer'}`}
                             onClick={handleClick}
                         >
                             <DataListBar className='bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/60 opacity-20 transition-all group-hover/row:opacity-40' style={{
@@ -229,7 +231,7 @@ interface TopContentCardProps {
 const TopContentCard: React.FC<TopContentCardProps> = ({range}) => {
     const {audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
-    const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS);
+    const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
 
     // Prepare query parameters based on selected content type
     const queryParams = useMemo(() => {
@@ -265,17 +267,18 @@ const TopContentCard: React.FC<TopContentCardProps> = ({range}) => {
         if (!data) {
             return null;
         }
-        
+
         // Calculate total visits for the filtered dataset
         const filteredTotalVisits = data.reduce((sum, item) => sum + Number(item.visits), 0);
-        
+
         return data.map(item => ({
             pathname: item.pathname,
             title: item.title || item.pathname,
             visits: item.visits,
             percentage: filteredTotalVisits > 0 ? (Number(item.visits) / filteredTotalVisits) : 0,
             post_uuid: item.post_uuid,
-            post_id: item.post_id
+            post_id: item.post_id,
+            post_type: item.post_type
         }));
     }, [topContentData]);
 
@@ -289,11 +292,11 @@ const TopContentCard: React.FC<TopContentCardProps> = ({range}) => {
     const getContentTitle = () => {
         switch (selectedContentType) {
         case CONTENT_TYPES.POSTS:
-            return 'Top performing posts';
+            return 'Top posts';
         case CONTENT_TYPES.PAGES:
-            return 'Top performing pages';
+            return 'Top pages';
         default:
-            return 'Top performing posts';
+            return 'Top content';
         }
     };
 
@@ -301,13 +304,12 @@ const TopContentCard: React.FC<TopContentCardProps> = ({range}) => {
         return (
             <Card className='group/datalist'>
                 <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle>{getContentTitle()}</CardTitle>
-                            <CardDescription>Loading...</CardDescription>
-                        </div>
-                    </div>
+                    <CardTitle>{getContentTitle()}</CardTitle>
+                    <CardDescription>Loading...</CardDescription>
                 </CardHeader>
+                <CardContent className='flex h-full items-center justify-center'>
+                    <LoadingIndicator size='md' />
+                </CardContent>
             </Card>
         );
     }
@@ -325,38 +327,33 @@ const TopContentCard: React.FC<TopContentCardProps> = ({range}) => {
 
     return (
         <Card className='group/datalist'>
-            <CardHeader>
-                <div className="flex items-center justify-between">
-                    <div>
-                        <CardTitle>{getContentTitle()}</CardTitle>
-                        <CardDescription>{getContentDescription()}</CardDescription>
-                    </div>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button className="gap-1 text-sm" size="sm" variant="outline">
-                                {getContentTypeLabel()}
-                                <LucideIcon.ChevronDown className="size-3" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            {CONTENT_TYPE_OPTIONS.map(option => (
-                                <DropdownMenuItem 
-                                    key={option.value}
-                                    onClick={() => setSelectedContentType(option.value)}
-                                >
-                                    {option.label}
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </CardHeader>
+            <div className='flex items-start justify-between'>
+                <CardHeader className='relative'>
+                    <CardTitle>{getContentTitle()}</CardTitle>
+                    <CardDescription>{getContentDescription()}</CardDescription>
+                </CardHeader>
+                <DropdownMenu>
+                    <DropdownMenuTrigger className='mr-6 mt-6' asChild>
+                        <Button variant="dropdown">{getContentTypeLabel()}</Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align='end'>
+                        {CONTENT_TYPE_OPTIONS.map(option => (
+                            <DropdownMenuItem
+                                key={option.value}
+                                onClick={() => setSelectedContentType(option.value)}
+                            >
+                                {option.label}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
             <CardContent>
                 <Separator />
-                <TopContentTable 
+                <TopContentTable
                     contentType={selectedContentType}
-                    data={topContent} 
-                    range={range} 
+                    data={topContent}
+                    range={range}
                 />
             </CardContent>
             {transformedData && transformedData.length > 10 &&
@@ -371,10 +368,10 @@ const TopContentCard: React.FC<TopContentCardProps> = ({range}) => {
                                 <SheetDescription>{getContentDescription()}</SheetDescription>
                             </SheetHeader>
                             <div className='group/datalist'>
-                                <TopContentTable 
+                                <TopContentTable
                                     contentType={selectedContentType}
-                                    data={transformedData} 
-                                    range={range} 
+                                    data={transformedData}
+                                    range={range}
                                 />
                             </div>
                         </SheetContent>
@@ -429,7 +426,7 @@ const Web: React.FC = () => {
     // Get total visitors for table
     const totalVisitors = kpiData?.length ? kpiData.reduce((sum, item) => sum + Number(item.visits), 0) : 0;
 
-    // Calculate combined loading state  
+    // Calculate combined loading state
     const isLoading = isConfigLoading || kpiLoading || sourcesLoading;
 
     return (
@@ -444,18 +441,18 @@ const Web: React.FC = () => {
                         <WebKPIs data={kpiData as KpiDataItem[] | null} range={range} />
                     </CardContent>
                 </Card>
-                <div className='grid grid-cols-2 gap-8'>
-                    <TopContentCard 
-                        range={range} 
+                <div className='grid min-h-[460px] grid-cols-2 gap-8'>
+                    <TopContentCard
+                        range={range}
                     />
-                    <SourcesCard 
-                        data={sourcesData as SourcesData[] | null} 
+                    <SourcesCard
+                        data={sourcesData as SourcesData[] | null}
                         defaultSourceIconUrl={STATS_DEFAULT_SOURCE_ICON_URL}
                         getPeriodText={getPeriodText}
-                        range={range} 
-                        siteIcon={siteIcon} 
-                        siteUrl={siteUrl} 
-                        totalVisitors={totalVisitors} 
+                        range={range}
+                        siteIcon={siteIcon}
+                        siteUrl={siteUrl}
+                        totalVisitors={totalVisitors}
                     />
                 </div>
             </StatsView>

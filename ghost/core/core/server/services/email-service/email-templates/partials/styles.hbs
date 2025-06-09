@@ -352,6 +352,10 @@ h6 + .kg-paywall .kg-paywall-hr td {
 .post-content-row h6 {
     {{#if sectionTitleColor}}
     color: {{sectionTitleColor}};
+    {{else}}
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    {{/hasFeature}}
     {{/if}}
 }
 
@@ -550,7 +554,7 @@ figure blockquote p {
         color: #8f9aa3;
         color: rgba(255, 255, 255, .6);
     {{else}}
-        color: #73818c
+        color: #73818c;
         color: rgba(0, 0, 0, .6);
     {{/if}}
     font-size: 13px;
@@ -651,7 +655,7 @@ figure blockquote p {
         color: #8f9aa3;
         color: rgba(255, 255, 255, .6);
     {{else}}
-        color: #73818c
+        color: #73818c;
         color: rgba(0, 0, 0, .6);
     {{/if}}
     font-size: 13px;
@@ -701,7 +705,7 @@ figure blockquote p {
         color: #8f9aa3;
         color: rgba(255, 255, 255, .6);
     {{else}}
-        color: #73818c
+        color: #73818c;
         color: rgba(0, 0, 0, .6);
     {{/if}}
     text-decoration: underline !important;
@@ -887,12 +891,20 @@ h3.latest-posts-header {
 .latest-post-title h4 {
     {{#if sectionTitleColor}}
     color: {{sectionTitleColor}};
+    {{else}}
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{/hasFeature}}
     {{/if}}
 }
 
 .latest-post-title h4 a {
     {{#if sectionTitleColor}}
     color: {{sectionTitleColor}} !important;
+    {{else}}
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{/hasFeature}}
     {{/if}}
 }
 
@@ -1772,6 +1784,7 @@ img.kg-cta-image {
     color: inherit;
     text-decoration: underline;
 }
+
 {{else}}
 .kg-header-card h2 {
     font-size: 3em;
@@ -1895,6 +1908,16 @@ img.kg-cta-image {
     {{#hasFeature "emailCustomizationAlpha"}}
     background-color: #FFFFFF;
     {{/hasFeature}}
+}
+
+.kg-product-card h4 {
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
+    {{else}}
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: #15212A !important;
+    {{/hasFeature}}
+    {{/if}}
 }
 
 .kg-product-card-container {
@@ -2147,6 +2170,13 @@ img.kg-cta-image {
 .kg-toggle-heading h4 {
     margin: 0;
     font-weight: {{titleWeight}};
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
+    {{else}}
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: #15212A !important;
+    {{/hasFeature}}
+    {{/if}}
 }
 
 .kg-toggle-content {
@@ -2217,7 +2247,7 @@ img.kg-cta-image {
         color: #8f9aa3;
         color: rgba(255, 255, 255, .6);
     {{else}}
-        color: #73818c
+        color: #73818c;
         color: rgba(0, 0, 0, .6);
     {{/if}}
     margin-top: 20px;
@@ -2235,7 +2265,7 @@ img.kg-cta-image {
         color: #8f9aa3;
         color: rgba(255, 255, 255, .6);
     {{else}}
-        color: #73818c
+        color: #73818c;
         color: rgba(0, 0, 0, .6);
     {{/if}}
     text-decoration: underline;

@@ -1,15 +1,15 @@
 import DateRangeSelect from './components/DateRangeSelect';
-import React, {useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, centsToDollars, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiTabTrigger, KpiTabValue, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, centsToDollars, formatNumber} from '@tryghost/shade';
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {STATS_RANGES} from '@src/utils/constants';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 
 // Define content types
@@ -74,9 +74,16 @@ type Totals = {
 const GrowthKPIs: React.FC<{
     chartData: ChartDataItem[];
     totals: Totals;
-}> = ({chartData: allChartData, totals}) => {
-    const [currentTab, setCurrentTab] = useState('total-members');
+    initialTab?: string;
+    currencySymbol: string;
+}> = ({chartData: allChartData, totals, initialTab = 'total-members', currencySymbol}) => {
+    const [currentTab, setCurrentTab] = useState(initialTab);
     const {range} = useGlobalData();
+
+    // Update current tab if initialTab changes
+    useEffect(() => {
+        setCurrentTab(initialTab);
+    }, [initialTab]);
 
     const {totalMembers, freeMembers, paidMembers, mrr, percentChanges, directions} = totals;
 
@@ -131,7 +138,7 @@ const GrowthKPIs: React.FC<{
             processedData = sanitizedData.map(item => ({
                 ...item,
                 value: centsToDollars(item.mrr),
-                formattedValue: `$${formatNumber(centsToDollars(item.mrr))}`,
+                formattedValue: `${currencySymbol}${formatNumber(centsToDollars(item.mrr))}`,
                 label: 'MRR'
             }));
             break;
@@ -163,7 +170,7 @@ const GrowthKPIs: React.FC<{
     };
 
     return (
-        <Tabs defaultValue="total-members" variant='kpis'>
+        <Tabs defaultValue={initialTab} variant='kpis'>
             <TabsList className="-mx-6 grid grid-cols-4">
                 <KpiTabTrigger value="total-members" onClick={() => {
                     setCurrentTab('total-members');
@@ -206,7 +213,7 @@ const GrowthKPIs: React.FC<{
                         diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
                         diffValue={percentChanges.mrr}
                         label="MRR"
-                        value={`$${formatNumber(centsToDollars(mrr))}`}
+                        value={`${currencySymbol}${formatNumber(centsToDollars(mrr))}`}
                     />
                 </KpiTabTrigger>
             </TabsList>
@@ -218,7 +225,7 @@ const GrowthKPIs: React.FC<{
                     dataFormatter={currentTab === 'mrr'
                         ?
                         (value: number) => {
-                            return `$${formatNumber(value)}`;
+                            return `${currencySymbol}${formatNumber(value)}`;
                         } :
                         formatNumber}
                     id="mrr"
@@ -232,11 +239,15 @@ const GrowthKPIs: React.FC<{
 const Growth: React.FC = () => {
     const {range} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopPostsOrder>('free_members desc');
-    const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS);
+    const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
+    // Get the initial tab from URL search parameters
+    const initialTab = searchParams.get('tab') || 'total-members';
 
     // Get stats from custom hook once
-    const {isLoading, chartData, totals} = useGrowthStats(range);
+    const {isLoading, chartData, totals, currencySymbol} = useGrowthStats(range);
 
     // Get growth data with post_type filtering
     const {data: topPostsData} = useTopPostsStatsWithRange(range, sortBy, selectedContentType as 'posts' | 'pages' | 'posts_and_pages');
@@ -281,11 +292,11 @@ const Growth: React.FC = () => {
     const getContentTitle = () => {
         switch (selectedContentType) {
         case CONTENT_TYPES.POSTS:
-            return 'Top performing posts';
+            return 'Top posts';
         case CONTENT_TYPES.PAGES:
-            return 'Top performing pages';
+            return 'Top pages';
         default:
-            return 'Top performing posts & pages';
+            return 'Top content';
         }
     };
 
@@ -310,36 +321,31 @@ const Growth: React.FC = () => {
             <StatsView data={chartData} isLoading={isLoading}>
                 <Card>
                     <CardContent>
-                        <GrowthKPIs chartData={chartData} totals={totals} />
+                        <GrowthKPIs chartData={chartData} currencySymbol={currencySymbol} initialTab={initialTab} totals={totals} />
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <CardTitle>{getContentTitle()}</CardTitle>
-                                <CardDescription>{getContentDescription()}</CardDescription>
-                            </div>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button className="gap-1 text-sm" size="sm" variant="outline">
-                                        {getContentTypeLabel()}
-                                        <LucideIcon.ChevronDown className="size-3" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    {CONTENT_TYPE_OPTIONS.map(option => (
-                                        <DropdownMenuItem
-                                            key={option.value}
-                                            onClick={() => setSelectedContentType(option.value)}
-                                        >
-                                            {option.label}
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                    </CardHeader>
+                    <div className="flex items-start justify-between">
+                        <CardHeader>
+                            <CardTitle>{getContentTitle()}</CardTitle>
+                            <CardDescription>{getContentDescription()}</CardDescription>
+                        </CardHeader>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger className='mr-6 mt-6' asChild>
+                                <Button variant="dropdown">{getContentTypeLabel()}</Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align='end'>
+                                {CONTENT_TYPE_OPTIONS.map(option => (
+                                    <DropdownMenuItem
+                                        key={option.value}
+                                        onClick={() => setSelectedContentType(option.value)}
+                                    >
+                                        {option.label}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                     <CardContent>
                         <Separator/>
                         <Table>
@@ -393,8 +399,7 @@ const Growth: React.FC = () => {
                                             {(post.paid_members > 0 && '+')}{formatNumber(post.paid_members)}
                                         </TableCell>
                                         <TableCell className='text-right font-mono text-sm'>
-                                            {/* TODO: Update to use actual currency */}
-                                            {(post.mrr > 0 && '+')}{centsToDollars(post.mrr).toFixed(0)}
+                                            {(post.mrr > 0 && '+')}{currencySymbol}{centsToDollars(post.mrr).toFixed(0)}
                                         </TableCell>
                                     </TableRow>
                                 ))}

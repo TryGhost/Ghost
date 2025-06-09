@@ -19,7 +19,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
             <header className='z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-black'>
                 <div className='relative flex w-full items-start justify-between gap-5 px-8 pb-0 pt-8'>
                     <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
-                        Stats
+                        Analytics
                     </H1>
                 </div>
             </header>
