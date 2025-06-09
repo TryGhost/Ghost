@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import moment from 'moment-timezone';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
-import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
+import {Post, useBrowsePosts, useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useAppContext} from '../../../App';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
