@@ -75,7 +75,7 @@ const DataListBody = React.forwardRef<HTMLDivElement, DataListBodyProps>(({child
     return (
         <div
             ref={ref}
-            className={cn('flex flex-col items-stretch pt-4', className)}
+            className={cn('flex flex-col items-stretch pt-1.5', className)}
             {...props}
         >
             {children}
@@ -96,7 +96,7 @@ const DataListRow = React.forwardRef<HTMLDivElement, DataListRowProps>(({childre
     return (
         <div
             ref={ref}
-            className={cn('py-1 overflow-hidden relative flex items-center justify-between gap-3', className)}
+            className={cn('py-0.5 overflow-hidden relative flex items-center justify-between gap-3', className)}
             {...props}
         >
             {children}
@@ -138,7 +138,7 @@ const DataListItemContent = React.forwardRef<HTMLDivElement, DataListItemContent
     return (
         <div
             ref={ref}
-            className={cn('text-sm px-2 font-medium relative z-10 flex min-w-0 max-w-[calc(100%-32px)] items-center py-1.5 transition-[max-width] duration-300 ease-in-out group-hover/datalist:max-w-[calc(100%-100px)]', className)}
+            className={cn('text-sm px-1.5 font-medium relative z-10 flex min-w-0 max-w-[calc(100%-32px)] items-center py-1.5 transition-[max-width] duration-300 ease-in-out group-hover/datalist:max-w-[calc(100%-100px)]', className)}
             {...props}
         >
             {children}
