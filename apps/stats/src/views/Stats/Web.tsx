@@ -229,7 +229,7 @@ interface TopContentCardProps {
 const TopContentCard: React.FC<TopContentCardProps> = ({range}) => {
     const {audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
-    const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS);
+    const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
 
     // Prepare query parameters based on selected content type
     const queryParams = useMemo(() => {
@@ -289,11 +289,11 @@ const TopContentCard: React.FC<TopContentCardProps> = ({range}) => {
     const getContentTitle = () => {
         switch (selectedContentType) {
         case CONTENT_TYPES.POSTS:
-            return 'Top performing posts';
+            return 'Top posts';
         case CONTENT_TYPES.PAGES:
-            return 'Top performing pages';
+            return 'Top pages';
         default:
-            return 'Top performing posts';
+            return 'Top content';
         }
     };
 
