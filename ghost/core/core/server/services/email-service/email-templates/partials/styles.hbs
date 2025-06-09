@@ -21,6 +21,7 @@ img.is-dark-background {
 
 body {
     background-color: #fff;
+
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     font-size: 18px;
@@ -57,6 +58,13 @@ table td {
 {{#hasFeature "emailCustomizationAlpha"}}
 .body {
     background-color: {{backgroundColor}} !important;
+}
+.header {
+    {{#if headerBackgroundColor}}
+    background-color: {{headerBackgroundColor}};
+    {{else}}
+    background-color: {{backgroundColor}};
+    {{/if}}
 }
 {{/hasFeature}}
 
@@ -514,7 +522,7 @@ figure blockquote p {
 {{#hasFeature "emailCustomizationAlpha"}}
 
 .site-url {
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
     font-size: 16px;
     letter-spacing: -0.1px;
     font-weight: 700;
@@ -540,7 +548,7 @@ figure blockquote p {
 
 {{#hasFeature "emailCustomizationAlpha"}}
 .site-title {
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
 }
 {{else}}
 .site-title {
@@ -550,7 +558,7 @@ figure blockquote p {
 
 {{#hasFeature "emailCustomizationAlpha"}}
 .site-subtitle {
-    {{#if backgroundIsDark}}
+    {{#if headerBackgroundIsDark}}
         color: #8f9aa3;
         color: rgba(255, 255, 255, .6);
     {{else}}
@@ -578,6 +586,13 @@ figure blockquote p {
 }
 
 {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+.post-title {
+    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    {{#if postTitleColor}}
+    color: {{postTitleColor}};
+    {{/if}}
+}
+
 {{#if postTitleColor}}
 .post-title-color a {
     color: {{postTitleColor}} !important;
@@ -651,7 +666,7 @@ figure blockquote p {
 {{#hasFeature "emailCustomizationAlpha"}}
 .post-meta,
 .view-online {
-    {{#if backgroundIsDark}}
+    {{#if headerBackgroundIsDark}}
         color: #8f9aa3;
         color: rgba(255, 255, 255, .6);
     {{else}}
@@ -701,7 +716,7 @@ figure blockquote p {
 .view-online-link {
     word-wrap: none;
     white-space: nowrap;
-    {{#if backgroundIsDark}}
+    {{#if headerBackgroundIsDark}}
         color: #8f9aa3;
         color: rgba(255, 255, 255, .6);
     {{else}}
@@ -1037,7 +1052,7 @@ h3.latest-posts-header {
 }
 {{/if}}
 {{else}}
-.post-content-row:first-child > td, 
+.post-content-row:first-child > td,
 .header-image-row + .post-content-row > td {
     padding-top: 32px;
 }
@@ -2252,7 +2267,9 @@ img.kg-cta-image {
     padding: 0;
     /* Background color for the header */
     {{#hasFeature "emailCustomizationAlpha"}}
+    {{#if headerBackgroundColor}}
     background-color: {{headerBackgroundColor}};
+    {{/if}}
     {{/hasFeature}}
 }
 
@@ -2706,7 +2723,7 @@ table.btn-accent a {
         text-decoration: underline;
     }
 
-    table.body .footer p, 
+    table.body .footer p,
     table.body .footer p span {
         font-size: 13px !important;
     }
@@ -2822,7 +2839,7 @@ table.btn-accent a {
         padding-right: 8px !important;
     }
 
-    table.body .latest-post h4, 
+    table.body .latest-post h4,
     table.body .latest-post h4 span {
         padding: 4px 0 6px !important;
         font-size: 15px !important;
