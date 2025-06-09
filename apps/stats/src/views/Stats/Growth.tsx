@@ -75,7 +75,8 @@ const GrowthKPIs: React.FC<{
     chartData: ChartDataItem[];
     totals: Totals;
     initialTab?: string;
-}> = ({chartData: allChartData, totals, initialTab = 'total-members'}) => {
+    currencySymbol: string;
+}> = ({chartData: allChartData, totals, initialTab = 'total-members', currencySymbol}) => {
     const [currentTab, setCurrentTab] = useState(initialTab);
     const {range} = useGlobalData();
 
@@ -137,7 +138,7 @@ const GrowthKPIs: React.FC<{
             processedData = sanitizedData.map(item => ({
                 ...item,
                 value: centsToDollars(item.mrr),
-                formattedValue: `$${formatNumber(centsToDollars(item.mrr))}`,
+                formattedValue: `${currencySymbol}${formatNumber(centsToDollars(item.mrr))}`,
                 label: 'MRR'
             }));
             break;
@@ -212,7 +213,7 @@ const GrowthKPIs: React.FC<{
                         diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
                         diffValue={percentChanges.mrr}
                         label="MRR"
-                        value={`$${formatNumber(centsToDollars(mrr))}`}
+                        value={`${currencySymbol}${formatNumber(centsToDollars(mrr))}`}
                     />
                 </KpiTabTrigger>
             </TabsList>
@@ -224,7 +225,7 @@ const GrowthKPIs: React.FC<{
                     dataFormatter={currentTab === 'mrr'
                         ?
                         (value: number) => {
-                            return `$${formatNumber(value)}`;
+                            return `${currencySymbol}${formatNumber(value)}`;
                         } :
                         formatNumber}
                     id="mrr"
@@ -246,7 +247,7 @@ const Growth: React.FC = () => {
     const initialTab = searchParams.get('tab') || 'total-members';
 
     // Get stats from custom hook once
-    const {isLoading, chartData, totals} = useGrowthStats(range);
+    const {isLoading, chartData, totals, currencySymbol} = useGrowthStats(range);
 
     // Get growth data with post_type filtering
     const {data: topPostsData} = useTopPostsStatsWithRange(range, sortBy, selectedContentType as 'posts' | 'pages' | 'posts_and_pages');
@@ -320,7 +321,7 @@ const Growth: React.FC = () => {
             <StatsView data={chartData} isLoading={isLoading}>
                 <Card>
                     <CardContent>
-                        <GrowthKPIs chartData={chartData} initialTab={initialTab} totals={totals} />
+                        <GrowthKPIs chartData={chartData} currencySymbol={currencySymbol} initialTab={initialTab} totals={totals} />
                     </CardContent>
                 </Card>
                 <Card>
@@ -398,8 +399,7 @@ const Growth: React.FC = () => {
                                             {(post.paid_members > 0 && '+')}{formatNumber(post.paid_members)}
                                         </TableCell>
                                         <TableCell className='text-right font-mono text-sm'>
-                                            {/* TODO: Update to use actual currency */}
-                                            {(post.mrr > 0 && '+')}{centsToDollars(post.mrr).toFixed(0)}
+                                            {(post.mrr > 0 && '+')}{currencySymbol}{centsToDollars(post.mrr).toFixed(0)}
                                         </TableCell>
                                     </TableRow>
                                 ))}

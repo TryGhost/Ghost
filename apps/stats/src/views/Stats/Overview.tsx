@@ -119,7 +119,7 @@ const Overview: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
-    const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals} = useGrowthStats(range);
+    const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals, currencySymbol} = useGrowthStats(range);
     const {isLoading: isLatestPostLoading, data: latestPostStatsData} = useLatestPostStats();
     const latestPostStats = latestPostStatsData?.stats?.[0] || null;
     const navigate = useNavigate();
@@ -202,7 +202,7 @@ const Overview: React.FC = () => {
         const processedData: GhAreaChartDataItem[] = sanitizedData.map(item => ({
             date: item.date,
             value: centsToDollars(item.mrr),
-            formattedValue: `$${formatNumber(centsToDollars(item.mrr))}`,
+            formattedValue: `${currencySymbol}${formatNumber(centsToDollars(item.mrr))}`,
             label: 'MRR'
         }));
 
@@ -287,7 +287,7 @@ const Overview: React.FC = () => {
                         description='Monthly recurring revenue changes over time'
                         diffDirection={growthTotals.directions.mrr}
                         diffValue={growthTotals.percentChanges.mrr}
-                        formattedValue={`$${formatNumber(centsToDollars(growthTotals.mrr))}`}
+                        formattedValue={`${currencySymbol}${formatNumber(centsToDollars(growthTotals.mrr))}`}
                         linkto='/growth/'
                         title='MRR'
                         onClick={() => {

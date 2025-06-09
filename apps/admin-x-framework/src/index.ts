@@ -2,6 +2,9 @@
 export type {StatsConfig, FrameworkContextType, FrameworkProviderProps, TopLevelFrameworkProps} from './providers/FrameworkProvider';
 export {FrameworkProvider, useFramework} from './providers/FrameworkProvider';
 
+// Currency utilities
+export {getSymbol} from './utils/currency';
+
 // Stats utilities
 export {getStatEndpointUrl, getToken} from './utils/stats-config';
 
