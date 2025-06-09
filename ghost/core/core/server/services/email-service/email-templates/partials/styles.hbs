@@ -352,6 +352,10 @@ h6 + .kg-paywall .kg-paywall-hr td {
 .post-content-row h6 {
     {{#if sectionTitleColor}}
     color: {{sectionTitleColor}};
+    {{else}}
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{/hasFeature}}
     {{/if}}
 }
 
