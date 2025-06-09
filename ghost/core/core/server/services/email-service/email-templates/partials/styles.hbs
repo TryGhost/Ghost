@@ -758,7 +758,11 @@ figure blockquote p {
     padding-bottom: 32px;
     text-align: center;
     font-size: 13px !important;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#73818c{{/if}};
+    {{else}}
     color: #73818c;
+    {{/hasFeature}}
     line-height: 1.5em;
 }
 
