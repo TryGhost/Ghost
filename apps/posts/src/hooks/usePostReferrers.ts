@@ -1,14 +1,7 @@
 import moment from 'moment';
+import {getSymbol} from '@tryghost/admin-x-framework';
 import {useMemo} from 'react';
 import {useMrrHistory, usePostGrowthStats as usePostGrowthStatsAPI, usePostReferrers as usePostReferrersAPI} from '@tryghost/admin-x-framework/api/stats';
-
-// Currency symbol utility (same as in admin-x-settings)
-function getSymbol(currency: string): string {
-    if (!currency) {
-        return '';
-    }
-    return Intl.NumberFormat('en', {currency, style: 'currency'}).format(0).replace(/[\d\s.]/g, '');
-}
 
 // Source normalization mapping - matches Tinybird's mv_hits.pipe logic
 // Using Map for O(1) lookup performance

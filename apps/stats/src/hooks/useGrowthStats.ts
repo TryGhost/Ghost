@@ -1,18 +1,11 @@
 import moment from 'moment';
 import {MemberStatusItem, MrrHistoryItem, useMemberCountHistory, useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
 import {formatNumber} from '@tryghost/shade';
+import {getSymbol} from '@tryghost/admin-x-framework';
 import {useMemo} from 'react';
 
 // Type for direction values
 export type DiffDirection = 'up' | 'down' | 'same';
-
-// Currency symbol utility (same as in admin-x-settings)
-function getSymbol(currency: string): string {
-    if (!currency) {
-        return '';
-    }
-    return Intl.NumberFormat('en', {currency, style: 'currency'}).format(0).replace(/[\d\s.]/g, '');
-}
 
 // Helper function to convert range to date parameters
 export const getRangeDates = (rangeInDays: number) => {
