@@ -11,9 +11,8 @@ import {getPeriodText} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
-import {useLatestPostStats} from '@src/hooks/useLatestPostStats';
+import {TopPostViewsStats, useLatestPostStats, useTopPostsViews} from '@tryghost/admin-x-framework/api/stats';
 import {useQuery} from '@tinybirdco/charts';
-import {useTopPostsViews} from '@src/hooks/useTopPostsViews';
 
 interface OverviewKPICardProps {
     linkto: string;
@@ -116,24 +115,22 @@ type GrowthChartDataItem = {
     label?: string;
 };
 
-interface TopPostViewsStats {
-    post_id: string;
-    title: string;
-    published_at: string;
-    views: number;
-    open_rate: number | null;
-    members: number;
-    feature_image: string;
-}
-
 const Overview: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals} = useGrowthStats(range);
-    const {isLoading: isLatestPostLoading, stats: latestPostStats} = useLatestPostStats();
+    const {isLoading: isLatestPostLoading, data: latestPostStatsData} = useLatestPostStats();
+    const latestPostStats = latestPostStatsData?.stats?.[0] || null;
     const navigate = useNavigate();
-    const {data: topPostsData, isLoading: isTopPostsLoading} = useTopPostsViews({startDate, endDate, limit: 5, timezone});
+    const {data: topPostsData, isLoading: isTopPostsLoading} = useTopPostsViews({
+        searchParams: {
+            date_from: startDate,
+            date_to: endDate,
+            limit: '5',
+            timezone
+        }
+    });
 
     /* Get visitors
     /* ---------------------------------------------------------------------- */
@@ -400,7 +397,7 @@ const Overview: React.FC = () => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {topPostsData?.stats?.[0]?.map((post: TopPostViewsStats) => (
+                                    {topPostsData?.stats?.map((post: TopPostViewsStats) => (
                                         <TableRow key={post.post_id} className='hover:cursor-pointer' onClick={() => {
                                             navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
                                         }}>
@@ -430,7 +427,7 @@ const Overview: React.FC = () => {
                                             </TableCell>
                                         </TableRow>
                                     ))}
-                                    {(!topPostsData?.stats?.[0] || topPostsData.stats?.[0].length === 0) && (
+                                    {(!topPostsData?.stats || topPostsData.stats.length === 0) && (
                                         <TableRow>
                                             <TableHead
                                                 className='text-center font-normal text-muted-foreground'
