@@ -6,12 +6,12 @@ import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, cn, formatDisplayDate, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {STATS_RANGES} from '@src/utils/constants';
+import {TopPostViewsStats, useLatestPostStats, useTopPostsViews} from '@tryghost/admin-x-framework/api/stats';
 import {getAudienceQueryParam} from './components/AudienceSelect';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
-import {TopPostViewsStats, useLatestPostStats, useTopPostsViews} from '@tryghost/admin-x-framework/api/stats';
 import {useQuery} from '@tinybirdco/charts';
 
 interface OverviewKPICardProps {
@@ -44,13 +44,13 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     const IconComponent = iconName && LucideIcon[iconName] as LucideIcon.LucideIcon;
 
     return (
-        <Card className={onClick && 'group transition-all hover:!cursor-pointer hover:bg-accent/50'} onClick={onClick}>
+        <Card className={onClick && 'hover:bg-accent/50 group transition-all hover:!cursor-pointer'} onClick={onClick}>
             <CardHeader className='hidden'>
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
             <KpiCardHeader className='grow gap-2 border-none pb-2'>
-                <KpiCardHeaderLabel className={onClick && 'transition-all group-hover:text-foreground'}>
+                <KpiCardHeaderLabel className={onClick && 'group-hover:text-foreground transition-all'}>
                     {color && <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color}}></span>}
                     {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
                     {title}
@@ -92,7 +92,7 @@ export const HelpCard: React.FC<HelpCardProps> = ({
                 {children}
                 <div className='flex flex-col gap-0.5 leading-tight'>
                     <span className='text-base font-semibold'>{title}</span>
-                    <span className='text-sm font-normal text-muted-foreground'>{description}</span>
+                    <span className='text-muted-foreground text-sm font-normal'>{description}</span>
                 </div>
             </div>
         </a>
@@ -307,7 +307,7 @@ const Overview: React.FC = () => {
                     </OverviewKPICard>
                 </div>
                 <div className='grid grid-cols-3 gap-8'>
-                    <Card className={`group/card ${latestPostStats && 'transition-all hover:cursor-pointer hover:bg-accent/50'}`} onClick={() => {
+                    <Card className={`group/card ${latestPostStats && 'hover:bg-accent/50 transition-all hover:cursor-pointer'}`} onClick={() => {
                         if (latestPostStats) {
                             navigate(`/posts/analytics/beta/${latestPostStats.id}`, {crossApp: true});
                         }
@@ -339,11 +339,11 @@ const Overview: React.FC = () => {
                                             <Separator />
                                         }
                                         <div className='mt-4 text-xl font-semibold leading-tight tracking-tight'>{latestPostStats.title}</div>
-                                        <div className='mt-0.5 text-sm text-muted-foreground'>Published {formatDisplayDate(latestPostStats.published_at)} {new Date(latestPostStats.published_at).toLocaleDateString()}</div>
+                                        <div className='text-muted-foreground mt-0.5 text-sm'>Published {formatDisplayDate(latestPostStats.published_at)} {new Date(latestPostStats.published_at).toLocaleDateString()}</div>
                                     </div>
                                     <div className='flex flex-col items-stretch gap-2 text-sm'>
                                         <div className='flex items-center justify-between'>
-                                            <div className='flex items-center gap-1 font-medium text-muted-foreground'>
+                                            <div className='text-muted-foreground flex items-center gap-1 font-medium'>
                                                 <LucideIcon.MousePointer size={16} strokeWidth={1.5} />
                                                 Visitors
                                             </div>
@@ -351,7 +351,7 @@ const Overview: React.FC = () => {
                                         </div>
                                         {latestPostStats.open_rate &&
                                         <div className='flex items-center justify-between'>
-                                            <div className='flex items-center gap-1 font-medium text-muted-foreground'>
+                                            <div className='text-muted-foreground flex items-center gap-1 font-medium'>
                                                 <LucideIcon.MailOpen size={16} strokeWidth={1.5} />
                                                 Open rate
                                             </div>
@@ -359,7 +359,7 @@ const Overview: React.FC = () => {
                                         </div>
                                         }
                                         <div className='flex items-center justify-between'>
-                                            <div className='flex items-center gap-1 font-medium text-muted-foreground'>
+                                            <div className='text-muted-foreground flex items-center gap-1 font-medium'>
                                                 <LucideIcon.User size={16} strokeWidth={1.5} />
                                                 Members
                                             </div>
@@ -368,7 +368,7 @@ const Overview: React.FC = () => {
                                     </div>
                                 </>
                             ) : (
-                                <div className='flex flex-col items-center justify-center gap-4 py-8 text-center text-muted-foreground'>
+                                <div className='text-muted-foreground flex flex-col items-center justify-center gap-4 py-8 text-center'>
                                     <LucideIcon.FileText size={32} strokeWidth={1.5} />
                                     <div>No published posts yet</div>
                                 </div>
@@ -412,7 +412,7 @@ const Overview: React.FC = () => {
                                                     }
                                                     <div className='flex flex-col'>
                                                         <span className='font-semibold leading-[1.35em]'>{post.title}</span>
-                                                        <span className='text-xs text-muted-foreground'>{formatDisplayDate(post.published_at)}</span>
+                                                        <span className='text-muted-foreground text-xs'>{formatDisplayDate(post.published_at)}</span>
                                                     </div>
                                                 </div>
                                             </TableCell>
@@ -430,7 +430,7 @@ const Overview: React.FC = () => {
                                     {(!topPostsData?.stats || topPostsData.stats.length === 0) && (
                                         <TableRow>
                                             <TableHead
-                                                className='text-center font-normal text-muted-foreground'
+                                                className='text-muted-foreground text-center font-normal'
                                                 colSpan={4}
                                             >
                                                 No data for the selected period
