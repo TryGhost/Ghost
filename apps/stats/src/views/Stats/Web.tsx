@@ -23,6 +23,7 @@ interface UnifiedContentData {
     percentage?: number;
     post_uuid?: string;
     post_id?: string;
+    post_type?: string;
 }
 
 interface KpiDataItem {
@@ -187,9 +188,10 @@ const TopContentTable: React.FC<TopContentTableProps> = ({data, contentType}) =>
             </DataListHeader>
             <DataListBody>
                 {data?.map((row: UnifiedContentData) => {
-                    const isClickable = row.post_id;
+                    // Only make posts clickable (not pages), since there's no analytics route for pages
+                    const isClickable = row.post_id && row.post_type === 'post';
                     const handleClick = () => {
-                        if (row.post_id) {
+                        if (isClickable) {
                             navigate(`/posts/analytics/beta/${row.post_id}`, {crossApp: true});
                         }
                     };
@@ -275,7 +277,8 @@ const TopContentCard: React.FC<TopContentCardProps> = ({range}) => {
             visits: item.visits,
             percentage: filteredTotalVisits > 0 ? (Number(item.visits) / filteredTotalVisits) : 0,
             post_uuid: item.post_uuid,
-            post_id: item.post_id
+            post_id: item.post_id,
+            post_type: item.post_type
         }));
     }, [topContentData]);
 
