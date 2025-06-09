@@ -179,3 +179,8 @@ add|ember-template-lint|require-iframe-title|42|16|42|16|a3292b469dc37f2f4791e7f
 add|ember-template-lint|no-autofocus-attribute|21|20|21|20|942419d05c04ded6716f09faecd6b1ab55418121|1746489600000|||app/components/modals/new-custom-integration.hbs
 add|ember-template-lint|no-invalid-interactive|2|37|2|37|e21ba31f54b631a428c28a1c9f88d0dc66f2f5fc|1746489600000|||app/components/modals/search.hbs
 add|ember-template-lint|no-redundant-role|11|20|11|20|bc4fbabe3d468440d8a2c70e92cec991caca41e2|1746489600000|||app/components/dashboard/onboarding/share-modal.hbs
+add|ember-template-lint|no-action|74|30|74|30|3b76c38861ddcdfaa277e272a1d27293c2659524|1749427200000|||app/components/gh-nav-menu/main.hbs
+add|ember-template-lint|no-invalid-interactive|42|30|42|30|ffabb36d3b9e207aba8ff78ac29b648f2b314bb2|1749427200000|||app/components/gh-nav-menu/main.hbs
+add|ember-template-lint|no-invalid-interactive|74|30|74|30|ffabb36d3b9e207aba8ff78ac29b648f2b314bb2|1749427200000|||app/components/gh-nav-menu/main.hbs
+add|ember-template-lint|no-unknown-arguments-for-builtin-components|76|32|76|32|571c3d774ed33480f528b54b323b23bfd7148eee|1749427200000|||app/components/gh-nav-menu/main.hbs
+remove|ember-template-lint|no-invalid-interactive|47|26|47|26|da9f7c0f319619ff98a53fd679c47841cfaa3c1d|1746489600000|||app/components/gh-nav-menu/main.hbs
