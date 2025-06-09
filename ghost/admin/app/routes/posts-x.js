@@ -8,7 +8,7 @@ export default class PostsXRoute extends AuthenticatedRoute {
     @service feature;
 
     setupController(controller, model, transition) {
-        if (transition.from?.name === 'stats-x.index') {
+        if (transition.from?.name.includes('stats-x')) {
             controller.fromAnalytics = true;
         } else {
             controller.fromAnalytics = false;
