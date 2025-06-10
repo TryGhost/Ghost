@@ -367,7 +367,8 @@ class EmailRenderer {
                 ...renderOptions.design,
                 ...betaDesignOptions,
                 backgroundColor: newsletter?.get('background_color'),
-                backgroundIsDark: this.#checkIfBackgroundIsDark(newsletter)
+                backgroundIsDark: this.#checkIfBackgroundIsDark(newsletter),
+                headerBackgroundColor: this.#getHeaderBackgroundColor(newsletter, accentColor)
             };
         }
 
@@ -878,7 +879,11 @@ class EmailRenderer {
         this.#handlebars.registerPartial('latestPosts', latestPostsPartial);
 
         // Actual template
-        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template.hbs`), 'utf8');
+        let templateName = 'template.hbs';
+        if (labs.isSet('emailCustomizationAlpha')) {
+            templateName = 'template-emailCustomization.hbs';
+        }
+        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', templateName), 'utf8');
         this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
 
         return this.#renderTemplate(data);
@@ -968,7 +973,7 @@ class EmailRenderer {
         }
 
         // value === 'auto', value === null, value is not valid hex
-        const backgroundColor = this.#getBackgroundColor(newsletter);
+        const backgroundColor = this.#getHeaderBackgroundColor(newsletter, accentColor) || this.#getBackgroundColor(newsletter);
         return textColorForBackgroundColor(backgroundColor).hex();
     }
 
@@ -1099,6 +1104,24 @@ class EmailRenderer {
         return textColorForBackgroundColor(backgroundColor).hex().toLowerCase() === '#ffffff';
     }
 
+    #getHeaderBackgroundColor(newsletter, accentColor) {
+        const value = newsletter?.get('header_background_color');
+
+        if (value === 'transparent') {
+            return null;
+        }
+
+        if (value === 'accent') {
+            return accentColor;
+        }
+
+        if (VALID_HEX_REGEX.test(value)) {
+            return value;
+        }
+
+        return null;
+    }
+
     /**
      * @private
      */
@@ -1134,6 +1157,8 @@ class EmailRenderer {
         const dividerColor = this.#getDividerColor(newsletter);
         const buttonColor = this.#getButtonColor(newsletter, adjustedAccentColor);
         const buttonTextColor = this.#getButtonTextColor(newsletter, adjustedAccentColor);
+        const headerBackgroundColor = this.#getHeaderBackgroundColor(newsletter, accentColor);
+        const headerBackgroundIsDark = textColorForBackgroundColor(headerBackgroundColor || backgroundColor).hex().toLowerCase() === '#ffffff';
 
         let buttonBorderRadius = '6px';
         if (hasAnyEmailCustomization) {
@@ -1274,6 +1299,16 @@ class EmailRenderer {
                 showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag,
                 showSubscriptionDetails: newsletter.get('show_subscription_details')
             },
+
+            hasHeaderContent: !!(
+                headerImage ||
+                (newsletter.get('show_header_icon') && this.#settingsCache.get('icon')) ||
+                newsletter.get('show_header_title') ||
+                newsletter.get('show_header_name') ||
+                newsletter.get('show_post_title_section') ||
+                (newsletter.get('show_feature_image') && !!postFeatureImage)
+            ),
+
             latestPosts,
             latestPostsHasImages,
 
@@ -1298,6 +1333,8 @@ class EmailRenderer {
             dividerColor,
             buttonColor,
             buttonTextColor,
+            headerBackgroundColor,
+            headerBackgroundIsDark,
 
             // TODO: consider moving these to newsletter property
             showHeaderTitle: newsletter.get('show_header_title'),
