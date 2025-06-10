@@ -432,24 +432,22 @@ const Sidebar: React.FC<{
                     </div>
                 </Form>
                 <Form className='mt-6' gap='xs' margins='lg' title='Header'>
-                    {hasEmailCustomizationAlpha && (
-                        <div className='mb-1'>
-                            <ColorPickerField
-                                direction='rtl'
-                                eyedropper={true}
-                                swatches={[
-                                    {
-                                        value: 'transparent',
-                                        title: 'Transparent',
-                                        hex: '#00000000'
-                                    }
-                                ]}
-                                title='Header background color'
-                                value={newsletter.header_background_color || 'transparent'}
-                                onChange={color => updateNewsletter({header_background_color: color!})}
-                            />
-                        </div>
-                    )}
+                    <div className='mb-1'>
+                        <ColorPickerField
+                            direction='rtl'
+                            eyedropper={true}
+                            swatches={[
+                                {
+                                    value: 'transparent',
+                                    title: 'Transparent',
+                                    hex: '#00000000'
+                                }
+                            ]}
+                            title='Header background color'
+                            value={newsletter.header_background_color || 'transparent'}
+                            onChange={color => updateNewsletter({header_background_color: color!})}
+                        />
+                    </div>
                     <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
