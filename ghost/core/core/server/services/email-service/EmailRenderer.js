@@ -1146,7 +1146,7 @@ class EmailRenderer {
         const hasAnyEmailCustomization = labs.isSet('emailCustomization') || labs.isSet('emailCustomizationAlpha');
 
         const backgroundColor = this.#getBackgroundColor(newsletter);
-        const backgroundIsDark = textColorForBackgroundColor(backgroundColor).hex().toLowerCase() === '#ffffff';
+        const backgroundIsDark = this.#checkIfBackgroundIsDark(newsletter);
         const postTitleColor = this.#getPostTitleColor(newsletter, accentColor);
         const titleWeight = this.#getTitleWeight(newsletter);
         const titleStrongWeight = this.#getTitleStrongWeight(titleWeight);
