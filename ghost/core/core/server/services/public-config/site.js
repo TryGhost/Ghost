@@ -1,5 +1,6 @@
 const ghostVersion = require('@tryghost/version');
 const settingsCache = require('../../../shared/settings-cache');
+const settingsHelpers = require('../settings-helpers');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 
@@ -15,7 +16,7 @@ module.exports = function getSiteProperties() {
         url: urlUtils.urlFor('home', true),
         version: ghostVersion.safe,
         allow_external_signup: settingsCache.get('allow_self_signup') && !(settingsCache.get('portal_signup_checkbox_required') && settingsCache.get('portal_signup_terms_html')),
-        site_uuid: settingsCache.get('site_uuid')
+        site_uuid: settingsHelpers.getSiteUuid()
     };
 
     if (config.get('client_sentry') && !config.get('client_sentry').disabled) {
