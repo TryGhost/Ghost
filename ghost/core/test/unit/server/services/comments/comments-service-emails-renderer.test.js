@@ -11,6 +11,7 @@ describe('Comments Service Email Renderer', function () {
 
             const templateData = {
                 postTitle: 'Test Post',
+                postUrl: 'https://ghost.org/post',
                 siteUrl: 'https://ghost.org'
             };
 
@@ -20,6 +21,7 @@ describe('Comments Service Email Renderer', function () {
             // assert
             should(result.html).containEql('Hey there,</p>');
             should(result.html).containEql('This message was sent from <a class="small" href="https://ghost.org"');
+            should(result.html).containEql('Someone just replied to your comment on <a href="https://ghost.org/post"');
             should(result.text).containEql('Hey there,');
             should(result.text).containEql('Someone just replied to your comment on Test Post.');
         });
@@ -32,8 +34,7 @@ describe('Comments Service Email Renderer', function () {
             const templateData = {
                 postTitle: 'Test post\'s the best post',
                 siteUrl: 'https://ghost.org',
-                siteTitle: 'Cathy\'s blog'
-                
+                siteDomain: 'Cathy\'s blog'
             };
 
             // act
@@ -44,7 +45,7 @@ describe('Comments Service Email Renderer', function () {
             should(result.html).containEql('This message was sent from <a class="small" href="https://ghost.org" style="text-decoration: underline; color: #738A94; font-size: 11px;">Cathy\'s blog</a>');
             should(result.text).containEql('Someone just replied to your comment on Test post\'s the best post.');
         });
-        
+
         it('should render html and text templates with German locale', async function () {
             // arrange
             const i18n = i18nLib('de', 'ghost');
@@ -52,6 +53,7 @@ describe('Comments Service Email Renderer', function () {
 
             const templateData = {
                 postTitle: 'Testbeitrag',
+                postUrl: 'https://ghost.de/post',
                 siteUrl: 'https://ghost.de'
             };
 
@@ -61,6 +63,7 @@ describe('Comments Service Email Renderer', function () {
             // assert
             should(result.html).containEql('Hallo,</p>');
             should(result.html).containEql('Diese Nachricht wurde von <a class="small" href="https://ghost.de"');
+            should(result.html).containEql('Jemand hat auf deinen Kommentar zu <a href="https://ghost.de/post"');
             should(result.text).containEql('Hallo,');
             should(result.text).containEql('Jemand hat auf deinen Kommentar zu Testbeitrag geantwortet.');
         });
