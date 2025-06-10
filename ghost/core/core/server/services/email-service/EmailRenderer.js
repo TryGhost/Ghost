@@ -366,7 +366,8 @@ class EmailRenderer {
             renderOptions.design = {
                 ...renderOptions.design,
                 ...betaDesignOptions,
-                backgroundColor: newsletter?.get('background_color')
+                backgroundColor: newsletter?.get('background_color'),
+                backgroundIsDark: this.#checkIfBackgroundIsDark(newsletter)
             };
         }
 
@@ -1091,6 +1092,11 @@ class EmailRenderer {
     #getButtonTextColor(newsletter, accentColor) {
         const buttonColor = this.#getButtonColor(newsletter, accentColor);
         return textColorForBackgroundColor(buttonColor).hex();
+    }
+
+    #checkIfBackgroundIsDark(newsletter) {
+        const backgroundColor = this.#getBackgroundColor(newsletter);
+        return textColorForBackgroundColor(backgroundColor).hex().toLowerCase() === '#ffffff';
     }
 
     /**
