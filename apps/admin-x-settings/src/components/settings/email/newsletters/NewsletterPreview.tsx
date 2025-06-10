@@ -101,7 +101,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
             return siteData.accent_color;
         }
 
-        return textColorForBackgroundColor(backgroundColor()).hex();
+        return textColorForBackgroundColor(headerBackgroundColor() || backgroundColor()).hex();
     };
 
     const sectionTitleColor = () => {

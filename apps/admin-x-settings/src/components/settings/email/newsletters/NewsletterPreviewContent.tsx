@@ -154,17 +154,17 @@ const NewsletterPreviewContent: React.FC<{
                     </div>
 
                     {/* Email content */}
-                    <div className="overflow-y-auto p-4 text-sm" style={{backgroundColor}}>
-                        <div className="px-[5.4rem]" style={{backgroundColor: headerBackgroundColor}}>
+                    <div className="overflow-y-auto text-sm" style={{backgroundColor}}>
+                        <div className="px-[7rem]" style={{backgroundColor: headerBackgroundColor}}>
                             {headerImage && (
                                 <div>
-                                    <img alt="" className="mb-4 block" src={headerImage} />
+                                    <img alt="" className="mb-4 block pt-6" src={headerImage} />
                                 </div>
                             )}
                             {showHeader && (
                                 <div className="py-3">
                                     {headerIcon && <img alt="" className="mx-auto mb-2 size-10" role="presentation" src={headerIcon} />}
-                                    {headerTitle && <h4 className="mb-1 text-center text-[1.6rem] font-bold uppercase leading-tight tracking-tight text-grey-900" style={{color: textColor}}>{headerTitle}</h4>}
+                                    {headerTitle && <h4 className="mb-1 text-center text-[1.6rem] font-bold uppercase leading-tight tracking-tight text-grey-900" style={{color: headerTextColor}}>{headerTitle}</h4>}
                                     {headerSubtitle && <h5 className="mb-1 text-center text-[1.3rem] font-normal text-grey-700" style={{color: secondaryTextColor}}>{headerSubtitle}</h5>}
                                 </div>
                             )}
@@ -233,7 +233,7 @@ const NewsletterPreviewContent: React.FC<{
                             )}
                         </div>
 
-                        <div className={clsx('px-[5.4rem]', headerBackgroundColor !== 'transparent' && 'pt-10')}>
+                        <div className={clsx('px-[7rem]', headerBackgroundColor !== 'transparent' && 'pt-10')}>
                             <div className={clsx(
                                 'max-w-[600px] border-b border-grey-200 pb-5 leading-[27.2px] text-black',
                                 dividerStyle === 'dashed' && 'border-dashed',
