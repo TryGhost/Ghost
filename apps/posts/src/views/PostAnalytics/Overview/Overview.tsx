@@ -24,7 +24,6 @@ const Overview: React.FC = () => {
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid,email,status,count,feature_image',
             include: 'email,authors,tags,tiers,count.clicks,count.signups,count.paid_conversions'
         }
     });
