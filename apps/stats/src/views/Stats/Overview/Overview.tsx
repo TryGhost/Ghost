@@ -176,7 +176,7 @@ const Overview: React.FC = () => {
             <StatsHeader>
                 <DateRangeSelect />
             </StatsHeader>
-            <StatsView isLoading={isPageLoading}>
+            <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
                 <OverviewKPIs
                     currencySymbol={currencySymbol}
                     growthTotals={growthTotals}
