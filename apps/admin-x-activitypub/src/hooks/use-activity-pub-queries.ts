@@ -386,9 +386,39 @@ export function useLikeMutationForUser(handle: string) {
         onMutate: (id) => {
             updateLikedCache(queryClient, QUERY_KEYS.feed, id, true);
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, true);
-            updateLikedCache(queryClient, QUERY_KEYS.profilePosts('index'), id, true);
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, true);
             updateNotificationsLikedCache(queryClient, handle, id, true);
+
+            // Update all profile post caches (not just current user's)
+            const profilePostsQueryKey = QUERY_KEYS.profilePosts(null);
+            queryClient.setQueriesData(profilePostsQueryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+                if (current === undefined) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {posts: Activity[]}) => {
+                        return {
+                            ...page,
+                            posts: page.posts.map((item: Activity) => {
+                                if (item.object.id === id) {
+                                    return {
+                                        ...item,
+                                        object: {
+                                            ...item.object,
+                                            liked: true,
+                                            likeCount: Math.max((item.object.likeCount || 0) + 1, 0)
+                                        }
+                                    };
+                                }
+
+                                return item;
+                            })
+                        };
+                    })
+                };
+            });
 
             // Update the individual post cache (used by Reader)
             const postQueryKey = QUERY_KEYS.post(id);
@@ -445,9 +475,39 @@ export function useLikeMutationForUser(handle: string) {
         onError(error: {message: string, statusCode: number}, id) {
             updateLikedCache(queryClient, QUERY_KEYS.feed, id, false);
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
-            updateLikedCache(queryClient, QUERY_KEYS.profilePosts('index'), id, false);
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
             updateNotificationsLikedCache(queryClient, handle, id, false);
+
+            // Revert all profile post caches (not just current user's)
+            const profilePostsQueryKey = QUERY_KEYS.profilePosts(null);
+            queryClient.setQueriesData(profilePostsQueryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+                if (current === undefined) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {posts: Activity[]}) => {
+                        return {
+                            ...page,
+                            posts: page.posts.map((item: Activity) => {
+                                if (item.object.id === id) {
+                                    return {
+                                        ...item,
+                                        object: {
+                                            ...item.object,
+                                            liked: false,
+                                            likeCount: Math.max((item.object.likeCount || 0) - 1, 0)
+                                        }
+                                    };
+                                }
+
+                                return item;
+                            })
+                        };
+                    })
+                };
+            });
 
             // Revert the individual post cache (used by Reader)
             const postQueryKey = QUERY_KEYS.post(id);
@@ -523,9 +583,39 @@ export function useUnlikeMutationForUser(handle: string) {
         onMutate: (id) => {
             updateLikedCache(queryClient, QUERY_KEYS.feed, id, false);
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
-            updateLikedCache(queryClient, QUERY_KEYS.profilePosts('index'), id, false);
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
             updateNotificationsLikedCache(queryClient, handle, id, false);
+
+            // Update all profile post caches (not just current user's)
+            const profilePostsQueryKey = QUERY_KEYS.profilePosts(null);
+            queryClient.setQueriesData(profilePostsQueryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+                if (current === undefined) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {posts: Activity[]}) => {
+                        return {
+                            ...page,
+                            posts: page.posts.map((item: Activity) => {
+                                if (item.object.id === id) {
+                                    return {
+                                        ...item,
+                                        object: {
+                                            ...item.object,
+                                            liked: false,
+                                            likeCount: Math.max((item.object.likeCount || 0) - 1, 0)
+                                        }
+                                    };
+                                }
+
+                                return item;
+                            })
+                        };
+                    })
+                };
+            });
 
             // Update the individual post cache (used by Reader)
             const postQueryKey = QUERY_KEYS.post(id);
