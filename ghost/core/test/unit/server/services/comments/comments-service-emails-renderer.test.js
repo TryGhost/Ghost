@@ -24,6 +24,27 @@ describe('Comments Service Email Renderer', function () {
             should(result.text).containEql('Someone just replied to your comment on Test Post.');
         });
 
+        it('should correctly handle apostrophes in post titles and site names', async function () {
+            // arrange
+            const i18n = i18nLib('en', 'ghost');
+            const renderer = new CommentsServiceEmailRenderer({t: i18n.t});
+
+            const templateData = {
+                postTitle: 'Test post\'s the best post',
+                siteUrl: 'https://ghost.org',
+                siteTitle: 'Cathy\'s blog'
+                
+            };
+
+            // act
+            const result = await renderer.renderEmailTemplate('new-comment-reply', templateData);
+
+            // assert
+            should(result.html).containEql('Hey there,</p>');
+            should(result.html).containEql('This message was sent from <a class="small" href="https://ghost.org" style="text-decoration: underline; color: #738A94; font-size: 11px;">Cathy\'s blog</a>');
+            should(result.text).containEql('Someone just replied to your comment on Test post\'s the best post.');
+        });
+        
         it('should render html and text templates with German locale', async function () {
             // arrange
             const i18n = i18nLib('de', 'ghost');
