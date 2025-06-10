@@ -209,6 +209,20 @@ const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, 
     );
 };
 
+export interface EmptyCardProps extends React.ComponentPropsWithoutRef<'div'> {}
+
+const EmptyCard = React.forwardRef<
+    HTMLDivElement,
+    EmptyCardProps
+>(({className, ...props}, ref) => (
+    <div
+        ref={ref}
+        className={cn('p-6 transition-all hover:shadow-xs rounded-xl border flex flex-col bg-card text-card-foreground', className)}
+        {...props}
+    />
+));
+EmptyCard.displayName = 'EmptyCard';
+
 export {
     Card,
     CardHeader,
@@ -219,5 +233,6 @@ export {
     KpiCardHeader,
     KpiCardHeaderLabel,
     KpiCardHeaderValue,
+    EmptyCard,
     cardVariants
 };
