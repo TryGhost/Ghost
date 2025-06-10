@@ -635,7 +635,11 @@ figure blockquote p {
 
 .post-excerpt {
     margin: 0;
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    {{else}}
     color: #15212A;
+    {{/hasFeature}}
     font-size: 19px;
     line-height: 1.4em;
     text-align: center;
@@ -2239,7 +2243,7 @@ img.kg-cta-image {
 }
 {{/hasFeature}}
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .kg-paywall {
     text-align: center;
 }
@@ -2252,6 +2256,9 @@ img.kg-cta-image {
     max-width: 440px;
     margin: 0 auto 1.5em auto;
     text-wrap: pretty;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    {{/hasFeature}}
 }
 {{/hasFeature}}
 
