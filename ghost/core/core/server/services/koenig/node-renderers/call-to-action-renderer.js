@@ -87,15 +87,18 @@ function emailCTATemplate(dataset, options = {}) {
         }
     }
 
-    if (options.feature?.emailCustomization || options.feature?.emailCustomizationAlpha) {
+    if (options.feature?.emailCustomizationAlpha) {
         const isTransparentCTA = dataset.backgroundColor === 'none';
-        const isDarkBackground = options.feature?.emailCustomizationAlpha && options.design?.backgroundIsDark;
+        const isDarkBackground = options.design?.backgroundIsDark;
         const isBlackButton = dataset.buttonColor === 'black' || dataset.buttonColor === '#000000' || dataset.buttonColor === '#000';
 
         if (isTransparentCTA && isDarkBackground && isBlackButton) {
             buttonStyle = `color: white;`;
             dataset.buttonColor = 'white';
         }
+    }
+
+    if (options.feature?.emailCustomization || options.feature?.emailCustomizationAlpha) {
         const buttonHtml = renderEmailButton({
             url: dataset.buttonUrl,
             text: dataset.buttonText,
