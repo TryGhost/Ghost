@@ -225,7 +225,7 @@
   "devDependencies": {
     "@actions/core": "1.11.1",
     "@playwright/test": "1.52.0",
-    "@prettier/sync": "0.5.5",
+    "@prettier/sync": "0.6.1",
     "@tryghost/express-test": "0.14.1",
     "@tryghost/webhook-mock-receiver": "0.2.17",
     "@types/bookshelf": "1.2.9",
