@@ -86,22 +86,6 @@ describe('SettingsImporter', function () {
             should.not.exist(emailVerificationRequired);
         });
 
-        it('Does not overwrite site_uuid setting', function () {
-            const fakeSettings = [{
-                key: 'site_uuid',
-                value: 'e7914916-e990-4a1b-b371-07a56798b2aa',
-                flags: 'PUBLIC,RO'
-            }];
-
-            const importer = new SettingsImporter({settings: fakeSettings}, {dataKeyToImport: 'settings'});
-
-            importer.beforeImport();
-
-            const siteUuid = find(importer.dataToImport, {key: 'site_uuid'});
-
-            should.not.exist(siteUuid);
-        });
-
         it('Adds a problem if the existing data is_private is false, and new data is_private is true', function () {
             const fakeSettings = [{
                 key: 'password',

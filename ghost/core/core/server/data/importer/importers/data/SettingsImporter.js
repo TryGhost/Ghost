@@ -10,7 +10,7 @@ const {WRITABLE_KEYS_ALLOWLIST} = require('../../../../../shared/labs');
 const {sequence} = require('@tryghost/promise');
 
 const labsDefaults = JSON.parse(defaultSettings.labs.labs.defaultValue);
-const ignoredSettings = ['slack_url', 'members_from_address', 'members_support_address', 'portal_products', 'email_verification_required', 'site_uuid'];
+const ignoredSettings = ['slack_url', 'members_from_address', 'members_support_address', 'portal_products', 'email_verification_required'];
 
 // Importer maintains as much backwards compatibility as possible
 const renamedSettingsMap = {
