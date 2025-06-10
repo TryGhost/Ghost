@@ -1,4 +1,4 @@
-import {Avatar, AvatarFallback, AvatarImage, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, Tabs, TabsList, TabsTrigger, formatMemberName, formatPercentage, formatTimestamp, getMemberInitials, stringToHslColor, useSimplePagination} from '@tryghost/shade';
+import {Avatar, AvatarFallback, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, Tabs, TabsList, TabsTrigger, formatMemberName, formatPercentage, formatTimestamp, getMemberInitials, stringToHslColor, useSimplePagination} from '@tryghost/shade';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {usePostFeedback} from '@src/hooks/usePostFeedback';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
@@ -56,19 +56,19 @@ const Feedback: React.FC = () => {
             {feedbackStats.totalFeedback > 0 ?
                 <CardContent className='pb-3'>
                     <Tabs defaultValue="positive" value={activeFeedbackTab} variant='underline' onValueChange={value => setActiveFeedbackTab(value as 'positive' | 'negative')}>
-                        <TabsList className="flex w-full">
+                        <TabsList className="flex w-full gap-2">
                             <TabsTrigger className='h-12 justify-start px-3' value="positive">
-                                <div className='flex items-center gap-1.5'>
+                                <div className='flex items-center gap-1'>
                                     <LucideIcon.ThumbsUp />
-                                    <span className='font-semibold tracking-tight'>{formatPercentage(feedbackStats.positiveFeedback / feedbackStats.totalFeedback)}</span>
                                     <span className='text-sm font-medium'>More like this</span>
+                                    <span className='ml-1.5 font-semibold tracking-tight'>{formatPercentage(feedbackStats.positiveFeedback / feedbackStats.totalFeedback)}</span>
                                 </div>
                             </TabsTrigger>
                             <TabsTrigger className='h-12 justify-start px-3' value="negative">
-                                <div className='flex items-center gap-1.5'>
+                                <div className='flex items-center gap-1'>
                                     <LucideIcon.ThumbsDown />
-                                    <span className='font-semibold tracking-tight'>{formatPercentage(feedbackStats.negativeFeedback / feedbackStats.totalFeedback)}</span>
                                     <span className='text-sm font-medium'>Less like this</span>
+                                    <span className='ml-1.5 font-semibold tracking-tight'>{formatPercentage(feedbackStats.negativeFeedback / feedbackStats.totalFeedback)}</span>
                                 </div>
                             </TabsTrigger>
                         </TabsList>
@@ -81,7 +81,7 @@ const Feedback: React.FC = () => {
                                 }}>
                                     <div className='flex items-center gap-2 font-medium'>
                                         <Avatar className='size-7'>
-                                            <AvatarImage src={item.member?.avatar_image}></AvatarImage>
+                                            {item.member?.avatar_image && <img className='absolute aspect-square size-full' src={item.member?.avatar_image} />}
                                             <AvatarFallback className='text-white' style={{
                                                 backgroundColor: `${stringToHslColor(formatMemberName(item.member), 75, 55)}`
                                             }}>{getMemberInitials(item.member)}</AvatarFallback>

@@ -59,6 +59,9 @@ table td {
 .body {
     background-color: {{backgroundColor}} !important;
 }
+{{/hasFeature}}
+
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .header {
     {{#if headerBackgroundColor}}
     background-color: {{headerBackgroundColor}};
@@ -519,8 +522,7 @@ figure blockquote p {
     padding-top: 32px;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
-
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .site-url {
     color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
     font-size: 16px;
@@ -529,7 +531,6 @@ figure blockquote p {
     text-transform: uppercase;
     text-align: center;
 }
-
 {{else}}
 .site-url {
     color: #15212A;
@@ -539,14 +540,13 @@ figure blockquote p {
     text-transform: uppercase;
     text-align: center;
 }
-
 {{/hasFeature}}
 
 .site-url-bottom-padding {
     padding-bottom: 12px;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .site-title {
     color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
 }
@@ -556,7 +556,7 @@ figure blockquote p {
 }
 {{/hasFeature}}
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .site-subtitle {
     {{#if headerBackgroundIsDark}}
         color: #8f9aa3;
@@ -635,7 +635,11 @@ figure blockquote p {
 
 .post-excerpt {
     margin: 0;
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    {{else}}
     color: #15212A;
+    {{/hasFeature}}
     font-size: 19px;
     line-height: 1.4em;
     text-align: center;
@@ -663,7 +667,7 @@ figure blockquote p {
     text-align: left;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .post-meta,
 .view-online {
     {{#if headerBackgroundIsDark}}
@@ -712,7 +716,7 @@ figure blockquote p {
     white-space: nowrap;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .view-online-link {
     word-wrap: none;
     white-space: nowrap;
@@ -758,7 +762,7 @@ figure blockquote p {
     padding-bottom: 32px;
     text-align: center;
     font-size: 13px !important;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#73818c{{/if}};
     {{else}}
     color: #73818c;
@@ -2239,7 +2243,7 @@ img.kg-cta-image {
 }
 {{/hasFeature}}
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .kg-paywall {
     text-align: center;
 }
@@ -2252,6 +2256,9 @@ img.kg-cta-image {
     max-width: 440px;
     margin: 0 auto 1.5em auto;
     text-wrap: pretty;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    {{/hasFeature}}
 }
 {{/hasFeature}}
 
@@ -2270,11 +2277,9 @@ img.kg-cta-image {
 .header-bg {
     padding: 0;
     /* Background color for the header */
-    {{#hasFeature "emailCustomizationAlpha"}}
     {{#if headerBackgroundColor}}
     background-color: {{headerBackgroundColor}};
     {{/if}}
-    {{/hasFeature}}
 }
 
 .header-container {

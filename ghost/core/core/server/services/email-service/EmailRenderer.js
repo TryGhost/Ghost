@@ -326,18 +326,14 @@ class EmailRenderer {
 
         const labs = this.getLabs();
 
-        let accentColor = this.#settingsCache?.get('accent_color') || DEFAULT_ACCENT_COLOR;
-        if (!VALID_HEX_REGEX.test(accentColor)) {
-            accentColor = DEFAULT_ACCENT_COLOR;
+        if (labs?.isSet('emailCustomization') || labs?.isSet('emailCustomizationAlpha')) {
+            renderOptions.design = {};
         }
 
-        if (labs?.isSet('emailCustomization') || labs?.isSet('emailCustomizationAlpha')) {
-            renderOptions.design = {
-                accentColor
-            };
-        }
+        const accentColor = this.#getAccentColor();
 
         const betaDesignOptions = {
+            accentColor,
             buttonCorners: newsletter?.get('button_corners'),
             buttonStyle: newsletter?.get('button_style'),
             titleFontWeight: newsletter?.get('title_font_weight'),
@@ -352,7 +348,8 @@ class EmailRenderer {
             //duplicating magic values or logic in renderers
             dividerColor: this.#getDividerColor(newsletter),
             buttonColor: this.#getButtonColor(newsletter, accentColor),
-            buttonTextColor: this.#getButtonTextColor(newsletter, accentColor)
+            buttonTextColor: this.#getButtonTextColor(newsletter, accentColor),
+            headerBackgroundColor: this.#getHeaderBackgroundColor(newsletter, accentColor)
         };
 
         if (labs?.isSet('emailCustomization')) {
@@ -880,7 +877,7 @@ class EmailRenderer {
 
         // Actual template
         let templateName = 'template.hbs';
-        if (labs.isSet('emailCustomizationAlpha')) {
+        if (labs?.isSet('emailCustomization') || labs?.isSet('emailCustomizationAlpha')) {
             templateName = 'template-emailCustomization.hbs';
         }
         const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', templateName), 'utf8');
@@ -946,6 +943,16 @@ class EmailRenderer {
         } else {
             return escapeHtml(text ?? '');
         }
+    }
+
+    #getAccentColor() {
+        let accentColor = this.#settingsCache?.get('accent_color') || DEFAULT_ACCENT_COLOR;
+
+        if (!VALID_HEX_REGEX.test(accentColor)) {
+            accentColor = DEFAULT_ACCENT_COLOR;
+        }
+
+        return accentColor;
     }
 
     #getBackgroundColor(newsletter) {
@@ -1128,10 +1135,7 @@ class EmailRenderer {
     async getTemplateData({post, newsletter, html, addPaywall, segment}) {
         const labs = this.getLabs();
 
-        let accentColor = this.#settingsCache.get('accent_color') || DEFAULT_ACCENT_COLOR;
-        if (!VALID_HEX_REGEX.test(accentColor)) {
-            accentColor = DEFAULT_ACCENT_COLOR;
-        }
+        let accentColor = this.#getAccentColor();
 
         let adjustedAccentColor;
         let adjustedAccentContrastColor;

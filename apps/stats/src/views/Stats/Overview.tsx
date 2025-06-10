@@ -4,7 +4,7 @@ import React, {useMemo} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, cn, formatDisplayDate, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, H3, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, cn, formatDisplayDate, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {STATS_RANGES} from '@src/utils/constants';
 import {TopPostViewsStats, useLatestPostStats, useTopPostsViews} from '@tryghost/admin-x-framework/api/stats';
 import {getAudienceQueryParam} from './components/AudienceSelect';
@@ -92,7 +92,7 @@ export const HelpCard: React.FC<HelpCardProps> = ({
                 {children}
                 <div className='flex flex-col gap-0.5 leading-tight'>
                     <span className='text-base font-semibold'>{title}</span>
-                    <span className='text-sm font-normal text-muted-foreground'>{description}</span>
+                    <span className='text-sm font-normal text-gray-700'>{description}</span>
                 </div>
             </div>
         </a>
@@ -442,27 +442,25 @@ const Overview: React.FC = () => {
                         </CardContent>
                     </Card>
                 </div>
-                {/*
-                TBD
                 <div className='grid grid-cols-1 gap-8 lg:grid-cols-2'>
                     <H3 className='-mb-4 mt-4 lg:col-span-2'>Grow your audience</H3>
                     <HelpCard
                         description='Find out how to review the performance of your content and get the most out of post analytics in Ghost.'
-                        title='Analytics in Ghost'
-                        url='https://ghost.org/help'>
-                        <div className='flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-r from-muted-foreground/15 to-muted-foreground/10 p-4 opacity-80 transition-all group-hover/card:opacity-100'>
-                            <LucideIcon.Sprout className='text-muted-foreground' size={40} strokeWidth={1} />
-                        </div>
-                    </HelpCard>
-                    <HelpCard
-                        description='Use these content distribution tactics to get more people to discover your work and increase engagement.'
-                        title='How to reach more people?'
-                        url='https://ghost.org/help'>
+                        title='Understanding analytics in Ghost'
+                        url='https://ghost.org/help/post-analytics/'>
                         <div className='flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-r from-muted-foreground/15 to-muted-foreground/10 p-4 opacity-80 transition-all group-hover/card:opacity-100'>
                             <LucideIcon.ChartColumnIncreasing className='text-muted-foreground' size={40} strokeWidth={1} />
                         </div>
                     </HelpCard>
-                </div> */}
+                    <HelpCard
+                        description='Use these content distribution tactics to get more people to discover your work and increase engagement.'
+                        title='How to get your content seen online'
+                        url='https://ghost.org/resources/content-distribution/'>
+                        <div className='flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-r from-muted-foreground/15 to-muted-foreground/10 p-4 opacity-80 transition-all group-hover/card:opacity-100'>
+                            <LucideIcon.Sprout className='text-muted-foreground' size={40} strokeWidth={1} />
+                        </div>
+                    </HelpCard>
+                </div>
             </StatsView>
         </StatsLayout>
     );
