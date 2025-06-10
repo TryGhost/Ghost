@@ -95,7 +95,7 @@ const Overview: React.FC = () => {
                                     </KpiCardContent>
                                 </KpiCard>
                                 <KpiCard className='grow' onClick={() => {
-                                    navigate(`/analytics/beta/${postId}/web`);
+                                    navigate(`/analytics/beta/${postId}/web/?tab=views`);
                                 }}>
                                     <KpiCardLabel>
                                         <LucideIcon.Eye size={16} strokeWidth={1.5} />

@@ -1,6 +1,7 @@
 import React, {useMemo} from 'react';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn, formatNumber, formatPercentage} from '@tryghost/shade';
 import {Post} from '@tryghost/admin-x-framework/api/posts';
+import {cleanTrackedUrl} from '@src/utils/link-helpers';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useTopLinks} from '@tryghost/admin-x-framework/api/links';
 
@@ -11,13 +12,13 @@ interface NewsletterOverviewProps {
 const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post}) => {
     const {postId} = useParams();
     const navigate = useNavigate();
-    
+
     // Calculate stats from post data
     const stats = useMemo(() => {
         const opened = post.email?.opened_count || 0;
         const sent = post.email?.email_count || 0;
         const clicked = post.count?.clicks || 0;
-        
+
         return {
             opened,
             clicked,
@@ -234,11 +235,10 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post}) => {
                     </Button>
                 </div>
                 <CardContent>
-                    <Separator />
                     <div>
                         <Table>
                             <TableHeader>
-                                <TableRow>
+                                <TableRow className='border-b !border-border'>
                                     <TableHead className='w-full' colSpan={2}>
                                         <div className='flex items-center justify-between gap-6'>
                                             <span>Link</span>
@@ -252,8 +252,8 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post}) => {
                                 <TableBody>
                                     {topLinks.slice(0, 5).map((link) => {
                                         return (
-                                            <TableRow key={link.link.link_id}>
-                                                <TableCell className='max-w-0 group-hover:!bg-transparent'>
+                                            <TableRow key={link.link.link_id} className='border-none'>
+                                                <TableCell className='max-w-0 py-2.5 group-hover:!bg-transparent'>
                                                     <a
                                                         className='block truncate font-medium hover:underline'
                                                         href={link.link.to}
@@ -261,10 +261,10 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post}) => {
                                                         target='_blank'
                                                         title={link.link.to}
                                                     >
-                                                        {link.link.to}
+                                                        {cleanTrackedUrl(link.link.to, true)}
                                                     </a>
                                                 </TableCell>
-                                                <TableCell className='w-[10%] text-right font-mono text-sm group-hover:!bg-transparent'>{formatNumber(link.count?.clicks || 0)}</TableCell>
+                                                <TableCell className='w-[10%] py-2.5 text-right font-mono text-sm group-hover:!bg-transparent'>{formatNumber(link.count?.clicks || 0)}</TableCell>
                                             </TableRow>
                                         );
                                     })}

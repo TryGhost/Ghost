@@ -30,7 +30,8 @@ interface NewsletterRadialChartProps {
 const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
     config,
     data,
-    percentageValue
+    percentageValue,
+    percentageLabel
 }) => {
     const barWidth = 46;
     const innerRadiusStart = data.length > 1 ? 72 : 89;
@@ -103,17 +104,17 @@ const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                                         <tspan
                                             className="fill-foreground text-[1.6rem] font-semibold tracking-tight"
                                             x={viewBox.cx}
-                                            y={viewBox.cy}
+                                            y={(viewBox.cy || 0) - 6}
                                         >
                                             {formatPercentage(percentageValue)}
                                         </tspan>
-                                        {/* <tspan
-                                                className="fill-muted-foreground font-medium"
-                                                x={viewBox.cx}
-                                                y={(viewBox.cy || 0) + 24}
-                                                >
-                                                {percentageLabel}
-                                                </tspan> */}
+                                        <tspan
+                                            className="fill-muted-foreground font-medium"
+                                            x={viewBox.cx}
+                                            y={(viewBox.cy || 0) + 14}
+                                        >
+                                            {percentageLabel}
+                                        </tspan>
                                     </text>
                                 );
                             }
@@ -341,7 +342,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             <CardContent className='p-0'>
                                 <div className='grid grid-cols-3 items-stretch border-b'>
                                     <KpiCard className='relative grow'>
-                                        <FunnelArrow />
+                                        {/* <FunnelArrow /> */}
                                         <KpiCardLabel>
                                             <div className='ml-0.5 size-[9px] rounded-full bg-chart-purple opacity-50'></div>
                                             {/* <LucideIcon.Send strokeWidth={1.5} /> */}
@@ -352,7 +353,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         </KpiCardContent>
                                     </KpiCard>
                                     <KpiCard className='relative grow'>
-                                        <FunnelArrow />
+                                        {/* <FunnelArrow /> */}
                                         <KpiCardLabel>
                                             <div className='ml-0.5 size-[9px] rounded-full bg-chart-blue opacity-50'></div>
                                             {/* <LucideIcon.Eye strokeWidth={1.5} /> */}
@@ -380,27 +381,29 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     </TabsList> */}
                                     <TabsContent value="radial">
                                         <div className='mx-auto grid grid-cols-3 items-center justify-center'>
-                                            <div className='border-r px-6'>
+                                            <div className='relative border-r px-6'>
                                                 <NewsletterRadialChart
                                                     config={sentChartConfig}
                                                     data={sentChartData}
                                                     percentageLabel='Sent'
                                                     percentageValue={1}
                                                 />
+                                                <FunnelArrow />
                                             </div>
-                                            <div className='border-r px-6'>
+                                            <div className='relative border-r px-6'>
                                                 <NewsletterRadialChart
                                                     config={openedChartConfig}
                                                     data={openedChartData}
-                                                    percentageLabel='Opened'
+                                                    percentageLabel='Open rate'
                                                     percentageValue={stats.openedRate}
                                                 />
+                                                <FunnelArrow />
                                             </div>
                                             <div className='px-6'>
                                                 <NewsletterRadialChart
                                                     config={clickedChartConfig}
                                                     data={clickedChartData}
-                                                    percentageLabel='Clicked'
+                                                    percentageLabel='Click rate'
                                                     percentageValue={stats.clickedRate}
                                                 />
                                             </div>
