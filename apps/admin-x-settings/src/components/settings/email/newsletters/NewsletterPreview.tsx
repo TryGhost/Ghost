@@ -157,9 +157,8 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
     }
 
     let colors: Colors = {};
-    if (hasEmailCustomizationAlpha) {
+    if (hasAnyEmailCustomization) {
         colors = {
-            backgroundColor: backgroundColor(),
             headerBackgroundColor: headerBackgroundColor(),
             postTitleColor: postTitleColor() || undefined,
             sectionTitleColor: sectionTitleColor() || undefined,
@@ -171,11 +170,9 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
             headerTextColor,
             secondaryHeaderTextColor
         };
-    } else if (hasEmailCustomization) {
-        colors = {
-            postTitleColor: postTitleColor() || undefined,
-            sectionTitleColor: sectionTitleColor() || undefined
-        };
+    }
+    if (hasEmailCustomizationAlpha) {
+        colors = {...colors, backgroundColor: backgroundColor()};
     }
 
     return <NewsletterPreviewContent
@@ -187,7 +184,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         buttonStyle={hasAnyEmailCustomization && newsletter.button_style || 'fill'}
         dividerStyle={newsletter.divider_style || 'solid'}
         footerContent={newsletter.footer_content}
-        headerBackgroundColor={hasEmailCustomizationAlpha ? (colors.headerBackgroundColor || headerBackgroundColor()) : 'transparent'}
+        headerBackgroundColor={hasAnyEmailCustomization ? (colors.headerBackgroundColor || headerBackgroundColor()) : 'transparent'}
         headerIcon={newsletter.show_header_icon ? icon : undefined}
         headerImage={newsletter.header_image}
         headerSubtitle={headerSubtitle}
