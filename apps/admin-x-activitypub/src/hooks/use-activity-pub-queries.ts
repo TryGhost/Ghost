@@ -1320,28 +1320,6 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     return {suggestedProfilesQuery, updateSuggestedProfile};
 }
 
-export function useThreadForUser(handle: string, id?: string) {
-    return useQuery({
-        queryKey: QUERY_KEYS.thread(id || ''),
-        refetchOnMount: 'always',
-        enabled: Boolean(id),
-        async queryFn() {
-            if (!id) {
-                throw new Error('Post ID is required');
-            }
-
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.getThread(id).then((response) => {
-                return {
-                    posts: response.posts.map(mapPostToActivity)
-                };
-            });
-        }
-    });
-}
-
 function prependActivityToPaginatedCollection(
     queryClient: QueryClient,
     queryKey: string[],
@@ -2165,26 +2143,6 @@ export function useNotificationsForUser(handle: string) {
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
-        }
-    });
-}
-
-export function usePostForUser(handle: string, id: string | null) {
-    return useQuery({
-        queryKey: QUERY_KEYS.post(id || ''),
-        refetchOnMount: 'always',
-        enabled: Boolean(id),
-        async queryFn() {
-            if (!id) {
-                throw new Error('Post ID is required');
-            }
-
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.getPost(id).then((response) => {
-                return mapPostToActivity(response);
-            });
         }
     });
 }
