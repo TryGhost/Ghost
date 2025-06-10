@@ -42,7 +42,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
         if (!post) {
             return;
         }
-        
+
         // We'll implement this as a controlled AlertDialog with React state
         setShowDeleteDialog(true);
     };
@@ -95,21 +95,26 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                     <DropdownMenuContent align='end'>
                                         <DropdownMenuGroup>
                                             <DropdownMenuItem asChild>
-                                                <a href={post.url} rel="noopener noreferrer" target="_blank">View in browser</a>
+                                                <a href={post.url} rel="noopener noreferrer" target="_blank">
+                                                    <LucideIcon.ExternalLink />
+                                                    View in browser
+                                                </a>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => {
                                                 navigate(`/editor/post/${postId}`, {crossApp: true});
                                             }}>
+                                                <LucideIcon.Pen />
                                                 Edit post
                                                 {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
                                             </DropdownMenuItem>
                                         </DropdownMenuGroup>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuGroup>
-                                            <DropdownMenuItem 
-                                                className='text-red-600 focus:text-red-600'
+                                            <DropdownMenuItem
+                                                className='text-destructive focus:text-destructive'
                                                 onClick={handleDeletePost}
                                             >
+                                                <LucideIcon.Trash />
                                                 Delete post
                                             </DropdownMenuItem>
                                         </DropdownMenuGroup>
@@ -185,7 +190,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction 
+                        <AlertDialogAction
                             className="hover:bg-red-700 bg-red-600 text-white"
                             onClick={performDelete}
                         >
