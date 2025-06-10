@@ -2145,7 +2145,8 @@ describe('Email renderer', function () {
                     sectionTitleColor: '#BADA55',
                     postTitleColor: '#BADA55',
                     dividerColor: '#e0e7eb',
-                    linkColor: '#BADA55'
+                    linkColor: '#BADA55',
+                    backgroundIsDark: false
                 },
                 labs: {emailCustomizationAlpha: true}
             });
