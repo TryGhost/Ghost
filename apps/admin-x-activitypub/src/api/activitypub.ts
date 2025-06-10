@@ -40,6 +40,20 @@ export interface Thread {
     posts: Post[];
 }
 
+export interface ReplyChainResponse {
+    ancestors: {
+        chain: Post[];
+        hasMore: boolean;
+    };
+    post: Post;
+    children: Array<{
+        post: Post;
+        chain: Post[];
+        hasMore: boolean;
+    }>;
+    next: string | null;
+}
+
 export type ActivityPubCollectionResponse<T> = {data: T[], next: string | null};
 
 export interface GetProfileFollowersResponse {
@@ -76,7 +90,7 @@ export interface GetAccountFollowsResponse {
 
 export interface Notification {
     id: string;
-    type: 'like' | 'reply' | 'repost' | 'follow';
+    type: 'like' | 'reply' | 'repost' | 'follow' | 'mention';
     actor: {
         id: string;
         name: string;
@@ -90,6 +104,11 @@ export interface Notification {
         title: string | null;
         content: string;
         url: string;
+        likeCount: number;
+        likedByMe: boolean;
+        repostCount: number;
+        repostedByMe: boolean;
+        replyCount: number;
     },
     inReplyTo: null | {
         id: string;
@@ -106,6 +125,16 @@ export interface GetNotificationsResponse {
     next: string | null;
 }
 
+export interface GetBlockedAccountsResponse {
+    accounts: Account[];
+    next: string | null;
+}
+
+export interface GetBlockedDomainsResponse {
+    domains: Account[];
+    next: string | null;
+}
+
 export enum PostType {
     Note = 0,
     Article = 1,
@@ -117,6 +146,7 @@ export interface Post {
     type: PostType;
     title: string;
     excerpt: string;
+    summary: string | null;
     content: string;
     url: string;
     featureImageUrl: string | null;
@@ -433,10 +463,72 @@ export class ActivityPubAPI {
         };
     }
 
+    async getBlockedAccounts(next?: string): Promise<GetBlockedAccountsResponse> {
+        const url = new URL('.ghost/activitypub/blocks/accounts', this.apiUrl);
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null) {
+            return {
+                accounts: [],
+                next: null
+            };
+        }
+
+        const accounts = ('blocked_accounts' in json && Array.isArray(json.blocked_accounts))
+            ? json.blocked_accounts as Account[]
+            : [];
+        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        return {
+            accounts,
+            next: nextPage
+        };
+    }
+
+    async getBlockedDomains(next?: string): Promise<GetBlockedDomainsResponse> {
+        const url = new URL('.ghost/activitypub/blocks/domains', this.apiUrl);
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null) {
+            return {
+                domains: [],
+                next: null
+            };
+        }
+
+        const domains = ('blocked_domains' in json && Array.isArray(json.blocked_domains))
+            ? json.blocked_domains as Account[]
+            : [];
+
+        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        return {
+            domains,
+            next: nextPage
+        };
+    }
+
     async getPost(id: string): Promise<Post> {
         const url = new URL(`.ghost/activitypub/post/${encodeURIComponent(id)}`, this.apiUrl);
         const json = await this.fetchJSON(url);
         return json as Post;
+    }
+
+    async getReplies(postApId: string, next?: string): Promise<ReplyChainResponse> {
+        const url = new URL(`.ghost/activitypub/replies/${encodeURIComponent(postApId)}`, this.apiUrl);
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+        const json = await this.fetchJSON(url);
+        return json as ReplyChainResponse;
     }
 
     async updateAccount({

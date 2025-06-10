@@ -2,7 +2,7 @@ import * as React from 'react';
 import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
 import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
-import {handleProfileClickRR} from '@utils/handle-profile-click';
+import {handleProfileClick} from '@utils/handle-profile-click';
 import {useNavigate, useNavigationStack} from '@tryghost/admin-x-framework';
 import {useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
@@ -51,7 +51,7 @@ const Recommendations: React.FC = () => {
                             <li key={actorId} className={className}>
                                 <ActivityItem onClick={() => {
                                     if (!isLoadingSuggested && profile) {
-                                        handleProfileClickRR(profile, navigate);
+                                        handleProfileClick(profile, navigate);
                                     }
                                 }}>
                                     {!isLoadingSuggested ? <APAvatar author={

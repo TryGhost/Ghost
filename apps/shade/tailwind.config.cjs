@@ -21,7 +21,7 @@ module.exports = {
         colors: {
             transparent: 'transparent',
             current: 'currentColor',
-            accent: 'var(--accent-color, #ff0095)',
+            ghostaccent: 'var(--accent-color, #ff0095)',
             white: '#FFF',
             black: '#15171A',
 
@@ -102,6 +102,13 @@ module.exports = {
                 600: '#DC091E',
                 DEFAULT: '#F50B23'
             },
+            orange: {
+                100: '#FFEDD5',
+                400: '#FB923C',
+                500: '#F97316',
+                600: '#EA580C',
+                DEFAULT: '#F97316'
+            },
             yellow: {
                 100: '#FFF1D6',
                 400: '#FFC247',
@@ -142,7 +149,7 @@ module.exports = {
         },
         letterSpacing: {
             tightest: '-.05em',
-            tighter: '-.02em',
+            tighter: '-.025em',
             tight: '-.01em',
             normal: '0',
             wide: '.01em',
@@ -413,7 +420,17 @@ module.exports = {
                     2: 'hsl(var(--chart-2))',
                     3: 'hsl(var(--chart-3))',
                     4: 'hsl(var(--chart-4))',
-                    5: 'hsl(var(--chart-5))'
+                    5: 'hsl(var(--chart-5))',
+                    gray: 'hsl(var(--chart-gray))',
+                    darkgray: 'hsl(var(--chart-darkgray))',
+                    rose: 'hsl(var(--chart-rose))',
+                    orange: 'hsl(var(--chart-orange))',
+                    amber: 'hsl(var(--chart-amber))',
+                    yellow: 'hsl(var(--chart-yellow))',
+                    green: 'hsl(var(--chart-green))',
+                    teal: 'hsl(var(--chart-teal))',
+                    blue: 'hsl(var(--chart-blue))',
+                    purple: 'hsl(var(--chart-purple))'
                 },
                 sidebar: {
                     DEFAULT: 'hsl(var(--sidebar-background))',

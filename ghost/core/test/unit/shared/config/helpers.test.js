@@ -1,3 +1,4 @@
+require('should');
 const configUtils = require('../../../utils/configUtils');
 
 describe('vhost utils', function () {

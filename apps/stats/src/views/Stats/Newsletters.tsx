@@ -1,12 +1,13 @@
-import AudienceSelect from './components/AudienceSelect';
-import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
+// import AudienceSelect from './components/AudienceSelect';
 import DateRangeSelect from './components/DateRangeSelect';
+import NewsletterSelect from './components/NewsletterSelect';
 import React, {useMemo, useState} from 'react';
 import SortButton from './components/SortButton';
+import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
-import {calculateYAxisWidth, getYRange, getYTicks, sanitizeChartData} from '@src/utils/chart-helpers';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, GhAreaChart, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useNewsletterStatsWithRange, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
@@ -51,7 +52,7 @@ const BarTooltipContent = ({active, payload}: BarTooltipProps) => {
     }
 
     const currentItem = payload[0].payload;
-    const sendDate = typeof currentItem.send_date === 'string' ? 
+    const sendDate = typeof currentItem.send_date === 'string' ?
         new Date(currentItem.send_date) : currentItem.send_date;
 
     return (
@@ -85,19 +86,6 @@ const BarTooltipContent = ({active, payload}: BarTooltipProps) => {
     );
 };
 
-const getBarColor = (value: number) => {
-    let opacity;
-    if (value <= 0.25) {
-        opacity = 0.6;
-    } else if (value >= 0.75) {
-        opacity = 1.0;
-    } else {
-        // Interpolate between 0.6 and 1.0 for values between 0.25 and 0.75
-        opacity = 0.6 + ((value - 0.25) * (0.4 / 0.5));
-    }
-    return `hsl(var(--chart-1) / ${opacity})`;
-};
-
 const NewsletterKPIs: React.FC<{
     subscribersData: SubscribersDataItem[]
     avgsData: AvgsDataItem[];
@@ -108,7 +96,9 @@ const NewsletterKPIs: React.FC<{
     totals
 }) => {
     const [currentTab, setCurrentTab] = useState('total-subscribers');
+    const [isHoveringClickable, setIsHoveringClickable] = useState(false);
     const {range} = useGlobalData();
+    const navigate = useNavigate();
 
     const {totalSubscribers, avgOpenRate, avgClickRate} = totals;
 
@@ -123,37 +113,25 @@ const NewsletterKPIs: React.FC<{
         // First sanitize the data based on range
         sanitizedData = sanitizeChartData(allSubscribersData, range, 'value', 'exact');
 
-        // Convert deltas to cumulative counts
+        // Convert from deltas to running count (backwards from total)
         let runningTotal = totalSubscribers;
-        
-        // Go backwards through the array to calculate cumulative values
-        // Starting from the current total and subtracting deltas
-        const cumulativeData = [...sanitizedData]
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-            .map((item) => {
-                runningTotal -= item.value;
-                return {
-                    date: item.date,
-                    value: runningTotal + item.value // Value for this specific day
-                };
-            })
-            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        const cumulativeData = [...sanitizedData].reverse().map((item) => {
+            runningTotal -= item.value;
+            return {
+                ...item,
+                value: runningTotal + item.value // Current day's value is before the day's change
+            };
+        }).reverse();
 
         // Map the data for display
         const processedData = cumulativeData.map(item => ({
             ...item,
             formattedValue: formatNumber(item.value),
-            label: 'Subscribers'
+            label: 'Total Subscribers'
         }));
 
         return processedData;
-    }, [allSubscribersData, totalSubscribers, range]);
-
-    const subscribersChartConfig = {
-        value: {
-            label: 'Newsletter subscribers'
-        }
-    } satisfies ChartConfig;
+    }, [allSubscribersData, range, totalSubscribers]);
 
     const barChartConfig = {
         open_rate: {
@@ -162,7 +140,22 @@ const NewsletterKPIs: React.FC<{
     } satisfies ChartConfig;
 
     const barDomain = [0, 1];
-    const barTicks = [0, 0.25, 0.5, 0.75, 1];
+    const barTicks = [0, 1];
+
+    const tabConfig = {
+        'total-subscribers': {
+            color: 'hsl(var(--chart-purple))',
+            datakey: 'value'
+        },
+        'avg-open-rate': {
+            color: 'hsl(var(--chart-blue))',
+            datakey: 'open_rate'
+        },
+        'avg-click-rate': {
+            color: 'hsl(var(--chart-teal))',
+            datakey: 'click_rate'
+        }
+    };
 
     return (
         <Tabs defaultValue="total-subscribers" variant='kpis'>
@@ -171,6 +164,7 @@ const NewsletterKPIs: React.FC<{
                     setCurrentTab('total-subscribers');
                 }}>
                     <KpiTabValue
+                        color={tabConfig['total-subscribers'].color}
                         label="Total subscribers"
                         value={formatNumber(totalSubscribers)}
                     />
@@ -179,6 +173,7 @@ const NewsletterKPIs: React.FC<{
                     setCurrentTab('avg-open-rate');
                 }}>
                     <KpiTabValue
+                        color={tabConfig['avg-open-rate'].color}
                         label="Avg. open rate"
                         value={formatPercentage(avgOpenRate)}
                     />
@@ -187,96 +182,81 @@ const NewsletterKPIs: React.FC<{
                     setCurrentTab('avg-click-rate');
                 }}>
                     <KpiTabValue
+                        color={tabConfig['avg-click-rate'].color}
                         label="Avg. click rate"
                         value={formatPercentage(avgClickRate)}
                     />
                 </KpiTabTrigger>
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
-                {currentTab === 'total-subscribers' &&
-                <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] w-full' config={subscribersChartConfig}>
-                    <Recharts.LineChart
+                {(currentTab === 'total-subscribers') &&
+                    <GhAreaChart
+                        className='-mb-3 h-[16vw] max-h-[320px] w-full'
+                        color={tabConfig['total-subscribers'].color}
                         data={subscribersData}
-                        margin={{
-                            left: 0,
-                            right: 20,
-                            top: 12
-                        }}
-                        accessibilityLayer
-                    >
-                        <Recharts.CartesianGrid horizontal={false} vertical={false} />
-                        <Recharts.XAxis
-                            axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
-                            dataKey="date"
-                            interval={0}
-                            stroke="hsl(var(--gray-300))"
-                            tickFormatter={formatDisplayDate}
-                            tickLine={false}
-                            tickMargin={8}
-                            ticks={subscribersData.length > 0 ? [subscribersData[0].date, subscribersData[subscribersData.length - 1].date] : []}
-                        />
-                        <Recharts.YAxis
-                            axisLine={false}
-                            domain={[getYRange(subscribersData).min, getYRange(subscribersData).max]}
-                            tickFormatter={value => formatNumber(value)}
-                            tickLine={false}
-                            ticks={getYTicks(subscribersData)}
-                            width={calculateYAxisWidth(getYTicks(subscribersData), value => formatNumber(value))}
-                        />
-                        <ChartTooltip
-                            content={<CustomTooltipContent range={range} />}
-                            cursor={true}
-                        />
-                        <Recharts.Line
-                            dataKey="value"
-                            dot={false}
-                            isAnimationActive={false}
-                            stroke="hsl(var(--chart-1))"
-                            strokeWidth={2}
-                            type='monotone'
-                        />
-                    </Recharts.LineChart>
-                </ChartContainer>
+                        id="mrr"
+                        range={range}
+                    />
                 }
 
                 {(currentTab === 'avg-open-rate' || currentTab === 'avg-click-rate') &&
                 <>
                     <ChartContainer className='max-h-[320px] w-full' config={barChartConfig}>
-                        <Recharts.BarChart data={avgsData} accessibilityLayer>
-                            <Recharts.CartesianGrid vertical={false} />
+                        <Recharts.BarChart
+                            className={isHoveringClickable ? '!cursor-pointer' : ''}
+                            data={avgsData}
+                            margin={{
+                                top: 20
+                            }}
+                            onClick={(e) => {
+                                if (e.activePayload && e.activePayload![0].payload.post_id) {
+                                    navigate(`/posts/analytics/beta/${e.activePayload![0].payload.post_id}`, {crossApp: true});
+                                }
+                            }}
+                            onMouseLeave={() => setIsHoveringClickable(false)}
+                            onMouseMove={(e) => {
+                                setIsHoveringClickable(!!(e.activePayload && e.activePayload[0].payload.post_id));
+                            }}
+                        >
+                            <defs>
+                                <linearGradient id="barGradient" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stopColor={tabConfig[currentTab].color} stopOpacity={0.8} />
+                                    <stop offset="100%" stopColor={tabConfig[currentTab].color} stopOpacity={0.3} />
+                                </linearGradient>
+                            </defs>
+                            <Recharts.CartesianGrid horizontal={false} vertical={false} />
+                            <Recharts.XAxis
+                                axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
+                                dataKey="post_id"
+                                interval={0}
+                                stroke="hsl(var(--gray-300))"
+                                tickFormatter={() => ('')}
+                                tickLine={false}
+                                tickMargin={10}
+                            />
                             <Recharts.YAxis
                                 axisLine={false}
                                 domain={barDomain}
                                 tickFormatter={value => formatPercentage(value)}
                                 tickLine={false}
                                 ticks={barTicks}
-                                width={calculateYAxisWidth(barTicks, value => formatPercentage(value))}
-                            />
-                            <Recharts.XAxis
-                                axisLine={false}
-                                dataKey="post_id"
-                                tickFormatter={() => ('')}
-                                tickLine={false}
-                                tickMargin={10}
+                                width={calculateYAxisWidth(barTicks, (value: number) => formatPercentage(value))}
                             />
                             <ChartTooltip
                                 content={<BarTooltipContent />}
-                                cursor={false}
+                                isAnimationActive={false}
+                                position={{y: 10}}
                             />
                             <Recharts.Bar
-                                activeBar={{fill: 'hsl(var(--chart-1) / 0.8)'}}
-                                dataKey={currentTab === 'avg-open-rate' ? 'open_rate' : 'click_rate'}
-                                fill="hsl(var(--chart-1))"
+                                activeBar={{fillOpacity: 1}}
+                                dataKey={tabConfig[currentTab].datakey}
+                                fill='url(#barGradient)'
+                                fillOpacity={0.6}
                                 isAnimationActive={false}
                                 maxBarSize={32}
-                                radius={0}>
-                                {avgsData.map(entry => (
-                                    <Recharts.Cell
-                                        key={`cell-${entry.post_id}`}
-                                        fill={getBarColor(entry[currentTab === 'avg-open-rate' ? 'open_rate' : 'click_rate'])}
-                                    />
-                                ))}
-                            </Recharts.Bar>
+                                minPointSize={3}
+                                radius={4}
+                            />
                         </Recharts.BarChart>
                     </ChartContainer>
                     <div className="-mt-6 text-center text-sm text-muted-foreground">
@@ -290,29 +270,36 @@ const NewsletterKPIs: React.FC<{
 };
 
 const Newsletters: React.FC = () => {
-    const {range} = useGlobalData();
+    const {range, selectedNewsletterId} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
     const navigate = useNavigate();
-    
-    // Get stats from real data using the new hooks
-    const {data: newsletterStatsData, isLoading: isStatsLoading} = useNewsletterStatsWithRange(range);
-    const {data: subscriberStatsData, isLoading: isSubscriberStatsLoading} = useSubscriberCountWithRange(range);
-    
+
+    // Get stats from real data using the new hooks with selected newsletter
+    const {data: newsletterStatsData, isLoading: isStatsLoading} = useNewsletterStatsWithRange(
+        range,
+        sortBy,
+        selectedNewsletterId || undefined
+    );
+    const {data: subscriberStatsData, isLoading: isSubscriberStatsLoading} = useSubscriberCountWithRange(
+        range,
+        selectedNewsletterId || undefined
+    );
+
     // Prepare the data - wrap in useMemo to avoid dependency changes
     const newsletterStats = useMemo(() => {
         if (!newsletterStatsData?.stats || newsletterStatsData?.stats.length === 0) {
             return [];
         }
-        
+
         // Clone the data for sorting
         const stats = [...newsletterStatsData.stats];
-        
+
         // Apply client-side sorting
         const [field, direction = 'desc'] = sortBy.split(' ');
-        
+
         return stats.sort((a, b) => {
             let valueA, valueB;
-            
+
             // Handle different sort fields
             if (field === 'date') {
                 valueA = new Date(a.send_date).getTime();
@@ -326,12 +313,12 @@ const Newsletters: React.FC = () => {
             } else {
                 return 0;
             }
-            
+
             // Apply sort direction
             return direction === 'desc' ? valueB - valueA : valueA - valueB;
         });
     }, [newsletterStatsData, sortBy]);
-    
+
     // Calculate totals
     const totals = useMemo(() => {
         if (!newsletterStatsData?.stats || newsletterStatsData.stats.length === 0) {
@@ -344,11 +331,11 @@ const Newsletters: React.FC = () => {
 
         // Use all stats for calculating averages, not just the sorted/limited ones
         const allStats = newsletterStatsData.stats;
-        
+
         // Calculate average open and click rates from all stats
         const totalOpenRate = allStats.reduce((sum, stat) => sum + (stat.open_rate || 0), 0);
         const totalClickRate = allStats.reduce((sum, stat) => sum + (stat.click_rate || 0), 0);
-        
+
         return {
             totalSubscribers: subscriberStatsData?.stats?.[0]?.total || 0,
             avgOpenRate: totalOpenRate / allStats.length,
@@ -376,13 +363,10 @@ const Newsletters: React.FC = () => {
 
     return (
         <StatsLayout>
-            <ViewHeader className='before:hidden'>
-                <H1>Newsletters</H1>
-                <ViewHeaderActions>
-                    <AudienceSelect />
-                    <DateRangeSelect />
-                </ViewHeaderActions>
-            </ViewHeader>
+            <StatsHeader>
+                <NewsletterSelect />
+                <DateRangeSelect />
+            </StatsHeader>
             <StatsView data={subscribersData} isLoading={isLoading}>
                 <Card>
                     <CardContent>
@@ -392,7 +376,9 @@ const Newsletters: React.FC = () => {
                 <Card>
                     <CardHeader>
                         <CardTitle>Top newsletters</CardTitle>
-                        <CardDescription>Which newsletters performed best in this period</CardDescription>
+                        <CardDescription>
+                            Your best performing newsletters {getPeriodText(range)}
+                        </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Separator/>
@@ -402,17 +388,22 @@ const Newsletters: React.FC = () => {
                                     <TableHead>
                                         Title
                                     </TableHead>
-                                    <TableHead>
+                                    <TableHead className='w-[60px]'>
                                         <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='date desc'>
                                             Date
                                         </SortButton>
                                     </TableHead>
-                                    <TableHead className='w-[10%] text-right'>
-                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='open_rate desc'>
-                                            Open rate
+                                    <TableHead className='w-[90px] text-right'>
+                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='sent_to desc'>
+                                            Sent
                                         </SortButton>
                                     </TableHead>
-                                    <TableHead className='w-[10%] text-right'>
+                                    <TableHead className='w-[90px] text-right'>
+                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='open_rate desc'>
+                                            Opens
+                                        </SortButton>
+                                    </TableHead>
+                                    <TableHead className='w-[90px] text-right'>
                                         <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='click_rate desc'>
                                             Clicks
                                         </SortButton>
@@ -426,7 +417,7 @@ const Newsletters: React.FC = () => {
                                             <div className='group/link inline-flex items-center gap-2'>
                                                 {post.post_id ?
                                                     <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
-                                                        navigate(`/posts/analytics/${post.post_id}`, {crossApp: true});
+                                                        navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
                                                     }}>
                                                         {post.post_title}
                                                     </Button>
@@ -437,14 +428,17 @@ const Newsletters: React.FC = () => {
                                                 }
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-sm text-muted-foreground">
+                                        <TableCell className="whitespace-nowrap text-sm">
                                             {formatDisplayDate(new Date(post.send_date))}
                                         </TableCell>
-                                        <TableCell className={`text-right font-mono text-sm ${post.total_opens === 0 && 'text-gray-700'}`}>
+                                        <TableCell className='text-right font-mono text-sm'>
+                                            {formatNumber(post.sent_to)}
+                                        </TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>
                                             <span className="group-hover:hidden">{formatPercentage(post.open_rate)}</span>
                                             <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_opens)}</span>
                                         </TableCell>
-                                        <TableCell className={`text-right font-mono text-sm ${post.total_clicks === 0 && 'text-gray-700'}`}>
+                                        <TableCell className='text-right font-mono text-sm'>
                                             <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
                                             <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_clicks)}</span>
                                         </TableCell>

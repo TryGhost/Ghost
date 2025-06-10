@@ -50,6 +50,10 @@ WORKDIR /home/ghost
 
 COPY package.json yarn.lock ./
 
+# Calculate a hash of the yarn.lock file
+## See development.entrypoint.sh for more info
+RUN mkdir -p .yarnhash && md5sum yarn.lock | awk '{print $1}' > .yarnhash/yarn.lock.md5
+
 # Copy all package.json files
 COPY apps/stats/package.json apps/stats/package.json
 COPY apps/admin-x-activitypub/package.json apps/admin-x-activitypub/package.json
@@ -67,39 +71,15 @@ COPY ghost/admin/lib/asset-delivery/package.json ghost/admin/lib/asset-delivery/
 COPY ghost/admin/lib/ember-power-calendar-moment/package.json ghost/admin/lib/ember-power-calendar-moment/package.json
 COPY ghost/admin/lib/ember-power-calendar-utils/package.json ghost/admin/lib/ember-power-calendar-utils/package.json
 COPY ghost/admin/package.json ghost/admin/package.json
-COPY ghost/api-framework/package.json ghost/api-framework/package.json
 COPY ghost/core/package.json ghost/core/package.json
-COPY ghost/custom-fonts/package.json ghost/custom-fonts/package.json
-COPY ghost/domain-events/package.json ghost/domain-events/package.json
-COPY ghost/email-addresses/package.json ghost/email-addresses/package.json
-COPY ghost/email-service/package.json ghost/email-service/package.json
-COPY ghost/html-to-plaintext/package.json ghost/html-to-plaintext/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
-COPY ghost/job-manager/package.json ghost/job-manager/package.json
-COPY ghost/members-csv/package.json ghost/members-csv/package.json
-COPY ghost/mw-error-handler/package.json ghost/mw-error-handler/package.json
-COPY ghost/mw-vhost/package.json ghost/mw-vhost/package.json
-COPY ghost/prometheus-metrics/package.json ghost/prometheus-metrics/package.json
-COPY ghost/security/package.json ghost/security/package.json
 
-RUN --mount=type=cache,target=/home/ghost/.yarn-cache \
-    yarn config set cache-folder /home/ghost/.yarn-cache && \
-    yarn install --frozen-lockfile --prefer-offline
+RUN yarn install --frozen-lockfile --prefer-offline
 
 # --------------------
 # Development
 # --------------------
 FROM development-base AS development
 COPY . .
-RUN yarn nx run-many -t build:ts
+RUN yarn build
 CMD ["yarn", "dev"]
-
-# --------------------
-# Tinybird CLI
-# --------------------
-FROM development AS tinybird
-RUN apt update && apt install -y \
-    parallel \
-    python3-pip
-WORKDIR /home/ghost/ghost/web-analytics
-RUN pip install -r requirements.txt

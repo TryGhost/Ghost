@@ -119,7 +119,8 @@ const controller = {
             'date_to',
             'timezone',
             'member_status',
-            'tb_version'
+            'tb_version',
+            'post_type'
         ],
         permissions: {
             docName: 'posts',
@@ -145,7 +146,8 @@ const controller = {
             'limit',
             'date_from',
             'date_to',
-            'timezone'
+            'timezone',
+            'post_type'
         ],
         permissions: {
             docName: 'posts',
@@ -160,7 +162,8 @@ const controller = {
                     limit: frame.options.limit,
                     date_from: frame.options.date_from,
                     date_to: frame.options.date_to,
-                    timezone: frame.options.timezone
+                    timezone: frame.options.timezone,
+                    post_type: frame.options.post_type
                 }
             };
         },
@@ -168,7 +171,7 @@ const controller = {
             return await statsService.api.getTopPosts(frame.options);
         }
     },
-    newsletterStats: {
+    topPostsViews: {
         headers: {
             cacheInvalidate: false
         },
@@ -186,13 +189,47 @@ const controller = {
         cache: statsService.cache,
         generateCacheKeyData(frame) {
             return {
-                method: 'getNewsletterStats',
+                method: 'topPostsViews',
                 options: {
                     order: frame.options.order,
                     limit: frame.options.limit,
                     date_from: frame.options.date_from,
                     date_to: frame.options.date_to,
                     timezone: frame.options.timezone
+                }
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getTopPostsViews(frame.options);
+        }
+    },
+    newsletterStats: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'order',
+            'limit',
+            'date_from',
+            'date_to',
+            'timezone',
+            'newsletter_id'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'getNewsletterStats',
+                options: {
+                    order: frame.options.order,
+                    limit: frame.options.limit,
+                    date_from: frame.options.date_from,
+                    date_to: frame.options.date_to,
+                    timezone: frame.options.timezone,
+                    newsletter_id: frame.options.newsletter_id
                 }
             };
         },
@@ -206,7 +243,8 @@ const controller = {
         },
         options: [
             'date_from',
-            'date_to'
+            'date_to',
+            'newsletter_id'
         ],
         permissions: {
             docName: 'posts',
@@ -218,7 +256,8 @@ const controller = {
                 method: 'getNewsletterSubscriberStats',
                 options: {
                     date_from: frame.options.date_from,
-                    date_to: frame.options.date_to
+                    date_to: frame.options.date_to,
+                    newsletter_id: frame.options.newsletter_id
                 }
             };
         },
@@ -295,6 +334,24 @@ const controller = {
         },
         async query(frame) {
             return await statsService.api.getGrowthStatsForPost(frame.data.id);
+        }
+    },
+    latestPost: {
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData() {
+            return {
+                method: 'getLatestPostStats'
+            };
+        },
+        async query() {
+            return await statsService.api.getLatestPostStats();
         }
     }
 };

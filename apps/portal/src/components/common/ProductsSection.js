@@ -5,7 +5,6 @@ import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice
 import AppContext from '../../AppContext';
 import calculateDiscount from '../../utils/discount';
 import Interpolate from '@doist/react-interpolate';
-import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 
 export const ProductsSectionStyles = () => {
     // const products = getSiteProducts({site});
@@ -586,7 +585,7 @@ function ProductCardTrialDays({trialDays, discount, selectedInterval}) {
     if (hasFreeTrialTier({site})) {
         if (trialDays) {
             return (
-                <span className="gh-portal-discount-label">{t('{{trialDays}} days free', {trialDays})}</span>
+                <span className="gh-portal-discount-label">{t('{trialDays} days free', {trialDays})}</span>
             );
         } else {
             return null;
@@ -595,7 +594,7 @@ function ProductCardTrialDays({trialDays, discount, selectedInterval}) {
 
     if (selectedInterval === 'year') {
         return (
-            <span className="gh-portal-discount-label">{t('{{discount}}% discount', {discount})}</span>
+            <span className="gh-portal-discount-label">{t('{discount}% discount', {discount})}</span>
         );
     }
 
@@ -747,8 +746,7 @@ function ProductCardButton({selectedProduct, product, disabled, noOfProducts, tr
     if (trialDays > 0) {
         return (
             <Interpolate
-                syntax={SYNTAX_I18NEXT}
-                string={t('Start {{amount}}-day free trial')}
+                string={t('Start {amount}-day free trial')}
                 mapping={{
                     amount: trialDays
                 }}
@@ -851,13 +849,13 @@ function YearlyDiscount({discount}) {
     if (hasFreeTrialTier({site})) {
         return (
             <>
-                <span className="gh-portal-discount-label-trial">{t('{{discount}}% discount', {discount})}</span>
+                <span className="gh-portal-discount-label-trial">{t('{discount}% discount', {discount})}</span>
             </>
         );
     } else {
         return (
             <>
-                <span className="gh-portal-discount-label">{t('{{discount}}% discount', {discount})}</span>
+                <span className="gh-portal-discount-label">{t('{discount}% discount', {discount})}</span>
             </>
         );
     }
@@ -900,7 +898,7 @@ function ProductPriceSwitch({selectedInterval, setSelectedInterval, products}) {
                     }}
                 >
                     {t('Yearly')}
-                    {(highestYearlyDiscount > 0) && <span className='gh-portal-maximum-discount'>{t('(save {{highestYearlyDiscount}}%)', {highestYearlyDiscount})}</span>}
+                    {(highestYearlyDiscount > 0) && <span className='gh-portal-maximum-discount'>{t('(save {highestYearlyDiscount}%)', {highestYearlyDiscount})}</span>}
                 </button>
             </div>
         </div>
@@ -973,7 +971,7 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
             const supportAddress = getSupportAddress({site});
             return (
                 <p style={{textAlign: 'center'}}>
-                    {t('Please contact {{supportAddress}} to adjust your complimentary subscription.', {supportAddress})}
+                    {t('Please contact {supportAddress} to adjust your complimentary subscription.', {supportAddress})}
                 </p>
             );
         } else {

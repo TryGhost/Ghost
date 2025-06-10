@@ -32,6 +32,9 @@ bower_components
 # node-waf configuration
 .lock-wscript
 
+# Cursor config
+.cursor/
+
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
 
@@ -125,6 +128,7 @@ test/functional/*.png
 /ghost/core/core/frontend/public/ghost-stats.min.js
 # Caddyfile - for local development with ssl + caddy
 Caddyfile
+!.docker/caddy/Caddyfile
 
 # Playwright state with cookies it keeps across tests
 /ghost/core/playwright-state.json
@@ -180,3 +184,8 @@ temp*.sql
 # Docker Yarn Cache
 .yarncache
 .yarncachecopy
+.yarnhash
+
+# yalc — for linking local packages in a docker compatible way
+yalc.lock
+.yalc
