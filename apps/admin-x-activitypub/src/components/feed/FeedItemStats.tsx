@@ -1,8 +1,7 @@
 import NewNoteModal from '@components/modals/NewNoteModal';
 import React, {useEffect, useRef, useState} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, LucideIcon} from '@tryghost/shade';
-import {useAnimatedCounter} from '@hooks/use-animated-counter';
+import {AnimatedNumber, Button, LucideIcon} from '@tryghost/shade';
 import {useDerepostMutationForUser, useLikeMutationForUser, useRepostMutationForUser, useUnlikeMutationForUser} from '@hooks/use-activity-pub-queries';
 import {useKeyboardShortcuts} from '@hooks/use-keyboard-shortcuts';
 
@@ -50,25 +49,14 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
     }, [object.liked, object.reposted]);
 
     useEffect(() => {
-        if (repostCount !== initialRepostCount) {
-            if (initialRepostCount > repostCount) {
-                incrementReposts();
-            } else if (initialRepostCount < repostCount) {
-                decrementReposts();
-            }
-        }
-    }, [initialRepostCount]); // eslint-disable-line react-hooks/exhaustive-deps
+        setRepostCount(initialRepostCount);
+    }, [initialRepostCount]);
 
     const likeMutation = useLikeMutationForUser('index');
     const unlikeMutation = useUnlikeMutationForUser('index');
     const repostMutation = useRepostMutationForUser('index');
     const derepostMutation = useDerepostMutationForUser('index');
-    const {
-        Counter: RepostCounter,
-        currentValue: repostCount,
-        increment: incrementReposts,
-        decrement: decrementReposts
-    } = useAnimatedCounter(initialRepostCount);
+    const [repostCount, setRepostCount] = useState(initialRepostCount);
 
     const handleLikeClick = async (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
@@ -115,7 +103,13 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
                     }}
                 >
                     <LucideIcon.Heart className={`${isLiked && 'fill-pink-500 text-pink-500'}`} />
-                    {!(likeCount === 0 || (layout === 'inbox')) && new Intl.NumberFormat().format(likeCount)}
+                    {layout !== 'inbox' && (
+                        <AnimatedNumber
+                            className={likeCount === 0 ? '-ml-1.5 w-0 overflow-hidden' : ''}
+                            spinTiming={{duration: 300}}
+                            value={likeCount}
+                        />
+                    )}
                 </Button>
                 <Button
                     className={`${buttonClass}`}
@@ -126,8 +120,14 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
                     variant='ghost'
                     onClick={handleCommentClick}
                 >
-                    <LucideIcon.MessageCircle />
-                    {!(commentCount === 0 || (layout === 'inbox')) && new Intl.NumberFormat().format(commentCount)}
+                    <LucideIcon.MessageCircle className='-mr-px' />
+                    {layout !== 'inbox' && (
+                        <AnimatedNumber
+                            className={commentCount === 0 ? '-ml-1.5 w-0 overflow-hidden' : ''}
+                            spinTiming={{duration: 300}}
+                            value={commentCount}
+                        />
+                    )}
                 </Button>
                 <Button
                     className={`${buttonClass} ${isReposted && 'text-green-500 hover:text-green-500'}`}
@@ -143,20 +143,26 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
                             repostMutation.mutate(object.id, {
                                 onError() {
                                     setIsReposted(false);
-                                    decrementReposts();
+                                    setRepostCount(repostCount - 1);
                                 }
                             });
-                            incrementReposts();
+                            setRepostCount(repostCount + 1);
                         } else {
                             derepostMutation.mutate(object.id);
-                            decrementReposts();
+                            setRepostCount(repostCount - 1);
                         }
 
                         setIsReposted(!isReposted);
                     }}
                 >
                     <LucideIcon.RefreshCw className={`${isReposted && 'text-green-500'}`} />
-                    {!((initialRepostCount === 0 && !isReposted) || repostCount === 0 || (layout === 'inbox')) && RepostCounter}
+                    {layout !== 'inbox' && (
+                        <AnimatedNumber
+                            className={repostCount === 0 ? '-ml-1.5 w-0 overflow-hidden' : ''}
+                            spinTiming={{duration: 300}}
+                            value={repostCount}
+                        />
+                    )}
                 </Button>
             </div>
 
