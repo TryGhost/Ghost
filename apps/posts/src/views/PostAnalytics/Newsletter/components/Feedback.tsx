@@ -56,7 +56,7 @@ const Feedback: React.FC = () => {
             {feedbackStats.totalFeedback > 0 ?
                 <CardContent className='pb-3'>
                     <Tabs defaultValue="positive" value={activeFeedbackTab} variant='underline' onValueChange={value => setActiveFeedbackTab(value as 'positive' | 'negative')}>
-                        <TabsList className="flex w-full">
+                        <TabsList className="flex w-full gap-2">
                             <TabsTrigger className='h-12 justify-start px-3' value="positive">
                                 <div className='flex items-center gap-1'>
                                     <LucideIcon.ThumbsUp />
