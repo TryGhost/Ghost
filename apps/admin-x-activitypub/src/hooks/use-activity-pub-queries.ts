@@ -2231,7 +2231,7 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
     }, [handle, postApId]);
 
     const loadMoreAncestors = useCallback(async () => {
-        if (!replyChain?.ancestors.next || !replyChain?.ancestors.chain[0]) {
+        if (!replyChain?.ancestors.hasMore || !replyChain?.ancestors.chain[0]) {
             return;
         }
 
@@ -2249,14 +2249,14 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
                     ...prev,
                     ancestors: {
                         chain: [...nextPage.ancestors.chain, ...prev.ancestors.chain],
-                        next: nextPage.ancestors.next
+                        hasMore: nextPage.ancestors.hasMore
                     }
                 };
             });
         } catch (err) {
             setError(err instanceof Error ? err : new Error('Failed to load more ancestors'));
         }
-    }, [handle, replyChain?.ancestors.next, replyChain?.ancestors.chain]);
+    }, [handle, replyChain?.ancestors.hasMore, replyChain?.ancestors.chain]);
 
     const loadMoreChildren = useCallback(async () => {
         if (!replyChain?.next) {
@@ -2288,7 +2288,7 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
     }, [handle, replyChain?.next, postApId]);
 
     const loadMoreChildReplies = useCallback(async (childIndex: number) => {
-        if (!replyChain?.children[childIndex]?.next) {
+        if (!replyChain?.children[childIndex]?.hasMore) {
             return;
         }
 
@@ -2315,7 +2315,7 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
                 newChildren[childIndex] = {
                     ...child,
                     chain: [...child.chain, ...moreReplies],
-                    next: nextPage.children[0].next
+                    hasMore: nextPage.children[0].hasMore
                 };
                 return {
                     ...prev,
@@ -2334,9 +2334,9 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
         loadMoreAncestors,
         loadMoreChildren,
         loadMoreChildReplies,
-        hasMoreAncestors: !!replyChain?.ancestors.next,
+        hasMoreAncestors: !!replyChain?.ancestors.hasMore,
         hasMoreChildren: !!replyChain?.next,
-        hasMoreChildReplies: (childIndex: number) => !!replyChain?.children[childIndex]?.next
+        hasMoreChildReplies: (childIndex: number) => !!replyChain?.children[childIndex]?.hasMore
     };
 }
 

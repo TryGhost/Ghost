@@ -43,13 +43,13 @@ export interface Thread {
 export interface ReplyChainResponse {
     ancestors: {
         chain: Post[];
-        next: string | null;
+        hasMore: boolean;
     };
     post: Post;
     children: Array<{
         post: Post;
         chain: Post[];
-        next: string | null;
+        hasMore: boolean;
     }>;
     next: string | null;
 }
