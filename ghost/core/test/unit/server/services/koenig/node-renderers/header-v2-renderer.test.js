@@ -1,5 +1,6 @@
 const assert = require('assert/strict');
-const {callRenderer, html, assertPrettifiesTo} = require('../test-utils');
+const should = require('should');
+const {callRenderer, html, assertPrettifiesTo, assertPrettifiedIncludes} = require('../test-utils');
 
 describe('services/koenig/node-renderers/header-v2-renderer', function () {
     function getTestData(overrides = {}) {
@@ -171,8 +172,8 @@ describe('services/koenig/node-renderers/header-v2-renderer', function () {
                                                             <tr>
                                                                 <td
                                                                     align="center"
-                                                                    style="background-color: #ffffff; #ffffff">
-                                                                    <a href="https://example.com/" style="color: #000000">The button</a>
+                                                                    style="background-color: #ffffff;">
+                                                                    <a href="https://example.com/" style="color: #000000 !important;">The button</a>
                                                                 </td>
                                                             </tr>
                                                         </tbody>
@@ -249,8 +250,8 @@ describe('services/koenig/node-renderers/header-v2-renderer', function () {
                                                             <tr>
                                                                 <td
                                                                     align="center"
-                                                                    style="background-color: #ffffff; #ffffff">
-                                                                    <a href="https://example.com/" style="color: #000000">The button</a>
+                                                                    style="background-color: #ffffff;">
+                                                                    <a href="https://example.com/" style="color: #000000 !important;">The button</a>
                                                                 </td>
                                                             </tr>
                                                         </tbody>
@@ -264,6 +265,16 @@ describe('services/koenig/node-renderers/header-v2-renderer', function () {
                         </tbody>
                     </table>
                 </div>
+            `);
+        });
+
+        it('has expected button output for outline buttons', function () {
+            const result = renderForEmail(getTestData(), {design: {buttonStyle: 'outline'}, feature: {emailCustomizationAlpha: true}});
+
+            assertPrettifiedIncludes(result.html, html`
+                <td align="center" style="border: 1px solid #ffffff; background-color: transparent; color: #ffffff !important">
+                    <a href="https://example.com/" style="color: #ffffff !important">The button</a>
+                </td>
             `);
         });
     });

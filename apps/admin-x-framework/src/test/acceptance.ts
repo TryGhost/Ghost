@@ -16,8 +16,6 @@ import siteFixture from './responses/site.json';
 import themesFixture from './responses/themes.json';
 import tiersFixture from './responses/tiers.json';
 import usersFixture from './responses/users.json';
-import activitypubInboxFixture from './responses/activitypub/inbox.json';
-import activitypubFeedFixture from './responses/activitypub/feed.json';
 import memberCountHistoryFixture from './responses/member_count_history.json';
 import mrrHistoryFixture from './responses/mrr_history.json';
 import newsletterStatsFixture from './responses/newsletter_stats.json';
@@ -74,8 +72,6 @@ export const responseFixtures = {
     newsletters: newslettersFixture as NewslettersResponseType,
     actions: actionsFixture as ActionsResponseType,
     latestPost: {posts: [{id: '1', url: `${siteFixture.site.url}/test-post/`}]},
-    activitypubInbox: activitypubInboxFixture,
-    activitypubFeed: activitypubFeedFixture,
     memberCountHistory: memberCountHistoryFixture as MemberCountHistoryResponseType,
     mrrHistory: mrrHistoryFixture as MrrHistoryResponseType,
     newsletterStats: newsletterStatsFixture as NewsletterStatsResponseType,
@@ -220,8 +216,8 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
         [] as Array<MockRequestConfig & {name: keyof Requests}>
     );
 
-    const routeRegex = options?.useActivityPub ? /\/activitypub\// : /\/ghost\/api\/admin\//;
-    const routeReplaceRegex = options.useActivityPub ? /^.*\/activitypub/ : /^.*\/ghost\/api\/admin/;
+    const routeRegex = options?.useActivityPub ? /\/.ghost\/activitypub\// : /\/ghost\/api\/admin\//;
+    const routeReplaceRegex = options?.useActivityPub ? /^.*\/.ghost\/activitypub/ : /^.*\/ghost\/api\/admin/;
 
     await page.route(routeRegex, async (route) => {
         const apiPath = route.request().url().replace(routeReplaceRegex, '');

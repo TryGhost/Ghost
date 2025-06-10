@@ -25,7 +25,7 @@ concurrency:
 jobs:
   job_setup:
     name: Setup
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 15
     env:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
@@ -107,6 +107,11 @@ jobs:
               - 'apps/admin-x-settings/**'
               - 'apps/admin-x-design-system/**'
               - 'apps/admin-x-framework/**'
+            admin-x-activitypub:
+              - *shared
+              - 'apps/shade/**'
+              - 'apps/admin-x-framework/**'
+              - 'apps/admin-x-activitypub/**'
             announcement-bar:
               - *shared
               - 'apps/announcement-bar/**'
@@ -149,7 +154,7 @@ jobs:
           echo "$EOF" >> "$GITHUB_ENV"
 
       - name: Nx cache
-        uses: actions/cache@v4
+        uses: useblacksmith/cache@v5
         id: cache_nx
         with:
           path: .nxcache
@@ -160,7 +165,7 @@ jobs:
             nx-Linux
 
       - name: Check dependency cache
-        uses: actions/cache@v4
+        uses: useblacksmith/cache@v5
         id: cache_dependencies
         with:
           path: ${{ env.CACHED_DEPENDENCY_PATHS }}
@@ -168,7 +173,7 @@ jobs:
           restore-keys: ${{ env.IS_MAIN == 'false' && env.DEPENDENCY_CACHE_RESTORE_KEYS || 'dep-never-restore'}}
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: useblacksmith/setup-node@v5
         env:
           FORCE_COLOR: 0
         with:
@@ -181,6 +186,7 @@ jobs:
       changed_admin: ${{ steps.changed.outputs.admin }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_admin_x_settings: ${{ steps.changed.outputs.admin-x-settings }}
+      changed_admin_x_activitypub: ${{ steps.changed.outputs.admin-x-activitypub }}
       changed_announcement_bar: ${{ steps.changed.outputs.announcement-bar }}
       changed_comments_ui: ${{ steps.changed.outputs.comments-ui }}
       changed_portal: ${{ steps.changed.outputs.portal }}
@@ -196,7 +202,7 @@ jobs:
       dependency_cache_key: ${{ env.cachekey }}
 
   job_lint:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_any_code == 'true'
     name: Lint
@@ -204,7 +210,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1000
-      - uses: actions/setup-node@v4
+      - uses: useblacksmith/setup-node@v5
         env:
           FORCE_COLOR: 0
         with:
@@ -215,7 +221,7 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - uses: actions/cache@v4
+      - uses: useblacksmith/cache@v5
         with:
           path: ghost/**/.eslintcache
           key: eslint-cache
@@ -230,7 +236,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_i18n:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     name: i18n
     if: |
@@ -241,7 +247,7 @@ jobs:
         || needs.job_setup.outputs.changed_core == 'true'
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: useblacksmith/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -254,7 +260,7 @@ jobs:
         run: yarn nx run @tryghost/i18n:test
 
   job_admin-tests:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_admin == 'true'
     name: Admin tests - Chrome
@@ -265,9 +271,29 @@ jobs:
       COVERAGE: true
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: useblacksmith/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install specific Chrome version (137.0.7151.55)
+        run: |
+          # Fix for keyboard shortcut test failures on Blacksmith runners
+          # Blacksmith uses Chrome 135.0.7049.52 while GitHub Actions uses 137.0.7151.55
+          # This version difference causes keyboard event handling issues in admin tests
+          # Installing the same version as GitHub Actions to verify this is the root cause
+
+          # Remove existing Chrome installations
+          sudo apt-get remove -y google-chrome-stable google-chrome-beta google-chrome-unstable chromium-browser || true
+
+          # Download and install Chrome 137.0.7151.55
+          CHROME_VERSION="137.0.7151.55-1"
+          wget -q "https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb"
+          sudo dpkg -i "google-chrome-stable_${CHROME_VERSION}_amd64.deb" || sudo apt-get install -f -y
+
+          # Verify installation
+          google-chrome --version
+          echo "Chrome installation completed"
+
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -298,7 +324,7 @@ jobs:
     name: Browser tests
     timeout-minutes: 60
     runs-on:
-      labels: ubuntu-latest
+      labels: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_main == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true')
     concurrency:
@@ -317,7 +343,7 @@ jobs:
           echo "If so, please re-open the PR from a branch in the upstream TryGhost/Ghost repository."
           exit 1
         fi
-    - uses: actions/setup-node@v4
+    - uses: useblacksmith/setup-node@v5
       env:
         FORCE_COLOR: 0
       with:
@@ -370,7 +396,7 @@ jobs:
 
   job_perf-tests:
     runs-on:
-      labels: ubuntu-latest-4-cores
+      labels: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_main == 'true'
     name: Performance tests
@@ -378,7 +404,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-node@v4
+      - uses: useblacksmith/setup-node@v5
         env:
           FORCE_COLOR: 0
         with:
@@ -420,7 +446,7 @@ jobs:
           auto-push: true
 
   job_unit-tests:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_any_code == 'true'
     strategy:
@@ -431,7 +457,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1000
-      - uses: actions/setup-node@v4
+      - uses: useblacksmith/setup-node@v5
         env:
           FORCE_COLOR: 0
         with:
@@ -466,8 +492,8 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  job_database-tests:
-    runs-on: ubuntu-latest
+  job_acceptance-tests:
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
     strategy:
@@ -484,10 +510,10 @@ jobs:
     env:
       DB: ${{ matrix.env.DB }}
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
-    name: Database tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
+    name: Acceptance tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: useblacksmith/setup-node@v5
         env:
           FORCE_COLOR: 0
         with:
@@ -556,7 +582,6 @@ jobs:
           path: |
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
-            ghost/*/coverage-regression/cobertura-coverage.xml
 
       # Continue on error if TailScale service is down
       - name: Tailscale Action
@@ -600,8 +625,8 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  job_regression-tests:
-    runs-on: ubuntu-latest
+  job_legacy-tests:
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
     strategy:
@@ -618,12 +643,12 @@ jobs:
     env:
       DB: ${{ matrix.env.DB }}
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
-    name: Regression tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
+    name: Legacy tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-node@v4
+      - uses: useblacksmith/setup-node@v5
         env:
           FORCE_COLOR: 0
         with:
@@ -655,9 +680,9 @@ jobs:
         if: contains(matrix.env.DB, 'mysql')
         run: echo "database__connection__password=root" >> $GITHUB_ENV
 
-      - name: Regression tests
+      - name: Legacy tests
         working-directory: ghost/core
-        run: yarn test:ci:regression
+        run: yarn test:ci:legacy
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -667,7 +692,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_admin_x_settings:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_admin_x_settings == 'true'
     name: Admin-X Settings tests
@@ -675,7 +700,7 @@ jobs:
       CI: true
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: useblacksmith/setup-node@v5
         env:
           FORCE_COLOR: 0
         with:
@@ -706,8 +731,48 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+  job_admin_x_activitypub:
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_admin_x_activitypub == 'true'
+    name: ActivityPub tests
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: useblacksmith/setup-node@v5
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Setup Playwright
+        uses: ./.github/actions/setup-playwright
+
+      - run: yarn nx run @tryghost/admin-x-activitypub:test:acceptance
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-x-activitypub-playwright-report
+          path: apps/admin-x-activitypub/playwright-report
+          retention-days: 30
+
+      - uses: tryghost/actions/actions/slack-build@main
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
   job_comments_ui:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_comments_ui == 'true'
     name: Comments-UI tests
@@ -715,7 +780,7 @@ jobs:
       CI: true
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: useblacksmith/setup-node@v5
         env:
           FORCE_COLOR: 0
         with:
@@ -747,7 +812,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_signup_form:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_signup_form == 'true'
     name: Signup-form tests
@@ -755,7 +820,7 @@ jobs:
       CI: true
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: useblacksmith/setup-node@v5
         env:
           FORCE_COLOR: 0
         with:
@@ -788,7 +853,7 @@ jobs:
 
   job_tinybird_forward:
     name: Tinybird Tests (Forward)
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_tinybird_forward == 'true'
     env:
@@ -817,13 +882,13 @@ jobs:
     name: Ghost-CLI tests
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_core == 'true'
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
-      - uses: actions/setup-node@v4
+      - uses: useblacksmith/setup-node@v5
         env:
           FORCE_COLOR: 0
         with:
@@ -848,7 +913,7 @@ jobs:
         working-directory: ghost/core
 
       - name: Switch back to Node v16.14.0 (for v4)
-        uses: actions/setup-node@v4
+        uses: useblacksmith/setup-node@v5
         env:
           FORCE_COLOR: 0
         with:
@@ -861,7 +926,7 @@ jobs:
           ghost install v4 --local -d $DIR
 
       - name: Switch back to ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
+        uses: useblacksmith/setup-node@v5
         env:
           FORCE_COLOR: 0
         with:
@@ -905,10 +970,10 @@ jobs:
     name: Coverage
     needs: [
       job_admin-tests,
-      job_database-tests,
+      job_acceptance-tests,
       job_unit-tests
     ]
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - uses: actions/checkout@v4
 
@@ -930,18 +995,18 @@ jobs:
           move_coverage_to_trash: true
 
       - name: Restore E2E coverage
-        if: contains(needs.job_database-tests.result, 'success')
+        if: contains(needs.job_acceptance-tests.result, 'success')
         uses: actions/download-artifact@v4
         with:
           name: e2e-coverage
 
       - name: Move coverage
-        if: contains(needs.job_database-tests.result, 'success')
+        if: contains(needs.job_acceptance-tests.result, 'success')
         run: |
           rsync -av --remove-source-files core/* ghost/core
 
       - name: Upload E2E test coverage
-        if: contains(needs.job_database-tests.result, 'success')
+        if: contains(needs.job_acceptance-tests.result, 'success')
         uses: codecov/codecov-action@v5
         with:
           flags: e2e-tests
@@ -957,16 +1022,17 @@ jobs:
         job_ghost-cli,
         job_admin-tests,
         job_unit-tests,
-        job_database-tests,
-        job_regression-tests,
+        job_acceptance-tests,
+        job_legacy-tests,
         job_browser-tests,
         job_admin_x_settings,
+        job_admin_x_activitypub,
         job_comments_ui,
         job_signup_form,
         job_tinybird_forward
       ]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - name: Output needs
         run: echo "${{ toJson(needs) }}"
@@ -982,7 +1048,7 @@ jobs:
       job_required_tests
     ]
     name: Canary
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     if: |
       always()
       && needs.job_setup.result == 'success'
@@ -1028,7 +1094,7 @@ jobs:
       job_unit-tests
     ]
     name: Publish ${{ matrix.package_name }}
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     strategy:
       matrix:
@@ -1052,7 +1118,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: useblacksmith/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -1125,7 +1191,7 @@ jobs:
 
   deploy_tinybird_forward:
     name: Deploy Tinybird (Forward)
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [
       job_setup,
       job_tinybird_forward

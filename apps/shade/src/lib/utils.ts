@@ -177,6 +177,48 @@ export const formatDisplayDate = (dateString: string): string => {
     return isCurrentYear ? `${day} ${month}` : `${day} ${month} ${year}`;
 };
 
+// Helper function to format timestamp
+export const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+
+    // Handle invalid dates
+    if (isNaN(date.getTime())) {
+        return 'Unknown';
+    }
+
+    // Both dates are now in the same timezone context (local)
+    // The timestamp from DB is UTC but Date constructor handles the conversion
+    const diffMs = now.getTime() - date.getTime();
+
+    // Handle negative differences (future dates)
+    if (diffMs < 0) {
+        return 'Just now';
+    }
+
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMins < 1) {
+        return 'Just now';
+    } else if (diffMins < 60) {
+        return `${diffMins} min ago`;
+    } else if (diffHours < 24) {
+        return `${diffHours} hr ago`;
+    } else if (diffDays === 1) {
+        return 'Yesterday';
+    } else if (diffDays < 7) {
+        return `${diffDays} days ago`;
+    } else {
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: diffDays > 365 ? 'numeric' : undefined
+        });
+    }
+};
+
 // Add thousands indicator to numbers
 export const formatNumber = (value: number): string => {
     return new Intl.NumberFormat('en-US').format(Math.round(value));
@@ -200,7 +242,15 @@ export const formatDuration = (seconds: number): string => {
 
 // Format a fraction to percentage
 export const formatPercentage = (value: number) => {
-    return `${Math.round(value * 100)}%`;
+    const percentage = value * 100;
+    if (percentage === 0) {
+        return '0%';
+    } else if (percentage < 0.1) {
+        return `${percentage.toFixed(2)}%`;
+    } else if (percentage < 1) {
+        return `${percentage.toFixed(1)}%`;
+    }
+    return `${Math.round(percentage)}%`;
 };
 
 // Format cents to Dollars
@@ -211,7 +261,7 @@ export const centsToDollars = (value: number) => {
 /* Chart formatters
 /* -------------------------------------------------------------------------- */
 
-// Calculates the Y-axis range with appropriate padding
+// Calculates the Y-axis range with padding
 export const getYRangeWithLargePadding = (data: { value: number }[]): {min: number; max: number} => {
     if (!data.length) {
         return {min: 0, max: 1};
@@ -259,34 +309,19 @@ export const getYRange = (data: { value: number }[]): {min: number; max: number}
     let min = Math.min(...values);
     let max = Math.max(...values);
 
-    // If min and max are the same, create a range around the value
-    // if (min === max) {
-    //     const value = min;
-    //     // Round to nearest 10
-    //     const roundTo = 10;
-    //     min = Math.max(0, Math.floor(value / roundTo) * roundTo);
-    //     max = Math.ceil(value / roundTo) * roundTo;
-    //     // If min and max are still the same, add 10 to max
-    //     if (min === max) {
-    //         max += roundTo;
-    //     }
-    //     return {min, max};
-    // }
-
     if (min === max) {
         const value = min;
         return {min: Math.max(0, value - 1), max: value + 1};
     }
 
-    // Calculate the range
-    const range = max - min;
-
-    // Use a percentage-based padding (5% of the range)
-    const padding = range * 0.05;
+    // Use a percentage-based padding (10% of the range)
+    const padding = 0.02;
 
     // Add padding and ensure min is not negative
-    min = Math.max(0, min - padding);
-    max = max + padding;
+    min = Math.max(0, min - (min * padding));
+    max = max + (max * padding);
+
+    const range = max - min;
 
     // Determine the order of magnitude for rounding based on the range
     const rangeMagnitude = Math.floor(Math.log10(range));
@@ -295,13 +330,17 @@ export const getYRange = (data: { value: number }[]): {min: number; max: number}
     const roundTo = Math.pow(10, rangeMagnitude);
 
     // Round min and max to the appropriate precision
-    min = Math.max(0, Math.floor(min / roundTo) * roundTo);
-    max = Math.ceil(max / roundTo) * roundTo;
+    const roundedMax = Math.round(max / roundTo) * roundTo;
+    max = roundedMax < max ? Math.ceil(max / roundTo) * roundTo : roundedMax;
+
+    const roundedMin = Math.round(min / roundTo) * roundTo;
+    min = roundedMin > min ? Math.floor(min / roundTo) * roundTo : roundedMin;
+    min = Math.max(0, min);
 
     // Ensure we have a visible range even after rounding
     if (min === max) {
         const midPoint = (min + max) / 2;
-        const smallRange = Math.max(Math.abs(midPoint) * 0.01, roundTo);
+        const smallRange = Math.max(Math.abs(midPoint) * padding, roundTo);
         min = Math.max(0, Math.floor(midPoint - smallRange));
         max = Math.ceil(midPoint + smallRange);
     }
@@ -338,6 +377,17 @@ export const calculateYAxisWidth = (ticks: number[], formatter: (value: number) 
     // Add padding for safety
     const width = Math.max(20, maxFormattedLength * 8 + 20);
     return width;
+};
+
+// Get range for date
+export const getRangeForStartDate = (startDate: string) => {
+    const publishedDate = new Date(startDate);
+    const today = new Date();
+    const diffInTime = today.getTime() - publishedDate.getTime();
+    const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
+
+    // Ensure minimum of 1 day to avoid issues with same-day publications
+    return Math.max(diffInDays, 1);
 };
 
 //Return today and startdate for charts
@@ -488,4 +538,33 @@ export const formatDisplayDateWithRange = (date: string, range: number): string 
         return `Week of ${formatDisplayDate(date)}`;
     }
     return formatDisplayDate(date);
+};
+
+/**
+ * Member formatters
+ */
+
+// Helper function to format member names with fallback to email
+export const formatMemberName = (member: {name?: string; email?: string}) => {
+    return member.name || member.email || 'Unknown Member';
+};
+
+// Helper function to get member initials
+export const getMemberInitials = (member: {name?: string; email?: string}) => {
+    const name = formatMemberName(member);
+    const words = name.split(' ');
+    if (words.length >= 2) {
+        return (words[0][0] + words[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+};
+
+export const stringToHslColor = (str: string, saturation:string, lightness:string) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    const h = hash % 360;
+    return 'hsl(' + h + ', ' + saturation + '%, ' + lightness + '%)';
 };

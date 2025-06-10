@@ -76,7 +76,7 @@ export function renderFeedAttachment(
         return (
             <div className={`attachment-gallery mt-3 grid ${gridClass} gap-2`}>
                 {attachment.map((item, index) => (
-                    <img key={item.url} alt={item.name || `Image-${index}`} className={`size-full cursor-pointer rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} src={item.url} onClick={onImageClick ? handleImageClick(item.url) : undefined} />
+                    <img key={item.url} alt={item.name || `Image-${index}`} className={`size-full cursor-pointer rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} referrerPolicy='no-referrer' src={item.url} onClick={onImageClick ? handleImageClick(item.url) : undefined} />
                 ))}
             </div>
         );
@@ -87,7 +87,7 @@ export function renderFeedAttachment(
     case 'image/png':
     case 'image/gif':
     case 'image/webp':
-        return <img alt={attachment.name || 'Image'} className={`cursor-pointer ${object.type === 'Article' ? 'w-full rounded-t-md' : 'mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10'}`} src={attachment.url} onClick={onImageClick ? handleImageClick(attachment.url) : undefined} />;
+        return <img alt={attachment.name || 'Image'} className={`cursor-pointer ${object.type === 'Article' ? 'w-full rounded-t-md' : 'mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10'}`} referrerPolicy='no-referrer' src={attachment.url} onClick={onImageClick ? handleImageClick(attachment.url) : undefined} />;
     case 'video/mp4':
     case 'video/webm':
         return <div className='relative mb-4 mt-3'>
@@ -117,6 +117,7 @@ export function renderFeedAttachment(
                 <img
                     alt={attachment.name || 'Image'}
                     className={imageClassName}
+                    referrerPolicy='no-referrer'
                     src={imageUrl}
                     onClick={onImageClick ? handleImageClick(imageUrl) : undefined}
                 />
@@ -142,7 +143,7 @@ function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | un
 
     if (Array.isArray(attachment)) {
         return (
-            <img className={imageAttachmentStyles} src={attachment[0].url} />
+            <img className={imageAttachmentStyles} referrerPolicy='no-referrer' src={attachment[0].url} />
         );
     }
 
@@ -151,7 +152,7 @@ function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | un
     case 'image/png':
     case 'image/gif':
         return (
-            <img className={imageAttachmentStyles} src={attachment.url} />
+            <img className={imageAttachmentStyles} referrerPolicy='no-referrer' src={attachment.url} />
         );
     case 'video/mp4':
     case 'video/webm':
@@ -176,7 +177,7 @@ function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | un
         );
     default:
         if (object.image) {
-            return <img className={imageAttachmentStyles} src={typeof object.image === 'string' ? object.image : object.image?.url} />;
+            return <img className={imageAttachmentStyles} referrerPolicy='no-referrer' src={typeof object.image === 'string' ? object.image : object.image?.url} />;
         }
         return null;
     }
@@ -191,12 +192,15 @@ interface FeedItemProps {
     type: string;
     commentCount?: number;
     repostCount?: number;
+    likeCount?: number;
     showHeader?: boolean;
     last?: boolean;
     isLoading?: boolean;
     isPending?: boolean;
+    isCompact?: boolean;
+    isChainContinuation?: boolean;
+    isChainParent?: boolean;
     onClick?: () => void;
-    onCommentClick: () => void;
     onDelete?: () => void;
     showStats?: boolean;
 }
@@ -214,12 +218,15 @@ const FeedItem: React.FC<FeedItemProps> = ({
     type,
     commentCount = 0,
     repostCount = 0,
+    likeCount = 0,
     showHeader = true,
     last,
     isLoading,
     isPending = false,
+    isCompact = false,
+    isChainContinuation = false,
+    isChainParent = false,
     onClick: onClickHandler = noop,
-    onCommentClick,
     onDelete = noop,
     showStats = true
 }) => {
@@ -304,7 +311,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
     }
 
     const UserMenuTrigger = (
-        <Button className={`relative z-10 size-[34px] rounded-md ${layout === 'inbox' || layout === 'modal' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500'} dark:bg-black dark:hover:bg-gray-950 [&_svg]:size-5`} variant='ghost'>
+        <Button className={`relative z-10 size-[34px] rounded-md ${layout === 'inbox' || layout === 'modal' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500'} dark:bg-black dark:hover:bg-gray-950 [&_svg]:size-5`} data-testid="menu-button" variant='ghost'>
             <LucideIcon.Ellipsis />
         </Button>
     );
@@ -338,12 +345,12 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         handleProfileClick(author, navigate, e);
                                     }
                                 }}>
-                                    <span className={`min-w-0 truncate font-semibold leading-[normal] break-anywhere ${!isPending ? 'hover-underline' : ''} dark:text-white`}
+                                    <span className={`min-w-0 truncate font-semibold leading-[normal] break-anywhere ${isCompact ? 'text-lg' : 'text-md'} ${!isPending ? 'hover-underline' : ''} dark:text-white`}
                                         data-test-activity-heading
                                     >
                                         {!isLoading ? author.name : <Skeleton className='w-24' />}
                                     </span>
-                                    <div className='flex w-full text-sm text-gray-700 dark:text-gray-600'>
+                                    <div className={`flex w-full ${isCompact ? 'text-md' : 'text-sm'} text-gray-700 dark:text-gray-600`}>
                                         <span className={`truncate leading-tight ${!isPending ? 'hover-underline' : ''}`}>
                                             {!isLoading ? getUsername(author) : <Skeleton className='w-56' />}
                                         </span>
@@ -401,13 +408,13 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     <div className='space-between relative z-[30] ml-[-8px] mt-1 flex'>
                                         {!isLoading ?
                                             showStats && <FeedItemStats
+                                                actor={author}
                                                 commentCount={commentCount}
                                                 disabled={isPending}
                                                 layout={layout}
-                                                likeCount={1}
+                                                likeCount={likeCount}
                                                 object={object}
                                                 repostCount={repostCount}
-                                                onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
                                             /> :
                                             <Skeleton className='ml-2 w-18' />
@@ -465,12 +472,12 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         {renderFeedAttachment(object, openLightbox)}
                                         <div className='space-between ml-[-8px] mt-3 flex'>
                                             {showStats && <FeedItemStats
+                                                actor={author}
                                                 commentCount={commentCount}
                                                 layout={layout}
-                                                likeCount={1}
+                                                likeCount={likeCount}
                                                 object={object}
                                                 repostCount={repostCount}
-                                                onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
                                             />}
                                         </div>
@@ -496,7 +503,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         return (
             <>
                 {object && (
-                    <div className={`group/article relative py-5 ${!isPending ? 'cursor-pointer' : 'pointer-events-none'}`} data-layout='reply' data-object-id={object.id} onClick={onClick}>
+                    <div className={`group/article relative ${isCompact ? 'pb-6' : isChainContinuation ? 'pb-5' : 'py-5'} ${!isPending ? 'cursor-pointer' : 'pointer-events-none'}`} data-layout='reply' data-object-id={object.id} onClick={onClick}>
                         <div className={`border-1 z-10 flex items-start gap-3 border-b-gray-200`} data-test-activity>
                             <div className='relative z-10 pt-[3px]'>
                                 <APAvatar author={author} disabled={isPending} />
@@ -516,14 +523,14 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             <span className='truncate text-gray-700'>{getUsername(author)}</span>
                                         </div>
                                     </div>
-                                    <FeedItemMenu
+                                    {!isCompact && <FeedItemMenu
                                         allowDelete={allowDelete}
                                         disabled={isPending}
                                         layout='reply'
                                         trigger={UserMenuTrigger}
                                         onCopyLink={handleCopyLink}
                                         onDelete={handleDelete}
-                                    />
+                                    />}
                                 </div>
                                 <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
@@ -536,24 +543,24 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             id='read-more'
                                             variant='secondary'
                                         >Read more</Button>}
-                                        <div className='space-between ml-[-8px] mt-2 flex'>
+                                        {!isCompact && <div className='space-between ml-[-8px] mt-2 flex'>
                                             {showStats && <FeedItemStats
+                                                actor={author}
                                                 commentCount={commentCount}
                                                 disabled={isPending}
                                                 layout={layout}
-                                                likeCount={1}
+                                                likeCount={likeCount}
                                                 object={object}
                                                 repostCount={repostCount}
-                                                onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
                                             />}
-                                        </div>
+                                        </div>}
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
-                        {!last && <div className="absolute bottom-0 left-[18px] top-[6.5rem] z-0 mb-[-13px] w-[2px] rounded-sm bg-gray-200"></div>}
+                        {!last && <div className={`absolute left-[19px] ${isCompact ? 'bottom-[8px] top-[51px]' : isChainContinuation ? 'bottom-[5px] top-[51px]' : isChainParent ? 'bottom-[5px] top-[71px]' : 'bottom-[-7px] top-[71px]'} z-0 w-[2px] rounded-sm bg-gray-200`}></div>}
                     </div>
                 )}
                 <ImageLightbox
@@ -615,12 +622,12 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </div>
                                 <div className='invisible absolute right-3 top-8 z-[49] flex -translate-y-1/2 rounded-lg bg-white p-1 shadow-md group-hover/article:visible dark:bg-black'>
                                     {showStats && <FeedItemStats
+                                        actor={author}
                                         commentCount={commentCount}
                                         layout={layout}
-                                        likeCount={1}
+                                        likeCount={likeCount}
                                         object={object}
                                         repostCount={repostCount}
-                                        onCommentClick={onCommentClick}
                                         onLikeClick={onLikeClick}
                                     />}
                                     <FeedItemMenu

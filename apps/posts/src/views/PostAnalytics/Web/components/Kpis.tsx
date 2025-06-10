@@ -1,6 +1,6 @@
 import EmptyStatView from '../../components/EmptyStatView';
 import React, {useState} from 'react';
-import {AlignedAxisTick, Card, CardContent, ChartConfig, ChartContainer, ChartTooltip, DateTooltipContent, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsList, calculateYAxisWidth, formatDisplayDateWithRange, formatDuration, formatNumber, formatPercentage, getYRange, sanitizeChartData} from '@tryghost/shade';
+import {Card, CardContent, GhAreaChart, KpiTabTrigger, KpiTabValue, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, sanitizeChartData} from '@tryghost/shade';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
@@ -23,7 +23,7 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
     views: {
         dataKey: 'pageviews',
         label: 'Pageviews',
-        color: 'hsl(var(--chart-green))',
+        color: 'hsl(var(--chart-teal))',
         formatter: formatNumber
     },
     'bounce-rate': {
@@ -70,14 +70,6 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
 
     const kpiValues = getWebKpiValues(data as unknown as KpiDataItem[] | null);
 
-    const chartConfig = {
-        value: {
-            label: currentMetric.label
-        }
-    } satisfies ChartConfig;
-
-    const yRange = [getYRange(chartData).min, getYRange(chartData).max];
-
     return (
         <>
             {isLoading ? '' :
@@ -99,79 +91,14 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
                                         </KpiTabTrigger>
                                     </TabsList>
                                     <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
-                                        <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] w-full' config={chartConfig}>
-                                            <Recharts.AreaChart
-                                                data={chartData}
-                                                margin={{
-                                                    left: 0,
-                                                    right: 20,
-                                                    top: 12
-                                                }}
-                                            >
-                                                <Recharts.CartesianGrid horizontal={false} vertical={false} />
-                                                <Recharts.XAxis
-                                                    axisLine={false}
-                                                    dataKey="date"
-                                                    interval={0}
-                                                    tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(value, range)} />}
-                                                    tickFormatter={value => formatDisplayDateWithRange(value, range)}
-                                                    tickLine={false}
-                                                    tickMargin={8}
-                                                    ticks={chartData && chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}
-                                                />
-                                                <Recharts.YAxis
-                                                    axisLine={false}
-                                                    domain={yRange}
-                                                    scale="linear"
-                                                    tickFormatter={(value) => {
-                                                        switch (currentTab) {
-                                                        case 'bounce-rate':
-                                                            return formatPercentage(value);
-                                                        case 'duration':
-                                                            return formatDuration(value);
-                                                        case 'visits':
-                                                        case 'views':
-                                                            return formatNumber(value);
-                                                        default:
-                                                            return value.toLocaleString();
-                                                        }
-                                                    }}
-                                                    tickLine={false}
-                                                    ticks={yRange}
-                                                    width={calculateYAxisWidth(yRange, currentMetric.formatter)}
-                                                />
-                                                <ChartTooltip
-                                                    content={<DateTooltipContent color={currentMetric.color} range={range} />}
-                                                    cursor={true}
-                                                    isAnimationActive={false}
-                                                    position={{y: 20}}
-                                                />
-                                                <defs>
-                                                    <linearGradient id="fillChart" x1="0" x2="0" y1="0" y2="1">
-                                                        <stop
-                                                            offset="5%"
-                                                            stopColor={currentMetric.color}
-                                                            stopOpacity={0.8}
-                                                        />
-                                                        <stop
-                                                            offset="95%"
-                                                            stopColor={currentMetric.color}
-                                                            stopOpacity={0.1}
-                                                        />
-                                                    </linearGradient>
-                                                </defs>
-                                                <Recharts.Area
-                                                    dataKey="value"
-                                                    fill="url(#fillChart)"
-                                                    fillOpacity={0.2}
-                                                    isAnimationActive={false}
-                                                    stackId="a"
-                                                    stroke={currentMetric.color}
-                                                    strokeWidth={2}
-                                                    type="linear"
-                                                />
-                                            </Recharts.AreaChart>
-                                        </ChartContainer>
+                                        <GhAreaChart
+                                            className={'-mb-3 h-[16vw] max-h-[320px] w-full'}
+                                            color={currentMetric.color}
+                                            data={chartData}
+                                            id={currentMetric.dataKey}
+                                            range={range}
+                                            syncId="overview-charts"
+                                        />
                                     </div>
                                 </Tabs>
                             </CardContent>

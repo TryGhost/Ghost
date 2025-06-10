@@ -174,7 +174,7 @@ describe('services/koenig/node-renderers/product-renderer', function () {
                                         <tr>
                                             <td class="kg-product-button-wrapper">
                                                 <table
-                                                    class="btn btn-accent"
+                                                    class="btn"
                                                     border="0"
                                                     cellspacing="0"
                                                     cellpadding="0">
@@ -206,8 +206,6 @@ describe('services/koenig/node-renderers/product-renderer', function () {
     describe('email (emailCustomizationAlpha)', function () {
         it('matches snapshot for default test data', function () {
             const result = renderForEmail(getTestData(), {feature: {emailCustomizationAlpha: true}});
-
-            assert.ok(result.html);
 
             assertPrettifiesTo(result.html, html`
                 <table class="kg-product-card" cellspacing="0" cellpadding="0" border="0">
@@ -245,7 +243,7 @@ describe('services/koenig/node-renderers/product-renderer', function () {
                                         <tr>
                                             <td class="kg-product-button-wrapper">
                                                 <table
-                                                    class="btn btn-accent"
+                                                    class="btn"
                                                     border="0"
                                                     cellspacing="0"
                                                     cellpadding="0">

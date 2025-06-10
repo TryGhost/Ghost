@@ -6,7 +6,6 @@ import clsx from 'clsx';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {GhostOrb, Icon} from '@tryghost/admin-x-design-system';
 import {isManagedEmail} from '@tryghost/admin-x-framework/api/config';
-import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const NewsletterPreviewContent: React.FC<{
@@ -110,8 +109,6 @@ const NewsletterPreviewContent: React.FC<{
     });
     const currentYear = new Date().getFullYear();
 
-    const backgroundColorIsDark = backgroundColor && textColorForBackgroundColor(backgroundColor).hex().toLowerCase() === '#ffffff';
-
     // Process footer content to add target and rel attributes to links
     const processedFooterContent = footerContent ? footerContent.replace(/<a/g, '<a target="_blank" rel="noopener noreferrer"') : '';
 
@@ -157,17 +154,17 @@ const NewsletterPreviewContent: React.FC<{
                     </div>
 
                     {/* Email content */}
-                    <div className="overflow-y-auto p-4 text-sm" style={{backgroundColor}}>
-                        <div className="px-[5.4rem]" style={{backgroundColor: headerBackgroundColor}}>
+                    <div className="overflow-y-auto text-sm" style={{backgroundColor}}>
+                        <div className="px-[7rem]" style={{backgroundColor: headerBackgroundColor}}>
                             {headerImage && (
                                 <div>
-                                    <img alt="" className="mb-4 block" src={headerImage} />
+                                    <img alt="" className="mb-4 block pt-6" src={headerImage} />
                                 </div>
                             )}
                             {showHeader && (
                                 <div className="py-3">
                                     {headerIcon && <img alt="" className="mx-auto mb-2 size-10" role="presentation" src={headerIcon} />}
-                                    {headerTitle && <h4 className="mb-1 text-center text-[1.6rem] font-bold uppercase leading-tight tracking-tight text-grey-900" style={{color: textColor}}>{headerTitle}</h4>}
+                                    {headerTitle && <h4 className="mb-1 text-center text-[1.6rem] font-bold uppercase leading-tight tracking-tight text-grey-900" style={{color: headerTextColor}}>{headerTitle}</h4>}
                                     {headerSubtitle && <h5 className="mb-1 text-center text-[1.3rem] font-normal text-grey-700" style={{color: secondaryTextColor}}>{headerSubtitle}</h5>}
                                 </div>
                             )}
@@ -236,7 +233,7 @@ const NewsletterPreviewContent: React.FC<{
                             )}
                         </div>
 
-                        <div className={clsx('px-[5.4rem]', headerBackgroundColor !== 'transparent' && 'pt-10')}>
+                        <div className={clsx('px-[7rem]', headerBackgroundColor !== 'transparent' && 'pt-10')}>
                             <div className={clsx(
                                 'max-w-[600px] border-b border-grey-200 pb-5 leading-[27.2px] text-black',
                                 dividerStyle === 'dashed' && 'border-dashed',
@@ -348,7 +345,7 @@ const NewsletterPreviewContent: React.FC<{
                             {/* Latest posts */}
                             {showLatestPosts && (
                                 <div className={clsx('border-b border-grey-200 py-6', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-dotted')} style={{borderColor: dividerColor}}>
-                                    <h3 className="mb-4 mt-2 pb-1 text-[1.2rem] font-semibold uppercase tracking-wide text-black">Keep reading</h3>
+                                    <h3 className="mb-4 mt-2 pb-1 text-[1.2rem] font-semibold uppercase tracking-wide text-black" style={{color: textColor}}>Keep reading</h3>
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
                                             <h4
@@ -416,7 +413,7 @@ const NewsletterPreviewContent: React.FC<{
                             {/* Subscription details */}
                             {showSubscriptionDetails && (
                                 <div className={clsx('border-b border-grey-200 py-8', dividerStyle === 'dashed' && 'border-dashed', dividerStyle === 'dotted' && 'border-b-2 border-dotted')} style={{borderColor: dividerColor}}>
-                                    <h4 className="mb-3 text-[1.2rem] uppercase tracking-wide text-black">Subscription details</h4>
+                                    <h4 className="mb-3 text-[1.2rem] uppercase tracking-wide text-black" style={{color: textColor}}>Subscription details</h4>
                                     <p className="m-0 mb-4 text-base" style={{color: textColor}}>You are receiving this because you are a paid subscriber to {siteTitle}. Your subscription will renew on 17 Jul 2024.</p>
                                     <div className="flex">
                                         <div className="shrink-0 text-base">
@@ -424,7 +421,7 @@ const NewsletterPreviewContent: React.FC<{
                                             <p style={{color: textColor}}>Email: jamie@example.com</p>
                                             <p style={{color: textColor}}>Member since: 17 July 2023</p>
                                         </div>
-                                        <span className={clsx('w-full self-end whitespace-nowrap text-right text-base text-grey-700 underline', backgroundColorIsDark && 'text-white')}>
+                                        <span className={clsx('w-full self-end whitespace-nowrap text-right text-base', linkStyle === 'underline' && 'underline', linkStyle === 'bold' && 'font-bold')} style={{color: linkColor || accentColor}}>
                                             Manage subscription
                                         </span>
                                     </div>

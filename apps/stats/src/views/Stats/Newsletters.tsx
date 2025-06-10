@@ -1,5 +1,4 @@
 // import AudienceSelect from './components/AudienceSelect';
-import AreaChart from './components/AreaChart';
 import DateRangeSelect from './components/DateRangeSelect';
 import NewsletterSelect from './components/NewsletterSelect';
 import React, {useMemo, useState} from 'react';
@@ -7,7 +6,7 @@ import SortButton from './components/SortButton';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, GhAreaChart, KpiTabTrigger, KpiTabValue, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -153,7 +152,7 @@ const NewsletterKPIs: React.FC<{
             datakey: 'open_rate'
         },
         'avg-click-rate': {
-            color: 'hsl(var(--chart-green))',
+            color: 'hsl(var(--chart-teal))',
             datakey: 'click_rate'
         }
     };
@@ -191,8 +190,7 @@ const NewsletterKPIs: React.FC<{
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 {(currentTab === 'total-subscribers') &&
-                    <AreaChart
-                        allowDataOverflow={true}
+                    <GhAreaChart
                         className='-mb-3 h-[16vw] max-h-[320px] w-full'
                         color={tabConfig['total-subscribers'].color}
                         data={subscribersData}
@@ -220,6 +218,12 @@ const NewsletterKPIs: React.FC<{
                                 setIsHoveringClickable(!!(e.activePayload && e.activePayload[0].payload.post_id));
                             }}
                         >
+                            <defs>
+                                <linearGradient id="barGradient" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stopColor={tabConfig[currentTab].color} stopOpacity={0.8} />
+                                    <stop offset="100%" stopColor={tabConfig[currentTab].color} stopOpacity={0.3} />
+                                </linearGradient>
+                            </defs>
                             <Recharts.CartesianGrid horizontal={false} vertical={false} />
                             <Recharts.XAxis
                                 axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
@@ -246,12 +250,12 @@ const NewsletterKPIs: React.FC<{
                             <Recharts.Bar
                                 activeBar={{fillOpacity: 1}}
                                 dataKey={tabConfig[currentTab].datakey}
-                                fill={tabConfig[currentTab].color}
+                                fill='url(#barGradient)'
                                 fillOpacity={0.6}
                                 isAnimationActive={false}
                                 maxBarSize={32}
-                                minPointSize={2}
-                                radius={0}
+                                minPointSize={3}
+                                radius={4}
                             />
                         </Recharts.BarChart>
                     </ChartContainer>

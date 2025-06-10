@@ -71,11 +71,12 @@ const FeedList:React.FC<FeedListProps> = ({
                                 <div className='flex w-full min-w-0 flex-col items-center'>
                                     <div className='flex w-full min-w-0 max-w-[620px] flex-col items-start'>
                                         <FeedInput user={user} />
-                                        <ul className='mx-auto flex w-full flex-col px-4'>
+                                        <ul className='mx-auto flex w-full flex-col px-4' data-testid="feed-list">
                                             {activities.map((activity, index) => (
                                                 <li
                                                 // eslint-disable-next-line react/no-array-index-key
                                                     key={`${activity.id}-${activity.type}-${index}`} // We are using index here as activity.id is cannot be guaranteed to be unique at the moment
+                                                    data-testid="feed-item"
                                                     data-test-view-article
                                                 >
                                                     <FeedItem
@@ -85,14 +86,12 @@ const FeedList:React.FC<FeedListProps> = ({
                                                         isLoading={isLoading}
                                                         isPending={isPendingActivity(activity.id)}
                                                         layout={'feed'}
+                                                        likeCount={activity.object.likeCount ?? 0}
                                                         object={activity.object}
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
                                                         onClick={() => {
                                                             navigate(`/feed/${encodeURIComponent(activity.id)}`);
-                                                        }}
-                                                        onCommentClick={() => {
-                                                            navigate(`/feed/${encodeURIComponent(activity.id)}?focusReply=true`);
                                                         }}
                                                     />
                                                     {index < activities.length - 1 && (

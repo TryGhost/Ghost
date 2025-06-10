@@ -90,6 +90,20 @@ class StatsService {
     }
 
     /**
+     * Get top posts by views
+     * @param {Object} options
+     * @param {string} options.date_from - Start date in YYYY-MM-DD format
+     * @param {string} options.date_to - End date in YYYY-MM-DD format
+     * @param {string} options.timezone - Timezone to use for date interpretation
+     * @param {number} [options.limit=5] - Maximum number of posts to return
+     * @returns {Promise<{data: import('./PostsStatsService').TopPostResult[]}>}
+     */
+    async getTopPostsViews(options) {
+        const result = await this.posts.getTopPostsViews(options);
+        return result;
+    }
+
+    /**
      * @param {string} postId
      */
     async getGrowthStatsForPost(postId) {
@@ -143,6 +157,14 @@ class StatsService {
     }
 
     /**
+     * Get stats for the latest published post
+     * @returns {Promise<{data: Object}>}
+     */
+    async getLatestPostStats() {
+        return await this.posts.getLatestPostStats();
+    }
+
+    /**
      * @param {object} deps
      *
      * @returns {StatsService}
@@ -172,7 +194,7 @@ class StatsService {
             members: new MembersService(deps),
             subscriptions: new SubscriptionStatsService(deps),
             referrers: new ReferrersStatsService(deps),
-            posts: new PostsStatsService(deps),
+            posts: new PostsStatsService(depsWithTinybird),
             content: new ContentStatsService(depsWithTinybird)
         });
     }

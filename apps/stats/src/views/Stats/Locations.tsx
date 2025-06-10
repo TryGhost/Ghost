@@ -7,7 +7,7 @@ import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, Flag, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, cn, formatNumber, formatQueryDate, getRangeDates, useSimplePagination} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, Icon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, cn, formatNumber, formatPercentage, formatQueryDate, getRangeDates, useSimplePagination} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -19,6 +19,9 @@ countries.registerLocale(enLocale);
 const getCountryName = (label: string) => {
     return STATS_LABEL_MAPPINGS[label as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(label, 'en') || 'Unknown';
 };
+
+// Array of values that represent unknown locations
+const UNKNOWN_LOCATIONS = ['NULL', 'ᴺᵁᴸᴸ', ''];
 
 // Normalize country code for flag display
 const normalizeCountryCode = (code: string): string => {
@@ -45,6 +48,13 @@ interface TooltipData {
     y: number;
 }
 
+interface ProcessedLocationData {
+    location: string;
+    visits: number;
+    percentage: number;
+    relativeValue: number;
+}
+
 const Locations:React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
@@ -66,69 +76,67 @@ const Locations:React.FC = () => {
         params
     });
 
-    // Move "NULL" (uknown) location as the last item in the list
-    const sortedData = useMemo(() => {
-        if (!data) {
-            return null;
-        }
-        return [...data].sort((a, b) => {
-            if (a.location === 'ᴺᵁᴸᴸ') {
+    const totalVisits = useMemo(() => data?.reduce((sum, row) => sum + Number(row.visits), 0) || 0,
+        [data]
+    );
+
+    const processedData = useMemo<ProcessedLocationData[]>(() => {
+        // First calculate total visits for known locations only
+        const knownTotalVisits = data?.reduce((sum, row) => (UNKNOWN_LOCATIONS.includes(String(row.location)) ? sum : sum + Number(row.visits)), 0) || 0;
+
+        const processed = data?.map(row => ({
+            location: String(row.location),
+            visits: Number(row.visits),
+            percentage: totalVisits > 0 ? (Number(row.visits) / totalVisits) : 0,
+            relativeValue: UNKNOWN_LOCATIONS.includes(String(row.location)) ? 0 :
+                Math.min(100, Math.max(10, Math.ceil((Number(row.visits) / knownTotalVisits) * 100 / 10) * 10)),
+            isUnknown: UNKNOWN_LOCATIONS.includes(String(row.location))
+        })) || [];
+
+        // Separate known and unknown locations
+        const knownLocations = processed.filter(item => !item.isUnknown);
+        const unknownLocations = processed.filter(item => item.isUnknown);
+
+        // Combine unknown locations into a single entry
+        const combinedUnknown = unknownLocations.length > 0 ? [{
+            location: 'Unknown',
+            visits: unknownLocations.reduce((sum, item) => sum + item.visits, 0),
+            percentage: unknownLocations.reduce((sum, item) => sum + item.percentage, 0),
+            relativeValue: 0
+        }] : [];
+
+        // Combine and sort data
+        return [...knownLocations, ...combinedUnknown].sort((a, b) => {
+            if (a.location === 'Unknown' && b.location !== 'Unknown') {
                 return 1;
             }
-            if (b.location === 'ᴺᵁᴸᴸ') {
+            if (a.location !== 'Unknown' && b.location === 'Unknown') {
                 return -1;
             }
             return 0;
         });
-    }, [data]);
+    }, [data, totalVisits]);
 
     const isLoading = isConfigLoading || loading;
 
-    interface LocationData {
-        location: string;
-        visits: string;
-    }
-
-    interface TransformedLocationData extends LocationData {
-        relativeValue: number;
-    }
-
-    const transformData = (rawData: LocationData[] | null): Record<string, TransformedLocationData> => {
-        if (!rawData) {
-            return {};
-        }
-
-        // Filter out "ᴺᵁᴸᴸ" entries for calculations
-        const validData = rawData.filter(item => item.location !== 'ᴺᵁᴸᴸ');
-
-        // Find the maximum number of visits
-        const maxVisits = validData.reduce((max, item) => Math.max(max, Number(item.visits)), 0);
-
-        // Transform all data into an object with location codes as keys
-        return rawData.reduce((acc, item) => {
-            if (item.location === 'ᴺᵁᴸᴸ') {
-                return acc;
-            }
-
-            // Calculate percentage relative to max visits
-            const percentage = (Number(item.visits) / maxVisits) * 100;
-            // Map percentage to 10-100 scale in increments of 10
-            const relativeValue = Math.min(100, Math.max(10, Math.ceil(percentage / 10) * 10));
-
-            acc[item.location] = {
-                ...item,
-                relativeValue
-            };
-
-            return acc;
-        }, {} as Record<string, TransformedLocationData>);
-    };
-
-    const transformedData = transformData(sortedData as LocationData[] | null);
+    const {
+        currentPage,
+        totalPages,
+        paginatedData: tableData,
+        nextPage,
+        previousPage,
+        hasNextPage,
+        hasPreviousPage
+    } = useSimplePagination({
+        data: processedData,
+        itemsPerPage: ITEMS_PER_PAGE
+    });
 
     const getLocationClassName = (location: {id: string, name: string}) => {
         const countryCode = location.id.toUpperCase();
-        const currentData = transformedData[countryCode];
+
+        // find currentData from processedData based on countryCode (location)
+        const currentData = processedData.find(item => normalizeCountryCode(item.location) === countryCode);
         if (currentData) {
             let opacity = '';
 
@@ -162,7 +170,7 @@ const Locations:React.FC = () => {
                 opacity = 'opacity-90';
                 break;
             }
-            return cn('fill-[hsl(var(--chart-1))]', opacity);
+            return cn('fill-[hsl(var(--chart-blue))]', opacity);
         }
 
         return 'fill-gray-300 dark:fill-gray-900/75';
@@ -171,14 +179,14 @@ const Locations:React.FC = () => {
     const handleLocationMouseOver = (e: React.MouseEvent<SVGPathElement>) => {
         const target = e.target as SVGPathElement;
         const countryCode = target.getAttribute('id')?.toUpperCase() || '';
-        const countryData = transformedData[countryCode];
+        const countryData = processedData.find(item => normalizeCountryCode(item.location) === countryCode);
 
         target.style.opacity = '0.75';
 
         setTooltipData({
             countryCode,
             countryName: getCountryName(countryCode),
-            visits: countryData ? Number(countryData.visits) : 0,
+            visits: countryData ? countryData.visits : 0,
             x: e.clientX,
             y: e.clientY
         });
@@ -189,19 +197,6 @@ const Locations:React.FC = () => {
         target.style.opacity = '';
         setTooltipData(null);
     };
-
-    const {
-        currentPage,
-        totalPages,
-        paginatedData: tableData,
-        nextPage,
-        previousPage,
-        hasNextPage,
-        hasPreviousPage
-    } = useSimplePagination({
-        data: sortedData,
-        itemsPerPage: ITEMS_PER_PAGE
-    });
 
     return (
         <StatsLayout>
@@ -217,7 +212,7 @@ const Locations:React.FC = () => {
                     </CardHeader>
                     <CardContent className='p-0'>
                         <div className='grid grid-cols-3 items-stretch'>
-                            <div className='svg-map-container relative col-span-2 mx-auto w-full max-w-[680px] px-8 py-12 [&_.svg-map]:stroke-background'>
+                            <div className='svg-map-container relative col-span-2 mx-auto w-full max-w-[740px] px-8 py-12 [&_.svg-map]:stroke-background'>
                                 <SVGMap
                                     locationClassName={getLocationClassName}
                                     map={World}
@@ -244,27 +239,46 @@ const Locations:React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                            <div className='border-l px-6'>
-                                <div className='flex items-center justify-between py-4 text-sm'>
-                                    <div className='font-medium text-muted-foreground'>Country</div>
-                                    <div className='text-right font-medium text-muted-foreground'>Visitors</div>
-                                </div>
-                                <Separator />
-                                <div className='py-2'>
-                                    {tableData?.map((row) => {
-                                        const countryName = getCountryName(`${row.location}`) || 'Unknown';
-                                        return (
-                                            <div key={row.location || 'unknown'} className='flex items-center justify-between text-sm'>
-                                                <div className='flex items-center gap-3 py-2.5 font-medium'>
-                                                    <Flag countryCode={`${normalizeCountryCode(row.location as string)}`} />
-                                                    {countryName}
-                                                </div>
-                                                <div className='py-2.5 text-right font-mono'>{formatNumber(Number(row.visits))}</div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                                <SimplePagination>
+                            <div className='group/datalist flex flex-col justify-between border-l px-6'>
+                                <DataList>
+                                    <DataListHeader className='py-4'>
+                                        <DataListHead>Country</DataListHead>
+                                        <DataListHead>Visitors</DataListHead>
+                                    </DataListHeader>
+                                    <DataListBody>
+                                        {tableData?.map((row) => {
+                                            const countryName = getCountryName(`${row.location}`) || 'Unknown';
+                                            return (
+                                                <DataListRow key={row.location || 'unknown'}>
+                                                    <DataListBar
+                                                        className='bg-gradient-to-r from-[hsl(var(--chart-blue))]/40 to-[hsl(var(--chart-blue))]/80  opacity-20 transition-all'
+                                                        style={{
+                                                            width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
+                                                        }}
+                                                    />
+                                                    <DataListItemContent className='group-hover/data:max-w-[calc(100%-140px)]'>
+                                                        <div className='flex items-center space-x-3 overflow-hidden'>
+                                                            <Flag
+                                                                countryCode={`${normalizeCountryCode(row.location as string)}`}
+                                                                fallback={
+                                                                    <span className='flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-black text-white'>
+                                                                        <Icon.SkullAndBones className='size-3' />
+                                                                    </span>
+                                                                }
+                                                            />
+                                                            <div className='truncate font-medium'>{countryName}</div>
+                                                        </div>
+                                                    </DataListItemContent>
+                                                    <DataListItemValue>
+                                                        <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
+                                                        <DataListItemValuePerc>{formatPercentage(row.percentage)}</DataListItemValuePerc>
+                                                    </DataListItemValue>
+                                                </DataListRow>
+                                            );
+                                        })}
+                                    </DataListBody>
+                                </DataList>
+                                <SimplePagination className='mt-5'>
                                     <SimplePaginationPages currentPage={currentPage.toString()} totalPages={totalPages.toString()} />
                                     <SimplePaginationNavigation>
                                         <SimplePaginationPreviousButton

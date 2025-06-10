@@ -1,27 +1,30 @@
-import AreaChart, {AreaChartDataItem} from './components/AreaChart';
 import DateRangeSelect from './components/DateRangeSelect';
+import FeatureImagePlaceholder from './components/FeatureImagePlaceholder';
 import React, {useMemo} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, cn, formatDisplayDate, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
+import {STATS_RANGES} from '@src/utils/constants';
+import {TopPostViewsStats, useLatestPostStats, useTopPostsViews} from '@tryghost/admin-x-framework/api/stats';
 import {getAudienceQueryParam} from './components/AudienceSelect';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
+import {getPeriodText} from '@src/utils/chart-helpers';
+import {getStatEndpointUrl, getToken, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
 import {useQuery} from '@tinybirdco/charts';
-// import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
 interface OverviewKPICardProps {
     linkto: string;
     title: string;
-    iconName: keyof typeof LucideIcon;
+    iconName?: keyof typeof LucideIcon;
     description: string;
     diffDirection?: 'up' | 'down' | 'same' | 'empty';
     diffValue?: string;
     color?: string;
     formattedValue: string;
     children?: React.ReactNode;
+    onClick?: () => void;
 }
 
 const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
@@ -29,28 +32,31 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     title,
     iconName,
     description,
-    // color,
+    color,
     diffDirection,
     diffValue,
     formattedValue,
-    children
+    children,
+    onClick
 }) => {
     // const navigate = useNavigate();
-    const IconComponent = LucideIcon[iconName] as LucideIcon.LucideIcon;
+    const {range} = useGlobalData();
+    const IconComponent = iconName && LucideIcon[iconName] as LucideIcon.LucideIcon;
 
     return (
-        <Card>
+        <Card className={onClick && 'group transition-all hover:!cursor-pointer hover:bg-accent/50'} onClick={onClick}>
             <CardHeader className='hidden'>
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
             <KpiCardHeader className='grow gap-2 border-none pb-2'>
-                <KpiCardHeaderLabel>
+                <KpiCardHeaderLabel className={onClick && 'transition-all group-hover:text-foreground'}>
+                    {color && <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color}}></span>}
                     {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
                     {title}
                 </KpiCardHeaderLabel>
                 <KpiCardHeaderValue
-                    diffDirection={diffDirection}
+                    diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : diffDirection}
                     diffValue={diffValue}
                     value={formattedValue}
                 />
@@ -59,30 +65,6 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
                 {children}
             </CardContent>
         </Card>
-    );
-};
-
-interface PostTableCellProps {
-    featureImage?: string;
-    title: string;
-    publishDate: string;
-}
-
-const PostTableCell: React.FC<PostTableCellProps> = ({
-    featureImage,
-    title,
-    publishDate
-}) => {
-    return (
-        <div className='flex items-center gap-3 py-1 pl-1 text-sm'>
-            <div className='h-14 w-20 min-w-20 rounded-md bg-cover' style={{
-                backgroundImage: featureImage
-            }}></div>
-            <div className='flex flex-col gap-0.5 leading-tight'>
-                <span className='font-semibold'>{title}</span>
-                <span className='text-sm font-normal text-muted-foreground'>{publishDate}</span>
-            </div>
-        </div>
     );
 };
 
@@ -137,7 +119,18 @@ const Overview: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
-    const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals} = useGrowthStats(range);
+    const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals, currencySymbol} = useGrowthStats(range);
+    const {isLoading: isLatestPostLoading, data: latestPostStatsData} = useLatestPostStats();
+    const latestPostStats = latestPostStatsData?.stats?.[0] || null;
+    const navigate = useNavigate();
+    const {data: topPostsData, isLoading: isTopPostsLoading} = useTopPostsViews({
+        searchParams: {
+            date_from: startDate,
+            date_to: endDate,
+            limit: '5',
+            timezone
+        }
+    });
 
     /* Get visitors
     /* ---------------------------------------------------------------------- */
@@ -166,7 +159,7 @@ const Overview: React.FC = () => {
             };
         });
     }, [visitorsData, range]);
-    const visitorsYRange: [number, number] = [0, Math.max(...(visitorsChartData?.map((item: AreaChartDataItem) => item.value) || [0]))];
+    const visitorsYRange: [number, number] = [0, Math.max(...(visitorsChartData?.map((item: GhAreaChartDataItem) => item.value) || [0]))];
 
     /* Get members
     /* ---------------------------------------------------------------------- */
@@ -182,7 +175,7 @@ const Overview: React.FC = () => {
         sanitizedData = sanitizeChartData<GrowthChartDataItem>(growthChartData, range, fieldName, 'exact');
 
         // Then map the sanitized data to the final format
-        const processedData: AreaChartDataItem[] = sanitizedData.map(item => ({
+        const processedData: GhAreaChartDataItem[] = sanitizedData.map(item => ({
             date: item.date,
             value: item.free + item.paid + item.comped,
             formattedValue: formatNumber(item.free + item.paid + item.comped),
@@ -206,10 +199,10 @@ const Overview: React.FC = () => {
         sanitizedData = sanitizeChartData<GrowthChartDataItem>(growthChartData, range, fieldName, 'exact');
 
         // Then map the sanitized data to the final format
-        const processedData: AreaChartDataItem[] = sanitizedData.map(item => ({
+        const processedData: GhAreaChartDataItem[] = sanitizedData.map(item => ({
             date: item.date,
             value: centsToDollars(item.mrr),
-            formattedValue: `$${formatNumber(centsToDollars(item.mrr))}`,
+            formattedValue: `${currencySymbol}${formatNumber(centsToDollars(item.mrr))}`,
             label: 'MRR'
         }));
 
@@ -231,8 +224,8 @@ const Overview: React.FC = () => {
         };
     }, [visitorsData]);
 
-    const isLoading = isConfigLoading || isVisitorsLoading || isGrowthStatsLoading;
-    const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px]';
+    const isLoading = isConfigLoading || isVisitorsLoading || isGrowthStatsLoading || isLatestPostLoading || isTopPostsLoading;
+    const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] hover:!cursor-pointer';
 
     return (
         <StatsLayout>
@@ -240,21 +233,25 @@ const Overview: React.FC = () => {
                 <DateRangeSelect />
             </StatsHeader>
             <StatsView isLoading={isLoading}>
-                <div className='grid grid-cols-1 gap-8 lg:grid-cols-3'>
+                <div className='grid grid-cols-3 gap-8'>
                     <OverviewKPICard
+                        color='hsl(var(--chart-blue))'
                         description='Number of individual people who visited your website'
                         diffDirection='empty'
                         formattedValue={kpiValues.visits}
-                        iconName='MousePointer'
                         linkto='/web/'
                         title='Unique visitors'
+                        onClick={() => {
+                            navigate('/web/');
+                        }}
                     >
-                        <AreaChart
+                        <GhAreaChart
                             className={areaChartClassName}
                             color='hsl(var(--chart-blue))'
                             data={visitorsChartData}
                             id="visitors"
                             range={range}
+                            showHorizontalLines={false}
                             showYAxisValues={false}
                             syncId="overview-charts"
                             yAxisRange={visitorsYRange}
@@ -262,179 +259,184 @@ const Overview: React.FC = () => {
                     </OverviewKPICard>
 
                     <OverviewKPICard
+                        color='hsl(var(--chart-teal))'
                         description='How number of members of your publication changed over time'
                         diffDirection={growthTotals.directions.total}
                         diffValue={growthTotals.percentChanges.total}
                         formattedValue={formatNumber(growthTotals.totalMembers)}
-                        iconName='User'
                         linkto='/growth/'
                         title='Members'
+                        onClick={() => {
+                            navigate('/growth/?tab=total-members');
+                        }}
                     >
-                        <AreaChart
-                            allowDataOverflow={true}
+                        <GhAreaChart
                             className={areaChartClassName}
-                            color='hsl(var(--chart-green))'
+                            color='hsl(var(--chart-teal))'
                             data={membersChartData}
                             id="members"
                             range={range}
+                            showHorizontalLines={false}
                             showYAxisValues={false}
                             syncId="overview-charts"
                         />
                     </OverviewKPICard>
 
                     <OverviewKPICard
+                        color='hsl(var(--chart-purple))'
                         description='Monthly recurring revenue changes over time'
                         diffDirection={growthTotals.directions.mrr}
                         diffValue={growthTotals.percentChanges.mrr}
-                        formattedValue={`$${formatNumber(centsToDollars(growthTotals.mrr))}`}
-                        iconName='DollarSign'
+                        formattedValue={`${currencySymbol}${formatNumber(centsToDollars(growthTotals.mrr))}`}
                         linkto='/growth/'
                         title='MRR'
+                        onClick={() => {
+                            navigate('/growth/?tab=mrr');
+                        }}
                     >
-                        <AreaChart
-                            allowDataOverflow={true}
+                        <GhAreaChart
                             className={areaChartClassName}
-                            color='hsl(var(--chart-orange))'
+                            color='hsl(var(--chart-purple))'
                             data={mrrChartData}
                             id="mrr"
                             range={range}
+                            showHorizontalLines={false}
                             showYAxisValues={false}
                             syncId="overview-charts"
                         />
                     </OverviewKPICard>
                 </div>
-                <div className='grid grid-cols-1 gap-8 lg:grid-cols-3'>
-                    <Card className='group/card'>
+                <div className='grid grid-cols-3 gap-8'>
+                    <Card className={`group/card ${latestPostStats && 'transition-all hover:cursor-pointer hover:bg-accent/50'}`} onClick={() => {
+                        if (latestPostStats) {
+                            navigate(`/posts/analytics/beta/${latestPostStats.id}`, {crossApp: true});
+                        }
+                    }}>
                         <CardHeader>
                             <CardTitle className='flex items-baseline justify-between leading-snug'>
                                 Latest post performance
-                                <Button className='-translate-x-2 opacity-0 transition-all group-hover/card:translate-x-0 group-hover/card:opacity-100' variant='outline'>
-                                    Details
-                                    <LucideIcon.ArrowRight size={16} strokeWidth={1.5} />
-                                </Button>
+                                {/* {latestPostStats && (
+                                    <Button
+                                        className='-translate-x-2 opacity-0 transition-all group-hover/card:translate-x-0 group-hover/card:opacity-100'
+                                        variant='outline'
+                                    >
+                                        Details
+                                        <LucideIcon.ArrowRight size={16} strokeWidth={1.5} />
+                                    </Button>
+                                )} */}
                             </CardTitle>
                             <CardDescription className='hidden'>How your last post did</CardDescription>
                         </CardHeader>
                         <CardContent className='flex flex-col items-stretch gap-6'>
-                            <div className='flex flex-col items-stretch gap-2'>
-                                <div className='aspect-video w-full rounded-md bg-cover' style={{
-                                    backgroundImage: 'url(https://picsum.photos/1920/1080?random)'
-                                }}></div>
-                                <div className='mt-1 font-semibold leading-tight'>The Rise of DIY Synth Culture: Building Your First Rig</div>
-                                <div className='text-sm text-muted-foreground'>Published and sent 5 days ago</div>
-                            </div>
-                            <div className='flex flex-col items-stretch gap-2 text-sm'>
-                                <div className='flex items-center justify-between'>
-                                    <div className='flex items-center gap-1 font-medium text-muted-foreground'>
-                                        <LucideIcon.MousePointer size={16} strokeWidth={1.5} />
-                                        Visitors
+                            {latestPostStats ? (
+                                <>
+                                    <div className='flex flex-col items-stretch'>
+                                        {latestPostStats.feature_image ?
+                                            <div className='aspect-video w-full rounded-md bg-cover bg-center' style={{
+                                                backgroundImage: `url(${latestPostStats.feature_image})`
+                                            }}></div>
+                                            :
+                                            <Separator />
+                                        }
+                                        <div className='mt-4 text-xl font-semibold leading-tight tracking-tight'>{latestPostStats.title}</div>
+                                        <div className='mt-0.5 text-sm text-muted-foreground'>Published {formatDisplayDate(latestPostStats.published_at)} {new Date(latestPostStats.published_at).toLocaleDateString()}</div>
                                     </div>
-                                    <div className='font-mono'>1,234</div>
-                                </div>
-                                <div className='flex items-center justify-between'>
-                                    <div className='flex items-center gap-1 font-medium text-muted-foreground'>
-                                        <LucideIcon.MailOpen size={16} strokeWidth={1.5} />
-                                        Open rate
+                                    <div className='flex flex-col items-stretch gap-2 text-sm'>
+                                        <div className='flex items-center justify-between'>
+                                            <div className='flex items-center gap-1 font-medium text-muted-foreground'>
+                                                <LucideIcon.MousePointer size={16} strokeWidth={1.5} />
+                                                Visitors
+                                            </div>
+                                            <div className='font-mono'>{formatNumber(latestPostStats.visitors)}</div>
+                                        </div>
+                                        {latestPostStats.open_rate &&
+                                        <div className='flex items-center justify-between'>
+                                            <div className='flex items-center gap-1 font-medium text-muted-foreground'>
+                                                <LucideIcon.MailOpen size={16} strokeWidth={1.5} />
+                                                Open rate
+                                            </div>
+                                            <div className='font-mono'>{`${Math.round(latestPostStats.open_rate)}%`}</div>
+                                        </div>
+                                        }
+                                        <div className='flex items-center justify-between'>
+                                            <div className='flex items-center gap-1 font-medium text-muted-foreground'>
+                                                <LucideIcon.User size={16} strokeWidth={1.5} />
+                                                Members
+                                            </div>
+                                            <div className='font-mono'>{latestPostStats.member_delta > 0 ? `+${latestPostStats.member_delta}` : latestPostStats.member_delta}</div>
+                                        </div>
                                     </div>
-                                    <div className='font-mono'>71%</div>
+                                </>
+                            ) : (
+                                <div className='flex flex-col items-center justify-center gap-4 py-8 text-center text-muted-foreground'>
+                                    <LucideIcon.FileText size={32} strokeWidth={1.5} />
+                                    <div>No published posts yet</div>
                                 </div>
-                                <div className='flex items-center justify-between'>
-                                    <div className='flex items-center gap-1 font-medium text-muted-foreground'>
-                                        <LucideIcon.User size={16} strokeWidth={1.5} />
-                                        Members
-                                    </div>
-                                    <div className='font-mono'>+3</div>
-                                </div>
-                            </div>
+                            )}
                         </CardContent>
-                        {/*
-                        TBD
-                        <CardFooter className='flex items-center justify-between gap-3'>
-                            <Button><LucideIcon.Share /> Share post</Button>
-                        </CardFooter> */}
                     </Card>
                     <Card className='group/card lg:col-span-2'>
                         <CardHeader>
                             <CardTitle className='flex items-baseline justify-between leading-snug'>
-                                Top posts in the last 30 days
-                                <Button className='-translate-x-2 opacity-0 transition-all group-hover/card:translate-x-0 group-hover/card:opacity-100' variant='outline'>
+                                Top posts {getPeriodText(range)}
+                                {/* <Button className='-translate-x-2 opacity-0 transition-all group-hover/card:translate-x-0 group-hover/card:opacity-100' variant='outline'>
                                     View all
                                     <LucideIcon.ArrowRight size={16} strokeWidth={1.5} />
-                                </Button>
+                                </Button> */}
                             </CardTitle>
-                            <CardDescription className='hidden'>Best performing post in the period</CardDescription>
+                            <CardDescription className='hidden'>Most viewed posts in this period</CardDescription>
                         </CardHeader>
-                        <CardContent className='-mt-4'>
+                        <CardContent>
                             <Table>
                                 <TableHeader>
-                                    <TableRow>
-                                        <TableHead className='pl-0'>Post title</TableHead>
+                                    <TableRow className='border-b !border-border'>
+                                        <TableHead>Post title</TableHead>
                                         <TableHead className='text-right'>Visitors</TableHead>
                                         <TableHead className='whitespace-nowrap text-right'>Open rate</TableHead>
                                         <TableHead className='text-right'>Members</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            <PostTableCell
-                                                featureImage='url(https://picsum.photos/1920/1080?random?v=1)'
-                                                publishDate='13 days ago'
-                                                title='The Rise of DIY Synth Culture: Building Your First Rig'
-                                            />
-                                        </TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>2,345</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>56%</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>+2</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            <PostTableCell
-                                                featureImage='url(https://picsum.photos/1920/1080?random?v=2)'
-                                                publishDate='13 days ago'
-                                                title='Sculpting Sound: A Deep Dive into Modern Synthesizers'
-                                            />
-                                        </TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>2,345</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>56%</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>+2</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            <PostTableCell
-                                                featureImage='url(https://picsum.photos/1920/1080?random?v=3)'
-                                                publishDate='13 days ago'
-                                                title='From Voltage to Vibe: How Analog Synths Shape Sound'
-                                            />
-                                        </TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>2,345</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>56%</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>+2</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            <PostTableCell
-                                                featureImage='url(https://picsum.photos/1920/1080?random?v=4)'
-                                                publishDate='13 days ago'
-                                                title='Digital vs. Analog: The Great Synth Showdown'
-                                            />
-                                        </TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>2,345</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>56%</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>+2</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            <PostTableCell
-                                                featureImage='url(https://picsum.photos/1920/1080?random?v=5)'
-                                                publishDate='13 days ago'
-                                                title='Inside the Patchbay: Creative Routing Techniques for Unique Sounds'
-                                            />
-                                        </TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>2,345</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>56%</TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>+2</TableCell>
-                                    </TableRow>
+                                    {topPostsData?.stats?.map((post: TopPostViewsStats) => (
+                                        <TableRow key={post.post_id} className='border-t-0 hover:cursor-pointer' onClick={() => {
+                                            navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
+                                        }}>
+                                            <TableCell className='font-'>
+                                                <div className='flex items-center gap-4'>
+                                                    {post.feature_image ?
+                                                        <div className='aspect-[4/3] w-20 shrink-0 rounded-md bg-cover bg-center' style={{
+                                                            backgroundImage: `url(${post.feature_image})`
+                                                        }}></div>
+                                                        :
+                                                        <FeatureImagePlaceholder className='aspect-[4/3] w-20 shrink-0' />
+                                                    }
+                                                    <div className='flex flex-col'>
+                                                        <span className='font-semibold leading-[1.35em]'>{post.title}</span>
+                                                        <span className='text-xs text-muted-foreground'>{formatDisplayDate(post.published_at)}</span>
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className='text-right font-mono'>
+                                                {formatNumber(post.views)}
+                                            </TableCell>
+                                            <TableCell className='text-right font-mono'>
+                                                {post.open_rate ? `${Math.round(post.open_rate)}%` : <>&mdash;</>}
+                                            </TableCell>
+                                            <TableCell className='text-right font-mono'>
+                                                {post.members > 0 ? `+${formatNumber(post.members)}` : '0'}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                    {(!topPostsData?.stats || topPostsData.stats.length === 0) && (
+                                        <TableRow>
+                                            <TableHead
+                                                className='text-center font-normal text-muted-foreground'
+                                                colSpan={4}
+                                            >
+                                                No data for the selected period
+                                            </TableHead>
+                                        </TableRow>
+                                    )}
                                 </TableBody>
                             </Table>
                         </CardContent>

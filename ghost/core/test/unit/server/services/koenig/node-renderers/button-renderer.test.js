@@ -98,8 +98,25 @@ describe('services/koenig/node-renderers/button-renderer', function () {
 
             assert.ok(result.html);
 
-            // TODO: The HTML output is invalid so doesn't work with prettier. Replace with alpha version
-            assert.equal(result.html, '<p><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td><table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0" align="center"><tbody><tr><td align="center"><a href="http://blog.com/post1">click me</a></td></tr></tbody></table></td></tr></tbody></table></p>');
+            assertPrettifiesTo(result.html, html`
+                <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
+                    <tbody>
+                        <tr>
+                            <td class="kg-card-spacing">
+                                <table class="btn" border="0" cellspacing="0" cellpadding="0" align="center">
+                                    <tbody>
+                                        <tr>
+                                            <td align="center">
+                                                <a href="http://blog.com/post1">click me</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `);
         });
     });
 
@@ -107,14 +124,12 @@ describe('services/koenig/node-renderers/button-renderer', function () {
         it('matches snapshot for default test data', function () {
             const result = renderForEmail(getTestData(), {feature: {emailCustomizationAlpha: true}});
 
-            assert.ok(result.html);
-
             assertPrettifiesTo(result.html, html`
                 <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
                     <tbody>
                         <tr>
                             <td class="kg-card-spacing">
-                                <table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0" align="center">
+                                <table class="btn" border="0" cellspacing="0" cellpadding="0" align="center">
                                     <tbody>
                                         <tr>
                                             <td align="center">

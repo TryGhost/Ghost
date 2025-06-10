@@ -189,12 +189,6 @@ const Notifications: React.FC = () => {
         // Don't need to know about setting timeouts or anything like that
     };
 
-    const handleCommentClick = (postId?: string) => {
-        if (postId) {
-            navigate(`/feed/${encodeURIComponent(postId)}`);
-        }
-    };
-
     const maxAvatars = 5;
 
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = useNotificationsForUser('index');
@@ -409,6 +403,14 @@ const Notifications: React.FC = () => {
                                                 {((group.type === 'reply' && group.post) || group.type === 'mention') && (
                                                     <div className="mt-1.5">
                                                         <FeedItemStats
+                                                            actor={{
+                                                                ...group.actors[0],
+                                                                icon: {
+                                                                    url: group.actors[0].avatarUrl || ''
+                                                                },
+                                                                id: group.actors[0].url,
+                                                                preferredUsername: group.actors[0].handle?.replace(/^@([^@]+)@.*$/, '$1') || 'unknown'
+                                                            }}
                                                             buttonClassName='hover:bg-gray-200'
                                                             commentCount={group.post.replyCount || 0}
                                                             layout="notification"
@@ -419,7 +421,6 @@ const Notifications: React.FC = () => {
                                                                 reposted: group.post.repostedByMe
                                                             }}
                                                             repostCount={group.post.repostCount || 0}
-                                                            onCommentClick={() => handleCommentClick(group.post?.id)}
                                                             onLikeClick={handleLikeClick}
                                                         />
                                                     </div>

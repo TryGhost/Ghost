@@ -4,6 +4,13 @@
 
 # Run `sudo ./.docker/caddy/trust_caddy_ca.sh` while the caddy container is running to trust the Caddy CA
 (common_ghost_config) {
+    # Proxy analytics requests with any prefix (e.g. /.ghost/analytics/ or /blog/.ghost/analytics/)
+    @analytics_paths path_regexp analytics_match ^(.*)/\.ghost/analytics(.*)$
+    handle @analytics_paths {
+        rewrite * {re.analytics_match.2}
+        reverse_proxy analytics-service:3000
+    }
+
     handle /ember-cli-live-reload.js {
         reverse_proxy admin:4200
     }

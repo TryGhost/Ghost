@@ -1,27 +1,29 @@
-import AreaChart from './components/AreaChart';
 import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import DateRangeSelect from './components/DateRangeSelect';
 import React, {useMemo, useState} from 'react';
 import StatsHeader from './layout/StatsHeader';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, KpiTabTrigger, KpiTabValue, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange, isValidDomain} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, KpiTabTrigger, KpiTabValue, LoadingIndicator, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
-import {SourceRow} from './Sources';
+import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
+import {SourcesCard, getStatEndpointUrl, getToken, useNavigate} from '@tryghost/admin-x-framework';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useNavigate} from '@tryghost/admin-x-framework';
 import {useQuery} from '@tinybirdco/charts';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
 // Define types for our page data
-interface TopContentData {
+
+// Unified data structure for content
+interface UnifiedContentData {
     pathname: string;
+    title: string;
     visits: number;
-    title?: string;
+    percentage?: number;
     post_uuid?: string;
     post_id?: string;
+    post_type?: string;
 }
 
 interface KpiDataItem {
@@ -31,9 +33,25 @@ interface KpiDataItem {
 
 interface SourcesData {
     source?: string | number;
-    visits: string | number;
+    visits?: number;
     [key: string]: unknown;
+    percentage?: number;
 }
+
+// Content type definitions
+const CONTENT_TYPES = {
+    POSTS: 'posts',
+    PAGES: 'pages',
+    POSTS_AND_PAGES: 'posts-and-pages'
+} as const;
+
+type ContentType = typeof CONTENT_TYPES[keyof typeof CONTENT_TYPES];
+
+const CONTENT_TYPE_OPTIONS = [
+    {value: CONTENT_TYPES.POSTS, label: 'Posts'},
+    {value: CONTENT_TYPES.PAGES, label: 'Pages'},
+    {value: CONTENT_TYPES.POSTS_AND_PAGES, label: 'Posts & pages'}
+];
 
 const KPI_METRICS: Record<string, KpiMetric> = {
     visits: {
@@ -45,19 +63,19 @@ const KPI_METRICS: Record<string, KpiMetric> = {
     views: {
         dataKey: 'pageviews',
         label: 'Pageviews',
-        chartColor: 'hsl(var(--chart-green))',
+        chartColor: 'hsl(var(--chart-teal))',
         formatter: formatNumber
     },
     'bounce-rate': {
         dataKey: 'bounce_rate',
         label: 'Bounce rate',
-        chartColor: 'hsl(var(--chart-green))',
+        chartColor: 'hsl(var(--chart-teal))',
         formatter: formatPercentage
     },
     'visit-duration': {
         dataKey: 'avg_session_sec',
         label: 'Visit duration',
-        chartColor: 'hsl(var(--chart-green))',
+        chartColor: 'hsl(var(--chart-teal))',
         formatter: formatDuration
     }
 };
@@ -122,14 +140,14 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range}) => {
         <Tabs defaultValue="visits" variant='kpis'>
             <TabsList className="-mx-6 grid grid-cols-2">
                 <KpiTabTrigger value="visits" onClick={() => setCurrentTab('visits')}>
-                    <KpiTabValue color={KPI_METRICS.visits.chartColor} label="Unique visitors" value={kpiValues.visits} />
+                    <KpiTabValue color='hsl(var(--chart-blue))' label="Unique visitors" value={kpiValues.visits} />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="views" onClick={() => setCurrentTab('views')}>
-                    <KpiTabValue color={KPI_METRICS.views.chartColor} label="Total views" value={kpiValues.views} />
+                    <KpiTabValue color='hsl(var(--chart-teal))' label="Total views" value={kpiValues.views} />
                 </KpiTabTrigger>
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
-                <AreaChart
+                <GhAreaChart
                     className='-mb-3 h-[16vw] max-h-[320px] w-full'
                     color={currentMetric.chartColor}
                     data={chartData}
@@ -142,155 +160,235 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range}) => {
     );
 };
 
-interface TopContentCardProps {
-    data: TopContentData[] | null;
+interface TopContentTableProps {
+    data: UnifiedContentData[] | null;
     range: number;
+    contentType: ContentType;
 }
 
-const TopContentTable: React.FC<TopContentCardProps> = ({data}) => {
+const TopContentTable: React.FC<TopContentTableProps> = ({data, contentType}) => {
     const navigate = useNavigate();
+
+    const getTableHeader = () => {
+        switch (contentType) {
+        case CONTENT_TYPES.POSTS:
+            return 'Post';
+        case CONTENT_TYPES.PAGES:
+            return 'Page';
+        default:
+            return 'Post';
+        }
+    };
+
     return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Content</TableHead>
-                    <TableHead className='text-right'>Visitors</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {data?.map((row: TopContentData) => {
+        <DataList>
+            <DataListHeader>
+                <DataListHead>{getTableHeader()}</DataListHead>
+                <DataListHead>Visitors</DataListHead>
+            </DataListHeader>
+            <DataListBody>
+                {data?.map((row: UnifiedContentData) => {
+                    // Only make posts clickable (not pages), since there's no analytics route for pages
+                    const isClickable = row.post_id && row.post_type === 'post';
+                    const handleClick = () => {
+                        if (isClickable) {
+                            navigate(`/posts/analytics/beta/${row.post_id}`, {crossApp: true});
+                        }
+                    };
+
                     return (
-                        <TableRow key={row.pathname}>
-                            <TableCell className="font-medium">
-                                <div className='group/link inline-flex items-center gap-2'>
-                                    {row.post_id ?
-                                        <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
-                                            navigate(`/posts/analytics/beta/${row.post_id}`, {crossApp: true});
-                                        }}>
-                                            {row.title || row.pathname}
-                                        </Button>
-                                        :
-                                        <>
-                                            {row.title || row.pathname}
-                                        </>
-                                    }
-                                    <a className='-mx-2 inline-flex min-h-6 items-center gap-1 rounded-sm px-2 opacity-0 hover:underline group-hover/link:opacity-75' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
-                                        <LucideIcon.SquareArrowOutUpRight size={12} strokeWidth={2.5} />
-                                    </a>
+                        <DataListRow
+                            key={row.pathname}
+                            className={`group/row ${isClickable && 'hover:cursor-pointer'}`}
+                            onClick={handleClick}
+                        >
+                            <DataListBar className='bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/60 opacity-20 transition-all group-hover/row:opacity-40' style={{
+                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
+                            }} />
+                            <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
+                                <div className='flex items-center space-x-4 overflow-hidden'>
+                                    <div className={`truncate font-medium ${isClickable && 'group-hover/row:underline'}`}>
+                                        {row.title}
+                                    </div>
                                 </div>
-                            </TableCell>
-                            <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
-                        </TableRow>
+                            </DataListItemContent>
+                            <DataListItemValue>
+                                <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
+                                <DataListItemValuePerc>{formatPercentage(row.percentage || 0)}</DataListItemValuePerc>
+                            </DataListItemValue>
+                        </DataListRow>
                     );
                 })}
-            </TableBody>
-        </Table>
+            </DataListBody>
+        </DataList>
     );
 };
 
-const TopContentCard: React.FC<TopContentCardProps> = ({data, range}) => {
-    const topContent = data?.slice(0, 10) || [];
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Top content</CardTitle>
-                <CardDescription>Your highest viewed posts or pages {getPeriodText(range)}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Separator />
-                <TopContentTable data={topContent} range={range} />
-            </CardContent>
-            <CardFooter>
-                <Sheet>
-                    <SheetTrigger asChild>
-                        <Button variant='outline'>View all <LucideIcon.Maximize /></Button>
-                    </SheetTrigger>
-                    <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                        <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
-                            <SheetTitle>Top content</SheetTitle>
-                            <SheetDescription>Your highest viewed posts or pages {getPeriodText(range)}</SheetDescription>
-                        </SheetHeader>
-                        <TopContentTable data={data} range={range} />
-                    </SheetContent>
-                </Sheet>
-            </CardFooter>
-        </Card>
-    );
-};
-
-interface SourcesCardProps {
-    data: SourcesData[] | null;
+interface TopContentCardProps {
     range: number;
 }
 
-const SourcesTable: React.FC<SourcesCardProps> = ({data}) => {
-    return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Source</TableHead>
-                    <TableHead className='text-right'>Visitors</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {data?.map((row) => {
-                    return (
-                        <TableRow key={row.source || 'direct'}>
-                            <TableCell className="font-medium">
-                                {row.source && typeof row.source === 'string' && isValidDomain(row.source) ?
-                                    <a className='group flex items-center gap-1' href={`https://${row.source}`} rel="noreferrer" target="_blank">
-                                        <SourceRow className='group-hover:underline' source={row.source} />
-                                    </a>
-                                    :
-                                    <span className='flex items-center gap-1'>
-                                        <SourceRow source={row.source} />
-                                    </span>
-                                }
-                            </TableCell>
-                            <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
-                        </TableRow>
-                    );
-                })}
-            </TableBody>
-        </Table>
-    );
-};
+const TopContentCard: React.FC<TopContentCardProps> = ({range}) => {
+    const {audience} = useGlobalData();
+    const {startDate, endDate, timezone} = getRangeDates(range);
+    const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
 
-const SourcesCard: React.FC<SourcesCardProps> = ({data, range}) => {
-    const topSources = data?.slice(0, 10);
+    // Prepare query parameters based on selected content type
+    const queryParams = useMemo(() => {
+        const params: Record<string, string> = {
+            date_from: formatQueryDate(startDate),
+            date_to: formatQueryDate(endDate),
+            member_status: getAudienceQueryParam(audience)
+        };
+
+        if (timezone) {
+            params.timezone = timezone;
+        }
+
+        // Add post_type filter based on selected content type
+        if (selectedContentType === CONTENT_TYPES.POSTS) {
+            params.post_type = 'post';
+        } else if (selectedContentType === CONTENT_TYPES.PAGES) {
+            params.post_type = 'page';
+        }
+        // For POSTS_AND_PAGES, don't add post_type filter to get both
+
+        return params;
+    }, [startDate, endDate, timezone, audience, selectedContentType]);
+
+    // Get filtered content data
+    const {data: topContentData, isLoading: topContentLoading} = useTopContent({
+        searchParams: queryParams
+    });
+
+    // Transform data for display
+    const transformedData = useMemo((): UnifiedContentData[] | null => {
+        const data = topContentData?.stats || null;
+        if (!data) {
+            return null;
+        }
+
+        // Calculate total visits for the filtered dataset
+        const filteredTotalVisits = data.reduce((sum, item) => sum + Number(item.visits), 0);
+
+        return data.map(item => ({
+            pathname: item.pathname,
+            title: item.title || item.pathname,
+            visits: item.visits,
+            percentage: filteredTotalVisits > 0 ? (Number(item.visits) / filteredTotalVisits) : 0,
+            post_uuid: item.post_uuid,
+            post_id: item.post_id,
+            post_type: item.post_type
+        }));
+    }, [topContentData]);
+
+    const topContent = transformedData?.slice(0, 10) || [];
+
+    const getContentTypeLabel = () => {
+        const option = CONTENT_TYPE_OPTIONS.find(opt => opt.value === selectedContentType);
+        return option ? option.label : 'Posts & pages';
+    };
+
+    const getContentTitle = () => {
+        switch (selectedContentType) {
+        case CONTENT_TYPES.POSTS:
+            return 'Top posts';
+        case CONTENT_TYPES.PAGES:
+            return 'Top pages';
+        default:
+            return 'Top content';
+        }
+    };
+
+    if (topContentLoading) {
+        return (
+            <Card className='group/datalist'>
+                <CardHeader>
+                    <CardTitle>{getContentTitle()}</CardTitle>
+                    <CardDescription>Loading...</CardDescription>
+                </CardHeader>
+                <CardContent className='flex h-full items-center justify-center'>
+                    <LoadingIndicator size='md' />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    const getContentDescription = () => {
+        switch (selectedContentType) {
+        case CONTENT_TYPES.POSTS:
+            return `Your highest viewed posts ${getPeriodText(range)}`;
+        case CONTENT_TYPES.PAGES:
+            return `Your highest viewed pages ${getPeriodText(range)}`;
+        default:
+            return `Your highest viewed posts or pages ${getPeriodText(range)}`;
+        }
+    };
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Top Sources</CardTitle>
-                <CardDescription>How readers found your site {getPeriodText(range)}</CardDescription>
-            </CardHeader>
+        <Card className='group/datalist'>
+            <div className='flex items-start justify-between'>
+                <CardHeader className='relative'>
+                    <CardTitle>{getContentTitle()}</CardTitle>
+                    <CardDescription>{getContentDescription()}</CardDescription>
+                </CardHeader>
+                <DropdownMenu>
+                    <DropdownMenuTrigger className='mr-6 mt-6' asChild>
+                        <Button variant="dropdown">{getContentTypeLabel()}</Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align='end'>
+                        {CONTENT_TYPE_OPTIONS.map(option => (
+                            <DropdownMenuItem
+                                key={option.value}
+                                onClick={() => setSelectedContentType(option.value)}
+                            >
+                                {option.label}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
             <CardContent>
                 <Separator />
-                <SourcesTable data={topSources || null} range={range} />
+                <TopContentTable
+                    contentType={selectedContentType}
+                    data={topContent}
+                    range={range}
+                />
             </CardContent>
-            <CardFooter>
-                <Sheet>
-                    <SheetTrigger asChild>
-                        <Button variant='outline'>View all <LucideIcon.Maximize /></Button>
-                    </SheetTrigger>
-                    <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                        <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
-                            <SheetTitle>Top sources</SheetTitle>
-                            <SheetDescription>How readers found your site {getPeriodText(range)}</SheetDescription>
-                        </SheetHeader>
-                        <SourcesTable data={data} range={range} />
-                    </SheetContent>
-                </Sheet>
-            </CardFooter>
+            {transformedData && transformedData.length > 10 &&
+                <CardFooter>
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
+                        </SheetTrigger>
+                        <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
+                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
+                                <SheetTitle>Top content</SheetTitle>
+                                <SheetDescription>{getContentDescription()}</SheetDescription>
+                            </SheetHeader>
+                            <div className='group/datalist'>
+                                <TopContentTable
+                                    contentType={selectedContentType}
+                                    data={transformedData}
+                                    range={range}
+                                />
+                            </div>
+                        </SheetContent>
+                    </Sheet>
+                </CardFooter>
+            }
         </Card>
     );
 };
 
 const Web: React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading, range, audience} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
+
+    // Get site URL and icon for domain comparison and Direct traffic favicon
+    const siteUrl = data?.url as string | undefined;
+    const siteIcon = data?.icon as string | undefined;
 
     // Prepare query parameters
     const params = {
@@ -318,11 +416,6 @@ const Web: React.FC = () => {
         params
     });
 
-    // Get top content data
-    const {data: topContentData, isLoading: topContentLoading} = useTopContent({
-        searchParams: queryParams
-    });
-
     // Get top sources data
     const {data: sourcesData, loading: sourcesLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
@@ -330,8 +423,11 @@ const Web: React.FC = () => {
         params
     });
 
+    // Get total visitors for table
+    const totalVisitors = kpiData?.length ? kpiData.reduce((sum, item) => sum + Number(item.visits), 0) : 0;
+
     // Calculate combined loading state
-    const isLoading = isConfigLoading || kpiLoading || topContentLoading || sourcesLoading;
+    const isLoading = isConfigLoading || kpiLoading || sourcesLoading;
 
     return (
         <StatsLayout>
@@ -345,9 +441,19 @@ const Web: React.FC = () => {
                         <WebKPIs data={kpiData as KpiDataItem[] | null} range={range} />
                     </CardContent>
                 </Card>
-                <div className='grid grid-cols-2 gap-8'>
-                    <TopContentCard data={topContentData?.stats || null} range={range} />
-                    <SourcesCard data={sourcesData as SourcesData[] | null} range={range} />
+                <div className='grid min-h-[460px] grid-cols-2 gap-8'>
+                    <TopContentCard
+                        range={range}
+                    />
+                    <SourcesCard
+                        data={sourcesData as SourcesData[] | null}
+                        defaultSourceIconUrl={STATS_DEFAULT_SOURCE_ICON_URL}
+                        getPeriodText={getPeriodText}
+                        range={range}
+                        siteIcon={siteIcon}
+                        siteUrl={siteUrl}
+                        totalVisitors={totalVisitors}
+                    />
                 </div>
             </StatsView>
         </StatsLayout>

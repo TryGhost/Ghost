@@ -13,9 +13,14 @@ const App: React.FC<AppProps> = ({framework, activityPubEnabled}) => {
         return null;
     }
 
+    // In test mode, we use hash routing to avoid basename issues
+    const routerProps = import.meta.env.VITE_TEST
+        ? {prefix: '', hash: true, routes}
+        : {prefix: APP_ROUTE_PREFIX, routes};
+
     return (
         <FrameworkProvider {...framework}>
-            <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
+            <RouterProvider {...routerProps}>
                 <FeatureFlagsProvider>
                     <ShadeApp darkMode={false} fetchKoenigLexical={null}>
                         <Outlet />

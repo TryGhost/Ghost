@@ -1,6 +1,9 @@
+const {renderEmailButton} = require('../render-partials/email-button');
 const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
 const {slugify} = require('../render-utils/slugify');
 const {getSrcsetAttribute} = require('../render-utils/srcset-attribute');
+
+// TODO: nodeData.buttonTextColor should be calculated on the fly here rather than hardcoded by the editor
 
 function cardTemplate(nodeData, options = {}) {
     const cardClasses = getCardClasses(nodeData).join(' ');
@@ -69,32 +72,19 @@ function emailTemplate(nodeData, options) {
     const backgroundAccent = nodeData.backgroundColor === 'accent' ? `background-color: ${nodeData.accentColor};` : '';
     let buttonAccent = nodeData.buttonColor === 'accent' ? `background-color: ${nodeData.accentColor};` : nodeData.buttonColor;
     let buttonStyle = nodeData.buttonColor !== 'accent' ? `background-color: ${nodeData.buttonColor};` : '';
-    let buttonTextColor = nodeData.buttonTextColor;
     const alignment = nodeData.alignment === 'center' ? 'text-align: center;' : '';
     const backgroundImageStyle = nodeData.backgroundImageSrc ? (nodeData.layout !== 'split' ? `background-image: url(${nodeData.backgroundImageSrc}); background-size: cover; background-position: center center;` : `background-color: ${nodeData.backgroundColor};`) : `background-color: ${nodeData.backgroundColor};`;
     const splitImageStyle = `background-image: url(${nodeData.backgroundImageSrc}); background-size: ${nodeData.backgroundSize !== 'contain' ? 'cover' : '50%'}; background-position: center`;
 
-    if (
-        (options?.feature?.emailCustomization || options?.feature?.emailCustomizationAlpha) &&
-        options?.design?.buttonStyle === 'outline'
-    ) {
-        if (nodeData.buttonColor === 'accent') {
-            buttonAccent = '';
-            buttonStyle = `
-                border: 1px solid ${nodeData.accentColor};
-                background-color: transparent;
-                color: ${nodeData.accentColor} !important;
-            `;
-            buttonTextColor = nodeData.accentColor;
-        } else {
-            buttonStyle = `
-                border: 1px solid ${nodeData.buttonColor};
-                background-color: transparent;
-                color: ${nodeData.buttonColor} !important;
-            `;
-            buttonTextColor = nodeData.buttonColor;
-        }
-    }
+    const showButton = nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '';
+
+    const buttonHtml = renderEmailButton({
+        url: nodeData.buttonUrl,
+        text: nodeData.buttonText,
+        alignment: nodeData.alignment,
+        color: nodeData.buttonColor,
+        style: options?.design?.buttonStyle
+    });
 
     if (options?.feature?.emailCustomization || options?.feature?.emailCustomizationAlpha) {
         return (
@@ -122,15 +112,9 @@ function emailTemplate(nodeData, options) {
                                     </td>
                                 </tr>
                                 <tr>
-                                    ${nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '' ? `
+                                    ${showButton ? `
                                         <td class="kg-header-button-wrapper">
-                                            <table class="btn" border="0" cellspacing="0" cellpadding="0" align="${nodeData.alignment}">
-                                                <tr>
-                                                    <td align="center" style="${buttonStyle} ${buttonAccent}">
-                                                        <a href="${nodeData.buttonUrl}" style="color: ${buttonTextColor};">${nodeData.buttonText}</a>
-                                                    </td>
-                                                </tr>
-                                            </table>
+                                            ${buttonHtml}
                                         </td>
                                     ` : ''}
                                 </tr>
@@ -152,7 +136,7 @@ function emailTemplate(nodeData, options) {
             <div class="kg-header-card-content" style="${nodeData.layout === 'split' && nodeData.backgroundSize === 'contain' ? 'padding-top: 0;' : ''}">
                 <h2 class="kg-header-card-heading" style="color:${nodeData.textColor};">${nodeData.header}</h2>
                 <p class="kg-header-card-subheading" style="color:${nodeData.textColor};">${nodeData.subheader}</p>
-                ${nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '' ? `
+                ${showButton ? `
                     <a class="kg-header-card-button" href="${nodeData.buttonUrl}" style="color: ${nodeData.buttonTextColor}; ${buttonStyle} ${buttonAccent}">${nodeData.buttonText}</a>
                 ` : ''}
             </div>

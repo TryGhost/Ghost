@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const {callRenderer, html, assertPrettifiesTo, visibility} = require('../test-utils');
+const {callRenderer, html, assertPrettifiesTo, assertPrettifiedIncludes, visibility} = require('../test-utils');
 
 describe('services/koenig/node-renderers/call-to-action-renderer', function () {
     function getTestData(overrides = {}) {
@@ -11,8 +11,8 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
             showDividers: true,
             buttonText: 'click me',
             buttonUrl: 'http://blog.com/post1',
-            buttonColor: 'none',
-            buttonTextColor: 'none',
+            buttonColor: '#000000',
+            buttonTextColor: '#ffffff',
             hasSponsorLabel: true,
             backgroundColor: 'none',
             imageUrl: 'http://blog.com/image1.jpg',
@@ -60,7 +60,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
                             <a
                                 href="http://blog.com/post1"
                                 class="kg-cta-button"
-                                style="background-color: none; color: none"
+                                style="background-color: #000000; color: #ffffff;"
                             >
                                 click me
                             </a>
@@ -114,8 +114,8 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
                                                                 <table border="0" cellpadding="0" cellspacing="0" class="kg-cta-button-wrapper">
                                                                     <tbody>
                                                                         <tr>
-                                                                            <td class="" style="background-color: none; color: none">
-                                                                                <a href="http://blog.com/post1" class="kg-cta-button" style="background-color: none; color: none">
+                                                                            <td class="" style="background-color: #000000; color: #ffffff;">
+                                                                                <a href="http://blog.com/post1" class="kg-cta-button" style="background-color: #000000; color: #ffffff;">
                                                                                     click me
                                                                                 </a>
                                                                             </td>
@@ -178,11 +178,11 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
                                                         </tr>
                                                         <tr>
                                                             <td class="kg-cta-button-container">
-                                                                <table border="0" cellpadding="0" cellspacing="0" class="btn">
+                                                                <table class="btn" border="0" cellspacing="0" cellpadding="0">
                                                                     <tbody>
                                                                         <tr>
-                                                                            <td class="" style="background-color: none; color: none">
-                                                                                <a href="http://blog.com/post1" class="" style="background-color: none; color: none">
+                                                                            <td align="center" style="background-color: #000000;">
+                                                                                <a href="http://blog.com/post1" style="color: #ffffff !important;">
                                                                                     click me
                                                                                 </a>
                                                                             </td>
@@ -245,11 +245,11 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
                                                         </tr>
                                                         <tr>
                                                             <td class="kg-cta-button-container">
-                                                                <table border="0" cellpadding="0" cellspacing="0" class="btn">
+                                                                <table class="btn" border="0" cellspacing="0" cellpadding="0">
                                                                     <tbody>
                                                                         <tr>
-                                                                            <td class="" style="background-color: none; color: none">
-                                                                                <a href="http://blog.com/post1" class="" style="background-color: none; color: none">
+                                                                            <td align="center" style="background-color: #000000;">
+                                                                                <a href="http://blog.com/post1" style="color: #ffffff !important;">
                                                                                     click me
                                                                                 </a>
                                                                             </td>
@@ -264,6 +264,44 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
                                         </tr>
                                     </tbody>
                                 </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `);
+        });
+
+        it('handles accent button color', function () {
+            const data = getTestData({buttonColor: 'accent'});
+            const result = renderForEmail(data, {feature: {emailCustomizationAlpha: true}});
+
+            assertPrettifiedIncludes(result.html, html`
+                <table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0">
+                    <tbody>
+                        <tr>
+                            <td align="center">
+                                <a href="http://blog.com/post1">
+                                    click me
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `);
+        });
+
+        it('handles outline buttons', function () {
+            const data = getTestData();
+            const result = renderForEmail(data, {design: {buttonStyle: 'outline'}, feature: {emailCustomizationAlpha: true}});
+
+            assertPrettifiedIncludes(result.html, html`
+                <table class="btn" border="0" cellspacing="0" cellpadding="0">
+                    <tbody>
+                        <tr>
+                            <td align="center" style="border: 1px solid #000000; background-color: transparent; color: #000000 !important;">
+                                <a href="http://blog.com/post1" style="color: #000000 !important;">
+                                    click me
+                                </a>
                             </td>
                         </tr>
                     </tbody>

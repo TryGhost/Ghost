@@ -1,6 +1,6 @@
 import React from 'react';
 import {H1, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
-import {useFeatureFlag} from '@src/hooks/useFeatureFlag';
+// import {useFeatureFlag} from '@src/hooks/useFeatureFlag';
 import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
 
 interface StatsHeaderProps {
@@ -12,29 +12,27 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
 }) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const alphaFlag = useFeatureFlag('trafficAnalyticsAlpha', '/');
+    // const alphaFlag = useFeatureFlag('trafficAnalyticsAlpha', '/');
 
     return (
         <>
             <header className='z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-black'>
                 <div className='relative flex w-full items-start justify-between gap-5 px-8 pb-0 pt-8'>
                     <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
-                        Stats
+                        Analytics
                     </H1>
                 </div>
             </header>
             <Navbar className='sticky top-0 z-50 items-center border-none bg-white/70 py-8 backdrop-blur-md dark:bg-black'>
                 <Tabs className="w-full" defaultValue={location.pathname} variant='pill'>
                     <TabsList>
-                        {alphaFlag.isEnabled &&
-                        <TabsTrigger value="/overview/" onClick={() => {
-                            navigate('/overview/');
+                        <TabsTrigger value="/" onClick={() => {
+                            navigate('/');
                         }}>
                             Overview
                         </TabsTrigger>
-                        }
-                        <TabsTrigger value="/" onClick={() => {
-                            navigate('/');
+                        <TabsTrigger value="/web/" onClick={() => {
+                            navigate('/web/');
                         }}>
                         Web traffic
                         </TabsTrigger>
