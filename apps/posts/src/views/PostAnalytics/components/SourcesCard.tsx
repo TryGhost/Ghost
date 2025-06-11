@@ -132,7 +132,7 @@ interface SourcesCardProps {
 }
 
 export const SourcesCard: React.FC<SourcesCardProps> = ({
-    title = 'Top Sources',
+    title = 'Top sources',
     description,
     data,
     mode = 'visits',
