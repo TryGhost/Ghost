@@ -1,4 +1,5 @@
-import React from 'react';
+import React, {useState} from 'react';
+import SortButton from '../../components/SortButton';
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, formatNumber} from '@tryghost/shade';
 import {getFaviconDomain, getSymbol} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -127,24 +128,79 @@ interface ProcessedReferrerData {
     linkUrl?: string;
 }
 
+type SourcesOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc' | 'source asc' | 'source desc';
+
 interface GrowthSourcesTableProps {
     data: ProcessedReferrerData[];
     currencySymbol: string;
     limit?: number;
     defaultSourceIconUrl: string;
+    sortBy: SourcesOrder;
+    setSortBy: (sortBy: SourcesOrder) => void;
 }
 
-const GrowthSourcesTable: React.FC<GrowthSourcesTableProps> = ({data, currencySymbol, limit, defaultSourceIconUrl}) => {
-    const displayData = limit ? data.slice(0, limit) : data;
+const GrowthSourcesTable: React.FC<GrowthSourcesTableProps> = ({data, currencySymbol, limit, defaultSourceIconUrl, sortBy, setSortBy}) => {
+    const sortedData = React.useMemo(() => {
+        const [field, direction = 'desc'] = sortBy.split(' ');
+        
+        return [...data].sort((a, b) => {
+            let valueA, valueB;
+            
+            switch (field) {
+            case 'source':
+                valueA = a.source.toLowerCase();
+                valueB = b.source.toLowerCase();
+                break;
+            case 'free_members':
+                valueA = a.free_members;
+                valueB = b.free_members;
+                break;
+            case 'paid_members':
+                valueA = a.paid_members;
+                valueB = b.paid_members;
+                break;
+            case 'mrr':
+                valueA = a.mrr;
+                valueB = b.mrr;
+                break;
+            default:
+                return 0;
+            }
+
+            if (direction === 'desc') {
+                return valueA < valueB ? 1 : valueA > valueB ? -1 : 0;
+            } else {
+                return valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
+            }
+        });
+    }, [data, sortBy]);
+
+    const displayData = limit ? sortedData.slice(0, limit) : sortedData;
 
     return (
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead>Source</TableHead>
-                    <TableHead className='w-[110px] text-right'>Free members</TableHead>
-                    <TableHead className='w-[110px] text-right'>Paid members</TableHead>
-                    <TableHead className='w-[110px] text-right'>MRR impact</TableHead>
+                    <TableHead>
+                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='source asc'>
+                            Source
+                        </SortButton>
+                    </TableHead>
+                    <TableHead className='w-[110px] text-right'>
+                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='free_members desc'>
+                            Free members
+                        </SortButton>
+                    </TableHead>
+                    <TableHead className='w-[110px] text-right'>
+                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='paid_members desc'>
+                            Paid members
+                        </SortButton>
+                    </TableHead>
+                    <TableHead className='w-[110px] text-right'>
+                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
+                            MRR impact
+                        </SortButton>
+                    </TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -204,6 +260,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
     const {data: globalData} = useGlobalData();
     const {data: referrersData, isLoading} = useReferrersGrowth(range);
     const {data: mrrHistoryResponse} = useMrrHistory();
+    const [sortBy, setSortBy] = useState<SourcesOrder>('free_members desc');
 
     // Get site URL for favicon processing
     const siteUrl = globalData?.url as string | undefined;
@@ -259,8 +316,8 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
 
                 return {
                     source,
-                    free_members: metrics.signups - metrics.paid_conversions, // Free = total signups - paid
-                    paid_members: metrics.paid_conversions,
+                    free_members: metrics.signups, // Free signups from members_created_events
+                    paid_members: metrics.paid_conversions, // Paid conversions from members_subscription_created_events
                     mrr: metrics.mrr,
                     iconSrc,
                     displayName: source,
@@ -306,6 +363,8 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
                         data={processedData}
                         defaultSourceIconUrl={defaultSourceIconUrl}
                         limit={limit}
+                        setSortBy={setSortBy}
+                        sortBy={sortBy}
                     />
                 ) : (
                     <div className='py-20 text-center text-sm text-gray-700'>
@@ -329,6 +388,8 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
                                     currencySymbol={currencySymbol}
                                     data={processedData}
                                     defaultSourceIconUrl={defaultSourceIconUrl}
+                                    setSortBy={setSortBy}
+                                    sortBy={sortBy}
                                 />
                             </div>
                         </SheetContent>
