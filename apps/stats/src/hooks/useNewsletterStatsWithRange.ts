@@ -15,8 +15,9 @@ export type TopNewslettersOrder = 'date desc' | 'open_rate desc' | 'click_rate d
  * @param range - The number of days for the date range (e.g., 7, 30, 90). Defaults to 30.
  * @param order - The field and direction to order by (e.g., 'open_rate desc'). Defaults to 'date desc'.
  * @param newsletterId - Optional ID of the specific newsletter to get stats for
+ * @param shouldFetch - Whether to actually fetch data. If false, returns loading state without making API calls.
  */
-export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslettersOrder, newsletterId?: string) => {
+export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslettersOrder, newsletterId?: string, shouldFetch = true) => {
     // Default range and order
     const currentRange = range ?? 30;
     const currentOrder = order ?? 'date desc'; // Default to date descending
@@ -39,8 +40,20 @@ export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslette
         return params;
     }, [dateFrom, endDate, currentOrder, newsletterId]);
 
-    // Call the newsletter stats API
-    return useNewsletterStats({searchParams});
+    // Conditionally call the hook or return empty state
+    const realResult = useNewsletterStats({searchParams, enabled: shouldFetch});
+    
+    if (!shouldFetch) {
+        return {
+            data: undefined,
+            isLoading: false,
+            error: null,
+            isError: false,
+            refetch: realResult.refetch
+        };
+    }
+    
+    return realResult;
 };
 
 /**
@@ -49,8 +62,9 @@ export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslette
  *
  * @param range - The number of days for the date range (e.g., 7, 30, 90). Defaults to 30.
  * @param newsletterId - Optional ID of the specific newsletter to get stats for
+ * @param shouldFetch - Whether to actually fetch data. If false, returns loading state without making API calls.
  */
-export const useSubscriberCountWithRange = (range?: number, newsletterId?: string) => {
+export const useSubscriberCountWithRange = (range?: number, newsletterId?: string, shouldFetch = true) => {
     // Default range
     const currentRange = range ?? 30;
 
@@ -71,8 +85,20 @@ export const useSubscriberCountWithRange = (range?: number, newsletterId?: strin
         return params;
     }, [dateFrom, endDate, newsletterId]);
 
-    // Call the subscriber count API
-    return useSubscriberCount({searchParams});
+    // Conditionally call the hook or return empty state
+    const realResult = useSubscriberCount({searchParams, enabled: shouldFetch});
+    
+    if (!shouldFetch) {
+        return {
+            data: undefined,
+            isLoading: false,
+            error: null,
+            isError: false,
+            refetch: realResult.refetch
+        };
+    }
+    
+    return realResult;
 };
 
 /**

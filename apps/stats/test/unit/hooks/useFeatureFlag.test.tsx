@@ -72,9 +72,11 @@ describe('useFeatureFlag', () => {
     it('handles invalid JSON gracefully', () => {
         mocks.mockGetSettingValue.mockReturnValue('invalid json');
 
-        expect(() => {
-            renderHook(() => useFeatureFlag('testFlag', '/fallback'));
-        }).toThrow();
+        const {result} = renderHook(() => useFeatureFlag('testFlag', '/fallback'));
+
+        expect(result.current.isEnabled).toBe(false);
+        expect(result.current.isLoading).toBe(false);
+        expect(result.current.redirect).toBeTruthy();
     });
 
     it('handles null labs setting', () => {
