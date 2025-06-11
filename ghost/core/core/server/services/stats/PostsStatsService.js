@@ -568,6 +568,134 @@ class PostsStatsService {
     }
 
     /**
+     * Get newsletter basic statistics (without click data) for faster loading
+     *
+     * @param {string} newsletterId - ID of the newsletter to get stats for
+     * @param {Object} options - Query options
+     * @param {string} [options.order] - Sort order (e.g., 'date desc', 'open_rate desc')
+     * @param {number} [options.limit] - Number of results to return (default: 20)
+     * @param {string} [options.date_from] - Optional start date filter (YYYY-MM-DD)
+     * @param {string} [options.date_to] - Optional end date filter (YYYY-MM-DD)
+     * @returns {Promise<{data: Array}>} The newsletter basic stats (without click data)
+     */
+    async getNewsletterBasicStats(newsletterId, options = {}) {
+        try {
+            const order = options.order || 'date desc';
+            const limitRaw = Number.parseInt(String(options.limit ?? 20), 10);
+            const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 20;
+
+            // Parse order field and direction
+            let [orderField, orderDirection = 'desc'] = order.split(' ');
+
+            // Map frontend order fields to database fields (simplified for ORDER BY)
+            const orderFieldMap = {
+                date: 'send_date',
+                open_rate: 'open_rate',
+                sent_to: 'sent_to'
+            };
+
+            // Validate order field (excluding click_rate since we don't fetch click data)
+            if (!Object.keys(orderFieldMap).includes(orderField)) {
+                throw new errors.BadRequestError({
+                    message: `Invalid order field: ${orderField}. Must be one of: date, open_rate, sent_to`
+                });
+            }
+
+            // Validate order direction
+            if (!['asc', 'desc'].includes(orderDirection.toLowerCase())) {
+                throw new errors.BadRequestError({
+                    message: `Invalid order direction: ${orderDirection}`
+                });
+            }
+
+            // Build date filters if provided
+            let dateFilter = this.knex.raw('1=1');
+            if (options.date_from) {
+                dateFilter = this.knex.raw(`p.published_at >= ?`, [options.date_from]);
+            }
+            if (options.date_to) {
+                dateFilter = options.date_from
+                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, options.date_to])
+                    : this.knex.raw(`p.published_at <= ?`, [options.date_to]);
+            }
+
+            // Build the query to get newsletter basic stats (without click data)
+            const query = this.knex
+                .select(
+                    'p.id as post_id',
+                    'p.title as post_title',
+                    'p.published_at as send_date',
+                    this.knex.raw('COALESCE(e.email_count, 0) as sent_to'),
+                    this.knex.raw('COALESCE(e.opened_count, 0) as total_opens'),
+                    this.knex.raw('CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate')
+                )
+                .from('posts as p')
+                .leftJoin('emails as e', 'p.id', 'e.post_id')
+                .where('p.newsletter_id', newsletterId)
+                .whereIn('p.status', ['sent', 'published'])
+                .whereNotNull('e.id') // Ensure there is an associated email record
+                .whereRaw(dateFilter)
+                .orderBy(orderFieldMap[orderField], orderDirection)
+                .limit(limit);
+
+            const results = await query;
+
+            return {data: results};
+        } catch (error) {
+            logging.error(`Error fetching newsletter basic stats for newsletter ${newsletterId}:`, error);
+            return {data: []};
+        }
+    }
+
+    /**
+     * Get newsletter click statistics for specific posts
+     *
+     * @param {string} newsletterId - ID of the newsletter to get click stats for
+     * @param {Array<string>|string} postIds - Array of post IDs or comma-separated string of post IDs to get click data for
+     * @returns {Promise<{data: Array}>} The newsletter click stats
+     */
+    async getNewsletterClickStats(newsletterId, postIds = []) {
+        try {
+            // Handle postIds as either array or comma-separated string
+            let postIdsArray = [];
+            if (Array.isArray(postIds)) {
+                postIdsArray = postIds;
+            } else if (typeof postIds === 'string' && postIds.length > 0) {
+                postIdsArray = postIds.split(',').map(id => id.trim()).filter(id => id.length > 0);
+            }
+
+            if (postIdsArray.length === 0) {
+                return {data: []};
+            }
+
+            // Subquery to count clicks from members_click_events
+            const clicksQuery = this.knex
+                .select(
+                    'r.post_id',
+                    this.knex.raw('COALESCE(COUNT(DISTINCT mce.member_id), 0) as total_clicks')
+                )
+                .from('redirects as r')
+                .leftJoin('members_click_events as mce', 'r.id', 'mce.redirect_id')
+                .leftJoin('posts as p', 'r.post_id', 'p.id')
+                .leftJoin('emails as e', 'p.id', 'e.post_id')
+                .whereIn('r.post_id', postIdsArray)
+                .where('p.newsletter_id', newsletterId)
+                .whereNotNull('r.post_id')
+                .groupBy('r.post_id', 'e.email_count')
+                .select(
+                    this.knex.raw('CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(COUNT(DISTINCT mce.member_id), 0) / COALESCE(e.email_count, 0) ELSE 0 END as click_rate')
+                );
+
+            const results = await clicksQuery;
+
+            return {data: results};
+        } catch (error) {
+            logging.error(`Error fetching newsletter click stats for newsletter ${newsletterId}:`, error);
+            return {data: []};
+        }
+    }
+
+    /**
      * Get newsletter subscriber statistics including total count and daily deltas for a specific newsletter
      *
      * @param {string} newsletterId - ID of the newsletter to get subscriber stats for

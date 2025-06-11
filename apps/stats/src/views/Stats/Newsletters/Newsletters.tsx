@@ -12,7 +12,7 @@ import {getPeriodText} from '@src/utils/chart-helpers';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
-import {useNewsletterStatsWithRange, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
+import {useNewsletterStatsWithRangeSplit, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
 import type {TopNewslettersOrder} from '@src/hooks/useNewsletterStatsWithRange';
 
 export type AvgsDataItem = {
@@ -44,8 +44,8 @@ const Newsletters: React.FC = () => {
     // 2. Unnecessary calls when no newsletter is selected yet
     const shouldFetchStats = !isNewslettersLoading && newslettersData && newslettersData.newsletters.length > 0 && !!selectedNewsletterId;
 
-    // Get newsletter stats (emailed posts with their metrics)
-    const {data: newsletterStatsData, isLoading: isStatsLoading} = useNewsletterStatsWithRange(
+    // Get newsletter stats using the split hook for better performance
+    const {data: newsletterStatsData, isLoading: isStatsLoading, isClicksLoading} = useNewsletterStatsWithRangeSplit(
         range,
         sortBy,
         selectedNewsletterId || undefined,
@@ -247,8 +247,14 @@ const Newsletters: React.FC = () => {
                                                 <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_opens)}</span>
                                             </TableCell>
                                             <TableCell className='text-right font-mono text-sm'>
-                                                <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
-                                                <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_clicks)}</span>
+                                                {isClicksLoading ? (
+                                                    <span className="inline-block h-4 w-8 animate-pulse rounded bg-gray-200"></span>
+                                                ) : (
+                                                    <>
+                                                        <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
+                                                        <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_clicks)}</span>
+                                                    </>
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     ))}
