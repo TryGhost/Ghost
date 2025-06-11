@@ -351,6 +351,8 @@ describe('Unit: models/settings', function () {
             configGetStub = sinon.stub(config, 'get');
             loggingInfoStub = sinon.stub(logging, 'info');
             loggingErrorStub = sinon.stub(logging, 'error');
+            // Reset the cached UUID before each test
+            getOrGenerateSiteUuid._reset();
         });
 
         afterEach(function () {
@@ -366,7 +368,6 @@ describe('Unit: models/settings', function () {
             result.should.equal(testUuid.toLowerCase());
             configGetStub.calledOnce.should.be.true();
             loggingInfoStub.calledWith(`Using configured site UUID: ${testUuid}`).should.be.true();
-            loggingInfoStub.calledWith(`Setting site_uuid setting to ${testUuid.toLowerCase()}`).should.be.true();
         });
 
         it('generates new UUID when config value is not a valid UUID', function () {
@@ -432,6 +433,19 @@ describe('Unit: models/settings', function () {
 
             result.should.equal(testUuid.toLowerCase());
             result.should.equal('550e8400-e29b-41d4-a716-446655440000');
+        });
+
+        it('caches the UUID and returns same value on subsequent calls', function () {
+            const testUuid = '550e8400-e29b-41d4-a716-446655440000';
+            configGetStub.withArgs('site_uuid').returns(testUuid);
+
+            const result1 = getOrGenerateSiteUuid();
+            const result2 = getOrGenerateSiteUuid();
+
+            result1.should.equal(result2);
+            result1.should.equal(testUuid.toLowerCase());
+            // Config should only be called once due to caching
+            configGetStub.calledOnce.should.be.true();
         });
     });
 });
