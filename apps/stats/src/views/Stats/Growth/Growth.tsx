@@ -2,21 +2,27 @@ import DateRangeSelect from '../components/DateRangeSelect';
 import GrowthKPIs from './components/GrowthKPIs';
 import React, {useMemo, useState} from 'react';
 import SortButton from '../components/SortButton';
+import SourcesCard from '../Web/components/SourcesCard';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Separator, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Separator, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, formatNumber, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
+import {getAudienceQueryParam} from '../components/AudienceSelect';
 import {getPeriodText} from '@src/utils/chart-helpers';
+import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
 import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
+import {useQuery} from '@tinybirdco/charts';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 
 // Define content types
 const CONTENT_TYPES = {
     POSTS: 'posts',
     PAGES: 'pages',
-    POSTS_AND_PAGES: 'posts_and_pages'
+    POSTS_AND_PAGES: 'posts_and_pages',
+    SOURCES: 'sources'
 } as const;
 
 type ContentType = typeof CONTENT_TYPES[keyof typeof CONTENT_TYPES];
@@ -24,7 +30,8 @@ type ContentType = typeof CONTENT_TYPES[keyof typeof CONTENT_TYPES];
 const CONTENT_TYPE_OPTIONS: Array<{value: ContentType; label: string}> = [
     {value: CONTENT_TYPES.POSTS, label: 'Posts'},
     {value: CONTENT_TYPES.PAGES, label: 'Pages'},
-    {value: CONTENT_TYPES.POSTS_AND_PAGES, label: 'Posts & pages'}
+    {value: CONTENT_TYPES.POSTS_AND_PAGES, label: 'Posts & pages'},
+    {value: CONTENT_TYPES.SOURCES, label: 'Sources'}
 ];
 
 // Type for unified content data that combines top content with growth metrics
@@ -42,7 +49,7 @@ interface UnifiedGrowthContentData {
 type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
 
 const Growth: React.FC = () => {
-    const {range} = useGlobalData();
+    const {range, audience, statsConfig, data} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopPostsOrder>('free_members desc');
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
     const navigate = useNavigate();
@@ -56,6 +63,37 @@ const Growth: React.FC = () => {
 
     // Get growth data with post_type filtering
     const {data: topPostsData} = useTopPostsStatsWithRange(range, sortBy, selectedContentType as 'posts' | 'pages' | 'posts_and_pages');
+
+    // Get site URL and icon for sources data
+    const siteUrl = data?.url as string | undefined;
+    const siteIcon = data?.icon as string | undefined;
+
+    // Prepare query parameters for sources data
+    const {startDate, endDate, timezone} = getRangeDates(range);
+    const sourcesParams = {
+        site_uuid: statsConfig?.id || '',
+        date_from: formatQueryDate(startDate),
+        date_to: formatQueryDate(endDate),
+        timezone: timezone,
+        member_status: getAudienceQueryParam(audience)
+    };
+
+    // Get top sources data
+    const {data: sourcesData, loading: isSourcesLoading} = useQuery({
+        endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
+        token: getToken(statsConfig),
+        params: sourcesParams
+    });
+
+    // Get KPI data for total visitors calculation
+    const {data: kpiData} = useQuery({
+        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
+        token: getToken(statsConfig),
+        params: sourcesParams
+    });
+
+    // Calculate total visitors for sources table
+    const totalVisitors = kpiData?.length ? kpiData.reduce((sum, item) => sum + Number(item.visits), 0) : 0;
 
     // Transform data for display
     const transformedTopPosts = useMemo((): UnifiedGrowthContentData[] => {
@@ -100,6 +138,8 @@ const Growth: React.FC = () => {
             return 'Top posts';
         case CONTENT_TYPES.PAGES:
             return 'Top pages';
+        case CONTENT_TYPES.SOURCES:
+            return 'Top sources';
         default:
             return 'Top content';
         }
@@ -113,6 +153,8 @@ const Growth: React.FC = () => {
             return `Which pages drove the most growth ${getPeriodText(range)}`;
         case CONTENT_TYPES.POSTS_AND_PAGES:
             return `Which posts or pages drove the most growth ${getPeriodText(range)}`;
+        case CONTENT_TYPES.SOURCES:
+            return `How readers found your site ${getPeriodText(range)}`;
         default:
             return `Which posts drove the most growth ${getPeriodText(range)}`;
         }
@@ -137,26 +179,11 @@ const Growth: React.FC = () => {
                         />
                     </CardContent>
                 </Card>
-                {isPageLoading
-                    ?
-                    <Card className='min-h-[460px]'>
-                        <CardHeader>
-                            <CardTitle>{getContentTitle()}</CardTitle>
-                            <CardDescription>{getContentDescription()}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <SkeletonTable lines={5} />
-                        </CardContent>
-                    </Card>
-                    :
-                    <Card className='min-h-[460px]'>
-                        <div className="flex items-start justify-between">
-                            <CardHeader>
-                                <CardTitle>{getContentTitle()}</CardTitle>
-                                <CardDescription>{getContentDescription()}</CardDescription>
-                            </CardHeader>
+                {selectedContentType === CONTENT_TYPES.SOURCES ? (
+                    <div className="relative">
+                        <div className="absolute right-6 top-6 z-10">
                             <DropdownMenu>
-                                <DropdownMenuTrigger className='mr-6 mt-6' asChild>
+                                <DropdownMenuTrigger asChild>
                                     <Button variant="dropdown">{getContentTypeLabel()}</Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align='end'>
@@ -171,68 +198,113 @@ const Growth: React.FC = () => {
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
-                        <CardContent>
-                            <Separator/>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>
-                                        Title
-                                        </TableHead>
-                                        <TableHead className='text-right'>
-                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='free_members desc'>
-                                            Free members
-                                            </SortButton>
-                                        </TableHead>
-                                        <TableHead className='text-right'>
-                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='paid_members desc'>
-                                            Paid members
-                                            </SortButton>
-                                        </TableHead>
-                                        <TableHead className='text-right'>
-                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
-                                            MRR impact
-                                            </SortButton>
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {transformedTopPosts.map(post => (
-                                        <TableRow key={post.post_id}>
-                                            <TableCell className="font-medium">
-                                                <div className='group/link inline-flex items-center gap-2'>
-                                                    {post.post_id ?
-                                                        <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
-                                                            navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
-                                                        }}>
-                                                            {post.title}
-                                                        </Button>
-                                                        :
-                                                        <>
-                                                            {post.title}
-                                                        </>
-                                                    }
-                                                    {/* <a className='-mx-2 inline-flex min-h-6 items-center gap-1 rounded-sm px-2 opacity-0 hover:underline group-hover/link:opacity-75' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
-                                                    <LucideIcon.SquareArrowOutUpRight size={12} strokeWidth={2.5} />
-                                                </a> */}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className='text-right font-mono text-sm'>
-                                                {(post.free_members > 0 && '+')}{formatNumber(post.free_members)}
-                                            </TableCell>
-                                            <TableCell className='text-right font-mono text-sm'>
-                                                {(post.paid_members > 0 && '+')}{formatNumber(post.paid_members)}
-                                            </TableCell>
-                                            <TableCell className='text-right font-mono text-sm'>
-                                                {(post.mrr > 0 && '+')}{currencySymbol}{centsToDollars(post.mrr).toFixed(0)}
-                                            </TableCell>
+                        <SourcesCard
+                            data={sourcesData}
+                            defaultSourceIconUrl={STATS_DEFAULT_SOURCE_ICON_URL}
+                            isLoading={isSourcesLoading}
+                            range={range}
+                            siteIcon={siteIcon}
+                            siteUrl={siteUrl}
+                            totalVisitors={totalVisitors}
+                        />
+                    </div>
+                ) : (
+                    isPageLoading
+                        ?
+                        <Card className='min-h-[460px]'>
+                            <CardHeader>
+                                <CardTitle>{getContentTitle()}</CardTitle>
+                                <CardDescription>{getContentDescription()}</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <SkeletonTable lines={5} />
+                            </CardContent>
+                        </Card>
+                        :
+                        <Card className='min-h-[460px]'>
+                            <div className="flex items-start justify-between">
+                                <CardHeader>
+                                    <CardTitle>{getContentTitle()}</CardTitle>
+                                    <CardDescription>{getContentDescription()}</CardDescription>
+                                </CardHeader>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger className='mr-6 mt-6' asChild>
+                                        <Button variant="dropdown">{getContentTypeLabel()}</Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align='end'>
+                                        {CONTENT_TYPE_OPTIONS.map(option => (
+                                            <DropdownMenuItem
+                                                key={option.value}
+                                                onClick={() => setSelectedContentType(option.value)}
+                                            >
+                                                {option.label}
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                            <CardContent>
+                                <Separator/>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>
+                                            Title
+                                            </TableHead>
+                                            <TableHead className='text-right'>
+                                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='free_members desc'>
+                                                Free members
+                                                </SortButton>
+                                            </TableHead>
+                                            <TableHead className='text-right'>
+                                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='paid_members desc'>
+                                                Paid members
+                                                </SortButton>
+                                            </TableHead>
+                                            <TableHead className='text-right'>
+                                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
+                                                MRR impact
+                                                </SortButton>
+                                            </TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
-                }
+                                    </TableHeader>
+                                    <TableBody>
+                                        {transformedTopPosts.map(post => (
+                                            <TableRow key={post.post_id}>
+                                                <TableCell className="font-medium">
+                                                    <div className='group/link inline-flex items-center gap-2'>
+                                                        {post.post_id ?
+                                                            <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
+                                                                navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
+                                                            }}>
+                                                                {post.title}
+                                                            </Button>
+                                                            :
+                                                            <>
+                                                                {post.title}
+                                                            </>
+                                                        }
+                                                        {/* <a className='-mx-2 inline-flex min-h-6 items-center gap-1 rounded-sm px-2 opacity-0 hover:underline group-hover/link:opacity-75' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
+                                                        <LucideIcon.SquareArrowOutUpRight size={12} strokeWidth={2.5} />
+                                                    </a> */}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className='text-right font-mono text-sm'>
+                                                    {(post.free_members > 0 && '+')}{formatNumber(post.free_members)}
+                                                </TableCell>
+                                                <TableCell className='text-right font-mono text-sm'>
+                                                    {(post.paid_members > 0 && '+')}{formatNumber(post.paid_members)}
+                                                </TableCell>
+                                                <TableCell className='text-right font-mono text-sm'>
+                                                    {(post.mrr > 0 && '+')}{currencySymbol}{centsToDollars(post.mrr).toFixed(0)}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+                )}
             </StatsView>
         </StatsLayout>
     );
