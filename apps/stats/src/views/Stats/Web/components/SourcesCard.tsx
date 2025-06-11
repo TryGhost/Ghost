@@ -115,7 +115,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
             <Card className='group/datalist'>
                 <CardHeader>
                     <CardTitle>{title}</CardTitle>
-                    <CardDescription>Loading...</CardDescription>
+                    <CardDescription>{description}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <SkeletonTable lines={5} />
