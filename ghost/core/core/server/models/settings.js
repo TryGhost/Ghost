@@ -474,5 +474,6 @@ Settings = ghostBookshelf.Model.extend({
 });
 
 module.exports = {
-    Settings: ghostBookshelf.model('Settings', Settings)
+    Settings: ghostBookshelf.model('Settings', Settings),
+    getOrGenerateSiteUuid
 };
