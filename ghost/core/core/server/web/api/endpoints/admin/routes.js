@@ -164,7 +164,6 @@ module.exports = function apiRoutes() {
         router.get('/stats/newsletter-stats', mw.authAdminApi, http(api.stats.newsletterStats));
         router.get('/stats/newsletter-basic-stats', mw.authAdminApi, http(api.stats.newsletterBasicStats));
         router.get('/stats/newsletter-click-stats', mw.authAdminApi, http(api.stats.newsletterClickStats));
-        router.get('/stats/subscriber-total', mw.authAdminApi, http(api.stats.subscriberTotal));
         router.get('/stats/subscriber-count', mw.authAdminApi, http(api.stats.subscriberCount));
         router.get('/stats/posts/:id/top-referrers', mw.authAdminApi, http(api.stats.postReferrersAlpha));
         router.get('/stats/posts/:id/growth', mw.authAdminApi, http(api.stats.postGrowthStats));

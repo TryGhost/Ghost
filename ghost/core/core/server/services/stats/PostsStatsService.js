@@ -785,28 +785,6 @@ class PostsStatsService {
     }
 
     /**
-     * Get just the total subscriber count for a newsletter (fast query)
-     * 
-     * @param {string} newsletterId - ID of the newsletter
-     * @returns {Promise<number>} The total subscriber count
-     */
-    async getNewsletterSubscriberTotal(newsletterId) {
-        try {
-            const result = await this.knex('members_newsletters as mn')
-                .countDistinct('mn.member_id as total')
-                .join('members as m', 'm.id', 'mn.member_id')
-                .where('mn.newsletter_id', newsletterId)
-                .where('m.email_disabled', 0);
-
-            const totalValue = result[0] ? result[0].total : 0;
-            return parseInt(String(totalValue), 10);
-        } catch (error) {
-            logging.error(`Error fetching subscriber total for newsletter ${newsletterId}:`, error);
-            return 0;
-        }
-    }
-
-    /**
      * Get stats for the latest published post including open rate, member attribution counts, and visitor count
      * @returns {Promise<{data: Array<{id: string, title: string, slug: string, feature_image: string|null, published_at: string, recipient_count: number|null, opened_count: number|null, open_rate: number|null, member_delta: number, free_members: number, paid_members: number, visitors: number}>}>}
      */
