@@ -334,7 +334,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
             `);
         });
 
-        it('converts #000000 button to white on dark background with transparent CTA', function () {
+        it('converts #000000 button to white on dark background when CTA background is transparent', function () {
             const data = getTestData({
                 backgroundColor: 'none',
                 buttonColor: '#000000'
@@ -359,9 +359,59 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
             `);
         });
 
-        it('converts #000 button to white on dark background with transparent CTA', function () {
+        it('converts #000 button to white on dark background when CTA background is transparent', function () {
             const data = getTestData({
                 backgroundColor: 'none',
+                buttonColor: '#000'
+            });
+            const result = renderForEmail(data, {
+                design: {backgroundIsDark: true},
+                feature: {emailCustomizationAlpha: true}
+            });
+
+            assertPrettifiedIncludes(result.html, html`
+                <table class="btn" border="0" cellspacing="0" cellpadding="0">
+                    <tbody>
+                        <tr>
+                            <td align="center" style="background-color: white;">
+                                <a href="http://blog.com/post1" style="color: #000000 !important;">
+                                    click me
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `);
+        });
+
+        it('converts #000000 button to white on dark background when CTA background is white', function () {
+            const data = getTestData({
+                backgroundColor: 'white',
+                buttonColor: '#000000'
+            });
+            const result = renderForEmail(data, {
+                design: {backgroundIsDark: true},
+                feature: {emailCustomizationAlpha: true}
+            });
+
+            assertPrettifiedIncludes(result.html, html`
+                <table class="btn" border="0" cellspacing="0" cellpadding="0">
+                    <tbody>
+                        <tr>
+                            <td align="center" style="background-color: white;">
+                                <a href="http://blog.com/post1" style="color: #000000 !important;">
+                                    click me
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `);
+        });
+
+        it('converts #000 button to white on dark background when CTA background is white', function () {
+            const data = getTestData({
+                backgroundColor: 'white',
                 buttonColor: '#000'
             });
             const result = renderForEmail(data, {
@@ -409,9 +459,9 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
             `);
         });
 
-        it('does not convert black button when CTA background is not transparent', function () {
+        it('does not convert black button when CTA background is not transparent or white', function () {
             const data = getTestData({
-                backgroundColor: 'white',
+                backgroundColor: 'blue',
                 buttonColor: 'black'
             });
             const result = renderForEmail(data, {
