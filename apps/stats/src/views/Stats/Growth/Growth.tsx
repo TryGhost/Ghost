@@ -1,9 +1,9 @@
-import DateRangeSelect from './components/DateRangeSelect';
+import DateRangeSelect from '../components/DateRangeSelect';
 import React, {useEffect, useMemo, useState} from 'react';
-import SortButton from './components/SortButton';
-import StatsHeader from './layout/StatsHeader';
-import StatsLayout from './layout/StatsLayout';
-import StatsView from './layout/StatsView';
+import SortButton from '../components/SortButton';
+import StatsHeader from '../layout/StatsHeader';
+import StatsLayout from '../layout/StatsLayout';
+import StatsView from '../layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiTabTrigger, KpiTabValue, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, centsToDollars, formatNumber} from '@tryghost/shade';
 import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
 import {STATS_RANGES} from '@src/utils/constants';
