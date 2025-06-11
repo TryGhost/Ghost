@@ -1,4 +1,4 @@
-import {Avatar, AvatarFallback, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, Tabs, TabsList, TabsTrigger, formatMemberName, formatPercentage, formatTimestamp, getMemberInitials, stringToHslColor, useSimplePagination} from '@tryghost/shade';
+import {Avatar, AvatarFallback, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, Tabs, TabsList, TabsTrigger, formatMemberName, formatPercentage, formatTimestamp, getMemberInitials, stringToHslColor, useSimplePagination} from '@tryghost/shade';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {usePostFeedback} from '@src/hooks/usePostFeedback';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
@@ -40,8 +40,8 @@ const Feedback: React.FC = () => {
                     <CardTitle>Feedback</CardTitle>
                     <CardDescription>What did your readers think?</CardDescription>
                 </CardHeader>
-                <CardContent className='flex grow flex-col items-center justify-center text-center text-sm text-muted-foreground'>
-                    <div>Loading feedback...</div>
+                <CardContent className='p-6'>
+                    <SkeletonTable />
                 </CardContent>
             </Card>
         );
@@ -109,7 +109,7 @@ const Feedback: React.FC = () => {
             {feedbackStats.totalFeedback > 0 &&
                 <CardFooter className='grow-0'>
                     <div className='flex w-full items-center justify-between gap-3'>
-                        <Button size='sm' variant='outline' onClick={() => {
+                        <Button variant='outline' onClick={() => {
                             const positiveFilter = `(feedback.post_id:'${postId}'+feedback.score:1)`;
                             const negativeFilter = `(feedback.post_id:'${postId}'+feedback.score:0)`;
                             const positiveFilterParam = `${encodeURIComponent(positiveFilter)}&post=${postId}`;
