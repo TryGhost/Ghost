@@ -16,9 +16,12 @@ vi.mock('@tryghost/admin-x-framework/api/stats');
 vi.mock('@tryghost/admin-x-framework/api/newsletters');
 vi.mock('@src/providers/GlobalDataProvider');
 
-const mockUseNewsletterStats = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).useNewsletterStats;
-const mockUseSubscriberCount = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).useSubscriberCount;
-const mockUseBrowseNewsletters = vi.mocked(await import('@tryghost/admin-x-framework/api/newsletters')).useBrowseNewsletters;
+const {useNewsletterStats, useSubscriberCount} = await import('@tryghost/admin-x-framework/api/stats');
+const {useBrowseNewsletters} = await import('@tryghost/admin-x-framework/api/newsletters');
+
+const mockUseNewsletterStats = vi.mocked(useNewsletterStats);
+const mockUseSubscriberCount = vi.mocked(useSubscriberCount);
+const mockUseBrowseNewsletters = vi.mocked(useBrowseNewsletters);
 
 describe('Newsletter Stats Hooks', () => {
     beforeEach(() => {
@@ -47,7 +50,6 @@ describe('Newsletter Stats Hooks', () => {
             isRefetchError: false,
             isSuccess: true,
             isFetching: false,
-            isPending: false,
             isStale: false,
             refetch: vi.fn(),
             dataUpdatedAt: 0,
@@ -56,10 +58,9 @@ describe('Newsletter Stats Hooks', () => {
             failureReason: null,
             fetchStatus: 'idle' as const,
             isRefetching: false,
-            status: 'success' as const,
-            suspense: vi.fn(),
-            promise: Promise.resolve()
-        });
+            status: 'success' as const
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
         
         mockUseSubscriberCount.mockReturnValue({
             data: {stats: []},
@@ -70,7 +71,6 @@ describe('Newsletter Stats Hooks', () => {
             isRefetchError: false,
             isSuccess: true,
             isFetching: false,
-            isPending: false,
             isStale: false,
             refetch: vi.fn(),
             dataUpdatedAt: 0,
@@ -79,25 +79,27 @@ describe('Newsletter Stats Hooks', () => {
             failureReason: null,
             fetchStatus: 'idle' as const,
             isRefetching: false,
-            status: 'success' as const,
-            suspense: vi.fn(),
-            promise: Promise.resolve()
-        });
+            status: 'success' as const
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
 
         mockUseBrowseNewsletters.mockReturnValue({
             data: {
-                newsletters: [], 
-                isEnd: true,
-                meta: {
-                    pagination: {
-                        page: 1,
-                        limit: 50,
-                        pages: 1,
-                        total: 0,
-                        next: null,
-                        prev: null
+                pages: [{
+                    newsletters: [], 
+                    isEnd: true,
+                    meta: {
+                        pagination: {
+                            page: 1,
+                            limit: 50,
+                            pages: 1,
+                            total: 0,
+                            next: null,
+                            prev: null
+                        }
                     }
-                }
+                }],
+                pageParams: []
             },
             isLoading: false,
             error: null,
@@ -106,7 +108,6 @@ describe('Newsletter Stats Hooks', () => {
             isRefetchError: false,
             isSuccess: true,
             isFetching: false,
-            isPending: false,
             isStale: false,
             refetch: vi.fn(),
             dataUpdatedAt: 0,
@@ -116,9 +117,14 @@ describe('Newsletter Stats Hooks', () => {
             fetchStatus: 'idle' as const,
             isRefetching: false,
             status: 'success' as const,
-            suspense: vi.fn(),
-            promise: Promise.resolve()
-        });
+            fetchNextPage: vi.fn(),
+            fetchPreviousPage: vi.fn(),
+            hasNextPage: false,
+            hasPreviousPage: false,
+            isFetchingNextPage: false,
+            isFetchingPreviousPage: false
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
     });
 
     describe('useNewsletterStatsWithRange', () => {
