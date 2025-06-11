@@ -10,7 +10,6 @@ import WebKPIs, {KpiDataItem} from './components/WebKPIs';
 import {Card, CardContent, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
-import {getPeriodText} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
@@ -119,7 +118,6 @@ const Web: React.FC = () => {
                     <SourcesCard
                         data={sourcesData as SourcesData[] | null}
                         defaultSourceIconUrl={STATS_DEFAULT_SOURCE_ICON_URL}
-                        getPeriodText={getPeriodText}
                         range={range}
                         siteIcon={siteIcon}
                         siteUrl={siteUrl}
