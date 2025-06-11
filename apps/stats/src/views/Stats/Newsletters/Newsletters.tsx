@@ -2,7 +2,7 @@
 import DateRangeSelect from '../components/DateRangeSelect';
 import NewsletterKPIs from './components/NewslettersKPIs';
 import NewsletterSelect from '../components/NewsletterSelect';
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
@@ -26,23 +26,9 @@ export type AvgsDataItem = {
 };
 
 const Newsletters: React.FC = () => {
-    const instanceId = useMemo(() => Math.random().toString(36).substr(2, 9), []);
-    // eslint-disable-next-line no-console
-    console.log(`🚀 Newsletters component [${instanceId}] mounted at ${Date.now()}`);
-    
     const {range, selectedNewsletterId} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
     const navigate = useNavigate();
-
-    // Use useRef for stable timing references
-    const fetchStartTimes = useRef({
-        newsletters: Date.now(),
-        newsletterStats: Date.now(),
-        subscriberStats: Date.now()
-    });
-
-    // eslint-disable-next-line no-console
-    console.log(`📡 [${instanceId}] About to call newsletter hooks at ${Date.now()}`);
 
     // Get newsletters list for dropdown and basic stats
     const {data: newslettersData, isLoading: isNewslettersLoading} = useNewslettersList();
@@ -67,47 +53,6 @@ const Newsletters: React.FC = () => {
         selectedNewsletterId || undefined,
         shouldFetchStats
     );
-
-    // eslint-disable-next-line no-console
-    console.log(`🎯 [${instanceId}] Hooks called, data loading states: newsletters=${isNewslettersLoading}, stats=${isStatsLoading}, subscribers=${isSubscriberStatsLoading}, shouldFetch=${shouldFetchStats}`);
-
-    // Log fetch completion times
-    useEffect(() => {
-        if (!isNewslettersLoading && newslettersData) {
-            const duration = Date.now() - fetchStartTimes.current.newsletters;
-            // eslint-disable-next-line no-console
-            console.log(`📊 Newsletter list fetch completed in ${duration}ms`);
-        }
-    }, [isNewslettersLoading, newslettersData, fetchStartTimes]);
-
-    useEffect(() => {
-        if (!isStatsLoading && newsletterStatsData) {
-            const duration = Date.now() - fetchStartTimes.current.newsletterStats;
-            // eslint-disable-next-line no-console
-            console.log(`📈 Newsletter stats fetch completed in ${duration}ms`);
-        }
-    }, [isStatsLoading, newsletterStatsData, fetchStartTimes]);
-
-    useEffect(() => {
-        if (!isSubscriberStatsLoading && subscriberStatsData) {
-            const duration = Date.now() - fetchStartTimes.current.subscriberStats;
-            // eslint-disable-next-line no-console
-            console.log(`👥 Subscriber stats fetch completed in ${duration}ms`);
-        }
-    }, [isSubscriberStatsLoading, subscriberStatsData, fetchStartTimes]);
-
-    // Log when all fetches are complete
-    useEffect(() => {
-        if (!isNewslettersLoading && !isStatsLoading && !isSubscriberStatsLoading) {
-            const totalDuration = Date.now() - Math.min(
-                fetchStartTimes.current.newsletters,
-                fetchStartTimes.current.newsletterStats,
-                fetchStartTimes.current.subscriberStats
-            );
-            // eslint-disable-next-line no-console
-            console.log(`🎉 All newsletter data loaded in ${totalDuration}ms`);
-        }
-    }, [isNewslettersLoading, isStatsLoading, isSubscriberStatsLoading, fetchStartTimes]);
 
     // Find the selected newsletter to get its active_members count
     const selectedNewsletter = useMemo(() => {
