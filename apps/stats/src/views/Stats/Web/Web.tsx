@@ -83,7 +83,7 @@ const Web: React.FC = () => {
     });
 
     // Get top sources data
-    const {data: sourcesData, loading: sourcesLoading} = useQuery({
+    const {data: sourcesData, loading: isSourcesLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
         token: getToken(statsConfig),
         params
@@ -93,7 +93,7 @@ const Web: React.FC = () => {
     const totalVisitors = kpiData?.length ? kpiData.reduce((sum, item) => sum + Number(item.visits), 0) : 0;
 
     // Calculate combined loading state
-    const isPageLoading = isConfigLoading || sourcesLoading;
+    const isPageLoading = isConfigLoading;
 
     return (
         <StatsLayout>
@@ -101,7 +101,7 @@ const Web: React.FC = () => {
                 <AudienceSelect />
                 <DateRangeSelect />
             </StatsHeader>
-            <StatsView isLoading={isPageLoading}>
+            <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
                 <Card>
                     <CardContent>
                         <WebKPIs
@@ -118,6 +118,7 @@ const Web: React.FC = () => {
                     <SourcesCard
                         data={sourcesData as SourcesData[] | null}
                         defaultSourceIconUrl={STATS_DEFAULT_SOURCE_ICON_URL}
+                        isLoading={isSourcesLoading}
                         range={range}
                         siteIcon={siteIcon}
                         siteUrl={siteUrl}
