@@ -1,7 +1,7 @@
 import {type CleanedLink, cleanTrackedUrl} from '@src/utils/link-helpers';
+import {type NewsletterStatItem, useNewsletterBasicStats, useNewsletterClickStats} from '@tryghost/admin-x-framework/api/stats';
 import {type Post, getPost} from '@tryghost/admin-x-framework/api/posts';
 import {useMemo} from 'react';
-import {useNewsletterStatsByNewsletterId} from '@tryghost/admin-x-framework/api/stats';
 import {useTopLinks} from '@tryghost/admin-x-framework/api/links';
 
 // Extend the Post type to include newsletter property
@@ -70,11 +70,62 @@ export const usePostNewsletterStats = (postId: string) => {
     // Get the newsletter_id from the post
     const newsletterId = useMemo(() => post?.newsletter?.id, [post]);
 
-    // Fetch the last 20 newsletters and calculate the average open and click rates
-    // Only fetch if we have a newsletter ID to avoid unnecessary queries
-    const {data: newsletterStatsResponse, isLoading: isNewsletterStatsLoading} = useNewsletterStatsByNewsletterId(newsletterId, {}, {
+    // Fetch the last 20 newsletters using split approach for better performance
+    // 1. Basic stats (fast) - includes open rates
+    const {data: basicStatsResponse, isLoading: isBasicStatsLoading} = useNewsletterBasicStats({
+        searchParams: newsletterId ? {newsletter_id: newsletterId} : {},
         enabled: !!newsletterId
     });
+
+    // Get post IDs from basic stats to fetch click data
+    const postIds = useMemo(() => {
+        if (!basicStatsResponse?.stats) {
+            return [];
+        }
+        return basicStatsResponse.stats.map(stat => stat.post_id);
+    }, [basicStatsResponse]);
+
+    // 2. Click stats (potentially slower) - fetch separately 
+    const {data: clickStatsResponse, isLoading: isClickStatsLoading} = useNewsletterClickStats({
+        searchParams: newsletterId && postIds.length > 0 ? {
+            newsletter_id: newsletterId,
+            post_ids: postIds.join(',')
+        } : {},
+        enabled: !!newsletterId && postIds.length > 0
+    });
+
+    // Merge basic stats with click stats
+    const newsletterStatsResponse = useMemo(() => {
+        if (!basicStatsResponse?.stats) {
+            return undefined;
+        }
+
+        const basicStats = basicStatsResponse.stats;
+        const clickStats = clickStatsResponse?.stats || [];
+
+        // Create a map of click data by post_id for fast lookup
+        const clickStatsMap = new Map();
+        clickStats.forEach((clickStat) => {
+            clickStatsMap.set(clickStat.post_id, clickStat);
+        });
+
+        // Merge basic stats with click stats
+        const mergedStats = basicStats.map((basicStat) => {
+            const clickData = clickStatsMap.get(basicStat.post_id);
+            return {
+                ...basicStat,
+                total_clicks: clickData?.total_clicks || 0,
+                click_rate: clickData?.click_rate || 0
+            };
+        });
+
+        return {
+            ...basicStatsResponse,
+            stats: mergedStats
+        };
+    }, [basicStatsResponse, clickStatsResponse]);
+
+    const isNewsletterStatsLoading = isBasicStatsLoading || isClickStatsLoading;
 
     // Get the top links from this post
     const {data: clicksResponse, isLoading: isClicksLoading, refetch: refetchTopLinks} = useTopLinks({
@@ -107,8 +158,8 @@ export const usePostNewsletterStats = (postId: string) => {
             };
         }
 
-        const totalOpenRate = newsletters.reduce((sum, newsletter) => sum + (newsletter.open_rate || 0), 0);
-        const totalClickRate = newsletters.reduce((sum, newsletter) => sum + (newsletter.click_rate || 0), 0);
+        const totalOpenRate = newsletters.reduce((sum: number, newsletter: NewsletterStatItem) => sum + (newsletter.open_rate || 0), 0);
+        const totalClickRate = newsletters.reduce((sum: number, newsletter: NewsletterStatItem) => sum + (newsletter.click_rate || 0), 0);
 
         return {
             openRate: Number((totalOpenRate / newsletters.length).toFixed(2)),
