@@ -70,8 +70,8 @@ const Overview: React.FC = () => {
     const latestPostStats = latestPostStatsData?.stats?.[0] || null;
     const {data: topPostsData, isLoading: isTopPostsLoading} = useTopPostsViews({
         searchParams: {
-            date_from: startDate,
-            date_to: endDate,
+            date_from: formatQueryDate(startDate),
+            date_to: formatQueryDate(endDate),
             limit: '5',
             timezone
         }
