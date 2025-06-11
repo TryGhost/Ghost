@@ -34,8 +34,7 @@ const Newsletters: React.FC = () => {
     // Get newsletters list for dropdown (without expensive counts)
     const {data: newslettersData, isLoading: isNewslettersLoading} = useBrowseNewsletters({
         searchParams: {
-            limit: '50',
-            include: '' // Exclude expensive count calculations
+            limit: '50'
         }
     });
 

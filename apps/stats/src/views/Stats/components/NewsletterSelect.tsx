@@ -5,7 +5,12 @@ import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
 const NewsletterSelect: React.FC = () => {
     const {selectedNewsletterId, setSelectedNewsletterId} = useGlobalData();
-    const {data: {newsletters} = {}} = useBrowseNewsletters();
+    const {data: {newsletters} = {}} = useBrowseNewsletters({
+        searchParams: {
+            limit: '50'
+            // Omit include parameter to avoid expensive count.active_members,count.posts
+        }
+    });
 
     // Filter only active newsletters
     const activeNewsletters = useMemo(() => {
