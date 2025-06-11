@@ -14,8 +14,17 @@ export default Model.extend(ValidationEngine, {
     timezone: attr('string', {defaultValue: 'Etc/UTC'}),
     codeinjectionHead: attr('string'),
     codeinjectionFoot: attr('string'),
+    /* social media */
     facebook: attr('facebook-url-user'),
     twitter: attr('twitter-url-user'),
+    threads: attr('threads-url-user'),
+    bluesky: attr('bluesky-url-user'),
+    mastodon: attr('mastodon-url-user'),
+    tiktok: attr('tiktok-url-user'),
+    youtube: attr('youtube-url-user'),
+    instagram: attr('instagram-url-user'),
+    linkedin: attr('linkedin-url-user'),
+    /* end socials */
     labs: attr('string'),
     navigation: attr('navigation-settings'),
     secondaryNavigation: attr('navigation-settings', {isSecondary: true}),
