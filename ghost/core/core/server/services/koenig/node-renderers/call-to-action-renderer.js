@@ -88,7 +88,7 @@ function emailCTATemplate(dataset, options = {}) {
     }
 
     if (options.feature?.emailCustomizationAlpha) {
-        const isTransparentCTA = dataset.backgroundColor === 'none';
+        const isTransparentCTA = dataset.backgroundColor === 'none' || dataset.backgroundColor === 'white';
         const isDarkBackground = options.design?.backgroundIsDark;
         const isBlackButton = dataset.buttonColor === 'black' || dataset.buttonColor === '#000000' || dataset.buttonColor === '#000';
 
