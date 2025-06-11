@@ -1,6 +1,6 @@
 import React from 'react';
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
-import {getFaviconDomain} from '../../utils/source-utils';
+import {getFaviconDomain} from '@tryghost/admin-x-framework';
 
 // Default source icon URL - apps can override this
 const DEFAULT_SOURCE_ICON_URL = 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64';
@@ -53,7 +53,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data, mode, defaultSourceIco
                 <TableBody>
                     {data?.map((row) => {
                         const centsToDollars = (value: number) => Math.round(value / 100);
-                        
+
                         return (
                             <TableRow key={row.source}>
                                 <TableCell>
@@ -101,7 +101,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data, mode, defaultSourceIco
                 {data?.map((row) => {
                     return (
                         <DataListRow key={row.source} className='group/row'>
-                            <DataListBar className='from-muted-foreground/40 to-muted-foreground/60 bg-gradient-to-r opacity-20 transition-all group-hover/row:opacity-40' style={{
+                            <DataListBar className='bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/60 opacity-20 transition-all group-hover/row:opacity-40' style={{
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
                             }} />
                             <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
@@ -143,7 +143,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data, mode, defaultSourceIco
     );
 };
 
-interface SourcesCardProps {
+interface SourcesProps {
     title?: string;
     description?: string;
     data: BaseSourceData[] | null;
@@ -156,7 +156,7 @@ interface SourcesCardProps {
     getPeriodText?: (range: number) => string;
 }
 
-export const SourcesCard: React.FC<SourcesCardProps> = ({
+export const Sources: React.FC<SourcesProps> = ({
     title = 'Top Sources',
     description,
     data,
@@ -199,7 +199,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
             } else {
                 // Keep other sources as-is
                 const sourceKey = String(item.source);
-                const iconSrc = faviconDomain 
+                const iconSrc = faviconDomain
                     ? `https://www.faviconextractor.com/favicon/${faviconDomain}?larger=true`
                     : defaultSourceIconUrl;
                 const linkUrl = faviconDomain ? `https://${faviconDomain}` : undefined;
@@ -234,7 +234,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
         });
 
         // Add consolidated direct traffic entry if there's any
-        const hasDirectTraffic = mode === 'visits' 
+        const hasDirectTraffic = mode === 'visits'
             ? directTrafficTotal! > 0
             : directTrafficData && (directTrafficData.free_members > 0 || directTrafficData.paid_members > 0 || directTrafficData.mrr > 0);
 
@@ -259,7 +259,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
 
         // Convert back to array and sort
         const result = Array.from(sourceMap.values());
-        
+
         if (mode === 'growth') {
             // Sort by total impact (prioritizing MRR, then paid members, then free members)
             return result.sort((a, b) => {
@@ -278,7 +278,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
         if (mode === 'growth') {
             return processedData;
         }
-        
+
         return processedData.map(item => ({
             ...item,
             percentage: totalVisitors > 0 ? (item.visits / totalVisitors) : 0
@@ -286,16 +286,16 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
     }, [processedData, totalVisitors, mode]);
 
     const topSources = extendedData.slice(0, 10);
-    
+
     // Generate description based on mode and range
     const cardDescription = description || (
-        mode === 'growth' 
+        mode === 'growth'
             ? 'Where did your growth come from?'
             : `How readers found your ${range ? 'site' : 'post'}${range && getPeriodText ? ` ${getPeriodText(range)}` : ''}`
     );
 
     const sheetTitle = mode === 'growth' ? 'Sources' : 'Top sources';
-    const sheetDescription = mode === 'growth' 
+    const sheetDescription = mode === 'growth'
         ? 'Where did your growth come from?'
         : `How readers found your ${range ? 'site' : 'post'}${range && getPeriodText ? ` ${getPeriodText(range)}` : ''}`;
 
@@ -311,7 +311,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                     <SourcesTable data={topSources} defaultSourceIconUrl={defaultSourceIconUrl} getPeriodText={getPeriodText} mode={mode} range={range} />
                 ) : (
                     <div className='py-20 text-center text-sm text-gray-700'>
-                        {mode === 'growth' 
+                        {mode === 'growth'
                             ? 'Once someone signs up on this post, sources will show here.'
                             : 'No sources data available.'
                         }
@@ -340,4 +340,4 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
     );
 };
 
-export default SourcesCard; 
+export default Sources;
