@@ -54,6 +54,14 @@ class StatsService {
     }
 
     /**
+     * @param {string} startDate - Start date in YYYY-MM-DD format
+     * @param {string} endDate - End date in YYYY-MM-DD format
+     */
+    async getReferrersHistoryWithRange(startDate, endDate) {
+        return this.referrers.getReferrersHistoryWithRange(startDate, endDate);
+    }
+
+    /**
      * @param {string} postId
      */
     async getPostReferrers(postId) {
