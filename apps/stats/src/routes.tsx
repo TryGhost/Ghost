@@ -1,4 +1,4 @@
-import Growth from './views/Stats/Growth/Growth';
+import Growth from './views/Stats/Growth';
 import Locations from './views/Stats/Locations';
 import Newsletters from './views/Stats/Newsletters';
 import Overview from './views/Stats/Overview';
