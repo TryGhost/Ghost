@@ -405,7 +405,6 @@ const Sidebar: React.FC<{
                         <div className='shrink-0'>Heading font</div>
                         <Select
                             containerClassName='max-w-[200px]'
-                            disabled={!newsletter.show_post_title_section}
                             options={fontOptions}
                             selectedOption={fontOptions.find(option => option.value === newsletter.title_font_category)}
                             onSelect={option => updateNewsletter({title_font_category: option?.value})}
