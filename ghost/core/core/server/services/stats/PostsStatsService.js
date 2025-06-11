@@ -672,7 +672,8 @@ class PostsStatsService {
             const clicksQuery = this.knex
                 .select(
                     'r.post_id',
-                    this.knex.raw('COALESCE(COUNT(DISTINCT mce.member_id), 0) as total_clicks')
+                    this.knex.raw('COALESCE(COUNT(DISTINCT mce.member_id), 0) as total_clicks'),
+                    this.knex.raw('MAX(COALESCE(e.email_count, 0)) as email_count')
                 )
                 .from('redirects as r')
                 .leftJoin('members_click_events as mce', 'r.id', 'mce.redirect_id')
@@ -681,9 +682,9 @@ class PostsStatsService {
                 .whereIn('r.post_id', postIdsArray)
                 .where('p.newsletter_id', newsletterId)
                 .whereNotNull('r.post_id')
-                .groupBy('r.post_id', 'e.email_count')
+                .groupBy('r.post_id')
                 .select(
-                    this.knex.raw('CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(COUNT(DISTINCT mce.member_id), 0) / COALESCE(e.email_count, 0) ELSE 0 END as click_rate')
+                    this.knex.raw('CASE WHEN MAX(COALESCE(e.email_count, 0)) > 0 THEN COALESCE(COUNT(DISTINCT mce.member_id), 0) / MAX(COALESCE(e.email_count, 0)) ELSE 0 END as click_rate')
                 );
 
             const results = await clicksQuery;
@@ -706,37 +707,21 @@ class PostsStatsService {
      */
     async getNewsletterSubscriberStats(newsletterId, options = {}) {
         try {
-            // Get total subscriber count, filtering out members with email disabled
-            const totalResult = await this.knex('members_newsletters as mn')
-                .countDistinct('mn.member_id as total')
-                .join('members as m', 'm.id', 'mn.member_id')
-                .where('mn.newsletter_id', newsletterId)
-                .where('m.email_disabled', 0);
+            // Run both queries in parallel for better performance
+            const [totalResult, rawDeltas] = await Promise.all([
+                // Get total subscriber count (fast query)
+                this.knex('members_newsletters as mn')
+                    .countDistinct('mn.member_id as total')
+                    .join('members as m', 'm.id', 'mn.member_id')
+                    .where('mn.newsletter_id', newsletterId)
+                    .where('m.email_disabled', 0),
+                
+                // Get daily deltas (optimized query)
+                this._getNewsletterSubscriberDeltas(newsletterId, options)
+            ]);
 
             const totalValue = totalResult[0] ? totalResult[0].total : 0;
             const total = parseInt(String(totalValue), 10);
-
-            // Get daily deltas within date range for the specific newsletter
-            let deltasQuery = this.knex('members_subscribe_events as mse')
-                .select(
-                    this.knex.raw(`DATE(mse.created_at) as date`),
-                    this.knex.raw(`SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as value`)
-                )
-                .join('members as m', 'm.id', 'mse.member_id')
-                .where('mse.newsletter_id', newsletterId)
-                .where('m.email_disabled', 0) // Only include events for members with emails enabled
-                .groupByRaw('DATE(mse.created_at)')
-                .orderBy('date', 'asc');
-
-            // Apply date filters
-            if (options.date_from) {
-                deltasQuery.where('mse.created_at', '>=', options.date_from);
-            }
-            if (options.date_to) {
-                deltasQuery.where('mse.created_at', '<=', `${options.date_to} 23:59:59`);
-            }
-
-            const rawDeltas = await deltasQuery;
 
             // Transform raw database results to properly typed objects
             const deltas = [];
@@ -768,6 +753,35 @@ class PostsStatsService {
                 }]
             };
         }
+    }
+
+    /**
+     * Optimized query to get newsletter subscriber deltas
+     * @private
+     */
+    async _getNewsletterSubscriberDeltas(newsletterId, options = {}) {
+        // Build optimized deltas query with efficient JOIN
+        let deltasQuery = this.knex('members_subscribe_events as mse')
+            .select(
+                this.knex.raw(`DATE(mse.created_at) as date`),
+                this.knex.raw(`SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as value`)
+            )
+            .innerJoin('members as m', 'm.id', 'mse.member_id')
+            .where('mse.newsletter_id', newsletterId)
+            .whereNot('m.email_disabled', 1) // Filter out email-disabled members
+            .whereNotNull('mse.created_at')
+            .groupByRaw('DATE(mse.created_at)')
+            .orderBy('date', 'asc');
+
+        // Apply date filters early to reduce dataset
+        if (options.date_from) {
+            deltasQuery.where('mse.created_at', '>=', options.date_from);
+        }
+        if (options.date_to) {
+            deltasQuery.where('mse.created_at', '<=', `${options.date_to} 23:59:59`);
+        }
+
+        return await deltasQuery;
     }
 
     /**
