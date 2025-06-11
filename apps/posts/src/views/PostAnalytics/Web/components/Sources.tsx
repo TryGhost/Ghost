@@ -1,5 +1,6 @@
 import React from 'react';
-import {SourcesCard, getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
+import SourcesCard from '../../components/SourcesCard';
+import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -43,7 +44,7 @@ const Sources: React.FC<SourcesProps> = ({queryParams}) => {
     }
 
     return (
-        <SourcesCard 
+        <SourcesCard
             data={data}
             description="How readers found your post"
             mode="visits"

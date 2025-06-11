@@ -2,9 +2,10 @@ import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import React from 'react';
+import SourcesCard from '../components/SourcesCard';
 import {BarChartLoadingIndicator, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, formatNumber} from '@tryghost/shade';
-import {SourcesCard, useParams} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
+import {useParams} from '@tryghost/admin-x-framework';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
 
 export const centsToDollars = (value : number) => {
@@ -17,13 +18,13 @@ const Growth: React.FC<postAnalyticsProps> = () => {
     const {data: globalData} = useGlobalData();
     const {postId} = useParams();
     const {stats: postReferrers, totals, isLoading, currencySymbol} = usePostReferrers(postId || '');
-    
+
     // Get site URL and icon from global data
     const siteUrl = globalData?.url as string | undefined;
     const siteIcon = globalData?.icon as string | undefined;
-    
+
     // TEMPORARY: For testing levernews.com direct traffic grouping
-    // Remove this line when done testing  
+    // Remove this line when done testing
     const testingSiteUrl = siteUrl || 'https://levernews.com';
 
     return (
@@ -73,7 +74,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                 </div>
                             </CardContent>
                         </Card>
-                        <SourcesCard 
+                        <SourcesCard
                             data={postReferrers}
                             mode="growth"
                             siteIcon={siteIcon}

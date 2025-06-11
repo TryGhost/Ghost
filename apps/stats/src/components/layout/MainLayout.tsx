@@ -1,5 +1,4 @@
 import React from 'react';
-// import Sidebar from '@src/views/Stats/layout/Sidebar';
 
 const MainLayout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...props}) => {
     return (
