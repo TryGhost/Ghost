@@ -1,7 +1,7 @@
 import AudienceSelect, {getAudienceQueryParam} from '../components/AudienceSelect';
 import DateRangeSelect from '../components/DateRangeSelect';
 import React from 'react';
-import Sources from './components/Sources';
+import SourcesCard from './components/SourcesCard';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
@@ -116,7 +116,7 @@ const Web: React.FC = () => {
                     <TopContent
                         range={range}
                     />
-                    <Sources
+                    <SourcesCard
                         data={sourcesData as SourcesData[] | null}
                         defaultSourceIconUrl={STATS_DEFAULT_SOURCE_ICON_URL}
                         getPeriodText={getPeriodText}
