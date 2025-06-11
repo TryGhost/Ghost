@@ -180,7 +180,7 @@
     "Too many different sign-in attempts, try again in {number} days": "Demasiados intentos de iniciar sesión, intentalo de nuevo en {number} días",
     "Too many different sign-in attempts, try again in {number} hours": "Demasiados intentos de iniciar sesión, intentalo de nuevo en {number} horas",
     "Too many different sign-in attempts, try again in {number} minutes": "Demasiados intentos de iniciar sesión, intentalo de nuevo en {number} minutos",
-    "Too many sign-up attempts, try again later": "Demasiados intentos de iniciar sesión, intentalo de nuevo mas tarde",
+    "Too many sign-up attempts, try again later": "Demasiados intentos de registro, inténtalo de nuevo más tarde",
     "Try free for {amount} days, then {originalPrice}.": "Prueba gratis por {amount} dias, luego {originalPrice}.",
     "Unable to initiate checkout session": "No se pudo iniciar la sesión de pago",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Desbloquea el acceso a todos los boletines convirtiéndote en un suscriptor pago.",
