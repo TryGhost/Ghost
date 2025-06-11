@@ -62,7 +62,8 @@
         },
         "site_uuid": {
             "defaultValue": null,
-            "type": "string"
+            "type": "string",
+            "flags": "PUBLIC,RO"
         }
     },
     "site": {
