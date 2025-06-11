@@ -3,7 +3,7 @@ import NewsletterOverview from './components/NewsletterOverview';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import WebOverview from './components/WebOverview';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, formatNumber, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Skeleton, formatNumber, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {STATS_RANGES} from '@src/utils/constants';
@@ -18,7 +18,7 @@ const Overview: React.FC = () => {
     const {postId} = useParams();
     const navigate = useNavigate();
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    const {totals, isLoading, currencySymbol} = usePostReferrers(postId || '');
+    const {totals, isLoading: isTotalsLoading, currencySymbol} = usePostReferrers(postId || '');
     const {startDate, endDate, timezone} = getRangeDates(STATS_RANGES.ALL_TIME.value);
 
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
@@ -47,7 +47,7 @@ const Overview: React.FC = () => {
         return baseParams;
     }, [isPostLoading, post, statsConfig?.id, startDate, endDate, timezone]);
 
-    const {data, loading} = useQuery({
+    const {data, loading: tbLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
         token: getToken(statsConfig),
         params: params
@@ -55,7 +55,7 @@ const Overview: React.FC = () => {
 
     const kpiValues = getWebKpiValues(data as unknown as KpiDataItem[] | null);
 
-    const kpiIsLoading = isLoading || isConfigLoading || loading;
+    const kpiIsLoading = isConfigLoading || isTotalsLoading || isPostLoading || tbLoading || true;
     const typedPost = post as Post;
 
     // Use the utility function from admin-x-framework
@@ -79,7 +79,12 @@ const Overview: React.FC = () => {
                     </CardHeader>
                     <CardContent className='grid grid-cols-4 items-stretch p-0'>
                         {kpiIsLoading ?
-                            ''
+                            Array.from({length: 4}, (_, i) => (
+                                <div key={i} className='h-[98px] gap-1 border-r px-6 py-5 last:border-r-0'>
+                                    <Skeleton className='w-2/3' />
+                                    <Skeleton className='h-7 w-12' />
+                                </div>
+                            ))
                             :
                             <>
                                 <KpiCard className='grow' onClick={() => {
