@@ -11,7 +11,7 @@ import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separ
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
-import {useNewsletterStatsWithRange, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
+import {useNewsletterStatsWithRange, useNewslettersList, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
 import type {TopNewslettersOrder} from '@src/hooks/useNewsletterStatsWithRange';
 
 export type AvgsDataItem = {
@@ -30,20 +30,60 @@ const Newsletters: React.FC = () => {
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
     const navigate = useNavigate();
 
-    // Get stats from real data using the new hooks with selected newsletter
+    // Get newsletters list for dropdown and basic stats
+    const {data: newslettersData, isLoading: isNewslettersLoading} = useNewslettersList();
+
+    // Get newsletter stats (emailed posts with their metrics)
     const {data: newsletterStatsData, isLoading: isStatsLoading} = useNewsletterStatsWithRange(
         range,
         sortBy,
         selectedNewsletterId || undefined
     );
+
+    // Get subscriber count over time for the selected newsletter
     const {data: subscriberStatsData, isLoading: isSubscriberStatsLoading} = useSubscriberCountWithRange(
         range,
         selectedNewsletterId || undefined
     );
 
-    // Prepare the data - wrap in useMemo to avoid dependency changes
+    // Find the selected newsletter to get its active_members count
+    const selectedNewsletter = useMemo(() => {
+        if (!newslettersData?.newsletters || !selectedNewsletterId) {
+            return null;
+        }
+        return newslettersData.newsletters.find(n => n.id === selectedNewsletterId) || null;
+    }, [newslettersData, selectedNewsletterId]);
+
+    // Calculate totals for KPIs
+    const totals = useMemo(() => {
+        // Get total subscribers from the selected newsletter or all newsletters
+        const totalSubscribers = selectedNewsletter?.count?.active_members || 
+            subscriberStatsData?.stats?.[0]?.total || 
+            0;
+
+        // Calculate average open and click rates from newsletter stats
+        if (!newsletterStatsData?.stats || newsletterStatsData.stats.length === 0) {
+            return {
+                totalSubscribers,
+                avgOpenRate: 0,
+                avgClickRate: 0
+            };
+        }
+
+        const allStats = newsletterStatsData.stats;
+        const totalOpenRate = allStats.reduce((sum, stat) => sum + (stat.open_rate || 0), 0);
+        const totalClickRate = allStats.reduce((sum, stat) => sum + (stat.click_rate || 0), 0);
+
+        return {
+            totalSubscribers,
+            avgOpenRate: totalOpenRate / allStats.length,
+            avgClickRate: totalClickRate / allStats.length
+        };
+    }, [selectedNewsletter, subscriberStatsData, newsletterStatsData]);
+
+    // Prepare newsletter stats for sorting and display
     const newsletterStats = useMemo(() => {
-        if (!newsletterStatsData?.stats || newsletterStatsData?.stats.length === 0) {
+        if (!newsletterStatsData?.stats || newsletterStatsData.stats.length === 0) {
             return [];
         }
 
@@ -66,6 +106,9 @@ const Newsletters: React.FC = () => {
             } else if (field === 'click_rate') {
                 valueA = a.click_rate || 0;
                 valueB = b.click_rate || 0;
+            } else if (field === 'sent_to') {
+                valueA = a.sent_to || 0;
+                valueB = b.sent_to || 0;
             } else {
                 return 0;
             }
@@ -75,33 +118,9 @@ const Newsletters: React.FC = () => {
         });
     }, [newsletterStatsData, sortBy]);
 
-    // Calculate totals
-    const totals = useMemo(() => {
-        if (!newsletterStatsData?.stats || newsletterStatsData.stats.length === 0) {
-            return {
-                totalSubscribers: subscriberStatsData?.stats?.[0]?.total || 0,
-                avgOpenRate: 0,
-                avgClickRate: 0
-            };
-        }
-
-        // Use all stats for calculating averages, not just the sorted/limited ones
-        const allStats = newsletterStatsData.stats;
-
-        // Calculate average open and click rates from all stats
-        const totalOpenRate = allStats.reduce((sum, stat) => sum + (stat.open_rate || 0), 0);
-        const totalClickRate = allStats.reduce((sum, stat) => sum + (stat.click_rate || 0), 0);
-
-        return {
-            totalSubscribers: subscriberStatsData?.stats?.[0]?.total || 0,
-            avgOpenRate: totalOpenRate / allStats.length,
-            avgClickRate: totalClickRate / allStats.length
-        };
-    }, [newsletterStatsData, subscriberStatsData]);
-
     // Create subscribers data from newsletter subscriber stats
     const subscribersData = useMemo(() => {
-        if (!subscriberStatsData?.stats?.[0]?.deltas || subscriberStatsData.stats?.[0]?.deltas.length === 0) {
+        if (!subscriberStatsData?.stats?.[0]?.deltas || subscriberStatsData.stats[0].deltas.length === 0) {
             return [];
         }
 
@@ -109,15 +128,17 @@ const Newsletters: React.FC = () => {
         return subscriberStatsData.stats[0].deltas;
     }, [subscriberStatsData]);
 
-    const isPageLoading = isStatsLoading || isSubscriberStatsLoading;
-
     // Convert string dates to Date objects for AvgsDataItem compatibility
     const avgsData: AvgsDataItem[] = newsletterStats.map(stat => ({
         ...stat,
         send_date: new Date(stat.send_date)
     }));
 
-    const pageData = isPageLoading ? undefined : (selectedNewsletterId && subscribersData.length > 1 && newsletterStats.length > 1 ? ['data exists'] : []);
+    // Separate loading states for different sections
+    const isKPIsLoading = isNewslettersLoading || isSubscriberStatsLoading || isStatsLoading;
+    const isTableLoading = isStatsLoading || !newsletterStatsData;
+
+    const pageData = isKPIsLoading ? undefined : (selectedNewsletterId && subscribersData.length > 1 && newsletterStats.length > 1 ? ['data exists'] : []);
 
     return (
         <StatsLayout>
@@ -128,10 +149,16 @@ const Newsletters: React.FC = () => {
             <StatsView data={pageData} isLoading={false} loadingComponent={<></>}>
                 <Card>
                     <CardContent>
-                        <NewsletterKPIs avgsData={avgsData} isAvgsLoading={isStatsLoading} isLoading={isSubscriberStatsLoading} subscribersData={subscribersData} totals={totals} />
+                        <NewsletterKPIs 
+                            avgsData={avgsData} 
+                            isAvgsLoading={isStatsLoading} 
+                            isLoading={isKPIsLoading} 
+                            subscribersData={subscribersData} 
+                            totals={totals} 
+                        />
                     </CardContent>
                 </Card>
-                {isStatsLoading
+                {isTableLoading
                     ?
                     <Card className='min-h-[460px]'>
                         <CardHeader>
