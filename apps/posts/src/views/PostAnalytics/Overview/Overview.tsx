@@ -24,7 +24,6 @@ const Overview: React.FC = () => {
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid,email,status,count,feature_image',
             include: 'email,authors,tags,tiers,count.clicks,count.signups,count.paid_conversions'
         }
     });
@@ -95,7 +94,7 @@ const Overview: React.FC = () => {
                                     </KpiCardContent>
                                 </KpiCard>
                                 <KpiCard className='grow' onClick={() => {
-                                    navigate(`/analytics/beta/${postId}/web`);
+                                    navigate(`/analytics/beta/${postId}/web/?tab=views`);
                                 }}>
                                     <KpiCardLabel>
                                         <LucideIcon.Eye size={16} strokeWidth={1.5} />

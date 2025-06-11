@@ -2,7 +2,7 @@ import EmptyStatView from '../../components/EmptyStatView';
 import React, {useState} from 'react';
 import {Card, CardContent, GhAreaChart, KpiTabTrigger, KpiTabValue, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, sanitizeChartData} from '@tryghost/shade';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
+import {getStatEndpointUrl, getToken, useSearchParams} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -46,7 +46,9 @@ interface KpisProps {
 
 const Kpis:React.FC<KpisProps> = ({queryParams}) => {
     const {statsConfig, isLoading: isConfigLoading, range} = useGlobalData();
-    const [currentTab, setCurrentTab] = useState('visits');
+    const [searchParams] = useSearchParams();
+    const initialTab = searchParams.get('tab') || 'visits';
+    const [currentTab, setCurrentTab] = useState(initialTab);
 
     const {data, loading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
@@ -77,7 +79,7 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
                     {(data && data.length !== 0 && kpiValues.visits !== '0') ?
                         <Card>
                             <CardContent>
-                                <Tabs defaultValue="visits" variant='kpis'>
+                                <Tabs defaultValue={currentTab} variant='kpis'>
                                     <TabsList className="-mx-6 grid grid-cols-2">
                                         <KpiTabTrigger value="visits" onClick={() => {
                                             setCurrentTab('visits');

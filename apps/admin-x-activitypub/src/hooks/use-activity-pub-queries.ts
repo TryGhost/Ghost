@@ -1320,28 +1320,6 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     return {suggestedProfilesQuery, updateSuggestedProfile};
 }
 
-export function useThreadForUser(handle: string, id?: string) {
-    return useQuery({
-        queryKey: QUERY_KEYS.thread(id || ''),
-        refetchOnMount: 'always',
-        enabled: Boolean(id),
-        async queryFn() {
-            if (!id) {
-                throw new Error('Post ID is required');
-            }
-
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.getThread(id).then((response) => {
-                return {
-                    posts: response.posts.map(mapPostToActivity)
-                };
-            });
-        }
-    });
-}
-
 function prependActivityToPaginatedCollection(
     queryClient: QueryClient,
     queryKey: string[],
@@ -2169,26 +2147,6 @@ export function useNotificationsForUser(handle: string) {
     });
 }
 
-export function usePostForUser(handle: string, id: string | null) {
-    return useQuery({
-        queryKey: QUERY_KEYS.post(id || ''),
-        refetchOnMount: 'always',
-        enabled: Boolean(id),
-        async queryFn() {
-            if (!id) {
-                throw new Error('Post ID is required');
-            }
-
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.getPost(id).then((response) => {
-                return mapPostToActivity(response);
-            });
-        }
-    });
-}
-
 export function useReplyChainForUser(handle: string, postApId: string | null) {
     const [replyChain, setReplyChain] = useState<ReplyChainResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -2231,7 +2189,7 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
     }, [handle, postApId]);
 
     const loadMoreAncestors = useCallback(async () => {
-        if (!replyChain?.ancestors.next || !replyChain?.ancestors.chain[0]) {
+        if (!replyChain?.ancestors.hasMore || !replyChain?.ancestors.chain[0]) {
             return;
         }
 
@@ -2249,14 +2207,14 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
                     ...prev,
                     ancestors: {
                         chain: [...nextPage.ancestors.chain, ...prev.ancestors.chain],
-                        next: nextPage.ancestors.next
+                        hasMore: nextPage.ancestors.hasMore
                     }
                 };
             });
         } catch (err) {
             setError(err instanceof Error ? err : new Error('Failed to load more ancestors'));
         }
-    }, [handle, replyChain?.ancestors.next, replyChain?.ancestors.chain]);
+    }, [handle, replyChain?.ancestors.hasMore, replyChain?.ancestors.chain]);
 
     const loadMoreChildren = useCallback(async () => {
         if (!replyChain?.next) {
@@ -2288,7 +2246,7 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
     }, [handle, replyChain?.next, postApId]);
 
     const loadMoreChildReplies = useCallback(async (childIndex: number) => {
-        if (!replyChain?.children[childIndex]?.next) {
+        if (!replyChain?.children[childIndex]?.hasMore) {
             return;
         }
 
@@ -2315,7 +2273,7 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
                 newChildren[childIndex] = {
                     ...child,
                     chain: [...child.chain, ...moreReplies],
-                    next: nextPage.children[0].next
+                    hasMore: nextPage.children[0].hasMore
                 };
                 return {
                     ...prev,
@@ -2334,9 +2292,9 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
         loadMoreAncestors,
         loadMoreChildren,
         loadMoreChildReplies,
-        hasMoreAncestors: !!replyChain?.ancestors.next,
+        hasMoreAncestors: !!replyChain?.ancestors.hasMore,
         hasMoreChildren: !!replyChain?.next,
-        hasMoreChildReplies: (childIndex: number) => !!replyChain?.children[childIndex]?.next
+        hasMoreChildReplies: (childIndex: number) => !!replyChain?.children[childIndex]?.hasMore
     };
 }
 
