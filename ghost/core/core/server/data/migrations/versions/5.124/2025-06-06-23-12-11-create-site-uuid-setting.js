@@ -13,15 +13,12 @@ const {addSetting} = require('../../utils');
 
 let siteUuid;
 try {
-    siteUuid = config.get('site_uuid');
-
-    if (!siteUuid) {
+    let configuredSiteUuid = config.get('site_uuid');
+    if (configuredSiteUuid && validator.isUUID(configuredSiteUuid)) {
+        logging.info(`Using configured site UUID: ${configuredSiteUuid}`);
+        siteUuid = configuredSiteUuid.toLowerCase();
+    } else {
         logging.info('No site UUID found, generating a new one');
-        siteUuid = crypto.randomUUID();
-    }
-
-    if (!validator.isUUID(siteUuid)) {
-        logging.warn(`Invalid site UUID found: ${siteUuid}. Generating a new one`);
         siteUuid = crypto.randomUUID();
     }
 } catch (error) {
