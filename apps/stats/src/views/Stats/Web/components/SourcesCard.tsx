@@ -1,6 +1,6 @@
 import React from 'react';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
 
 // Default source icon URL - apps can override this
@@ -72,6 +72,7 @@ interface SourcesCardProps {
     siteUrl?: string;
     siteIcon?: string;
     defaultSourceIconUrl?: string;
+    isLoading: boolean;
 }
 
 export const SourcesCard: React.FC<SourcesCardProps> = ({
@@ -80,7 +81,8 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
     totalVisitors = 0,
     siteUrl,
     siteIcon,
-    defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL
+    defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL,
+    isLoading
 }) => {
     // Process and group sources data with pre-computed icons and display values
     const processedData = React.useMemo(() => {
@@ -108,6 +110,20 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
     const title = 'Top sources';
     const description = `How readers found your ${range ? 'site' : 'post'} ${getPeriodText(range)}`;
 
+    if (isLoading) {
+        return (
+            <Card className='group/datalist'>
+                <CardHeader>
+                    <CardTitle>{title}</CardTitle>
+                    <CardDescription>Loading...</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <SkeletonTable lines={5} />
+                </CardContent>
+            </Card>
+        );
+    }
+
     return (
         <Card className='group/datalist'>
             <CardHeader>
@@ -120,7 +136,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                     <SourcesTable data={topSources} defaultSourceIconUrl={defaultSourceIconUrl} range={range} />
                 ) : (
                     <div className='py-20 text-center text-sm text-gray-700'>
-                        No sources data available.
+                            No sources data available.
                     </div>
                 )}
             </CardContent>
