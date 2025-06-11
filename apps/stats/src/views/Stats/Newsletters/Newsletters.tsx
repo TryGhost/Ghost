@@ -9,9 +9,9 @@ import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
+import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
-import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useNewsletterStatsWithRange, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
 import type {TopNewslettersOrder} from '@src/hooks/useNewsletterStatsWithRange';
 
