@@ -1,9 +1,9 @@
 import {formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceQueryParam} from '../views/Stats/components/AudienceSelect';
 import {useGlobalData} from '../providers/GlobalDataProvider';
-import {useReferrerHistory} from '@tryghost/admin-x-framework/api/referrers';
+import {useReferrerGrowth} from '@tryghost/admin-x-framework/api/referrers';
 
-export const useReferrersWithRange = (range: number) => {
+export const useReferrersGrowth = (range: number) => {
     const {audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
@@ -17,5 +17,5 @@ export const useReferrersWithRange = (range: number) => {
         searchParams.timezone = timezone;
     }
 
-    return useReferrerHistory({searchParams});
+    return useReferrerGrowth({searchParams});
 }; 

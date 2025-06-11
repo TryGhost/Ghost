@@ -4,7 +4,7 @@ import {getFaviconDomain, getSymbol} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
-import {useReferrersWithRange} from '@src/hooks/useReferrersWithRange';
+import {useReferrersGrowth} from '@src/hooks/useReferrersGrowth';
 
 // Source normalization mapping - same as Posts app
 const SOURCE_MAPPING = new Map<string, string>([
@@ -121,7 +121,7 @@ interface ProcessedReferrerData {
     source: string;
     free_members: number;
     paid_members: number;
-    mrr: number; // estimated from paid_conversions
+    mrr: number; // Real MRR from database
     iconSrc: string;
     displayName: string;
     linkUrl?: string;
@@ -202,7 +202,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
     showViewAll = false
 }) => {
     const {data: globalData} = useGlobalData();
-    const {data: referrersData, isLoading} = useReferrersWithRange(range);
+    const {data: referrersData, isLoading} = useReferrersGrowth(range);
     const {data: mrrHistoryResponse} = useMrrHistory();
 
     // Get site URL for favicon processing
@@ -236,14 +236,15 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
         }
 
         // Group by source and sum metrics
-        const sourceMap = new Map<string, {signups: number, paid_conversions: number}>();
+        const sourceMap = new Map<string, {signups: number, paid_conversions: number, mrr: number}>();
         
         referrersData.stats.forEach((item) => {
             const normalizedSource = normalizeSource(item.source || '');
-            const existing = sourceMap.get(normalizedSource) || {signups: 0, paid_conversions: 0};
+            const existing = sourceMap.get(normalizedSource) || {signups: 0, paid_conversions: 0, mrr: 0};
             sourceMap.set(normalizedSource, {
                 signups: existing.signups + item.signups,
-                paid_conversions: existing.paid_conversions + item.paid_conversions
+                paid_conversions: existing.paid_conversions + item.paid_conversions,
+                mrr: existing.mrr + item.mrr
             });
         });
 
@@ -260,7 +261,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
                     source,
                     free_members: metrics.signups - metrics.paid_conversions, // Free = total signups - paid
                     paid_members: metrics.paid_conversions,
-                    mrr: metrics.paid_conversions * 500, // Rough estimate: $5/month per paid conversion
+                    mrr: metrics.mrr,
                     iconSrc,
                     displayName: source,
                     linkUrl

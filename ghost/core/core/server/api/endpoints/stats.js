@@ -110,6 +110,36 @@ const controller = {
             return await statsService.api.getReferrersHistory();
         }
     },
+    referrersHistoryWithRange: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'date_from',
+            'date_to',
+            'timezone',
+            'member_status'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'referrersHistoryWithRange',
+                options: {
+                    date_from: frame.options.date_from,
+                    date_to: frame.options.date_to,
+                    timezone: frame.options.timezone,
+                    member_status: frame.options.member_status
+                }
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getReferrersHistoryWithRange(frame.options.date_from, frame.options.date_to);
+        }
+    },
     topContent: {
         headers: {
             cacheInvalidate: false
