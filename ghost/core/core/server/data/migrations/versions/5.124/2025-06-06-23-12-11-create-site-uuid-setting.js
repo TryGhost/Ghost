@@ -11,24 +11,29 @@ const validator = require('validator');
 
 const {addSetting} = require('../../utils');
 
-let siteUuid;
-try {
-    let configuredSiteUuid = config.get('site_uuid');
-    if (configuredSiteUuid && validator.isUUID(configuredSiteUuid)) {
-        logging.info(`Using configured site UUID: ${configuredSiteUuid}`);
-        siteUuid = configuredSiteUuid.toLowerCase();
-    } else {
-        logging.info('No site UUID found, generating a new one');
+const getOrGenerateSiteUuid = () => {
+    let siteUuid;
+    try {
+        let configuredSiteUuid = config.get('site_uuid');
+        if (configuredSiteUuid && validator.isUUID(configuredSiteUuid)) {
+            logging.info(`Using configured site UUID: ${configuredSiteUuid}`);
+            siteUuid = configuredSiteUuid.toLowerCase();
+        } else {
+            logging.info('No valid site UUID found, generating a new one');
+            siteUuid = crypto.randomUUID();
+        }
+    } catch (error) {
+        logging.error('Error getting site UUID from config. Generating a new one', error);
         siteUuid = crypto.randomUUID();
     }
-} catch (error) {
-    logging.error('Error getting site UUID from config. Generating a new one', error);
-    siteUuid = crypto.randomUUID();
-}
+    siteUuid = siteUuid.toLowerCase();
+    logging.info(`Using site UUID: ${siteUuid}`);
+    return siteUuid;
+};
 
 module.exports = addSetting({
     key: 'site_uuid',
-    value: siteUuid.toLowerCase(),
+    value: getOrGenerateSiteUuid(),
     type: 'string',
     group: 'core',
     flags: 'PUBLIC,RO'
