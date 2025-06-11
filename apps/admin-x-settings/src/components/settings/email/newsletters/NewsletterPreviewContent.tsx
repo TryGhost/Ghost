@@ -165,7 +165,7 @@ const NewsletterPreviewContent: React.FC<{
                                 <div className="py-3">
                                     {headerIcon && <img alt="" className="mx-auto mb-2 size-10" role="presentation" src={headerIcon} />}
                                     {headerTitle && <h4 className="mb-1 text-center text-[1.6rem] font-bold uppercase leading-tight tracking-tight text-grey-900" style={{color: headerTextColor}}>{headerTitle}</h4>}
-                                    {headerSubtitle && <h5 className="mb-1 text-center text-[1.3rem] font-normal text-grey-700" style={{color: secondaryTextColor}}>{headerSubtitle}</h5>}
+                                    {headerSubtitle && <h5 className="mb-1 text-center text-[1.3rem] font-normal text-grey-700" data-testid="header-subtitle" style={{color: hasAnyEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}>{headerSubtitle}</h5>}
                                 </div>
                             )}
                             {showPostTitleSection && (
