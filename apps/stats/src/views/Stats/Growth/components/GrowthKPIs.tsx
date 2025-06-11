@@ -161,7 +161,7 @@ const GrowthKPIs: React.FC<{
                 }}>
                     <KpiTabValue
                         color='hsl(var(--chart-blue))'
-                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
+                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.free}
                         diffValue={percentChanges.free}
                         label="Free members"
                         value={formatNumber(freeMembers)}
@@ -172,7 +172,7 @@ const GrowthKPIs: React.FC<{
                 }}>
                     <KpiTabValue
                         color='hsl(var(--chart-yellow))'
-                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
+                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.paid}
                         diffValue={percentChanges.paid}
                         label="Paid members"
                         value={formatNumber(paidMembers)}
@@ -183,7 +183,7 @@ const GrowthKPIs: React.FC<{
                 }}>
                     <KpiTabValue
                         color='hsl(var(--chart-purple))'
-                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
+                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.mrr}
                         diffValue={percentChanges.mrr}
                         label="MRR"
                         value={`${currencySymbol}${formatNumber(centsToDollars(mrr))}`}
