@@ -259,7 +259,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
 
                 return {
                     source,
-                    free_members: metrics.signups - metrics.paid_conversions, // Free = total signups - paid
+                    free_members: Math.max(0, metrics.signups - metrics.paid_conversions), // Free = total signups - paid, but never negative
                     paid_members: metrics.paid_conversions,
                     mrr: metrics.mrr,
                     iconSrc,
