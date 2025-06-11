@@ -267,6 +267,66 @@ const controller = {
             return await statsService.api.getNewsletterStats(frame.options);
         }
     },
+    newsletterBasicStats: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'order',
+            'limit',
+            'date_from',
+            'date_to',
+            'timezone',
+            'newsletter_id'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'getNewsletterBasicStats',
+                options: {
+                    order: frame.options.order,
+                    limit: frame.options.limit,
+                    date_from: frame.options.date_from,
+                    date_to: frame.options.date_to,
+                    timezone: frame.options.timezone,
+                    newsletter_id: frame.options.newsletter_id
+                }
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getNewsletterBasicStats(frame.options);
+        }
+    },
+    newsletterClickStats: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'newsletter_id',
+            'post_ids'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'getNewsletterClickStats',
+                options: {
+                    newsletter_id: frame.options.newsletter_id,
+                    post_ids: frame.options.post_ids
+                }
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getNewsletterClickStats(frame.options);
+        }
+    },
     subscriberCount: {
         headers: {
             cacheInvalidate: false
