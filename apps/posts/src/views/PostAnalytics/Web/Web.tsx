@@ -6,7 +6,7 @@ import Locations from './components/Locations';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import Sources from './components/Sources';
-import {BarChartLoadingIndicator, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator, SkeletonTable, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Card, CardContent, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
@@ -71,35 +71,11 @@ const Web: React.FC<postAnalyticsProps> = () => {
             </PostAnalyticsHeader>
             <PostAnalyticsContent>
                 {isPageLoading ?
-                    <>
-                        <Card>
-                            <CardContent className='h-[calc(16vw+102px)] max-h-[440px] w-full items-center justify-center pb-0'>
-                                <BarChartLoadingIndicator />
-                            </CardContent>
-                        </Card>
-                        <div className='grid grid-cols-2 gap-8'>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Locations</CardTitle>
-                                    <CardDescription>Where are the readers of this post</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <Separator />
-                                    <SkeletonTable className='mt-6' />
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Top sources</CardTitle>
-                                    <CardDescription>How readers found your post</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <Separator />
-                                    <SkeletonTable className='mt-6' />
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </>
+                    <Card className='size-full'>
+                        <CardContent className='size-full items-center justify-center'>
+                            <BarChartLoadingIndicator />
+                        </CardContent>
+                    </Card>
                     :
                     kpiData && kpiData.length !== 0 && kpiValues.visits !== '0' ?
                         <>
