@@ -11,7 +11,8 @@ import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separ
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
-import {useNewsletterStatsWithRange, useNewslettersList, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
+import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
+import {useNewsletterStatsWithRange, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
 import type {TopNewslettersOrder} from '@src/hooks/useNewsletterStatsWithRange';
 
 export type AvgsDataItem = {
@@ -30,8 +31,13 @@ const Newsletters: React.FC = () => {
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
     const navigate = useNavigate();
 
-    // Get newsletters list for dropdown and basic stats
-    const {data: newslettersData, isLoading: isNewslettersLoading} = useNewslettersList();
+    // Get newsletters list for dropdown (without expensive counts)
+    const {data: newslettersData, isLoading: isNewslettersLoading} = useBrowseNewsletters({
+        searchParams: {
+            limit: '50',
+            include: '' // Exclude expensive count calculations
+        }
+    });
 
     // Only enable stats queries once newsletters are loaded AND we have a newsletter selected
     // This prevents both: 

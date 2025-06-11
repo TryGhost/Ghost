@@ -108,16 +108,3 @@ export const useSubscriberCountWithRange = (range?: number, newsletterId?: strin
 export const useNewslettersList = () => {
     return useBrowseNewsletters();
 };
-
-/**
- * Lightweight hook to fetch newsletters for dropdown only (without expensive member counts)
- * This should be much faster than the full newsletter list with counts
- */
-export const useNewslettersListLight = () => {
-    return useBrowseNewsletters({
-        searchParams: {
-            // Remove the expensive count includes - just get basic newsletter data
-            limit: '50'
-        }
-    });
-};
