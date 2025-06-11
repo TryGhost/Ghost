@@ -139,7 +139,8 @@ describe('Newsletter Stats Hooks', () => {
                     date_from: '2024-01-01',
                     date_to: '2024-01-31',
                     order: 'date desc'
-                }
+                },
+                enabled: true
             });
         });
 
@@ -153,7 +154,8 @@ describe('Newsletter Stats Hooks', () => {
                     date_from: '2024-01-24',
                     date_to: '2024-01-31',
                     order: 'date desc'
-                }
+                },
+                enabled: true
             });
         });
 
@@ -167,7 +169,8 @@ describe('Newsletter Stats Hooks', () => {
                     date_from: '2024-01-17',
                     date_to: '2024-01-31',
                     order: 'date desc'
-                }
+                },
+                enabled: true
             });
         });
 
@@ -181,7 +184,8 @@ describe('Newsletter Stats Hooks', () => {
                     date_from: '2024-01-01',
                     date_to: '2024-01-31',
                     order: 'open_rate desc'
-                }
+                },
+                enabled: true
             });
         });
 
@@ -196,7 +200,8 @@ describe('Newsletter Stats Hooks', () => {
                     date_to: '2024-01-31',
                     order: 'date desc',
                     newsletter_id: 'newsletter-123'
-                }
+                },
+                enabled: true
             });
         });
     });
@@ -211,7 +216,8 @@ describe('Newsletter Stats Hooks', () => {
                 searchParams: {
                     date_from: '2024-01-01',
                     date_to: '2024-01-31'
-                }
+                },
+                enabled: true
             });
         });
 
@@ -224,7 +230,8 @@ describe('Newsletter Stats Hooks', () => {
                 searchParams: {
                     date_from: '2024-01-24',
                     date_to: '2024-01-31'
-                }
+                },
+                enabled: true
             });
         });
 
@@ -238,7 +245,8 @@ describe('Newsletter Stats Hooks', () => {
                     date_from: '2024-01-01',
                     date_to: '2024-01-31',
                     newsletter_id: 'newsletter-123'
-                }
+                },
+                enabled: true
             });
         });
     });
