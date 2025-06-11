@@ -1,16 +1,14 @@
 import React, {useEffect, useMemo} from 'react';
 import {LucideIcon, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade';
-import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
+import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
-const NewsletterSelect: React.FC = () => {
+interface NewsletterSelectProps {
+    newsletters?: Newsletter[];
+}
+
+const NewsletterSelect: React.FC<NewsletterSelectProps> = ({newsletters}) => {
     const {selectedNewsletterId, setSelectedNewsletterId} = useGlobalData();
-    const {data: {newsletters} = {}} = useBrowseNewsletters({
-        searchParams: {
-            limit: '50'
-            // Omit include parameter to avoid expensive count.active_members,count.posts
-        }
-    });
 
     // Filter only active newsletters
     const activeNewsletters = useMemo(() => {

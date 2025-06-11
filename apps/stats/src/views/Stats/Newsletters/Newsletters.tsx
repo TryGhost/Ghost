@@ -156,7 +156,7 @@ const Newsletters: React.FC = () => {
     return (
         <StatsLayout>
             <StatsHeader>
-                <NewsletterSelect />
+                <NewsletterSelect newsletters={newslettersData?.newsletters} />
                 <DateRangeSelect />
             </StatsHeader>
             <StatsView data={pageData} isLoading={false} loadingComponent={<></>}>
