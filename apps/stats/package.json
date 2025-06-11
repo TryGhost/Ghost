@@ -25,6 +25,7 @@
         "build": "tsc && vite build",
         "lint": "yarn run lint:code && yarn run lint:test",
         "lint:code": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
+        "lint:code:fix": "eslint --ext .js,.ts,.cjs,.tsx --cache --fix src",
         "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx --cache test",
         "preview": "vite preview"
     },
@@ -36,7 +37,7 @@
         "@types/react": "18.3.23",
         "@types/react-svg-map": "2.1.4",
         "@vitejs/plugin-react": "4.5.0",
-        "msw": "2.8.3",
+        "msw": "2.10.2",
         "vite": "4.5.14",
         "vite-plugin-svgr": "4.3.0",
         "vitest": "0.34.3"

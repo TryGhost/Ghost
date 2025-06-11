@@ -176,7 +176,7 @@ const KpiCardHeaderLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({chi
 
 interface KpiCardValueProps {
     value: string | number;
-    diffDirection?: 'up' | 'down' | 'same' | 'empty';
+    diffDirection?: 'up' | 'down' | 'same' | 'empty' | 'hidden';
     diffValue?: string | number;
 }
 
@@ -192,7 +192,7 @@ const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, 
             <div className='text-[2.3rem] font-semibold leading-none tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>
                 {value}
             </div>
-            {diffDirection &&
+            {diffDirection && diffDirection !== 'hidden' &&
             <>
                 <div className={diffContainerClassName}>
                     {diffDirection === 'up' &&
@@ -209,6 +209,20 @@ const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, 
     );
 };
 
+export interface EmptyCardProps extends React.ComponentPropsWithoutRef<'div'> {}
+
+const EmptyCard = React.forwardRef<
+    HTMLDivElement,
+    EmptyCardProps
+>(({className, ...props}, ref) => (
+    <div
+        ref={ref}
+        className={cn('p-6 transition-all hover:shadow-xs rounded-xl border flex flex-col bg-card text-card-foreground', className)}
+        {...props}
+    />
+));
+EmptyCard.displayName = 'EmptyCard';
+
 export {
     Card,
     CardHeader,
@@ -219,5 +233,6 @@ export {
     KpiCardHeader,
     KpiCardHeaderLabel,
     KpiCardHeaderValue,
+    EmptyCard,
     cardVariants
 };

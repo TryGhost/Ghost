@@ -158,6 +158,19 @@ module.exports = function setupSiteApp(routerConfig) {
 
     debug('General middleware done');
 
+    // Middleware to set analytics indicator header when analytics tracking is included
+    siteApp.use(function ghostAnalyticsHeaderMiddleware(req, res, next) {
+        const originalSend = res.send;
+        // Has to be on res.send otherwise this executes prior to ghost_head
+        res.send = function (data) {
+            if (res.locals && (res.locals.ghostAnalytics)) {
+                res.set('X-Ghost-Analytics', 'true');
+            }
+            return originalSend.call(this, data);
+        };
+        next();
+    });
+
     router = siteRoutes(routerConfig);
     Object.setPrototypeOf(SiteRouter, router);
 

@@ -8,6 +8,7 @@ export type TopContentItem = {
     title?: string;
     post_uuid?: string;
     post_id?: string;
+    post_type?: string;
 }
 
 export type TopContentResponseType = {
@@ -78,9 +79,17 @@ export type MrrHistoryItem = {
     mrr: number;
     currency: string;
 };
+
+export type MrrTotalItem = {
+    currency: string;
+    mrr: number;
+};
+
 export type MrrHistoryResponseType = {
     stats: MrrHistoryItem[];
-    meta: Meta;
+    meta: {
+        totals: MrrTotalItem[];
+    };
 };
 
 export type NewsletterStatItem = {
@@ -113,6 +122,39 @@ export type NewsletterSubscriberStatsResponseType = {
     stats: NewsletterSubscriberStats[];
 };
 
+export type LatestPostStats = {
+    id: string;
+    title: string;
+    slug: string;
+    feature_image: string | null;
+    published_at: string;
+    email_count: number | null;
+    opened_count: number | null;
+    open_rate: number | null;
+    member_delta: number;
+    free_members: number;
+    paid_members: number;
+    visitors: number;
+};
+
+export type LatestPostStatsResponseType = {
+    stats: LatestPostStats[];
+};
+
+export type TopPostViewsStats = {
+    post_id: string;
+    title: string;
+    published_at: string;
+    feature_image: string;
+    views: number;
+    open_rate: number | null;
+    members: number;
+};
+
+export type TopPostViewsResponseType = {
+    stats: TopPostViewsStats[];
+};
+
 // Requests
 
 const dataType = 'TopContentResponseType';
@@ -124,6 +166,8 @@ const newsletterSubscriberStatsDataType = 'NewsletterSubscriberStatsResponseType
 
 const postGrowthStatsDataType = 'PostGrowthStatsResponseType';
 const mrrHistoryDataType = 'MrrHistoryResponseType';
+const latestPostStatsDataType = 'LatestPostStatsResponseType';
+const topPostViewsDataType = 'TopPostViewsResponseType';
 
 export const useTopContent = createQuery<TopContentResponseType>({
     dataType,
@@ -152,6 +196,16 @@ export const usePostGrowthStats = createQueryWithId<PostGrowthStatsResponseType>
 export const useMrrHistory = createQuery<MrrHistoryResponseType>({
     dataType: mrrHistoryDataType,
     path: '/stats/mrr/'
+});
+
+export const useLatestPostStats = createQuery<LatestPostStatsResponseType>({
+    dataType: latestPostStatsDataType,
+    path: '/stats/latest-post/'
+});
+
+export const useTopPostsViews = createQuery<TopPostViewsResponseType>({
+    dataType: topPostViewsDataType,
+    path: '/stats/top-posts-views/'
 });
 
 export interface NewsletterStatsSearchParams {

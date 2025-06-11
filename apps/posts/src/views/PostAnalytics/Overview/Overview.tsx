@@ -3,7 +3,8 @@ import NewsletterOverview from './components/NewsletterOverview';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import WebOverview from './components/WebOverview';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, formatNumber, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Skeleton, formatNumber, formatQueryDate, getRangeDates, getRangeForStartDate, sanitizeChartData} from '@tryghost/shade';
+import {KPI_METRICS} from '../Web/components/Kpis';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {STATS_RANGES} from '@src/utils/constants';
@@ -18,17 +19,28 @@ const Overview: React.FC = () => {
     const {postId} = useParams();
     const navigate = useNavigate();
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    const {totals, isLoading} = usePostReferrers(postId || '');
+    const {totals, isLoading: isTotalsLoading, currencySymbol} = usePostReferrers(postId || '');
     const {startDate, endDate, timezone} = getRangeDates(STATS_RANGES.ALL_TIME.value);
 
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid,email,status,count,feature_image',
             include: 'email,authors,tags,tiers,count.clicks,count.signups,count.paid_conversions'
         }
     });
 
+    // Calculate chart range based on days between today and post publication date
+    const chartRange = useMemo(() => {
+        if (!post?.published_at) {
+            return STATS_RANGES.ALL_TIME.value; // Fallback if no publication date
+        }
+        const calculatedRange = getRangeForStartDate(post.published_at);
+        return calculatedRange;
+    }, [post?.published_at]);
+
+    const {startDate: chartStartDate, endDate: chartEndDate, timezone: chartTimezone} = getRangeDates(chartRange);
+
+    // KPI params for overview data
     const params = useMemo(() => {
         const baseParams = {
             site_uuid: statsConfig?.id || '',
@@ -48,15 +60,54 @@ const Overview: React.FC = () => {
         return baseParams;
     }, [isPostLoading, post, statsConfig?.id, startDate, endDate, timezone]);
 
-    const {data, loading} = useQuery({
+    // Chart params for chart data
+    const chartParams = useMemo(() => {
+        const baseParams = {
+            site_uuid: statsConfig?.id || '',
+            date_from: formatQueryDate(chartStartDate),
+            date_to: formatQueryDate(chartEndDate),
+            timezone: chartTimezone,
+            post_uuid: ''
+        };
+
+        if (!isPostLoading && post?.uuid) {
+            return {
+                ...baseParams,
+                post_uuid: post.uuid
+            };
+        }
+
+        return baseParams;
+    }, [isPostLoading, post, statsConfig?.id, chartStartDate, chartEndDate, chartTimezone]);
+
+    const {data, loading: tbLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
         token: getToken(statsConfig),
         params: params
     });
 
+    const {data: chartData, loading: chartLoading} = useQuery({
+        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
+        token: getToken(statsConfig),
+        params: chartParams
+    });
+
     const kpiValues = getWebKpiValues(data as unknown as KpiDataItem[] | null);
 
-    const kpiIsLoading = isLoading || isConfigLoading || loading;
+    // Process chart data for WebOverview
+    const currentMetric = KPI_METRICS.visits;
+    const processedChartData = sanitizeChartData<KpiDataItem>(chartData as KpiDataItem[] || [], chartRange, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item: KpiDataItem) => {
+        const value = Number(item[currentMetric.dataKey]);
+        return {
+            date: String(item.date),
+            value,
+            formattedValue: currentMetric.formatter(value),
+            label: currentMetric.label
+        };
+    });
+
+    const kpiIsLoading = isConfigLoading || isTotalsLoading || isPostLoading || tbLoading;
+    const chartIsLoading = isPostLoading || isConfigLoading || chartLoading;
     const typedPost = post as Post;
 
     // Use the utility function from admin-x-framework
@@ -76,11 +127,16 @@ const Overview: React.FC = () => {
             <PostAnalyticsContent>
                 <Card className='overflow-hidden p-0'>
                     <CardHeader className='hidden'>
-                        <CardTitle>Newsletter performance</CardTitle>
+                        <CardTitle>Post performance</CardTitle>
                     </CardHeader>
                     <CardContent className='grid grid-cols-4 items-stretch p-0'>
                         {kpiIsLoading ?
-                            ''
+                            Array.from({length: 4}, (_, i) => (
+                                <div key={i} className='h-[98px] gap-1 border-r px-6 py-5 last:border-r-0'>
+                                    <Skeleton className='w-2/3' />
+                                    <Skeleton className='h-7 w-12' />
+                                </div>
+                            ))
                             :
                             <>
                                 <KpiCard className='grow' onClick={() => {
@@ -95,7 +151,7 @@ const Overview: React.FC = () => {
                                     </KpiCardContent>
                                 </KpiCard>
                                 <KpiCard className='grow' onClick={() => {
-                                    navigate(`/analytics/beta/${postId}/web`);
+                                    navigate(`/analytics/beta/${postId}/web/?tab=views`);
                                 }}>
                                     <KpiCardLabel>
                                         <LucideIcon.Eye size={16} strokeWidth={1.5} />
@@ -124,7 +180,7 @@ const Overview: React.FC = () => {
                                     MRR impact
                                     </KpiCardLabel>
                                     <KpiCardContent>
-                                        <KpiCardValue>${centsToDollars(totals?.mrr || 0)}</KpiCardValue>
+                                        <KpiCardValue>{currencySymbol}{centsToDollars(totals?.mrr || 0)}</KpiCardValue>
                                     </KpiCardContent>
                                 </KpiCard>
                             </>
@@ -132,7 +188,7 @@ const Overview: React.FC = () => {
                     </CardContent>
                 </Card>
                 {showNewsletterSection && (
-                    <NewsletterOverview />
+                    <NewsletterOverview isNewsletterStatsLoading={isPostLoading} post={typedPost} />
                 )}
                 <Card className='group/card'>
                     <div className='flex items-center justify-between gap-6'>
@@ -149,7 +205,11 @@ const Overview: React.FC = () => {
                     </div>
                     <CardContent>
                         <Separator />
-                        <WebOverview />
+                        <WebOverview
+                            chartData={processedChartData}
+                            isLoading={chartIsLoading}
+                            range={chartRange}
+                        />
                     </CardContent>
                 </Card>
             </PostAnalyticsContent>

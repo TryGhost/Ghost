@@ -1,6 +1,7 @@
 import {getRangeDates} from './useGrowthStats';
+import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useMemo} from 'react';
-import {useNewsletterStatsByNewsletterId, useSubscriberCountByNewsletterId} from '@tryghost/admin-x-framework/api/stats';
+import {useNewsletterStats, useSubscriberCount} from '@tryghost/admin-x-framework/api/stats';
 
 /**
  * Represents the possible fields to order top newsletters by.
@@ -14,8 +15,9 @@ export type TopNewslettersOrder = 'date desc' | 'open_rate desc' | 'click_rate d
  * @param range - The number of days for the date range (e.g., 7, 30, 90). Defaults to 30.
  * @param order - The field and direction to order by (e.g., 'open_rate desc'). Defaults to 'date desc'.
  * @param newsletterId - Optional ID of the specific newsletter to get stats for
+ * @param shouldFetch - Whether to actually fetch data. If false, returns loading state without making API calls.
  */
-export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslettersOrder, newsletterId?: string) => {
+export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslettersOrder, newsletterId?: string, shouldFetch = true) => {
     // Default range and order
     const currentRange = range ?? 30;
     const currentOrder = order ?? 'date desc'; // Default to date descending
@@ -23,12 +25,35 @@ export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslette
     // Calculate date strings using the helper, memoize for stability
     const {dateFrom, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
 
-    // Call the hook with the parameters
-    return useNewsletterStatsByNewsletterId(newsletterId, {
-        date_from: dateFrom,
-        date_to: endDate,
-        order: currentOrder
-    });
+    // Build search params
+    const searchParams = useMemo(() => {
+        const params: Record<string, string> = {
+            date_from: dateFrom,
+            date_to: endDate,
+            order: currentOrder
+        };
+
+        if (newsletterId) {
+            params.newsletter_id = newsletterId;
+        }
+
+        return params;
+    }, [dateFrom, endDate, currentOrder, newsletterId]);
+
+    // Conditionally call the hook or return empty state
+    const realResult = useNewsletterStats({searchParams, enabled: shouldFetch});
+    
+    if (!shouldFetch) {
+        return {
+            data: undefined,
+            isLoading: false,
+            error: null,
+            isError: false,
+            refetch: realResult.refetch
+        };
+    }
+    
+    return realResult;
 };
 
 /**
@@ -37,17 +62,49 @@ export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslette
  *
  * @param range - The number of days for the date range (e.g., 7, 30, 90). Defaults to 30.
  * @param newsletterId - Optional ID of the specific newsletter to get stats for
+ * @param shouldFetch - Whether to actually fetch data. If false, returns loading state without making API calls.
  */
-export const useSubscriberCountWithRange = (range?: number, newsletterId?: string) => {
+export const useSubscriberCountWithRange = (range?: number, newsletterId?: string, shouldFetch = true) => {
     // Default range
     const currentRange = range ?? 30;
 
     // Calculate date strings using the helper, memoize for stability
     const {dateFrom, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
 
-    // Call the hook with the parameters
-    return useSubscriberCountByNewsletterId(newsletterId, {
-        date_from: dateFrom,
-        date_to: endDate
-    });
+    // Build search params
+    const searchParams = useMemo(() => {
+        const params: Record<string, string> = {
+            date_from: dateFrom,
+            date_to: endDate
+        };
+
+        if (newsletterId) {
+            params.newsletter_id = newsletterId;
+        }
+
+        return params;
+    }, [dateFrom, endDate, newsletterId]);
+
+    // Conditionally call the hook or return empty state
+    const realResult = useSubscriberCount({searchParams, enabled: shouldFetch});
+    
+    if (!shouldFetch) {
+        return {
+            data: undefined,
+            isLoading: false,
+            error: null,
+            isError: false,
+            refetch: realResult.refetch
+        };
+    }
+    
+    return realResult;
+};
+
+/**
+ * Hook to fetch all newsletters with their subscriber counts
+ * This is used to populate the newsletter dropdown and get basic stats
+ */
+export const useNewslettersList = () => {
+    return useBrowseNewsletters();
 };

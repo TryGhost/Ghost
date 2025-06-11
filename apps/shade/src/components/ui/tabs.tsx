@@ -174,11 +174,20 @@ interface KpiTabValueProps {
     icon?: keyof typeof LucideIcons;
     label: string;
     value: string | number;
-    diffDirection?: 'up' | 'down' | 'same';
+    diffDirection?: 'up' | 'down' | 'same' | 'hidden';
     diffValue?: string | number;
+    className?: string;
 }
 
-const KpiTabValue: React.FC<KpiTabValueProps> = ({color, icon: iconName, label, value, diffDirection, diffValue}) => {
+const KpiTabValue: React.FC<KpiTabValueProps> = ({
+    color,
+    icon: iconName,
+    label,
+    value,
+    diffDirection,
+    diffValue,
+    className
+}) => {
     const IconComponent = iconName ? LucideIcons[iconName] as LucideIcon : null;
 
     const diffContainerClassName = cn(
@@ -188,7 +197,7 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({color, icon: iconName, label, 
         diffDirection === 'same' && 'text-gray-700'
     );
     return (
-        <div className='group flex w-full flex-col items-start gap-2'>
+        <div className={cn('group flex w-full flex-col items-start gap-2', className)}>
             <div className='flex h-[22px] items-center gap-1.5 text-base font-medium text-muted-foreground transition-all group-hover:text-foreground' data-type="value">
                 {color && <div className='ml-1 size-2 rounded-full opacity-50' style={{backgroundColor: color}}></div>}
                 {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
@@ -198,7 +207,7 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({color, icon: iconName, label, 
                 <div className='text-[2.3rem] font-semibold leading-none tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>
                     {value}
                 </div>
-                {diffValue &&
+                {diffDirection && diffDirection !== 'hidden' &&
                     <>
                         <div className={diffContainerClassName}>
                             {diffDirection === 'up' &&

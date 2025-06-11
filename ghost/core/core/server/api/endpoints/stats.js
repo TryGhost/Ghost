@@ -110,6 +110,36 @@ const controller = {
             return await statsService.api.getReferrersHistory();
         }
     },
+    referrersHistoryWithRange: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'date_from',
+            'date_to',
+            'timezone',
+            'member_status'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'referrersHistoryWithRange',
+                options: {
+                    date_from: frame.options.date_from,
+                    date_to: frame.options.date_to,
+                    timezone: frame.options.timezone,
+                    member_status: frame.options.member_status
+                }
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getReferrersHistoryWithRange(frame.options.date_from, frame.options.date_to);
+        }
+    },
     topContent: {
         headers: {
             cacheInvalidate: false
@@ -119,7 +149,8 @@ const controller = {
             'date_to',
             'timezone',
             'member_status',
-            'tb_version'
+            'tb_version',
+            'post_type'
         ],
         permissions: {
             docName: 'posts',
@@ -145,7 +176,8 @@ const controller = {
             'limit',
             'date_from',
             'date_to',
-            'timezone'
+            'timezone',
+            'post_type'
         ],
         permissions: {
             docName: 'posts',
@@ -160,7 +192,8 @@ const controller = {
                     limit: frame.options.limit,
                     date_from: frame.options.date_from,
                     date_to: frame.options.date_to,
-                    timezone: frame.options.timezone
+                    timezone: frame.options.timezone,
+                    post_type: frame.options.post_type
                 }
             };
         },

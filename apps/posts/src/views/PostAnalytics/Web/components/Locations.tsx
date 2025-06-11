@@ -1,23 +1,24 @@
-import React, {useMemo} from 'react';
+import React from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, Icon, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, formatNumber, formatPercentage} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@src/providers/PostAnalyticsContext';
-import {useQuery} from '@tinybirdco/charts';
 
 countries.registerLocale(enLocale);
 const getCountryName = (label: string) => {
     return STATS_LABEL_MAPPINGS[label as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(label, 'en') || 'Unknown';
 };
 
-interface LocationsProps {
-    queryParams: Record<string, string | number>
+interface ProcessedLocationData {
+    location: string;
+    visits: number;
+    percentage: number;
 }
 
-// Array of values that represent unknown locations
-const UNKNOWN_LOCATIONS = ['NULL', 'ᴺᵁᴸᴸ', ''];
+interface LocationsProps {
+    data: ProcessedLocationData[];
+    isLoading: boolean;
+}
 
 // Normalize country code for flag display
 const normalizeCountryCode = (code: string): string => {
@@ -35,12 +36,6 @@ const normalizeCountryCode = (code: string): string => {
     const upperCode = code.toUpperCase();
     return mappings[upperCode] || (code.length > 2 ? code.substring(0, 2) : code);
 };
-
-interface ProcessedLocationData {
-    location: string;
-    visits: number;
-    percentage: number;
-}
 
 interface LocationsTableProps {
     data: ProcessedLocationData[];
@@ -86,45 +81,8 @@ const LocationsTable: React.FC<LocationsTableProps> = ({data}) => {
     );
 };
 
-const Locations:React.FC<LocationsProps> = ({queryParams}) => {
-    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-
-    const {data, loading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_top_locations'),
-        token: getToken(statsConfig),
-        params: queryParams
-    });
-
-    const isLoading = isConfigLoading || loading;
-
-    // Calculate total visits for percentage calculation
-    const totalVisits = useMemo(() => data?.reduce((sum, row) => sum + Number(row.visits), 0) || 0,
-        [data]
-    );
-
-    // Memoize the processed data with percentages
-    const processedData = useMemo<ProcessedLocationData[]>(() => {
-        const processed = data?.map(row => ({
-            location: String(row.location),
-            visits: Number(row.visits),
-            percentage: totalVisits > 0 ? (Number(row.visits) / totalVisits) : 0,
-            isUnknown: UNKNOWN_LOCATIONS.includes(String(row.location))
-        })) || [];
-
-        // Separate known and unknown locations
-        const knownLocations = processed.filter(item => !item.isUnknown);
-        const unknownLocations = processed.filter(item => item.isUnknown);
-
-        // Combine unknown locations into a single entry
-        const combinedUnknown = unknownLocations.length > 0 ? [{
-            location: 'Unknown',
-            visits: unknownLocations.reduce((sum, item) => sum + item.visits, 0),
-            percentage: unknownLocations.reduce((sum, item) => sum + item.percentage, 0)
-        }] : [];
-
-        // Return combined array with known locations first, followed by the combined unknown entry
-        return [...knownLocations, ...combinedUnknown];
-    }, [data, totalVisits]);
+const Locations:React.FC<LocationsProps> = ({data, isLoading}) => {
+    const topLocations = data.slice(0, 10);
 
     return (
         <>
@@ -138,9 +96,9 @@ const Locations:React.FC<LocationsProps> = ({queryParams}) => {
                     </CardHeader>
                     <CardContent>
                         <Separator />
-                        <LocationsTable data={processedData} />
+                        <LocationsTable data={topLocations} />
                     </CardContent>
-                    {processedData!.length > 10 &&
+                    {data.length > 10 &&
                         <CardFooter>
                             <Sheet>
                                 <SheetTrigger asChild>
@@ -152,7 +110,7 @@ const Locations:React.FC<LocationsProps> = ({queryParams}) => {
                                         <SheetDescription>Where are the readers of this post</SheetDescription>
                                     </SheetHeader>
                                     <div className='group/datalist'>
-                                        <LocationsTable data={processedData} />
+                                        <LocationsTable data={data} />
                                     </div>
                                 </SheetContent>
                             </Sheet>

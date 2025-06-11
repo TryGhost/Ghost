@@ -9,6 +9,7 @@ const urlUtils = require('../../../shared/url-utils');
  * @property {string} [date_from] - optional start date filter (YYYY-MM-DD)
  * @property {string} [date_to] - optional end date filter (YYYY-MM-DD)
  * @property {string} [timezone='UTC'] - optional timezone for date interpretation
+ * @property {string} [post_type] - optional filter by post type ('post' or 'page')
  */
 
 /**
@@ -102,6 +103,11 @@ class PostsStatsService {
                 .leftJoin('paid', 'p.id', 'paid.post_id')
                 .leftJoin('mrr', 'p.id', 'mrr.post_id')
                 .where('p.status', 'published');
+
+            // Add post_type filter if specified
+            if (options.post_type && ['post', 'page'].includes(options.post_type)) {
+                query = query.where('p.type', options.post_type);
+            }
 
             const results = await query
                 .orderBy(orderField, orderDirection)
@@ -258,12 +264,32 @@ class PostsStatsService {
             .countDistinct('mce.member_id as free_members')
             .leftJoin('members_subscription_created_events as msce', function () {
                 this.on('mce.member_id', '=', 'msce.member_id')
-                    .andOn('mce.attribution_id', '=', 'msce.attribution_id')
-                    .andOnVal('msce.attribution_type', '=', 'post');
+                    .andOn('mce.attribution_id', '=', 'msce.attribution_id');
+                // Add attribution_type condition based on post_type filter
+                if (options.post_type === 'page') {
+                    this.andOnVal('msce.attribution_type', '=', 'page');
+                } else if (options.post_type === 'post') {
+                    this.andOnVal('msce.attribution_type', '=', 'post');
+                } else {
+                    // If no post_type specified, include both
+                    this.andOn(function () {
+                        this.on('msce.attribution_type', '=', knex.raw('?', ['post']))
+                            .orOn('msce.attribution_type', '=', knex.raw('?', ['page']));
+                    });
+                }
             })
-            .where('mce.attribution_type', 'post')
             .whereNull('msce.id')
             .groupBy('mce.attribution_id');
+
+        // Filter attribution_type based on post_type
+        if (options.post_type === 'page') {
+            subquery = subquery.where('mce.attribution_type', 'page');
+        } else if (options.post_type === 'post') {
+            subquery = subquery.where('mce.attribution_type', 'post');
+        } else {
+            // If no post_type specified, include both
+            subquery = subquery.whereIn('mce.attribution_type', ['post', 'page']);
+        }
 
         this._applyDateFilter(subquery, options, 'mce.created_at');
         return subquery;
@@ -281,8 +307,17 @@ class PostsStatsService {
         let subquery = knex('members_subscription_created_events as msce')
             .select('msce.attribution_id as post_id')
             .countDistinct('msce.member_id as paid_members')
-            .where('msce.attribution_type', 'post')
             .groupBy('msce.attribution_id');
+
+        // Filter attribution_type based on post_type
+        if (options.post_type === 'page') {
+            subquery = subquery.where('msce.attribution_type', 'page');
+        } else if (options.post_type === 'post') {
+            subquery = subquery.where('msce.attribution_type', 'post');
+        } else {
+            // If no post_type specified, include both
+            subquery = subquery.whereIn('msce.attribution_type', ['post', 'page']);
+        }
 
         this._applyDateFilter(subquery, options, 'msce.created_at');
         return subquery;
@@ -303,8 +338,17 @@ class PostsStatsService {
                 this.on('mpse.subscription_id', '=', 'msce.subscription_id');
                 this.andOn('mpse.member_id', '=', 'msce.member_id');
             })
-            .where('msce.attribution_type', 'post')
             .groupBy('msce.attribution_id');
+
+        // Filter attribution_type based on post_type
+        if (options.post_type === 'page') {
+            subquery = subquery.where('msce.attribution_type', 'page');
+        } else if (options.post_type === 'post') {
+            subquery = subquery.where('msce.attribution_type', 'post');
+        } else {
+            // If no post_type specified, include both
+            subquery = subquery.whereIn('msce.attribution_type', ['post', 'page']);
+        }
 
         this._applyDateFilter(subquery, options, 'msce.created_at');
         return subquery;
@@ -683,20 +727,21 @@ class PostsStatsService {
      * @param {Object} options
      * @param {string} options.date_from - Start date in YYYY-MM-DD format
      * @param {string} options.date_to - End date in YYYY-MM-DD format
-     * @param {string} options.timezone - Timezone to use for date interpretation
+     * @param {string} [options.timezone] - Timezone to use for date interpretation (default: 'UTC')
      * @param {number} [options.limit] - Maximum number of posts to return (default: 5)
      * @returns {Promise<Object>} Top posts with view counts and additional Ghost data
      */
     async getTopPostsViews(options) {
         try {
             const limit = options.limit || 5;
+            const timezone = options.timezone || 'UTC';
             let viewsData = [];
 
             if (this.tinybirdClient) {
                 const tinybirdOptions = {
                     dateFrom: options.date_from,
                     dateTo: options.date_to,
-                    timezone: options.timezone,
+                    timezone: timezone,
                     post_type: 'post',
                     limit: limit
                 };
@@ -795,10 +840,10 @@ class PostsStatsService {
             });
 
             // Combine both sets of posts
-            return [...postsWithViews, ...additionalPostsWithZeroViews];
+            return {data: [...postsWithViews, ...additionalPostsWithZeroViews]};
         } catch (error) {
             logging.error('Error fetching top posts views:', error);
-            return [];
+            return {data: []};
         }
     }
 
