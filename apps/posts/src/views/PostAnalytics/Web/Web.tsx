@@ -6,8 +6,8 @@ import Locations from './components/Locations';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import Sources from './components/Sources';
+import {BarChartLoadingIndicator, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator, SkeletonTable, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
-import {formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
@@ -53,14 +53,13 @@ const Web: React.FC<postAnalyticsProps> = () => {
     }, [isPostLoading, post, statsConfig?.id, startDate, endDate, timezone, audience]);
 
     // Get web kpi data
-    const {data: kpiData, loading: isTBLoading} = useQuery({
+    const {data: kpiData, loading: isKpisLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
         token: getToken(statsConfig),
         params: params
     });
 
-    const isPageLoading = isConfigLoading || isPostLoading;
-    const kpiLoading = isConfigLoading || isTBLoading;
+    const isPageLoading = isConfigLoading || isPostLoading || isKpisLoading;
 
     const kpiValues = getWebKpiValues(kpiData as unknown as KpiDataItem[] | null);
 
@@ -71,15 +70,49 @@ const Web: React.FC<postAnalyticsProps> = () => {
                 <DateRangeSelect />
             </PostAnalyticsHeader>
             <PostAnalyticsContent>
-                <Kpis data={kpiData as KpiDataItem[] | null} isLoading={kpiLoading} />
-                <div className='grid grid-cols-2 gap-8'>
-                    <Locations queryParams={params} />
-                    <Sources queryParams={params} />
-                </div>
-                {!isPageLoading && !(kpiData && kpiData.length !== 0 && kpiValues.visits !== '0') &&
-                    <div className='mt-10 grow'>
-                        <EmptyStatView />
-                    </div>
+                {isPageLoading ?
+                    <>
+                        <Card>
+                            <CardContent className='h-[calc(16vw+102px)] max-h-[440px] w-full items-center justify-center pb-0'>
+                                <BarChartLoadingIndicator />
+                            </CardContent>
+                        </Card>
+                        <div className='grid grid-cols-2 gap-8'>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Locations</CardTitle>
+                                    <CardDescription>Where are the readers of this post</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <Separator />
+                                    <SkeletonTable className='mt-6' />
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Top sources</CardTitle>
+                                    <CardDescription>How readers found your post</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <Separator />
+                                    <SkeletonTable className='mt-6' />
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </>
+                    :
+                    kpiData && kpiData.length !== 0 && kpiValues.visits !== '0' ?
+                        <>
+                            <Kpis data={kpiData as KpiDataItem[] | null} />
+                            <div className='grid grid-cols-2 gap-8'>
+                                <Locations queryParams={params} />
+                                <Sources queryParams={params} />
+                            </div>
+                        </>
+                        :
+                        <div className='mt-10 grow'>
+                            <EmptyStatView />
+                        </div>
                 }
             </PostAnalyticsContent>
         </>

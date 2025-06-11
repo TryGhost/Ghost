@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {BarChartLoadingIndicator, Card, CardContent, GhAreaChart, KpiTabTrigger, KpiTabValue, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, sanitizeChartData} from '@tryghost/shade';
+import {Card, CardContent, GhAreaChart, KpiTabTrigger, KpiTabValue, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, sanitizeChartData} from '@tryghost/shade';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useSearchParams} from '@tryghost/admin-x-framework';
@@ -40,10 +40,9 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
 
 interface KpisProps {
     data: KpiDataItem[] | null | undefined;
-    isLoading: boolean;
 }
 
-const Kpis:React.FC<KpisProps> = ({data, isLoading}) => {
+const Kpis:React.FC<KpisProps> = ({data}) => {
     const {range} = useGlobalData();
     const [searchParams] = useSearchParams();
     const initialTab = searchParams.get('tab') || 'visits';
@@ -79,22 +78,16 @@ const Kpis:React.FC<KpisProps> = ({data, isLoading}) => {
                             <KpiTabValue color={KPI_METRICS.views.color} label="Total views" value={kpiValues.views} />
                         </KpiTabTrigger>
                     </TabsList>
-                    {isLoading ?
-                        <div className='mb-1 mt-4 h-[16vw] max-h-[320px]'>
-                            <BarChartLoadingIndicator />
-                        </div>
-                        :
-                        <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
-                            <GhAreaChart
-                                className={'-mb-3 h-[16vw] max-h-[320px] w-full'}
-                                color={currentMetric.color}
-                                data={chartData}
-                                id={currentMetric.dataKey}
-                                range={range}
-                                syncId="overview-charts"
-                            />
-                        </div>
-                    }
+                    <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
+                        <GhAreaChart
+                            className={'-mb-3 h-[16vw] max-h-[320px] w-full'}
+                            color={currentMetric.color}
+                            data={chartData}
+                            id={currentMetric.dataKey}
+                            range={range}
+                            syncId="overview-charts"
+                        />
+                    </div>
                 </Tabs>
             </CardContent>
         </Card>
