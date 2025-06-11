@@ -12,7 +12,7 @@ import {
     H4,
     LucideIcon
 } from '@tryghost/shade';
-import {showToast} from '@tryghost/admin-x-design-system';
+import {toast} from 'sonner';
 
 type DialogMode = 'idle' | 'dual' | 'userOnly' | 'domainOnly';
 
@@ -128,10 +128,7 @@ const UnblockDialog: React.FC<UnblockDialogProps> = ({
             onUnblockComplete?.();
         }
 
-        showToast({
-            title: 'User unblocked',
-            type: 'success'
-        });
+        toast.success('User unblocked');
     };
 
     const handleDomainUnblock = async () => {
@@ -147,10 +144,7 @@ const UnblockDialog: React.FC<UnblockDialogProps> = ({
             onUnblockComplete?.();
         }
 
-        showToast({
-            title: 'Domain unblocked',
-            type: 'success'
-        });
+        toast.success('Domain unblocked');
     };
 
     const domain = handle.split('@').filter(Boolean)[1];

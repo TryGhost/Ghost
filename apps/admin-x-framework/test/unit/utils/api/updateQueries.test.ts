@@ -1,8 +1,8 @@
 import {deleteFromQueryCache, insertToQueryCache, updateQueryCache} from '../../../../src/utils/api/updateQueries';
 
-describe('cache update functions', function () {
-    describe('insertToQueryCache', function () {
-        it('appends records from the new data', function () {
+describe('cache update functions', () => {
+    describe('insertToQueryCache', () => {
+        it('appends records from the new data', () => {
             const newData = {
                 posts: [{id: '2'}]
             };
@@ -18,7 +18,7 @@ describe('cache update functions', function () {
             });
         });
 
-        it('appends to the last page for paginated queries', function () {
+        it('appends to the last page for paginated queries', () => {
             const newData = {
                 posts: [{id: '3'}]
             };
@@ -35,8 +35,8 @@ describe('cache update functions', function () {
         });
     });
 
-    describe('updateQueryCache', function () {
-        it('updates based on the ID', function () {
+    describe('updateQueryCache', () => {
+        it('updates based on the ID', () => {
             const newData = {
                 posts: [{id: '2', title: 'New Title'}]
             };
@@ -52,7 +52,7 @@ describe('cache update functions', function () {
             });
         });
 
-        it('updates nested records in paginated queries', function () {
+        it('updates nested records in paginated queries', () => {
             const newData = {
                 posts: [{id: '2', title: 'New Title'}]
             };
@@ -69,8 +69,8 @@ describe('cache update functions', function () {
         });
     });
 
-    describe('deleteFromQueryCache', function () {
-        it('deletes based on the ID', function () {
+    describe('deleteFromQueryCache', () => {
+        it('deletes based on the ID', () => {
             const currentData = {
                 posts: [{id: '1'}, {id: '2'}]
             };
@@ -82,7 +82,7 @@ describe('cache update functions', function () {
             });
         });
 
-        it('deletes nested records in paginated queries', function () {
+        it('deletes nested records in paginated queries', () => {
             const currentData = {
                 pages: [{posts: [{id: '1'}]}, {posts: [{id: '2'}]}]
             };

@@ -1,0 +1,37 @@
+{
+    "stats": [
+        {
+            "date": "2024-01-01",
+            "mrr": 50000,
+            "currency": "usd"
+        },
+        {
+            "date": "2024-01-02",
+            "mrr": 51500,
+            "currency": "usd"
+        },
+        {
+            "date": "2024-01-03",
+            "mrr": 52500,
+            "currency": "usd"
+        },
+        {
+            "date": "2024-01-04",
+            "mrr": 54000,
+            "currency": "usd"
+        },
+        {
+            "date": "2024-01-05",
+            "mrr": 55000,
+            "currency": "usd"
+        }
+    ],
+    "meta": {
+        "totals": [
+            {
+                "currency": "usd",
+                "mrr": 55000
+            }
+        ]
+    }
+} 

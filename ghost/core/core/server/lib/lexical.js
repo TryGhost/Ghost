@@ -7,6 +7,7 @@ const storage = require('../adapters/storage');
 
 let nodes;
 let lexicalHtmlRenderer;
+let customNodeRenderers;
 let urlTransformMap;
 let postsService;
 let serializePosts;
@@ -52,6 +53,30 @@ module.exports = {
         return lexicalHtmlRenderer;
     },
 
+    get customNodeRenderers() {
+        if (
+            !labs.isSet('emailCustomizationAlpha') &&
+            !labs.isSet('emailCustomization')
+        ) {
+            return undefined;
+        }
+
+        if (!customNodeRenderers) {
+            try {
+                customNodeRenderers = require('../services/koenig/node-renderers');
+            } catch (err) {
+                throw new errors.InternalServerError({
+                    message: 'Unable to render post content',
+                    context: 'The custom node renderers module could not be required',
+                    code: 'KOENIG_CUSTOM_NODE_RENDERERS_LOAD_ERROR',
+                    err: err
+                });
+            }
+        }
+
+        return customNodeRenderers;
+    },
+
     async render(lexical, userOptions = {}) {
         if (!postsService) {
             const getPostServiceInstance = require('../services/posts/posts-service');
@@ -77,7 +102,8 @@ module.exports = {
                 contentVisibility: labs.isSet('contentVisibility'),
                 emailCustomization: labs.isSet('emailCustomization'),
                 emailCustomizationAlpha: labs.isSet('emailCustomizationAlpha')
-            }
+            },
+            nodeRenderers: this.customNodeRenderers
         }, userOptions);
 
         return await this.lexicalHtmlRenderer.render(lexical, options);

@@ -25,6 +25,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({
     onOpenChange
 }) => {
     const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
+    const isScrollingToHeading = React.useRef(false);
 
     const handleHeadingClick = (id: string) => {
         if (!iframeElement?.contentDocument) {
@@ -33,10 +34,17 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({
 
         const heading = iframeElement.contentDocument.getElementById(id);
         if (heading && modalRef.current) {
+            isScrollingToHeading.current = true;
+            setActiveHeadingId(id);
+
             modalRef.current.scrollTo({
                 top: heading.offsetTop - 20,
                 behavior: 'smooth'
             });
+
+            setTimeout(() => {
+                isScrollingToHeading.current = false;
+            }, 1000);
         }
     };
 
@@ -51,6 +59,10 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({
         }
 
         const handleScroll = () => {
+            if (isScrollingToHeading.current) {
+                return;
+            }
+
             const doc = iframeElement.contentDocument;
             if (!doc) {
                 return;
@@ -83,7 +95,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({
         };
 
         container.addEventListener('scroll', scrollHandler);
-        handleScroll(); // Initial check
+        handleScroll();
 
         return () => {
             container.removeEventListener('scroll', scrollHandler);
@@ -128,6 +140,17 @@ const HEADING_PADDINGS = {
 } as const;
 
 const TableOfContentsView: React.FC<TableOfContentsViewProps> = ({items, activeHeading, onItemClick, onOpenChange}) => {
+    const [open, setOpen] = useState(false);
+    const timeoutRef = React.useRef<number>();
+
+    React.useEffect(() => {
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+        };
+    }, []);
+
     if (items.length === 0) {
         return null;
     }
@@ -144,10 +167,29 @@ const TableOfContentsView: React.FC<TableOfContentsViewProps> = ({items, activeH
         return HEADING_PADDINGS[getNormalizedLevel(level) as keyof typeof HEADING_PADDINGS];
     };
 
+    const handleMouseEnter = () => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+        setOpen(true);
+        onOpenChange?.(true);
+    };
+
+    const handleMouseLeave = () => {
+        timeoutRef.current = setTimeout(() => {
+            setOpen(false);
+            onOpenChange?.(false);
+        }, 100);
+    };
+
     return (
-        <Popover modal={false} onOpenChange={onOpenChange}>
+        <Popover modal={false} open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <div className='absolute right-2 top-1/2 flex -translate-y-1/2 cursor-pointer flex-col items-end gap-2 rounded-md p-2 text-base hover:bg-black/[3%] dark:bg-black dark:hover:bg-gray-950'>
+                <div
+                    className='absolute right-2 top-1/2 flex -translate-y-1/2 flex-col items-end gap-2 rounded-md p-2 text-base dark:bg-black'
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                >
                     {items.map(item => (
                         <div
                             key={item.id}
@@ -160,7 +202,10 @@ const TableOfContentsView: React.FC<TableOfContentsViewProps> = ({items, activeH
                 align='center'
                 className='w-[240px] p-2'
                 side='left'
+                sideOffset={-28}
                 onCloseAutoFocus={e => e.preventDefault()}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
                 onOpenAutoFocus={e => e.preventDefault()}
             >
                 <nav
@@ -171,12 +216,13 @@ const TableOfContentsView: React.FC<TableOfContentsViewProps> = ({items, activeH
                     {items.map(item => (
                         <button
                             key={item.id}
-                            className={`block w-full cursor-pointer rounded py-1 text-left text-sm leading-tight ${activeHeading === item.id ? 'text-black dark:text-white' : 'text-gray-700 dark:text-gray-600'} hover:bg-gray-75 hover:text-gray-900 dark:hover:bg-grey-925 dark:hover:text-white ${getHeadingPadding(item.level)}`}
-                            title={item.text}
+                            className={`line-clamp-2 block w-full cursor-pointer rounded py-1 text-left text-sm leading-tight ${activeHeading === item.id ? 'text-black dark:text-white' : 'text-gray-700 dark:text-gray-600'} hover:bg-gray-75 hover:text-gray-900 dark:hover:bg-grey-925 dark:hover:text-white ${getHeadingPadding(item.level)}`}
                             type='button'
                             onClick={() => onItemClick(item.id)}
                         >
-                            {item.text}
+                            <span className="line-clamp-2">
+                                {item.text}
+                            </span>
                         </button>
                     ))}
                 </nav>

@@ -102,7 +102,11 @@ module.exports = class AdapterManager {
         /** @type AdapterConstructor */
         let Adapter;
         for (const pathToAdapters of this.pathsToAdapters) {
-            const pathToAdapter = path.join(pathToAdapters, adapterType, adapterClassName);
+            let pathToAdapter = path.join(pathToAdapters, adapterType, adapterClassName);
+            if (pathToAdapters === '') {
+                // We are loading from node_modules, we can remove the `adapterType` prefix
+                pathToAdapter = path.join(pathToAdapters, adapterClassName);
+            }
             try {
                 Adapter = this.loadAdapterFromPath(pathToAdapter);
                 if (Adapter) {

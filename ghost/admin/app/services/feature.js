@@ -62,7 +62,6 @@ export default class FeatureService extends Service {
     @feature('audienceFeedback') audienceFeedback;
     @feature('webmentions') webmentions;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
-    @feature('emailCustomizationPrototype') emailCustomizationPrototype;
     @feature('emailCustomizationAlpha') emailCustomizationAlpha;
     @feature('i18n') i18n;
     @feature('announcementBar') announcementBar;
@@ -75,6 +74,7 @@ export default class FeatureService extends Service {
     @feature('contentVisibility') contentVisibility;
     @feature('contentVisibilityAlpha') contentVisibilityAlpha;
     @feature('trafficAnalyticsAlpha') trafficAnalyticsAlpha;
+    @feature('updatedMainNav') updatedMainNav;
     @feature('trafficAnalytics') trafficAnalytics;
 
     _user = null;

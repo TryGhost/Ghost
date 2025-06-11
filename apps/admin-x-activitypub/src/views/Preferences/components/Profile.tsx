@@ -1,7 +1,6 @@
 import APAvatar from '@src/components/global/APAvatar';
 import {Account} from '@src/api/activitypub';
-import {Heading} from '@tryghost/admin-x-design-system';
-import {Skeleton} from '@tryghost/shade';
+import {H2, Skeleton} from '@tryghost/shade';
 
 type ProfileProps = {
     account?: Account
@@ -23,7 +22,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                 }
                 size='lg'
             />
-            <Heading className='mb-0.5 mt-4' level={3}>{!isLoading ? account?.name : <Skeleton className='w-32' />}</Heading>
+            <H2 className='mb-0.5 mt-4'>{!isLoading ? account?.name : <Skeleton className='w-32' />}</H2>
             <span className='text-[1.5rem] text-gray-700'>{!isLoading ? account?.handle : <Skeleton className='w-full max-w-56' />}</span>
         </div>
     );

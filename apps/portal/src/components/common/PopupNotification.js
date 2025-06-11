@@ -6,7 +6,6 @@ import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg
 import {getSupportAddress} from '../../utils/helpers';
 import {clearURLParams} from '../../utils/notifications';
 import Interpolate from '@doist/react-interpolate';
-import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 
 export const PopupNotificationStyles = `
     .gh-portal-popupnotification {
@@ -45,7 +44,6 @@ const NotificationText = ({message, site, t}) => {
     return (
         <p>
             <Interpolate
-                syntax={SYNTAX_I18NEXT}
                 string={t('An unexpected error occured. Please try again or <a>contact support</a> if the error persists.')}
                 mapping={{
                     a: <a href={supportAddressMail} onClick={() => {

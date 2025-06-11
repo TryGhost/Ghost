@@ -5,7 +5,7 @@ import {BarChartLoadingIndicator} from '@tryghost/shade';
 
 interface StatsViewProps<T> {
     isLoading: boolean;
-    data: T[] | null;
+    data?: T[] | null;
     children: React.ReactNode;
     loadingComponent?: React.ReactNode;
     emptyComponent?: React.ReactNode;
@@ -22,7 +22,7 @@ const StatsView = <T,>({
         <StatsContent>
             {isLoading ? (
                 loadingComponent
-            ) : !data || data.length === 0 ? (
+            ) : (data !== undefined && data && data.length === 0) ? (
                 emptyComponent
             ) : (
                 children

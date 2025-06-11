@@ -2,9 +2,9 @@ import {act, renderHook} from '@testing-library/react';
 import * as assert from 'assert/strict';
 import useForm from '../../../src/hooks/useForm';
 
-describe('useForm', function () {
-    describe('formState', function () {
-        it('returns the initial form state', function () {
+describe('useForm', () => {
+    describe('formState', () => {
+        it('returns the initial form state', () => {
             const {result} = renderHook(() => useForm({
                 initialState: {a: 1},
                 onSave: () => {}
@@ -14,8 +14,8 @@ describe('useForm', function () {
         });
     });
 
-    describe('updateForm', function () {
-        it('updates the form state', function () {
+    describe('updateForm', () => {
+        it('updates the form state', () => {
             const {result} = renderHook(() => useForm({
                 initialState: {a: 1},
                 onSave: () => {}
@@ -26,7 +26,7 @@ describe('useForm', function () {
             assert.deepEqual(result.current.formState, {a: 1, b: 2});
         });
 
-        it('sets the saveState to unsaved', function () {
+        it('sets the saveState to unsaved', () => {
             const {result} = renderHook(() => useForm({
                 initialState: {a: 1},
                 onSave: () => {}
@@ -38,8 +38,8 @@ describe('useForm', function () {
         });
     });
 
-    describe('handleSave', function () {
-        it('does nothing when the state has not changed', async function () {
+    describe('handleSave', () => {
+        it('does nothing when the state has not changed', async () => {
             let onSaveCalled = false;
 
             const {result} = renderHook(() => useForm({
@@ -55,7 +55,7 @@ describe('useForm', function () {
             assert.equal(onSaveCalled, false);
         });
 
-        it('calls the onSave callback when the state has changed', async function () {
+        it('calls the onSave callback when the state has changed', async () => {
             let onSaveCalled = false;
 
             const {result} = renderHook(() => useForm({

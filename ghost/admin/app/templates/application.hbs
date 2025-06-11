@@ -8,6 +8,27 @@
         </div>
     {{/if}}
 
+    {{#if (and this.session.user.isAdmin this.showUpdateBanner)}}
+    <aside class="gh-update-banner">
+        {{#if this.session.user.isOwnerOnly}}
+            <div class="gh-alert-content">
+                A new major version of Ghost is available!&nbsp;
+            </div>
+            <a href="#" {{on "click" this.openUpdateTab}}>Update to Ghost 6.0 &rarr;</a>
+        {{else}}
+            <div class="gh-alert-content">
+                Your Ghost install is ready for a major update!
+                {{#if this.ownerUserNameOrEmail}}
+                    {{this.ownerUserNameOrEmail}}
+                {{else}}
+                    Your site owner
+                {{/if}}
+                will need to log in to do this.
+            </div>
+        {{/if}}
+    </aside>
+    {{/if}}
+
     <GhAlerts />
 
     <div class="gh-viewport {{if this.ui.showMobileMenu 'mobile-menu-expanded'}}">

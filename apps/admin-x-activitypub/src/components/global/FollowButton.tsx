@@ -10,6 +10,7 @@ interface FollowButtonProps {
     type?: 'primary' | 'secondary';
     onFollow?: () => void;
     onUnfollow?: () => void;
+    'data-testid'?: string;
 }
 
 const noop = () => {};
@@ -19,7 +20,8 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     following,
     handle,
     onFollow = noop,
-    onUnfollow = noop
+    onUnfollow = noop,
+    'data-testid': testId
 }) => {
     const [isFollowing, setIsFollowing] = useState(following);
 
@@ -61,6 +63,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
                 'min-w-[90px]',
                 className
             )}
+            data-testid={testId}
             title={isFollowing ? 'Click to unfollow' : ''}
             variant={!isFollowing ? 'default' : 'outline'}
             onClick={(event) => {

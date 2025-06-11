@@ -156,7 +156,9 @@ module.exports = function apiRoutes() {
     router.get('/stats/referrers/posts/:id', mw.authAdminApi, http(api.stats.postReferrers));
     router.get('/stats/referrers', mw.authAdminApi, http(api.stats.referrersHistory));
     if (labs.isSet('trafficAnalytics')) {
+        router.get('/stats/latest-post', mw.authAdminApi, http(api.stats.latestPost));
         router.get('/stats/top-posts', mw.authAdminApi, http(api.stats.topPosts));
+        router.get('/stats/top-posts-views', mw.authAdminApi, http(api.stats.topPostsViews));
         router.get('/stats/top-content', mw.authAdminApi, http(api.stats.topContent));
         router.get('/stats/newsletter-stats', mw.authAdminApi, http(api.stats.newsletterStats));
         router.get('/stats/subscriber-count', mw.authAdminApi, http(api.stats.subscriberCount));
@@ -367,6 +369,9 @@ module.exports = function apiRoutes() {
 
     // Incoming recommendations
     router.get('/incoming_recommendations', mw.authAdminApi, http(api.incomingRecommendations.browse));
+
+    // Feedback
+    router.get('/feedback/:id', mw.authAdminApi, http(api.feedbackMembers.browse));
 
     return router;
 };

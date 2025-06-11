@@ -363,6 +363,10 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
 
             if (labs.isSet('trafficAnalytics') && config.get('tinybird') && config.get('tinybird:tracker')) {
                 head.push(getTinybirdTrackerScript(dataRoot));
+                // Set a flag in response locals to indicate tracking script is being served
+                if (dataRoot._locals) {
+                    dataRoot._locals.ghostAnalytics = true;
+                }
             }
 
             // Check if if the request is for a site preview, in which case we **always** use the custom font values

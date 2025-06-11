@@ -9,6 +9,9 @@ img {
     border: none;
     -ms-interpolation-mode: bicubic;
     max-width: 100%;
+    {{#if hasRoundedImageCorners}}
+    border-radius: 6px;
+    {{/if}}
 }
 
 img.is-dark-background {
@@ -18,6 +21,7 @@ img.is-dark-background {
 
 body {
     background-color: #fff;
+
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     font-size: 18px;
@@ -51,8 +55,24 @@ table td {
     width: 100%;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.body {
+    background-color: {{backgroundColor}} !important;
+}
+{{/hasFeature}}
+
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+.header {
+    {{#if headerBackgroundColor}}
+    background-color: {{headerBackgroundColor}};
+    {{else}}
+    background-color: {{backgroundColor}};
+    {{/if}}
+}
+{{/hasFeature}}
+
 /* Set a max-width, and make it display as block so it will automatically stretch to that width, but will also shrink down on a phone or something */
-.container {
+.body .container {
     display: block;
     margin: 0 auto !important;
     /* makes it centered */
@@ -83,7 +103,21 @@ hr {
     height: 1px;
     background-color: transparent;
     border: 0;
-    border-top: 1px solid #e0e7eb;
+    border-top: 1px solid {{dividerColor}};
+}
+.kg-hr-card td,
+.kg-paywall-hr td {
+    margin: 0;
+    padding-top: 1.5em; /* account for elements above having bottom padding, we want 3em total */
+    padding-bottom: 3em;
+    font-size: 17px;
+}
+.kg-hr td {
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid {{dividerColor}};
+    font-size: 0;
+    line-height: 0;
 }
 
 p,
@@ -147,7 +181,11 @@ dt {
     float: left;
     margin: 0 20px 0 0;
     width: 120px;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    {{else}}
     color: #15212A;
+    {{/hasFeature}}
     font-weight: 500;
     text-align: right;
 }
@@ -172,7 +210,17 @@ blockquote.kg-blockquote-alt {
     text-align: center;
     font-size: 1.2em;
     font-style: italic;
-    color: #73818c;
+    {{#hasFeature "emailCustomizationAlpha"}}
+        {{#if backgroundIsDark}}
+            color: #8f9aa3;
+            color: rgba(255, 255, 255, .6);
+        {{else}}
+            color: #73818c;
+            color: rgba(0, 0, 0, .6);
+        {{/if}}
+    {{else}}
+        color: #73818c;
+    {{/hasFeature}}
 }
 
 blockquote p {
@@ -218,6 +266,16 @@ h6 {
     text-rendering: optimizeLegibility;
 }
 
+.title-serif h1,
+.title-serif h2,
+.title-serif h3,
+.title-serif h4,
+.title-serif h5,
+.title-serif h6 {
+    font-family: Georgia, serif;
+    letter-spacing: -0.01em;
+}
+
 h1 {
     margin: 1.5em 0 0.5em 0;
     font-size: 42px;
@@ -251,6 +309,130 @@ h6 {
     line-height: 1.3em;
 }
 
+/*
+  Adjust margins and padding when hr cards surround headings to simulate the
+  margin collapsing that we no longer have when using table+padding for hr cards.
+  Goal is to always have 3em spacing between heading and divider line.
+*/
+h1:has(+ .kg-hr-card),
+h2:has(+ .kg-hr-card),
+h3:has(+ .kg-hr-card),
+h4:has(+ .kg-hr-card),
+h5:has(+ .kg-hr-card),
+h6:has(+ .kg-hr-card),
+h1:has(+ .kg-paywall),
+h2:has(+ .kg-paywall),
+h3:has(+ .kg-paywall),
+h4:has(+ .kg-paywall),
+h5:has(+ .kg-paywall),
+h6:has(+ .kg-paywall) {
+    margin-bottom: 0;
+}
+
+h1 + .kg-hr-card td,
+h2 + .kg-hr-card td,
+h3 + .kg-hr-card td,
+h4 + .kg-hr-card td,
+h5 + .kg-hr-card td,
+h6 + .kg-hr-card td,
+h1 + .kg-paywall .kg-paywall-hr td,
+h2 + .kg-paywall .kg-paywall-hr td,
+h3 + .kg-paywall .kg-paywall-hr td,
+h4 + .kg-paywall .kg-paywall-hr td,
+h5 + .kg-paywall .kg-paywall-hr td,
+h6 + .kg-paywall .kg-paywall-hr td {
+    padding-top: 3em;
+}
+
+.kg-hr-card + h1,
+.kg-hr-card + h2,
+.kg-hr-card + h3,
+.kg-hr-card + h4,
+.kg-hr-card + h5,
+.kg-hr-card + h6,
+.kg-paywall-hr + h3 {
+    margin-top: 0;
+}
+
+/* Post content headings */
+.post-content-row h1,
+.post-content-row h2,
+.post-content-row h3,
+.post-content-row h4,
+.post-content-row h5,
+.post-content-row h6 {
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
+    {{else}}
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    {{/hasFeature}}
+    {{/if}}
+}
+
+{{#hasFeature "emailCustomizationAlpha"}}
+/* Apply custom content text color to main content elements */
+.post-content-row > td > p,
+.post-content-row .post-content > p,
+.post-content-row .post-content-sans-serif > p,
+.post-content-row > td > blockquote:not(.kg-blockquote-alt),
+.post-content-row .post-content > blockquote:not(.kg-blockquote-alt),
+.post-content-row .post-content-sans-serif > blockquote:not(.kg-blockquote-alt),
+.post-content-row > td > blockquote:not(.kg-blockquote-alt) p,
+.post-content-row .post-content > blockquote:not(.kg-blockquote-alt) p,
+.post-content-row .post-content-sans-serif > blockquote:not(.kg-blockquote-alt) p,
+.post-content-row .kg-cta-bg-none .kg-cta-text p {
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+}
+
+
+
+/* Exclude paragraphs inside cards from custom text color (except CTA cards which are handled separately) */
+.post-content-row .kg-card:not(.kg-cta-card) p,
+.post-content-row .kg-toggle-content p,
+.post-content-row .kg-callout-text,
+.post-content-row .kg-product-description-wrapper p {
+    color: inherit !important;
+}
+
+/* Exclude CTA cards with colored backgrounds from custom text color, but allow transparent ones */
+.post-content-row .kg-cta-bg-white .kg-cta-text p,
+.post-content-row .kg-cta-bg-grey .kg-cta-text p,
+.post-content-row .kg-cta-bg-blue .kg-cta-text p,
+.post-content-row .kg-cta-bg-green .kg-cta-text p,
+.post-content-row .kg-cta-bg-yellow .kg-cta-text p,
+.post-content-row .kg-cta-bg-red .kg-cta-text p,
+.post-content-row .kg-cta-bg-pink .kg-cta-text p,
+.post-content-row .kg-cta-bg-purple .kg-cta-text p {
+    color: inherit !important;
+}
+{{/hasFeature}}
+
+{{#hasFeature "emailCustomizationAlpha"}}
+.kg-cta-bg-none .kg-cta-sponsor-label span {
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+}
+{{/hasFeature}}
+
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+/* Links in captions */
+.feature-image-caption a,
+figcaption a {
+    color: {{linkColor}};
+}
+
+.kg-toggle-card:not(.kg-cta-card) a {
+    color: {{linkColor}};
+}
+.kg-callout-card:not(.kg-callout-card-accent) a {
+    color: {{linkColor}};
+}
+
+.subscription-box .manage-subscription a {
+    color: {{linkColor}} !important;
+}
+{{/hasFeature}}
+
 h1 strong,
 h2 strong,
 h3 strong,
@@ -276,7 +458,17 @@ figcaption {
     padding-top: 10px;
     padding-bottom: 10px;
     line-height: 1.5em;
-    color: #73818c;
+    {{#hasFeature "emailCustomizationAlpha"}}
+        {{#if backgroundIsDark}}
+            color: #8f9aa3;
+            color: rgba(255, 255, 255, .6);
+        {{else}}
+            color: #73818c;
+            color: rgba(0, 0, 0, .6);
+        {{/if}}
+    {{else}}
+        color: #73818c;
+    {{/hasFeature}}
 }
 
 figcaption a {
@@ -332,6 +524,16 @@ figure blockquote p {
     padding-top: 32px;
 }
 
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+.site-url {
+    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    font-size: 16px;
+    letter-spacing: -0.1px;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;
+}
+{{else}}
 .site-url {
     color: #15212A;
     font-size: 16px;
@@ -340,21 +542,43 @@ figure blockquote p {
     text-transform: uppercase;
     text-align: center;
 }
+{{/hasFeature}}
 
 .site-url-bottom-padding {
     padding-bottom: 12px;
 }
 
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+.site-title {
+    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+}
+{{else}}
 .site-title {
     color: #15212A;
 }
+{{/hasFeature}}
 
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+.site-subtitle {
+    {{#if headerBackgroundIsDark}}
+        color: #8f9aa3;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #73818c;
+        color: rgba(0, 0, 0, .6);
+    {{/if}}
+    font-size: 13px;
+    font-weight: 400;
+    text-transform: none;
+}
+{{else}}
 .site-subtitle {
     color: #73818c;
     font-size: 13px;
     font-weight: 400;
     text-transform: none;
 }
+{{/hasFeature}}
 
 .post-title {
     font-size: 36px;
@@ -362,6 +586,21 @@ figure blockquote p {
     font-weight: {{titleWeight}};
     text-align: center;
 }
+
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+.post-title {
+    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    {{#if postTitleColor}}
+    color: {{postTitleColor}};
+    {{/if}}
+}
+
+{{#if postTitleColor}}
+.post-title-color a {
+    color: {{postTitleColor}} !important;
+}
+{{/if}}
+{{/hasFeature}}
 
 .post-title-with-excerpt {
     padding-bottom: 8px;
@@ -398,7 +637,11 @@ figure blockquote p {
 
 .post-excerpt {
     margin: 0;
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    {{else}}
     color: #15212A;
+    {{/hasFeature}}
     font-size: 19px;
     line-height: 1.4em;
     text-align: center;
@@ -426,6 +669,21 @@ figure blockquote p {
     text-align: left;
 }
 
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+.post-meta,
+.view-online {
+    {{#if headerBackgroundIsDark}}
+        color: #8f9aa3;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #73818c;
+        color: rgba(0, 0, 0, .6);
+    {{/if}}
+    font-size: 13px;
+    font-weight: 400;
+    text-align: center;
+}
+{{else}}
 .post-meta,
 .view-online {
     color: #73818c;
@@ -433,6 +691,7 @@ figure blockquote p {
     font-weight: 400;
     text-align: center;
 }
+{{/hasFeature}}
 
 .post-meta-left {
     text-align: left;
@@ -459,12 +718,27 @@ figure blockquote p {
     white-space: nowrap;
 }
 
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+.view-online-link {
+    word-wrap: none;
+    white-space: nowrap;
+    {{#if headerBackgroundIsDark}}
+        color: #8f9aa3;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #73818c;
+        color: rgba(0, 0, 0, .6);
+    {{/if}}
+    text-decoration: underline !important;
+}
+{{else}}
 .view-online-link {
     word-wrap: none;
     white-space: nowrap;
     color: #73818c;
     text-decoration: underline !important;
 }
+{{/hasFeature}}
 
 .feature-image {
     padding-bottom: 30px;
@@ -490,7 +764,11 @@ figure blockquote p {
     padding-bottom: 32px;
     text-align: center;
     font-size: 13px !important;
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#73818c{{/if}};
+    {{else}}
     color: #73818c;
+    {{/hasFeature}}
     line-height: 1.5em;
 }
 
@@ -501,6 +779,19 @@ figure blockquote p {
 /* -------------------------------------
     FEEDBACK BUTTONS
 ------------------------------------- */
+
+.feedback-buttons-container {
+    padding: 32px 0 24px;
+    border-bottom: 1px solid {{dividerColor}};
+    background-color: #ffffff;
+    text-align: center;
+}
+
+{{#hasFeature "emailCustomizationAlpha"}}
+.feedback-buttons-container {
+    background-color: {{backgroundColor}};
+}
+{{/hasFeature}}
 
 .feedback-buttons {
     /*width: auto !important;*/
@@ -514,6 +805,18 @@ figure blockquote p {
     vertical-align: middle;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.feedback-button-text {
+    display: inline-block;
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    font-size: 13px !important;
+    font-weight: 500;
+    margin: 1em 0 0 0;
+    line-height: 1.4em;
+    word-break: break-word;
+}
+{{else}}
 .feedback-button-text {
     display: inline-block;
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
@@ -524,19 +827,38 @@ figure blockquote p {
     line-height: 1.4em;
     word-break: break-word;
 }
+{{/hasFeature}}
 
 /* -------------------------------------
     LATEST POSTS TABLE
 ------------------------------------- */
 
-.latest-posts-header {
+.latest-posts-container {
+    padding: 24px 0;
+    border-bottom: 1px solid {{dividerColor}};
+}
+
+{{#hasFeature "emailCustomizationAlpha"}}
+h3.latest-posts-header {
     margin: 0;
     padding: 8px 0 8px;
-    color: #15212A;
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 13px;
     font-weight: 600;
     text-transform: uppercase;
 }
+{{else}}
+h3.latest-posts-header {
+    margin: 0;
+    padding: 8px 0 8px;
+    color: #15212A;
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+{{/hasFeature}}
 
 .latest-post {
     max-width: 600px !important;
@@ -590,23 +912,69 @@ figure blockquote p {
     color: #73818c !important;
 }
 
+/* Custom heading colors for latest posts */
+.latest-post-title h4 {
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
+    {{else}}
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{/hasFeature}}
+    {{/if}}
+}
+
+.latest-post-title h4 a {
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}} !important;
+    {{else}}
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{/hasFeature}}
+    {{/if}}
+}
+
+{{#hasFeature "emailCustomizationAlpha"}}
+/* Override latest post text colors with custom content color */
+.latest-post-excerpt,
+.latest-post-excerpt a,
+.latest-post p,
+.latest-post p a {
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#73818c{{/if}} !important;
+}
+{{/hasFeature}}
+
 /* -------------------------------------
     SUBSCRIPTION DETAILS BOX
 ------------------------------------- */
 
 .subscription-box {
     padding: 32px 0;
-    border-bottom: 1px solid #e0e7eb;
+    border-bottom: 1px solid {{dividerColor}};
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    {{else}}
     color: #15212A;
+    {{/hasFeature}}
 }
 
 .subscription-box h3 {
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 14px;
     font-weight: 600;
     text-transform: uppercase;
     margin: 0 0 18px;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.subscription-box p {
+    margin-bottom: 0;
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.45em;
+    text-decoration: none;
+}
+{{else}}
 .subscription-box p {
     margin-bottom: 0;
     color: #15212A !important;
@@ -615,20 +983,41 @@ figure blockquote p {
     line-height: 1.45em;
     text-decoration: none;
 }
+{{/hasFeature}}
+
 
 .subscription-box p a {
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{else}}
     color: #15212A !important;
+    {{/hasFeature}}
     text-decoration: none;
 }
-
 .manage-subscription {
     white-space: nowrap;
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 400;
     text-align: right;
     line-height: 1.45em;
     vertical-align: bottom;
+}
+
+.manage-subscription a {
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    color: {{linkColor}};
+    {{#if (eq linkStyle "regular")}}
+    text-decoration: none;
+    {{else if (eq linkStyle "bold")}}
+    text-decoration: none;
+    font-weight: 700;
+    {{else}}
+    text-decoration: underline;
+    {{/if}}
+    {{else}}
     color: {{accentColor}};
+    text-decoration: underline;
+    {{/hasFeature}}
 }
 
 /* -------------------------------------
@@ -642,7 +1031,7 @@ figure blockquote p {
     line-height: 1.5em;
     color: #15212A;
     padding-bottom: 20px;
-    border-bottom: 1px solid #e0e7eb;
+    border-bottom: 1px solid {{dividerColor}};
 }
 
 .post-content-sans-serif {
@@ -651,21 +1040,57 @@ figure blockquote p {
     line-height: 1.5em;
     color: #15212A;
     padding-bottom: 20px;
-    border-bottom: 1px solid #e0e7eb;
+    border-bottom: 1px solid {{dividerColor}};
 }
 
-.post-content-row:first-child > td, .header-image-row + .post-content-row > td {
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#if headerBackgroundColor}}
+.post-content-row > td {
+    padding-top: 32px;
+}
+{{else}}
+.body:first-of-type .post-content-row > td {
     padding-top: 32px;
 }
 
+.header-image-row:last-of-type .header-image {
+  padding-bottom: 48px;
+}
+
+.site-info-row:last-of-type .site-info {
+    padding-bottom: 32px;
+}
+{{/if}}
+{{else}}
+.post-content-row:first-child > td,
+.header-image-row + .post-content-row > td {
+    padding-top: 32px;
+}
+{{/hasFeature}}
+
 .post-content a,
 .post-content-sans-serif a {
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    color: {{linkColor}};
+    {{else}}
     color: {{accentColor}};
-    {{linkStyles}}
+    {{/hasFeature}}
+    {{#if (eq linkStyle "regular")}}
+    text-decoration: none;
+    {{else if (eq linkStyle "bold")}}
+    text-decoration: none;
+    font-weight: 700;
+    {{else}}
+    text-decoration: underline;
+    {{/if}}
 }
 
 a[data-flickr-embed] img {
     height: auto;
+}
+
+td.kg-card-spacing {
+    padding: 0 0 1.5em 0;
 }
 
 /* Any card with altered visibility is wrapped in a div with the .kg-visibility-wrapper class */
@@ -679,7 +1104,10 @@ a[data-flickr-embed] img {
 
 .kg-bookmark-card {
     width: 100%;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    {{else}}
     background: #ffffff;
+    {{/hasFeature}}
 }
 
 .kg-bookmark-card a {
@@ -695,9 +1123,9 @@ a[data-flickr-embed] img {
     margin: 0 auto;
     height: auto;
     width: auto;
-    {{#hasFeature "emailCustomizationAlpha"}}
-    {{imageCorners}};
-    {{/hasFeature}}
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{/if}}
 }
 
 .kg-image-card span {
@@ -712,6 +1140,9 @@ a[data-flickr-embed] img {
     text-decoration: none;
     border-radius: 3px;
     border: 1px solid #e0e7eb;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    background: #ffffff;
+    {{/hasFeature}}
 }
 
 .kg-bookmark-content {
@@ -799,6 +1230,11 @@ a[data-flickr-embed] img {
     width: 100% !important;
     height: auto !important;
     padding-top: 20px;
+    {{#if hasRoundedImageCorners}}
+    border-radius: 6px;
+    padding-top: 0 !important;
+    margin-top: 20px !important;
+    {{/if}}
 }
 
 .kg-video-preview {
@@ -806,11 +1242,18 @@ a[data-flickr-embed] img {
     background-image: radial-gradient(circle at center, #5b5f66, #1d1f21);
     display: block;
     text-decoration: none !important;
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{/if}}
 }
 
 .kg-video-preview table {
     background-size: cover;
     min-height: 200px; /* for when images aren't loaded */
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{/if}}
+    overflow: hidden;
 }
 
 .kg-video-play-button {
@@ -915,11 +1358,23 @@ a[data-flickr-embed] img {
     font-size: 20px;
 }
 
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+.kg-cta-card {
+    margin: 0 0 1.5em 0;
+    padding: 0 24px;
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{else}}
+        border-radius: 0;
+    {{/if}}
+}
+{{else}}
 .kg-cta-card {
     margin: 0 0 1.5em 0;
     padding: 0 24px;
     border-radius: 8px;
 }
+{{/hasFeature}}
 
 .kg-cta-card + * {
     margin-top: 1.5em !important;
@@ -935,11 +1390,11 @@ a[data-flickr-embed] img {
 }
 
 .kg-cta-card.kg-cta-bg-none:not(.kg-cta-no-dividers) {
-    border-bottom: 1px solid #e0e7eb;
+    border-bottom: 1px solid {{dividerColor}};
 }
 
 .kg-cta-bg-none.kg-cta-no-label:not(.kg-cta-no-dividers) {
-    border-top: 1px solid #e0e7eb;
+    border-top: 1px solid {{dividerColor}};
 }
 
 .kg-cta-bg-white {
@@ -977,7 +1432,7 @@ a[data-flickr-embed] img {
 
 .kg-cta-sponsor-label {
     padding: 12px 0;
-    border-bottom: 1px solid #e0e7eb;
+    border-bottom: 1px solid {{dividerColor}};
 }
 
 .kg-cta-bg-none .kg-cta-sponsor-label {
@@ -991,7 +1446,7 @@ a[data-flickr-embed] img {
 
 .kg-cta-bg-none .kg-cta-sponsor-label,
 .kg-cta-bg-white .kg-cta-sponsor-label {
-    border-color: #e0e7eb;
+    border-color: {{dividerColor}};
 }
 
 .kg-cta-bg-grey .kg-cta-sponsor-label {
@@ -1083,11 +1538,31 @@ table.kg-cta-content-wrapper:not(.kg-cta-bg-none.kg-cta-no-dividers table.kg-cta
     padding-bottom: 0;
 }
 
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+img.kg-cta-image {
+    display: block;
+    border: 0;
+    {{#if hasRoundedImageCorners}}
+        border-radius: 4px;
+    {{else}}
+        border-radius: 0;
+    {{/if}}
+}
+
+.kg-cta-bg-none img.kg-cta-image {
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{else}}
+        border-radius: 0;
+    {{/if}}
+}
+{{else}}
 img.kg-cta-image {
     display: block;
     border-radius: 6px;
     border: 0;
 }
+{{/hasFeature}}
 
 .kg-cta-minimal img.kg-cta-image {
     width: 64px;
@@ -1106,8 +1581,9 @@ img.kg-cta-image {
     font-family: Georgia, serif;
 }
 
-.kg-cta-text a {
+.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
     color: #15212A;
+    text-decoration: underline;
 }
 
 .kg-cta-link-accent .kg-cta-text a {
@@ -1136,7 +1612,7 @@ img.kg-cta-image {
     text-align: center;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .kg-cta-button-container {
     padding-top: 20px;
 }
@@ -1287,7 +1763,7 @@ img.kg-cta-image {
     color: #ffffff;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .kg-header-card h2 {
     font-size: 32px;
     font-weight: {{titleWeight}};
@@ -1352,7 +1828,9 @@ img.kg-cta-image {
 .kg-header-card.kg-v2 .kg-header-card-heading a,
 .kg-header-card.kg-v2 .kg-header-card-subheading a {
     color: inherit;
+    text-decoration: underline;
 }
+
 {{else}}
 .kg-header-card h2 {
     font-size: 3em;
@@ -1463,11 +1941,29 @@ img.kg-cta-image {
 }
 {{/hasFeature}}
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .kg-product-card {
     margin: 0 0 1.5em;
-    border-radius: 6px;
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{else}}
+        border-radius: 0;
+    {{/if}}
     border: 1px solid #e9e9e9;
+
+    {{#hasFeature "emailCustomizationAlpha"}}
+    background-color: #FFFFFF;
+    {{/hasFeature}}
+}
+
+.kg-product-card h4 {
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
+    {{else}}
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: #15212A !important;
+    {{/hasFeature}}
+    {{/if}}
 }
 
 .kg-product-card-container {
@@ -1485,6 +1981,9 @@ img.kg-cta-image {
     height: auto;
     padding: 0;
     border: none;
+    {{#if hasRoundedImageCorners}}
+        border-radius: 4px;
+    {{/if}}
 }
 
 .kg-product-title {
@@ -1607,6 +2106,7 @@ img.kg-cta-image {
     margin: 0 auto 1.5em;
     border-radius: 3px;
     border: 1px solid #e0e7eb;
+    background-color: #ffffff;
 }
 .kg-audio-title {
     display: block;
@@ -1633,7 +2133,7 @@ img.kg-cta-image {
     display: block;
     text-decoration: none !important;
     font-size: 13px;
-    color: #15171A !important;
+    color: #73818c !important;
 }
 .kg-audio-link {
     color: #73818c !important;
@@ -1644,6 +2144,7 @@ img.kg-cta-image {
     margin: 0 0 1.5em 0;
     border-radius: 3px;
     border: 1px solid #e0e7eb;
+    background-color: #ffffff;
 }
 .kg-file-title {
     display: block;
@@ -1675,7 +2176,7 @@ img.kg-cta-image {
     font-size: 13px;
     line-height: 1.4em;
     text-decoration: none !important;
-    color: #73818c !important;
+    color: #73818c;
 }
 .kg-file-name {
     font-weight: 500;
@@ -1696,12 +2197,15 @@ img.kg-cta-image {
     border: 1px solid #e0e7eb;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 .kg-toggle-card {
     border: 1px solid #E5ECF0;
     border-radius: 4px;
     margin-bottom: 24px;
     width: 100%;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    background-color: #FFFFFF;
+    {{/hasFeature}}
 }
 
 .kg-toggle-heading {
@@ -1712,6 +2216,13 @@ img.kg-cta-image {
 .kg-toggle-heading h4 {
     margin: 0;
     font-weight: {{titleWeight}};
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
+    {{else}}
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: #15212A !important;
+    {{/hasFeature}}
+    {{/if}}
 }
 
 .kg-toggle-content {
@@ -1734,15 +2245,76 @@ img.kg-cta-image {
 }
 {{/hasFeature}}
 
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+.kg-paywall {
+    text-align: center;
+}
+
+.kg-paywall h3 {
+    text-wrap: pretty;
+}
+
+.kg-paywall p {
+    max-width: 440px;
+    margin: 0 auto 1.5em auto;
+    text-wrap: pretty;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    {{/hasFeature}}
+}
+{{/hasFeature}}
+
+
 /* -------------------------------------
     HEADER, FOOTER, MAIN
 ------------------------------------- */
+
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+.header {
+    width: 100%;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+.header-bg {
+    padding: 0;
+    /* Background color for the header */
+    {{#if headerBackgroundColor}}
+    background-color: {{headerBackgroundColor}};
+    {{/if}}
+}
+
+.header-container {
+    width: 600px;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+.header-content {
+    padding: 0 20px;
+    margin: 0 auto !important;
+}
+
+.main {
+    border-spacing: 20px 0;
+    width: 100%;
+    max-width: 600px;
+    background: #ffffff;
+}
+{{else}}
 .main {
     background: #ffffff;
     border-radius: 3px;
     border-spacing: 20px 0;
     width: 100%;
 }
+{{/hasFeature}}
+
+{{#hasFeature "emailCustomizationAlpha"}}
+.main {
+    background-color: {{backgroundColor}} !important;
+}
+{{/hasFeature}}
 
 .wrapper {
     box-sizing: border-box;
@@ -1753,6 +2325,37 @@ img.kg-cta-image {
     padding-top: 10px;
 }
 
+{{#hasFeature "emailCustomizationAlpha"}}
+.footer {
+    {{#if backgroundIsDark}}
+        color: #8f9aa3;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #73818c;
+        color: rgba(0, 0, 0, .6);
+    {{/if}}
+    margin-top: 20px;
+    text-align: center;
+    font-size: 13px!important;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    padding-left: 30px;
+    padding-right: 30px;
+    line-height: 1.5em;
+}
+
+.footer a {
+    {{#if backgroundIsDark}}
+        color: #8f9aa3;
+        color: rgba(255, 255, 255, .6);
+    {{else}}
+        color: #73818c;
+        color: rgba(0, 0, 0, .6);
+    {{/if}}
+    text-decoration: underline;
+    font-size: 13px;
+}
+{{else}}
 .footer {
     color: #73818c;
     margin-top: 20px;
@@ -1770,28 +2373,38 @@ img.kg-cta-image {
     text-decoration: underline;
     font-size: 13px;
 }
+{{/hasFeature}}
 
 /* -------------------------------------
     BUTTONS
 ------------------------------------- */
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
 table.btn {
     box-sizing: border-box;
     width: auto;
 }
+
 table.btn td {
     padding: 8px 20px 9px;
-    background-color: #ffffff;
+    {{#if hasOutlineButtons}}
+    border: 1px solid {{buttonColor}};
+    background-color: transparent;
+    {{else}}
+    background-color: {{buttonColor}};
+    {{/if}}
     border-radius: {{buttonBorderRadius}};
     text-align: center;
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
 }
 
 table.btn a {
-    border-radius: {{buttonBorderRadius}};
     box-sizing: border-box;
-    color: #15212A;
+    {{#if hasOutlineButtons}}
+    color: {{buttonColor}};
+    {{else}}
+    color: {{buttonTextColor}};
+    {{/if}}
     cursor: pointer;
     display: inline-block;
     font-size: 15px;
@@ -1803,6 +2416,7 @@ table.btn a {
 table.btn-accent td {
     {{#if hasOutlineButtons}}
     border: 1px solid {{adjustedAccentColor}};
+    background-color: transparent;
     {{else}}
     background-color: {{adjustedAccentColor}};
     {{/if}}
@@ -1837,7 +2451,7 @@ table.btn-accent a {
 .btn table td {
     background-color: #ffffff;
     border-radius: 5px;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     border-radius: {{buttonBorderRadius}};
     {{/hasFeature}}
     text-align: center;
@@ -1848,7 +2462,7 @@ table.btn-accent a {
     background-color: #ffffff;
     border: solid 1px #3498db;
     border-radius: 5px;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     border-radius: {{buttonBorderRadius}};
     {{/hasFeature}}
     box-sizing: border-box;
@@ -1948,6 +2562,26 @@ table.btn-accent a {
         min-width: 100%;
     }
 
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    table.header {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+
+    table.header .header-container {
+        width: 100% !important;
+        margin: 0 auto !important;
+    }
+
+    table.header .header-container table {
+        width: 100% !important;
+    }
+
+    table.header .header-content {
+        padding: 0 10px !important;
+    }
+    {{/hasFeature}}
+
     .hide-mobile {
         display: none;
     }
@@ -1971,9 +2605,15 @@ table.btn-accent a {
         font-size: 16px;
     }
 
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    table.header .post-excerpt {
+        font-size: 16px !important;
+    }
+    {{else}}
     table.body .post-excerpt {
         font-size: 16px !important;
     }
+    {{/hasFeature}}
 
     table.body .kg-callout-card {
         padding: 16px 24px !important;
@@ -1998,14 +2638,24 @@ table.btn-accent a {
         width: 100% !important;
     }
 
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    table.body .main,
+    table.header .header-container {
+        border-spacing: 10px 0 !important;
+        border-left-width: 0 !important;
+        border-radius: 0 !important;
+        border-right-width: 0 !important;
+    }
+    {{else}}
     table.body .main {
         border-spacing: 10px 0 !important;
         border-left-width: 0 !important;
         border-radius: 0 !important;
         border-right-width: 0 !important;
     }
+    {{/hasFeature}}
 
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     {{else}}
     table.body .btn table {
         width: 100% !important;
@@ -2022,7 +2672,85 @@ table.btn-accent a {
         width: auto !important;
     }
 
-    table.body .site-icon {
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    table.header .site-icon {
+        padding-top: 0 !important;
+    }
+
+    table.header .site-info {
+        padding-top: 24px !important;
+    }
+
+    table.header .post-title-link {
+        margin-top: 24px !important;
+    }
+
+    table.header .post-meta-wrapper {
+        padding-bottom: 24px !important;
+    }
+
+    table.header .site-icon img {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    table.header .site-url a {
+        font-size: 13px !important;
+        padding-bottom: 16px !important;
+    }
+
+    table.header .post-meta,
+    table.header .post-meta-date {
+        white-space: normal !important;
+        font-size: 13px !important;
+        line-height: 1.2em;
+    }
+
+    table.header .post-meta,
+    table.header .view-online {
+        width: 100% !important;
+    }
+
+    table.header .post-meta-left,
+    table.header .post-meta-left.view-online {
+        width: 100% !important;
+        text-align: left !important;
+    }
+
+    table.header .post-meta.view-online-mobile {
+        display: table-row !important;
+    }
+
+    table.header .post-meta-left.view-online-mobile,
+    table.header .post-meta-left.view-online-mobile .view-online {
+        text-align: left !important;
+    }
+
+    table.header .post-meta.view-online.desktop {
+        display: none !important;
+    }
+
+    table.header .view-online {
+        text-decoration: underline;
+    }
+
+    table.body .footer p,
+    table.body .footer p span {
+        font-size: 13px !important;
+    }
+
+    table.header .view-online-link,
+    table.body .footer,
+    table.body .footer a {
+        font-size: 13px !important;
+    }
+
+    table.header .post-title a {
+        font-size: 26px !important;
+        line-height: 1.1em !important;
+    }
+    {{else}}
+        table.body .site-icon {
         padding-top: 0 !important;
     }
 
@@ -2098,6 +2826,7 @@ table.btn-accent a {
         font-size: 26px !important;
         line-height: 1.1em !important;
     }
+    {{/hasFeature}}
 
     table.feedback-buttons {
         display: table !important;
@@ -2121,7 +2850,8 @@ table.btn-accent a {
         padding-right: 8px !important;
     }
 
-    table.body .latest-post h4, table.body .latest-post h4 span {
+    table.body .latest-post h4,
+    table.body .latest-post h4 span {
         padding: 4px 0 6px !important;
         font-size: 15px !important;
     }
@@ -2228,7 +2958,7 @@ table.btn-accent a {
         margin: 2em 0 !important;
     }
 
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     {{else}}
         table.body .kg-header-card.kg-v2 span {
         font-size: inherit !important;
@@ -2321,7 +3051,7 @@ table.btn-accent a {
         height: 52px !important;
     }
 
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     {{else}}
     table.body .kg-cta-minimal a.kg-cta-button {
         display: inline-block !important;
@@ -2376,7 +3106,7 @@ table.btn-accent a {
         line-height: inherit;
     }
 
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
     {{else}}
     .btn-primary table td:hover {
         background-color: #34495e !important;

@@ -54,4 +54,54 @@ function Skeleton({
     );
 }
 
-export {Skeleton};
+interface SkeletonTableProps extends React.HTMLAttributes<HTMLSpanElement> {
+    lines?: number;
+}
+
+const SkeletonTable = React.forwardRef<
+    HTMLDivElement,
+    SkeletonTableProps
+>(({className, lines = 5, ...props}, ref) => {
+    if (lines < 1) {
+        return <></>;
+    }
+
+    return (
+        <div ref={ref} className={cn('flex flex-col gap-2', className)} {...props}>
+            {Array.from({length: lines}, (_, i) => {
+                let skeletonMaxWidth = '66%';
+                switch (i % 5) {
+                case 0:
+                    skeletonMaxWidth = '57%';
+                    break;
+                case 1:
+                    skeletonMaxWidth = '33%';
+                    break;
+                case 2:
+                    skeletonMaxWidth = '40%';
+                    break;
+                case 3:
+                    skeletonMaxWidth = '48%';
+                    break;
+                case 4:
+                    skeletonMaxWidth = '24%';
+                    break;
+                }
+                return (
+                    <div key={i} className='flex justify-between gap-6'>
+                        <div className='grow' style={{
+                            maxWidth: skeletonMaxWidth
+                        }}><Skeleton /></div>
+                        <Skeleton className='w-[60px] self-end' />
+                    </div>
+                );
+            })}
+        </div>
+    );
+});
+SkeletonTable.displayName = 'SkeletonTable';
+
+export {
+    Skeleton,
+    SkeletonTable
+};

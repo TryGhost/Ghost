@@ -21,6 +21,7 @@
     "core/server/data/migrations/**",
     "core/server/data/schema/schema.js",
     "!core/server/data/migrations/utils.js",
-    "core/server/web/api/testmode/**"
+    "core/server/web/api/testmode/**",
+    "core/server/services/koenig/**"
   ]
 }

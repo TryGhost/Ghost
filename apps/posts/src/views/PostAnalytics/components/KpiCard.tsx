@@ -11,7 +11,7 @@ export const KpiCardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
 
 export const KpiCardLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (
-        <div className={cn('[&_svg]:size-4 flex items-center gap-1.5 text-base text-muted-foreground h-[22px] font-medium', className)} {...props}>
+        <div className={cn('[&_svg]:size-4 flex items-center gap-1.5 text-base h-[22px] font-medium transition-all', className)} {...props}>
             {children}
         </div>
     );
@@ -19,7 +19,7 @@ export const KpiCardLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ch
 
 export const KpiCardValue: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (
-        <div className={cn('text-[26px] mt-0.5 tracking-tighter leading-none font-semibold', className)} {...props}>
+        <div className={cn('text-[26px] mt-0.5 tracking-tighter leading-none text-foreground font-semibold', className)} {...props}>
             {children}
         </div>
     );
@@ -30,8 +30,8 @@ const KpiCard: React.FC<React.HTMLAttributes<HTMLButtonElement>> = ({children, c
         <button
             className={
                 cn(
-                    'flex flex-col border-r border-border last:border-none items-start gap-4 px-6 py-5 transition-all',
-                    props.onClick ? 'hover:bg-accent' : 'cursor-auto',
+                    'group flex flex-col border-r border-border last:border-none items-start gap-2 px-6 py-5 transition-all text-muted-foreground',
+                    props.onClick ? 'hover:bg-accent/50 hover:text-foreground' : 'cursor-auto',
                     className
                 )}
             type='button'

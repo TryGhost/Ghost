@@ -4,7 +4,6 @@ import BackButton from '../../components/common/BackButton';
 import CloseButton from '../../components/common/CloseButton';
 import {getDefaultNewsletterSender, getSupportAddress} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
-import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 
 export default function EmailReceivingPage() {
     const {brandColor, onAction, site, lastPage, member, t, pageData} = useContext(AppContext);
@@ -38,7 +37,6 @@ export default function EmailReceivingPage() {
 
                 <p>
                     <Interpolate
-                        syntax={SYNTAX_I18NEXT}
                         string={t(`The email address we have for you is {memberEmail} — if that's not correct, you can update it in your <button>account settings area</button>.`)}
                         mapping={{
                             memberEmail: <strong>{member.email}</strong>,
@@ -55,7 +53,6 @@ export default function EmailReceivingPage() {
 
                 <p>
                     <Interpolate
-                        syntax={SYNTAX_I18NEXT}
                         string={t(`In your email client add {senderEmail} to your contacts list. This signals to your mail provider that emails sent from this address should be trusted.`)}
                         mapping={{
                             senderEmail: <strong>{defaultNewsletterSenderEmail}</strong>
@@ -67,7 +64,6 @@ export default function EmailReceivingPage() {
 
                 <p>
                     <Interpolate
-                        syntax={SYNTAX_I18NEXT}
                         string={t(`Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.`)}
                         mapping={{
                             senderEmail: <strong>{defaultNewsletterSenderEmail}</strong>
@@ -79,7 +75,6 @@ export default function EmailReceivingPage() {
 
                 <p>
                     <Interpolate
-                        syntax={SYNTAX_I18NEXT}
                         string={t(`If you have a corporate or government email account, reach out to your IT department and ask them to allow emails to be received from {senderEmail}`)}
                         mapping={{
                             senderEmail: <strong>{defaultNewsletterSenderEmail}</strong>
@@ -91,7 +86,6 @@ export default function EmailReceivingPage() {
 
                 <p>
                     <Interpolate
-                        syntax={SYNTAX_I18NEXT}
                         string={t(`If you've completed all these checks and you're still not receiving emails, you can reach out to get support by contacting {supportAddress}.`)}
                         mapping={{
                             supportAddress: <a href={supportAddress} onClick={() => {

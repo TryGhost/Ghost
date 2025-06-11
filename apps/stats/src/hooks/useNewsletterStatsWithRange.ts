@@ -5,7 +5,7 @@ import {useNewsletterStatsByNewsletterId, useSubscriberCountByNewsletterId} from
 /**
  * Represents the possible fields to order top newsletters by.
  */
-export type TopNewslettersOrder = 'date desc' | 'open_rate desc' | 'click_rate desc';
+export type TopNewslettersOrder = 'date desc' | 'open_rate desc' | 'click_rate desc' | 'sent_to desc';
 
 /**
  * Hook to fetch Newsletter Stats, handling the conversion from a numeric range
@@ -22,7 +22,7 @@ export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslette
 
     // Calculate date strings using the helper, memoize for stability
     const {dateFrom, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
-    
+
     // Call the hook with the parameters
     return useNewsletterStatsByNewsletterId(newsletterId, {
         date_from: dateFrom,
@@ -34,7 +34,7 @@ export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslette
 /**
  * Hook to fetch Subscriber Count stats, handling the conversion from a numeric range
  * to API query parameters.
- * 
+ *
  * @param range - The number of days for the date range (e.g., 7, 30, 90). Defaults to 30.
  * @param newsletterId - Optional ID of the specific newsletter to get stats for
  */
@@ -44,10 +44,10 @@ export const useSubscriberCountWithRange = (range?: number, newsletterId?: strin
 
     // Calculate date strings using the helper, memoize for stability
     const {dateFrom, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
-    
+
     // Call the hook with the parameters
     return useSubscriberCountByNewsletterId(newsletterId, {
         date_from: dateFrom,
         date_to: endDate
     });
-}; 
+};

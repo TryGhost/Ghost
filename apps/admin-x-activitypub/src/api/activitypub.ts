@@ -40,6 +40,20 @@ export interface Thread {
     posts: Post[];
 }
 
+export interface ReplyChainResponse {
+    ancestors: {
+        chain: Post[];
+        hasMore: boolean;
+    };
+    post: Post;
+    children: Array<{
+        post: Post;
+        chain: Post[];
+        hasMore: boolean;
+    }>;
+    next: string | null;
+}
+
 export type ActivityPubCollectionResponse<T> = {data: T[], next: string | null};
 
 export interface GetProfileFollowersResponse {
@@ -132,6 +146,7 @@ export interface Post {
     type: PostType;
     title: string;
     excerpt: string;
+    summary: string | null;
     content: string;
     url: string;
     featureImageUrl: string | null;
@@ -505,6 +520,15 @@ export class ActivityPubAPI {
         const url = new URL(`.ghost/activitypub/post/${encodeURIComponent(id)}`, this.apiUrl);
         const json = await this.fetchJSON(url);
         return json as Post;
+    }
+
+    async getReplies(postApId: string, next?: string): Promise<ReplyChainResponse> {
+        const url = new URL(`.ghost/activitypub/replies/${encodeURIComponent(postApId)}`, this.apiUrl);
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+        const json = await this.fetchJSON(url);
+        return json as ReplyChainResponse;
     }
 
     async updateAccount({

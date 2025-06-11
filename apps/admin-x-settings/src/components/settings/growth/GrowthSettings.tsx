@@ -4,7 +4,7 @@ import React from 'react';
 import Recommendations from './Recommendations';
 import SearchableSection from '../../SearchableSection';
 import TipsAndDonations from './TipsAndDonations';
-import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
+import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 export const searchKeywords = {
@@ -16,6 +16,7 @@ export const searchKeywords = {
 
 const GrowthSettings: React.FC = () => {
     const {config, settings} = useGlobalData();
+    const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [boolean];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
 
     return (
@@ -23,7 +24,7 @@ const GrowthSettings: React.FC = () => {
             <Recommendations keywords={searchKeywords.recommendations} />
             <EmbedSignupForm keywords={searchKeywords.embedSignupForm} />
             {hasStripeEnabled && <Offers keywords={searchKeywords.offers} />}
-            {hasStripeEnabled && <TipsAndDonations keywords={searchKeywords.tips} />}
+            {hasTipsAndDonations && hasStripeEnabled && <TipsAndDonations keywords={searchKeywords.tips} />}
         </SearchableSection>
     );
 };

@@ -389,6 +389,11 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     color: var(--middarkgrey);
 }
 
+.gh-nav-list .gh-icon-ap-network {
+    width: 18px;
+    height: 18px;
+}
+
 /* Global search
 /* ---------------------------------------------------------- */
 

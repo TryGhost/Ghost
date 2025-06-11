@@ -177,6 +177,48 @@ export const formatDisplayDate = (dateString: string): string => {
     return isCurrentYear ? `${day} ${month}` : `${day} ${month} ${year}`;
 };
 
+// Helper function to format timestamp
+export const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+
+    // Handle invalid dates
+    if (isNaN(date.getTime())) {
+        return 'Unknown';
+    }
+
+    // Both dates are now in the same timezone context (local)
+    // The timestamp from DB is UTC but Date constructor handles the conversion
+    const diffMs = now.getTime() - date.getTime();
+
+    // Handle negative differences (future dates)
+    if (diffMs < 0) {
+        return 'Just now';
+    }
+
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMins < 1) {
+        return 'Just now';
+    } else if (diffMins < 60) {
+        return `${diffMins} min ago`;
+    } else if (diffHours < 24) {
+        return `${diffHours} hr ago`;
+    } else if (diffDays === 1) {
+        return 'Yesterday';
+    } else if (diffDays < 7) {
+        return `${diffDays} days ago`;
+    } else {
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: diffDays > 365 ? 'numeric' : undefined
+        });
+    }
+};
+
 // Add thousands indicator to numbers
 export const formatNumber = (value: number): string => {
     return new Intl.NumberFormat('en-US').format(Math.round(value));
@@ -200,7 +242,15 @@ export const formatDuration = (seconds: number): string => {
 
 // Format a fraction to percentage
 export const formatPercentage = (value: number) => {
-    return `${Math.round(value * 100)}%`;
+    const percentage = value * 100;
+    if (percentage === 0) {
+        return '0%';
+    } else if (percentage < 0.1) {
+        return `${percentage.toFixed(2)}%`;
+    } else if (percentage < 1) {
+        return `${percentage.toFixed(1)}%`;
+    }
+    return `${Math.round(percentage)}%`;
 };
 
 // Format cents to Dollars
@@ -211,7 +261,45 @@ export const centsToDollars = (value: number) => {
 /* Chart formatters
 /* -------------------------------------------------------------------------- */
 
-// Calculates the Y-axis range with appropriate padding
+// Calculates the Y-axis range with padding
+export const getYRangeWithLargePadding = (data: { value: number }[]): {min: number; max: number} => {
+    if (!data.length) {
+        return {min: 0, max: 1};
+    }
+
+    const values = data.map(d => Number(d.value));
+    let min = Math.min(...values);
+    let max = Math.max(...values);
+
+    // Helper function to round to nearest multiple of 10^n
+    const roundToNearestMultiple = (num: number): number => {
+        if (num === 0) {
+            return 0;
+        }
+
+        // Determine the order of magnitude (10^n)
+        const magnitude = Math.floor(Math.log10(num));
+        const multiple = Math.pow(10, magnitude);
+
+        // Round to nearest multiple
+        return Math.round(num / multiple) * multiple;
+    };
+
+    // Add padding based on magnitude before rounding
+    const magnitude = Math.floor(Math.log10(Math.max(max, 1)));
+    const padding = Math.pow(10, magnitude);
+
+    // Add padding and ensure min is not negative
+    min = Math.max(0, min - padding);
+    max = max + padding;
+
+    // Round to nearest multiple of 10^n
+    min = roundToNearestMultiple(min);
+    max = roundToNearestMultiple(max);
+
+    return {min, max};
+};
+
 export const getYRange = (data: { value: number }[]): {min: number; max: number} => {
     if (!data.length) {
         return {min: 0, max: 1};
@@ -221,63 +309,59 @@ export const getYRange = (data: { value: number }[]): {min: number; max: number}
     let min = Math.min(...values);
     let max = Math.max(...values);
 
-    // Helper function to round to nice numbers
-    const roundToNiceNumber = (num: number, roundUp: boolean = false): number => {
-        if (num === 0) {
-            return 0;
-        }
-
-        const magnitude = Math.floor(Math.log10(Math.abs(num)));
-        const scale = Math.pow(10, magnitude);
-
-        // For numbers less than 1, use smaller steps
-        if (magnitude < 0) {
-            const steps = [0.1, 0.2, 0.25, 0.5, 1];
-            const scaledNum = num * Math.pow(10, -magnitude);
-            const step = steps.find(s => s >= scaledNum) || 1;
-            return roundUp ?
-                Math.ceil(num * Math.pow(10, -magnitude) / step) * step * scale :
-                Math.floor(num * Math.pow(10, -magnitude) / step) * step * scale;
-        }
-
-        // For numbers >= 1, use standard steps
-        const steps = [1, 2, 2.5, 5, 10];
-        const scaledNum = num / scale;
-        const step = steps.find(s => s >= scaledNum) || 10;
-        return roundUp ?
-            Math.ceil(num / (step * scale)) * step * scale :
-            Math.floor(num / (step * scale)) * step * scale;
-    };
-
-    // If min and max are equal, create a range around the value
     if (min === max) {
         const value = min;
-        // For zero, use a range of 0 to 1
-        if (value === 0) {
-            min = 0;
-            max = 1;
-        } else {
-            // For non-zero values, create a 10% range around the value
-            const range = Math.abs(value) * 0.1;
-            min = roundToNiceNumber(Math.max(0, value - range));
-            max = roundToNiceNumber(value + range, true);
-        }
-    } else {
-        // First round min and max to nice numbers
-        min = roundToNiceNumber(min);
-        max = roundToNiceNumber(max, true);
-
-        // Ensure minimum 10% range between min and max
-        const range = max - min;
-        const minRange = Math.max(Math.abs(max), Math.abs(min)) * 0.1;
-        if (range < minRange) {
-            const padding = (minRange - range) / 2;
-            min = roundToNiceNumber(Math.max(0, min - padding));
-            max = roundToNiceNumber(max + padding, true);
-        }
+        return {min: Math.max(0, value - 1), max: value + 1};
     }
 
+    // Use a percentage-based padding (10% of the range)
+    const padding = 0.02;
+
+    // Add padding and ensure min is not negative
+    min = Math.max(0, min - (min * padding));
+    max = max + (max * padding);
+
+    const range = max - min;
+
+    // Determine the order of magnitude for rounding based on the range
+    const rangeMagnitude = Math.floor(Math.log10(range));
+    // Always round to at least 10s, but use larger steps for bigger ranges
+    // const roundTo = Math.max(10, Math.pow(10, rangeMagnitude));
+    const roundTo = Math.pow(10, rangeMagnitude);
+
+    // Round min and max to the appropriate precision
+    const roundedMax = Math.round(max / roundTo) * roundTo;
+    max = roundedMax < max ? Math.ceil(max / roundTo) * roundTo : roundedMax;
+
+    const roundedMin = Math.round(min / roundTo) * roundTo;
+    min = roundedMin > min ? Math.floor(min / roundTo) * roundTo : roundedMin;
+    min = Math.max(0, min);
+
+    // Ensure we have a visible range even after rounding
+    if (min === max) {
+        const midPoint = (min + max) / 2;
+        const smallRange = Math.max(Math.abs(midPoint) * padding, roundTo);
+        min = Math.max(0, Math.floor(midPoint - smallRange));
+        max = Math.ceil(midPoint + smallRange);
+    }
+
+    // Final safety check to ensure min is never negative
+    min = Math.max(0, min);
+
     return {min, max};
+};
+
+// Unfortunately in order to force Recharts area charts to start at a certain value
+// we need to use allowDataOverflow = true on the yAxis. This however clips the min
+// value if it reaches 0. In order to prevent this happening we add a bit of padding
+// to the min value.
+export const getYRangeWithMinPadding = (range: {min: number; max: number}) => {
+    if (range.min !== 0) {
+        return [range.min, range.max];
+    }
+    const padding = 0.005;
+    const minPadding = -2;
+    return [Math.min(range.min - (range.max * padding), minPadding), range.max];
 };
 
 // Calculates the width needed for the Y-axis based on the formatted tick values
@@ -293,6 +377,17 @@ export const calculateYAxisWidth = (ticks: number[], formatter: (value: number) 
     // Add padding for safety
     const width = Math.max(20, maxFormattedLength * 8 + 20);
     return width;
+};
+
+// Get range for date
+export const getRangeForStartDate = (startDate: string) => {
+    const publishedDate = new Date(startDate);
+    const today = new Date();
+    const diffInTime = today.getTime() - publishedDate.getTime();
+    const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
+
+    // Ensure minimum of 1 day to avoid issues with same-day publications
+    return Math.max(diffInDays, 1);
 };
 
 //Return today and startdate for charts
@@ -314,7 +409,7 @@ export const getRangeDates = (range: number) => {
 
 // Converts a country code to corresponding flag emoji
 export function getCountryFlag(countryCode:string) {
-    if (!countryCode || countryCode === null || countryCode.toUpperCase() === 'NULL' || countryCode === 'ᴺᵁᴸᴸ') {
+    if (!countryCode || countryCode === null || countryCode.toUpperCase() === 'NULL' || countryCode === 'ᴺᵁᴸᴸ' || countryCode === 'ᴺᵁ') {
         return '🏳️';
     }
     return countryCode.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)
@@ -443,4 +538,33 @@ export const formatDisplayDateWithRange = (date: string, range: number): string 
         return `Week of ${formatDisplayDate(date)}`;
     }
     return formatDisplayDate(date);
+};
+
+/**
+ * Member formatters
+ */
+
+// Helper function to format member names with fallback to email
+export const formatMemberName = (member: {name?: string; email?: string}) => {
+    return member.name || member.email || 'Unknown Member';
+};
+
+// Helper function to get member initials
+export const getMemberInitials = (member: {name?: string; email?: string}) => {
+    const name = formatMemberName(member);
+    const words = name.split(' ');
+    if (words.length >= 2) {
+        return (words[0][0] + words[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+};
+
+export const stringToHslColor = (str: string, saturation:string, lightness:string) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    const h = hash % 360;
+    return 'hsl(' + h + ', ' + saturation + '%, ' + lightness + '%)';
 };

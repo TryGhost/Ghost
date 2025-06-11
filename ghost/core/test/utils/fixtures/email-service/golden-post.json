@@ -380,7 +380,36 @@
                 "fileCaption": "A tiny text file.",
                 "fileName": "test.txt",
                 "fileSize": 16
-            }
+            },
+            {
+                "type": "call-to-action",
+                "version": 1,
+                "layout": "immersive",
+                "alignment": "center",
+                "textValue": "<p dir=\"ltr\"><span style=\"white-space: pre-wrap;\">Here’s a basic CTA card</span></p>",
+                "showButton": true,
+                "showDividers": true,
+                "buttonText": "Learn more",
+                "buttonUrl": "https://koenig.ghost.org/",
+                "buttonColor": "#000000",
+                "buttonTextColor": "#ffffff",
+                "hasSponsorLabel": true,
+                "sponsorLabel": "<p><span style=\"white-space: pre-wrap;\">SPONSORED test card</span></p>",
+                "backgroundColor": "none",
+                "linkColor": "text",
+                "imageUrl": "",
+                "imageWidth": null,
+                "imageHeight": null,
+                "visibility": {
+                  "web": {
+                    "nonMember": true,
+                    "memberSegment": "status:free,status:-free"
+                  },
+                  "email": {
+                    "memberSegment": "status:free,status:-free"
+                  }
+                }
+              }
         ],
         "direction": "ltr",
         "format": "",

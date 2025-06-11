@@ -18,13 +18,12 @@ const Overview: React.FC = () => {
     const {postId} = useParams();
     const navigate = useNavigate();
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    const {totals, isLoading} = usePostReferrers(postId || '');
+    const {totals, isLoading, currencySymbol} = usePostReferrers(postId || '');
     const {startDate, endDate, timezone} = getRangeDates(STATS_RANGES.ALL_TIME.value);
 
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid,email,status,count,feature_image',
             include: 'email,authors,tags,tiers,count.clicks,count.signups,count.paid_conversions'
         }
     });
@@ -58,7 +57,7 @@ const Overview: React.FC = () => {
 
     const kpiIsLoading = isLoading || isConfigLoading || loading;
     const typedPost = post as Post;
-    
+
     // Use the utility function from admin-x-framework
     const showNewsletterSection = hasBeenEmailed(typedPost);
 
@@ -78,7 +77,7 @@ const Overview: React.FC = () => {
                     <CardHeader className='hidden'>
                         <CardTitle>Newsletter performance</CardTitle>
                     </CardHeader>
-                    <CardContent className='flex items-stretch p-0'>
+                    <CardContent className='grid grid-cols-4 items-stretch p-0'>
                         {kpiIsLoading ?
                             ''
                             :
@@ -95,7 +94,7 @@ const Overview: React.FC = () => {
                                     </KpiCardContent>
                                 </KpiCard>
                                 <KpiCard className='grow' onClick={() => {
-                                    navigate(`/analytics/beta/${postId}/web`);
+                                    navigate(`/analytics/beta/${postId}/web/?tab=views`);
                                 }}>
                                     <KpiCardLabel>
                                         <LucideIcon.Eye size={16} strokeWidth={1.5} />
@@ -124,7 +123,7 @@ const Overview: React.FC = () => {
                                     MRR impact
                                     </KpiCardLabel>
                                     <KpiCardContent>
-                                        <KpiCardValue>${centsToDollars(totals?.mrr || 0)}</KpiCardValue>
+                                        <KpiCardValue>{currencySymbol}{centsToDollars(totals?.mrr || 0)}</KpiCardValue>
                                     </KpiCardContent>
                                 </KpiCard>
                             </>
@@ -132,24 +131,7 @@ const Overview: React.FC = () => {
                     </CardContent>
                 </Card>
                 {showNewsletterSection && (
-                    <Card className='group/card'>
-                        <div className='flex items-center justify-between gap-6'>
-                            <CardHeader>
-                                <CardTitle>Newsletter performance</CardTitle>
-                                <CardDescription>How members interacted with this email</CardDescription>
-                            </CardHeader>
-                            <Button className='mr-6 opacity-0 transition-all group-hover/card:opacity-100' variant='outline' onClick={() => {
-                                navigate(`/analytics/beta/${postId}/newsletter`);
-                            }}>
-                                    View more
-                                <LucideIcon.ArrowRight />
-                            </Button>
-                        </div>
-                        <CardContent>
-                            <Separator />
-                            <NewsletterOverview />
-                        </CardContent>
-                    </Card>
+                    <NewsletterOverview post={typedPost} />
                 )}
                 <Card className='group/card'>
                     <div className='flex items-center justify-between gap-6'>

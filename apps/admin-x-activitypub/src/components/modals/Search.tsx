@@ -2,8 +2,7 @@ import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
 import FollowButton from '@components/global/FollowButton';
 import React, {useEffect, useRef} from 'react';
-import {Button, H4, LoadingIndicator, LucideIcon} from '@tryghost/shade';
-import {NoValueLabel, TextField} from '@tryghost/admin-x-design-system';
+import {Button, H4, Input, LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade';
 import {SuggestedProfiles} from '../global/SuggestedProfiles';
 import {useDebounce} from 'use-debounce';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -133,18 +132,14 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
         <>
             <div className='-mx-6 -mt-6 flex items-center gap-2 border-b border-b-gray-150 px-6 pb-[10px] pt-3 dark:border-b-gray-950'>
                 <LucideIcon.Search className='text-gray-600' size={18} strokeWidth={1.5} />
-                <TextField
+                <Input
+                    ref={queryInputRef}
                     autoComplete='off'
-                    className='mr-12 flex h-10 w-full items-center rounded-lg border-0 bg-transparent px-0 py-1.5 transition-colors focus:border-0 focus:bg-transparent focus:outline-0 tablet:mr-0 dark:text-white dark:placeholder:text-gray-800'
-                    containerClassName='w-100'
-                    inputRef={queryInputRef}
+                    className='flex h-10 w-full items-center rounded-lg border-0 bg-transparent px-0 py-1.5 focus-visible:border-0 focus-visible:bg-transparent focus-visible:shadow-none focus-visible:outline-0 dark:text-white dark:placeholder:text-gray-800'
                     placeholder='Enter a handle or account URL...'
                     title="Search"
                     type='text'
                     value={query}
-                    clearBg
-                    hideTitle
-                    unstyled
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
                 />
             </div>
@@ -156,7 +151,8 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                 )}
                 {showNoResults && (
                     <div className='flex h-full items-center justify-center pb-8'>
-                        <NoValueLabel icon='user'>
+                        <NoValueLabel>
+                            <NoValueLabelIcon><LucideIcon.UserRound /></NoValueLabelIcon>
                             No users matching this handle or account URL
                         </NoValueLabel>
                     </div>

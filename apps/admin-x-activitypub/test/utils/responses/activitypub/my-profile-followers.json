@@ -1,0 +1,38 @@
+{
+    "accounts": [
+        {
+            "id": "https://www.bobsite.com/.ghost/activitypub/users/index",
+            "apId": "https://www.bobsite.com/.ghost/activitypub/users/index",
+            "name": "Bob's Site",
+            "handle": "@bob@bobsite.com",
+            "avatarUrl": "https://www.bobsite.com/profile.png",
+            "isFollowing": true,
+            "followedByMe": true,
+            "blockedByMe": false,
+            "domainBlockedByMe": false
+        },
+        {
+            "id": "https://www.edgarsite.com/.ghost/activitypub/users/index",
+            "apId": "https://www.edgarsite.com/.ghost/activitypub/users/index",
+            "name": "Edgar's Site",
+            "handle": "@edgar@edgarsite.com",
+            "avatarUrl": "https://www.edgarsite.com/profile.png",
+            "isFollowing": false,
+            "followedByMe": true,
+            "blockedByMe": false,
+            "domainBlockedByMe": false
+        },
+        {
+            "id": "https://www.francoisweb.com/.ghost/activitypub/users/index",
+            "apId": "https://www.francoisweb.com/.ghost/activitypub/users/index",
+            "name": "Francois's Site",
+            "handle": "@francois@francoisweb.com",
+            "avatarUrl": "https://www.francoisweb.com/profile.png",
+            "isFollowing": false,
+            "followedByMe": true,
+            "blockedByMe": false,
+            "domainBlockedByMe": false
+        }
+    ],
+    "next": "20"
+}

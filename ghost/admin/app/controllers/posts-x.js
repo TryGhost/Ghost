@@ -7,4 +7,6 @@ export default class PostsXController extends Controller {
     @service session;
 
     @inject config;
+
+    fromAnalytics = false;
 }

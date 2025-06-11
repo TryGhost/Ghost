@@ -475,5 +475,21 @@ describe('ContentStatsService', function () {
             should.exist(result);
             result.should.have.property('data').which.is.an.Array().with.lengthOf(0);
         });
+
+        it('passes post_type parameter to tinybird client', async function () {
+            mockTinybirdClient.fetch.resolves([]);
+
+            const options = {
+                date_from: '2023-01-01',
+                date_to: '2023-01-31',
+                post_type: 'page'
+            };
+
+            await service.fetchRawTopContentData(options);
+
+            mockTinybirdClient.fetch.calledOnce.should.be.true();
+            const tinybirdOptions = mockTinybirdClient.fetch.firstCall.args[1];
+            tinybirdOptions.should.have.property('postType', 'page');
+        });
     });
 });
