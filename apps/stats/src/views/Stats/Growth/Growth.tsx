@@ -1,14 +1,14 @@
 import DateRangeSelect from '../components/DateRangeSelect';
-import React, {useEffect, useMemo, useState} from 'react';
+import GrowthKPIs from './components/GrowthKPIs';
+import React, {useMemo, useState} from 'react';
 import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiTabTrigger, KpiTabValue, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, centsToDollars, formatNumber} from '@tryghost/shade';
-import {DiffDirection, useGrowthStats} from '@src/hooks/useGrowthStats';
-import {STATS_RANGES} from '@src/utils/constants';
-import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Separator, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, formatNumber} from '@tryghost/shade';
+import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useGrowthStats} from '@src/hooks/useGrowthStats';
 import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 
@@ -40,201 +40,6 @@ interface UnifiedGrowthContentData {
 }
 
 type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
-
-type ChartDataItem = {
-    date: string;
-    value: number;
-    free: number;
-    paid: number;
-    comped: number;
-    mrr: number;
-    formattedValue: string;
-    label?: string;
-};
-
-type Totals = {
-    totalMembers: number;
-    freeMembers: number;
-    paidMembers: number;
-    mrr: number;
-    percentChanges: {
-        total: string;
-        free: string;
-        paid: string;
-        mrr: string;
-    };
-    directions: {
-        total: DiffDirection;
-        free: DiffDirection;
-        paid: DiffDirection;
-        mrr: DiffDirection;
-    };
-};
-
-const GrowthKPIs: React.FC<{
-    chartData: ChartDataItem[];
-    totals: Totals;
-    initialTab?: string;
-    currencySymbol: string;
-}> = ({chartData: allChartData, totals, initialTab = 'total-members', currencySymbol}) => {
-    const [currentTab, setCurrentTab] = useState(initialTab);
-    const {range} = useGlobalData();
-
-    // Update current tab if initialTab changes
-    useEffect(() => {
-        setCurrentTab(initialTab);
-    }, [initialTab]);
-
-    const {totalMembers, freeMembers, paidMembers, mrr, percentChanges, directions} = totals;
-
-    // Create chart data based on selected tab
-    const chartData = useMemo(() => {
-        if (!allChartData || allChartData.length === 0) {
-            return [];
-        }
-
-        // First sanitize the data based on the selected field
-        let sanitizedData: ChartDataItem[] = [];
-        let fieldName: keyof ChartDataItem = 'value';
-
-        switch (currentTab) {
-        case 'free-members':
-            fieldName = 'free';
-            break;
-        case 'paid-members':
-            fieldName = 'paid';
-            break;
-        case 'mrr': {
-            fieldName = 'mrr';
-            break;
-        }
-        default:
-            fieldName = 'value';
-        }
-
-        sanitizedData = sanitizeChartData(allChartData, range, fieldName, 'exact');
-
-        // Then map the sanitized data to the final format
-        let processedData: GhAreaChartDataItem[] = [];
-
-        switch (currentTab) {
-        case 'free-members':
-            processedData = sanitizedData.map(item => ({
-                ...item,
-                value: item.free,
-                formattedValue: formatNumber(item.free),
-                label: 'Free members'
-            }));
-            break;
-        case 'paid-members':
-            processedData = sanitizedData.map(item => ({
-                ...item,
-                value: item.paid,
-                formattedValue: formatNumber(item.paid),
-                label: 'Paid members'
-            }));
-            break;
-        case 'mrr':
-            processedData = sanitizedData.map(item => ({
-                ...item,
-                value: centsToDollars(item.mrr),
-                formattedValue: `${currencySymbol}${formatNumber(centsToDollars(item.mrr))}`,
-                label: 'MRR'
-            }));
-            break;
-        default:
-            processedData = sanitizedData.map(item => ({
-                ...item,
-                value: item.free + item.paid + item.comped,
-                formattedValue: formatNumber(item.free + item.paid + item.comped),
-                label: 'Total members'
-            }));
-        }
-
-        return processedData;
-    }, [currentTab, allChartData, range]);
-
-    const tabConfig = {
-        'total-members': {
-            color: 'hsl(var(--chart-teal))'
-        },
-        'free-members': {
-            color: 'hsl(var(--chart-blue))'
-        },
-        'paid-members': {
-            color: 'hsl(var(--chart-yellow))'
-        },
-        mrr: {
-            color: 'hsl(var(--chart-purple))'
-        }
-    };
-
-    return (
-        <Tabs defaultValue={initialTab} variant='kpis'>
-            <TabsList className="-mx-6 grid grid-cols-4">
-                <KpiTabTrigger value="total-members" onClick={() => {
-                    setCurrentTab('total-members');
-                }}>
-                    <KpiTabValue
-                        color='hsl(var(--chart-teal))'
-                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
-                        diffValue={percentChanges.total}
-                        label="Total members"
-                        value={formatNumber(totalMembers)}
-                    />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="free-members" onClick={() => {
-                    setCurrentTab('free-members');
-                }}>
-                    <KpiTabValue
-                        color='hsl(var(--chart-blue))'
-                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
-                        diffValue={percentChanges.free}
-                        label="Free members"
-                        value={formatNumber(freeMembers)}
-                    />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="paid-members" onClick={() => {
-                    setCurrentTab('paid-members');
-                }}>
-                    <KpiTabValue
-                        color='hsl(var(--chart-yellow))'
-                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
-                        diffValue={percentChanges.paid}
-                        label="Paid members"
-                        value={formatNumber(paidMembers)}
-                    />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="mrr" onClick={() => {
-                    setCurrentTab('mrr');
-                }}>
-                    <KpiTabValue
-                        color='hsl(var(--chart-purple))'
-                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
-                        diffValue={percentChanges.mrr}
-                        label="MRR"
-                        value={`${currencySymbol}${formatNumber(centsToDollars(mrr))}`}
-                    />
-                </KpiTabTrigger>
-            </TabsList>
-            <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
-                <GhAreaChart
-                    className='-mb-3 h-[16vw] max-h-[320px] w-full'
-                    color={tabConfig[currentTab as keyof typeof tabConfig].color}
-                    data={chartData}
-                    dataFormatter={currentTab === 'mrr'
-                        ?
-                        (value: number) => {
-                            return `${currencySymbol}${formatNumber(value)}`;
-                        } :
-                        formatNumber}
-                    id="mrr"
-                    range={range}
-                />
-            </div>
-        </Tabs>
-    );
-};
 
 const Growth: React.FC = () => {
     const {range} = useGlobalData();
@@ -313,100 +118,121 @@ const Growth: React.FC = () => {
         }
     };
 
+    const isPageLoading = isLoading;
+
     return (
         <StatsLayout>
             <StatsHeader>
                 <DateRangeSelect />
             </StatsHeader>
-            <StatsView data={chartData} isLoading={isLoading}>
+            <StatsView data={isPageLoading ? undefined : chartData} isLoading={false} loadingComponent={<></>}>
                 <Card>
                     <CardContent>
-                        <GrowthKPIs chartData={chartData} currencySymbol={currencySymbol} initialTab={initialTab} totals={totals} />
+                        <GrowthKPIs
+                            chartData={chartData}
+                            currencySymbol={currencySymbol}
+                            initialTab={initialTab}
+                            isLoading={isPageLoading}
+                            totals={totals}
+                        />
                     </CardContent>
                 </Card>
-                <Card>
-                    <div className="flex items-start justify-between">
+                {isPageLoading
+                    ?
+                    <Card className='min-h-[460px]'>
                         <CardHeader>
                             <CardTitle>{getContentTitle()}</CardTitle>
                             <CardDescription>{getContentDescription()}</CardDescription>
                         </CardHeader>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger className='mr-6 mt-6' asChild>
-                                <Button variant="dropdown">{getContentTypeLabel()}</Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align='end'>
-                                {CONTENT_TYPE_OPTIONS.map(option => (
-                                    <DropdownMenuItem
-                                        key={option.value}
-                                        onClick={() => setSelectedContentType(option.value)}
-                                    >
-                                        {option.label}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                    <CardContent>
-                        <Separator/>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>
+                        <CardContent>
+                            <SkeletonTable lines={5} />
+                        </CardContent>
+                    </Card>
+                    :
+                    <Card className='min-h-[460px]'>
+                        <div className="flex items-start justify-between">
+                            <CardHeader>
+                                <CardTitle>{getContentTitle()}</CardTitle>
+                                <CardDescription>{getContentDescription()}</CardDescription>
+                            </CardHeader>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger className='mr-6 mt-6' asChild>
+                                    <Button variant="dropdown">{getContentTypeLabel()}</Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align='end'>
+                                    {CONTENT_TYPE_OPTIONS.map(option => (
+                                        <DropdownMenuItem
+                                            key={option.value}
+                                            onClick={() => setSelectedContentType(option.value)}
+                                        >
+                                            {option.label}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                        <CardContent>
+                            <Separator/>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>
                                         Title
-                                    </TableHead>
-                                    <TableHead className='text-right'>
-                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='free_members desc'>
+                                        </TableHead>
+                                        <TableHead className='text-right'>
+                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='free_members desc'>
                                             Free members
-                                        </SortButton>
-                                    </TableHead>
-                                    <TableHead className='text-right'>
-                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='paid_members desc'>
+                                            </SortButton>
+                                        </TableHead>
+                                        <TableHead className='text-right'>
+                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='paid_members desc'>
                                             Paid members
-                                        </SortButton>
-                                    </TableHead>
-                                    <TableHead className='text-right'>
-                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
+                                            </SortButton>
+                                        </TableHead>
+                                        <TableHead className='text-right'>
+                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
                                             MRR impact
-                                        </SortButton>
-                                    </TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {transformedTopPosts.map(post => (
-                                    <TableRow key={post.post_id}>
-                                        <TableCell className="font-medium">
-                                            <div className='group/link inline-flex items-center gap-2'>
-                                                {post.post_id ?
-                                                    <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
-                                                        navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
-                                                    }}>
-                                                        {post.title}
-                                                    </Button>
-                                                    :
-                                                    <>
-                                                        {post.title}
-                                                    </>
-                                                }
-                                                {/* <a className='-mx-2 inline-flex min-h-6 items-center gap-1 rounded-sm px-2 opacity-0 hover:underline group-hover/link:opacity-75' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
+                                            </SortButton>
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {transformedTopPosts.map(post => (
+                                        <TableRow key={post.post_id}>
+                                            <TableCell className="font-medium">
+                                                <div className='group/link inline-flex items-center gap-2'>
+                                                    {post.post_id ?
+                                                        <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
+                                                            navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
+                                                        }}>
+                                                            {post.title}
+                                                        </Button>
+                                                        :
+                                                        <>
+                                                            {post.title}
+                                                        </>
+                                                    }
+                                                    {/* <a className='-mx-2 inline-flex min-h-6 items-center gap-1 rounded-sm px-2 opacity-0 hover:underline group-hover/link:opacity-75' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
                                                     <LucideIcon.SquareArrowOutUpRight size={12} strokeWidth={2.5} />
                                                 </a> */}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>
-                                            {(post.free_members > 0 && '+')}{formatNumber(post.free_members)}
-                                        </TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>
-                                            {(post.paid_members > 0 && '+')}{formatNumber(post.paid_members)}
-                                        </TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>
-                                            {(post.mrr > 0 && '+')}{currencySymbol}{centsToDollars(post.mrr).toFixed(0)}
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className='text-right font-mono text-sm'>
+                                                {(post.free_members > 0 && '+')}{formatNumber(post.free_members)}
+                                            </TableCell>
+                                            <TableCell className='text-right font-mono text-sm'>
+                                                {(post.paid_members > 0 && '+')}{formatNumber(post.paid_members)}
+                                            </TableCell>
+                                            <TableCell className='text-right font-mono text-sm'>
+                                                {(post.mrr > 0 && '+')}{currencySymbol}{centsToDollars(post.mrr).toFixed(0)}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                }
             </StatsView>
         </StatsLayout>
     );

@@ -68,12 +68,34 @@ const SkeletonTable = React.forwardRef<
 
     return (
         <div ref={ref} className={cn('flex flex-col gap-2', className)} {...props}>
-            {Array.from({length: lines}, (_, i) => (
-                <div key={i} className='flex justify-between gap-3'>
-                    <div className='max-w-[66%] grow'><Skeleton /></div>
-                    <Skeleton className='w-[80px] self-end' />
-                </div>
-            ))}
+            {Array.from({length: lines}, (_, i) => {
+                let skeletonMaxWidth = '66%';
+                switch (i % 5) {
+                case 0:
+                    skeletonMaxWidth = '57%';
+                    break;
+                case 1:
+                    skeletonMaxWidth = '33%';
+                    break;
+                case 2:
+                    skeletonMaxWidth = '40%';
+                    break;
+                case 3:
+                    skeletonMaxWidth = '48%';
+                    break;
+                case 4:
+                    skeletonMaxWidth = '24%';
+                    break;
+                }
+                return (
+                    <div key={i} className='flex justify-between gap-6'>
+                        <div className='grow' style={{
+                            maxWidth: skeletonMaxWidth
+                        }}><Skeleton /></div>
+                        <Skeleton className='w-[60px] self-end' />
+                    </div>
+                );
+            })}
         </div>
     );
 });

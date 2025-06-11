@@ -172,20 +172,6 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
         }
     };
 
-    if (isLoading) {
-        return (
-            <Card className='group/datalist'>
-                <CardHeader>
-                    <CardTitle>{getContentTitle()}</CardTitle>
-                    <CardDescription>Loading...</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <SkeletonTable lines={5} />
-                </CardContent>
-            </Card>
-        );
-    }
-
     const getContentDescription = () => {
         switch (selectedContentType) {
         case CONTENT_TYPES.POSTS:
@@ -196,6 +182,20 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
             return `Your highest viewed posts or pages ${getPeriodText(range)}`;
         }
     };
+
+    if (isLoading) {
+        return (
+            <Card className='group/datalist'>
+                <CardHeader>
+                    <CardTitle>{getContentTitle()}</CardTitle>
+                    <CardDescription>{getContentDescription()}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <SkeletonTable lines={5} />
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
         <Card className='group/datalist'>
