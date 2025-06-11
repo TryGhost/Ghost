@@ -230,6 +230,22 @@ export const useNewsletterStats = createQuery<NewsletterStatsResponseType>({
     }
 });
 
+export const useNewsletterBasicStats = createQuery<NewsletterStatsResponseType>({
+    dataType: newsletterStatsDataType,
+    path: '/stats/newsletter-basic-stats/',
+    defaultSearchParams: {
+        // Empty default params, will be filled by the hook
+    }
+});
+
+export const useNewsletterClickStats = createQuery<NewsletterStatsResponseType>({
+    dataType: newsletterStatsDataType,
+    path: '/stats/newsletter-click-stats/',
+    defaultSearchParams: {
+        // Empty default params, will be filled by the hook
+    }
+});
+
 // Hook wrapper to accept a newsletterId parameter
 export const useNewsletterStatsByNewsletterId = (newsletterId?: string, options: Partial<NewsletterStatsSearchParams> = {}) => {
     const searchParams: Record<string, string> = {};
