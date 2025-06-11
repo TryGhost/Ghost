@@ -268,7 +268,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
                 };
             })
             .filter((item) => {
-                return item.free_members > 0 || item.paid_members > 0; // Only show sources with conversions
+                return item.free_members >= 0 && (item.free_members > 0 || item.paid_members > 0); // Skip sources with negative free members, only show sources with conversions
             })
             .sort((a, b) => {
                 return (b.free_members + b.paid_members) - (a.free_members + a.paid_members); // Sort by total conversions
