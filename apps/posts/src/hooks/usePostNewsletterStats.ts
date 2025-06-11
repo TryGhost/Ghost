@@ -71,7 +71,10 @@ export const usePostNewsletterStats = (postId: string) => {
     const newsletterId = useMemo(() => post?.newsletter?.id, [post]);
 
     // Fetch the last 20 newsletters and calculate the average open and click rates
-    const {data: newsletterStatsResponse, isLoading: isNewsletterStatsLoading} = useNewsletterStatsByNewsletterId(newsletterId);
+    // Only fetch if we have a newsletter ID to avoid unnecessary queries
+    const {data: newsletterStatsResponse, isLoading: isNewsletterStatsLoading} = useNewsletterStatsByNewsletterId(newsletterId, {}, {
+        enabled: !!newsletterId
+    });
 
     // Get the top links from this post
     const {data: clicksResponse, isLoading: isClicksLoading, refetch: refetchTopLinks} = useTopLinks({

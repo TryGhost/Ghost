@@ -231,7 +231,7 @@ export const useNewsletterStats = createQuery<NewsletterStatsResponseType>({
 });
 
 // Hook wrapper to accept a newsletterId parameter
-export const useNewsletterStatsByNewsletterId = (newsletterId?: string, options: Partial<NewsletterStatsSearchParams> = {}) => {
+export const useNewsletterStatsByNewsletterId = (newsletterId?: string, options: Partial<NewsletterStatsSearchParams> = {}, queryOptions: {enabled?: boolean} = {}) => {
     const searchParams: Record<string, string> = {};
     
     if (newsletterId) {
@@ -252,7 +252,7 @@ export const useNewsletterStatsByNewsletterId = (newsletterId?: string, options:
         searchParams.limit = options.limit.toString();
     }
     
-    return useNewsletterStats({searchParams});
+    return useNewsletterStats({searchParams, enabled: queryOptions.enabled});
 };
 
 export const useSubscriberCount = createQuery<NewsletterSubscriberStatsResponseType>({
