@@ -1,9 +1,9 @@
 import React from 'react';
-import {getFaviconDomain, getSymbol} from '@tryghost/admin-x-framework';
-import {useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, formatNumber} from '@tryghost/shade';
+import {getFaviconDomain, getSymbol} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
 import {useReferrersWithRange} from '@src/hooks/useReferrersWithRange';
 
 // Source normalization mapping - same as Posts app
@@ -148,17 +148,17 @@ const GrowthSourcesTable: React.FC<GrowthSourcesTableProps> = ({data, currencySy
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {displayData.map((row) => (
+                {displayData.map(row => (
                     <TableRow key={row.source}>
                         <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
                                 <img
+                                    alt=""
                                     className="size-4"
                                     src={row.iconSrc}
                                     onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                                         e.currentTarget.src = defaultSourceIconUrl;
                                     }}
-                                    alt=""
                                 />
                                 {row.linkUrl ? (
                                     <a 
@@ -303,8 +303,8 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
                     <GrowthSourcesTable 
                         currencySymbol={currencySymbol}
                         data={processedData}
-                        limit={limit}
                         defaultSourceIconUrl={defaultSourceIconUrl}
+                        limit={limit}
                     />
                 ) : (
                     <div className='py-20 text-center text-sm text-gray-700'>
