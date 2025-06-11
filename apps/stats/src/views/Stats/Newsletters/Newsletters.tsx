@@ -136,7 +136,7 @@ const Newsletters: React.FC = () => {
 
     // Separate loading states for different sections
     const isKPIsLoading = isNewslettersLoading || isSubscriberStatsLoading || isStatsLoading;
-    const isTableLoading = isStatsLoading;
+    const isTableLoading = isStatsLoading || !newsletterStatsData;
 
     const pageData = isKPIsLoading ? undefined : (selectedNewsletterId && subscribersData.length > 1 && newsletterStats.length > 1 ? ['data exists'] : []);
 
