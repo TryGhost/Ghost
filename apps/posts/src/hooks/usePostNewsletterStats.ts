@@ -1,7 +1,7 @@
 import {type CleanedLink, cleanTrackedUrl} from '@src/utils/link-helpers';
+import {type NewsletterStatItem, useNewsletterBasicStats, useNewsletterClickStats} from '@tryghost/admin-x-framework/api/stats';
 import {type Post, getPost} from '@tryghost/admin-x-framework/api/posts';
 import {useMemo} from 'react';
-import {type NewsletterStatItem, useNewsletterBasicStats, useNewsletterClickStats} from '@tryghost/admin-x-framework/api/stats';
 import {useTopLinks} from '@tryghost/admin-x-framework/api/links';
 
 // Extend the Post type to include newsletter property
