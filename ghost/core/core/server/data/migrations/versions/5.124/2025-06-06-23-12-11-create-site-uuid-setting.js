@@ -1,7 +1,7 @@
 const logging = require('@tryghost/logging');
 const config = require('../../../../../shared/config');
 const crypto = require('crypto');
-const validator = require('validator');
+const validator = require('@tryghost/validator');
 
 /**
  * This migration creates a new setting for the site UUID. 
