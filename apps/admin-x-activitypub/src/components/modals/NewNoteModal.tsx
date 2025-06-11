@@ -53,7 +53,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
         if (modalIsOpen) {
             const timer = setTimeout(() => {
                 setIsSticky(true);
-            }, 200);
+            }, 300);
             return () => clearTimeout(timer);
         } else {
             setIsSticky(false);
@@ -234,6 +234,10 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
         }
     };
 
+    const handleContentClick = () => {
+        textareaRef.current?.focus();
+    };
+
     useEffect(() => {
         // Cleanup function to revoke object URLs when component unmounts
         return () => {
@@ -293,7 +297,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                         onClick={() => {}}
                     />
                 )}
-                <div className='flex min-h-24 items-start gap-3'>
+                <div className={`flex ${!imagePreview ? 'min-h-36' : ''} cursor-text items-start gap-3`} onClick={handleContentClick}>
                     <div className='sticky top-0'>
                         <APAvatar author={user as ActorProperties} />
                     </div>
@@ -308,7 +312,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                                     <textarea
                                         ref={textareaRef}
                                         autoFocus={true}
-                                        className='ap-textarea w-full resize-none bg-transparent text-[1.5rem]'
+                                        className='ap-textarea w-full resize-none bg-transparent text-[1.5rem] break-anywhere'
                                         data-testid="note-textarea"
                                         placeholder={placeholder}
                                         rows={1}
@@ -333,7 +337,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                     </FormPrimitive.Root>
                 </div>
                 {imagePreview &&
-                    <div className='group relative mt-6 flex w-fit grow items-center justify-center'>
+                    <div className='group relative mt-6 flex min-h-[200px] w-fit grow items-center justify-center'>
                         <img alt='Image attachment preview' className={`max-h-[420px] w-full rounded-sm object-cover outline outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'opacity-10'}`} src={imagePreview} />
                         {isImageUploading &&
                             <div className='absolute leading-[0]'>
