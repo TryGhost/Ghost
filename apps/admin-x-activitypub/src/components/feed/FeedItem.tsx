@@ -372,7 +372,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 <div className='flex flex-col'>
                                     <div className=''>
                                         {(object.type === 'Article') ? <div className='rounded-md border border-gray-150 transition-colors hover:bg-gray-75 dark:border-gray-950 dark:hover:bg-gray-950'>
-                                            {renderFeedAttachment(object, openLightbox)}
+                                            {renderFeedAttachment(object, onClick)}
                                             <div className='p-5'>
                                                 <div className='mb-1 line-clamp-2 text-pretty text-lg font-semibold leading-tight tracking-tight break-anywhere' data-test-activity-heading>{object.name}</div>
                                                 <div className='line-clamp-3 leading-[1.4em] break-anywhere'>{object.preview?.content}</div>
@@ -534,7 +534,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </div>
                                 <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
-                                        {(object.type === 'Article') && renderFeedAttachment(object, openLightbox)}
+                                        {(object.type === 'Article') && renderFeedAttachment(object, onClick)}
                                         {object.name && <H4 className='mt-2.5 text-pretty leading-tight break-anywhere' data-test-activity-heading>{object.name}</H4>}
                                         {(object.preview && object.type === 'Article') ? <div className='mt-1 line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'></div>}
                                         {(object.type === 'Note') && renderFeedAttachment(object, openLightbox)}

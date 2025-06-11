@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.122.0",
+  "version": "5.123.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -224,7 +224,7 @@
   },
   "devDependencies": {
     "@actions/core": "1.11.1",
-    "@playwright/test": "1.52.0",
+    "@playwright/test": "1.53.0",
     "@prettier/sync": "0.5.5",
     "@tryghost/express-test": "0.14.1",
     "@tryghost/webhook-mock-receiver": "0.2.17",

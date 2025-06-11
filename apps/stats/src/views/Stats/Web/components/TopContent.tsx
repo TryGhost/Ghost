@@ -1,19 +1,10 @@
-import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
-import DateRangeSelect from './components/DateRangeSelect';
-import React, {useMemo, useState} from 'react';
-import StatsHeader from './layout/StatsHeader';
-import StatsLayout from './layout/StatsLayout';
-import StatsView from './layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, KpiTabTrigger, KpiTabValue, LoadingIndicator, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates, getYRange} from '@tryghost/shade';
-import {KpiMetric} from '@src/types/kpi';
-import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
-import {SourcesCard, getStatEndpointUrl, getToken, useNavigate} from '@tryghost/admin-x-framework';
-import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {getAudienceQueryParam} from '../../components/AudienceSelect';
+import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useQuery} from '@tinybirdco/charts';
+import {useMemo, useState} from 'react';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
-
-// Define types for our page data
 
 // Unified data structure for content
 interface UnifiedContentData {
@@ -24,18 +15,6 @@ interface UnifiedContentData {
     post_uuid?: string;
     post_id?: string;
     post_type?: string;
-}
-
-interface KpiDataItem {
-    date: string;
-    [key: string]: string | number;
-}
-
-interface SourcesData {
-    source?: string | number;
-    visits?: number;
-    [key: string]: unknown;
-    percentage?: number;
 }
 
 // Content type definitions
@@ -52,113 +31,6 @@ const CONTENT_TYPE_OPTIONS = [
     {value: CONTENT_TYPES.PAGES, label: 'Pages'},
     {value: CONTENT_TYPES.POSTS_AND_PAGES, label: 'Posts & pages'}
 ];
-
-const KPI_METRICS: Record<string, KpiMetric> = {
-    visits: {
-        dataKey: 'visits',
-        label: 'Visitors',
-        chartColor: 'hsl(var(--chart-blue))',
-        formatter: formatNumber
-    },
-    views: {
-        dataKey: 'pageviews',
-        label: 'Pageviews',
-        chartColor: 'hsl(var(--chart-teal))',
-        formatter: formatNumber
-    },
-    'bounce-rate': {
-        dataKey: 'bounce_rate',
-        label: 'Bounce rate',
-        chartColor: 'hsl(var(--chart-teal))',
-        formatter: formatPercentage
-    },
-    'visit-duration': {
-        dataKey: 'avg_session_sec',
-        label: 'Visit duration',
-        chartColor: 'hsl(var(--chart-teal))',
-        formatter: formatDuration
-    }
-};
-
-interface WebKPIsProps {
-    data: KpiDataItem[] | null;
-    range: number;
-}
-
-const WebKPIs: React.FC<WebKPIsProps> = ({data, range}) => {
-    const [currentTab, setCurrentTab] = useState('visits');
-    const currentMetric = KPI_METRICS[currentTab];
-
-    const chartData = useMemo(() => {
-        if (!data) {
-            return [];
-        }
-
-        return sanitizeChartData<KpiDataItem>(data, range, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item: KpiDataItem) => {
-            const value = Number(item[currentMetric.dataKey]);
-            return {
-                date: String(item.date),
-                value,
-                formattedValue: currentMetric.formatter(value),
-                label: currentMetric.label
-            };
-        });
-    }, [data, range, currentMetric]);
-
-    // Calculate KPI values
-    const getKpiValues = () => {
-        if (!data?.length) {
-            return {visits: 0, views: 0, bounceRate: 0, duration: 0};
-        }
-
-        const totalVisits = data.reduce((sum, item) => sum + Number(item.visits), 0);
-        const totalViews = data.reduce((sum, item) => sum + Number(item.pageviews), 0);
-
-        // Ponderated KPIs calculation
-        const _ponderatedKPIsTotal = (kpi: keyof typeof data[0]) => {
-            return data.reduce((prev, curr) => {
-                const currValue = Number(curr[kpi] ?? 0);
-                const currVisits = Number(curr.visits);
-                return prev + (currValue * currVisits / totalVisits);
-            }, 0);
-        };
-
-        const avgBounceRate = _ponderatedKPIsTotal('bounce_rate');
-        const avgDuration = _ponderatedKPIsTotal('avg_session_sec');
-
-        return {
-            visits: formatNumber(totalVisits),
-            views: formatNumber(totalViews),
-            bounceRate: formatPercentage(avgBounceRate),
-            duration: formatDuration(avgDuration)
-        };
-    };
-
-    const kpiValues = getKpiValues();
-
-    return (
-        <Tabs defaultValue="visits" variant='kpis'>
-            <TabsList className="-mx-6 grid grid-cols-2">
-                <KpiTabTrigger value="visits" onClick={() => setCurrentTab('visits')}>
-                    <KpiTabValue color='hsl(var(--chart-blue))' label="Unique visitors" value={kpiValues.visits} />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="views" onClick={() => setCurrentTab('views')}>
-                    <KpiTabValue color='hsl(var(--chart-teal))' label="Total views" value={kpiValues.views} />
-                </KpiTabTrigger>
-            </TabsList>
-            <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
-                <GhAreaChart
-                    className='-mb-3 h-[16vw] max-h-[320px] w-full'
-                    color={currentMetric.chartColor}
-                    data={chartData}
-                    id="mrr"
-                    range={range}
-                    yAxisRange={[0, getYRange(chartData).max]}
-                />
-            </div>
-        </Tabs>
-    );
-};
 
 interface TopContentTableProps {
     data: UnifiedContentData[] | null;
@@ -224,11 +96,11 @@ const TopContentTable: React.FC<TopContentTableProps> = ({data, contentType}) =>
     );
 };
 
-interface TopContentCardProps {
+interface TopContentProps {
     range: number;
 }
 
-const TopContentCard: React.FC<TopContentCardProps> = ({range}) => {
+const TopContent: React.FC<TopContentProps> = ({range}) => {
     const {audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
@@ -257,7 +129,7 @@ const TopContentCard: React.FC<TopContentCardProps> = ({range}) => {
     }, [startDate, endDate, timezone, audience, selectedContentType]);
 
     // Get filtered content data
-    const {data: topContentData, isLoading: topContentLoading} = useTopContent({
+    const {data: topContentData, isLoading: isLoading} = useTopContent({
         searchParams: queryParams
     });
 
@@ -300,20 +172,6 @@ const TopContentCard: React.FC<TopContentCardProps> = ({range}) => {
         }
     };
 
-    if (topContentLoading) {
-        return (
-            <Card className='group/datalist'>
-                <CardHeader>
-                    <CardTitle>{getContentTitle()}</CardTitle>
-                    <CardDescription>Loading...</CardDescription>
-                </CardHeader>
-                <CardContent className='flex h-full items-center justify-center'>
-                    <LoadingIndicator size='md' />
-                </CardContent>
-            </Card>
-        );
-    }
-
     const getContentDescription = () => {
         switch (selectedContentType) {
         case CONTENT_TYPES.POSTS:
@@ -324,6 +182,20 @@ const TopContentCard: React.FC<TopContentCardProps> = ({range}) => {
             return `Your highest viewed posts or pages ${getPeriodText(range)}`;
         }
     };
+
+    if (isLoading) {
+        return (
+            <Card className='group/datalist'>
+                <CardHeader>
+                    <CardTitle>{getContentTitle()}</CardTitle>
+                    <CardDescription>{getContentDescription()}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <SkeletonTable lines={5} />
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
         <Card className='group/datalist'>
@@ -382,82 +254,4 @@ const TopContentCard: React.FC<TopContentCardProps> = ({range}) => {
     );
 };
 
-const Web: React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
-    const {startDate, endDate, timezone} = getRangeDates(range);
-
-    // Get site URL and icon for domain comparison and Direct traffic favicon
-    const siteUrl = data?.url as string | undefined;
-    const siteIcon = data?.icon as string | undefined;
-
-    // Prepare query parameters
-    const params = {
-        site_uuid: statsConfig?.id || '',
-        date_from: formatQueryDate(startDate),
-        date_to: formatQueryDate(endDate),
-        timezone: timezone,
-        member_status: getAudienceQueryParam(audience)
-    };
-
-    const queryParams: Record<string, string> = {
-        date_from: formatQueryDate(startDate),
-        date_to: formatQueryDate(endDate),
-        member_status: getAudienceQueryParam(audience)
-    };
-
-    if (timezone) {
-        queryParams.timezone = timezone;
-    }
-
-    // Get KPI data
-    const {data: kpiData, loading: kpiLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
-        params
-    });
-
-    // Get top sources data
-    const {data: sourcesData, loading: sourcesLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
-        token: getToken(statsConfig),
-        params
-    });
-
-    // Get total visitors for table
-    const totalVisitors = kpiData?.length ? kpiData.reduce((sum, item) => sum + Number(item.visits), 0) : 0;
-
-    // Calculate combined loading state
-    const isLoading = isConfigLoading || kpiLoading || sourcesLoading;
-
-    return (
-        <StatsLayout>
-            <StatsHeader>
-                <AudienceSelect />
-                <DateRangeSelect />
-            </StatsHeader>
-            <StatsView isLoading={isLoading}>
-                <Card>
-                    <CardContent>
-                        <WebKPIs data={kpiData as KpiDataItem[] | null} range={range} />
-                    </CardContent>
-                </Card>
-                <div className='grid min-h-[460px] grid-cols-2 gap-8'>
-                    <TopContentCard
-                        range={range}
-                    />
-                    <SourcesCard
-                        data={sourcesData as SourcesData[] | null}
-                        defaultSourceIconUrl={STATS_DEFAULT_SOURCE_ICON_URL}
-                        getPeriodText={getPeriodText}
-                        range={range}
-                        siteIcon={siteIcon}
-                        siteUrl={siteUrl}
-                        totalVisitors={totalVisitors}
-                    />
-                </div>
-            </StatsView>
-        </StatsLayout>
-    );
-};
-
-export default Web;
+export default TopContent;

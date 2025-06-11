@@ -2147,6 +2147,7 @@ describe('Email renderer', function () {
                     postTitleColor: '#BADA55',
                     dividerColor: '#e0e7eb',
                     linkColor: '#BADA55',
+                    backgroundIsDark: false,
                     headerBackgroundColor: '#BADA55'
                 },
                 labs: {emailCustomizationAlpha: true}

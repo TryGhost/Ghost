@@ -363,7 +363,9 @@ class EmailRenderer {
             renderOptions.design = {
                 ...renderOptions.design,
                 ...betaDesignOptions,
-                backgroundColor: newsletter?.get('background_color')
+                backgroundColor: newsletter?.get('background_color'),
+                backgroundIsDark: this.#checkIfBackgroundIsDark(newsletter),
+                headerBackgroundColor: this.#getHeaderBackgroundColor(newsletter, accentColor)
             };
         }
 
@@ -955,7 +957,7 @@ class EmailRenderer {
 
     #getBackgroundColor(newsletter) {
         /** @type {'light' | string | null} */
-        const value = newsletter.get('background_color');
+        const value = newsletter?.get('background_color');
 
         if (VALID_HEX_REGEX.test(value)) {
             return value;
@@ -1104,6 +1106,11 @@ class EmailRenderer {
         return textColorForBackgroundColor(buttonColor).hex();
     }
 
+    #checkIfBackgroundIsDark(newsletter) {
+        const backgroundColor = this.#getBackgroundColor(newsletter);
+        return textColorForBackgroundColor(backgroundColor).hex().toLowerCase() === '#ffffff';
+    }
+
     #getHeaderBackgroundColor(newsletter, accentColor) {
         const value = newsletter?.get('header_background_color');
 
@@ -1143,7 +1150,7 @@ class EmailRenderer {
         const hasAnyEmailCustomization = labs.isSet('emailCustomization') || labs.isSet('emailCustomizationAlpha');
 
         const backgroundColor = this.#getBackgroundColor(newsletter);
-        const backgroundIsDark = textColorForBackgroundColor(backgroundColor).hex().toLowerCase() === '#ffffff';
+        const backgroundIsDark = this.#checkIfBackgroundIsDark(newsletter);
         const postTitleColor = this.#getPostTitleColor(newsletter, accentColor);
         const titleWeight = this.#getTitleWeight(newsletter);
         const titleStrongWeight = this.#getTitleStrongWeight(titleWeight);
