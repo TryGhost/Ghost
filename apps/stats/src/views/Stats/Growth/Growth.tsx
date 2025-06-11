@@ -1,20 +1,16 @@
 import DateRangeSelect from '../components/DateRangeSelect';
 import GrowthKPIs from './components/GrowthKPIs';
+import GrowthSources from './components/GrowthSources';
 import React, {useMemo, useState} from 'react';
 import SortButton from '../components/SortButton';
-import SourcesCard from '../Web/components/SourcesCard';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Separator, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, formatNumber, formatQueryDate, getRangeDates} from '@tryghost/shade';
-import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
-import {getAudienceQueryParam} from '../components/AudienceSelect';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Separator, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, formatNumber} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
 import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
-import {useQuery} from '@tinybirdco/charts';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 
 // Define content types
@@ -49,7 +45,7 @@ interface UnifiedGrowthContentData {
 type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
 
 const Growth: React.FC = () => {
-    const {range, audience, statsConfig, data} = useGlobalData();
+    const {range} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopPostsOrder>('free_members desc');
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
     const navigate = useNavigate();
@@ -64,36 +60,7 @@ const Growth: React.FC = () => {
     // Get growth data with post_type filtering
     const {data: topPostsData} = useTopPostsStatsWithRange(range, sortBy, selectedContentType as 'posts' | 'pages' | 'posts_and_pages');
 
-    // Get site URL and icon for sources data
-    const siteUrl = data?.url as string | undefined;
-    const siteIcon = data?.icon as string | undefined;
-
-    // Prepare query parameters for sources data
-    const {startDate, endDate, timezone} = getRangeDates(range);
-    const sourcesParams = {
-        site_uuid: statsConfig?.id || '',
-        date_from: formatQueryDate(startDate),
-        date_to: formatQueryDate(endDate),
-        timezone: timezone,
-        member_status: getAudienceQueryParam(audience)
-    };
-
-    // Get top sources data
-    const {data: sourcesData, loading: isSourcesLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
-        token: getToken(statsConfig),
-        params: sourcesParams
-    });
-
-    // Get KPI data for total visitors calculation
-    const {data: kpiData} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
-        params: sourcesParams
-    });
-
-    // Calculate total visitors for sources table
-    const totalVisitors = kpiData?.length ? kpiData.reduce((sum, item) => sum + Number(item.visits), 0) : 0;
+    // Sources data is now handled by the GrowthSources component
 
     // Transform data for display
     const transformedTopPosts = useMemo((): UnifiedGrowthContentData[] => {
@@ -198,14 +165,10 @@ const Growth: React.FC = () => {
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
-                        <SourcesCard
-                            data={sourcesData}
-                            defaultSourceIconUrl={STATS_DEFAULT_SOURCE_ICON_URL}
-                            isLoading={isSourcesLoading}
+                        <GrowthSources
+                            limit={20}
                             range={range}
-                            siteIcon={siteIcon}
-                            siteUrl={siteUrl}
-                            totalVisitors={totalVisitors}
+                            showViewAll={false}
                         />
                     </div>
                 ) : (
