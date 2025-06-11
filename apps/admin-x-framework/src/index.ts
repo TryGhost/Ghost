@@ -12,8 +12,8 @@ export {getStatEndpointUrl, getToken} from './utils/stats-config';
 export {hasBeenEmailed} from './utils/post-utils';
 
 // Source utilities
-export {SOURCE_DOMAIN_MAP, extractDomain, isDomainOrSubdomain, getFaviconDomain} from './utils/source-utils';
-export {SourcesCard} from './components/Sources/SourcesCard';
+export type {BaseSourceData, ProcessedSourceData, ExtendSourcesOptions} from './utils/source-utils';
+export {SOURCE_DOMAIN_MAP, extractDomain, isDomainOrSubdomain, getFaviconDomain, processSources, extendSourcesWithPercentages} from './utils/source-utils';
 
 // Routing
 export type {RouteObject} from 'react-router';
