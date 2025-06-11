@@ -1,6 +1,7 @@
 import {getRangeDates} from './useGrowthStats';
+import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useMemo} from 'react';
-import {useNewsletterStatsByNewsletterId, useSubscriberCountByNewsletterId} from '@tryghost/admin-x-framework/api/stats';
+import {useNewsletterStats, useSubscriberCount} from '@tryghost/admin-x-framework/api/stats';
 
 /**
  * Represents the possible fields to order top newsletters by.
@@ -23,12 +24,23 @@ export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslette
     // Calculate date strings using the helper, memoize for stability
     const {dateFrom, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
 
-    // Call the hook with the parameters
-    return useNewsletterStatsByNewsletterId(newsletterId, {
-        date_from: dateFrom,
-        date_to: endDate,
-        order: currentOrder
-    });
+    // Build search params
+    const searchParams = useMemo(() => {
+        const params: Record<string, string> = {
+            date_from: dateFrom,
+            date_to: endDate,
+            order: currentOrder
+        };
+
+        if (newsletterId) {
+            params.newsletter_id = newsletterId;
+        }
+
+        return params;
+    }, [dateFrom, endDate, currentOrder, newsletterId]);
+
+    // Call the newsletter stats API
+    return useNewsletterStats({searchParams});
 };
 
 /**
@@ -45,9 +57,28 @@ export const useSubscriberCountWithRange = (range?: number, newsletterId?: strin
     // Calculate date strings using the helper, memoize for stability
     const {dateFrom, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
 
-    // Call the hook with the parameters
-    return useSubscriberCountByNewsletterId(newsletterId, {
-        date_from: dateFrom,
-        date_to: endDate
-    });
+    // Build search params
+    const searchParams = useMemo(() => {
+        const params: Record<string, string> = {
+            date_from: dateFrom,
+            date_to: endDate
+        };
+
+        if (newsletterId) {
+            params.newsletter_id = newsletterId;
+        }
+
+        return params;
+    }, [dateFrom, endDate, newsletterId]);
+
+    // Call the subscriber count API
+    return useSubscriberCount({searchParams});
+};
+
+/**
+ * Hook to fetch all newsletters with their subscriber counts
+ * This is used to populate the newsletter dropdown and get basic stats
+ */
+export const useNewslettersList = () => {
+    return useBrowseNewsletters();
 };

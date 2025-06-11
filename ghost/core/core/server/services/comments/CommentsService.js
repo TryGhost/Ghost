@@ -163,7 +163,7 @@ class CommentsService {
             member_id: reporter.id
         });
 
-        await this.emails.notifiyReport(comment, reporter);
+        await this.emails.notifyReport(comment, reporter);
     }
 
     /**

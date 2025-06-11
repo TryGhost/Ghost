@@ -386,9 +386,39 @@ export function useLikeMutationForUser(handle: string) {
         onMutate: (id) => {
             updateLikedCache(queryClient, QUERY_KEYS.feed, id, true);
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, true);
-            updateLikedCache(queryClient, QUERY_KEYS.profilePosts('index'), id, true);
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, true);
             updateNotificationsLikedCache(queryClient, handle, id, true);
+
+            // Update all profile post caches (not just current user's)
+            const profilePostsQueryKey = QUERY_KEYS.profilePosts(null);
+            queryClient.setQueriesData(profilePostsQueryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+                if (current === undefined) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {posts: Activity[]}) => {
+                        return {
+                            ...page,
+                            posts: page.posts.map((item: Activity) => {
+                                if (item.object.id === id) {
+                                    return {
+                                        ...item,
+                                        object: {
+                                            ...item.object,
+                                            liked: true,
+                                            likeCount: Math.max((item.object.likeCount || 0) + 1, 0)
+                                        }
+                                    };
+                                }
+
+                                return item;
+                            })
+                        };
+                    })
+                };
+            });
 
             // Update the individual post cache (used by Reader)
             const postQueryKey = QUERY_KEYS.post(id);
@@ -445,9 +475,39 @@ export function useLikeMutationForUser(handle: string) {
         onError(error: {message: string, statusCode: number}, id) {
             updateLikedCache(queryClient, QUERY_KEYS.feed, id, false);
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
-            updateLikedCache(queryClient, QUERY_KEYS.profilePosts('index'), id, false);
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
             updateNotificationsLikedCache(queryClient, handle, id, false);
+
+            // Revert all profile post caches (not just current user's)
+            const profilePostsQueryKey = QUERY_KEYS.profilePosts(null);
+            queryClient.setQueriesData(profilePostsQueryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+                if (current === undefined) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {posts: Activity[]}) => {
+                        return {
+                            ...page,
+                            posts: page.posts.map((item: Activity) => {
+                                if (item.object.id === id) {
+                                    return {
+                                        ...item,
+                                        object: {
+                                            ...item.object,
+                                            liked: false,
+                                            likeCount: Math.max((item.object.likeCount || 0) - 1, 0)
+                                        }
+                                    };
+                                }
+
+                                return item;
+                            })
+                        };
+                    })
+                };
+            });
 
             // Revert the individual post cache (used by Reader)
             const postQueryKey = QUERY_KEYS.post(id);
@@ -523,9 +583,39 @@ export function useUnlikeMutationForUser(handle: string) {
         onMutate: (id) => {
             updateLikedCache(queryClient, QUERY_KEYS.feed, id, false);
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
-            updateLikedCache(queryClient, QUERY_KEYS.profilePosts('index'), id, false);
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
             updateNotificationsLikedCache(queryClient, handle, id, false);
+
+            // Update all profile post caches (not just current user's)
+            const profilePostsQueryKey = QUERY_KEYS.profilePosts(null);
+            queryClient.setQueriesData(profilePostsQueryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+                if (current === undefined) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {posts: Activity[]}) => {
+                        return {
+                            ...page,
+                            posts: page.posts.map((item: Activity) => {
+                                if (item.object.id === id) {
+                                    return {
+                                        ...item,
+                                        object: {
+                                            ...item.object,
+                                            liked: false,
+                                            likeCount: Math.max((item.object.likeCount || 0) - 1, 0)
+                                        }
+                                    };
+                                }
+
+                                return item;
+                            })
+                        };
+                    })
+                };
+            });
 
             // Update the individual post cache (used by Reader)
             const postQueryKey = QUERY_KEYS.post(id);
@@ -1228,28 +1318,6 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     };
 
     return {suggestedProfilesQuery, updateSuggestedProfile};
-}
-
-export function useThreadForUser(handle: string, id?: string) {
-    return useQuery({
-        queryKey: QUERY_KEYS.thread(id || ''),
-        refetchOnMount: 'always',
-        enabled: Boolean(id),
-        async queryFn() {
-            if (!id) {
-                throw new Error('Post ID is required');
-            }
-
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.getThread(id).then((response) => {
-                return {
-                    posts: response.posts.map(mapPostToActivity)
-                };
-            });
-        }
-    });
 }
 
 function prependActivityToPaginatedCollection(
@@ -2079,26 +2147,6 @@ export function useNotificationsForUser(handle: string) {
     });
 }
 
-export function usePostForUser(handle: string, id: string | null) {
-    return useQuery({
-        queryKey: QUERY_KEYS.post(id || ''),
-        refetchOnMount: 'always',
-        enabled: Boolean(id),
-        async queryFn() {
-            if (!id) {
-                throw new Error('Post ID is required');
-            }
-
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.getPost(id).then((response) => {
-                return mapPostToActivity(response);
-            });
-        }
-    });
-}
-
 export function useReplyChainForUser(handle: string, postApId: string | null) {
     const [replyChain, setReplyChain] = useState<ReplyChainResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -2141,7 +2189,7 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
     }, [handle, postApId]);
 
     const loadMoreAncestors = useCallback(async () => {
-        if (!replyChain?.ancestors.next || !replyChain?.ancestors.chain[0]) {
+        if (!replyChain?.ancestors.hasMore || !replyChain?.ancestors.chain[0]) {
             return;
         }
 
@@ -2159,14 +2207,14 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
                     ...prev,
                     ancestors: {
                         chain: [...nextPage.ancestors.chain, ...prev.ancestors.chain],
-                        next: nextPage.ancestors.next
+                        hasMore: nextPage.ancestors.hasMore
                     }
                 };
             });
         } catch (err) {
             setError(err instanceof Error ? err : new Error('Failed to load more ancestors'));
         }
-    }, [handle, replyChain?.ancestors.next, replyChain?.ancestors.chain]);
+    }, [handle, replyChain?.ancestors.hasMore, replyChain?.ancestors.chain]);
 
     const loadMoreChildren = useCallback(async () => {
         if (!replyChain?.next) {
@@ -2198,7 +2246,7 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
     }, [handle, replyChain?.next, postApId]);
 
     const loadMoreChildReplies = useCallback(async (childIndex: number) => {
-        if (!replyChain?.children[childIndex]?.next) {
+        if (!replyChain?.children[childIndex]?.hasMore) {
             return;
         }
 
@@ -2225,7 +2273,7 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
                 newChildren[childIndex] = {
                     ...child,
                     chain: [...child.chain, ...moreReplies],
-                    next: nextPage.children[0].next
+                    hasMore: nextPage.children[0].hasMore
                 };
                 return {
                     ...prev,
@@ -2244,9 +2292,9 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
         loadMoreAncestors,
         loadMoreChildren,
         loadMoreChildReplies,
-        hasMoreAncestors: !!replyChain?.ancestors.next,
+        hasMoreAncestors: !!replyChain?.ancestors.hasMore,
         hasMoreChildren: !!replyChain?.next,
-        hasMoreChildReplies: (childIndex: number) => !!replyChain?.children[childIndex]?.next
+        hasMoreChildReplies: (childIndex: number) => !!replyChain?.children[childIndex]?.hasMore
     };
 }
 

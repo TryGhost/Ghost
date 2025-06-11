@@ -459,7 +459,7 @@ export const Reader: React.FC<ReaderProps> = ({
     }, [object?.replyCount]);
 
     useEffect(() => {
-        // Only set up infinite scroll if pagination is supported (reply-chain feature flag enabled)
+        // Only set up infinite scroll if pagination is supported
         if (!hasMoreChildren) {
             return;
         }
