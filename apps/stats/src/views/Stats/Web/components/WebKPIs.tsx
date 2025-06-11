@@ -1,4 +1,4 @@
-import {BarChartLoadingIndicator, EmptyCard, GhAreaChart, KpiTabTrigger, KpiTabValue, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, getYRange} from '@tryghost/shade';
+import {BarChartLoadingIndicator, GhAreaChart, KpiTabTrigger, KpiTabValue, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, getYRange} from '@tryghost/shade';
 import {KPI_METRICS} from '../Web';
 import {sanitizeChartData} from '@src/utils/chart-helpers';
 import {useMemo, useState} from 'react';
@@ -67,9 +67,9 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range, isLoading}) => {
 
     if (isLoading) {
         return (
-            <EmptyCard className='flex h-[calc(16vw+132px)] w-full items-start justify-center'>
+            <div className='-mb-6 flex h-[calc(16vw+132px)] w-full items-start justify-center'>
                 <BarChartLoadingIndicator />
-            </EmptyCard>
+            </div>
         );
     }
 

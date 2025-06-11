@@ -1,4 +1,4 @@
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, LoadingIndicator, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceQueryParam} from '../../components/AudienceSelect';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -129,7 +129,7 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
     }, [startDate, endDate, timezone, audience, selectedContentType]);
 
     // Get filtered content data
-    const {data: topContentData, isLoading: topContentLoading} = useTopContent({
+    const {data: topContentData, isLoading: isLoading} = useTopContent({
         searchParams: queryParams
     });
 
@@ -172,15 +172,15 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
         }
     };
 
-    if (topContentLoading) {
+    if (isLoading) {
         return (
             <Card className='group/datalist'>
                 <CardHeader>
                     <CardTitle>{getContentTitle()}</CardTitle>
                     <CardDescription>Loading...</CardDescription>
                 </CardHeader>
-                <CardContent className='flex h-full items-center justify-center'>
-                    <LoadingIndicator size='md' />
+                <CardContent>
+                    <SkeletonTable lines={5} />
                 </CardContent>
             </Card>
         );
