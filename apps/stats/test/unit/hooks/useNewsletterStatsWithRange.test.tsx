@@ -59,7 +59,7 @@ describe('Newsletter Stats Hooks', () => {
             status: 'success' as const,
             suspense: vi.fn(),
             promise: Promise.resolve()
-        } as any);
+        });
         
         mockUseSubscriberCount.mockReturnValue({
             data: {stats: []},
@@ -82,7 +82,7 @@ describe('Newsletter Stats Hooks', () => {
             status: 'success' as const,
             suspense: vi.fn(),
             promise: Promise.resolve()
-        } as any);
+        });
 
         mockUseBrowseNewsletters.mockReturnValue({
             data: {
@@ -118,7 +118,7 @@ describe('Newsletter Stats Hooks', () => {
             status: 'success' as const,
             suspense: vi.fn(),
             promise: Promise.resolve()
-        } as any);
+        });
     });
 
     describe('useNewsletterStatsWithRange', () => {
