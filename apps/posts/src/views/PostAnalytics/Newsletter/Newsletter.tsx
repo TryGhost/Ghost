@@ -8,7 +8,7 @@ import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {getLinkById} from '@src/utils/link-helpers';
 import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useEditLinks} from '@src/hooks/useEditLinks';
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 
 interface postAnalyticsProps {}
@@ -163,8 +163,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid,status',
-            include: 'email'
+            include: 'email,count.positive_feedback,count.negative_feedback'
         }
     });
 
@@ -181,6 +180,27 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId || '');
     const {editLinks} = useEditLinks();
+
+    // Calculate feedback stats from the post data
+    const feedbackStats = useMemo(() => {
+        if (!typedPost?.count) {
+            return {
+                positiveFeedback: 0,
+                negativeFeedback: 0,
+                totalFeedback: 0
+            };
+        }
+
+        const positiveFeedback = typedPost.count.positive_feedback || 0;
+        const negativeFeedback = typedPost.count.negative_feedback || 0;
+        const totalFeedback = positiveFeedback + negativeFeedback;
+
+        return {
+            positiveFeedback,
+            negativeFeedback,
+            totalFeedback
+        };
+    }, [typedPost]);
 
     const handleEdit = (linkId: string) => {
         const link = getLinkById(topLinks, linkId);
@@ -388,7 +408,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             </CardContent>
                         }
                     </Card>
-                    <Feedback />
+                    <Feedback feedbackStats={feedbackStats} />
                     <Card>
                         <CardHeader className='pb-3'>
                             <CardTitle>Newsletter clicks</CardTitle>
