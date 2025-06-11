@@ -218,6 +218,26 @@ class StatsService {
     }
 
     /**
+     * Get newsletter subscriber total count only (fast query)
+     * 
+     * @param {Object} options
+     * @param {string} [options.newsletter_id] - ID of the specific newsletter to get total for
+     * @returns {Promise<{data: Object}>}
+     */
+    async getNewsletterSubscriberTotal(options = {}) {
+        // Extract newsletter_id from options
+        const {newsletter_id: newsletterId} = options;
+        
+        // If no newsletterId is provided, we can't get specific stats
+        if (!newsletterId) {
+            return {data: {total: 0}};
+        }
+        
+        const total = await this.posts.getNewsletterSubscriberTotal(newsletterId);
+        return {data: {total}};
+    }
+
+    /**
      * @param {object} deps
      *
      * @returns {StatsService}

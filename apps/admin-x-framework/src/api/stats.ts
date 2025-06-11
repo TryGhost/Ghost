@@ -279,6 +279,14 @@ export const useSubscriberCount = createQuery<NewsletterSubscriberStatsResponseT
     }
 });
 
+export const useSubscriberTotal = createQuery<{data: {total: number}}>({
+    dataType: 'SubscriberTotal',
+    path: '/stats/subscriber-total/',
+    defaultSearchParams: {
+        // Empty default params, will be filled by the hook
+    }
+});
+
 // Hook wrapper to accept a newsletterId parameter
 export const useSubscriberCountByNewsletterId = (newsletterId?: string, options: Partial<SubscriberCountSearchParams> = {}) => {
     const searchParams: Record<string, string> = {};

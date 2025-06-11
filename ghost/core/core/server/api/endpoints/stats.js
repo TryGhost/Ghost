@@ -443,6 +443,30 @@ const controller = {
         async query() {
             return await statsService.api.getLatestPostStats();
         }
+    },
+    subscriberTotal: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'newsletter_id'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'getNewsletterSubscriberTotal',
+                options: {
+                    newsletter_id: frame.options.newsletter_id
+                }
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getNewsletterSubscriberTotal(frame.options);
+        }
     }
 };
 
