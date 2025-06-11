@@ -19,7 +19,7 @@ const SupportPage = () => {
             const api = setupGhostApi({siteUrl});
 
             try {
-                const response = await api.member.checkoutDonation({successUrl, cancelUrl});
+                const response = await api.member.checkoutDonation({successUrl, cancelUrl, personalNote: t('Add a personal note')});
 
                 if (response.url) {
                     window.location.replace(response.url);
@@ -35,7 +35,12 @@ const SupportPage = () => {
             }
         }
 
-        checkoutDonation();
+        if (site && site.donations_enabled === false) {
+            setDisabledFeatureError(t('This site is not accepting donations at the moment.'));
+            setLoading(false);
+        } else {
+            checkoutDonation();
+        }
 
     // Do it once
     // eslint-disable-next-line

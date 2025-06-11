@@ -3,9 +3,20 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
 /**
+ * This plugin is used to add actions to the database. It backs the "audit log" feature we have in Ghost.
+ *
+ * The functions here are triggered by the `onCreated`, `onUpdated`, `onDeleted` functions in the `events`
+ * plugin, with some extra ones for niche other events.
+ *
  * @param {import('bookshelf')} Bookshelf
  */
 module.exports = function (Bookshelf) {
+    /**
+     * Insert an action into the database
+     *
+     * @param {Object} data - The data to insert
+     * @param {Object} options - The options object
+     */
     const insertAction = (data, options) => {
         // CASE: model does not support action for target event
         if (!data) {
@@ -39,7 +50,13 @@ module.exports = function (Bookshelf) {
         }
     };
 
-    // We need this addAction accessible from the static model and instances
+    /**
+     * Add an action to the database
+     *
+     * @param {import('bookshelf').Model} model - The model to add the action to
+     * @param {string} event - The event that triggered the action
+     * @param {Object} options - The options object
+     */
     const addAction = (model, event, options) => {
         if (!model.wasChanged()) {
             return;
@@ -58,11 +75,14 @@ module.exports = function (Bookshelf) {
         /**
          * Constructs data to be stored in the database with info
          * on particular actions
+         *
+         * @param {string} event - The event that triggered the action
+         * @param {Object} options - The options object
+         * @returns {Object} The data to be stored in the database
          */
         getAction(event, options) {
+            // Ignore internal updates (`options.context.internal`) for now
             const actor = this.getActor(options);
-
-            // @NOTE: we ignore internal updates (`options.context.internal`) for now
             if (!actor) {
                 return;
             }
@@ -71,12 +91,7 @@ module.exports = function (Bookshelf) {
                 return;
             }
 
-            let resourceType = this.actionsResourceType;
-
-            if (typeof resourceType === 'function') {
-                resourceType = resourceType.bind(this)();
-            }
-
+            const resourceType = this.actionsResourceType;
             if (!resourceType) {
                 return;
             }
@@ -85,12 +100,14 @@ module.exports = function (Bookshelf) {
                 action_name: options.actionName
             };
 
+            // Used to attach extra content to the action (ie. the key + group for settings changes)
             if (this.actionsExtraContext && Array.isArray(this.actionsExtraContext)) {
                 for (const c of this.actionsExtraContext) {
                     context[c] = this.get(c) || this.previous(c);
                 }
             }
 
+            // Attach the primary name to the action (ie. the title or name of the model)
             if (event === 'deleted') {
                 context.primary_name = (this.previous('title') || this.previous('name'));
             } else if (['added', 'edited'].includes(event)) {
@@ -112,21 +129,17 @@ module.exports = function (Bookshelf) {
             return data;
         },
 
-        /**
-         * @NOTE:
-         *
-         * We add actions step by step and define how they should look like.
-         * Each post update triggers a couple of events, which we don't want to add actions for.
-         *
-         * e.g. transform post to page triggers a handful of events including `post.deleted` and `page.added`
-         *
-         * We protect adding too many and uncontrolled events.
-         *
-         * We could embed adding actions more nicely in the future e.g. plugin.
-         */
         addAction
     }, {
         addAction,
+
+        /**
+         * Add actions for bulk actions
+         *
+         * @param {string} event - The event that triggered the action
+         * @param {number[]} ids - The ids of the models that were affected
+         * @param {Object} options - The options object
+         */
         async addActions(event, ids, options) {
             if (ids.length === 1) {
                 // We want to store an event for a single model in the actions table
@@ -141,27 +154,27 @@ module.exports = function (Bookshelf) {
         },
 
         /**
-         * Constructs data to be stored in the database with info
-         * on particular actions
+         * Constructs data for bulk actions to be stored in the database
+         *
+         * @param {string} event - The event that triggered the action
+         * @param {number} count - The number of models that were affected
+         * @param {Object} options - The options object
+         * @returns {Object} The data to be stored in the database
          */
         getBulkAction(event, count, options) {
+            // Ignore internal updates (`options.context.internal`) for now
             const actor = this.prototype.getActor(options);
-
-            // @NOTE: we ignore internal updates (`options.context.internal`) for now
             if (!actor) {
                 return;
             }
 
+            // Models can opt-in to their CRUD actions being collected (we do this so we don't
+            // log every single action)
             if (!this.prototype.actionsCollectCRUD) {
                 return;
             }
 
-            let resourceType = this.prototype.actionsResourceType;
-
-            if (typeof resourceType === 'function') {
-                resourceType = resourceType.bind(this)();
-            }
-
+            const resourceType = this.prototype.actionsResourceType;
             if (!resourceType) {
                 return;
             }

@@ -2,7 +2,7 @@ const {agentProvider, fixtureManager, mockManager, matchers} = require('../../ut
 const {anyObjectId, anyErrorId, anyISODateTime, anyContentVersion, anyLocationFor, anyEtag} = matchers;
 const assert = require('assert/strict');
 const recommendationsService = require('../../../core/server/services/recommendations');
-const {Recommendation, ClickEvent, SubscribeEvent} = require('@tryghost/recommendations');
+const {Recommendation, ClickEvent, SubscribeEvent} = require('../../../core/server/services/recommendations/service');
 const nock = require('nock');
 
 async function addDummyRecommendation(i = 0) {

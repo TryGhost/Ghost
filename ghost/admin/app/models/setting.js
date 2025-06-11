@@ -116,6 +116,11 @@ export default Model.extend(ValidationEngine, {
     defaultEmailAddress: attr('string'),
     supportEmailAddress: attr('string'),
 
+    /**
+     * Security settings
+     */
+    requireEmailMfa: attr('boolean'),
+
     // HACK - not a real model attribute but a workaround for Ember Data not
     //        exposing meta from save responses
     _meta: attr()

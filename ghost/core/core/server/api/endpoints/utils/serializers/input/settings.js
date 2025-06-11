@@ -74,7 +74,9 @@ const EDITABLE_SETTINGS = [
     'donations_suggested_amount',
     'recommendations_enabled',
     'body_font',
-    'heading_font'
+    'heading_font',
+    'blocked_email_domains',
+    'require_email_mfa'
 ];
 
 module.exports = {

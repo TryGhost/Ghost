@@ -114,7 +114,7 @@ export default class GhPostSettingsMenu extends Component {
     @or(
         'session.user.isOwnerOnly',
         'session.user.isAdminOnly',
-        'session.user.isEditor'
+        'session.user.isEitherEditor'
     )
         showVisibilityInput;
 

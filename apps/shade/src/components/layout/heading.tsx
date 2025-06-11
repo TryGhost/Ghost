@@ -9,7 +9,7 @@ const H1 = React.forwardRef<HTMLHeadingElement, HeadingProps>(
         return (
             <h1
                 ref={ref}
-                className={cn('scroll-m-20 text-3xl leading-supertight tracking-tight font-bold', className)}
+                className={cn('scroll-m-20 text-3xl leading-[1.1em] tracking-tighter font-bold', className)}
                 {...props} />
         );
     }
@@ -21,7 +21,7 @@ const H2 = React.forwardRef<HTMLHeadingElement, HeadingProps>(
         return (
             <h2
                 ref={ref}
-                className={cn('scroll-m-20 text-2xl font-bold tracking-tight first:mt-0', className)}
+                className={cn('scroll-m-20 text-2xl font-bold tracking-tighter first:mt-0', className)}
                 {...props} />
         );
     }

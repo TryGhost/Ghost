@@ -1,16 +1,17 @@
-import React, {ComponentProps, useState} from 'react';
+import React, {useState} from 'react';
 import i18nLib from '@tryghost/i18n';
 import pages, {Page, PageName} from './pages';
 import {AppContextProvider, SignupFormOptions} from './AppContext';
 import {ContentBox} from './components/ContentBox';
 import {userEvent, within} from '@storybook/testing-library';
-import type {Meta, ReactRenderer, StoryObj} from '@storybook/react';
-import type {PlayFunction} from '@storybook/types';
+import type {Meta, StoryObj} from '@storybook/react';
 
-const Preview: React.FC<SignupFormOptions & {
-    pageBackgroundColor: string
-    simulateApiError: boolean
-}> = ({simulateApiError, pageBackgroundColor, ...options}) => {
+type PreviewProps = SignupFormOptions & {
+    pageBackgroundColor: string;
+    simulateApiError: boolean;
+};
+
+const Preview: React.FC<PreviewProps> = ({simulateApiError, pageBackgroundColor, ...options}) => {
     const [page, setPage] = useState<Page>({
         name: 'FormPage',
         data: {}
@@ -68,24 +69,23 @@ const Preview: React.FC<SignupFormOptions & {
 
 const meta = {
     title: 'Preview',
-    component: Preview
+    component: Preview,
+    play: async ({canvasElement}) => {
+        const canvas = within(canvasElement);
+
+        const emailInput = canvas.getByTestId('input');
+
+        await userEvent.type(emailInput, 'test@example.com', {
+            delay: 100
+        });
+
+        const submitButton = canvas.getByTestId('button');
+        userEvent.click(submitButton);
+    }
 } satisfies Meta<typeof Preview>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
-const play: PlayFunction<ReactRenderer, ComponentProps<typeof Preview>> = async ({canvasElement}) => {
-    const canvas = within(canvasElement);
-
-    const emailInput = canvas.getByTestId('input');
-
-    await userEvent.type(emailInput, 'test@example.com', {
-        delay: 100
-    });
-
-    const submitButton = canvas.getByTestId('button');
-    userEvent.click(submitButton);
-};
 
 export const Full: Story = {
     args: {
@@ -101,9 +101,7 @@ export const Full: Story = {
         simulateApiError: false,
         pageBackgroundColor: '#ffffff',
         locale: 'en'
-    },
-
-    play
+    }
 };
 
 export const Minimal: Story = {
@@ -115,9 +113,7 @@ export const Minimal: Story = {
         simulateApiError: false,
         pageBackgroundColor: '#ffffff',
         locale: 'en'
-    },
-
-    play
+    }
 };
 
 export const MinimalOnDark: Story = {
@@ -129,7 +125,5 @@ export const MinimalOnDark: Story = {
         simulateApiError: false,
         pageBackgroundColor: '#122334',
         locale: 'en'
-    },
-
-    play
+    }
 };

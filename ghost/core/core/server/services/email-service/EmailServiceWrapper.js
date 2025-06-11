@@ -15,9 +15,16 @@ class EmailServiceWrapper {
             return;
         }
 
-        const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter, MailgunEmailProvider} = require('@tryghost/email-service');
+        const EmailService = require('./EmailService');
+        const EmailController = require('./EmailController');
+        const EmailRenderer = require('./EmailRenderer');
+        const SendingService = require('./SendingService');
+        const BatchSendingService = require('./BatchSendingService');
+        const EmailSegmenter = require('./EmailSegmenter');
+        const MailgunEmailProvider = require('./MailgunEmailProvider');
+
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
-        const MailgunClient = require('@tryghost/mailgun-client');
+        const MailgunClient = require('../lib/MailgunClient');
         const configService = require('../../../shared/config');
         const settingsCache = require('../../../shared/settings-cache');
         const settingsHelpers = require('../settings-helpers');
@@ -34,7 +41,7 @@ class EmailServiceWrapper {
         const lexicalLib = require('../../lib/lexical');
         const urlUtils = require('../../../shared/url-utils');
         const memberAttribution = require('../member-attribution');
-        const linkReplacer = require('@tryghost/link-replacer');
+        const linkReplacer = require('../lib/link-replacer');
         const linkTracking = require('../link-tracking');
         const audienceFeedback = require('../audience-feedback');
         const storageUtils = require('../../adapters/storage/utils');
@@ -52,8 +59,8 @@ class EmailServiceWrapper {
             config: configService, settings: settingsCache
         });
         const i18nLanguage = labs.isSet('i18n') ? settingsCache.get('locale') || 'en' : 'en';
-        const i18n = i18nLib(i18nLanguage, 'newsletter');
-        
+        const i18n = i18nLib(i18nLanguage, 'ghost');
+
         events.on('settings.labs.edited', () => {
             if (labs.isSet('i18n')) {
                 debug('labs i18n enabled, updating i18n to', settingsCache.get('locale'));
@@ -63,12 +70,12 @@ class EmailServiceWrapper {
                 i18n.changeLanguage('en');
             }
         });
-    
+
         events.on('settings.locale.edited', (model) => {
             if (labs.isSet('i18n')) {
                 debug('locale changed, updating i18n to', model.get('value'));
                 i18n.changeLanguage(model.get('value'));
-            } 
+            }
         });
 
         const mailgunEmailProvider = new MailgunEmailProvider({

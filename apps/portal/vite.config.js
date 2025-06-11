@@ -22,7 +22,8 @@ export default defineConfig((config) => {
         },
         preview: {
             host: '0.0.0.0',
-            port: 4175
+            port: 4175,
+            cors: true
         },
         server: {
             port: 5368
@@ -34,7 +35,7 @@ export default defineConfig((config) => {
         ],
         esbuild: {
             loader: 'jsx',
-            include: /src\/.*\.jsx?$/,
+            include: [/src\/.*\.jsx?$/, /__mocks__\/.*\.jsx?$/],
             exclude: []
         },
         optimizeDeps: {

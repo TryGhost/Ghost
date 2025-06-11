@@ -54,7 +54,9 @@ export type Config = {
             sendingDomain?: string
         },
     }
-
+    security?: {
+        staffDeviceVerification?: boolean;
+    };
     // Config is relatively fluid, so we only type used properties above and still support arbitrary property access when needed
     [key: string]: JSONValue | undefined;
 };

@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const debug = require('@tryghost/debug')('services:url:urls');
 const urlUtils = require('../../../shared/url-utils');
 const logging = require('@tryghost/logging');
@@ -6,6 +5,10 @@ const errors = require('@tryghost/errors');
 
 // This emits its own url added/removed events
 const events = require('../../lib/common/events');
+
+/**
+ * @typedef {{url: string, generatorId: string, resource: import('./Resource')}} Url
+ */
 
 /**
  * This class keeps track of all urls in the system.
@@ -20,24 +23,14 @@ const events = require('../../lib/common/events');
  * You can easily ask `this.urls[resourceId]`.
  */
 class Urls {
-    /**
-     *
-     * @param {Object} [options]
-     * @param {Object} [options.urls] map of available URLs with their resources
-     */
-    constructor({urls = {}} = {}) {
-        this.urls = urls;
-    }
+    /** @type {Object<string, Url>} */
+    urls = {};
 
     /**
      * @description Add a url to the system.
-     * @param {Object} options
-     * @param {import('./Resource')} options.resource - instance of the Resource class
-     * @param {string} options.generatorId
-     * @param {string} options.url
+     * @param {Url} options
      */
-    add(options) {
-        const {url, generatorId, resource} = options;
+    add({url, generatorId, resource}) {
         debug('add', resource.data.id, url);
 
         if (this.urls[resource.data.id]) {
@@ -76,7 +69,7 @@ class Urls {
     /**
      * @description Get url by resource id.
      * @param {String} id
-     * @returns {Object}
+     * @returns {Url}
      */
     getByResourceId(id) {
         return this.urls[id];
@@ -85,16 +78,10 @@ class Urls {
     /**
      * @description Get all urls by generator id.
      * @param {String} generatorId
-     * @returns {Array}
+     * @returns {Url[]}
      */
     getByGeneratorId(generatorId) {
-        return _.reduce(Object.keys(this.urls), (toReturn, resourceId) => {
-            if (this.urls[resourceId].generatorId === generatorId) {
-                toReturn.push(this.urls[resourceId]);
-            }
-
-            return toReturn;
-        }, []);
+        return Object.values(this.urls).filter(url => url.generatorId === generatorId);
     }
 
     /**
@@ -108,20 +95,17 @@ class Urls {
      *
      *  But depending on the routing registration, you will always serve e.g. resource1,
      *  because the router it belongs to was registered first.
+     *
+     *  @param {string} urlToLookup
+     *  @returns {Url[]}
      */
-    getByUrl(url) {
-        return _.reduce(Object.keys(this.urls), (toReturn, resourceId) => {
-            if (this.urls[resourceId].url === url) {
-                toReturn.push(this.urls[resourceId]);
-            }
-
-            return toReturn;
-        }, []);
+    getByUrl(urlToLookup) {
+        return Object.values(this.urls).filter(url => url.url === urlToLookup);
     }
 
     /**
      * @description Remove url.
-     * @param id
+     * @param {string} id
      */
     removeResourceId(id) {
         if (!this.urls[id]) {

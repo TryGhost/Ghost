@@ -5,8 +5,11 @@ const urlService = require('../../../../core/server/services/url');
 const getAuthorUrl = require('../../../../core/frontend/meta/author-url');
 
 describe('getAuthorUrl', function () {
+    /** @type {import('sinon').SinonStub} */
+    let urlServiceGetUrlByResourceIdStub;
+
     beforeEach(function () {
-        sinon.stub(urlService, 'getUrlByResourceId');
+        urlServiceGetUrlByResourceIdStub = sinon.stub(urlService, 'getUrlByResourceId');
     });
 
     afterEach(function () {
@@ -21,7 +24,7 @@ describe('getAuthorUrl', function () {
             }
         };
 
-        urlService.getUrlByResourceId.withArgs(post.primary_author.id, {absolute: undefined, withSubdirectory: true})
+        urlServiceGetUrlByResourceIdStub.withArgs(post.primary_author.id, {absolute: undefined, withSubdirectory: true})
             .returns('author url');
 
         should.exist(getAuthorUrl({
@@ -38,7 +41,7 @@ describe('getAuthorUrl', function () {
             }
         };
 
-        urlService.getUrlByResourceId.withArgs(post.primary_author.id, {absolute: true, withSubdirectory: true})
+        urlServiceGetUrlByResourceIdStub.withArgs(post.primary_author.id, {absolute: true, withSubdirectory: true})
             .returns('absolute author url');
 
         should.exist(getAuthorUrl({
@@ -55,7 +58,7 @@ describe('getAuthorUrl', function () {
             }
         };
 
-        urlService.getUrlByResourceId.withArgs(post.primary_author.id, {absolute: undefined, withSubdirectory: true})
+        urlServiceGetUrlByResourceIdStub.withArgs(post.primary_author.id, {absolute: undefined, withSubdirectory: true})
             .returns('author url');
 
         should.exist(getAuthorUrl({
@@ -70,7 +73,7 @@ describe('getAuthorUrl', function () {
             slug: 'test-author'
         };
 
-        urlService.getUrlByResourceId.withArgs(author.id, {absolute: undefined, withSubdirectory: true})
+        urlServiceGetUrlByResourceIdStub.withArgs(author.id, {absolute: undefined, withSubdirectory: true})
             .returns('author url');
 
         should.exist(getAuthorUrl({

@@ -1,22 +1,4 @@
-import ArticleModal from '../components/feed/ArticleModal';
-import NiceModal from '@ebay/nice-modal-react';
-import {type Activity} from '../components/activities/ActivityItem';
-
-export const handleViewContent = (
-    activity: Activity,
-    focusReply = false,
-    updateActivity: (id: string, updated: Partial<Activity>) => void = () => {}
-) => {
-    const authorActor = getContentAuthor(activity);
-    NiceModal.show(ArticleModal, {
-        activityId: activity.id,
-        object: activity.object,
-        actor: authorActor,
-        focusReply,
-        width: activity.object.type === 'Article' ? 'wide' : 'narrow',
-        updateActivity
-    });
-};
+import {type Activity} from '@tryghost/admin-x-framework/api/activitypub';
 
 export const getContentAuthor = (activity: Activity) => {
     const actor = activity.actor;

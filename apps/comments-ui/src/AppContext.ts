@@ -8,7 +8,7 @@ export type Member = {
     id: string,
     uuid: string,
     name: string,
-    avatar: string,
+    avatar_image: string,
     expertise: string
 }
 
@@ -82,7 +82,7 @@ export type EditableAppContext = {
     labs: LabsContextType,
     order: string,
     adminApi: AdminApi | null,
-    commentsIsLoading?: boolean
+    commentsIsLoading?: boolean,
     commentIdToHighlight: string | null
 }
 

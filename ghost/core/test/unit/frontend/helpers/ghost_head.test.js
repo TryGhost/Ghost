@@ -45,6 +45,8 @@ describe('{{ghost_head}} helper', function () {
     let users = [];
 
     let keyStub;
+    let getStub;
+    let routingRegistryGetRssUrlStub;
 
     const makeFixtures = () => {
         const {createPost, createUser, createTag} = testUtils.DataGenerator.forKnex;
@@ -372,16 +374,16 @@ describe('{{ghost_head}} helper', function () {
         sinon.stub(urlService, 'getUrlByResourceId').returns('https://mysite.com/fakeauthor/');
 
         // @TODO: this is a LOT of mocking :/
-        sinon.stub(routing.registry, 'getRssUrl').returns('http://localhost:65530/rss/');
+        routingRegistryGetRssUrlStub = sinon.stub(routing.registry, 'getRssUrl').returns('http://localhost:65530/rss/');
         sinon.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
-        sinon.stub(settingsCache, 'get');
+        getStub = sinon.stub(settingsCache, 'get');
 
-        settingsCache.get.withArgs('title').returns('Ghost');
-        settingsCache.get.withArgs('description').returns('site description');
-        settingsCache.get.withArgs('cover_image').returns('/content/images/site-cover.png');
-        settingsCache.get.withArgs('amp').returns(true);
-        settingsCache.get.withArgs('comments_enabled').returns('off');
-        settingsCache.get.withArgs('members_track_sources').returns(true);
+        getStub.withArgs('title').returns('Ghost');
+        getStub.withArgs('description').returns('site description');
+        getStub.withArgs('cover_image').returns('/content/images/site-cover.png');
+        getStub.withArgs('amp').returns(true);
+        getStub.withArgs('comments_enabled').returns('off');
+        getStub.withArgs('members_track_sources').returns(true);
 
         // Force the usage of a fixed asset hash so we have reliable snapshots
         configUtils.set('assetHash', 'asset-hash');
@@ -399,15 +401,11 @@ describe('{{ghost_head}} helper', function () {
 
         beforeEach(function () {
             configUtils.set({url: 'http://localhost:65530/'});
-        });
-
-        afterEach(function () {
-            sinon.restore();
+            loggingErrorStub = sinon.stub(logging, 'error');
         });
 
         it('returns meta tag string on paginated index page without structured data and schema', async function () {
             // @TODO: later we can extend this fn with an `meta` object e.g. locals.meta
-            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/page/2/',
@@ -429,7 +427,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not inject count script if comments off', async function () {
-            settingsCache.get.withArgs('comments_enabled').returns('off');
+            getStub.withArgs('comments_enabled').returns('off');
 
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -441,7 +439,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('injects comment count script if comments paid', async function () {
-            settingsCache.get.withArgs('comments_enabled').returns('paid');
+            getStub.withArgs('comments_enabled').returns('paid');
 
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -453,7 +451,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('injects comment count script if comments all', async function () {
-            settingsCache.get.withArgs('comments_enabled').returns('all');
+            getStub.withArgs('comments_enabled').returns('all');
 
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -465,15 +463,15 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns meta structured data on homepage with site metadata defined', async function () {
-            settingsCache.get.withArgs('meta_description').returns('site SEO description');
+            getStub.withArgs('meta_description').returns('site SEO description');
 
-            settingsCache.get.withArgs('og_title').returns('facebook site title');
-            settingsCache.get.withArgs('og_description').returns('facebook site description');
-            settingsCache.get.withArgs('og_image').returns('/content/images/facebook-image.png');
+            getStub.withArgs('og_title').returns('facebook site title');
+            getStub.withArgs('og_description').returns('facebook site description');
+            getStub.withArgs('og_image').returns('/content/images/facebook-image.png');
 
-            settingsCache.get.withArgs('twitter_title').returns('twitter site title');
-            settingsCache.get.withArgs('twitter_description').returns('twitter site description');
-            settingsCache.get.withArgs('twitter_image').returns('/content/images/twitter-image.png');
+            getStub.withArgs('twitter_title').returns('twitter site title');
+            getStub.withArgs('twitter_description').returns('twitter site description');
+            getStub.withArgs('twitter_image').returns('/content/images/twitter-image.png');
 
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -781,7 +779,6 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('disallows indexing for preview pages', async function () {
-            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['preview', 'post']
@@ -793,7 +790,6 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('implicit indexing settings for non-preview pages', async function () {
-            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['featured', 'paged', 'index', 'post', 'amp', 'home', 'unicorn']
@@ -817,15 +813,15 @@ describe('{{ghost_head}} helper', function () {
 
     describe('with /site subdirectory', function () {
         beforeEach(function () {
-            settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
+            getStub.withArgs('icon').returns('/content/images/favicon.png');
 
             configUtils.set({url: 'http://localhost:65530/site'});
 
-            routing.registry.getRssUrl.returns('http://localhost:65530/site/rss/');
+            routingRegistryGetRssUrlStub.returns('http://localhost:65530/site/rss/');
         });
 
         afterEach(function () {
-            routing.registry.getRssUrl.returns('http://localhost:65530/rss/');
+            routingRegistryGetRssUrlStub.restore();
         });
 
         it('returns correct rss url with subdirectory', async function () {
@@ -840,7 +836,7 @@ describe('{{ghost_head}} helper', function () {
 
     describe('with changed origin in config file', function () {
         beforeEach(function () {
-            settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
+            getStub.withArgs('icon').returns('/content/images/favicon.png');
 
             configUtils.set({
                 url: 'http://localhost:65530/site',
@@ -860,7 +856,7 @@ describe('{{ghost_head}} helper', function () {
 
     describe('with useStructuredData is set to false in config file', function () {
         beforeEach(function () {
-            settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
+            getStub.withArgs('icon').returns('/content/images/favicon.png');
 
             configUtils.set({
                 url: 'http://localhost:65530/',
@@ -888,8 +884,8 @@ describe('{{ghost_head}} helper', function () {
 
     describe('with Code Injection', function () {
         beforeEach(function () {
-            settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
-            settingsCache.get.withArgs('codeinjection_head').returns('<style>body {background: red;}</style>');
+            getStub.withArgs('icon').returns('/content/images/favicon.png');
+            getStub.withArgs('codeinjection_head').returns('<style>body {background: red;}</style>');
 
             configUtils.set({url: 'http://localhost:65530/'});
         });
@@ -965,7 +961,7 @@ describe('{{ghost_head}} helper', function () {
 
     describe('amp is disabled', function () {
         beforeEach(function () {
-            settingsCache.get.withArgs('amp').returns(false);
+            getStub.withArgs('amp').returns(false);
         });
 
         it('does not contain amphtml link', async function () {
@@ -1034,7 +1030,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('attaches style tag to existing script/style tag', async function () {
-            settingsCache.get.withArgs('members_enabled').returns(true);
+            getStub.withArgs('members_enabled').returns(true);
 
             const renderObject = {
                 post: posts[1]
@@ -1102,7 +1098,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not override code injection', async function () {
-            settingsCache.get.withArgs('codeinjection_head').returns('<style>:root {--ghost-accent-color: #site-code-injection}</style>');
+            getStub.withArgs('codeinjection_head').returns('<style>:root {--ghost-accent-color: #site-code-injection}</style>');
 
             const renderObject = {
                 post: Object.assign({}, posts[1], {codeinjection_head: '<style>:root {--ghost-accent-color: #post-code-injection}</style>'})
@@ -1152,8 +1148,8 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('includes custom font when set in settings cache and no preview', async function () {
-            settingsCache.get.withArgs('heading_font').returns('Playfair Display');
-            settingsCache.get.withArgs('body_font').returns('Lora');
+            getStub.withArgs('heading_font').returns('Playfair Display');
+            getStub.withArgs('body_font').returns('Lora');
 
             const renderObject = {
                 post: posts[1]
@@ -1171,8 +1167,8 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not include custom font when not set', async function () {
-            settingsCache.get.withArgs('heading_font').returns(null);
-            settingsCache.get.withArgs('body_font').returns('');
+            getStub.withArgs('heading_font').returns(null);
+            getStub.withArgs('body_font').returns('');
 
             const renderObject = {
                 post: posts[1]
@@ -1190,8 +1186,8 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not include custom font when invalid', async function () {
-            settingsCache.get.withArgs('heading_font').returns(null);
-            settingsCache.get.withArgs('body_font').returns('Wendy Sans');
+            getStub.withArgs('heading_font').returns(null);
+            getStub.withArgs('body_font').returns('Wendy Sans');
 
             const templateOptions = {
                 site: {
@@ -1217,8 +1213,8 @@ describe('{{ghost_head}} helper', function () {
 
         it('does not inject custom fonts when preview is set and default font was selected (empty string)', async function () {
             // The site has fonts set up, but we override them with Theme default fonts (empty string)
-            settingsCache.get.withArgs('heading_font').returns('Playfair Display');
-            settingsCache.get.withArgs('body_font').returns('Lora');
+            getStub.withArgs('heading_font').returns('Playfair Display');
+            getStub.withArgs('body_font').returns('Lora');
 
             const renderObject = {
                 post: posts[1]
@@ -1241,8 +1237,8 @@ describe('{{ghost_head}} helper', function () {
 
         it('can handle preview being set and custom font keys missing', async function () {
             // The site has fonts set up, but we override them with Theme default fonts (empty string)
-            settingsCache.get.withArgs('heading_font').returns('Playfair Display');
-            settingsCache.get.withArgs('body_font').returns('Lora');
+            getStub.withArgs('heading_font').returns('Playfair Display');
+            getStub.withArgs('body_font').returns('Lora');
 
             const renderObject = {
                 post: posts[1]
@@ -1265,7 +1261,7 @@ describe('{{ghost_head}} helper', function () {
 
     describe('members scripts', function () {
         it('includes portal when members enabled', async function () {
-            settingsCache.get.withArgs('members_enabled').returns(true);
+            getStub.withArgs('members_enabled').returns(true);
 
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1277,7 +1273,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('includes portal when recommendations enabled', async function () {
-            settingsCache.get.withArgs('recommendations_enabled').returns(true);
+            getStub.withArgs('recommendations_enabled').returns(true);
 
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1289,7 +1285,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('includes portal when donations enabled', async function () {
-            settingsCache.get.withArgs('donations_enabled').returns(true);
+            getStub.withArgs('donations_enabled').returns(true);
 
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1301,8 +1297,8 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('includes stripe when connected', async function () {
-            settingsCache.get.withArgs('members_enabled').returns(true);
-            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(true);
 
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1314,8 +1310,8 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('skips portal and stripe when members are disabled', async function () {
-            settingsCache.get.withArgs('members_enabled').returns(false);
-            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+            getStub.withArgs('members_enabled').returns(false);
+            getStub.withArgs('paid_members_enabled').returns(true);
 
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1327,8 +1323,8 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('skips stripe if not set up', async function () {
-            settingsCache.get.withArgs('members_enabled').returns(true);
-            settingsCache.get.withArgs('paid_members_enabled').returns(false);
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(false);
 
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1384,8 +1380,8 @@ describe('{{ghost_head}} helper', function () {
 
     describe('attribution scripts', function () {
         it('is included when tracking setting is enabled', async function () {
-            settingsCache.get.withArgs('members_track_sources').returns(true);
-            settingsCache.get.withArgs('members_enabled').returns(true);
+            getStub.withArgs('members_track_sources').returns(true);
+            getStub.withArgs('members_enabled').returns(true);
 
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1397,8 +1393,8 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('is not included when tracking setting is disabled', async function () {
-            settingsCache.get.withArgs('members_track_sources').returns(false);
-            settingsCache.get.withArgs('members_enabled').returns(true);
+            getStub.withArgs('members_track_sources').returns(false);
+            getStub.withArgs('members_enabled').returns(true);
 
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1411,18 +1407,69 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('includes tinybird tracker script when config is set', function () {
+        let labsStub;
         beforeEach(function () {
             configUtils.set({
                 tinybird: {
                     tracker: {
-                        scriptUrl: 'https://unpkg.com/@tinybirdco/flock.js',
-                        endpoint: 'https://api.tinybird.co',
+                        endpoint: 'https://e.ghost.org/tb/web_analytics',
                         token: 'tinybird_token',
-                        id: 'tb_test_site_uuid'
+                        id: 'tb_test_site_uuid',
+                        datasource: 'analytics_events',
+                        local: {
+                            enabled: false,
+                            endpoint: 'http://localhost:7181/v0/events',
+                            token: 'tinybird_local_token',
+                            datasource: 'analytics_events'
+                        }
                     }
                 }
             });
+            labsStub = sinon.stub(labs, 'isSet');
+            labsStub.withArgs('trafficAnalytics').returns(true);
+            labsStub.withArgs('i18n').returns(true);
         });
+
+        it('includes tracker script', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/script defer src="\/public\/ghost-stats\.min\.js/);
+        });
+
+        it('does not include tracker script when trafficAnalytics is not set', async function () {
+            labsStub.withArgs('trafficAnalytics').returns(false);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js/);
+        });
+
+        it('includes tracker script with subdir', async function () {
+            configUtils.set('url', 'http://localhost:2388/blog/');
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/script defer src="\/blog\/public\/ghost-stats\.min\.js/);
+        });
+
         it('with all tb_variables set to undefined on logged out home page', async function () {
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1484,11 +1531,59 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
         });
+
+        it('includes datasource when set', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/data-datasource="analytics_events"/);
+        });
+
+        it('does not include tracker script when preview is set', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    context: ['preview', 'post']
+                }
+            }));
+
+            rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js"/);
+        });
+
+        it('uses the provided host/endpoint from config', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/data-host="https:\/\/e.ghost.org\/tb\/web_analytics"/);
+        });
+
+        it('includes local tracker script when local is set', async function () {
+            configUtils.set('tinybird:tracker:local:enabled', true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/data-host="http:\/\/localhost:7181\/v0\/events"/);
+        });
     });
     describe('respects values from excludes: ', function () {
         it('when excludes is empty', async function () {
-            settingsCache.get.withArgs('members_enabled').returns(true);
-            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(true);
 
             let rendered = await testGhostHead({hash: {exclude: ''}, ...testUtils.createHbsResponse({
                 locals: {
@@ -1502,8 +1597,8 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.match(/js.stripe.com/);
         });
         it('when exclude contains search', async function () {
-            settingsCache.get.withArgs('members_enabled').returns(true);
-            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(true);
 
             let rendered = await testGhostHead({hash: {exclude: 'search'}, ...testUtils.createHbsResponse({
                 locals: {
@@ -1517,8 +1612,8 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.match(/js.stripe.com/);
         });
         it('when exclude contains portal', async function () {
-            settingsCache.get.withArgs('members_enabled').returns(true);
-            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(true);
 
             let rendered = await testGhostHead({hash: {exclude: 'portal'}, ...testUtils.createHbsResponse({
                 locals: {
@@ -1532,8 +1627,8 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.match(/js.stripe.com/);
         });
         it('can handle multiple excludes', async function () {
-            settingsCache.get.withArgs('members_enabled').returns(true);
-            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(true);
 
             let rendered = await testGhostHead({hash: {exclude: 'portal,search'}, ...testUtils.createHbsResponse({
                 locals: {
@@ -1548,10 +1643,10 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('shows the announcement when exclude does not contain announcement', async function () {
-            settingsCache.get.withArgs('members_enabled').returns(true);
-            settingsCache.get.withArgs('paid_members_enabled').returns(true);
-            settingsCache.get.withArgs('announcement_content').returns('Hello world');
-            settingsCache.get.withArgs('announcement_visibility').returns('visitors');
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(true);
+            getStub.withArgs('announcement_content').returns('Hello world');
+            getStub.withArgs('announcement_visibility').returns('visitors');
 
             let rendered = await testGhostHead({hash: {exclude: ''}, ...testUtils.createHbsResponse({
                 locals: {
@@ -1566,10 +1661,10 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.match(/announcement-bar@/);
         });
         it('does not show the announcement when exclude contains announcement', async function () {
-            settingsCache.get.withArgs('members_enabled').returns(true);
-            settingsCache.get.withArgs('paid_members_enabled').returns(true);
-            settingsCache.get.withArgs('announcement_content').returns('Hello world');
-            settingsCache.get.withArgs('announcement_visibility').returns('visitors');
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(true);
+            getStub.withArgs('announcement_content').returns('Hello world');
+            getStub.withArgs('announcement_visibility').returns('visitors');
 
             let rendered = await testGhostHead({hash: {exclude: 'announcement'}, ...testUtils.createHbsResponse({
                 locals: {
@@ -1586,7 +1681,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not load the comments script when exclude contains comment_counts', async function () {
-            settingsCache.get.withArgs('comments_enabled').returns('all');
+            getStub.withArgs('comments_enabled').returns('all');
             let rendered = await testGhostHead({hash: {exclude: 'comment_counts'}, ...testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
@@ -1655,8 +1750,8 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.not.match(/<meta property="twitter:/);
         });
         it('does not load cta styles when excluded with cta_styles', async function () {
-            settingsCache.get.withArgs('members_enabled').returns(true);
-            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(true);
             let rendered = await testGhostHead({hash: {exclude: 'cta_styles'}, ...testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',

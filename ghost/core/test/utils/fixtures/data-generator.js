@@ -2,7 +2,6 @@ const _ = require('lodash');
 const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const moment = require('moment');
-const constants = require('@tryghost/constants');
 const DataGenerator = {};
 
 DataGenerator.markdownToMobiledoc = function markdownToMobiledoc(content) {
@@ -200,6 +199,14 @@ DataGenerator.Content = {
             slug: 'contrib-2',
             email: 'contributor2@ghost.org',
             password: 'Sl1m3rson99'
+        },
+        {
+            // super editor
+            id: '6193c6cde792de832cd08148',
+            name: 'Super Editor',
+            slug: 'super-editor',
+            email: 'supersuper@ghost.org',
+            password: 'Sl1m3rson99'
         }
     ],
 
@@ -296,6 +303,11 @@ DataGenerator.Content = {
             id: ObjectId().toHexString(),
             name: 'Admin Integration',
             description: 'External Apps'
+        },
+        {
+            id: ObjectId().toHexString(),
+            name: 'Super Editor',
+            description: 'Super Editor'
         }
     ],
 
@@ -1309,7 +1321,7 @@ DataGenerator.forKnex = (function () {
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
             token: crypto.randomUUID(),
-            expires: Date.now() + constants.ONE_DAY_MS
+            expires: moment().add(1, 'days').valueOf()
         });
     }
 
@@ -1433,7 +1445,8 @@ DataGenerator.forKnex = (function () {
         createBasic(DataGenerator.Content.roles[2]),
         createBasic(DataGenerator.Content.roles[3]),
         createBasic(DataGenerator.Content.roles[4]),
-        createBasic(DataGenerator.Content.roles[5])
+        createBasic(DataGenerator.Content.roles[5]),
+        createBasic(DataGenerator.Content.roles[6])
     ];
 
     const users = [
@@ -1441,7 +1454,8 @@ DataGenerator.forKnex = (function () {
         createUser(DataGenerator.Content.users[1]),
         createUser(DataGenerator.Content.users[2]),
         createUser(DataGenerator.Content.users[3]),
-        createUser(DataGenerator.Content.users[7])
+        createUser(DataGenerator.Content.users[7]),
+        createUser(DataGenerator.Content.users[9])
     ];
 
     const roles_users = [
@@ -1479,6 +1493,52 @@ DataGenerator.forKnex = (function () {
             role_name: 'Contributor',
             user_id: DataGenerator.Content.users[7].id,
             role_id: DataGenerator.Content.roles[4].id
+        },
+        {
+            // super editor
+            id: ObjectId().toHexString(),
+            role_name: 'Super Editor',
+            user_id: DataGenerator.Content.users[9].id,
+            role_id: DataGenerator.Content.roles[6].id
+        }
+    ];
+
+    const user_api_keys = [
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[0].id, // owner
+            type: 'admin',
+            secret: _.repeat('0', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[1].id, // admin
+            type: 'admin',
+            secret: _.repeat('1', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[2].id, // editor
+            type: 'admin',
+            secret: _.repeat('2', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[3].id, // author
+            type: 'admin',
+            secret: _.repeat('3', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[7].id, // contributor
+            type: 'admin',
+            secret: _.repeat('4', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[9].id,
+            type: 'admin',
+            secret: _.repeat('5', 64)
         }
     ];
 
@@ -1966,6 +2026,7 @@ DataGenerator.forKnex = (function () {
         roles,
         users,
         roles_users,
+        user_api_keys,
         webhooks,
         integrations,
         api_keys,

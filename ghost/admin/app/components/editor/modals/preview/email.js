@@ -23,16 +23,17 @@ const PAID_SEGMENT = 'status:-free';
 
 const SEGMENT_OPTIONS = [{
     name: 'Free member',
-    value: FREE_SEGMENT
+    value: FREE_SEGMENT,
+    alias: 'free'
 }, {
     name: 'Paid member',
-    value: PAID_SEGMENT
+    value: PAID_SEGMENT,
+    alias: 'paid'
 }];
 
 // TODO: remove duplication with <ModalPostEmailPreview>
 export default class ModalPostPreviewEmailComponent extends Component {
     @service ajax;
-    @service dropdown;
     @service feature;
     @service ghostPaths;
     @service session;
@@ -43,7 +44,6 @@ export default class ModalPostPreviewEmailComponent extends Component {
 
     @tracked html = '';
     @tracked subject = '';
-    @tracked memberSegment = FREE_SEGMENT;
     @tracked previewEmailAddress = this.session.user.email;
     @tracked sendPreviewEmailError = '';
     @tracked newsletter = this.args.post.newsletter || this.args.newsletter;
@@ -61,8 +61,8 @@ export default class ModalPostPreviewEmailComponent extends Component {
             !!(this.settings.mailgunApiKey && this.settings.mailgunDomain && this.settings.mailgunBaseUrl);
     }
 
-    get paidMembersEnabled() {
-        return this.settings.paidMembersEnabled;
+    get selectedSegment() {
+        return this.segments.find(segment => segment.alias === this.args.memberSegment);
     }
 
     @action
@@ -77,22 +77,6 @@ export default class ModalPostPreviewEmailComponent extends Component {
             iframe.contentWindow.document.open();
             iframe.contentWindow.document.write(this.html);
             iframe.contentWindow.document.close();
-
-            iframe.contentWindow.document.removeEventListener('click', this.dropdown.closeDropdowns);
-            iframe.contentWindow.document.addEventListener('click', this.dropdown.closeDropdowns);
-        }
-    }
-
-    get selectedSegment() {
-        return this.segments.find(segment => segment.value === this.memberSegment);
-    }
-
-    @action
-    setSegment(segment) {
-        this.memberSegment = segment.value;
-
-        if (this._previewIframe) {
-            this.renderEmailPreview(this._previewIframe);
         }
     }
 
@@ -101,6 +85,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
         try {
             const resourceId = this.args.post.id;
             const testEmail = this.previewEmailAddress.trim();
+            const memberSegment = this.selectedSegment.value;
 
             if (!validator.isEmail(testEmail)) {
                 this.sendPreviewEmailError = 'Please enter a valid email';
@@ -113,7 +98,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
             this.sendPreviewEmailError = '';
 
             const url = this.ghostPaths.url.api('/email_previews/posts', resourceId);
-            const data = {emails: [testEmail], memberSegment: this.memberSegment, newsletter: this.newsletter.slug};
+            const data = {emails: [testEmail], memberSegment, newsletter: this.newsletter.slug};
             const options = {
                 data,
                 dataType: 'json'
@@ -139,8 +124,9 @@ export default class ModalPostPreviewEmailComponent extends Component {
     }
 
     async _fetchEmailData() {
-        let {html, subject, memberSegment, newsletter} = this;
+        let {html, subject, newsletter} = this;
         let {post} = this.args;
+        const memberSegment = this.selectedSegment.value;
 
         if (html && subject && memberSegment === this._lastMemberSegment && newsletter.slug === this._lastNewsletterSlug) {
             return {html, subject};
@@ -160,7 +146,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
         // model is a post, fetch email preview
         } else {
             let url = new URL(this.ghostPaths.url.api('/email_previews/posts', post.id), window.location.href);
-            url.searchParams.set('memberSegment', this.memberSegment);
+            url.searchParams.set('memberSegment', memberSegment);
             url.searchParams.set('newsletter', this.newsletter.slug);
 
             let response = await this.ajax.request(url.href);

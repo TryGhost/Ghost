@@ -9,9 +9,10 @@ export type FollowItem = {
 
 export type ObjectProperties = {
     '@context': string | (string | object)[];
-    type: 'Article' | 'Link' | 'Note';
+    type: 'Article' | 'Link' | 'Note' | 'Tombstone';
     name: string;
-    content: string;
+    content: string | null;
+    summary: string | null;
     url?: string | undefined;
     attributedTo?: object | string | object[] | undefined;
     image?: string | {
@@ -20,7 +21,7 @@ export type ObjectProperties = {
         type?: string;
     };
     published?: string;
-    preview?: {type: string, content: string};
+    preview?: {type: string, content: string | null};
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [x: string]: any;
 }

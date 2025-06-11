@@ -104,7 +104,7 @@ const BuiltInIntegrations: React.FC = () => {
                 }}
                 detail='Automation for your apps'
                 disabled={zapierDisabled}
-                icon={<ZapierIcon className='h-8 w-8' />}
+                icon={<ZapierIcon className='size-8' />}
                 testId='zapier-integration'
                 title='Zapier' />
 
@@ -114,7 +114,7 @@ const BuiltInIntegrations: React.FC = () => {
                 }}
                 active={slackUrl && slackUsername}
                 detail='A messaging app for teams'
-                icon={<SlackIcon className='h-8 w-8' />}
+                icon={<SlackIcon className='size-8' />}
                 testId='slack-integration'
                 title='Slack' />
 
@@ -124,7 +124,7 @@ const BuiltInIntegrations: React.FC = () => {
                 }}
                 active={unsplashEnabled}
                 detail='Beautiful, free photos'
-                icon={<UnsplashIcon className='h-8 w-8' />}
+                icon={<UnsplashIcon className='size-8' />}
                 testId='unsplash-integration'
                 title='Unsplash' />
 
@@ -134,7 +134,7 @@ const BuiltInIntegrations: React.FC = () => {
                 }}
                 active={firstPromoterEnabled}
                 detail='Launch your member referral program'
-                icon={<FirstPromoterIcon className='h-8 w-8' />}
+                icon={<FirstPromoterIcon className='size-8' />}
                 testId='firstpromoter-integration'
                 title='FirstPromoter' />
 
@@ -144,7 +144,7 @@ const BuiltInIntegrations: React.FC = () => {
                 }}
                 active={pinturaEditor.isEnabled}
                 detail='Advanced image editing'
-                icon={<PinturaIcon className='h-8 w-8' />}
+                icon={<PinturaIcon className='size-8' />}
                 testId='pintura-integration'
                 title='Pintura' />
         </List>
@@ -167,7 +167,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                         </div>}
                         icon={
                             integration.icon_image ?
-                                <img className='h-8 w-8 shrink-0 object-cover' role='presentation' src={integration.icon_image} /> :
+                                <img className='size-8 shrink-0 object-cover' role='presentation' src={integration.icon_image} /> :
                                 <Icon className='w-8 shrink-0' name='integration' />
                         }
                         title={integration.name}
@@ -225,15 +225,15 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ] as const;
 
     const buttons = (
-        <Button 
-            className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center whitespace-nowrap rounded px-3 text-sm font-semibold text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black' 
+        <Button
+            className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center whitespace-nowrap rounded px-3 text-sm font-semibold text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black'
             color='clear'
-            label='Add custom integration' 
-            link 
+            label='Add custom integration'
+            link
             onClick={() => {
                 updateRoute('integrations/new');
                 setSelectedTab('custom');
-            }} 
+            }}
         />
     );
 
@@ -242,8 +242,8 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             customButtons={buttons}
             customHeader={
                 <div className='sm:-mt-5 md:-mt-7'>
-                    <div className='-mx-5 overflow-hidden rounded-t-xl border-b border-grey-200 dark:border-grey-800 md:-mx-7'>
-                        <img className='h-full w-full' src={IntegrationsSettingsImg} />
+                    <div className='-mx-5 overflow-hidden rounded-t-xl border-b border-grey-200 md:-mx-7 dark:border-grey-800'>
+                        <img className='size-full' src={IntegrationsSettingsImg} />
                     </div>
                     <div className=' z-10 mt-6 flex items-start justify-between'>
                         <SettingGroupHeader description='Make Ghost work with apps and tools.' title='Integrations' />

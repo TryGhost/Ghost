@@ -17,6 +17,15 @@ module.exports = {
     },
     overrides: [
         {
+            files: [
+                '**/*.ts'
+            ],
+            extends: [
+                'plugin:ghost/ts'
+            ],
+            parser: '@typescript-eslint/parser'
+        },
+        {
             files: 'core/server/api/endpoints/*',
             rules: {
                 'ghost/ghost-custom/max-api-complexity': 'error'

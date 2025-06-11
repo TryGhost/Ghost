@@ -2,6 +2,7 @@ const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
 const security = require('@tryghost/security');
 const models = require('../../../core/server/models');
+const {signInAsUserById, signOutCurrentUser} = require('../utils/e2e-browser-utils');
 
 test.describe('Portal', () => {
     test.describe('Invites', () => {
@@ -43,11 +44,7 @@ test.describe('Portal', () => {
             const encodedToken = security.url.encodeBase64(token);
             const inviteUrl = `${adminUrl}/signup/${encodedToken}/`;
 
-            //signout current user
-            await sharedPage.goto('/ghost/#/dashboard');
-            await sharedPage.waitForLoadState('networkidle');
-            await sharedPage.locator('[data-test-nav="arrow-down"]').click();
-            await sharedPage.getByRole('link', {name: 'Sign out'}).click();
+            await signOutCurrentUser(sharedPage);
 
             // Open invite URL
             await sharedPage.goto(inviteUrl);
@@ -66,6 +63,10 @@ test.describe('Portal', () => {
 
             await sharedPage.locator('[data-test-nav="arrow-down"]').click();
             await expect(sharedPage.locator(`text=${testEmail}`)).toBeVisible();
+
+            await signOutCurrentUser(sharedPage);
+
+            await signInAsUserById(sharedPage, '1');
         });
 
         test.describe('2FA invite test', () => {
@@ -74,24 +75,6 @@ test.describe('Portal', () => {
                 await sharedPage.goto('/ghost');
                 await sharedPage.locator('[data-test-nav="settings"]').click();
                 await sharedPage.waitForLoadState('networkidle');
-
-                // Make an API call to get settings
-                const adminUrl = new URL(sharedPage.url()).origin + '/ghost';
-                const settingsResponse = await sharedPage.request.get(`${adminUrl}/api/admin/settings/`);
-                const settingsData = await settingsResponse.json();
-                // Add staff2fa flag to labs settings
-                const settings = settingsData.settings;
-                const labsSetting = settings.find(s => s.key === 'labs');
-                const labsValue = JSON.parse(labsSetting.value);
-                labsValue.staff2fa = true;
-                labsSetting.value = JSON.stringify(labsValue);
-
-                // Update settings
-                await sharedPage.request.put(`${adminUrl}/api/admin/settings/`, {
-                    data: {
-                        settings
-                    }
-                });
 
                 const testEmail = 'test@gmail.com';
 
@@ -122,15 +105,12 @@ test.describe('Portal', () => {
 
                 // Construct the invite URL
                 const encodedToken = security.url.encodeBase64(token);
+                const adminUrl = new URL(sharedPage.url()).origin + '/ghost';
                 const inviteUrl = `${adminUrl}/signup/${encodedToken}/`;
                 const context = await sharedPage.context();
                 await context.clearCookies();
 
-                //signout current user
-                await sharedPage.goto('/ghost/#/dashboard');
-                await sharedPage.waitForLoadState('networkidle');
-                await sharedPage.locator('[data-test-nav="arrow-down"]').click();
-                await sharedPage.getByRole('link', {name: 'Sign out'}).click();
+                await signOutCurrentUser(sharedPage);
 
                 // Open invite URL
                 await sharedPage.goto(inviteUrl);
@@ -150,6 +130,10 @@ test.describe('Portal', () => {
 
                 await sharedPage.locator('[data-test-nav="arrow-down"]').click();
                 await expect(sharedPage.locator(`text=${testEmail}`)).toBeVisible();
+
+                await signOutCurrentUser(sharedPage);
+
+                await signInAsUserById(sharedPage, '1');
             });
         });
     });

@@ -22,50 +22,45 @@ const messages = {
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
     'audienceFeedback',
-    'collections',
     'i18n',
     'themeErrorsNotification',
-    'outboundLinkTagging',
     'announcementBar',
-    'newEmailAddresses',
-    'customFonts'
-];
-
-// NOTE: this allowlist is meant to be used to filter out any unexpected
-//       input for the "labs" setting value
-const BETA_FEATURES = [
-    'additionalPaymentMethods',
-    'stripeAutomaticTax',
-    'webmentions',
-    'editorExcerpt',
-    'ActivityPub',
-    'importMemberTier',
-    'staff2fa',
+    'customFonts',
     'contentVisibility'
 ];
 
-const ALPHA_FEATURES = [
-    'NestPlayground',
+// These features are considered publicly available and can be enabled/disabled by users
+const PUBLIC_BETA_FEATURES = [
+    'ActivityPub',
+    'superEditors',
+    'editorExcerpt',
+    'additionalPaymentMethods'
+];
+
+// These features are considered private they live in the private tab of the labs settings page
+// Which is only visible if the developer experiments flag is enabled
+const PRIVATE_FEATURES = [
+    'stripeAutomaticTax',
+    'webmentions',
+    'trafficAnalytics',
+    'importMemberTier',
     'urlCache',
     'emailCustomization',
+    'emailCustomizationAlpha',
     'mailEvents',
     'collectionsCard',
     'lexicalIndicators',
-    'adminXDemo',
-    'postsX'
+    'trafficAnalyticsAlpha',
+    'updatedMainNav',
+    'contentVisibilityAlpha',
+    'explore'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
-module.exports.WRITABLE_KEYS_ALLOWLIST = [...BETA_FEATURES, ...ALPHA_FEATURES];
+module.exports.WRITABLE_KEYS_ALLOWLIST = [...PUBLIC_BETA_FEATURES, ...PRIVATE_FEATURES];
 
 module.exports.getAll = () => {
     const labs = _.cloneDeep(settingsCache.get('labs')) || {};
-
-    ALPHA_FEATURES.forEach((alphaKey) => {
-        if (labs[alphaKey] && !(config.get('enableDeveloperExperiments') || process.env.NODE_ENV.startsWith('test'))) {
-            delete labs[alphaKey];
-        }
-    });
 
     GA_FEATURES.forEach((gaKey) => {
         labs[gaKey] = true;
@@ -82,7 +77,7 @@ module.exports.getAll = () => {
 };
 
 module.exports.getAllFlags = function () {
-    return [...GA_FEATURES, ...BETA_FEATURES, ...ALPHA_FEATURES];
+    return [...GA_FEATURES, ...PUBLIC_BETA_FEATURES, ...PRIVATE_FEATURES];
 };
 
 /**

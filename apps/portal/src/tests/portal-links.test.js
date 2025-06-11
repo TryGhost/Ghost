@@ -2,6 +2,7 @@ import App from '../App';
 import {site as FixtureSite, member as FixtureMember} from '../utils/test-fixtures';
 import {appRender, within} from '../utils/test-utils';
 import setupGhostApi from '../utils/api';
+import {fireEvent} from '@testing-library/react';
 
 const setup = async ({site, member = null, showPopup = true}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
@@ -14,6 +15,10 @@ const setup = async ({site, member = null, showPopup = true}) => {
 
     ghostApi.member.sendMagicLink = jest.fn(() => {
         return Promise.resolve('success');
+    });
+
+    ghostApi.member.getIntegrityToken = jest.fn(() => {
+        return Promise.resolve('testtoken');
     });
 
     ghostApi.member.checkoutPlan = jest.fn(() => {
@@ -139,19 +144,19 @@ describe('Portal Data links:', () => {
 
         describe('on a paid-members only site', () => {
             describe('with only a free plan', () => {
-                test('renders paid-members only message and does not allow signups', async () => {
+                test('renders invite-only message and does not allow signups', async () => {
                     window.location.hash = '#/portal/signup';
                     let {
                         popupFrame
                     } = await setup({
-                        site: {...FixtureSite.singleTier.onlyFreePlan, allow_self_signup: false, members_signup_access: 'paid'},
+                        site: {...FixtureSite.singleTier.onlyFreePlan, members_signup_access: 'paid'},
                         member: null
                     });
 
                     expect(popupFrame).toBeInTheDocument();
 
-                    const paidMembersOnlyMessage = within(popupFrame.contentDocument).queryByText(/This site only accepts paid members/i);
-                    expect(paidMembersOnlyMessage).toBeInTheDocument();
+                    const inviteOnlyMessage = within(popupFrame.contentDocument).queryByText(/This site is invite-only/i);
+                    expect(inviteOnlyMessage).toBeInTheDocument();
                 });
             });
 
@@ -164,7 +169,7 @@ describe('Portal Data links:', () => {
                         popupFrame
 
                     } = await setup({
-                        site: {...FixtureSite.multipleTiers.basic, allow_self_signup: false, members_signup_access: 'paid'},
+                        site: {...FixtureSite.multipleTiers.basic, members_signup_access: 'paid'},
                         member: null
                     });
 
@@ -185,10 +190,10 @@ describe('Portal Data links:', () => {
     });
 
     describe('#/portal/signup/free', () => {
-        test('opens free signup page even if free plan is hidden', async () => {
+        test('opens free signup page and completes signup even if free plan is hidden', async () => {
             window.location.hash = '#/portal/signup/free';
             let {
-                popupFrame, triggerButtonFrame, ...utils
+                ghostApi, popupFrame, triggerButtonFrame, ...utils
             } = await setup({
                 site: FixtureSite.multipleTiers.onlyPaidPlans,
                 member: null
@@ -207,6 +212,28 @@ describe('Portal Data links:', () => {
             expect(signinButton).toBeInTheDocument();
             const signupTitle = within(popupFrame.contentDocument).queryByText(/already a member/i);
             expect(signupTitle).toBeInTheDocument();
+
+            // Fill out and submit the signup form
+            fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+
+            expect(emailInput).toHaveValue('jamie@example.com');
+            expect(nameInput).toHaveValue('Jamie Larsen');
+
+            fireEvent.click(submitButton);
+
+            // Verify success message is shown
+            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
+            // Verify the API was called with correct parameters
+            expect(ghostApi.member.sendMagicLink).toHaveBeenCalledWith({
+                email: 'jamie@example.com',
+                emailType: 'signup',
+                name: 'Jamie Larsen',
+                plan: 'free',
+                integrityToken: 'testtoken'
+            });
         });
 
         describe('on a paid-members only site', () => {
@@ -215,7 +242,7 @@ describe('Portal Data links:', () => {
                 let {
                     popupFrame
                 } = await setup({
-                    site: {...FixtureSite.multipleTiers.basic, allow_self_signup: false, members_signup_access: 'paid'},
+                    site: {...FixtureSite.multipleTiers.basic, members_signup_access: 'paid'},
                     member: null
                 });
 

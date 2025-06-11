@@ -57,6 +57,64 @@ function addSetting({key, value, type, group, flags = null}) {
     );
 }
 
+/**
+ * @param {string} key - The key of the setting to remove
+ * @returns {Object} - A migration object with up and down functions
+ */
+function removeSetting(key) {
+    let originalSetting = null;
+
+    return createTransactionalMigration(
+        async function up(connection) {
+            const settingExists = await connection('settings')
+                .where('key', '=', key)
+                .first();
+            if (!settingExists) {
+                logging.warn(`Skipping removing setting: ${key} - setting does not exist`);
+                return;
+            }
+
+            // Store the original setting data for the down migration
+            originalSetting = settingExists;
+
+            logging.info(`Removing setting: ${key}`);
+            return connection('settings')
+                .where('key', '=', key)
+                .del();
+        },
+        async function down(connection) {
+            const settingExists = await connection('settings')
+                .where('key', '=', key)
+                .first();
+            if (settingExists) {
+                logging.warn(`Skipping restoring setting: ${key} - setting already exists`);
+                return;
+            }
+
+            if (!originalSetting) {
+                logging.warn(`Skipping restoring setting: ${key} - no original setting data found`);
+                return;
+            }
+
+            logging.info(`Restoring setting: ${key}`);
+            const now = connection.raw('CURRENT_TIMESTAMP');
+
+            return connection('settings')
+                .insert({
+                    id: ObjectId().toHexString(),
+                    key,
+                    value: originalSetting.value,
+                    group: originalSetting.group,
+                    type: originalSetting.type,
+                    flags: originalSetting.flags,
+                    created_at: now,
+                    created_by: MIGRATION_USER
+                });
+        }
+    );
+}
+
 module.exports = {
-    addSetting
+    addSetting,
+    removeSetting
 };

@@ -123,7 +123,7 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, ope
     }, [comment, parent, openForm, dispatchAction]);
 
     const hasReplies = displayReplyForm || (comment.replies && comment.replies.length > 0);
-    const avatar = (<Avatar comment={comment} />);
+    const avatar = (<Avatar member={comment.member} />);
 
     return (
         <CommentLayout avatar={avatar} className={hiddenClass} hasReplies={hasReplies} memberUuid={comment.member?.uuid}>
@@ -161,7 +161,7 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
     const {admin, openCommentForms, t} = useAppContext();
 
     const avatar = (admin && comment.status !== 'deleted')
-        ? <Avatar comment={comment} />
+        ? <Avatar member={comment.member} />
         : <BlankAvatar />;
     const hasReplies = comment.replies && comment.replies.length > 0;
 
@@ -293,7 +293,7 @@ export const RepliedToSnippet: React.FC<{comment: Comment}> = ({comment}) => {
 
     const linkToReply = inReplyToComment && inReplyToComment.status === 'published';
 
-    const className = 'font-medium text-neutral-900/60 transition-colors dark:text-white/70';
+    const className = 'font-medium text-neutral-900/60 break-all transition-colors dark:text-white/70';
 
     return (
         linkToReply

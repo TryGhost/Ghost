@@ -1,21 +1,32 @@
-import MainContent from './MainContent';
-import {DesignSystemApp, DesignSystemAppProps} from '@tryghost/admin-x-design-system';
-import {FrameworkProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
-import {RoutingProvider} from '@tryghost/admin-x-framework/routing';
+import {APP_ROUTE_PREFIX, routes} from '@src/routes';
+import {FeatureFlagsProvider} from './lib/feature-flags';
+import {FrameworkProvider, Outlet, RouterProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
+import {ShadeApp} from '@tryghost/shade';
 
 interface AppProps {
     framework: TopLevelFrameworkProps;
-    designSystem: DesignSystemAppProps;
+    activityPubEnabled?: boolean;
 }
 
-const App: React.FC<AppProps> = ({framework, designSystem}) => {
+const App: React.FC<AppProps> = ({framework, activityPubEnabled}) => {
+    if (activityPubEnabled === false) {
+        return null;
+    }
+
+    // In test mode, we use hash routing to avoid basename issues
+    const routerProps = import.meta.env.VITE_TEST
+        ? {prefix: '', hash: true, routes}
+        : {prefix: APP_ROUTE_PREFIX, routes};
+
     return (
         <FrameworkProvider {...framework}>
-            <RoutingProvider basePath='activitypub'>
-                <DesignSystemApp className='admin-x-activitypub' {...designSystem}>
-                    <MainContent />
-                </DesignSystemApp>
-            </RoutingProvider>
+            <RouterProvider {...routerProps}>
+                <FeatureFlagsProvider>
+                    <ShadeApp darkMode={false} fetchKoenigLexical={null}>
+                        <Outlet />
+                    </ShadeApp>
+                </FeatureFlagsProvider>
+            </RouterProvider>
         </FrameworkProvider>
     );
 };
