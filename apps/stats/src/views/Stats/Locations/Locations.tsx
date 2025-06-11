@@ -1,9 +1,9 @@
-import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
-import DateRangeSelect from './components/DateRangeSelect';
+import AudienceSelect, {getAudienceQueryParam} from '../components/AudienceSelect';
+import DateRangeSelect from '../components/DateRangeSelect';
 import React, {useMemo, useState} from 'react';
-import StatsHeader from './layout/StatsHeader';
-import StatsLayout from './layout/StatsLayout';
-import StatsView from './layout/StatsView';
+import StatsHeader from '../layout/StatsHeader';
+import StatsLayout from '../layout/StatsLayout';
+import StatsView from '../layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';

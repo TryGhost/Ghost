@@ -26,19 +26,19 @@ const BarTooltipContent = ({active, payload}: BarTooltipProps) => {
         new Date(currentItem.send_date) : currentItem.send_date;
 
     return (
-        <div className="bg-background min-w-[220px] max-w-[240px] rounded-lg border px-3 py-2 shadow-lg">
+        <div className="min-w-[220px] max-w-[240px] rounded-lg border bg-background px-3 py-2 shadow-lg">
             <div className="mb-2 flex w-full flex-col border-b pb-2">
                 <span className="text-sm font-semibold leading-tight">{currentItem.post_title}</span>
-                <span className="text-muted-foreground text-sm">Sent on {formatDisplayDate(sendDate)}</span>
+                <span className="text-sm text-muted-foreground">Sent on {formatDisplayDate(sendDate)}</span>
             </div>
 
             <div className="mb-1 flex w-full justify-between">
-                <span className="text-muted-foreground font-medium">Sent</span>
+                <span className="font-medium text-muted-foreground">Sent</span>
                 <div className="ml-2 w-full text-right font-mono">{formatNumber(currentItem.sent_to)}</div>
             </div>
 
             <div className="mb-1 flex w-full justify-between">
-                <span className="text-muted-foreground font-medium">Opens</span>
+                <span className="font-medium text-muted-foreground">Opens</span>
                 <div className="ml-2 w-full text-right font-mono">
                     <span className="text-muted-foreground">{formatNumber(currentItem.total_opens)} / </span>
                     {formatPercentage(currentItem.open_rate)}
@@ -46,7 +46,7 @@ const BarTooltipContent = ({active, payload}: BarTooltipProps) => {
             </div>
 
             <div className="mb-1 flex w-full justify-between">
-                <span className="text-muted-foreground font-medium">Clicks</span>
+                <span className="font-medium text-muted-foreground">Clicks</span>
                 <div className="ml-2 w-full text-right font-mono">
                     <span className="text-muted-foreground">{formatNumber(currentItem.total_clicks)} / </span>
                     {formatPercentage(currentItem.click_rate)}
@@ -72,11 +72,13 @@ const NewsletterKPIs: React.FC<{
     avgsData: AvgsDataItem[];
     totals: Totals;
     isLoading: boolean;
+    isAvgsLoading: boolean;
 }> = ({
     subscribersData: allSubscribersData,
     avgsData,
     totals,
-    isLoading
+    isLoading,
+    isAvgsLoading
 }) => {
     const [currentTab, setCurrentTab] = useState('total-subscribers');
     const [isHoveringClickable, setIsHoveringClickable] = useState(false);
@@ -164,6 +166,7 @@ const NewsletterKPIs: React.FC<{
                     setCurrentTab('avg-open-rate');
                 }}>
                     <KpiTabValue
+                        className={isAvgsLoading ? 'opacity-50' : ''}
                         color={tabConfig['avg-open-rate'].color}
                         label="Avg. open rate"
                         value={formatPercentage(avgOpenRate)}
@@ -173,6 +176,7 @@ const NewsletterKPIs: React.FC<{
                     setCurrentTab('avg-click-rate');
                 }}>
                     <KpiTabValue
+                        className={isAvgsLoading ? 'opacity-50' : ''}
                         color={tabConfig['avg-click-rate'].color}
                         label="Avg. click rate"
                         value={formatPercentage(avgClickRate)}
@@ -191,69 +195,77 @@ const NewsletterKPIs: React.FC<{
                 }
 
                 {(currentTab === 'avg-open-rate' || currentTab === 'avg-click-rate') &&
-                <>
-                    <ChartContainer className='max-h-[320px] w-full' config={barChartConfig}>
-                        <Recharts.BarChart
-                            className={isHoveringClickable ? '!cursor-pointer' : ''}
-                            data={avgsData}
-                            margin={{
-                                top: 20
-                            }}
-                            onClick={(e) => {
-                                if (e.activePayload && e.activePayload![0].payload.post_id) {
-                                    navigate(`/posts/analytics/beta/${e.activePayload![0].payload.post_id}`, {crossApp: true});
-                                }
-                            }}
-                            onMouseLeave={() => setIsHoveringClickable(false)}
-                            onMouseMove={(e) => {
-                                setIsHoveringClickable(!!(e.activePayload && e.activePayload[0].payload.post_id));
-                            }}
-                        >
-                            <defs>
-                                <linearGradient id="barGradient" x1="0" x2="0" y1="0" y2="1">
-                                    <stop offset="0%" stopColor={tabConfig[currentTab].color} stopOpacity={0.8} />
-                                    <stop offset="100%" stopColor={tabConfig[currentTab].color} stopOpacity={0.3} />
-                                </linearGradient>
-                            </defs>
-                            <Recharts.CartesianGrid horizontal={false} vertical={false} />
-                            <Recharts.XAxis
-                                axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
-                                dataKey="post_id"
-                                interval={0}
-                                stroke="hsl(var(--gray-300))"
-                                tickFormatter={() => ('')}
-                                tickLine={false}
-                                tickMargin={10}
-                            />
-                            <Recharts.YAxis
-                                axisLine={false}
-                                domain={barDomain}
-                                tickFormatter={value => formatPercentage(value)}
-                                tickLine={false}
-                                ticks={barTicks}
-                                width={calculateYAxisWidth(barTicks, (value: number) => formatPercentage(value))}
-                            />
-                            <ChartTooltip
-                                content={<BarTooltipContent />}
-                                isAnimationActive={false}
-                                position={{y: 10}}
-                            />
-                            <Recharts.Bar
-                                activeBar={{fillOpacity: 1}}
-                                dataKey={tabConfig[currentTab].datakey}
-                                fill='url(#barGradient)'
-                                fillOpacity={0.6}
-                                isAnimationActive={false}
-                                maxBarSize={32}
-                                minPointSize={3}
-                                radius={4}
-                            />
-                        </Recharts.BarChart>
-                    </ChartContainer>
-                    <div className="text-muted-foreground -mt-6 text-center text-sm">
-                        Newsletters {currentTab === 'avg-open-rate' ? 'opens' : 'clicks'} in this period
-                    </div>
-                </>
+                    <>
+                        {isAvgsLoading ?
+                            <div className='h-[320px] w-full items-center justify-center'>
+                                <BarChartLoadingIndicator />
+                            </div>
+                            :
+                            <>
+                                <ChartContainer className='max-h-[320px] w-full' config={barChartConfig}>
+                                    <Recharts.BarChart
+                                        className={isHoveringClickable ? '!cursor-pointer' : ''}
+                                        data={avgsData}
+                                        margin={{
+                                            top: 20
+                                        }}
+                                        onClick={(e) => {
+                                            if (e.activePayload && e.activePayload![0].payload.post_id) {
+                                                navigate(`/posts/analytics/beta/${e.activePayload![0].payload.post_id}`, {crossApp: true});
+                                            }
+                                        }}
+                                        onMouseLeave={() => setIsHoveringClickable(false)}
+                                        onMouseMove={(e) => {
+                                            setIsHoveringClickable(!!(e.activePayload && e.activePayload[0].payload.post_id));
+                                        }}
+                                    >
+                                        <defs>
+                                            <linearGradient id="barGradient" x1="0" x2="0" y1="0" y2="1">
+                                                <stop offset="0%" stopColor={tabConfig[currentTab].color} stopOpacity={0.8} />
+                                                <stop offset="100%" stopColor={tabConfig[currentTab].color} stopOpacity={0.3} />
+                                            </linearGradient>
+                                        </defs>
+                                        <Recharts.CartesianGrid horizontal={false} vertical={false} />
+                                        <Recharts.XAxis
+                                            axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
+                                            dataKey="post_id"
+                                            interval={0}
+                                            stroke="hsl(var(--gray-300))"
+                                            tickFormatter={() => ('')}
+                                            tickLine={false}
+                                            tickMargin={10}
+                                        />
+                                        <Recharts.YAxis
+                                            axisLine={false}
+                                            domain={barDomain}
+                                            tickFormatter={value => formatPercentage(value)}
+                                            tickLine={false}
+                                            ticks={barTicks}
+                                            width={calculateYAxisWidth(barTicks, (value: number) => formatPercentage(value))}
+                                        />
+                                        <ChartTooltip
+                                            content={<BarTooltipContent />}
+                                            isAnimationActive={false}
+                                            position={{y: 10}}
+                                        />
+                                        <Recharts.Bar
+                                            activeBar={{fillOpacity: 1}}
+                                            dataKey={tabConfig[currentTab].datakey}
+                                            fill='url(#barGradient)'
+                                            fillOpacity={0.6}
+                                            isAnimationActive={false}
+                                            maxBarSize={32}
+                                            minPointSize={3}
+                                            radius={4}
+                                        />
+                                    </Recharts.BarChart>
+                                </ChartContainer>
+                                <div className="-mt-6 text-center text-sm text-muted-foreground">
+                                    Newsletters {currentTab === 'avg-open-rate' ? 'opens' : 'clicks'} in this period
+                                </div>
+                            </>
+                        }
+                    </>
                 }
             </div>
         </Tabs>

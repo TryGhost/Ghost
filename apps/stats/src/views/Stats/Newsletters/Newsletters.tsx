@@ -128,7 +128,7 @@ const Newsletters: React.FC = () => {
             <StatsView data={pageData} isLoading={false} loadingComponent={<></>}>
                 <Card>
                     <CardContent>
-                        <NewsletterKPIs avgsData={avgsData} isLoading={isSubscriberStatsLoading} subscribersData={subscribersData} totals={totals} />
+                        <NewsletterKPIs avgsData={avgsData} isAvgsLoading={isStatsLoading} isLoading={isSubscriberStatsLoading} subscribersData={subscribersData} totals={totals} />
                     </CardContent>
                 </Card>
                 {isStatsLoading
