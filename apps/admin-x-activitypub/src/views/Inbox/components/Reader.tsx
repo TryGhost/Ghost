@@ -731,6 +731,17 @@ export const Reader: React.FC<ReaderProps> = ({
                                 </div>
                             </div>
                         </div>
+                        <div className='relative flex-1'>
+                            <div className='mx-auto mt-11 w-full max-w-[640px]'>
+                                <div className='mb-6 flex flex-col gap-2'>
+                                    <Skeleton className='h-8' />
+                                    <Skeleton className='h-8 w-full max-w-md' />
+                                </div>
+                                <Skeleton className='mt-2 h-4' count={4} randomize={true} />
+                                <Skeleton className='mt-8 h-[400px]' />
+                                <Skeleton className='mt-2 h-4' containerClassName='block mt-7 mb-4' count={8} randomize={true} />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
