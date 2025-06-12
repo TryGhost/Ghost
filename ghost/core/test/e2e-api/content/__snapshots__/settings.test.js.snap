@@ -95,7 +95,7 @@ Object {
     "twitter_title": null,
     "url": "http://127.0.0.1:2369/",
     "version": Any<String>,
-    "youtube": null
+    "youtube": null,
   },
 }
 `;
