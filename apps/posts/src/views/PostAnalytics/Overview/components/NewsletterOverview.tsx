@@ -1,5 +1,5 @@
 import React, {useMemo} from 'react';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn, formatNumber, formatPercentage} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, HTable, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableRow, cn, formatNumber, formatPercentage} from '@tryghost/shade';
 import {Post} from '@tryghost/admin-x-framework/api/posts';
 import {cleanTrackedUrl} from '@src/utils/link-helpers';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -235,31 +235,17 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
 
             </Card>
             <Card className='group/card'>
-                <div className='flex items-center justify-between gap-6'>
-                    <CardHeader>
+                <div className='flex items-center justify-between gap-6 p-6'>
+                    <CardHeader className='p-0'>
                         <CardTitle>Top links</CardTitle>
                         <CardDescription>Links in your newsletter people clicked on the most</CardDescription>
                     </CardHeader>
-                    <Button className='mr-6 opacity-0 transition-all group-hover/card:opacity-100' variant='outline' onClick={() => {
-                        navigate(`/analytics/beta/${postId}/newsletter`);
-                    }}>
-                    View more
-                        <LucideIcon.ArrowRight />
-                    </Button>
+                    <HTable className='mr-2'>No. of members</HTable>
                 </div>
                 <CardContent>
+                    <Separator />
                     <div>
                         <Table>
-                            <TableHeader>
-                                <TableRow className='border-b !border-border'>
-                                    <TableHead className='w-full' colSpan={2}>
-                                        <div className='flex items-center justify-between gap-6'>
-                                            <span>Link</span>
-                                            <span>No. of members</span>
-                                        </div>
-                                    </TableHead>
-                                </TableRow>
-                            </TableHeader>
                             {topLinks.length > 0
                                 ?
                                 <TableBody>
