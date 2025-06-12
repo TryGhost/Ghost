@@ -6,9 +6,6 @@ const logging = require('@tryghost/logging');
 // The string returned when a setting is set as write-only
 const obfuscatedSetting = '••••••••';
 
-// Cached site UUID to ensure consistency
-let SITE_UUID;
-
 /**
  * @description // The function used to decide whether a setting is write-only
  * @param {Object} setting setting record
@@ -33,6 +30,8 @@ function hideValueIfSecret(setting) {
     return setting;
 }
 
+// Cached site UUID to ensure consistency
+let SITE_UUID;
 /**
  * @description Get or generate a site UUID, used for seeding the site_uuid setting
  * Uses the configured site_uuid if valid, otherwise generates a new one
