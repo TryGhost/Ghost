@@ -136,8 +136,6 @@ describe('services/koenig/node-renderers/product-renderer', function () {
         it('matches snapshot for default test data', function () {
             const result = renderForEmail(getTestData(), {feature: {emailCustomization: true}});
 
-            assert.ok(result.html);
-
             assertPrettifiesTo(result.html, html`
                 <table class="kg-product-card" cellspacing="0" cellpadding="0" border="0">
                     <tbody>
@@ -199,75 +197,6 @@ describe('services/koenig/node-renderers/product-renderer', function () {
 
         it('renders nothing with a missing data', function () {
             const result = renderForEmail(getTestData({isEmpty: () => true}), {feature: {emailCustomization: true}});
-            assert.equal(result.html, '');
-        });
-    });
-
-    describe('email (emailCustomizationAlpha)', function () {
-        it('matches snapshot for default test data', function () {
-            const result = renderForEmail(getTestData(), {feature: {emailCustomizationAlpha: true}});
-
-            assertPrettifiesTo(result.html, html`
-                <table class="kg-product-card" cellspacing="0" cellpadding="0" border="0">
-                    <tbody>
-                        <tr>
-                            <td class="kg-product-card-container">
-                                <table cellspacing="0" cellpadding="0" border="0">
-                                    <tbody>
-                                        <tr>
-                                            <td class="kg-product-image" align="center">
-                                                <img
-                                                    src="/content/images/2022/11/koenig-lexical.jpg"
-                                                    width="200"
-                                                    height="100"
-                                                    border="0" />
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td valign="top">
-                                                <h4 class="kg-product-title">This is a<b>title</b></h4>
-                                            </td>
-                                        </tr>
-                                        <tr class="kg-product-rating">
-                                            <td valign="top">
-                                                <img
-                                                    src="https://static.ghost.org/v4.0.0/images/star-rating-undefined.png"
-                                                    border="0" />
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="kg-product-description-wrapper">
-                                                This is a<b>description</b>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="kg-product-button-wrapper">
-                                                <table
-                                                    class="btn"
-                                                    border="0"
-                                                    cellspacing="0"
-                                                    cellpadding="0">
-                                                    <tbody>
-                                                        <tr>
-                                                            <td align="center" width="100%">
-                                                                <a href="https://google.com/">Button text</a>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            `);
-        });
-
-        it('renders nothing with a missing data', function () {
-            const result = renderForEmail(getTestData({isEmpty: () => true}), {feature: {emailCustomizationAlpha: true}});
             assert.equal(result.html, '');
         });
     });

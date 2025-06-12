@@ -90,7 +90,7 @@ function emailCardTemplate({data, feature}) {
         }
     }
 
-    if (feature?.emailCustomization || feature?.emailCustomizationAlpha) {
+    if (feature?.emailCustomization) {
         const buttonHtml = renderEmailButton({
             text: data.productButton,
             url: data.productUrl,
