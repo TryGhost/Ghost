@@ -22,6 +22,13 @@ const _ = require('lodash');
  * @property {string|null} cover_image - URL to the blog's cover image
  * @property {string|null} facebook - Facebook page name
  * @property {string|null} twitter - Twitter username
+ * @property {string|null} threads - Threads username
+ * @property {string|null} bluesky - Bluesky username
+ * @property {string|null} mastodon - Mastodon username
+ * @property {string|null} tiktok - TikTok username
+ * @property {string|null} youtube - YouTube channel name
+ * @property {string|null} instagram - Instagram username
+ * @property {string|null} linkedin - LinkedIn username
  * @property {string|null} lang - The blog's language code
  * @property {string|null} locale - The blog's locale
  * @property {string|null} timezone - The blog's timezone
