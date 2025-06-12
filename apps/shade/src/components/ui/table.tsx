@@ -74,7 +74,7 @@ const headVariants = cva(
         variants: {
             variant: {
                 default: 'h-10 px-2 text-left text-xs font-medium uppercase tracking-wide text-gray-700 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
-                cardhead: 'text-base font-normal [&>div]:px-2'
+                cardhead: 'text-base font-normal [&>div]:px-0'
             }
         },
         defaultVariants: {
