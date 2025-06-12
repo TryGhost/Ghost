@@ -42,36 +42,7 @@ describe('services/koenig/node-renderers/horizontalrule-renderer', function () {
 
     describe('email (emailCustomization)', function () {
         it('matches snapshot for default test data', function () {
-            const result = renderForEmail(getTestData(), {feature: {emailCustomizationAlpha: true}});
-
-            assert.ok(result.html);
-
-            assertPrettifiesTo(result.html, html`
-                <table class="kg-card kg-hr-card" role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <!--[if !mso]><!-- -->
-                                <hr style="display: none;" />
-                                <!--<![endif]-->
-                                <table class="kg-hr" role="presentation" border="0" cellpadding="0" cellspacing="0">
-                                    <tbody>
-                                        <tr>
-                                            <td>&nbsp;</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            `);
-        });
-    });
-
-    describe('email (emailCustomizationAlpha)', function () {
-        it('matches snapshot for default test data', function () {
-            const result = renderForEmail(getTestData(), {feature: {emailCustomizationAlpha: true}});
+            const result = renderForEmail(getTestData(), {feature: {emailCustomization: true}});
 
             assert.ok(result.html);
 

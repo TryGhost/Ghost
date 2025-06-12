@@ -55,13 +55,13 @@ table td {
     width: 100%;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .body {
     background-color: {{backgroundColor}} !important;
 }
 {{/hasFeature}}
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .header {
     {{#if headerBackgroundColor}}
     background-color: {{headerBackgroundColor}};
@@ -181,7 +181,7 @@ dt {
     float: left;
     margin: 0 20px 0 0;
     width: 120px;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
     {{else}}
     color: #15212A;
@@ -210,7 +210,7 @@ blockquote.kg-blockquote-alt {
     text-align: center;
     font-size: 1.2em;
     font-style: italic;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
         {{#if backgroundIsDark}}
             color: #8f9aa3;
             color: rgba(255, 255, 255, .6);
@@ -364,13 +364,13 @@ h6 + .kg-paywall .kg-paywall-hr td {
     {{#if sectionTitleColor}}
     color: {{sectionTitleColor}};
     {{else}}
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
     {{/hasFeature}}
     {{/if}}
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 /* Apply custom content text color to main content elements */
 .post-content-row > td > p,
 .post-content-row .post-content > p,
@@ -408,7 +408,7 @@ h6 + .kg-paywall .kg-paywall-hr td {
 }
 {{/hasFeature}}
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .kg-cta-bg-none .kg-cta-sponsor-label span,
 .kg-cta-bg-white .kg-cta-sponsor-label span {
     {{#if backgroundIsDark}}
@@ -421,7 +421,7 @@ h6 + .kg-paywall .kg-paywall-hr td {
 }
 {{/hasFeature}}
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 /* Links in captions */
 .feature-image-caption a,
 figcaption a {
@@ -465,7 +465,7 @@ figcaption {
     padding-top: 10px;
     padding-bottom: 10px;
     line-height: 1.5em;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
         {{#if backgroundIsDark}}
             color: #8f9aa3;
             color: rgba(255, 255, 255, .6);
@@ -531,7 +531,7 @@ figure blockquote p {
     padding-top: 32px;
 }
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .site-url {
     color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
     font-size: 16px;
@@ -555,7 +555,7 @@ figure blockquote p {
     padding-bottom: 12px;
 }
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .site-title {
     color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
 }
@@ -565,7 +565,7 @@ figure blockquote p {
 }
 {{/hasFeature}}
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .site-subtitle {
     {{#if headerBackgroundIsDark}}
         color: #8f9aa3;
@@ -594,7 +594,7 @@ figure blockquote p {
     text-align: center;
 }
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .post-title {
     color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
     {{#if postTitleColor}}
@@ -644,7 +644,7 @@ figure blockquote p {
 
 .post-excerpt {
     margin: 0;
-    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
     {{else}}
     color: #15212A;
@@ -676,7 +676,7 @@ figure blockquote p {
     text-align: left;
 }
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .post-meta,
 .view-online {
     {{#if headerBackgroundIsDark}}
@@ -725,7 +725,7 @@ figure blockquote p {
     white-space: nowrap;
 }
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .view-online-link {
     word-wrap: none;
     white-space: nowrap;
@@ -771,7 +771,7 @@ figure blockquote p {
     padding-bottom: 32px;
     text-align: center;
     font-size: 13px !important;
-    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#73818c{{/if}};
     {{else}}
     color: #73818c;
@@ -794,7 +794,7 @@ figure blockquote p {
     text-align: center;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .feedback-buttons-container {
     background-color: {{backgroundColor}};
 }
@@ -812,7 +812,7 @@ figure blockquote p {
     vertical-align: middle;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .feedback-button-text {
     display: inline-block;
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
@@ -845,7 +845,7 @@ figure blockquote p {
     border-bottom: 1px solid {{dividerColor}};
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 h3.latest-posts-header {
     margin: 0;
     padding: 8px 0 8px;
@@ -924,7 +924,7 @@ h3.latest-posts-header {
     {{#if sectionTitleColor}}
     color: {{sectionTitleColor}};
     {{else}}
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
     {{/hasFeature}}
     {{/if}}
@@ -934,13 +934,13 @@ h3.latest-posts-header {
     {{#if sectionTitleColor}}
     color: {{sectionTitleColor}} !important;
     {{else}}
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
     {{/hasFeature}}
     {{/if}}
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 /* Override latest post text colors with custom content color */
 .latest-post-excerpt,
 .latest-post-excerpt a,
@@ -957,7 +957,7 @@ h3.latest-posts-header {
 .subscription-box {
     padding: 32px 0;
     border-bottom: 1px solid {{dividerColor}};
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
     {{else}}
     color: #15212A;
@@ -972,7 +972,7 @@ h3.latest-posts-header {
     margin: 0 0 18px;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .subscription-box p {
     margin-bottom: 0;
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
@@ -994,7 +994,7 @@ h3.latest-posts-header {
 
 
 .subscription-box p a {
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
     {{else}}
     color: #15212A !important;
@@ -1011,7 +1011,7 @@ h3.latest-posts-header {
 }
 
 .manage-subscription a {
-    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     color: {{linkColor}};
     {{#if (eq linkStyle "regular")}}
     text-decoration: none;
@@ -1050,7 +1050,7 @@ h3.latest-posts-header {
     border-bottom: 1px solid {{dividerColor}};
 }
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 {{#if headerBackgroundColor}}
 .post-content-row > td {
     padding-top: 32px;
@@ -1077,7 +1077,7 @@ h3.latest-posts-header {
 
 .post-content a,
 .post-content-sans-serif a {
-    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     color: {{linkColor}};
     {{else}}
     color: {{accentColor}};
@@ -1111,7 +1111,7 @@ td.kg-card-spacing {
 
 .kg-bookmark-card {
     width: 100%;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     {{else}}
     background: #ffffff;
     {{/hasFeature}}
@@ -1145,7 +1145,7 @@ td.kg-card-spacing {
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     text-decoration: none;
     border-radius: 3px;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
         color: #ffffff;
         background-color: #15212A;
@@ -1172,7 +1172,7 @@ td.kg-card-spacing {
 }
 
 .kg-bookmark-title {
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
     {{else}}
     color: #15212A;
@@ -1187,7 +1187,7 @@ td.kg-card-spacing {
     overflow-y: hidden;
     margin-top: 12px;
     max-height: 40px;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
     color: #ffffff;
     color: rgba(255, 255, 255, 0.6);
@@ -1224,7 +1224,7 @@ td.kg-card-spacing {
     flex-wrap: wrap;
     align-items: center;
     margin-top: 14px;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
     {{else}}
     color: #15212A;
@@ -1396,7 +1396,7 @@ td.kg-card-spacing {
     font-size: 20px;
 }
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .kg-cta-card {
     margin: 0 0 1.5em 0;
     padding: 0 24px;
@@ -1436,7 +1436,7 @@ td.kg-card-spacing {
 }
 
 .kg-cta-bg-white {
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
         background-color: #15212A;
         background-color: rgba(0, 0, 0, 0.15);
@@ -1597,7 +1597,7 @@ table.kg-cta-content-wrapper:not(.kg-cta-bg-none.kg-cta-no-dividers table.kg-cta
     padding-bottom: 0;
 }
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 img.kg-cta-image {
     display: block;
     border: 0;
@@ -1671,7 +1671,7 @@ img.kg-cta-image {
     text-align: center;
 }
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .kg-cta-button-container {
     padding-top: 20px;
 }
@@ -1822,7 +1822,7 @@ img.kg-cta-image {
     color: #ffffff;
 }
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .kg-header-card h2 {
     font-size: 32px;
     font-weight: {{titleWeight}};
@@ -2000,7 +2000,7 @@ img.kg-cta-image {
 }
 {{/hasFeature}}
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .kg-product-card {
     margin: 0 0 1.5em;
     {{#if hasRoundedImageCorners}}
@@ -2025,7 +2025,7 @@ img.kg-cta-image {
     {{#if sectionTitleColor}}
     color: {{sectionTitleColor}};
     {{else}}
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     color: #15212A !important;
     {{/hasFeature}}
     {{/if}}
@@ -2170,7 +2170,7 @@ img.kg-cta-image {
     width: 100%;
     margin: 0 auto 1.5em;
     border-radius: 3px;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
         background-color: #15212A;
         background-color: rgba(0, 0, 0, 0.15);
@@ -2196,7 +2196,7 @@ img.kg-cta-image {
     font-weight: 600;
     line-height: 18px;
     text-decoration: none !important;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
     {{else}}
     color: #15212A !important;
@@ -2207,7 +2207,7 @@ img.kg-cta-image {
     box-sizing: border-box;
     width: 16px;
     height: 16px;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
     {{else}}
     color: #15212A !important;
@@ -2220,7 +2220,7 @@ img.kg-cta-image {
     display: block;
     text-decoration: none !important;
     font-size: 13px;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
     color: #ffffff !important;
     color: rgba(255, 255, 255, 0.6) !important;
@@ -2232,7 +2232,7 @@ img.kg-cta-image {
     {{/hasFeature}}
 }
 .kg-audio-link {
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
     color: #ffffff !important;
     color: rgba(255, 255, 255, 0.6) !important;
@@ -2303,12 +2303,12 @@ img.kg-cta-image {
     border: 1px solid #e0e7eb;
 }
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .kg-toggle-card {
     border-radius: 4px;
     margin-bottom: 24px;
     width: 100%;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
         background-color: #15212A;
         background-color: rgba(0, 0, 0, 0.15);
@@ -2336,7 +2336,7 @@ img.kg-cta-image {
     {{#if sectionTitleColor}}
     color: {{sectionTitleColor}};
     {{else}}
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
     color: #ffffff !important;
     {{else}}
@@ -2347,7 +2347,7 @@ img.kg-cta-image {
 }
 
 .kg-toggle-content {
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
     color: #ffffff;
     {{else}}
@@ -2374,7 +2374,7 @@ img.kg-cta-image {
 }
 {{/hasFeature}}
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .kg-paywall {
     text-align: center;
 }
@@ -2387,7 +2387,7 @@ img.kg-cta-image {
     max-width: 440px;
     margin: 0 auto 1.5em auto;
     text-wrap: pretty;
-    {{#hasFeature "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
     {{/hasFeature}}
 }
@@ -2398,7 +2398,7 @@ img.kg-cta-image {
     HEADER, FOOTER, MAIN
 ------------------------------------- */
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .header {
     width: 100%;
     border-spacing: 0;
@@ -2439,7 +2439,7 @@ img.kg-cta-image {
 }
 {{/hasFeature}}
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .main {
     background-color: {{backgroundColor}} !important;
 }
@@ -2454,7 +2454,7 @@ img.kg-cta-image {
     padding-top: 10px;
 }
 
-{{#hasFeature "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 .footer {
     {{#if backgroundIsDark}}
         color: #8f9aa3;
@@ -2508,7 +2508,7 @@ img.kg-cta-image {
     BUTTONS
 ------------------------------------- */
 
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
 table.btn {
     box-sizing: border-box;
     width: auto;
@@ -2580,7 +2580,7 @@ table.btn-accent a {
 .btn table td {
     background-color: #ffffff;
     border-radius: 5px;
-    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     border-radius: {{buttonBorderRadius}};
     {{/hasFeature}}
     text-align: center;
@@ -2591,7 +2591,7 @@ table.btn-accent a {
     background-color: #ffffff;
     border: solid 1px #3498db;
     border-radius: 5px;
-    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     border-radius: {{buttonBorderRadius}};
     {{/hasFeature}}
     box-sizing: border-box;
@@ -2691,7 +2691,7 @@ table.btn-accent a {
         min-width: 100%;
     }
 
-    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     table.header {
         width: 100% !important;
         min-width: 100% !important;
@@ -2734,7 +2734,7 @@ table.btn-accent a {
         font-size: 16px;
     }
 
-    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     table.header .post-excerpt {
         font-size: 16px !important;
     }
@@ -2767,7 +2767,7 @@ table.btn-accent a {
         width: 100% !important;
     }
 
-    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     table.body .main,
     table.header .header-container {
         border-spacing: 10px 0 !important;
@@ -2784,7 +2784,7 @@ table.btn-accent a {
     }
     {{/hasFeature}}
 
-    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     {{else}}
     table.body .btn table {
         width: 100% !important;
@@ -2801,7 +2801,7 @@ table.btn-accent a {
         width: auto !important;
     }
 
-    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     table.header .site-icon {
         padding-top: 0 !important;
     }
@@ -3087,7 +3087,7 @@ table.btn-accent a {
         margin: 2em 0 !important;
     }
 
-    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     {{else}}
         table.body .kg-header-card.kg-v2 span {
         font-size: inherit !important;
@@ -3180,7 +3180,7 @@ table.btn-accent a {
         height: 52px !important;
     }
 
-    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     {{else}}
     table.body .kg-cta-minimal a.kg-cta-button {
         display: inline-block !important;
@@ -3235,7 +3235,7 @@ table.btn-accent a {
         line-height: inherit;
     }
 
-    {{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+    {{#hasFeature "emailCustomization"}}
     {{else}}
     .btn-primary table td:hover {
         background-color: #34495e !important;

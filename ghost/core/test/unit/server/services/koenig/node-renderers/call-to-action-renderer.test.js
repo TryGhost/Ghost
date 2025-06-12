@@ -203,77 +203,10 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
                 </table>
             `);
         });
-    });
-
-    describe('email (emailCustomizationAlpha)', function () {
-        it('matches snapshot for default test data', function () {
-            const result = renderForEmail(getTestData(), {feature: {emailCustomizationAlpha: true}});
-
-            assert.ok(result.html);
-
-            assertPrettifiesTo(result.html, html`
-                <table class="kg-card kg-cta-card kg-cta-bg-none kg-cta-minimal kg-cta-has-img" border="0" cellpadding="0" cellspacing="0" width="100%">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                    <tbody>
-                                        <tr>
-                                            <td class="kg-cta-sponsor-label">
-                                                <p><span style="white-space: pre-wrap">SPONSORED</span></p>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="kg-cta-content">
-                                <table border="0" cellpadding="0" cellspacing="0" width="100%" class="kg-cta-content-wrapper">
-                                    <tbody>
-                                        <tr>
-                                            <td class="kg-cta-image-container" width="64">
-                                                <a href="http://blog.com/post1">
-                                                    <img src="http://blog.com/image1.jpg" alt="CTA Image" class="kg-cta-image" width="64" height="64"/>
-                                                </a>
-                                            </td>
-                                            <td class="kg-cta-content-inner">
-                                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                    <tbody>
-                                                        <tr>
-                                                            <td class="kg-cta-text">This is a cool advertisement</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="kg-cta-button-container">
-                                                                <table class="btn" border="0" cellspacing="0" cellpadding="0">
-                                                                    <tbody>
-                                                                        <tr>
-                                                                            <td align="center" style="background-color: #000000;">
-                                                                                <a href="http://blog.com/post1" style="color: #ffffff !important;">
-                                                                                    click me
-                                                                                </a>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </tbody>
-                                                                </table>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            `);
-        });
 
         it('handles accent button color', function () {
             const data = getTestData({buttonColor: 'accent'});
-            const result = renderForEmail(data, {feature: {emailCustomizationAlpha: true}});
+            const result = renderForEmail(data, {feature: {emailCustomization: true}});
 
             assertPrettifiedIncludes(result.html, html`
                 <table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0">
@@ -292,7 +225,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
 
         it('handles outline buttons', function () {
             const data = getTestData();
-            const result = renderForEmail(data, {design: {buttonStyle: 'outline'}, feature: {emailCustomizationAlpha: true}});
+            const result = renderForEmail(data, {design: {buttonStyle: 'outline'}, feature: {emailCustomization: true}});
 
             assertPrettifiedIncludes(result.html, html`
                 <table class="btn" border="0" cellspacing="0" cellpadding="0">
@@ -316,7 +249,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
             });
             const result = renderForEmail(data, {
                 design: {backgroundIsDark: true},
-                feature: {emailCustomizationAlpha: true}
+                feature: {emailCustomization: true}
             });
 
             assertPrettifiedIncludes(result.html, html`
@@ -341,7 +274,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
             });
             const result = renderForEmail(data, {
                 design: {backgroundIsDark: true},
-                feature: {emailCustomizationAlpha: true}
+                feature: {emailCustomization: true}
             });
 
             assertPrettifiedIncludes(result.html, html`
@@ -366,7 +299,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
             });
             const result = renderForEmail(data, {
                 design: {backgroundIsDark: true},
-                feature: {emailCustomizationAlpha: true}
+                feature: {emailCustomization: true}
             });
 
             assertPrettifiedIncludes(result.html, html`
@@ -391,7 +324,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
             });
             const result = renderForEmail(data, {
                 design: {backgroundIsDark: true},
-                feature: {emailCustomizationAlpha: true}
+                feature: {emailCustomization: true}
             });
 
             assertPrettifiedIncludes(result.html, html`
@@ -416,7 +349,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
             });
             const result = renderForEmail(data, {
                 design: {backgroundIsDark: true},
-                feature: {emailCustomizationAlpha: true}
+                feature: {emailCustomization: true}
             });
 
             assertPrettifiedIncludes(result.html, html`
@@ -441,7 +374,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
             });
             const result = renderForEmail(data, {
                 design: {backgroundIsDark: false},
-                feature: {emailCustomizationAlpha: true}
+                feature: {emailCustomization: true}
             });
 
             assertPrettifiedIncludes(result.html, html`
@@ -466,7 +399,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
             });
             const result = renderForEmail(data, {
                 design: {backgroundIsDark: true},
-                feature: {emailCustomizationAlpha: true}
+                feature: {emailCustomization: true}
             });
 
             assertPrettifiedIncludes(result.html, html`

@@ -16,10 +16,6 @@ const features = [{
     description: 'Enables alpha stage analytics features',
     flag: 'trafficAnalyticsAlpha'
 }, {
-    title: 'Email customization (internal alpha)',
-    description: 'Adds customization settings to newsletter design screen. NB: must have beta flag enabled too.',
-    flag: 'emailCustomizationAlpha'
-}, {
     title: 'Email customization (internal beta)',
     description: 'Newsletter customization settings that have been released to Ghost\'s own production sites',
     flag: 'emailCustomization'

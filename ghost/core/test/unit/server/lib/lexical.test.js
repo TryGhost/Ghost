@@ -52,7 +52,7 @@ describe('lib/lexical', function () {
             rendered.should.containEql('<div class="kg-card kg-audio-card">');
         });
 
-        ['emailCustomizationAlpha', 'emailCustomization'].forEach(function (feature) {
+        ['emailCustomization'].forEach(function (feature) {
             it(`calls custom renderers (${feature})`, async function () {
                 // stub labs
                 sinon.stub(labs, 'isSet').withArgs(feature).returns(true);

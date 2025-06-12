@@ -87,7 +87,7 @@ function emailCTATemplate(dataset, options = {}) {
         }
     }
 
-    if (options.feature?.emailCustomizationAlpha) {
+    if (options.feature?.emailCustomization) {
         const isTransparentCTA = dataset.backgroundColor === 'none' || dataset.backgroundColor === 'white';
         const isDarkBackground = options.design?.backgroundIsDark;
         const isBlackButton = dataset.buttonColor === 'black' || dataset.buttonColor === '#000000' || dataset.buttonColor === '#000';
@@ -98,7 +98,7 @@ function emailCTATemplate(dataset, options = {}) {
         }
     }
 
-    if (options.feature?.emailCustomization || options.feature?.emailCustomizationAlpha) {
+    if (options.feature?.emailCustomization) {
         const buttonHtml = renderEmailButton({
             url: dataset.buttonUrl,
             text: dataset.buttonText,
