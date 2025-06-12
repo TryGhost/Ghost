@@ -35,6 +35,10 @@ const features = [{
     title: 'Explore',
     description: 'Enables keeping in touch with the new Explore API',
     flag: 'explore'
+}, {
+    title: 'ActivityPub Notifications',
+    description: 'Enables notification count badge for ActivityPub',
+    flag: 'apNotification'
 }];
 
 const AlphaFeatures: React.FC = () => {
