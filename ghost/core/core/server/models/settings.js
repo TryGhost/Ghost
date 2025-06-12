@@ -7,9 +7,8 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const urlUtils = require('../../shared/url-utils');
-const config = require('../../shared/config');
-const logging = require('@tryghost/logging');
 const {WRITABLE_KEYS_ALLOWLIST} = require('../../shared/labs');
+const {getOrGenerateSiteUuid} = require('../services/settings/settings-utils');
 
 const messages = {
     valueCannotBeBlank: 'Value in [settings.key] cannot be blank.',
@@ -43,35 +42,6 @@ const getGhostKey = doBlock(() => {
     };
 });
 
-const getGhostSiteUuid = doBlock(() => {
-    let SITE_UUID;
-    function getOrGenerateSiteUuid() {
-        if (!SITE_UUID) {
-            try {
-                let configuredSiteUuid = config.get('site_uuid');
-                if (configuredSiteUuid && validator.isUUID(configuredSiteUuid)) {
-                    logging.info(`Using configured site UUID: ${configuredSiteUuid}`);
-                    SITE_UUID = configuredSiteUuid.toLowerCase();
-                } else {
-                    logging.info('No site UUID found, generating a new one');
-                    SITE_UUID = crypto.randomUUID();
-                }
-            } catch (error) {
-                logging.error('Error getting site UUID from config. Generating a new one', error);
-                SITE_UUID = crypto.randomUUID();
-            }
-        }
-        return SITE_UUID.toLowerCase();
-    }
-    
-    // Reset function for testing
-    getOrGenerateSiteUuid._reset = () => {
-        SITE_UUID = undefined;
-    };
-    
-    return getOrGenerateSiteUuid;
-});
-
 // For neatness, the defaults file is split into categories.
 // It's much easier for us to work with it as a single level
 // instead of iterating those categories every time
@@ -89,7 +59,7 @@ function parseDefaultSettings() {
         members_email_auth_secret: () => crypto.randomBytes(64).toString('hex'),
         ghost_public_key: () => getGhostKey('public'),
         ghost_private_key: () => getGhostKey('private'),
-        site_uuid: () => getGhostSiteUuid()
+        site_uuid: () => getOrGenerateSiteUuid()
     };
 
     _.each(defaultSettingsInCategories, function each(settings, categoryName) {
@@ -485,5 +455,5 @@ Settings = ghostBookshelf.Model.extend({
 
 module.exports = {
     Settings: ghostBookshelf.model('Settings', Settings),
-    getOrGenerateSiteUuid: getGhostSiteUuid
+    getOrGenerateSiteUuid: getOrGenerateSiteUuid
 };
