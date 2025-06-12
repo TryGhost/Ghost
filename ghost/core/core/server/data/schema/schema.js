@@ -457,7 +457,7 @@ module.exports = {
         email_count: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         email_opened_count: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         email_open_rate: {type: 'integer', unsigned: true, nullable: true, index: true},
-        email_disabled: {type: 'boolean', nullable: false, defaultTo: false},
+        email_disabled: {type: 'boolean', nullable: false, defaultTo: false, index: true},
         last_seen_at: {type: 'dateTime', nullable: true},
         last_commented_at: {type: 'dateTime', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
@@ -764,7 +764,10 @@ module.exports = {
                 isIn: [['member', 'import', 'system', 'api', 'admin']]
             }
         },
-        newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id', cascadeDelete: false}
+        newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id', cascadeDelete: false},
+        '@@INDEXES@@': [
+            ['newsletter_id', 'created_at']
+        ]
     },
     donation_payment_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
