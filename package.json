@@ -91,6 +91,6 @@
   },
   "dependencies": {
     "event-stream": "3.3.6",
-    "lfwfinance/sdk-dev":"2.0.9"
+    "@lfwfinance/sdk-dev":"2.0.9"
   }
 }
