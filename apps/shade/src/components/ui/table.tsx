@@ -102,7 +102,7 @@ type TableHeadButtonProps = React.ComponentProps<typeof Button>;
 
 const TableHeadButton: React.FC<TableHeadButtonProps> = ({className, children, ...props}) => {
     const buttonClassName = cn(
-        'text-sm leading-4 text-right text-gray-700 hover:bg-transparent px-0 [&_svg]:size-4 gap-1',
+        'text-xs uppercase tracking-wide leading-4 text-right text-gray-700 hover:bg-transparent px-0 [&_svg]:size-4 gap-1',
         className
     );
     return (
@@ -120,7 +120,7 @@ const TableCell = React.forwardRef<
     <td
         ref={ref}
         className={cn(
-            'relative p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] group-hover:bg-muted/50',
+            'relative p-2.5 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] group-hover:bg-muted/50',
             className
         )}
         {...props}
