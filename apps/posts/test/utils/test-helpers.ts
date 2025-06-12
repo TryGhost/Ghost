@@ -103,6 +103,8 @@ export const defaultMockData = {
 export const setupPostsAppMocks = async () => {
     const mockGetPost = vi.mocked(await import('@tryghost/admin-x-framework/api/posts')).getPost;
     const mockUseNewsletterStatsByNewsletterId = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).useNewsletterStatsByNewsletterId;
+    const mockUseNewsletterBasicStats = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).useNewsletterBasicStats;
+    const mockUseNewsletterClickStats = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).useNewsletterClickStats;
     const mockUsePostReferrers = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).usePostReferrers;
     const mockUsePostGrowthStats = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).usePostGrowthStats;
     const mockUseMrrHistory = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).useMrrHistory;
@@ -113,6 +115,8 @@ export const setupPostsAppMocks = async () => {
     // Set up ALL mocks with sensible defaults using centralized fixtures
     mockApiHook<PostsResponseType>(mockGetPost, defaultMockData.postsResponse);
     mockApiHook<NewsletterStatsResponseType>(mockUseNewsletterStatsByNewsletterId, responseFixtures.newsletterStats);
+    mockApiHook<NewsletterStatsResponseType>(mockUseNewsletterBasicStats, responseFixtures.newsletterStats);
+    mockApiHook<NewsletterStatsResponseType>(mockUseNewsletterClickStats, responseFixtures.newsletterStats);
     mockApiHook<PostReferrersResponseType>(mockUsePostReferrers, responseFixtures.postReferrers);
     mockApiHook<PostGrowthStatsResponseType>(mockUsePostGrowthStats, defaultMockData.growthStats);
     mockApiHook<MrrHistoryResponseType>(mockUseMrrHistory, responseFixtures.mrrHistory);
@@ -123,6 +127,8 @@ export const setupPostsAppMocks = async () => {
     return {
         mockGetPost,
         mockUseNewsletterStatsByNewsletterId,
+        mockUseNewsletterBasicStats,
+        mockUseNewsletterClickStats,
         mockUsePostReferrers,
         mockUsePostGrowthStats,
         mockUseMrrHistory,

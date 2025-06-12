@@ -155,12 +155,15 @@ module.exports = function apiRoutes() {
     router.get('/stats/subscriptions', mw.authAdminApi, http(api.stats.subscriptions));
     router.get('/stats/referrers/posts/:id', mw.authAdminApi, http(api.stats.postReferrers));
     router.get('/stats/referrers', mw.authAdminApi, http(api.stats.referrersHistory));
+    router.get('/stats/referrers-growth', mw.authAdminApi, http(api.stats.referrersHistoryWithRange));
     if (labs.isSet('trafficAnalytics')) {
         router.get('/stats/latest-post', mw.authAdminApi, http(api.stats.latestPost));
         router.get('/stats/top-posts', mw.authAdminApi, http(api.stats.topPosts));
         router.get('/stats/top-posts-views', mw.authAdminApi, http(api.stats.topPostsViews));
         router.get('/stats/top-content', mw.authAdminApi, http(api.stats.topContent));
         router.get('/stats/newsletter-stats', mw.authAdminApi, http(api.stats.newsletterStats));
+        router.get('/stats/newsletter-basic-stats', mw.authAdminApi, http(api.stats.newsletterBasicStats));
+        router.get('/stats/newsletter-click-stats', mw.authAdminApi, http(api.stats.newsletterClickStats));
         router.get('/stats/subscriber-count', mw.authAdminApi, http(api.stats.subscriberCount));
         router.get('/stats/posts/:id/top-referrers', mw.authAdminApi, http(api.stats.postReferrersAlpha));
         router.get('/stats/posts/:id/growth', mw.authAdminApi, http(api.stats.postGrowthStats));

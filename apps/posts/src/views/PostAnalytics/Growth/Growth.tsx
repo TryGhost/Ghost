@@ -3,7 +3,7 @@ import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import React from 'react';
 import SourcesCard from '../components/SourcesCard';
-import {BarChartLoadingIndicator, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, formatNumber} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Skeleton, SkeletonTable, formatNumber} from '@tryghost/shade';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useParams} from '@tryghost/admin-x-framework';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
@@ -32,8 +32,28 @@ const Growth: React.FC<postAnalyticsProps> = () => {
             <PostAnalyticsHeader currentTab='Growth' />
             <PostAnalyticsContent>
                 {isLoading ?
-                    <div className='flex size-full grow items-center justify-center'>
-                        <BarChartLoadingIndicator />
+                    <div className='flex flex-col items-stretch gap-6'>
+                        <Card>
+                            <CardContent className='grid grid-cols-3 p-0'>
+                                {Array.from({length: 3}, (_, i) => (
+                                    <div key={i} className='h-[98px] gap-1 border-r px-6 py-5 last:border-r-0'>
+                                        <Skeleton className='w-2/3' />
+                                        <Skeleton className='h-7 w-12' />
+                                    </div>
+                                ))}
+
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Top sources</CardTitle>
+                                <CardDescription>Where did your growth come from?</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <Separator />
+                                <SkeletonTable className='pt-6' />
+                            </CardContent>
+                        </Card>
                     </div>
                     :
                     <div className='flex flex-col items-stretch gap-6'>

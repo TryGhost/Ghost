@@ -3,12 +3,12 @@ import Feedback from './components/Feedback';
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, Tabs, TabsContent, calculateYAxisWidth, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {getLinkById} from '@src/utils/link-helpers';
 import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useEditLinks} from '@src/hooks/useEditLinks';
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 
 interface postAnalyticsProps {}
@@ -163,8 +163,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid,status',
-            include: 'email'
+            include: 'email,count.positive_feedback,count.negative_feedback'
         }
     });
 
@@ -181,6 +180,27 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId || '');
     const {editLinks} = useEditLinks();
+
+    // Calculate feedback stats from the post data
+    const feedbackStats = useMemo(() => {
+        if (!typedPost?.count) {
+            return {
+                positiveFeedback: 0,
+                negativeFeedback: 0,
+                totalFeedback: 0
+            };
+        }
+
+        const positiveFeedback = typedPost.count.positive_feedback || 0;
+        const negativeFeedback = typedPost.count.negative_feedback || 0;
+        const totalFeedback = positiveFeedback + negativeFeedback;
+
+        return {
+            positiveFeedback,
+            negativeFeedback,
+            totalFeedback
+        };
+    }, [typedPost]);
 
     const handleEdit = (linkId: string) => {
         const link = getLinkById(topLinks, linkId);
@@ -251,24 +271,6 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         }
     }, [editingLinkId, editedUrl, topLinks]);
 
-    const barDomain = [0, 1];
-    const barTicks = [0, 0.25, 0.5, 0.75, 1];
-    const barChartData = [
-        // {metric: 'Sent', current: 1, average: 1},
-        {metric: 'Opened', current: stats.openedRate, average: averageStats.openedRate},
-        {metric: 'Clicked', current: stats.clickedRate, average: averageStats.clickedRate}
-    ];
-    const barChartConfig = {
-        current: {
-            label: 'This newsletter',
-            color: 'hsl(var(--chart-blue))'
-        },
-        average: {
-            label: 'Average',
-            color: 'hsl(var(--chart-gray))'
-        }
-    } satisfies ChartConfig;
-
     const isLoading = isNewsletterStatsLoading || isPostLoading;
 
     // "Sent" Chart
@@ -328,17 +330,18 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         <>
             <PostAnalyticsHeader currentTab='Newsletter' />
             <PostAnalyticsContent>
-                {isLoading ?
-                    <div className='flex size-full grow items-center justify-center'>
-                        <BarChartLoadingIndicator />
-                    </div>
-                    :
-                    <div className='grid grid-cols-2 gap-8'>
-                        <Card className='col-span-2'>
-                            <CardHeader className='hidden'>
-                                <CardTitle>Newsletters</CardTitle>
-                                <CardDescription>How did this post perform</CardDescription>
-                            </CardHeader>
+
+                <div className='grid grid-cols-2 gap-8'>
+                    <Card className='col-span-2'>
+                        <CardHeader className='hidden'>
+                            <CardTitle>Newsletters</CardTitle>
+                            <CardDescription>How did this post perform</CardDescription>
+                        </CardHeader>
+                        {isLoading ?
+                            <CardContent className='h-[25vw] p-6'>
+                                <BarChartLoadingIndicator />
+                            </CardContent>
+                            :
                             <CardContent className='p-0'>
                                 <div className='grid grid-cols-3 items-stretch border-b'>
                                     <KpiCard className='relative grow'>
@@ -346,7 +349,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         <KpiCardLabel>
                                             <div className='ml-0.5 size-[9px] rounded-full bg-chart-purple opacity-50'></div>
                                             {/* <LucideIcon.Send strokeWidth={1.5} /> */}
-                                            Sent
+                                    Sent
                                         </KpiCardLabel>
                                         <KpiCardContent>
                                             <KpiCardValue>{formatNumber(stats.sent)}</KpiCardValue>
@@ -357,7 +360,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         <KpiCardLabel>
                                             <div className='ml-0.5 size-[9px] rounded-full bg-chart-blue opacity-50'></div>
                                             {/* <LucideIcon.Eye strokeWidth={1.5} /> */}
-                                            Opened
+                                    Opened
                                         </KpiCardLabel>
                                         <KpiCardContent>
                                             <KpiCardValue>{formatNumber(stats.opened)}</KpiCardValue>
@@ -367,141 +370,55 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         <KpiCardLabel>
                                             <div className='ml-0.5 size-[9px] rounded-full bg-chart-teal opacity-50'></div>
                                             {/* <LucideIcon.MousePointer strokeWidth={1.5} /> */}
-                                            Clicked
+                                    Clicked
                                         </KpiCardLabel>
                                         <KpiCardContent>
                                             <KpiCardValue>{formatNumber(stats.clicked)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
                                 </div>
-                                <Tabs className="relative" defaultValue="radial">
-                                    {/* <TabsList className="absolute right-3 top-3 grid grid-cols-2">
-                                        <TabsTrigger value="radial"><LucideIcon.LoaderCircle /></TabsTrigger>
-                                        <TabsTrigger value="bar"><LucideIcon.ChartNoAxesColumnDecreasing /></TabsTrigger>
-                                    </TabsList> */}
-                                    <TabsContent value="radial">
-                                        <div className='mx-auto grid grid-cols-3 items-center justify-center'>
-                                            <div className='relative border-r px-6'>
-                                                <NewsletterRadialChart
-                                                    config={sentChartConfig}
-                                                    data={sentChartData}
-                                                    percentageLabel='Sent'
-                                                    percentageValue={1}
-                                                />
-                                                <FunnelArrow />
-                                            </div>
-                                            <div className='relative border-r px-6'>
-                                                <NewsletterRadialChart
-                                                    config={openedChartConfig}
-                                                    data={openedChartData}
-                                                    percentageLabel='Open rate'
-                                                    percentageValue={stats.openedRate}
-                                                />
-                                                <FunnelArrow />
-                                            </div>
-                                            <div className='px-6'>
-                                                <NewsletterRadialChart
-                                                    config={clickedChartConfig}
-                                                    data={clickedChartData}
-                                                    percentageLabel='Click rate'
-                                                    percentageValue={stats.clickedRate}
-                                                />
-                                            </div>
-                                        </div>
-                                    </TabsContent>
-                                    <TabsContent value="bar">
-                                        <div>
-                                            <ChartContainer className='max-h-[380px] w-full pb-6 pt-14' config={barChartConfig}>
-                                                <Recharts.BarChart barCategoryGap={24} data={barChartData}>
-                                                    <Recharts.CartesianGrid vertical={false} />
-                                                    <Recharts.YAxis
-                                                        axisLine={false}
-                                                        domain={barDomain}
-                                                        tickFormatter={value => formatPercentage(value)}
-                                                        tickLine={false}
-                                                        ticks={barTicks}
-                                                        width={calculateYAxisWidth(barTicks, (value: number) => formatPercentage(value))}
-                                                    />
-                                                    <Recharts.XAxis
-                                                        axisLine={false}
-                                                        dataKey="metric"
-                                                        tickFormatter={value => (value)}
-                                                        tickLine={false}
-                                                        tickMargin={10}
-                                                    />
-                                                    <ChartTooltip
-                                                        content={
-                                                            <ChartTooltipContent
-                                                                className="text-muted-foreground"
-                                                                formatter={(value, name, props) => {
-                                                                    const metric = props.payload.metric;
-                                                                    const color = (name === 'average' ?
-                                                                        'hsl(var(--chart-gray))'
-                                                                        :
-                                                                        metric === 'Sent' ? 'hsl(var(--chart-purple))' :
-                                                                            metric === 'Opened' ? 'hsl(var(--chart-blue))' :
-                                                                                metric === 'Clicked' ? 'hsl(var(--chart-green))' :
-                                                                                    'hsl(var(--chart-blue))'
-                                                                    );
-
-                                                                    return (
-                                                                        <>
-                                                                            <div
-                                                                                className="size-2.5 shrink-0 rounded-[2px]"
-                                                                                style={{backgroundColor: color}}
-                                                                            />
-                                                                            {barChartConfig[name as keyof typeof barChartConfig]?.label || name}
-                                                                            <div className="ml-auto flex items-baseline gap-0.5 pl-2 font-mono font-medium tabular-nums text-foreground">
-                                                                                {formatPercentage(value)}
-                                                                            </div>
-                                                                        </>
-                                                                    );
-                                                                }}
-                                                                hideLabel
-                                                            />
-                                                        }
-                                                        cursor={false}
-                                                    />
-                                                    <Recharts.Bar
-                                                        barSize={48}
-                                                        dataKey="current"
-                                                        fill="hsl(var(--chart-blue))"
-                                                        minPointSize={2}
-                                                        radius={0}
-                                                    >
-                                                        {barChartData.map(entry => (
-                                                            <Recharts.Cell
-                                                                key={`cell-${entry.metric}`}
-                                                                fill={
-                                                                    entry.metric === 'Sent' ? 'hsl(var(--chart-purple))' :
-                                                                        entry.metric === 'Opened' ? 'hsl(var(--chart-blue))' :
-                                                                            entry.metric === 'Clicked' ? 'hsl(var(--chart-green))' :
-                                                                                'hsl(var(--chart-blue))'
-                                                                }
-                                                            />
-                                                        ))}
-                                                    </Recharts.Bar>
-                                                    <Recharts.Bar
-                                                        barSize={48}
-                                                        dataKey="average"
-                                                        fill="var(--color-average)"
-                                                        minPointSize={2}
-                                                        radius={0}
-                                                    />
-                                                    {/* <ChartLegend content={<ChartLegendContent />} /> */}
-                                                </Recharts.BarChart>
-                                            </ChartContainer>
-                                        </div>
-                                    </TabsContent>
-                                </Tabs>
+                                <div className='mx-auto grid grid-cols-3 items-center justify-center'>
+                                    <div className='relative border-r px-6'>
+                                        <NewsletterRadialChart
+                                            config={sentChartConfig}
+                                            data={sentChartData}
+                                            percentageLabel='Sent'
+                                            percentageValue={1}
+                                        />
+                                        <FunnelArrow />
+                                    </div>
+                                    <div className='relative border-r px-6'>
+                                        <NewsletterRadialChart
+                                            config={openedChartConfig}
+                                            data={openedChartData}
+                                            percentageLabel='Open rate'
+                                            percentageValue={stats.openedRate}
+                                        />
+                                        <FunnelArrow />
+                                    </div>
+                                    <div className='px-6'>
+                                        <NewsletterRadialChart
+                                            config={clickedChartConfig}
+                                            data={clickedChartData}
+                                            percentageLabel='Click rate'
+                                            percentageValue={stats.clickedRate}
+                                        />
+                                    </div>
+                                </div>
                             </CardContent>
-                        </Card>
-                        <Feedback />
-                        <Card>
-                            <CardHeader className='pb-3'>
-                                <CardTitle>Newsletter clicks</CardTitle>
-                                <CardDescription>Which links resonated with your readers</CardDescription>
-                            </CardHeader>
+                        }
+                    </Card>
+                    <Feedback feedbackStats={feedbackStats} />
+                    <Card>
+                        <CardHeader className='pb-3'>
+                            <CardTitle>Newsletter clicks</CardTitle>
+                            <CardDescription>Which links resonated with your readers</CardDescription>
+                        </CardHeader>
+                        {isLoading ?
+                            <CardContent className='p-6'>
+                                <SkeletonTable />
+                            </CardContent>
+                            :
                             <CardContent className='pb-0'>
                                 {topLinks.length > 0
                                     ?
@@ -534,7 +451,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                             size='sm'
                                                                             onClick={handleUpdate}
                                                                         >
-                                                                            Update
+                                                                        Update
                                                                         </Button>
                                                                     </div>
                                                                 ) : (
@@ -573,11 +490,13 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     </>
                                     :
                                     <div className='py-20 text-center text-sm text-gray-700'>
-                                    You have no links in your post.
+                                You have no links in your post.
                                     </div>
                                 }
                             </CardContent>
-                            {topLinks.length > 1 &&
+                        }
+
+                        {!isLoading && topLinks.length > 1 &&
                                 <CardFooter>
                                     <div className='flex w-full items-start justify-between gap-3'>
                                         <div className='mt-1 flex items-start gap-2 pl-4 text-sm text-green'>
@@ -590,20 +509,21 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                     <SimplePaginationPreviousButton
                                                         disabled={!hasPreviousPage}
                                                         onClick={previousPage}
+                                                        // size='default'
                                                     />
                                                     <SimplePaginationNextButton
                                                         disabled={!hasNextPage}
                                                         onClick={nextPage}
+                                                        // size='default'
                                                     />
                                                 </SimplePaginationNavigation>
                                             </SimplePagination>
                                         )}
                                     </div>
                                 </CardFooter>
-                            }
-                        </Card>
-                    </div>
-                }
+                        }
+                    </Card>
+                </div>
             </PostAnalyticsContent>
         </>
     );
