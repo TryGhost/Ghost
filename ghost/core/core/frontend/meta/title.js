@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const settingsCache = require('../../shared/settings-cache');
+const {t} = require('../../server/services/i18n');
 
 function optionalString(test, string) {
     if (test) {
@@ -20,7 +21,11 @@ function getTitle(data, root, options = {}) {
     let pageString = '';
 
     if (pagination && pagination.total > 1) {
-        pageString = _.has(options.hash, 'page') ? options.hash.page.replace('%', pagination.page) : ' (Page ' + pagination.page + ')';
+        const paginatingPage = t(`Page {page}`, {
+            page: pagination.page,
+            interpolation: {escapeValue: false}
+        });
+        pageString = _.has(options.hash, 'page') ? options.hash.page.replace('%', pagination.page) : ' (' + paginatingPage + ')';
     }
 
     const dashSiteTitle = optionalString(siteTitle, ' - ' + siteTitle);

@@ -169,6 +169,7 @@
     "Once resubscribed, if you still don't see emails in your inbox, check your spam folder. Some inbox providers keep a record of previous spam complaints and will continue to flag emails. If this happens, mark the latest newsletter as 'Not spam' to move it back to your primary inbox.": "A paragraph in the email suppression FAQ",
     "One hour ago": "Time a comment was placed",
     "One min ago": "Time since a comment was made",
+    "Page {page}": "",
     "Permanent failure (bounce)": "A section title in the email suppression FAQ",
     "Phone number": "Label for phone number input",
     "Plan": "Label for the default subscription plan",
