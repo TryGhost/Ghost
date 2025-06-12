@@ -46,7 +46,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                             <TableRow key={i} className='border-none hover:bg-transparent'>
                                 <TableCell className='group-hover:bg-transparent'>
                                     <div className='flex w-full items-center gap-4'>
-                                        <Skeleton className='aspect-[4/3] w-20 rounded-md' />
+                                        <Skeleton className='aspect-[16/10] w-20 rounded-sm' />
                                         <div className='flex w-full flex-col'>
                                             <Skeleton className='w-2/3' />
                                             <Skeleton className='w-20' />
@@ -67,7 +67,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                     <TableCell>
                                         <div className='flex items-center gap-4'>
                                             {post.feature_image ?
-                                                <div className='aspect-[4/3] w-20 shrink-0 rounded-md bg-cover bg-center' style={{
+                                                <div className='aspect-[16/10] w-20 shrink-0 rounded-sm bg-cover bg-center' style={{
                                                     backgroundImage: `url(${post.feature_image})`
                                                 }}></div>
                                                 :
