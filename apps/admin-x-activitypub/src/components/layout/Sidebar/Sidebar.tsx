@@ -9,7 +9,7 @@ import {Button, Dialog, DialogContent, DialogTrigger, LucideIcon} from '@tryghos
 import {useFeatureFlags} from '@src/lib/feature-flags';
 
 const Sidebar: React.FC = () => {
-    const {allFlags, flags} = useFeatureFlags();
+    const {allFlags, flags, isEnabled} = useFeatureFlags();
     const [isSearchOpen, setIsSearchOpen] = React.useState(false);
     const [searchQuery, setSearchQuery] = React.useState('');
 
@@ -36,7 +36,7 @@ const Sidebar: React.FC = () => {
                             <LucideIcon.Hash size={18} strokeWidth={1.5} />
                             Feed
                         </SidebarMenuLink>
-                        <SidebarMenuLink to='/notifications'>
+                        <SidebarMenuLink count={isEnabled('notification') ? 5 : undefined} to='/notifications'>
                             <LucideIcon.Bell size={18} strokeWidth={1.5} />
                             Notifications
                         </SidebarMenuLink>

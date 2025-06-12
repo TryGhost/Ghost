@@ -53,7 +53,8 @@ const PRIVATE_FEATURES = [
     'trafficAnalyticsAlpha',
     'updatedMainNav',
     'contentVisibilityAlpha',
-    'explore'
+    'explore',
+    'apNotification'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
