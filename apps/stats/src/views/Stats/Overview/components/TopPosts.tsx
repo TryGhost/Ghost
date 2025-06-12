@@ -71,7 +71,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                     backgroundImage: `url(${post.feature_image})`
                                                 }}></div>
                                                 :
-                                                <FeatureImagePlaceholder className='aspect-[4/3] w-20 shrink-0' />
+                                                <FeatureImagePlaceholder className='aspect-[16/10] h-[50px] w-20 shrink-0' />
                                             }
                                             <div className='flex flex-col'>
                                                 <span className='font-semibold leading-[1.35em]'>{post.title}</span>
