@@ -244,7 +244,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                 </div>
                 <CardContent>
                     <Separator />
-                    <div>
+                    <div className='pt-3'>
                         <Table>
                             {topLinks.length > 0
                                 ?
