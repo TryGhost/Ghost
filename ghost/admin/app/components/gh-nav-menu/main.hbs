@@ -54,8 +54,12 @@
             {{else}}
                 <ul class="gh-nav-list gh-nav-main">
                     {{#if (and (feature "ActivityPub") this.session.user.isAdmin)}}
-                        <li>
-                            <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "house"}}Home</LinkTo>
+                        <li class="relative gh-nav-list-ap">
+                            <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "house"}}Home
+                                {{#if (feature "apNotification")}}
+                                    <span class="gh-nav-member-count">5</span>
+                                {{/if}}
+                            </LinkTo>
                         </li>
                     {{/if}}
                     {{#if (gh-user-can-admin this.session.user)}}
