@@ -138,7 +138,7 @@ const DataListItemContent = React.forwardRef<HTMLDivElement, DataListItemContent
     return (
         <div
             ref={ref}
-            className={cn('text-sm px-1.5 font-medium relative z-10 flex min-w-0 max-w-[calc(100%-32px)] items-center py-1.5 transition-[max-width] duration-300 ease-in-out group-hover/datalist:max-w-[calc(100%-100px)]', className)}
+            className={cn('text-sm p-2 font-medium relative z-10 flex min-w-0 max-w-[calc(100%-32px)] items-center transition-[max-width] duration-300 ease-in-out group-hover/datalist:max-w-[calc(100%-100px)]', className)}
             {...props}
         >
             {children}

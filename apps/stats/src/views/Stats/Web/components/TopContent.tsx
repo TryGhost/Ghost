@@ -1,4 +1,4 @@
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceQueryParam} from '../../components/AudienceSelect';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -36,9 +36,10 @@ interface TopContentTableProps {
     data: UnifiedContentData[] | null;
     range: number;
     contentType: ContentType;
+    tableHeader: boolean;
 }
 
-const TopContentTable: React.FC<TopContentTableProps> = ({data, contentType}) => {
+const TopContentTable: React.FC<TopContentTableProps> = ({tableHeader = false, data, contentType}) => {
     const navigate = useNavigate();
 
     const getTableHeader = () => {
@@ -54,10 +55,12 @@ const TopContentTable: React.FC<TopContentTableProps> = ({data, contentType}) =>
 
     return (
         <DataList>
-            <DataListHeader>
-                <DataListHead>{getTableHeader()}</DataListHead>
-                <DataListHead>Visitors</DataListHead>
-            </DataListHeader>
+            {tableHeader &&
+                <DataListHeader>
+                    <DataListHead>{getTableHeader()}</DataListHead>
+                    <DataListHead>Visitors</DataListHead>
+                </DataListHeader>
+            }
             <DataListBody>
                 {data?.map((row: UnifiedContentData) => {
                     // Only make posts clickable (not pages), since there's no analytics route for pages
@@ -199,16 +202,16 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
 
     return (
         <Card className='group/datalist'>
-            <div className='flex items-start justify-between'>
-                <CardHeader className='relative'>
-                    <CardTitle>{getContentTitle()}</CardTitle>
-                    <CardDescription>{getContentDescription()}</CardDescription>
-                </CardHeader>
+            <CardHeader>
+                <CardTitle>{getContentTitle()}</CardTitle>
+                <CardDescription>{getContentDescription()}</CardDescription>
+            </CardHeader>
+            <div className='flex items-center justify-between px-6 pb-3 pt-0'>
                 <DropdownMenu>
-                    <DropdownMenuTrigger className='mr-6 mt-6' asChild>
-                        <Button variant="dropdown">{getContentTypeLabel()}</Button>
+                    <DropdownMenuTrigger asChild>
+                        <Button size='sm' variant="dropdown">{getContentTypeLabel()}</Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align='end'>
+                    <DropdownMenuContent align='start'>
                         {CONTENT_TYPE_OPTIONS.map(option => (
                             <DropdownMenuItem
                                 key={option.value}
@@ -219,6 +222,7 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                         ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
+                <HTable className='mr-2'>Visitors</HTable>
             </div>
             <CardContent>
                 <Separator />
@@ -226,6 +230,7 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                     contentType={selectedContentType}
                     data={topContent}
                     range={range}
+                    tableHeader={false}
                 />
             </CardContent>
             {transformedData && transformedData.length > 10 &&
@@ -244,6 +249,7 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                                     contentType={selectedContentType}
                                     data={transformedData}
                                     range={range}
+                                    tableHeader={true}
                                 />
                             </div>
                         </SheetContent>
