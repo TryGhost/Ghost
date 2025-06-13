@@ -56,11 +56,11 @@
                     {{#if (and (feature "ActivityPub") this.session.user.isAdmin)}}
                         <li class="relative gh-nav-list-ap">
                             <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "house"}}Home
-                                {{#if (and (feature "apNotification") (not this.notificationsCount.isLoading))}}
+                                {{#unless this.notificationsCount.isLoading}}
                                     {{#if (gt this.notificationsCount.count 0)}}
                                         <span class="gh-nav-member-count">{{format-number this.notificationsCount.count}}</span>
                                     {{/if}}
-                                {{/if}}
+                                {{/unless}}
                             </LinkTo>
                         </li>
                     {{/if}}
