@@ -175,20 +175,6 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
         }
     };
 
-    if (isLoading) {
-        return (
-            <Card className='group/datalist'>
-                <CardHeader>
-                    <CardTitle>{getContentTitle()}</CardTitle>
-                    <CardDescription>{getContentDescription()}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <SkeletonTable lines={5} />
-                </CardContent>
-            </Card>
-        );
-    }
-
     return (
         <Card className='group/datalist'>
             <CardHeader>
@@ -209,12 +195,16 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
             </div>
             <CardContent>
                 <Separator />
-                <TopContentTable
-                    contentType={selectedContentType}
-                    data={topContent}
-                    range={range}
-                    tableHeader={false}
-                />
+                {isLoading ?
+                    <SkeletonTable className='mt-3' / >
+                    :
+                    <TopContentTable
+                        contentType={selectedContentType}
+                        data={topContent}
+                        range={range}
+                        tableHeader={false}
+                    />
+                }
             </CardContent>
             {transformedData && transformedData.length > 10 &&
                 <CardFooter>
