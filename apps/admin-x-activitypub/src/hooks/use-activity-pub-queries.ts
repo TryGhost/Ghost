@@ -64,12 +64,6 @@ const QUERY_KEYS = {
     searchResults: (query: string) => ['search_results', query],
     suggestedProfiles: (handle: string, limit: number) => ['suggested_profiles', handle, limit],
     exploreProfiles: (handle: string) => ['explore_profiles', handle],
-    thread: (id: string | null) => {
-        if (id === null) {
-            return ['thread'];
-        }
-        return ['thread', id];
-    },
     replyChain: (id: string | null) => {
         if (id === null) {
             return ['reply_chain'];
@@ -82,44 +76,26 @@ const QUERY_KEYS = {
     postsLikedByAccount: ['account_liked_posts'],
     notifications: (handle: string) => ['notifications', handle],
     blockedAccounts: (handle: string) => ['blocked_accounts', handle],
-    blockedDomains: (handle: string) => ['blocked_domains', handle],
-    post: (id: string) => ['post', id]
+    blockedDomains: (handle: string) => ['blocked_domains', handle]
 };
 
-function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: string, liked: boolean) {
-    queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
-        if (current === undefined) {
-            return current;
-        }
+function updateLikeCache(queryClient: QueryClient, handle: string, id: string, liked: boolean) {
+    const queryKeys = [
+        QUERY_KEYS.feed,
+        QUERY_KEYS.inbox,
+        QUERY_KEYS.postsLikedByAccount,
+        QUERY_KEYS.profilePosts('index')
+    ];
 
-        return {
-            ...current,
-            pages: current.pages.map((page: {posts: Activity[]}) => {
-                return {
-                    ...page,
-                    posts: page.posts.map((item: Activity) => {
-                        if (item.object.id === id) {
-                            return {
-                                ...item,
-                                object: {
-                                    ...item.object,
-                                    liked: liked,
-                                    likeCount: Math.max(liked ? (item.object.likeCount || 0) + 1 : (item.object.likeCount || 0) - 1, 0)
-                                }
-                            };
-                        }
+    // Add handle-specific profile posts if different from index
+    if (handle !== 'index') {
+        queryKeys.push(QUERY_KEYS.profilePosts(handle));
+    }
 
-                        return item;
-                    })
-                };
-            })
-        };
-    });
-
-    // For the likes tab, add/remove the post
-    if (queryKey === QUERY_KEYS.postsLikedByAccount) {
+    for (const queryKey of queryKeys) {
+        // Handle paginated caches (feed, inbox, etc.)
         queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
-            if (!current) {
+            if (current === undefined) {
                 return current;
             }
 
@@ -128,21 +104,100 @@ function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: stri
                 pages: current.pages.map((page: {posts: Activity[]}) => {
                     return {
                         ...page,
-                        posts: liked
-                            // If liking, keep the post (it will be added via refetch)
-                            ? page.posts
-                            // If unliking, remove the post
-                            : page.posts.filter(item => item.object.id !== id)
+                        posts: page.posts.map((item: Activity) => {
+                            if (item.object.id === id) {
+                                return {
+                                    ...item,
+                                    object: {
+                                        ...item.object,
+                                        liked: liked,
+                                        likeCount: Math.max(liked ? (item.object.likeCount || 0) + 1 : (item.object.likeCount || 0) - 1, 0)
+                                    }
+                                };
+                            }
+
+                            return item;
+                        })
                     };
                 })
             };
         });
 
-        // Invalidate the likes tab query to refetch and get the new post when liking
-        if (liked) {
-            queryClient.invalidateQueries({queryKey: QUERY_KEYS.postsLikedByAccount});
+        // For the likes tab, add/remove the post
+        if (queryKey === QUERY_KEYS.postsLikedByAccount) {
+            queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+                if (!current) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {posts: Activity[]}) => {
+                        return {
+                            ...page,
+                            posts: liked
+                                // If liking, keep the post (it will be added via refetch)
+                                ? page.posts
+                                // If unliking, remove the post
+                                : page.posts.filter(item => item.object.id !== id)
+                        };
+                    })
+                };
+            });
+
+            // Invalidate the likes tab query to refetch and get the new post when liking
+            if (liked) {
+                queryClient.invalidateQueries({queryKey: QUERY_KEYS.postsLikedByAccount});
+            }
         }
     }
+}
+
+// Update non-paginated caches (should only be called once per mutation)
+function updateLikeCacheOnce(queryClient: QueryClient, id: string, liked: boolean) {
+    // Handle reply chain cache (used by Note.tsx and Reader.tsx)
+    const replyChainQueryKey = QUERY_KEYS.replyChain(null);
+    queryClient.setQueriesData(replyChainQueryKey, (current?: ReplyChainResponse) => {
+        if (!current) {
+            return current;
+        }
+
+        const updatePost = (post: Post) => {
+            if (post.id === id) {
+                return {
+                    ...post,
+                    likedByMe: liked,
+                    likeCount: Math.max(liked ? (post.likeCount || 0) + 1 : (post.likeCount || 0) - 1, 0)
+                };
+            }
+            return post;
+        };
+
+        return {
+            ...current,
+            post: updatePost(current.post),
+            ancestors: {
+                ...current.ancestors,
+                chain: current.ancestors.chain.map(updatePost)
+            },
+            children: current.children.map(child => ({
+                ...child,
+                post: updatePost(child.post),
+                chain: child.chain.map(updatePost)
+            }))
+        };
+    });
+
+    // Handle account liked count
+    queryClient.setQueryData(QUERY_KEYS.account('index'), (currentAccount?: Account) => {
+        if (!currentAccount) {
+            return currentAccount;
+        }
+        return {
+            ...currentAccount,
+            likedCount: Math.max(0, currentAccount.likedCount + (liked ? 1 : -1))
+        };
+    });
 }
 
 function updateNotificationsLikedCache(queryClient: QueryClient, handle: string, id: string, liked: boolean) {
@@ -282,7 +337,7 @@ function updateNotificationsReplyCountCache(queryClient: QueryClient, handle: st
     );
 }
 
-function updateReplyCountInCache(queryClient: QueryClient, id: string, delta: number) {
+function updateReplyCache(queryClient: QueryClient, id: string, delta: number) {
     const queryKeys = [
         QUERY_KEYS.feed,
         QUERY_KEYS.inbox,
@@ -316,27 +371,38 @@ function updateReplyCountInCache(queryClient: QueryClient, id: string, delta: nu
             };
         });
     }
+}
 
-    // Update thread cache
-    const threadQueryKey = QUERY_KEYS.thread(null);
-    queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
+function updateReplyCacheOnce(queryClient: QueryClient, id: string, delta: number) {
+    // Update reply chain cache (used by Note.tsx and Reader.tsx)
+    const replyChainQueryKey = QUERY_KEYS.replyChain(null);
+    queryClient.setQueriesData(replyChainQueryKey, (current?: ReplyChainResponse) => {
         if (!current) {
             return current;
         }
 
+        const updatePost = (post: Post) => {
+            if (post.id === id) {
+                return {
+                    ...post,
+                    replyCount: Math.max((post.replyCount || 0) + delta, 0)
+                };
+            }
+            return post;
+        };
+
         return {
-            posts: current.posts.map((activity) => {
-                if (activity.object.id === id) {
-                    return {
-                        ...activity,
-                        object: {
-                            ...activity.object,
-                            replyCount: Math.max((activity.object.replyCount ?? 0) + delta, 0)
-                        }
-                    };
-                }
-                return activity;
-            })
+            ...current,
+            post: updatePost(current.post),
+            ancestors: {
+                ...current.ancestors,
+                chain: current.ancestors.chain.map(updatePost)
+            },
+            children: current.children.map(child => ({
+                ...child,
+                post: updatePost(child.post),
+                chain: child.chain.map(updatePost)
+            }))
         };
     });
 }
@@ -384,182 +450,14 @@ export function useLikeMutationForUser(handle: string) {
             return api.like(id);
         },
         onMutate: (id) => {
-            updateLikedCache(queryClient, QUERY_KEYS.feed, id, true);
-            updateLikedCache(queryClient, QUERY_KEYS.inbox, id, true);
-            updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, true);
+            updateLikeCache(queryClient, handle, id, true);
+            updateLikeCacheOnce(queryClient, id, true);
             updateNotificationsLikedCache(queryClient, handle, id, true);
-
-            // Update all profile post caches (not just current user's)
-            const profilePostsQueryKey = QUERY_KEYS.profilePosts(null);
-            queryClient.setQueriesData(profilePostsQueryKey, (current?: {pages: {posts: Activity[]}[]}) => {
-                if (current === undefined) {
-                    return current;
-                }
-
-                return {
-                    ...current,
-                    pages: current.pages.map((page: {posts: Activity[]}) => {
-                        return {
-                            ...page,
-                            posts: page.posts.map((item: Activity) => {
-                                if (item.object.id === id) {
-                                    return {
-                                        ...item,
-                                        object: {
-                                            ...item.object,
-                                            liked: true,
-                                            likeCount: Math.max((item.object.likeCount || 0) + 1, 0)
-                                        }
-                                    };
-                                }
-
-                                return item;
-                            })
-                        };
-                    })
-                };
-            });
-
-            // Update the individual post cache (used by Reader)
-            const postQueryKey = QUERY_KEYS.post(id);
-            queryClient.setQueryData(postQueryKey, (current?: Activity) => {
-                if (!current || current.object.id !== id) {
-                    return current;
-                }
-
-                return {
-                    ...current,
-                    object: {
-                        ...current.object,
-                        liked: true,
-                        likeCount: Math.max((current.object.likeCount || 0) + 1, 0)
-                    }
-                };
-            });
-
-            // Update the thread cache (used by Note.tsx)
-            const threadQueryKey = QUERY_KEYS.thread(null);
-            queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
-                if (!current) {
-                    return current;
-                }
-
-                return {
-                    posts: current.posts.map((activity) => {
-                        if (activity.object.id === id) {
-                            return {
-                                ...activity,
-                                object: {
-                                    ...activity.object,
-                                    liked: true,
-                                    likeCount: Math.max((activity.object.likeCount || 0) + 1, 0)
-                                }
-                            };
-                        }
-                        return activity;
-                    })
-                };
-            });
-
-            // Update account liked count
-            queryClient.setQueryData(QUERY_KEYS.account('index'), (currentAccount?: Account) => {
-                if (!currentAccount) {
-                    return currentAccount;
-                }
-                return {
-                    ...currentAccount,
-                    likedCount: currentAccount.likedCount + 1
-                };
-            });
         },
         onError(error: {message: string, statusCode: number}, id) {
-            updateLikedCache(queryClient, QUERY_KEYS.feed, id, false);
-            updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
-            updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
+            updateLikeCache(queryClient, handle, id, false);
+            updateLikeCacheOnce(queryClient, id, false);
             updateNotificationsLikedCache(queryClient, handle, id, false);
-
-            // Revert all profile post caches (not just current user's)
-            const profilePostsQueryKey = QUERY_KEYS.profilePosts(null);
-            queryClient.setQueriesData(profilePostsQueryKey, (current?: {pages: {posts: Activity[]}[]}) => {
-                if (current === undefined) {
-                    return current;
-                }
-
-                return {
-                    ...current,
-                    pages: current.pages.map((page: {posts: Activity[]}) => {
-                        return {
-                            ...page,
-                            posts: page.posts.map((item: Activity) => {
-                                if (item.object.id === id) {
-                                    return {
-                                        ...item,
-                                        object: {
-                                            ...item.object,
-                                            liked: false,
-                                            likeCount: Math.max((item.object.likeCount || 0) - 1, 0)
-                                        }
-                                    };
-                                }
-
-                                return item;
-                            })
-                        };
-                    })
-                };
-            });
-
-            // Revert the individual post cache (used by Reader)
-            const postQueryKey = QUERY_KEYS.post(id);
-            queryClient.setQueryData(postQueryKey, (current?: Activity) => {
-                if (!current || current.object.id !== id) {
-                    return current;
-                }
-
-                return {
-                    ...current,
-                    object: {
-                        ...current.object,
-                        liked: false,
-                        likeCount: Math.max((current.object.likeCount || 0) - 1, 0)
-                    }
-                };
-            });
-
-            // Revert the thread cache (used by Note.tsx)
-            const threadQueryKey = QUERY_KEYS.thread(null);
-            queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
-                if (!current) {
-                    return current;
-                }
-
-                return {
-                    posts: current.posts.map((activity) => {
-                        if (activity.object.id === id) {
-                            return {
-                                ...activity,
-                                object: {
-                                    ...activity.object,
-                                    liked: false,
-                                    likeCount: Math.max((activity.object.likeCount || 0) - 1, 0)
-                                }
-                            };
-                        }
-                        return activity;
-                    })
-                };
-            });
-
-            // Update account liked count
-            queryClient.setQueryData(QUERY_KEYS.account('index'), (currentAccount?: Account) => {
-                if (!currentAccount) {
-                    return currentAccount;
-                }
-                return {
-                    ...currentAccount,
-                    likedCount: currentAccount.likedCount - 1
-                };
-            });
 
             if (error.statusCode === 403) {
                 toast.error('Action failed', {
@@ -581,93 +479,9 @@ export function useUnlikeMutationForUser(handle: string) {
             return api.unlike(id);
         },
         onMutate: (id) => {
-            updateLikedCache(queryClient, QUERY_KEYS.feed, id, false);
-            updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
-            updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
+            updateLikeCache(queryClient, handle, id, false);
+            updateLikeCacheOnce(queryClient, id, false);
             updateNotificationsLikedCache(queryClient, handle, id, false);
-
-            // Update all profile post caches (not just current user's)
-            const profilePostsQueryKey = QUERY_KEYS.profilePosts(null);
-            queryClient.setQueriesData(profilePostsQueryKey, (current?: {pages: {posts: Activity[]}[]}) => {
-                if (current === undefined) {
-                    return current;
-                }
-
-                return {
-                    ...current,
-                    pages: current.pages.map((page: {posts: Activity[]}) => {
-                        return {
-                            ...page,
-                            posts: page.posts.map((item: Activity) => {
-                                if (item.object.id === id) {
-                                    return {
-                                        ...item,
-                                        object: {
-                                            ...item.object,
-                                            liked: false,
-                                            likeCount: Math.max((item.object.likeCount || 0) - 1, 0)
-                                        }
-                                    };
-                                }
-
-                                return item;
-                            })
-                        };
-                    })
-                };
-            });
-
-            // Update the individual post cache (used by Reader)
-            const postQueryKey = QUERY_KEYS.post(id);
-            queryClient.setQueryData(postQueryKey, (current?: Activity) => {
-                if (!current || current.object.id !== id) {
-                    return current;
-                }
-
-                return {
-                    ...current,
-                    object: {
-                        ...current.object,
-                        liked: false,
-                        likeCount: Math.max((current.object.likeCount || 0) - 1, 0)
-                    }
-                };
-            });
-
-            // Update the thread cache (used by Note.tsx)
-            const threadQueryKey = QUERY_KEYS.thread(null);
-            queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
-                if (!current) {
-                    return current;
-                }
-
-                return {
-                    posts: current.posts.map((activity) => {
-                        if (activity.object.id === id) {
-                            return {
-                                ...activity,
-                                object: {
-                                    ...activity.object,
-                                    liked: false,
-                                    likeCount: Math.max((activity.object.likeCount || 0) - 1, 0)
-                                }
-                            };
-                        }
-                        return activity;
-                    })
-                };
-            });
-
-            // Update account liked count
-            queryClient.setQueryData(QUERY_KEYS.account(handle === 'me' ? 'index' : handle), (currentAccount?: Account) => {
-                if (!currentAccount) {
-                    return currentAccount;
-                }
-                return {
-                    ...currentAccount,
-                    likedCount: Math.max(0, currentAccount.likedCount - 1)
-                };
-            });
         }
     });
 }
@@ -792,33 +606,83 @@ export function useUnblockMutationForUser(handle: string) {
     });
 }
 
-function updateRepostCache(queryClient: QueryClient, queryKey: string[], id: string, reposted: boolean) {
-    queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
-        if (current === undefined) {
+function updateRepostCache(queryClient: QueryClient, handle: string, id: string, reposted: boolean) {
+    const queryKeys = [
+        QUERY_KEYS.feed,
+        QUERY_KEYS.inbox,
+        QUERY_KEYS.profilePosts('index')
+    ];
+
+    // Add handle-specific profile posts if different from index
+    if (handle !== 'index') {
+        queryKeys.push(QUERY_KEYS.profilePosts(handle));
+    }
+
+    for (const queryKey of queryKeys) {
+        // Handle paginated caches (feed, inbox, etc.)
+        queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+            if (current === undefined) {
+                return current;
+            }
+
+            return {
+                ...current,
+                pages: current.pages.map((page: {posts: Activity[]}) => {
+                    return {
+                        ...page,
+                        posts: page.posts.map((item: Activity) => {
+                            if (item.object.id === id) {
+                                return {
+                                    ...item,
+                                    object: {
+                                        ...item.object,
+                                        reposted: reposted,
+                                        repostCount: Math.max(reposted ? item.object.repostCount + 1 : item.object.repostCount - 1, 0)
+                                    }
+                                };
+                            }
+
+                            return item;
+                        })
+                    };
+                })
+            };
+        });
+    }
+}
+
+// Update non-paginated caches (should only be called once per mutation)
+function updateRepostCacheOnce(queryClient: QueryClient, id: string, reposted: boolean) {
+    // Handle reply chain cache (used by Note.tsx and Reader.tsx via useReplyChainForUser)
+    const replyChainQueryKey = QUERY_KEYS.replyChain(null);
+    queryClient.setQueriesData(replyChainQueryKey, (current?: ReplyChainResponse) => {
+        if (!current) {
             return current;
         }
 
+        const updatePost = (post: Post) => {
+            if (post.id === id) {
+                return {
+                    ...post,
+                    repostedByMe: reposted,
+                    repostCount: Math.max(reposted ? (post.repostCount || 0) + 1 : (post.repostCount || 0) - 1, 0)
+                };
+            }
+            return post;
+        };
+
         return {
             ...current,
-            pages: current.pages.map((page: {posts: Activity[]}) => {
-                return {
-                    ...page,
-                    posts: page.posts.map((item: Activity) => {
-                        if (item.object.id === id) {
-                            return {
-                                ...item,
-                                object: {
-                                    ...item.object,
-                                    reposted: reposted,
-                                    repostCount: Math.max(reposted ? item.object.repostCount + 1 : item.object.repostCount - 1, 0)
-                                }
-                            };
-                        }
-
-                        return item;
-                    })
-                };
-            })
+            post: updatePost(current.post),
+            ancestors: {
+                ...current.ancestors,
+                chain: current.ancestors.chain.map(updatePost)
+            },
+            children: current.children.map(child => ({
+                ...child,
+                post: updatePost(child.post),
+                chain: child.chain.map(updatePost)
+            }))
         };
     });
 }
@@ -834,13 +698,13 @@ export function useRepostMutationForUser(handle: string) {
             return api.repost(id);
         },
         onMutate: (id) => {
-            updateRepostCache(queryClient, QUERY_KEYS.feed, id, true);
-            updateRepostCache(queryClient, QUERY_KEYS.inbox, id, true);
+            updateRepostCache(queryClient, handle, id, true);
+            updateRepostCacheOnce(queryClient, id, true);
             updateNotificationsRepostCache(queryClient, handle, id, true);
         },
         onError(error: {message: string, statusCode: number}, id) {
-            updateRepostCache(queryClient, QUERY_KEYS.feed, id, false);
-            updateRepostCache(queryClient, QUERY_KEYS.inbox, id, false);
+            updateRepostCache(queryClient, handle, id, false);
+            updateRepostCacheOnce(queryClient, id, false);
             updateNotificationsRepostCache(queryClient, handle, id, false);
             if (error.statusCode === 403) {
                 toast.error('Action failed', {
@@ -862,8 +726,8 @@ export function useDerepostMutationForUser(handle: string) {
             return api.derepost(id);
         },
         onMutate: (id) => {
-            updateRepostCache(queryClient, QUERY_KEYS.feed, id, false);
-            updateRepostCache(queryClient, QUERY_KEYS.inbox, id, false);
+            updateRepostCache(queryClient, handle, id, false);
+            updateRepostCacheOnce(queryClient, id, false);
             updateNotificationsRepostCache(queryClient, handle, id, false);
         }
     });
@@ -1350,41 +1214,6 @@ function prependActivityToPaginatedCollection(
     });
 }
 
-function addActivityToCollection(
-    queryClient: QueryClient,
-    queryKey: string[],
-    collection: 'posts',
-    activity: Activity,
-    after?: string
-) {
-    queryClient.setQueryData(queryKey, (current: {
-        [key: string]: Activity[]
-    } | undefined) => {
-        if (!current) {
-            return current;
-        }
-
-        let afterIdx = 0;
-
-        if (after) {
-            afterIdx = current[collection].findIndex(item => item.id === after);
-
-            if (afterIdx === -1) {
-                return current;
-            }
-        }
-
-        return {
-            ...current,
-            [collection]: [
-                ...current[collection].slice(0, afterIdx + 1),
-                activity,
-                ...current[collection].slice(afterIdx + 1)
-            ]
-        };
-    });
-}
-
 function updateActivityInPaginatedCollection(
     queryClient: QueryClient,
     queryKey: string[],
@@ -1418,32 +1247,6 @@ function updateActivityInPaginatedCollection(
     });
 }
 
-function updateActivityInCollection(
-    queryClient: QueryClient,
-    queryKey: string[],
-    collection: 'posts',
-    id: string,
-    update: (activity: Activity) => Activity
-) {
-    queryClient.setQueryData(queryKey, (current: {
-        [key: string]: Activity[]
-    } | undefined) => {
-        if (!current) {
-            return current;
-        }
-
-        return {
-            ...current,
-            [collection]: current[collection].map((item: Activity) => {
-                if (item.id === id) {
-                    return update(item);
-                }
-                return item;
-            })
-        };
-    });
-}
-
 function removeActivityFromPaginatedCollection(
     queryClient: QueryClient,
     queryKey: string[],
@@ -1471,48 +1274,6 @@ function removeActivityFromPaginatedCollection(
     });
 }
 
-function removeActivityFromCollection(
-    queryClient: QueryClient,
-    queryKey: string[],
-    collection: 'posts',
-    id: string
-) {
-    queryClient.setQueryData(queryKey, (current: {
-        [key: string]: Activity[]
-    } | undefined) => {
-        if (!current) {
-            return current;
-        }
-
-        return {
-            ...current,
-            [collection]: current[collection].filter((item: Activity) => item.id !== id)
-        };
-    });
-}
-
-function prepareNewActivity(activity: Activity) {
-    return {
-        ...activity,
-        // Update the id of the activity to the id of the activity object
-        // as this is the id that will be used to perform actions on the
-        // activity (i.e like, delete, etc)
-        id: activity.object.id,
-        object: {
-            ...activity.object,
-            // Set the authored flag to true as we know this is an activity created
-            // by the user but the returned activity object does not have this
-            // flag set
-            authored: true,
-            // Set the URL property to be the id of the object as this is not
-            // included in the object returned from the API
-            url: activity.object.id,
-            // Set the replyCount property to 0 so that it can be incremented
-            replyCount: 0
-        }
-    };
-}
-
 export function useReplyMutationForUser(handle: string, actorProps?: ActorProperties) {
     const queryClient = useQueryClient();
 
@@ -1523,48 +1284,41 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
 
             return api.reply(inReplyTo, content, imageUrl);
         },
-        onMutate: ({inReplyTo, content, imageUrl}) => {
+        onMutate: ({inReplyTo}) => {
             if (!actorProps) {
                 throw new Error('Cannot create reply without actor props');
             }
 
-            const formattedContent = formatPendingActivityContent(content);
-
             const id = generatePendingActivityId();
-            const activity = generatePendingActivity(actorProps, id, formattedContent, imageUrl);
-
-            // Add pending activity to the thread after the inReplyTo post
-            addActivityToCollection(queryClient, QUERY_KEYS.thread(inReplyTo), 'posts', activity, inReplyTo);
 
             // Increment the reply count of the inReplyTo post in the feed
-            updateReplyCountInCache(queryClient, inReplyTo, 1);
+            updateReplyCache(queryClient, inReplyTo, 1);
+
+            // Update reply count in reply chain cache (for child replies)
+            updateReplyCacheOnce(queryClient, inReplyTo, 1);
 
             // Update reply count in notifications
             updateNotificationsReplyCountCache(queryClient, handle, inReplyTo, 1);
 
-            // We do not need to increment the reply count of the inReplyTo post
-            // in the thread as this is handled locally in the ArticleModal component
-
             return {id};
         },
-        onSuccess: (activity: Activity, variables, context) => {
+        onSuccess: (activity: Activity, variables) => {
             if (activity.id === undefined) {
                 throw new Error('Activity returned from API has no id');
             }
 
-            const preparedActivity = prepareNewActivity(activity);
-
-            updateActivityInCollection(queryClient, QUERY_KEYS.thread(variables.inReplyTo), 'posts', context?.id ?? '', () => preparedActivity);
+            // Invalidate reply chain cache to refetch with new reply
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.replyChain(variables.inReplyTo)});
         },
-        onError(error: {message: string, statusCode: number}, variables, context) {
+        onError(error: {message: string, statusCode: number}, variables) {
             // eslint-disable-next-line no-console
             console.error(error);
 
-            // Remove the pending activity from the thread
-            removeActivityFromCollection(queryClient, QUERY_KEYS.thread(variables.inReplyTo), 'posts', context?.id ?? '');
-
             // Decrement the reply count of the inReplyTo post in the feed
-            updateReplyCountInCache(queryClient, variables.inReplyTo, -1);
+            updateReplyCache(queryClient, variables.inReplyTo, -1);
+
+            // Update reply count in reply chain cache (for child replies)
+            updateReplyCacheOnce(queryClient, variables.inReplyTo, -1);
 
             // Update reply count in notifications
             updateNotificationsReplyCountCache(queryClient, handle, variables.inReplyTo, -1);
@@ -1888,34 +1642,6 @@ export function useDeleteMutationForUser(handle: string) {
                 };
             });
 
-            // Update the thread cache:
-            // - Remove the post from the thread
-            // - Decrement the reply count of the parent post if applicable
-            const threadQueryKey = QUERY_KEYS.thread(null);
-            const previousThreads = queryClient.getQueriesData<{posts: Activity[]}>(threadQueryKey);
-
-            queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
-                if (!current) {
-                    return current;
-                }
-
-                return {
-                    posts: current.posts.filter((activity: Activity) => activity.id !== id)
-                        .map((activity: Activity) => {
-                            if (activity.object.id === parentId) {
-                                return {
-                                    ...activity,
-                                    object: {
-                                        ...activity.object,
-                                        replyCount: activity.object.replyCount - 1
-                                    }
-                                };
-                            }
-                            return activity;
-                        })
-                };
-            });
-
             // Update reply count in notifications if this was a reply
             if (parentId) {
                 updateNotificationsReplyCountCache(queryClient, handle, parentId, -1);
@@ -2076,10 +1802,6 @@ export function useDeleteMutationForUser(handle: string) {
                     key: QUERY_KEYS.inbox,
                     data: previousInbox
                 },
-                previousThreads: {
-                    key: threadQueryKey,
-                    data: previousThreads
-                },
                 previousOutbox: {
                     key: outboxQueryKey,
                     data: previousOutbox
@@ -2113,7 +1835,7 @@ export function useDeleteMutationForUser(handle: string) {
 
             queryClient.setQueryData(context.previousFeed.key, context.previousFeed.data);
             queryClient.setQueryData(context.previousInbox.key, context.previousInbox.data);
-            queryClient.setQueriesData(context.previousThreads.key, context.previousThreads.data);
+
             queryClient.setQueryData(context.previousOutbox.key, context.previousOutbox.data);
             queryClient.setQueryData(context.previousLiked.key, context.previousLiked.data);
             queryClient.setQueriesData(context.previousProfilePosts.key, context.previousProfilePosts.data);
@@ -2148,45 +1870,32 @@ export function useNotificationsForUser(handle: string) {
 }
 
 export function useReplyChainForUser(handle: string, postApId: string | null) {
+    // Use React Query for the base data
+    const baseQuery = useQuery({
+        queryKey: QUERY_KEYS.replyChain(postApId),
+        enabled: !!postApId,
+        async queryFn() {
+            if (!postApId) {
+                throw new Error('Post ID is required');
+            }
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.getReplies(postApId);
+        }
+    });
+
+    // Local state for pagination (until full conversion)
     const [replyChain, setReplyChain] = useState<ReplyChainResponse | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
+    // Sync base query data with local state
     useEffect(() => {
-        if (!postApId) {
-            setIsLoading(false);
-            return;
+        if (baseQuery.data) {
+            setReplyChain(baseQuery.data);
+        } else if (baseQuery.error) {
+            setError(baseQuery.error as Error);
         }
-
-        let cancelled = false;
-
-        async function fetchReplyChain() {
-            try {
-                setIsLoading(true);
-                setError(null);
-
-                const siteUrl = await getSiteUrl();
-                const api = createActivityPubAPI(handle, siteUrl);
-                const response = await api.getReplies(postApId!);
-
-                if (!cancelled) {
-                    setReplyChain(response);
-                    setIsLoading(false);
-                }
-            } catch (err) {
-                if (!cancelled) {
-                    setError(err instanceof Error ? err : new Error('Failed to fetch reply chain'));
-                    setIsLoading(false);
-                }
-            }
-        }
-
-        fetchReplyChain();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [handle, postApId]);
+    }, [baseQuery.data, baseQuery.error]);
 
     const loadMoreAncestors = useCallback(async () => {
         if (!replyChain?.ancestors.hasMore || !replyChain?.ancestors.chain[0]) {
@@ -2287,7 +1996,7 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
 
     return {
         data: replyChain,
-        isLoading,
+        isLoading: baseQuery.isLoading,
         error,
         loadMoreAncestors,
         loadMoreChildren,
