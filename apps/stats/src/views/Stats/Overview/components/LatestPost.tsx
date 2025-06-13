@@ -42,7 +42,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                             :
                             <>
                                 <Separator />
-                                <div className='flex items-stretch gap-3 hover:cursor-pointer' onClick={() => {
+                                <div className='-mt-2 flex items-stretch gap-4 transition-all hover:cursor-pointer hover:opacity-75' onClick={() => {
                                     if (!isLoading && latestPostStats) {
                                         navigate(`/posts/analytics/beta/${latestPostStats.id}`, {crossApp: true});
                                     }
