@@ -1,4 +1,4 @@
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Tabs, TabsList, TabsTrigger, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceQueryParam} from '../../components/AudienceSelect';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -25,12 +25,6 @@ const CONTENT_TYPES = {
 } as const;
 
 type ContentType = typeof CONTENT_TYPES[keyof typeof CONTENT_TYPES];
-
-const CONTENT_TYPE_OPTIONS = [
-    {value: CONTENT_TYPES.POSTS, label: 'Posts'},
-    {value: CONTENT_TYPES.PAGES, label: 'Pages'},
-    {value: CONTENT_TYPES.POSTS_AND_PAGES, label: 'Posts & pages'}
-];
 
 interface TopContentTableProps {
     data: UnifiedContentData[] | null;
@@ -159,11 +153,6 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
 
     const topContent = transformedData?.slice(0, 10) || [];
 
-    const getContentTypeLabel = () => {
-        const option = CONTENT_TYPE_OPTIONS.find(opt => opt.value === selectedContentType);
-        return option ? option.label : 'Posts & pages';
-    };
-
     const getContentTitle = () => {
         switch (selectedContentType) {
         case CONTENT_TYPES.POSTS:
@@ -206,22 +195,16 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                 <CardTitle>{getContentTitle()}</CardTitle>
                 <CardDescription>{getContentDescription()}</CardDescription>
             </CardHeader>
-            <div className='flex items-center justify-between px-6 pb-3 pt-0'>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button size='sm' variant="dropdown">{getContentTypeLabel()}</Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align='start'>
-                        {CONTENT_TYPE_OPTIONS.map(option => (
-                            <DropdownMenuItem
-                                key={option.value}
-                                onClick={() => setSelectedContentType(option.value)}
-                            >
-                                {option.label}
-                            </DropdownMenuItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+            <div className='flex items-center justify-between px-6 pb-2 pt-0'>
+                <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
+                    setSelectedContentType(value as ContentType);
+                }}>
+                    <TabsList>
+                        <TabsTrigger value={CONTENT_TYPES.POSTS_AND_PAGES}>All content</TabsTrigger>
+                        <TabsTrigger value={CONTENT_TYPES.POSTS}>Posts</TabsTrigger>
+                        <TabsTrigger value={CONTENT_TYPES.PAGES}>Pages</TabsTrigger>
+                    </TabsList>
+                </Tabs>
                 <HTable className='mr-2'>Visitors</HTable>
             </div>
             <CardContent>
