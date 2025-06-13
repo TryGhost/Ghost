@@ -69,6 +69,17 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         return siteData.accent_color;
     };
 
+    const buttonTextColor = () => {
+        const buttonStyle = newsletter.button_style;
+        const calcButtonColor = buttonColor();
+
+        if (calcButtonColor && buttonStyle === 'fill') {
+            return textColorForBackgroundColor(calcButtonColor).hex();
+        }
+
+        return undefined;
+    };
+
     const linkColor = () => {
         const value = newsletter.link_color === undefined ? 'accent' : newsletter.link_color;
 
@@ -148,6 +159,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         postTitleColor?: string;
         sectionTitleColor?: string;
         buttonColor?: string;
+        buttonTextColor?: string;
         linkColor?: string;
         dividerColor?: string;
         textColor?: string;
@@ -164,6 +176,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
             postTitleColor: postTitleColor() || undefined,
             sectionTitleColor: sectionTitleColor() || undefined,
             buttonColor: buttonColor() || undefined,
+            buttonTextColor: buttonTextColor() || undefined,
             linkColor: linkColor() || undefined,
             dividerColor: dividerColor() || undefined,
             textColor,
