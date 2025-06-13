@@ -2035,11 +2035,13 @@ img.kg-cta-image {
 
 .kg-product-card h4 {
     {{#if sectionTitleColor}}
-    color: {{sectionTitleColor}};
+        color: {{sectionTitleColor}} !important;
     {{else}}
-    {{#hasFeature "emailCustomization"}}
-    color: #15212A !important;
-    {{/hasFeature}}
+        {{#if backgroundIsDark}}
+            color: #ffffff !important;
+        {{else}}
+            color: #15212A !important;
+        {{/if}}
     {{/if}}
 }
 
