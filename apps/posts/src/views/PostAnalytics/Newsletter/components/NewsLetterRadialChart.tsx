@@ -25,7 +25,7 @@ export const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
     tooltip = true
 }) => {
     const barWidth = 46;
-    const innerRadiusStart = data.length > 1 ? 72 : 89;
+    const innerRadiusStart = data.length > 1 ? 72 : 94;
 
     const chartComponentConfig = {
         innerRadius: innerRadiusStart,
