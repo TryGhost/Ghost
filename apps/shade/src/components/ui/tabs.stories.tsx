@@ -13,6 +13,7 @@ type Story = StoryObj<typeof Tabs>;
 export const Default: Story = {
     args: {
         defaultValue: 'account',
+        variant: 'button-sm',
         children: [
             <TabsList key="list" className="grid w-full grid-cols-2">
                 <TabsTrigger value="account">Account</TabsTrigger>

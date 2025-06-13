@@ -5,7 +5,7 @@ import Kpis from './components/Kpis';
 import Locations from './components/Locations';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import SourcesCard from '../components/SourcesCard';
+import Sources from './components/Sources';
 import {BarChartLoadingIndicator, Card, CardContent, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {BaseSourceData, getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
@@ -142,7 +142,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
             </PostAnalyticsHeader>
             <PostAnalyticsContent>
                 {isPageLoading ?
-                    <Card className='size-full'>
+                    <Card className='size-full' variant='plain'>
                         <CardContent className='size-full items-center justify-center'>
                             <BarChartLoadingIndicator />
                         </CardContent>
@@ -156,10 +156,8 @@ const Web: React.FC<postAnalyticsProps> = () => {
                                     data={processedLocationsData}
                                     isLoading={isLocationsLoading}
                                 />
-                                <SourcesCard
+                                <Sources
                                     data={sourcesData as BaseSourceData[] | null}
-                                    description="How readers found your post"
-                                    mode="visits"
                                     range={range}
                                     siteIcon={siteIcon}
                                     siteUrl={testingSiteUrl}

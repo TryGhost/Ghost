@@ -1,7 +1,7 @@
 import React from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, Icon, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, HTable, Icon, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, formatNumber, formatPercentage} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 
 countries.registerLocale(enLocale);
@@ -39,21 +39,24 @@ const normalizeCountryCode = (code: string): string => {
 
 interface LocationsTableProps {
     data: ProcessedLocationData[];
+    tableHeader: boolean;
 }
 
-const LocationsTable: React.FC<LocationsTableProps> = ({data}) => {
+const LocationsTable: React.FC<LocationsTableProps> = ({tableHeader, data}) => {
     return (
         <DataList>
-            <DataListHeader>
-                <DataListHead>Country</DataListHead>
-                <DataListHead>Visitors</DataListHead>
-            </DataListHeader>
+            {tableHeader &&
+                <DataListHeader>
+                    <DataListHead>Country</DataListHead>
+                    <DataListHead>Visitors</DataListHead>
+                </DataListHeader>
+            }
             <DataListBody>
                 {data.map((row) => {
                     const countryName = getCountryName(`${row.location}`) || 'Unknown';
                     return (
                         <DataListRow key={row.location || 'unknown'}>
-                            <DataListBar className='bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/60 opacity-20 transition-all' style={{
+                            <DataListBar style={{
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
                             }} />
                             <DataListItemContent className='group-hover/data:max-w-[calc(100%-140px)]'>
@@ -90,13 +93,19 @@ const Locations:React.FC<LocationsProps> = ({data, isLoading}) => {
                 <>
                     {(data && data.length > 0) &&
                 <Card className='group/datalist'>
-                    <CardHeader>
-                        <CardTitle>Locations</CardTitle>
-                        <CardDescription>Where are the readers of this post</CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                    <div className='flex items-center justify-between p-6'>
+                        <CardHeader className='p-0'>
+                            <CardTitle>Locations</CardTitle>
+                            <CardDescription>Where are the readers of this post</CardDescription>
+                        </CardHeader>
+                        <HTable className='mr-2'>Visitors</HTable>
+                    </div>
+                    <CardContent className='overflow-hidden'>
                         <Separator />
-                        <LocationsTable data={topLocations} />
+                        <LocationsTable
+                            data={topLocations}
+                            tableHeader={false}
+                        />
                     </CardContent>
                     {data.length > 10 &&
                         <CardFooter>
@@ -110,7 +119,10 @@ const Locations:React.FC<LocationsProps> = ({data, isLoading}) => {
                                         <SheetDescription>Where are the readers of this post</SheetDescription>
                                     </SheetHeader>
                                     <div className='group/datalist'>
-                                        <LocationsTable data={data} />
+                                        <LocationsTable
+                                            data={data}
+                                            tableHeader={true}
+                                        />
                                     </div>
                                 </SheetContent>
                             </Sheet>

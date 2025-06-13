@@ -1,8 +1,8 @@
+import GrowthSources from './components/GrowthSources';
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import React from 'react';
-import SourcesCard from '../components/SourcesCard';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Skeleton, SkeletonTable, formatNumber} from '@tryghost/shade';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useParams} from '@tryghost/admin-x-framework';
@@ -94,7 +94,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                 </div>
                             </CardContent>
                         </Card>
-                        <SourcesCard
+                        <GrowthSources
                             data={postReferrers}
                             mode="growth"
                             siteIcon={siteIcon}

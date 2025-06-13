@@ -1,6 +1,6 @@
 import React from 'react';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber} from '@tryghost/shade';
 
 // Default source icon URL - apps can override this
 const DEFAULT_SOURCE_ICON_URL = 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64';
@@ -11,18 +11,20 @@ interface SourcesTableProps {
     range?: number;
     defaultSourceIconUrl?: string;
     getPeriodText?: (range: number) => string;
+    headerStyle?: 'card' | 'table';
+    children?: React.ReactNode;
 }
 
-const SourcesTable: React.FC<SourcesTableProps> = ({data, mode, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL}) => {
+const SourcesTable: React.FC<SourcesTableProps> = ({headerStyle = 'table', children = 'Source', data, mode, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL}) => {
     if (mode === 'growth') {
         return (
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Source</TableHead>
+                        <TableHead variant={headerStyle === 'table' ? 'default' : 'cardhead'}>{children}</TableHead>
                         <TableHead className='w-[110px] text-right'>Free members</TableHead>
                         <TableHead className='w-[110px] text-right'>Paid members</TableHead>
-                        <TableHead className='w-[110px] text-right'>MRR impact</TableHead>
+                        <TableHead className='w-[100px] text-right'>MRR impact</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -30,7 +32,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data, mode, defaultSourceIco
                         const centsToDollars = (value: number) => Math.round(value / 100);
 
                         return (
-                            <TableRow key={row.source}>
+                            <TableRow key={row.source} className='last:border-none'>
                                 <TableCell>
                                     {row.linkUrl ?
                                         <a className='group flex items-center gap-2' href={row.linkUrl} rel="noreferrer" target="_blank">
@@ -64,58 +66,6 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data, mode, defaultSourceIco
             </Table>
         );
     }
-
-    // Default visits mode using DataList
-    return (
-        <DataList>
-            <DataListHeader>
-                <DataListHead>Source</DataListHead>
-                <DataListHead>Visitors</DataListHead>
-            </DataListHeader>
-            <DataListBody>
-                {data?.map((row) => {
-                    return (
-                        <DataListRow key={row.source} className='group/row'>
-                            <DataListBar className='bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/60 opacity-20 transition-all group-hover/row:opacity-40' style={{
-                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
-                            }} />
-                            <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
-                                <div className='flex items-center space-x-4 overflow-hidden'>
-                                    <div className='truncate font-medium'>
-                                        {row.linkUrl ?
-                                            <a className='group/link flex items-center gap-2' href={row.linkUrl} rel="noreferrer" target="_blank">
-                                                <img
-                                                    className="size-4"
-                                                    src={row.iconSrc}
-                                                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                        e.currentTarget.src = defaultSourceIconUrl;
-                                                    }} />
-                                                <span className='group-hover/link:underline'>{row.displayName}</span>
-                                            </a>
-                                            :
-                                            <span className='flex items-center gap-2'>
-                                                <img
-                                                    className="size-4"
-                                                    src={row.iconSrc}
-                                                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                        e.currentTarget.src = defaultSourceIconUrl;
-                                                    }} />
-                                                <span>{row.displayName}</span>
-                                            </span>
-                                        }
-                                    </div>
-                                </div>
-                            </DataListItemContent>
-                            <DataListItemValue>
-                                <DataListItemValueAbs>{formatNumber(row.visits)}</DataListItemValueAbs>
-                                <DataListItemValuePerc>{formatPercentage(row.percentage || 0)}</DataListItemValuePerc>
-                            </DataListItemValue>
-                        </DataListRow>
-                    );
-                })}
-            </DataListBody>
-        </DataList>
-    );
 };
 
 interface SourcesCardProps {
@@ -131,7 +81,7 @@ interface SourcesCardProps {
     getPeriodText?: (range: number) => string;
 }
 
-export const SourcesCard: React.FC<SourcesCardProps> = ({
+export const GrowthSources: React.FC<SourcesCardProps> = ({
     title = 'Top sources',
     description,
     data,
@@ -179,14 +129,27 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
 
     return (
         <Card className='group/datalist'>
-            <CardHeader>
-                <CardTitle>{title}</CardTitle>
-                <CardDescription>{cardDescription}</CardDescription>
-            </CardHeader>
+            {topSources.length <= 0 &&
+                <CardHeader>
+                    <CardTitle>{title}</CardTitle>
+                    <CardDescription>{cardDescription}</CardDescription>
+                </CardHeader>
+            }
             <CardContent>
-                <Separator />
                 {topSources.length > 0 ? (
-                    <SourcesTable data={topSources} defaultSourceIconUrl={defaultSourceIconUrl} getPeriodText={getPeriodText} mode={mode} range={range} />
+                    <SourcesTable
+                        data={topSources}
+                        defaultSourceIconUrl={defaultSourceIconUrl}
+                        getPeriodText={getPeriodText}
+                        headerStyle='card'
+                        mode={mode}
+                        range={range}
+                    >
+                        <CardHeader>
+                            <CardTitle>{title}</CardTitle>
+                            <CardDescription>{cardDescription}</CardDescription>
+                        </CardHeader>
+                    </SourcesTable>
                 ) : (
                     <div className='py-20 text-center text-sm text-gray-700'>
                         {mode === 'growth'
@@ -208,7 +171,13 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                                 <SheetDescription>{sheetDescription}</SheetDescription>
                             </SheetHeader>
                             <div className='group/datalist'>
-                                <SourcesTable data={extendedData} defaultSourceIconUrl={defaultSourceIconUrl} getPeriodText={getPeriodText} mode={mode} range={range} />
+                                <SourcesTable
+                                    data={extendedData}
+                                    defaultSourceIconUrl={defaultSourceIconUrl}
+                                    getPeriodText={getPeriodText}
+                                    mode={mode}
+                                    range={range}
+                                />
                             </div>
                         </SheetContent>
                     </Sheet>
@@ -218,4 +187,4 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
     );
 };
 
-export default SourcesCard;
+export default GrowthSources;

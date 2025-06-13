@@ -18,11 +18,9 @@ export const Default: Story = {
                 <DataListHead>Title</DataListHead>
                 <DataListHead>Visitors</DataListHead>
             </DataListHeader>,
-            <DataListBody className='group/data'>
+            <DataListBody className='group/datalist'>
                 <DataListRow>
-                    <DataListBar className='opacity-20' style={{
-                        backgroundColor: 'hsl(var(--chart-blue))'
-                    }} />
+                    <DataListBar />
                     <DataListItemContent>
                         <div className='flex items-center space-x-4 overflow-hidden'>
                             <div>🇺🇸</div>
@@ -38,8 +36,7 @@ export const Default: Story = {
                 </DataListRow>
 
                 <DataListRow>
-                    <DataListBar className='opacity-20' style={{
-                        backgroundColor: 'hsl(var(--chart-blue))',
+                    <DataListBar style={{
                         width: '93%'
                     }} />
                     <DataListItemContent>
@@ -56,8 +53,7 @@ export const Default: Story = {
                 </DataListRow>
 
                 <DataListRow>
-                    <DataListBar className='opacity-20' style={{
-                        backgroundColor: 'hsl(var(--chart-blue))',
+                    <DataListBar style={{
                         width: '74%'
                     }} />
                     <DataListItemContent>

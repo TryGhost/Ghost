@@ -22,7 +22,7 @@ const SortButton = <T extends string>({
             }}
         >
             {children}
-            {sortBy === activeSortBy && <LucideIcon.ArrowUp />}
+            {sortBy === activeSortBy && <LucideIcon.ArrowUpDown />}
         </TableHeadButton>
     );
 };

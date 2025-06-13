@@ -1,6 +1,6 @@
 import React from 'react';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
 
 // Default source icon URL - apps can override this
@@ -10,13 +10,13 @@ interface SourcesTableProps {
     data: ProcessedSourceData[] | null;
     range?: number;
     defaultSourceIconUrl?: string;
-    tableHeader: boolean;
+    dataTableHeader: boolean;
 }
 
-const SourcesTable: React.FC<SourcesTableProps> = ({tableHeader, data, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL}) => {
+const SourcesTable: React.FC<SourcesTableProps> = ({dataTableHeader, data, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL}) => {
     return (
         <DataList>
-            {tableHeader &&
+            {dataTableHeader &&
                 <DataListHeader>
                     <DataListHead>Source</DataListHead>
                     <DataListHead>Visitors</DataListHead>
@@ -69,23 +69,24 @@ const SourcesTable: React.FC<SourcesTableProps> = ({tableHeader, data, defaultSo
 };
 
 interface SourcesCardProps {
+    title?: string;
+    description?: string;
     data: BaseSourceData[] | null;
     range?: number;
     totalVisitors?: number;
     siteUrl?: string;
     siteIcon?: string;
     defaultSourceIconUrl?: string;
-    isLoading: boolean;
+    getPeriodText?: (range: number) => string;
 }
 
-export const SourcesCard: React.FC<SourcesCardProps> = ({
+export const Sources: React.FC<SourcesCardProps> = ({
     data,
     range = 30,
     totalVisitors = 0,
     siteUrl,
     siteIcon,
-    defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL,
-    isLoading
+    defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL
 }) => {
     // Process and group sources data with pre-computed icons and display values
     const processedData = React.useMemo(() => {
@@ -110,29 +111,14 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
     const topSources = extendedData.slice(0, 10);
 
     // Generate description based on mode and range
-    const title = 'Top sources';
-    const description = `How readers found your ${range ? 'site' : 'post'} ${getPeriodText(range)}`;
-
-    if (isLoading) {
-        return (
-            <Card className='group/datalist'>
-                <CardHeader>
-                    <CardTitle>{title}</CardTitle>
-                    <CardDescription>{description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <SkeletonTable lines={5} />
-                </CardContent>
-            </Card>
-        );
-    }
+    const cardDescription = `How readers found your ${range ? 'site' : 'post'}${range && ` ${getPeriodText(range)}`}`;
 
     return (
         <Card className='group/datalist'>
             <div className='flex items-center justify-between p-6'>
                 <CardHeader className='p-0'>
-                    <CardTitle>{title}</CardTitle>
-                    <CardDescription>{description}</CardDescription>
+                    <CardTitle>Top sources</CardTitle>
+                    <CardDescription>{cardDescription}</CardDescription>
                 </CardHeader>
                 <HTable className='mr-2'>Visitors</HTable>
             </div>
@@ -141,12 +127,13 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                 {topSources.length > 0 ? (
                     <SourcesTable
                         data={topSources}
+                        dataTableHeader={false}
                         defaultSourceIconUrl={defaultSourceIconUrl}
                         range={range}
-                        tableHeader={false} />
+                    />
                 ) : (
                     <div className='py-20 text-center text-sm text-gray-700'>
-                            No sources data available.
+                        No sources data available.
                     </div>
                 )}
             </CardContent>
@@ -158,15 +145,16 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                         </SheetTrigger>
                         <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
                             <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
-                                <SheetTitle>{title}</SheetTitle>
-                                <SheetDescription>{description}</SheetDescription>
+                                <SheetTitle>Sources</SheetTitle>
+                                <SheetDescription>{cardDescription}</SheetDescription>
                             </SheetHeader>
                             <div className='group/datalist'>
                                 <SourcesTable
                                     data={extendedData}
+                                    dataTableHeader={true}
                                     defaultSourceIconUrl={defaultSourceIconUrl}
                                     range={range}
-                                    tableHeader={true} />
+                                />
                             </div>
                         </SheetContent>
                     </Sheet>
@@ -176,4 +164,4 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
     );
 };
 
-export default SourcesCard;
+export default Sources;
