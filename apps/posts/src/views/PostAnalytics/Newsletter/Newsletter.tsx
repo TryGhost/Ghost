@@ -3,7 +3,7 @@ import Feedback from './components/Feedback';
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, HTable, Input, LucideIcon, Recharts, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {getLinkById} from '@src/utils/link-helpers';
 import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -410,87 +410,82 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                     </Card>
                     <Feedback feedbackStats={feedbackStats} />
                     <Card>
-                        <CardHeader className='pb-3'>
-                            <CardTitle>Newsletter clicks</CardTitle>
-                            <CardDescription>Which links resonated with your readers</CardDescription>
-                        </CardHeader>
+                        <div className='flex items-center justify-between p-6'>
+                            <CardHeader className='p-0'>
+                                <CardTitle>Newsletter clicks</CardTitle>
+                                <CardDescription>Which links resonated with your readers</CardDescription>
+                            </CardHeader>
+                            <HTable className='mr-2'>No. of members</HTable>
+                        </div>
                         {isLoading ?
                             <CardContent className='p-6'>
+                                <Separator />
                                 <SkeletonTable />
                             </CardContent>
                             :
                             <CardContent className='pb-0'>
-                                {topLinks.length > 0
-                                    ?
-                                    <>
+                                <Separator />
+                                {topLinks.length > 0 ?
+                                    <div className='flex w-full flex-col py-3'>
+                                        {paginatedTopLinks?.map((row) => {
+                                            const linkId = row.link.link_id;
+                                            const title = row.link.title;
+                                            const url = row.link.to;
+                                            const edited = row.link.edited;
 
-                                        <div className='flex w-full flex-col'>
-                                            <div className='flex h-12 w-full items-center justify-between border-b text-sm text-muted-foreground'>
-                                                <div>Link</div>
-                                                <div>No. of members</div>
-                                            </div>
-                                            <div className='flex w-full flex-col py-3'>
-                                                {paginatedTopLinks?.map((row) => {
-                                                    const linkId = row.link.link_id;
-                                                    const title = row.link.title;
-                                                    const url = row.link.to;
-                                                    const edited = row.link.edited;
-
-                                                    return (
-                                                        <div key={linkId} className='flex h-10 w-full items-center justify-between gap-3 rounded-sm border-none px-2 text-sm hover:cursor-pointer hover:bg-accent'>
-                                                            <div className='flex grow items-center gap-2 overflow-hidden'>
-                                                                {editingLinkId === linkId ? (
-                                                                    <div ref={containerRef} className='flex w-full items-center gap-2'>
-                                                                        <Input
-                                                                            ref={inputRef}
-                                                                            className="h-7 w-full border-border bg-background text-sm"
-                                                                            value={editedUrl}
-                                                                            onChange={e => setEditedUrl(e.target.value)}
-                                                                        />
-                                                                        <Button
-                                                                            size='sm'
-                                                                            onClick={handleUpdate}
-                                                                        >
+                                            return (
+                                                <div key={linkId} className='flex h-10 w-full items-center justify-between gap-3 rounded-sm border-none px-2 text-sm hover:cursor-pointer hover:bg-accent'>
+                                                    <div className='flex grow items-center gap-2 overflow-hidden'>
+                                                        {editingLinkId === linkId ? (
+                                                            <div ref={containerRef} className='flex w-full items-center gap-2'>
+                                                                <Input
+                                                                    ref={inputRef}
+                                                                    className="h-7 w-full border-border bg-background text-sm"
+                                                                    value={editedUrl}
+                                                                    onChange={e => setEditedUrl(e.target.value)}
+                                                                />
+                                                                <Button
+                                                                    size='sm'
+                                                                    onClick={handleUpdate}
+                                                                >
                                                                         Update
-                                                                        </Button>
-                                                                    </div>
-                                                                ) : (
-                                                                    <>
-                                                                        <Button
-                                                                            className='shrink-0 bg-background'
-                                                                            size='sm'
-                                                                            variant='outline'
-                                                                            onClick={() => handleEdit(linkId)}
-                                                                        >
-                                                                            <LucideIcon.Pen />
-                                                                        </Button>
-                                                                        <a
-                                                                            className='block truncate font-medium hover:underline'
-                                                                            href={url}
-                                                                            rel="noreferrer"
-                                                                            target='_blank'
-                                                                            title={title}
-                                                                        >
-                                                                            {title}
-                                                                        </a>
-                                                                        {edited && (
-                                                                            <span className='text-xs text-gray-500'>(edited)</span>
-                                                                        )}
-                                                                    </>
+                                                                </Button>
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                <Button
+                                                                    className='shrink-0 bg-background'
+                                                                    size='sm'
+                                                                    variant='outline'
+                                                                    onClick={() => handleEdit(linkId)}
+                                                                >
+                                                                    <LucideIcon.Pen />
+                                                                </Button>
+                                                                <a
+                                                                    className='block truncate font-medium hover:underline'
+                                                                    href={url}
+                                                                    rel="noreferrer"
+                                                                    target='_blank'
+                                                                    title={title}
+                                                                >
+                                                                    {title}
+                                                                </a>
+                                                                {edited && (
+                                                                    <span className='text-xs text-gray-500'>(edited)</span>
                                                                 )}
-                                                            </div>
-                                                            <div className='font-mono'>
-                                                                {formatNumber(row.count)}
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    </>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                    <div className='font-mono'>
+                                                        {formatNumber(row.count)}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                     :
                                     <div className='py-20 text-center text-sm text-gray-700'>
-                                You have no links in your post.
+                                        You have no links in your post.
                                     </div>
                                 }
                             </CardContent>
