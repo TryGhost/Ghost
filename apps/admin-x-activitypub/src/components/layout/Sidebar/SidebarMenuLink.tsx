@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Button, ButtonProps, cn} from '@tryghost/shade';
+import {Button, ButtonProps, cn, formatNumber} from '@tryghost/shade';
 import {Link, resetScrollPosition, useLocation, useNavigationStack} from '@tryghost/admin-x-framework';
 
 interface SidebarButtonProps extends ButtonProps {
@@ -20,9 +20,9 @@ const SidebarMenuLink = React.forwardRef<HTMLButtonElement, SidebarButtonProps>(
 
         const badge = count && count > 0 ? (
             <span className={cn(
-                'ml-auto bg-purple-500 text-white text-xs font-semibold p-1 rounded-full min-w-[20px] h-5 flex items-center justify-center'
+                'ml-auto bg-purple-500 text-white text-xs font-semibold py-1 px-1.5 rounded-full min-w-[20px] h-5 flex items-center justify-center'
             )}>
-                {count}
+                {formatNumber(count)}
             </span>
         ) : null;
 
