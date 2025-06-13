@@ -424,13 +424,15 @@ h6 + .kg-paywall .kg-paywall-hr td {
 {{#hasFeature "emailCustomization"}}
 /* Links in captions */
 .feature-image-caption a,
-figcaption a {
-    color: {{linkColor}};
-}
-
 .kg-toggle-card:not(.kg-cta-card) a {
     color: {{linkColor}};
 }
+
+.feature-image-caption a {
+    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    text-decoration: underline;
+}
+
 .kg-callout-card:not(.kg-callout-card-accent) a {
     color: {{linkColor}};
 }
