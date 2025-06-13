@@ -49,6 +49,7 @@ const NewsletterPreviewContent: React.FC<{
     sectionTitleColor?: string;
     dividerColor?: string;
     buttonColor?: string;
+    buttonTextColor?: string;
     linkColor?: string;
     buttonStyle?: string;
     buttonCorners?: string;
@@ -92,6 +93,7 @@ const NewsletterPreviewContent: React.FC<{
     sectionTitleColor,
     dividerColor,
     buttonColor,
+    buttonTextColor,
     linkColor,
     buttonCorners,
     buttonStyle,
@@ -278,7 +280,8 @@ const NewsletterPreviewContent: React.FC<{
                                                         color: buttonColor || accentColor
                                                     }
                                                     : {
-                                                        backgroundColor: buttonColor || accentColor
+                                                        backgroundColor: buttonColor || accentColor,
+                                                        color: buttonTextColor
                                                     }
                                             }
                                             type="button"
