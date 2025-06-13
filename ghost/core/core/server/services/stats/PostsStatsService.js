@@ -709,12 +709,16 @@ class PostsStatsService {
         try {
             // Run both queries in parallel for better performance
             const [totalResult, rawDeltas] = await Promise.all([
-                // Get total subscriber count (fast query)
+                // Get total subscriber count (optimized query - avoid JOIN)
                 this.knex('members_newsletters as mn')
                     .countDistinct('mn.member_id as total')
-                    .join('members as m', 'm.id', 'mn.member_id')
                     .where('mn.newsletter_id', newsletterId)
-                    .where('m.email_disabled', 0),
+                    .whereNotExists(function () {
+                        this.select('*')
+                            .from('members as m')
+                            .whereRaw('m.id = mn.member_id')
+                            .where('m.email_disabled', 1);
+                    }),
                 
                 // Get daily deltas (optimized query)
                 this._getNewsletterSubscriberDeltas(newsletterId, options)
@@ -760,16 +764,19 @@ class PostsStatsService {
      * @private
      */
     async _getNewsletterSubscriberDeltas(newsletterId, options = {}) {
-        // Build optimized deltas query with efficient JOIN
+        // Build optimized deltas query - avoid expensive JOIN
         let deltasQuery = this.knex('members_subscribe_events as mse')
             .select(
                 this.knex.raw(`DATE(mse.created_at) as date`),
                 this.knex.raw(`SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as value`)
             )
-            .innerJoin('members as m', 'm.id', 'mse.member_id')
             .where('mse.newsletter_id', newsletterId)
-            .whereNot('m.email_disabled', 1) // Filter out email-disabled members
-            .whereNotNull('mse.created_at')
+            .whereNotExists(function () {
+                this.select('*')
+                    .from('members as m')
+                    .whereRaw('m.id = mse.member_id')
+                    .where('m.email_disabled', 1);
+            })
             .groupByRaw('DATE(mse.created_at)')
             .orderBy('date', 'asc');
 

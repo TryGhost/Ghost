@@ -463,7 +463,10 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
-        updated_by: {type: 'string', maxlength: 24, nullable: true}
+        updated_by: {type: 'string', maxlength: 24, nullable: true},
+        '@@INDEXES@@': [
+            ['email_disabled']
+        ]
     },
     // NOTE: this is the tiers table
     products: {
@@ -764,7 +767,10 @@ module.exports = {
                 isIn: [['member', 'import', 'system', 'api', 'admin']]
             }
         },
-        newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id', cascadeDelete: false}
+        newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id', cascadeDelete: false},
+        '@@INDEXES@@': [
+            ['newsletter_id', 'created_at']
+        ]
     },
     donation_payment_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
