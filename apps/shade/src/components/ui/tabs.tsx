@@ -88,7 +88,7 @@ const tabsTriggerVariants = cva(
             variant: {
                 segmented: 'h-7 rounded-md text-sm font-medium data-[state=active]:shadow-md',
                 'segmented-sm': 'h-[26px] rounded-md text-xs font-medium data-[state=active]:shadow-md',
-                button: 'h-[34px] gap-1.5 rounded-md border border-input py-2 text-sm font-medium hover:bg-muted/50 data-[state=active]:bg-muted/70 data-[state=active]:font-semibold',
+                button: 'h-[34px] gap-1.5 rounded-md py-2 text-sm font-normal hover:bg-muted data-[state=active]:bg-muted-foreground/15 data-[state=active]:font-medium',
                 'button-sm': 'font-regular h-6 gap-1.5 rounded-md p-2 text-xs text-gray-800 hover:bg-muted data-[state=active]:bg-muted-foreground/15 data-[state=active]:font-medium data-[state=active]:text-foreground',
                 underline: 'relative h-[36px] px-0 text-md font-semibold text-gray-700 after:absolute after:inset-x-0 after:bottom-[-1px] after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:!opacity-100',
                 navbar: 'relative h-[52px] px-px text-md font-semibold text-muted-foreground after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:!opacity-100',
