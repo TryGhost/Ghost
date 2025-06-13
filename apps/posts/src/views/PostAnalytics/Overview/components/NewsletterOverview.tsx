@@ -1,5 +1,6 @@
 import React, {useMemo} from 'react';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, HTable, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableRow, cn, formatNumber, formatPercentage} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, HTable, LucideIcon, Separator, Table, TableBody, TableCell, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
+import {NewsletterRadialChart, NewsletterRadialChartData} from '../../Newsletter/components/NewsLetterRadialChart';
 import {Post} from '@tryghost/admin-x-framework/api/posts';
 import {cleanTrackedUrl} from '@src/utils/link-helpers';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -24,7 +25,8 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
             opened,
             clicked,
             openedRate: sent > 0 ? opened / sent : 0,
-            clickedRate: sent > 0 ? clicked / sent : 0
+            clickedRate: sent > 0 ? clicked / sent : 0,
+            sent: sent
         };
     }, [post]);
 
@@ -39,45 +41,34 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
         return linksResponse?.links || [];
     }, [linksResponse]);
 
-    const opensChartData = [
-        {opens: stats.opened, openrate: stats.openedRate, fill: 'url(#gradientBlue)'}
+    // "Clicked" Chart
+    const commonChartData: NewsletterRadialChartData[] = [
+        {datatype: 'Clicked', value: stats.clickedRate, fill: 'url(#gradientTeal)', color: 'hsl(var(--chart-teal))'},
+        {datatype: 'Opened', value: stats.openedRate, fill: 'url(#gradientBlue)', color: 'hsl(var(--chart-blue))'}
     ];
-    const opensChartConfig = {
-        openrate: {
-            label: 'Opens',
-            color: 'hsl(var(--chart-blue))'
+
+    const commonChartConfig = {
+        percentage: {
+            label: 'Opened'
+        },
+        Average: {
+            label: 'Clicked'
+        },
+        'This newsletter': {
+            label: 'Opened'
         }
     } satisfies ChartConfig;
-
-    const clicksChartData = [
-        {clicks: stats.clicked, clickrate: stats.clickedRate, fill: 'url(#gradientTeal)'}
-    ];
-    const clickschartConfig = {
-        clickrate: {
-            label: 'Clicks',
-            color: 'hsl(var(--chart-teal))'
-        }
-    } satisfies ChartConfig;
-
-    const radialBarChartClassName = cn('mx-auto aspect-square w-full min-h-[200px] max-w-[200px] grow pointer-events-none');
 
     return (
         <div className='grid grid-cols-1 gap-8 xl:grid-cols-2'>
-            <Card className='group/card'>
+            <Card className='group/card hover:cursor-pointer' onClick={() => {
+                navigate(`/analytics/beta/${postId}/newsletter`);
+            }}>
                 <div className='flex items-center justify-between gap-6'>
                     <CardHeader>
                         <CardTitle>Newsletter performance</CardTitle>
                         <CardDescription>How members interacted with this email</CardDescription>
                     </CardHeader>
-
-                    {!isNewsletterStatsLoading &&
-                        <Button className='mr-6 opacity-0 transition-all group-hover/card:opacity-100' variant='outline' onClick={() => {
-                            navigate(`/analytics/beta/${postId}/newsletter`);
-                        }}>
-                        View more
-                            <LucideIcon.ArrowRight />
-                        </Button>
-                    }
                 </div>
                 {isNewsletterStatsLoading ?
                     <CardContent>
@@ -88,146 +79,30 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                     :
                     <CardContent>
                         <Separator />
-                        <div className='mx-auto flex min-h-[250px] flex-wrap items-stretch justify-center xl:size-full'>
-                            <div className='group flex grow flex-col items-center rounded-md p-4 transition-all hover:!cursor-pointer' onClick={() => {
-                                navigate(`/analytics/beta/${postId}/newsletter`);
-                            }}>
-                                <ChartContainer
-                                    className={radialBarChartClassName}
-                                    config={opensChartConfig}
-                                >
-                                    <Recharts.RadialBarChart
-                                        data={opensChartData}
-                                        endAngle={-270}
-                                        innerRadius={72}
-                                        outerRadius={110}
-                                        startAngle={90}
-                                    >
-                                        <defs>
-                                            <radialGradient cx="30%" cy="30%" id="gradientBlue" r="70%">
-                                                <stop offset="0%" stopColor="hsl(var(--chart-blue))" stopOpacity={0.5} />
-                                                <stop offset="100%" stopColor="hsl(var(--chart-blue))" stopOpacity={1} />
-                                            </radialGradient>
-                                        </defs>
-                                        <Recharts.RadialBar
-                                            cornerRadius={10}
-                                            dataKey="openrate"
-                                            minPointSize={-2}
-                                            background />
-                                        <Recharts.PolarAngleAxis
-                                            angleAxisId={0}
-                                            domain={[0, 1]}
-                                            tick={false}
-                                            type="number"
-                                        />
-                                        <Recharts.PolarRadiusAxis axisLine={false} domain={[0, 1]} tick={false} tickLine={false} type="number">
-                                            <Recharts.Label
-                                                content={({viewBox}) => {
-                                                    if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
-                                                        return (
-                                                            <text
-                                                                dominantBaseline="middle"
-                                                                textAnchor="middle"
-                                                                x={viewBox.cx}
-                                                                y={viewBox.cy}
-                                                            >
-                                                                <tspan
-                                                                    className="fill-foreground text-[2.0rem] font-semibold tracking-tight"
-                                                                    x={viewBox.cx}
-                                                                    y={(viewBox.cy || 0) - 4}
-                                                                >
-                                                                    {formatPercentage(opensChartData[0].openrate)}
-                                                                </tspan>
-                                                                <tspan
-                                                                    className="text-base font-medium"
-                                                                    x={viewBox.cx}
-                                                                    y={(viewBox.cy || 0) + 18}
-                                                                >
-                                                                    {formatNumber(opensChartData[0].opens)}
-                                                                </tspan>
-                                                            </text>
-                                                        );
-                                                    }
-                                                }}
-                                            />
-                                        </Recharts.PolarRadiusAxis>
-                                    </Recharts.RadialBarChart>
-                                </ChartContainer>
-                                <div className='-mt-2 flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                    <LucideIcon.MailOpen size={16} strokeWidth={1.5} />
-                            Opened
+                        <div className='mx-auto mt-4 h-[240px]'>
+                            <NewsletterRadialChart
+                                className='pointer-events-none h-[240px]'
+                                config={commonChartConfig}
+                                data={commonChartData}
+                                percentageLabel='Sent'
+                                percentageValue={formatNumber(stats.sent)}
+                                tooltip={false}
+                            />
+                        </div>
+                        <div className='mt-2 flex items-center justify-center gap-8'>
+                            <div className='flex gap-1.5 text-sm text-muted-foreground'>
+                                <div className='flex items-center gap-1.5'>
+                                    <div className='size-2 rounded-full bg-chart-blue/50'></div>
+                                    <span className='font-medium'>Opened</span>
                                 </div>
+                                <span className='text-lg font-semibold tracking-tighter text-foreground'>{formatPercentage(stats.openedRate)}</span>
                             </div>
-
-                            <div className='group flex grow flex-col items-center rounded-md p-4 transition-all hover:!cursor-pointer' onClick={() => {
-                                navigate(`/analytics/beta/${postId}/newsletter`);
-                            }}>
-                                <ChartContainer
-                                    className={radialBarChartClassName}
-                                    config={clickschartConfig}
-                                >
-                                    <Recharts.RadialBarChart
-                                        data={clicksChartData}
-                                        endAngle={-270}
-                                        innerRadius={72}
-                                        outerRadius={110}
-                                        startAngle={90}
-                                    >
-                                        <defs>
-                                            <radialGradient cx="30%" cy="30%" id="gradientTeal" r="70%">
-                                                <stop offset="0%" stopColor="hsl(var(--chart-teal))" stopOpacity={0.5} />
-                                                <stop offset="100%" stopColor="hsl(var(--chart-teal))" stopOpacity={1} />
-                                            </radialGradient>
-                                        </defs>
-                                        <Recharts.RadialBar
-                                            cornerRadius={10}
-                                            dataKey="clickrate"
-                                            minPointSize={-2}
-                                            background
-                                        />
-                                        <Recharts.PolarAngleAxis
-                                            angleAxisId={0}
-                                            domain={[0, 1]}
-                                            tick={false}
-                                            type="number"
-                                        />
-                                        <Recharts.PolarRadiusAxis axisLine={false} domain={[0, 1]} tick={false} tickLine={false}>
-                                            <Recharts.Label
-                                                content={({viewBox}) => {
-                                                    if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
-                                                        return (
-                                                            <text
-                                                                dominantBaseline="middle"
-                                                                textAnchor="middle"
-                                                                x={viewBox.cx}
-                                                                y={viewBox.cy}
-                                                            >
-                                                                <tspan
-                                                                    className="fill-foreground text-[2.0rem] font-semibold tracking-tight"
-                                                                    x={viewBox.cx}
-                                                                    y={(viewBox.cy || 0) - 4}
-                                                                >
-                                                                    {formatPercentage(clicksChartData[0].clickrate)}
-                                                                </tspan>
-                                                                <tspan
-                                                                    className="text-base font-medium"
-                                                                    x={viewBox.cx}
-                                                                    y={(viewBox.cy || 0) + 18}
-                                                                >
-                                                                    {formatNumber(clicksChartData[0].clicks)}
-                                                                </tspan>
-                                                            </text>
-                                                        );
-                                                    }
-                                                }}
-                                            />
-                                        </Recharts.PolarRadiusAxis>
-                                    </Recharts.RadialBarChart>
-                                </ChartContainer>
-                                <div className='-mt-2 flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                    <LucideIcon.MousePointerClick size={16} strokeWidth={1.5} />
-                            Clicked
+                            <div className='flex gap-1.5 text-sm text-muted-foreground'>
+                                <div className='flex items-center gap-1.5'>
+                                    <div className='size-2 rounded-full bg-chart-teal/50'></div>
+                                    <span className='font-medium'>Clicked</span>
                                 </div>
+                                <span className='text-lg font-semibold tracking-tighter text-foreground'>{formatPercentage(stats.clickedRate)}</span>
                             </div>
                         </div>
                     </CardContent>
@@ -240,7 +115,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                         <CardTitle>Top links</CardTitle>
                         <CardDescription>Links in your newsletter people clicked on the most</CardDescription>
                     </CardHeader>
-                    <HTable className='mr-2'>No. of members</HTable>
+                    <HTable className='mr-2 text-right'>No. of members</HTable>
                 </div>
                 <CardContent>
                     <Separator />
@@ -273,7 +148,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                                     <TableRow>
                                         <TableCell colSpan={2}>
                                             <div className='py-20 text-center text-sm text-gray-700'>
-                                    You have no links in your post.
+                                                You have no links in your post.
                                             </div>
                                         </TableCell>
                                     </TableRow>
@@ -282,6 +157,16 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                         </Table>
                     </div>
                 </CardContent>
+                {topLinks.length > 0 &&
+                <CardFooter>
+                    <Button variant='outline' onClick={() => {
+                        navigate(`/analytics/beta/${postId}/newsletter`);
+                    }}>
+                        View all
+                        <LucideIcon.ArrowRight />
+                    </Button>
+                </CardFooter>
+                }
             </Card>
         </div>
     );
