@@ -3,7 +3,8 @@ import Feedback from './components/Feedback';
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, HTable, Input, LucideIcon, Recharts, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, HTable, Input, LucideIcon, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
+import {NewsletterRadialChart, NewsletterRadialChartData} from './components/NewsLetterRadialChart';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {getLinkById} from '@src/utils/link-helpers';
 import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -12,136 +13,6 @@ import {useEffect, useMemo, useRef, useState} from 'react';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 
 interface postAnalyticsProps {}
-
-type NewsletterRadialChartData = {
-    datatype: string,
-    value: number,
-    fill: string,
-    color: string
-}
-
-interface NewsletterRadialChartProps {
-    data: NewsletterRadialChartData[],
-    config: ChartConfig,
-    percentageValue: number,
-    percentageLabel: string
-}
-
-const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
-    config,
-    data,
-    percentageValue,
-    percentageLabel
-}) => {
-    const barWidth = 46;
-    const innerRadiusStart = data.length > 1 ? 72 : 89;
-
-    const chartComponentConfig = {
-        innerRadius: innerRadiusStart,
-        outerRadius: innerRadiusStart + barWidth,
-        startAngle: 90,
-        endAngle: -270
-    };
-
-    return (
-        <ChartContainer
-            className='mx-auto aspect-square'
-            config={config}
-        >
-            <Recharts.RadialBarChart
-                data={data}
-                endAngle={chartComponentConfig.endAngle}
-                innerRadius={chartComponentConfig.innerRadius}
-                outerRadius={chartComponentConfig.outerRadius}
-                startAngle={chartComponentConfig.startAngle}
-            >
-                <defs>
-                    {/* Define gradients for each data type */}
-                    <radialGradient cx="30%" cy="30%" id="gradientPurple" r="70%">
-                        <stop offset="0%" stopColor="hsl(var(--chart-purple))" stopOpacity={0.5} />
-                        <stop offset="100%" stopColor="hsl(var(--chart-purple))" stopOpacity={1} />
-                    </radialGradient>
-                    <radialGradient cx="30%" cy="30%" id="gradientBlue" r="70%">
-                        <stop offset="0%" stopColor="hsl(var(--chart-blue))" stopOpacity={0.5} />
-                        <stop offset="100%" stopColor="hsl(var(--chart-blue))" stopOpacity={1} />
-                    </radialGradient>
-                    <radialGradient cx="30%" cy="30%" id="gradientTeal" r="70%">
-                        <stop offset="0%" stopColor="hsl(var(--chart-teal))" stopOpacity={0.5} />
-                        <stop offset="100%" stopColor="hsl(var(--chart-teal))" stopOpacity={1} />
-                    </radialGradient>
-                    <radialGradient cx="30%" cy="30%" id="gradientGray" r="70%">
-                        <stop offset="0%" stopColor="hsl(var(--chart-gray))" stopOpacity={0.5} />
-                        <stop offset="100%" stopColor="hsl(var(--chart-gray))" stopOpacity={1} />
-                    </radialGradient>
-                </defs>
-                <Recharts.PolarAngleAxis angleAxisId={0} domain={[0, 1]} tick={false} type="number" />
-                <Recharts.RadialBar
-                    cornerRadius={10}
-                    dataKey="value"
-                    minPointSize={-2}
-                    background
-                >
-                    {data.length > 1 &&
-                        <Recharts.LabelList
-                            className="fill-black opacity-60"
-                            dataKey="datatype"
-                            fontSize={11}
-                            position="insideStart"
-                        />
-                    }
-                </Recharts.RadialBar>
-                <Recharts.PolarRadiusAxis axisLine={false} tick={false} tickLine={false}>
-                    <Recharts.Label
-                        content={({viewBox}) => {
-                            if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
-                                return (
-                                    <text
-                                        dominantBaseline="middle"
-                                        textAnchor="middle"
-                                        x={viewBox.cx}
-                                        y={viewBox.cy}
-                                    >
-                                        <tspan
-                                            className="fill-foreground text-[1.6rem] font-semibold tracking-tight"
-                                            x={viewBox.cx}
-                                            y={(viewBox.cy || 0) - 6}
-                                        >
-                                            {formatPercentage(percentageValue)}
-                                        </tspan>
-                                        <tspan
-                                            className="fill-muted-foreground font-medium"
-                                            x={viewBox.cx}
-                                            y={(viewBox.cy || 0) + 14}
-                                        >
-                                            {percentageLabel}
-                                        </tspan>
-                                    </text>
-                                );
-                            }
-                        }}
-                    />
-                </Recharts.PolarRadiusAxis>
-                <ChartTooltip
-                    content={<ChartTooltipContent
-                        formatter={(value, _, props) => {
-                            return (
-                                <div className='flex items-center gap-1'>
-                                    <div className='size-2 rounded-full opacity-50' style={{backgroundColor: props.payload?.color}}></div>
-                                    <div className='text-xs text-muted-foreground'>{props.payload?.datatype}</div>
-                                    <div className='ml-3 font-mono text-xs'>{formatPercentage(value)}</div>
-                                </div>
-                            );
-                        }}
-                        nameKey="datatype"
-                        hideLabel
-                    />}
-                    cursor={false}
-                    isAnimationActive={false}
-                />
-            </Recharts.RadialBarChart>
-        </ChartContainer>
-    );
-};
 
 const FunnelArrow: React.FC = () => {
     return (
@@ -380,28 +251,31 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                 <div className='mx-auto grid grid-cols-3 items-center justify-center'>
                                     <div className='relative border-r px-6'>
                                         <NewsletterRadialChart
+                                            className='aspect-square'
                                             config={sentChartConfig}
                                             data={sentChartData}
                                             percentageLabel='Sent'
-                                            percentageValue={1}
+                                            percentageValue={formatPercentage(1)}
                                         />
                                         <FunnelArrow />
                                     </div>
                                     <div className='relative border-r px-6'>
                                         <NewsletterRadialChart
+                                            className='aspect-square'
                                             config={openedChartConfig}
                                             data={openedChartData}
                                             percentageLabel='Open rate'
-                                            percentageValue={stats.openedRate}
+                                            percentageValue={formatPercentage(stats.openedRate)}
                                         />
                                         <FunnelArrow />
                                     </div>
                                     <div className='px-6'>
                                         <NewsletterRadialChart
+                                            className='aspect-square'
                                             config={clickedChartConfig}
                                             data={clickedChartData}
                                             percentageLabel='Click rate'
-                                            percentageValue={stats.clickedRate}
+                                            percentageValue={formatPercentage(stats.clickedRate)}
                                         />
                                     </div>
                                 </div>
