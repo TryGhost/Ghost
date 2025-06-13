@@ -81,6 +81,7 @@ const QUERY_KEYS = {
     postsByAccount: ['account_posts'],
     postsLikedByAccount: ['account_liked_posts'],
     notifications: (handle: string) => ['notifications', handle],
+    notificationsCount: (handle: string) => ['notifications_count', handle],
     blockedAccounts: (handle: string) => ['blocked_accounts', handle],
     blockedDomains: (handle: string) => ['blocked_domains', handle],
     post: (id: string) => ['post', id]
@@ -2326,4 +2327,39 @@ export async function uploadFile(file: File) {
     const siteUrl = await getSiteUrl();
     const api = createActivityPubAPI('index', siteUrl);
     return api.upload(file);
+}
+
+export function useNotificationsCountForUser(handle: string) {
+    const siteUrl = useCallback(async () => await getSiteUrl(), []);
+    const api = useCallback(async () => {
+        const url = await siteUrl();
+        return createActivityPubAPI(handle, url);
+    }, [handle, siteUrl]);
+
+    return useQuery({
+        queryKey: QUERY_KEYS.notificationsCount(handle),
+        async queryFn() {
+            const activityPubAPI = await api();
+            const response = await activityPubAPI.getNotificationsCount();
+            return response.count;
+        }
+    });
+}
+
+export function useResetNotificationsCountForUser(handle: string) {
+    const queryClient = useQueryClient();
+    const siteUrl = useCallback(async () => await getSiteUrl(), []);
+    const api = useCallback(async () => {
+        const url = await siteUrl();
+        return createActivityPubAPI(handle, url);
+    }, [handle, siteUrl]);
+
+    return useMutation({
+        async mutationFn() {
+            // Clear the count in the cache
+            queryClient.setQueryData(QUERY_KEYS.notificationsCount(handle), 0);
+            const activityPubAPI = await api();
+            return activityPubAPI.resetNotificationsCount();
+        }
+    });
 }
