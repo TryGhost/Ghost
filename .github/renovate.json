@@ -3,6 +3,11 @@
         "github>tryghost/renovate-config:quiet"
     ],
     "rebaseWhen": "never",
+    "automergeSchedule": [
+        "* 17-23 * * 5",
+        "* * * * 0,6,",
+        "* 0-12 * * 1"
+    ],
     "ignoreDeps": [
         "got",
         "intl-messageformat",
