@@ -186,7 +186,7 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                     setSelectedContentType(value as ContentType);
                 }}>
                     <TabsList>
-                        <TabsTrigger value={CONTENT_TYPES.POSTS_AND_PAGES}>All content</TabsTrigger>
+                        <TabsTrigger value={CONTENT_TYPES.POSTS_AND_PAGES}>Posts & pages</TabsTrigger>
                         <TabsTrigger value={CONTENT_TYPES.POSTS}>Posts</TabsTrigger>
                         <TabsTrigger value={CONTENT_TYPES.PAGES}>Pages</TabsTrigger>
                     </TabsList>
