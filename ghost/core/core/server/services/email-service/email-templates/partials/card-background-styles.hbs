@@ -1,0 +1,16 @@
+{{#hasFeature "emailCustomization"}}
+{{#if backgroundIsDark}}
+    background-color: #15212A;
+    background-color: rgba(0, 0, 0, 0.15);
+    border: 1px solid #343434;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+{{else}}
+    background-color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.25);
+    border: 1px solid #e0e7eb;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+{{/if}}
+{{else}}
+    border: 1px solid #e0e7eb;
+    background-color: #ffffff;
+{{/hasFeature}}

@@ -845,6 +845,9 @@ class EmailRenderer {
         registerHelpers(this.#handlebars, labs, this.#t);
 
         // Partials
+        const cardBackgroundStyles = await fs.readFile(path.join(__dirname, './email-templates/partials/', `card-background-styles.hbs`), 'utf8');
+        this.#handlebars.registerPartial('cardBackgroundStyles', cardBackgroundStyles);
+
         const cssPartialSource = await fs.readFile(path.join(__dirname, './email-templates/partials/', `styles.hbs`), 'utf8');
         this.#handlebars.registerPartial('styles', cssPartialSource);
 

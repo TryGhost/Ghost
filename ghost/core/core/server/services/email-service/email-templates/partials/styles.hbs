@@ -1160,21 +1160,13 @@ td.kg-card-spacing {
     {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
         color: #ffffff;
-        background-color: #15212A;
-        background-color: rgba(0, 0, 0, 0.15);
-        border: 1px solid #343434;
-        border: 1px solid rgba(255, 255, 255, 0.25);
     {{else}}
         color: #15212A;
-        background-color: #ffffff;
-        background-color: rgba(255, 255, 255, 0.25);
-        border: 1px solid #e0e7eb;
-        border: 1px solid rgba(0, 0, 0, 0.12);
     {{/if}}
     {{else}}
     color: #15212A;
-    border: 1px solid #e0e7eb;
     {{/hasFeature}}
+    {{> cardBackgroundStyles}}
 }
 
 .kg-bookmark-content {
@@ -1448,22 +1440,7 @@ td.kg-card-spacing {
 }
 
 .kg-cta-bg-white {
-    {{#hasFeature "emailCustomization"}}
-    {{#if backgroundIsDark}}
-        background-color: #15212A;
-        background-color: rgba(0, 0, 0, 0.15);
-        border: 1px solid #343434;
-        border: 1px solid rgba(255, 255, 255, 0.25);
-    {{else}}
-        background-color: #ffffff;
-        background-color: rgba(255, 255, 255, 0.25);
-        border: 1px solid #e0e7eb;
-        border: 1px solid rgba(0, 0, 0, 0.12);
-    {{/if}}
-    {{else}}
-    background: #fff;
-    border: 1px solid #e0e7eb;
-    {{/hasFeature}}
+    {{> cardBackgroundStyles}}
 }
 
 .kg-cta-bg-grey {
@@ -2020,17 +1997,7 @@ img.kg-cta-image {
     {{else}}
         border-radius: 0;
     {{/if}}
-    {{#if backgroundIsDark}}
-        background-color: #15212A;
-        background-color: rgba(0, 0, 0, 0.15);
-        border: 1px solid #343434;
-        border: 1px solid rgba(255, 255, 255, 0.25);
-    {{else}}
-        background-color: #FFFFFF;
-        background-color: rgba(255, 255, 255, 0.25);
-        border: 1px solid #e0e7eb;
-        border: 1px solid rgba(0, 0, 0, 0.12);
-    {{/if}}
+    {{> cardBackgroundStyles}}
 }
 
 .kg-product-card h4 {
@@ -2184,22 +2151,7 @@ img.kg-cta-image {
     width: 100%;
     margin: 0 auto 1.5em;
     border-radius: 3px;
-    {{#hasFeature "emailCustomization"}}
-    {{#if backgroundIsDark}}
-        background-color: #15212A;
-        background-color: rgba(0, 0, 0, 0.15);
-        border: 1px solid #343434;
-        border: 1px solid rgba(255, 255, 255, 0.25);
-    {{else}}
-        background-color: #ffffff;
-        background-color: rgba(255, 255, 255, 0.25);
-        border: 1px solid #e0e7eb;
-        border: 1px solid rgba(0, 0, 0, 0.12);
-    {{/if}}
-    {{else}}
-    border: 1px solid #e0e7eb;
-    background-color: #ffffff;
-    {{/hasFeature}}
+    {{> cardBackgroundStyles}}
 }
 .kg-audio-title {
     display: block;
@@ -2264,22 +2216,7 @@ img.kg-cta-image {
     width: 100%;
     margin: 0 0 1.5em 0;
     border-radius: 3px;
-    {{#hasFeature "emailCustomization"}}
-    {{#if backgroundIsDark}}
-        background-color: #15212A;
-        background-color: rgba(0, 0, 0, 0.15);
-        border: 1px solid #343434;
-        border: 1px solid rgba(255, 255, 255, 0.25);
-    {{else}}
-        background-color: #ffffff;
-        background-color: rgba(255, 255, 255, 0.25);
-        border: 1px solid #e0e7eb;
-        border: 1px solid rgba(0, 0, 0, 0.12);
-    {{/if}}
-    {{else}}
-    border: 1px solid #e0e7eb;
-    background-color: #ffffff;
-    {{/hasFeature}}
+    {{> cardBackgroundStyles}}
 }
 .kg-file-title {
     display: block;
@@ -2365,21 +2302,7 @@ img.kg-cta-image {
     border-radius: 4px;
     margin-bottom: 24px;
     width: 100%;
-    {{#hasFeature "emailCustomization"}}
-    {{#if backgroundIsDark}}
-        background-color: #15212A;
-        background-color: rgba(0, 0, 0, 0.15);
-        border: 1px solid #343434;
-        border: 1px solid rgba(255, 255, 255, 0.25);
-    {{else}}
-        background-color: #ffffff;
-        background-color: rgba(255, 255, 255, 0.25);
-        border: 1px solid #e0e7eb;
-        border: 1px solid rgba(0, 0, 0, 0.12);
-    {{/if}}
-    {{else}}
-    border: 1px solid #E5ECF0;
-    {{/hasFeature}}
+    {{> cardBackgroundStyles}}
 }
 
 .kg-toggle-heading {
