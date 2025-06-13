@@ -12,7 +12,6 @@ Object {
       "ActivityPub": true,
       "additionalPaymentMethods": true,
       "announcementBar": true,
-      "apNotification": true,
       "audienceFeedback": true,
       "collectionsCard": true,
       "contentVisibility": true,
