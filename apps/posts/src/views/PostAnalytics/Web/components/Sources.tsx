@@ -26,7 +26,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({dataTableHeader, data, defau
                 {data?.map((row) => {
                     return (
                         <DataListRow key={row.source} className='group/row'>
-                            <DataListBar className='bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/60 opacity-20 transition-all group-hover/row:opacity-40' style={{
+                            <DataListBar style={{
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
                             }} />
                             <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>

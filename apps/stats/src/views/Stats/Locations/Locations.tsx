@@ -261,12 +261,9 @@ const Locations:React.FC = () => {
                                                     const countryName = getCountryName(`${row.location}`) || 'Unknown';
                                                     return (
                                                         <DataListRow key={row.location || 'unknown'}>
-                                                            <DataListBar
-                                                                className='bg-gradient-to-r from-[hsl(var(--chart-blue))]/40 to-[hsl(var(--chart-blue))]/80  opacity-20 transition-all'
-                                                                style={{
-                                                                    width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
-                                                                }}
-                                                            />
+                                                            <DataListBar style={{
+                                                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
+                                                            }}/>
                                                             <DataListItemContent className='group-hover/data:max-w-[calc(100%-140px)]'>
                                                                 <div className='flex items-center space-x-3 overflow-hidden'>
                                                                     <Flag
