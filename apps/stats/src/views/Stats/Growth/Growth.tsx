@@ -40,7 +40,7 @@ type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
 const Growth: React.FC = () => {
     const {range} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopPostsOrder>('free_members desc');
-    const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
+    const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS);
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
