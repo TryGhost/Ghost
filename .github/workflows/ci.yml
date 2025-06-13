@@ -831,6 +831,112 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+  job_e2e:
+    name: E2E tests
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_core == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: true
+      BASE_URL: http://localhost:2368
+      database__connection__host: localhost
+      ADMIN_USERNAME: test@example.com
+      ADMIN_PASSWORD: not_very_secure
+      EMAIL_PROVIDER: mailhog
+      MAILHOG_API_URL: http://localhost:8025
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-node@v4
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Start supporting services
+        run: |
+          docker compose -f .docker/compose/compose.ci.e2e.yml up -d
+          docker compose -f .docker/compose/compose.ci.e2e.yml ps
+
+      - name: Wait for MySQL and Redis
+        run: |
+          timeout 60 bash -c 'until docker compose -f .docker/compose/compose.ci.e2e.yml exec -T mysql-test mysql -uroot -proot -e "SELECT 1"; do sleep 1; done'
+          timeout 60 bash -c 'until docker compose -f .docker/compose/compose.ci.e2e.yml exec -T redis-test redis-cli ping; do sleep 1; done'
+
+      - name: Build packages
+        run: yarn nx run-many -t build --exclude=ghost-admin
+
+      - name: Build Admin
+        run: yarn nx run ghost-admin:build:dev
+
+      - name: Setup Ghost database
+        working-directory: ghost/core
+        env:
+          database__client: mysql2
+          database__connection__host: localhost
+          database__connection__user: root
+          database__connection__password: root
+          database__connection__database: ghost_test
+          database__connection__port: 3306
+        run: |
+          yarn knex-migrator init
+          yarn knex-migrator migrate
+
+      - name: Start Ghost
+        working-directory: ghost/core
+        env:
+          mail__options__host: localhost
+          database__client: mysql2
+          database__connection__host: localhost
+          database__connection__user: root
+          database__connection__password: root
+          database__connection__database: ghost_test
+          database__connection__port: 3306
+        run: |
+          yarn dev &
+          sleep 10
+
+      - name: Wait for Ghost to be ready
+        run: |
+          timeout 120 bash -c 'until curl -f http://localhost:2368/ghost/api/admin/site/; do sleep 2; done'
+
+      - name: Setup Playwright
+        uses: ./.github/actions/setup-playwright
+
+      - name: Run E2E tests
+        working-directory: e2e
+        run: yarn test:e2e
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-playwright-report
+          path: e2e/playwright-report
+          retention-days: 30
+
+      - name: Upload test traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: e2e/test-results
+          retention-days: 7
+
+      - name: Stop services
+        if: always()
+        run: |
+          docker compose -f .docker/compose/compose.ci.e2e.yml down -v
+
+
   job_tinybird_forward:
     name: Tinybird Tests (Forward)
     runs-on: ubuntu-latest
@@ -972,7 +1078,6 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           flags: admin-tests
-          move_coverage_to_trash: true
 
       - name: Restore E2E coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
@@ -990,7 +1095,6 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           flags: e2e-tests
-          move_coverage_to_trash: true
 
   job_required_tests:
     name: All required tests passed or skipped
@@ -1009,6 +1113,7 @@ jobs:
         job_admin_x_activitypub,
         job_comments_ui,
         job_signup_form,
+        job_e2e,
         job_tinybird_forward
       ]
     if: always()
