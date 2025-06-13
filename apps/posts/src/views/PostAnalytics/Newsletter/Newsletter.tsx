@@ -22,6 +22,45 @@ const FunnelArrow: React.FC = () => {
     );
 };
 
+interface BlockTooltipProps {
+    dataColor: string;
+    value: string;
+    avgValue: string;
+}
+
+const BlockTooltip:React.FC<BlockTooltipProps> = ({
+    dataColor,
+    value,
+    avgValue
+}) => {
+    return (
+        <div className='absolute left-1/2 top-6 z-50 flex w-[200px] -translate-x-1/2 flex-col items-stretch gap-1.5 rounded-md bg-background px-4 py-2 text-sm opacity-0 shadow-md transition-all group-hover/block:top-3 group-hover/block:opacity-100'>
+            <div className='flex items-center justify-between gap-4'>
+                <div className='flex items-center gap-2 text-muted-foreground'>
+                    <div className='size-2 rounded-full bg-chart-blue opacity-50'
+                        style={{
+                            backgroundColor: dataColor
+                        }}
+                    ></div>
+                    This newsletter
+                </div>
+                <div className='text-right font-mono'>
+                    {value}
+                </div>
+            </div>
+            <div className='flex items-center justify-between gap-4'>
+                <div className='flex items-center gap-2 text-muted-foreground'>
+                    <div className='size-2 rounded-full bg-chart-gray opacity-80'></div>
+                    Average
+                </div>
+                <div className='text-right font-mono'>
+                    {avgValue}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const Newsletter: React.FC<postAnalyticsProps> = () => {
     const {postId} = useParams();
     const navigate = useNavigate();
@@ -248,7 +287,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         </KpiCardContent>
                                     </KpiCard>
                                 </div>
-                                <div className='mx-auto grid grid-cols-3 items-center justify-center'>
+                                <div className='mx-auto grid grid-cols-3 items-center justify-center transition-all'>
                                     <div className='relative border-r px-6'>
                                         <NewsletterRadialChart
                                             className='aspect-square'
@@ -256,26 +295,39 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             data={sentChartData}
                                             percentageLabel='Sent'
                                             percentageValue={formatPercentage(1)}
+                                            tooltip={false}
                                         />
                                         <FunnelArrow />
                                     </div>
-                                    <div className='relative border-r px-6'>
+                                    <div className='group/block relative border-r px-6 transition-all hover:bg-muted/25'>
+                                        <BlockTooltip
+                                            avgValue={formatPercentage(averageStats.openedRate)}
+                                            dataColor='hsl(var(--chart-blue))'
+                                            value={formatPercentage(stats.openedRate)}
+                                        />
                                         <NewsletterRadialChart
                                             className='aspect-square'
                                             config={openedChartConfig}
                                             data={openedChartData}
                                             percentageLabel='Open rate'
                                             percentageValue={formatPercentage(stats.openedRate)}
+                                            tooltip={false}
                                         />
                                         <FunnelArrow />
                                     </div>
-                                    <div className='px-6'>
+                                    <div className='group/block relative px-6 transition-all hover:bg-muted/25'>
+                                        <BlockTooltip
+                                            avgValue={formatPercentage(averageStats.clickedRate)}
+                                            dataColor='hsl(var(--chart-teal))'
+                                            value={formatPercentage(stats.clickedRate)}
+                                        />
                                         <NewsletterRadialChart
                                             className='aspect-square'
                                             config={clickedChartConfig}
                                             data={clickedChartData}
                                             percentageLabel='Click rate'
                                             percentageValue={formatPercentage(stats.clickedRate)}
+                                            tooltip={false}
                                         />
                                     </div>
                                 </div>

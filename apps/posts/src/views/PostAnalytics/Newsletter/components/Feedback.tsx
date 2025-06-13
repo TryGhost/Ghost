@@ -1,4 +1,4 @@
-import {Avatar, AvatarFallback, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, Tabs, TabsList, TabsTrigger, formatMemberName, formatPercentage, formatTimestamp, getMemberInitials, stringToHslColor, useSimplePagination} from '@tryghost/shade';
+import {Avatar, AvatarFallback, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, HTable, LucideIcon, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, Tabs, TabsList, TabsTrigger, formatMemberName, formatPercentage, formatTimestamp, getMemberInitials, stringToHslColor, useSimplePagination} from '@tryghost/shade';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {usePostFeedback} from '@src/hooks/usePostFeedback';
 import {useState} from 'react';
@@ -44,24 +44,27 @@ const Feedback: React.FC<FeedbackProps> = ({feedbackStats}) => {
             </CardHeader>
             {feedbackStats.totalFeedback > 0 ?
                 <CardContent className='pb-3'>
-                    <Tabs className='pb-3' defaultValue="positive" value={activeFeedbackTab} variant='button' onValueChange={value => setActiveFeedbackTab(value as 'positive' | 'negative')}>
-                        <TabsList className='gap-1'>
-                            <TabsTrigger className='h-7' value="positive">
-                                <div className='flex items-center gap-1 text-xs'>
-                                    <LucideIcon.ThumbsUp size={14} strokeWidth={1.25} />
-                                    <span className='font-medium'>More like this</span>
-                                    <span className='font-semibold tracking-tight'>{formatPercentage(feedbackStats.positiveFeedback / feedbackStats.totalFeedback)}</span>
-                                </div>
-                            </TabsTrigger>
-                            <TabsTrigger className='h-7' value="negative">
-                                <div className='flex items-center gap-1 text-xs'>
-                                    <LucideIcon.ThumbsDown size={14} strokeWidth={1.25} />
-                                    <span className='font-medium'>Less like this</span>
-                                    <span className='font-semibold tracking-tight'>{formatPercentage(feedbackStats.negativeFeedback / feedbackStats.totalFeedback)}</span>
-                                </div>
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
+                    <div className='flex items-center justify-between gap-3'>
+                        <Tabs className='pb-3' defaultValue="positive" value={activeFeedbackTab} variant='button' onValueChange={value => setActiveFeedbackTab(value as 'positive' | 'negative')}>
+                            <TabsList className='gap-1'>
+                                <TabsTrigger className='h-7' value="positive">
+                                    <div className='flex items-center gap-1 text-xs'>
+                                        <LucideIcon.ThumbsUp size={14} strokeWidth={1.25} />
+                                        <span className='font-medium'>More like this</span>
+                                        <span className='font-semibold tracking-tight'>{formatPercentage(feedbackStats.positiveFeedback / feedbackStats.totalFeedback)}</span>
+                                    </div>
+                                </TabsTrigger>
+                                <TabsTrigger className='h-7' value="negative">
+                                    <div className='flex items-center gap-1 text-xs'>
+                                        <LucideIcon.ThumbsDown size={14} strokeWidth={1.25} />
+                                        <span className='font-medium'>Less like this</span>
+                                        <span className='font-semibold tracking-tight'>{formatPercentage(feedbackStats.negativeFeedback / feedbackStats.totalFeedback)}</span>
+                                    </div>
+                                </TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                        <HTable className='mr-2'>Date</HTable>
+                    </div>
                     <Separator />
                     {isLoading ?
                         <SkeletonTable className='mt-3' lines={3} />

@@ -60,6 +60,9 @@ const TopPosts: React.FC<TopPostsProps> = ({
                         ))
                         :
                         <TableBody>
+                            <TableRow className='border-none'>
+                                <TableCell className='pointer-events-none !h-2 !p-0' colSpan={4}></TableCell>
+                            </TableRow>
                             {topPostsData?.stats?.map((post: TopPostViewsStats) => (
                                 <TableRow key={post.post_id} className='border-none hover:cursor-pointer' onClick={() => {
                                     navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});

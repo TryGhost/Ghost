@@ -222,7 +222,7 @@ const NewsletterKPIs: React.FC<{
                                         <defs>
                                             <linearGradient id="barGradient" x1="0" x2="0" y1="0" y2="1">
                                                 <stop offset="0%" stopColor={tabConfig[currentTab].color} stopOpacity={0.8} />
-                                                <stop offset="100%" stopColor={tabConfig[currentTab].color} stopOpacity={0.3} />
+                                                <stop offset="100%" stopColor={tabConfig[currentTab].color} stopOpacity={0.6} />
                                             </linearGradient>
                                         </defs>
                                         <Recharts.CartesianGrid horizontal={false} vertical={false} />
@@ -245,6 +245,7 @@ const NewsletterKPIs: React.FC<{
                                         />
                                         <ChartTooltip
                                             content={<BarTooltipContent />}
+                                            cursor={false}
                                             isAnimationActive={false}
                                             position={{y: 10}}
                                         />
