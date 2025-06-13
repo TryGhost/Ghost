@@ -63,10 +63,11 @@ const Posts: React.FC<PostsProps> = ({
                     {noResultsMessage}
                 </NoValueLabel>
             )}
-            <ul className='mx-auto flex max-w-[640px] flex-col'>
+            <ul className='mx-auto flex max-w-[640px] flex-col' data-testid="profile-posts-list">
                 {posts.map((activity, index) => (
                     <li
                         key={`posts-${activity.id}`}
+                        data-testid="profile-post-item"
                         data-test-view-article
                     >
                         <FeedItem
@@ -75,17 +76,11 @@ const Posts: React.FC<PostsProps> = ({
                             commentCount={activity.object.replyCount}
                             isLoading={isLoading}
                             layout='feed'
+                            likeCount={activity.object.likeCount}
                             object={activity.object}
                             repostCount={activity.object.repostCount}
                             type={activity.type}
                             onClick={() => {
-                                if (activity.object.type === 'Note') {
-                                    navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
-                                } else if (activity.object.type === 'Article') {
-                                    navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
-                                }
-                            }}
-                            onCommentClick={() => {
                                 if (activity.object.type === 'Note') {
                                     navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
                                 } else if (activity.object.type === 'Article') {

@@ -153,7 +153,7 @@
 
                             {{#if (or feedbackButtons newsletter.showCommentCta) }}
                                 <tr>
-                                    <td dir="ltr" width="100%" style="background-color: #ffffff; text-align: center; padding: 32px 0 24px; border-bottom: 1px solid #e0e7eb;" align="center">
+                                    <td class="feedback-buttons-container" dir="ltr" width="100%" align="center">
                                         <table class="feedback-buttons" role="presentation" border="0" cellpadding="0" cellspacing="0">
                                             <tr>
                                                 {{#if feedbackButtons }}
@@ -171,7 +171,7 @@
 
                              {{#if latestPosts.length}}
                                 <tr>
-                                    <td style="padding: 24px 0; border-bottom: 1px solid #e0e7eb;">
+                                    <td class="latest-posts-container">
                                         <h3 class="latest-posts-header">{{t 'Keep reading'}}</h3>
                                         {{> latestPosts}}
                                     </td>
@@ -193,7 +193,7 @@
                                                     <p>{{t 'Member since'}}: %%{created_at}%%</p>
                                                 </td>
                                                 <td align="right" valign="bottom" class="manage-subscription">
-                                                    <a href="%%{manage_account_url}%%"> {{t 'Manage subscription'}} &rarr;</a>
+                                                    <a href="%%{manage_account_url}%%"> {{t 'Manage subscription'}}</a>
                                                 </td>
                                             </tr>
                                         </table>
@@ -210,7 +210,7 @@
                                         <tr>
                                             <td class="footer">{{site.title}} &copy; {{year}} – <a href="%%{unsubscribe_url}%%">{{t 'Unsubscribe'}}</a></td>
                                         </tr>
-
+                                        
                                         {{#if showBadge }}
                                             <tr>
                                                 <td class="footer-powered"><a href="https://ghost.org/?via=pbg-newsletter"><img src="https://static.ghost.org/v4.0.0/images/powered.png" border="0" width="142" height="30" class="gh-powered" alt="Powered by Ghost"></a></td>
@@ -219,9 +219,9 @@
                                     </table>
                                 </td>
                             </tr>
-
                         </table>
                         <!-- END CENTERED WHITE CONTAINER -->
+
                     </div>
                 </td>
                 <td>&nbsp;</td>

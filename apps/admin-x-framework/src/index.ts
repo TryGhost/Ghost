@@ -2,11 +2,18 @@
 export type {StatsConfig, FrameworkContextType, FrameworkProviderProps, TopLevelFrameworkProps} from './providers/FrameworkProvider';
 export {FrameworkProvider, useFramework} from './providers/FrameworkProvider';
 
+// Currency utilities
+export {getSymbol} from './utils/currency';
+
 // Stats utilities
 export {getStatEndpointUrl, getToken} from './utils/stats-config';
 
 // Post utilities
 export {hasBeenEmailed} from './utils/post-utils';
+
+// Source utilities
+export type {BaseSourceData, ProcessedSourceData, ExtendSourcesOptions} from './utils/source-utils';
+export {SOURCE_DOMAIN_MAP, extractDomain, isDomainOrSubdomain, getFaviconDomain, processSources, extendSourcesWithPercentages} from './utils/source-utils';
 
 // Routing
 export type {RouteObject} from 'react-router';

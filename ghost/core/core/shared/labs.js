@@ -46,12 +46,12 @@ const PRIVATE_FEATURES = [
     'importMemberTier',
     'urlCache',
     'emailCustomization',
-    'emailCustomizationPrototype',
     'emailCustomizationAlpha',
     'mailEvents',
     'collectionsCard',
     'lexicalIndicators',
     'trafficAnalyticsAlpha',
+    'updatedMainNav',
     'contentVisibilityAlpha',
     'explore'
 ];

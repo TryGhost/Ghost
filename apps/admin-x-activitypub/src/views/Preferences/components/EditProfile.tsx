@@ -371,7 +371,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                     )}
                 />
                 <DialogFooter>
-                    <DialogClose>
+                    <DialogClose asChild>
                         <Button variant='outline'>Cancel</Button>
                     </DialogClose>
                     <Button disabled={isSubmitting || isProfileImageUploading || isCoverImageUploading} type="submit">Save</Button>

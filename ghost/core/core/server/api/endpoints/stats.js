@@ -110,6 +110,36 @@ const controller = {
             return await statsService.api.getReferrersHistory();
         }
     },
+    referrersHistoryWithRange: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'date_from',
+            'date_to',
+            'timezone',
+            'member_status'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'referrersHistoryWithRange',
+                options: {
+                    date_from: frame.options.date_from,
+                    date_to: frame.options.date_to,
+                    timezone: frame.options.timezone,
+                    member_status: frame.options.member_status
+                }
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getReferrersHistoryWithRange(frame.options.date_from, frame.options.date_to);
+        }
+    },
     topContent: {
         headers: {
             cacheInvalidate: false
@@ -119,7 +149,8 @@ const controller = {
             'date_to',
             'timezone',
             'member_status',
-            'tb_version'
+            'tb_version',
+            'post_type'
         ],
         permissions: {
             docName: 'posts',
@@ -145,7 +176,8 @@ const controller = {
             'limit',
             'date_from',
             'date_to',
-            'timezone'
+            'timezone',
+            'post_type'
         ],
         permissions: {
             docName: 'posts',
@@ -160,12 +192,45 @@ const controller = {
                     limit: frame.options.limit,
                     date_from: frame.options.date_from,
                     date_to: frame.options.date_to,
-                    timezone: frame.options.timezone
+                    timezone: frame.options.timezone,
+                    post_type: frame.options.post_type
                 }
             };
         },
         async query(frame) {
             return await statsService.api.getTopPosts(frame.options);
+        }
+    },
+    topPostsViews: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'order',
+            'limit',
+            'date_from',
+            'date_to',
+            'timezone'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'topPostsViews',
+                options: {
+                    order: frame.options.order,
+                    limit: frame.options.limit,
+                    date_from: frame.options.date_from,
+                    date_to: frame.options.date_to,
+                    timezone: frame.options.timezone
+                }
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getTopPostsViews(frame.options);
         }
     },
     newsletterStats: {
@@ -200,6 +265,66 @@ const controller = {
         },
         async query(frame) {
             return await statsService.api.getNewsletterStats(frame.options);
+        }
+    },
+    newsletterBasicStats: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'order',
+            'limit',
+            'date_from',
+            'date_to',
+            'timezone',
+            'newsletter_id'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'getNewsletterBasicStats',
+                options: {
+                    order: frame.options.order,
+                    limit: frame.options.limit,
+                    date_from: frame.options.date_from,
+                    date_to: frame.options.date_to,
+                    timezone: frame.options.timezone,
+                    newsletter_id: frame.options.newsletter_id
+                }
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getNewsletterBasicStats(frame.options);
+        }
+    },
+    newsletterClickStats: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'newsletter_id',
+            'post_ids'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'getNewsletterClickStats',
+                options: {
+                    newsletter_id: frame.options.newsletter_id,
+                    post_ids: frame.options.post_ids
+                }
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getNewsletterClickStats(frame.options);
         }
     },
     subscriberCount: {
@@ -299,6 +424,24 @@ const controller = {
         },
         async query(frame) {
             return await statsService.api.getGrowthStatsForPost(frame.data.id);
+        }
+    },
+    latestPost: {
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData() {
+            return {
+                method: 'getLatestPostStats'
+            };
+        },
+        async query() {
+            return await statsService.api.getLatestPostStats();
         }
     }
 };

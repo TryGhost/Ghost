@@ -16,6 +16,7 @@ const create = ({config, request}) => {
      * @param {string} [options.dateTo] - End date in YYYY-MM-DD format
      * @param {string} [options.timezone] - Timezone for the query
      * @param {string} [options.memberStatus] - Member status filter (defaults to 'all')
+     * @param {string} [options.postType] - Post type filter
      * @param {string} [options.tbVersion] - Tinybird version for API URL
      * @returns {Object} Object with URL and request options
      */
@@ -34,12 +35,31 @@ const create = ({config, request}) => {
 
         // Use snake_case for query parameters as expected by Tinybird API
         const searchParams = {
-            site_uuid: statsConfig.id,
-            date_from: options.dateFrom,
-            date_to: options.dateTo,
-            timezone: options.timezone || config.get('timezone'),
-            member_status: options.memberStatus || 'all'
+            site_uuid: statsConfig.id
         };
+
+        // todo: refactor all uses to simply pass options through
+        if (options.dateFrom) {
+            searchParams.date_from = options.dateFrom;
+        }
+        if (options.dateTo) {
+            searchParams.date_to = options.dateTo;
+        }
+        if (options.timezone) {
+            searchParams.timezone = options.timezone;
+        }
+        if (options.memberStatus) {
+            searchParams.member_status = options.memberStatus;
+        }
+        if (options.postType) {
+            searchParams.post_type = options.postType;
+        }
+        // Add any other options that might be needed
+        Object.entries(options).forEach(([key, value]) => {
+            if (!['dateFrom', 'dateTo', 'timezone', 'memberStatus'].includes(key)) {
+                searchParams[key] = value;
+            }
+        });
         
         // Convert searchParams to query string and append to URL
         const queryString = new URLSearchParams(searchParams).toString();

@@ -2099,7 +2099,12 @@ describe('Email renderer', function () {
                 button_corners: 'square',
                 button_style: 'outline',
                 link_style: 'normal',
-                image_corners: 'rounded'
+                image_corners: 'rounded',
+                section_title_color: '#BADA55',
+                post_title_color: '#BADA55',
+                divider_color: 'light', // should return our default hex value
+                link_color: '#BADA55',
+                header_background_color: '#BADA55'
             });
             const segment = null;
             const options = {};
@@ -2137,7 +2142,13 @@ describe('Email renderer', function () {
                     buttonStyle: 'outline',
                     titleFontWeight: 'semibold',
                     linkStyle: 'normal',
-                    imageCorners: 'rounded'
+                    imageCorners: 'rounded',
+                    sectionTitleColor: '#BADA55',
+                    postTitleColor: '#BADA55',
+                    dividerColor: '#e0e7eb',
+                    linkColor: '#BADA55',
+                    backgroundIsDark: false,
+                    headerBackgroundColor: '#BADA55'
                 },
                 labs: {emailCustomizationAlpha: true}
             });
@@ -2228,7 +2239,7 @@ describe('Email renderer', function () {
             const tests = [
                 {input: 'Invalid Color', expected: '#ffffff'},
                 {input: '#BADA55', expected: '#BADA55'},
-                {input: 'dark', expected: '#15212a'},
+                {input: 'dark', expected: '#ffffff'}, // not a valid hex color, first iteration of email customization had light/dark
                 {input: 'light', expected: '#ffffff'},
                 {input: null, expected: '#ffffff'}
             ];
@@ -2241,43 +2252,69 @@ describe('Email renderer', function () {
             }
         });
 
-        it('Uses the correct border colors based on settings', async function () {
-            settings.accent_color = '#ABC123';
-            const tests = [
-                {input: 'Invalid Color', expected: null},
-                {input: '#BADA55', expected: '#BADA55'},
-                {input: 'auto', expected: '#FFFFFF', background_color: '#15212A'},
-                {input: 'auto', expected: '#000000', background_color: '#ffffff'},
-                {input: 'light', expected: null},
-                {input: 'accent', expected: settings.accent_color},
-                {input: 'transparent', expected: null}
-            ];
-
-            for (const test of tests) {
-                const data = await templateDataWithSettings({
-                    border_color: test.input,
-                    background_color: test.background_color
-                });
-                assert.equal(data.borderColor, test.expected);
-            }
-        });
-
-        it('Uses the correct title colors based on settings and background color', async function () {
+        it('Uses the correct post title colors based on settings and background color', async function () {
             settings.accent_color = '#DEF456';
             const tests = [
                 {input: '#BADA55', expected: '#BADA55'},
                 {input: 'accent', expected: settings.accent_color},
                 {input: 'Invalid Color', expected: '#FFFFFF', background_color: '#15212A'},
-                {input: null, expected: '#000000', background_color: '#ffffff'}
+                {input: null, expected: '#000000', background_color: '#ffffff'},
+                {input: null, expected: '#FFFFFF', background_color: '#ffffff', header_background_color: '#000000'}
             ];
 
             for (const test of tests) {
                 const data = await templateDataWithSettings({
-                    title_color: test.input,
-                    background_color: test.background_color
+                    post_title_color: test.input,
+                    background_color: test.background_color,
+                    header_background_color: test.header_background_color || null
                 });
-                assert.equal(data.titleColor, test.expected);
+                assert.equal(data.postTitleColor, test.expected);
             }
+        });
+
+        it('Uses the correct post title color when emailCustomizationAlpha is enabled', async function () {
+            labsEnabled = true;
+            settings.accent_color = '#DEF456';
+            const tests = [
+                {input: '#BADA55', expected: '#BADA55'},
+                {input: 'accent', expected: settings.accent_color}
+            ];
+
+            for (const test of tests) {
+                const data = await templateDataWithSettings({
+                    post_title_color: test.input
+                });
+                assert.equal(data.postTitleColor, test.expected, `Failed for post_title_color input: ${test.input}`);
+            }
+        });
+
+        it('Uses the correct section title colors based on settings when emailCustomizationAlpha is enabled', async function () {
+            labsEnabled = true;
+            settings.accent_color = '#DEF456';
+            const tests = [
+                {input: '#BADA55', expected: '#BADA55'},
+                {input: 'accent', expected: settings.accent_color},
+                {input: 'auto', expected: null},
+                {input: 'Invalid Color', expected: null},
+                {input: null, expected: null}
+            ];
+
+            for (const test of tests) {
+                const data = await templateDataWithSettings({
+                    section_title_color: test.input
+                });
+                assert.equal(data.sectionTitleColor, test.expected);
+            }
+        });
+
+        it('Returns null for sectionTitleColor when emailCustomizationAlpha is disabled', async function () {
+            labsEnabled = false;
+            settings.accent_color = '#DEF456';
+
+            const data = await templateDataWithSettings({
+                section_title_color: '#BADA55'
+            });
+            assert.equal(data.sectionTitleColor, null);
         });
 
         it('Sets the backgroundIsDark correctly', async function () {
@@ -2306,6 +2343,40 @@ describe('Email renderer', function () {
                     background_color: test.background_color
                 });
                 assert.equal(data.linkColor, test.expected);
+            }
+        });
+
+        it('Uses the correct link colour best on settings when emailCustomizationAlpha is enabled', async function () {
+            labsEnabled = true;
+            settings.accent_color = '#A1B2C3';
+            const tests = [
+                {input: '#BADA55', expected: '#BADA55'},
+                {input: 'accent', expected: settings.accent_color},
+                {input: 'Invalid Color', expected: settings.accent_color}, // default to accent color
+                {input: null, expected: settings.accent_color} // default to accent color
+            ];
+
+            for (const test of tests) {
+                const data = await templateDataWithSettings({
+                    link_color: test.input
+                });
+                assert.equal(data.linkColor, test.expected);
+            }
+        });
+
+        it('Uses the correct header background color based on settings when emailCustomizationAlpha is enabled', async function () {
+            labsEnabled = true;
+            settings.accent_color = '#A1B2C3';
+            const tests = [
+                {input: '#BADA55', expected: '#BADA55'},
+                {input: 'accent', expected: settings.accent_color}
+            ];
+
+            for (const test of tests) {
+                const data = await templateDataWithSettings({
+                    header_background_color: test.input
+                });
+                assert.equal(data.headerBackgroundColor, test.expected);
             }
         });
 
@@ -2380,6 +2451,25 @@ describe('Email renderer', function () {
                 excerpt: 'post-excerpt post-excerpt-no-feature-image post-excerpt-serif-sans post-excerpt-left',
                 body: 'post-content-sans-serif'
             });
+        });
+
+        it('adds post-title-color class when emailCustomizationAlpha is enabled', async function () {
+            labsEnabled = true;
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'serif',
+                title_alignment: 'left',
+                body_font_category: 'sans_serif',
+                post_title_color: '#BADA55'
+            });
+
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.classes.title, 'post-title post-title-no-excerpt post-title-serif post-title-left post-title-color');
         });
 
         it('has correct excerpt classes for serif title+body', async function () {
@@ -2595,7 +2685,7 @@ describe('Email renderer', function () {
                 ...newsletterSettings
             });
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
-            assert.equal(data[property], expectedValue);
+            assert.equal(data[property], expectedValue, property);
         }
 
         async function testButtonBorderRadius(buttonCorners, expectedRadius) {
@@ -2681,7 +2771,7 @@ describe('Email renderer', function () {
             });
         });
 
-        function testLinkStyle(settingValue, expectedValue, options = {labsEnabled: true}) {
+        async function testLinkStyle(settingValue, expectedValue, options = {labsEnabled: true}) {
             testDataProperty({
                 link_style: settingValue
             }, 'linkStyle', expectedValue, options);
@@ -2697,6 +2787,89 @@ describe('Email renderer', function () {
 
         it('passes newsletter link_style through (emailCustomizationAlpha)', async function () {
             await testLinkStyle('normal', 'normal', {labsEnabled: false});
+        });
+
+        async function testDividerColor(settingValue, expectedValue, options = {labsEnabled: true}) {
+            testDataProperty({
+                divider_color: settingValue
+            }, 'dividerColor', expectedValue, options);
+        }
+
+        it('sets dividerColor to correct default (no labs flags)', async function () {
+            await testDividerColor('accent', '#e0e7eb', {labsEnabled: false});
+        });
+
+        it('sets dividerColor to correct default value (emailCustomizationAlpha)', async function () {
+            await testDividerColor(null, '#e0e7eb');
+        });
+
+        it('sets dividerColor to correct light value (emailCustomizationAlpha)', async function () {
+            await testDividerColor('light', '#e0e7eb');
+        });
+
+        it('sets dividerColor to correct accent value (emailCustomizationAlpha)', async function () {
+            settings.accent_color = '#aabbcc';
+            await testDividerColor('accent', '#aabbcc');
+        });
+
+        it('sets dividerColor to correct custom value (emailCustomizationAlpha)', async function () {
+            await testDividerColor('#BADA55', '#BADA55');
+        });
+
+        it('sets dividerColor to default value if invalid value is provided (emailCustomizationAlpha)', async function () {
+            await testDividerColor('#nothex', '#e0e7eb');
+        });
+
+        async function testButtonColor(settingValue, expectedValue, expectedTextValue, otherSettings = {}, options = {labsEnabled: true}) {
+            await testDataProperty({
+                ...otherSettings,
+                button_color: settingValue
+            }, 'buttonColor', expectedValue, options);
+            await testDataProperty({
+                ...otherSettings,
+                button_color: settingValue
+            }, 'buttonTextColor', expectedTextValue, options);
+        }
+
+        [
+            // button_color, expectedButtonColor, expectedButtonTextColor, otherSettings
+            [null, '#15212A', '#FFFFFF'],
+            ['accent', '#15212A', '#FFFFFF'],
+            ['auto', '#000000', '#FFFFFF', {background_color: '#dddddd'}], // light bg
+            ['auto', '#FFFFFF', '#000000', {background_color: '#222222'}], // dark bg
+            ['#BADA55', '#BADA55', '#000000'],
+            ['#nothex', '#15212A', '#FFFFFF']
+        ].forEach(([settingValue, expectedValue, expectedTextValue, otherSettings]) => {
+            it(`sets buttonColor/buttonTextColor to correct value for ${settingValue}${otherSettings ? ` with ${JSON.stringify(otherSettings)}` : ''} (emailCustomizationAlpha)`, async function () {
+                await testButtonColor(settingValue, expectedValue, expectedTextValue, otherSettings, {labsEnabled: true});
+            });
+        });
+
+        async function testHeaderBackgroundColor(settingValue, expectedValue, expectedIsDarkValue, otherSettings = {}, options = {labsEnabled: true}) {
+            await testDataProperty({
+                ...otherSettings,
+                header_background_color: settingValue
+            }, 'headerBackgroundColor', expectedValue, options);
+
+            await testDataProperty({
+                ...otherSettings,
+                header_background_color: settingValue
+            }, 'headerBackgroundIsDark', expectedIsDarkValue, options);
+        }
+
+        [
+            // header_background_color, expected headerBackgroundColor, expected headerBackgroundIsDark, otherSettings
+            [null, null, false],
+            [null, null, true, {background_color: '#000000'}],
+            ['accent', '#15212A', true],
+            ['#FFFFFF', '#FFFFFF', false],
+            ['#000000', '#000000', true],
+            ['nothex', null, false],
+            ['nothex', null, true, {background_color: '#000000'}]
+        ].forEach(([settingValue, expectedValue, expectedIsDarkValue, otherSettings]) => {
+            it(`sets headerBackgroundColor/headerBackgroundIsDark to correct values for ${settingValue}${otherSettings ? ` with ${JSON.stringify(otherSettings)}` : ''} (emailCustomizationAlpha)`, async function () {
+                await testHeaderBackgroundColor(settingValue, expectedValue, expectedIsDarkValue, otherSettings, {labsEnabled: true});
+            });
         });
     });
 

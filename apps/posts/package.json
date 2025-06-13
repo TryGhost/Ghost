@@ -22,6 +22,7 @@
         "test:unit": "vitest run test/unit",
         "lint": "yarn run lint:code && yarn run lint:test",
         "lint:code": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
+        "lint:code:fix": "eslint --ext .js,.ts,.cjs,.tsx --cache --fix src",
         "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx --cache test",
         "lint:fix": "eslint --ext .js,.ts,.cjs,.tsx --cache src --fix",
         "preview": "vite preview",
@@ -31,8 +32,8 @@
         "@tanstack/react-query": "4.36.1",
         "@testing-library/react": "14.3.1",
         "@types/jest": "29.5.14",
-        "@types/react": "18.3.22",
-        "msw": "2.8.4",
+        "@types/react": "18.3.23",
+        "msw": "2.10.2",
         "vite": "4.5.14",
         "vitest": "0.34.3"
     },

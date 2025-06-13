@@ -1,0 +1,52 @@
+{
+	local_certs
+}
+
+# Run `sudo ./.docker/caddy/trust_caddy_ca.sh` while the caddy container is running to trust the Caddy CA
+(common_ghost_config) {
+    # Proxy analytics requests with any prefix (e.g. /.ghost/analytics/ or /blog/.ghost/analytics/)
+    @analytics_paths path_regexp analytics_match ^(.*)/\.ghost/analytics(.*)$
+    handle @analytics_paths {
+        rewrite * {re.analytics_match.2}
+        reverse_proxy analytics-service:3000
+    }
+
+    handle /ember-cli-live-reload.js {
+        reverse_proxy admin:4200
+    }
+
+    reverse_proxy server:2368
+}
+
+# Allow http to be used
+## Disables automatic redirect to https in development
+http://localhost {
+    import common_ghost_config
+}
+
+# Allow https to be used by explicitly requesting https://localhost
+## Note: Caddy uses self-signed certificates. Your browser will warn you about this.
+## Run `sudo ./.docker/caddy/trust_caddy_ca.sh` while the caddy container is running to trust the Caddy CA
+https://localhost {
+    import common_ghost_config
+}
+
+# Access Ghost at https://site.ghost
+## Add the following to your /etc/hosts file:
+## 127.0.0.1 site.ghost
+site.ghost {
+    reverse_proxy server:2368
+}
+
+# Access Ghost Admin at https://admin.ghost/ghost
+## Add the following to your /etc/hosts file:
+## 127.0.0.1 admin.ghost
+admin.ghost {
+    handle /ember-cli-live-reload.js {
+        reverse_proxy admin:4200
+    }
+
+    handle {
+        reverse_proxy server:2368
+    }
+}

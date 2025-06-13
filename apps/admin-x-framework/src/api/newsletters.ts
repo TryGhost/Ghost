@@ -33,11 +33,10 @@ export type Newsletter = {
     show_subscription_details: boolean;
     show_latest_posts: boolean;
     background_color: string;
-    header_color: string;
-    border_color: string | null;
+    header_background_color: string;
     button_color: string | null;
     link_color: string | null;
-    title_color: string | null;
+    post_title_color: string | null;
     section_title_color: string | null;
     divider_color: string | null;
     button_corners: string | null;

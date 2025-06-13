@@ -54,6 +54,14 @@ class StatsService {
     }
 
     /**
+     * @param {string} startDate - Start date in YYYY-MM-DD format
+     * @param {string} endDate - End date in YYYY-MM-DD format
+     */
+    async getReferrersHistoryWithRange(startDate, endDate) {
+        return this.referrers.getReferrersHistoryWithRange(startDate, endDate);
+    }
+
+    /**
      * @param {string} postId
      */
     async getPostReferrers(postId) {
@@ -86,6 +94,20 @@ class StatsService {
     async getTopPosts(options = {}) {
         // Return the original { data: results } structure
         const result = await this.posts.getTopPosts(options);
+        return result;
+    }
+
+    /**
+     * Get top posts by views
+     * @param {Object} options
+     * @param {string} options.date_from - Start date in YYYY-MM-DD format
+     * @param {string} options.date_to - End date in YYYY-MM-DD format
+     * @param {string} options.timezone - Timezone to use for date interpretation
+     * @param {number} [options.limit=5] - Maximum number of posts to return
+     * @returns {Promise<{data: import('./PostsStatsService').TopPostResult[]}>}
+     */
+    async getTopPostsViews(options) {
+        const result = await this.posts.getTopPostsViews(options);
         return result;
     }
 
@@ -143,6 +165,59 @@ class StatsService {
     }
 
     /**
+     * Get stats for the latest published post
+     * @returns {Promise<{data: Object}>}
+     */
+    async getLatestPostStats() {
+        return await this.posts.getLatestPostStats();
+    }
+
+    /**
+     * Get newsletter basic stats for sent posts (without click data)
+     * @param {Object} options
+     * @param {string} [options.newsletter_id] - ID of the specific newsletter to get stats for
+     * @param {string} [options.order='published_at desc'] - Order field and direction
+     * @param {number} [options.limit=20] - Max number of results to return
+     * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
+     * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
+     * @returns {Promise<{data: Object[]}>}
+     */
+    async getNewsletterBasicStats(options = {}) {
+        // Extract newsletter_id from options
+        const {newsletter_id: newsletterId, ...otherOptions} = options;
+        
+        // If no newsletterId is provided, we can't get specific stats
+        if (!newsletterId) {
+            return {data: []};
+        }
+        
+        // Return newsletter basic stats for the specific newsletter
+        const result = await this.posts.getNewsletterBasicStats(newsletterId, otherOptions);
+        return result;
+    }
+
+    /**
+     * Get newsletter click stats for specific posts
+     * @param {Object} options
+     * @param {string} [options.newsletter_id] - ID of the specific newsletter to get stats for
+     * @param {string} [options.post_ids] - Comma-separated string of post IDs to get click data for
+     * @returns {Promise<{data: Object[]}>}
+     */
+    async getNewsletterClickStats(options = {}) {
+        // Extract newsletter_id and post_ids from options
+        const {newsletter_id: newsletterId, post_ids: postIds} = options;
+        
+        // If no newsletterId is provided, we can't get specific stats
+        if (!newsletterId) {
+            return {data: []};
+        }
+        
+        // Return newsletter click stats for the specific newsletter and posts
+        const result = await this.posts.getNewsletterClickStats(newsletterId, postIds);
+        return result;
+    }
+
+    /**
      * @param {object} deps
      *
      * @returns {StatsService}
@@ -172,7 +247,7 @@ class StatsService {
             members: new MembersService(deps),
             subscriptions: new SubscriptionStatsService(deps),
             referrers: new ReferrersStatsService(deps),
-            posts: new PostsStatsService(deps),
+            posts: new PostsStatsService(depsWithTinybird),
             content: new ContentStatsService(depsWithTinybird)
         });
     }
