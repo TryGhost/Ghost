@@ -98,7 +98,10 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
             return siteData.accent_color;
         }
 
-        return textColorForBackgroundColor(headerBackgroundColor() || backgroundColor()).hex();
+        const headerBgColor = headerBackgroundColor();
+        const bgColor = headerBgColor === 'transparent' ? backgroundColor() : headerBgColor;
+
+        return textColorForBackgroundColor(bgColor).hex();
     };
 
     const sectionTitleColor = () => {
