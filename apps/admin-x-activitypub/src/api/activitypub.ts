@@ -478,9 +478,11 @@ export class ActivityPubAPI {
             };
         }
 
-        return {
-            count: (json as {count: number}).count
-        };
+        const count = typeof (json as Record<string, unknown>).count === 'number'
+            ? (json as {count: number}).count
+            : 0;
+
+        return {count};
     }
 
     async resetNotificationsCount() {
