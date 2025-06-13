@@ -36,7 +36,7 @@
         "@types/jest": "29.5.14",
         "@types/react": "18.3.23",
         "@types/react-svg-map": "2.1.4",
-        "@vitejs/plugin-react": "4.5.0",
+        "@vitejs/plugin-react": "4.5.2",
         "msw": "2.10.2",
         "vite": "4.5.14",
         "vite-plugin-svgr": "4.3.0",

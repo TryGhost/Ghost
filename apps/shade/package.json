@@ -42,7 +42,7 @@
         "@types/lodash-es": "4.17.12",
         "@types/node": "22.15.31",
         "@types/react-world-flags": "1.6.0",
-        "@vitejs/plugin-react": "4.5.0",
+        "@vitejs/plugin-react": "4.5.2",
         "c8": "8.0.1",
         "chai": "4.5.0",
         "eslint-plugin-react-hooks": "4.6.2",
