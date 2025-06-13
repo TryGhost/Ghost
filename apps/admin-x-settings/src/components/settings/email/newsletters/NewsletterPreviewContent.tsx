@@ -49,6 +49,7 @@ const NewsletterPreviewContent: React.FC<{
     sectionTitleColor?: string;
     dividerColor?: string;
     buttonColor?: string;
+    buttonTextColor?: string;
     linkColor?: string;
     buttonStyle?: string;
     buttonCorners?: string;
@@ -92,6 +93,7 @@ const NewsletterPreviewContent: React.FC<{
     sectionTitleColor,
     dividerColor,
     buttonColor,
+    buttonTextColor,
     linkColor,
     buttonCorners,
     buttonStyle,
@@ -101,10 +103,7 @@ const NewsletterPreviewContent: React.FC<{
 }) => {
     const showHeader = headerIcon || headerTitle;
     const {config} = useGlobalData();
-    const hasEmailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
-
-    const hasAnyEmailCustomization = hasEmailCustomization || hasEmailCustomizationAlpha;
 
     const currentDate = new Date().toLocaleDateString('default', {
         year: 'numeric',
@@ -169,12 +168,12 @@ const NewsletterPreviewContent: React.FC<{
                                 <div className="py-3">
                                     {headerIcon && <img alt="" className="mx-auto mb-2 size-10" role="presentation" src={headerIcon} />}
                                     {headerTitle && <h4 className="mb-1 text-center text-[1.6rem] font-bold uppercase leading-tight tracking-tight text-grey-900" style={{color: headerTextColor}}>{headerTitle}</h4>}
-                                    {headerSubtitle && <h5 className="mb-1 text-center text-[1.3rem] font-normal text-grey-700" style={{color: hasAnyEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}>{headerSubtitle}</h5>}
+                                    {headerSubtitle && <h5 className="mb-1 text-center text-[1.3rem] font-normal text-grey-700" style={{color: hasEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}>{headerSubtitle}</h5>}
                                 </div>
                             )}
                             {showPostTitleSection && (
                                 <div className={clsx('flex flex-col py-8', titleAlignment === 'center' ? 'items-center' : 'items-start')}>
-                                    {hasAnyEmailCustomization ? (
+                                    {hasEmailCustomization ? (
                                         <>
                                             <h2 className={clsx(
                                                 'text-4xl font-bold leading-supertight text-black',
@@ -209,11 +208,11 @@ const NewsletterPreviewContent: React.FC<{
                                         'flex w-full justify-between text-center text-md leading-none text-grey-700',
                                         titleAlignment === 'center' ? 'flex-col gap-1' : 'flex-row'
                                     )}>
-                                        <p className="pb-1 text-[1.3rem]" style={{color: hasAnyEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}>
+                                        <p className="pb-1 text-[1.3rem]" style={{color: hasEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}>
                                             By {authorPlaceholder}
                                             <span className="before:pl-0.5 before:pr-1 before:content-['•']">{currentDate}</span>
                                         </p>
-                                        <p className="pb-1 text-[1.3rem] underline" style={{color: hasAnyEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}><span>View in browser</span></p>
+                                        <p className="pb-1 text-[1.3rem] underline" style={{color: hasEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}><span>View in browser</span></p>
                                     </div>
                                 </div>
                             )}
@@ -224,15 +223,15 @@ const NewsletterPreviewContent: React.FC<{
                                     <div className={clsx(
                                         'w-full max-w-[600px] bg-cover bg-no-repeat',
                                         showPostTitleSection ? '' : 'pt-6',
-                                        hasAnyEmailCustomization ? 'h-[unset]' : 'h-[300px]'
+                                        hasEmailCustomization ? 'h-[unset]' : 'h-[300px]'
                                     )}>
                                         <img alt="Feature" className={clsx(
                                             'min-h-full min-w-full shrink-0',
                                             imageCorners === 'square' && 'rounded-none',
                                             imageCorners === 'rounded' && 'rounded-md'
-                                        )} src={hasAnyEmailCustomization ? CoverImageLabs : CoverImage} />
+                                        )} src={hasEmailCustomization ? CoverImageLabs : CoverImage} />
                                     </div>
-                                    <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem] text-grey-700" style={{color: hasAnyEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}>Feature image caption</div>
+                                    <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem] text-grey-700" style={{color: hasEmailCustomization ? secondaryHeaderTextColor : secondaryTextColor}}>Feature image caption</div>
                                 </>
                             )}
                         </div>
@@ -245,7 +244,7 @@ const NewsletterPreviewContent: React.FC<{
                                 bodyFontCategory === 'serif' ? 'font-serif text-[1.8rem]' : 'text-[1.7rem] tracking-tight',
                                 (showFeatureImage || showPostTitleSection) ? '' : 'pt-8'
                             )} style={{borderColor: dividerColor}}>
-                                {hasAnyEmailCustomization ? (
+                                {hasEmailCustomization ? (
                                     <>
                                         <p className="mb-6" style={{color: textColor}}>This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.</p>
                                         <p className="mb-6" style={{color: textColor}}>Over there on the right you&apos;ll see some settings that allow you to customize the look and feel of this template – from colors and typography to layout and buttons – to make it perfectly suited to your brand.</p>
@@ -281,7 +280,8 @@ const NewsletterPreviewContent: React.FC<{
                                                         color: buttonColor || accentColor
                                                     }
                                                     : {
-                                                        backgroundColor: buttonColor || accentColor
+                                                        backgroundColor: buttonColor || accentColor,
+                                                        color: buttonTextColor
                                                     }
                                             }
                                             type="button"
@@ -339,7 +339,7 @@ const NewsletterPreviewContent: React.FC<{
                                             <h4
                                                 className={clsx(
                                                     'mt-0.5 text-[1.9rem] text-black',
-                                                    hasAnyEmailCustomization && titleFontCategory === 'serif' && 'font-serif',
+                                                    hasEmailCustomization && titleFontCategory === 'serif' && 'font-serif',
                                                     titleFontWeight === 'normal' && 'font-normal',
                                                     titleFontWeight === 'medium' && 'font-medium',
                                                     titleFontWeight === 'semibold' && 'font-semibold',
@@ -352,7 +352,7 @@ const NewsletterPreviewContent: React.FC<{
                                             <img alt="Latest post" className={clsx(
                                                 imageCorners === 'square' && 'rounded-none',
                                                 imageCorners === 'rounded' && 'rounded-md'
-                                            )} src={hasAnyEmailCustomization ? LatestPosts1Labs : LatestPosts1} />
+                                            )} src={hasEmailCustomization ? LatestPosts1Labs : LatestPosts1} />
                                         </div>
                                     </div>
                                     <div className="flex justify-between gap-4 py-2">
@@ -360,7 +360,7 @@ const NewsletterPreviewContent: React.FC<{
                                             <h4
                                                 className={clsx(
                                                     'mt-0.5 text-[1.9rem] text-black',
-                                                    hasAnyEmailCustomization && titleFontCategory === 'serif' && 'font-serif',
+                                                    hasEmailCustomization && titleFontCategory === 'serif' && 'font-serif',
                                                     titleFontWeight === 'normal' && 'font-normal',
                                                     titleFontWeight === 'medium' && 'font-medium',
                                                     titleFontWeight === 'semibold' && 'font-semibold',
@@ -372,7 +372,7 @@ const NewsletterPreviewContent: React.FC<{
                                             <img alt="Latest post" className={clsx(
                                                 imageCorners === 'square' && 'rounded-none',
                                                 imageCorners === 'rounded' && 'rounded-md'
-                                            )} src={hasAnyEmailCustomization ? LatestPosts2Labs : LatestPosts2} />
+                                            )} src={hasEmailCustomization ? LatestPosts2Labs : LatestPosts2} />
                                         </div>
                                     </div>
                                     <div className="flex justify-between gap-4 py-2">
@@ -380,7 +380,7 @@ const NewsletterPreviewContent: React.FC<{
                                             <h4
                                                 className={clsx(
                                                     'mt-0.5 text-[1.9rem] text-black',
-                                                    hasAnyEmailCustomization && titleFontCategory === 'serif' && 'font-serif',
+                                                    hasEmailCustomization && titleFontCategory === 'serif' && 'font-serif',
                                                     titleFontWeight === 'normal' && 'font-normal',
                                                     titleFontWeight === 'medium' && 'font-medium',
                                                     titleFontWeight === 'semibold' && 'font-semibold',
@@ -392,7 +392,7 @@ const NewsletterPreviewContent: React.FC<{
                                             <img alt="Latest post" className={clsx(
                                                 imageCorners === 'square' && 'rounded-none',
                                                 imageCorners === 'rounded' && 'rounded-md'
-                                            )} src={hasAnyEmailCustomization ? LatestPosts3Labs : LatestPosts3} />
+                                            )} src={hasEmailCustomization ? LatestPosts3Labs : LatestPosts3} />
                                         </div>
                                     </div>
                                 </div>

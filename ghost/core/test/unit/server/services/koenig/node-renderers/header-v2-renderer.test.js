@@ -189,87 +189,9 @@ describe('services/koenig/node-renderers/header-v2-renderer', function () {
                 </div>
             `);
         });
-    });
-
-    describe('email (emailCustomizationAlpha)', function () {
-        it('matches snapshot for default test data', function () {
-            const result = renderForEmail(getTestData(), {feature: {emailCustomizationAlpha: true}});
-
-            assert.ok(result.html);
-
-            assertPrettifiesTo(result.html, html`
-                <div
-                    class="kg-header-card kg-v2"
-                    style="
-                        color: #ffffff;
-                        text-align: center;
-                        background-image: url(https://example.com/image.jpg);
-                        background-size: cover;
-                        background-position: center center;
-                ">
-                    <table
-                        border="0"
-                        cellpadding="0"
-                        cellspacing="0"
-                        width="100%"
-                        style="
-                            color: #ffffff;
-                            text-align: center;
-                            background-image: url(https://example.com/image.jpg);
-                            background-size: cover;
-                            background-position: center center;
-                    ">
-                        <tbody>
-                            <tr>
-                                <td class="kg-header-card-content" style="">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                        <tbody>
-                                            <tr>
-                                                <td align="center">
-                                                    <h2 class="kg-header-card-heading" style="color: #ffffff">
-                                                        This is the header card
-                                                    </h2>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td class="kg-header-card-subheading-wrapper" align="center">
-                                                    <p class="kg-header-card-subheading" style="color: #ffffff">
-                                                        hello
-                                                    </p>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td class="kg-header-button-wrapper">
-                                                    <table
-                                                        class="btn"
-                                                        border="0"
-                                                        cellspacing="0"
-                                                        cellpadding="0"
-                                                        align="center">
-                                                        <tbody>
-                                                            <tr>
-                                                                <td
-                                                                    align="center"
-                                                                    style="background-color: #ffffff;">
-                                                                    <a href="https://example.com/" style="color: #000000 !important;">The button</a>
-                                                                </td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            `);
-        });
 
         it('has expected button output for outline buttons', function () {
-            const result = renderForEmail(getTestData(), {design: {buttonStyle: 'outline'}, feature: {emailCustomizationAlpha: true}});
+            const result = renderForEmail(getTestData(), {design: {buttonStyle: 'outline'}, feature: {emailCustomization: true}});
 
             assertPrettifiedIncludes(result.html, html`
                 <td align="center" style="border: 1px solid #ffffff; background-color: transparent; color: #ffffff !important">

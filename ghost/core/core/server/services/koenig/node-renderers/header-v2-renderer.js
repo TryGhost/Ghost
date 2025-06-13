@@ -86,7 +86,7 @@ function emailTemplate(nodeData, options) {
         style: options?.design?.buttonStyle
     });
 
-    if (options?.feature?.emailCustomization || options?.feature?.emailCustomizationAlpha) {
+    if (options?.feature?.emailCustomization) {
         return (
             `
             <div class="kg-header-card kg-v2" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">

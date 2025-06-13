@@ -24,61 +24,57 @@ const TopPosts: React.FC<TopPostsProps> = ({
 
     return (
         <Card className='group/card lg:col-span-2'>
-            <CardHeader>
-                <CardTitle className='flex items-baseline justify-between leading-snug'>
-                    Top posts {getPeriodText(range)}
-                    {/* <Button className='-translate-x-2 opacity-0 transition-all group-hover/card:translate-x-0 group-hover/card:opacity-100' variant='outline'>
-                        View all
-                        <LucideIcon.ArrowRight size={16} strokeWidth={1.5} />
-                    </Button> */}
-                </CardTitle>
-                <CardDescription className='hidden'>Most viewed posts in this period</CardDescription>
-            </CardHeader>
             <CardContent>
-                {isLoading ?
-                    <Table>
-                        <TableBody>
-                            {Array.from({length: 5}, (_, i) => (
-                                <TableRow key={i} className='border-none hover:bg-transparent'>
-                                    <TableCell className='group-hover:bg-transparent'>
-                                        <div className='flex w-full items-center gap-4'>
-                                            <Skeleton className='aspect-[4/3] w-20 rounded-md' />
-                                            <div className='flex w-full flex-col'>
-                                                <Skeleton className='w-2/3' />
-                                                <Skeleton className='w-20' />
-                                            </div>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead variant='cardhead'>
+                                <CardHeader>
+                                    <CardTitle className='flex items-baseline justify-between leading-snug'>
+                                        Top posts {getPeriodText(range)}
+                                    </CardTitle>
+                                    <CardDescription className='hidden'>Most viewed posts in this period</CardDescription>
+                                </CardHeader>
+                            </TableHead>
+                            <TableHead className='w-[92px] text-right'>Visitors</TableHead>
+                            <TableHead className='w-[92px] whitespace-nowrap text-right'>Open rate</TableHead>
+                            <TableHead className='w-[92px] text-right'>Members</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    {isLoading ?
+                        Array.from({length: 5}, (_, i) => (
+                            <TableRow key={i} className='border-none hover:bg-transparent'>
+                                <TableCell className='group-hover:bg-transparent'>
+                                    <div className='flex w-full items-center gap-4'>
+                                        <Skeleton className='aspect-[16/10] w-20 rounded-sm' />
+                                        <div className='flex w-full flex-col'>
+                                            <Skeleton className='w-2/3' />
+                                            <Skeleton className='w-20' />
                                         </div>
-                                    </TableCell>
-                                    <TableCell className='w-[10%] group-hover:bg-transparent'><Skeleton /></TableCell>
-                                    <TableCell className='w-[10%] group-hover:bg-transparent'><Skeleton /></TableCell>
-                                    <TableCell className='w-[10%] group-hover:bg-transparent'><Skeleton /></TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                    :
-                    <Table>
-                        <TableHeader>
-                            <TableRow className='border-b !border-border'>
-                                <TableHead>Post title</TableHead>
-                                <TableHead className='text-right'>Visitors</TableHead>
-                                <TableHead className='whitespace-nowrap text-right'>Open rate</TableHead>
-                                <TableHead className='text-right'>Members</TableHead>
+                                    </div>
+                                </TableCell>
+                                <TableCell className='w-[10%] group-hover:bg-transparent'><Skeleton /></TableCell>
+                                <TableCell className='w-[10%] group-hover:bg-transparent'><Skeleton /></TableCell>
+                                <TableCell className='w-[10%] group-hover:bg-transparent'><Skeleton /></TableCell>
                             </TableRow>
-                        </TableHeader>
+                        ))
+                        :
                         <TableBody>
+                            <TableRow className='border-none'>
+                                <TableCell className='pointer-events-none !h-2 !p-0' colSpan={4}></TableCell>
+                            </TableRow>
                             {topPostsData?.stats?.map((post: TopPostViewsStats) => (
-                                <TableRow key={post.post_id} className='border-t-0 hover:cursor-pointer' onClick={() => {
+                                <TableRow key={post.post_id} className='border-none hover:cursor-pointer' onClick={() => {
                                     navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
                                 }}>
-                                    <TableCell className='font-'>
+                                    <TableCell>
                                         <div className='flex items-center gap-4'>
                                             {post.feature_image ?
-                                                <div className='aspect-[4/3] w-20 shrink-0 rounded-md bg-cover bg-center' style={{
+                                                <div className='aspect-[16/10] w-20 shrink-0 rounded-sm bg-cover bg-center' style={{
                                                     backgroundImage: `url(${post.feature_image})`
                                                 }}></div>
                                                 :
-                                                <FeatureImagePlaceholder className='aspect-[4/3] w-20 shrink-0' />
+                                                <FeatureImagePlaceholder className='aspect-[16/10] h-[50px] w-20 shrink-0' />
                                             }
                                             <div className='flex flex-col'>
                                                 <span className='font-semibold leading-[1.35em]'>{post.title}</span>
@@ -108,8 +104,8 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                 </TableRow>
                             )}
                         </TableBody>
-                    </Table>
-                }
+                    }
+                </Table>
             </CardContent>
         </Card>
     );

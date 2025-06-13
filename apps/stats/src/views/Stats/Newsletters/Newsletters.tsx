@@ -7,7 +7,7 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -39,7 +39,7 @@ const Newsletters: React.FC = () => {
     });
 
     // Only enable stats queries once newsletters are loaded AND we have a newsletter selected
-    // This prevents both: 
+    // This prevents both:
     // 1. Empty API calls before newsletters load
     // 2. Unnecessary calls when no newsletter is selected yet
     const shouldFetchStats = !isNewslettersLoading && newslettersData && newslettersData.newsletters.length > 0 && !!selectedNewsletterId;
@@ -70,8 +70,8 @@ const Newsletters: React.FC = () => {
     // Calculate totals for KPIs
     const totals = useMemo(() => {
         // Get total subscribers from the selected newsletter or all newsletters
-        const totalSubscribers = selectedNewsletter?.count?.active_members || 
-            subscriberStatsData?.stats?.[0]?.total || 
+        const totalSubscribers = selectedNewsletter?.count?.active_members ||
+            subscriberStatsData?.stats?.[0]?.total ||
             0;
 
         // Calculate average open and click rates from newsletter stats
@@ -162,12 +162,12 @@ const Newsletters: React.FC = () => {
             <StatsView data={pageData} isLoading={false} loadingComponent={<></>}>
                 <Card>
                     <CardContent>
-                        <NewsletterKPIs 
-                            avgsData={avgsData} 
-                            isAvgsLoading={isStatsLoading} 
-                            isLoading={isKPIsLoading} 
-                            subscribersData={subscribersData} 
-                            totals={totals} 
+                        <NewsletterKPIs
+                            avgsData={avgsData}
+                            isAvgsLoading={isStatsLoading}
+                            isLoading={isKPIsLoading}
+                            subscribersData={subscribersData}
+                            totals={totals}
                         />
                     </CardContent>
                 </Card>
@@ -184,19 +184,17 @@ const Newsletters: React.FC = () => {
                     </Card>
                     :
                     <Card>
-                        <CardHeader>
-                            <CardTitle>Top newsletters</CardTitle>
-                            <CardDescription> Your best performing newsletters {getPeriodText(range)}</CardDescription>
-                        </CardHeader>
                         <CardContent>
-                            <Separator/>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>
-                                        Title
+                                        <TableHead variant='cardhead'>
+                                            <CardHeader>
+                                                <CardTitle>Top newsletters</CardTitle>
+                                                <CardDescription> Your best performing newsletters {getPeriodText(range)}</CardDescription>
+                                            </CardHeader>
                                         </TableHead>
-                                        <TableHead className='w-[60px]'>
+                                        <TableHead className='w-[65px]'>
                                             <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='date desc'>
                                             Date
                                             </SortButton>
@@ -220,7 +218,7 @@ const Newsletters: React.FC = () => {
                                 </TableHeader>
                                 <TableBody>
                                     {newsletterStats.map(post => (
-                                        <TableRow key={post.post_id}>
+                                        <TableRow key={post.post_id} className='last:border-none [&>td]:py-2.5'>
                                             <TableCell className="font-medium">
                                                 <div className='group/link inline-flex items-center gap-2'>
                                                     {post.post_id ?

@@ -6,7 +6,7 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Separator, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatNumber} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
@@ -14,7 +14,7 @@ import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 
 // Define content types
-const CONTENT_TYPES = {
+export const CONTENT_TYPES = {
     POSTS: 'posts',
     PAGES: 'pages',
     POSTS_AND_PAGES: 'posts_and_pages',
@@ -22,13 +22,6 @@ const CONTENT_TYPES = {
 } as const;
 
 type ContentType = typeof CONTENT_TYPES[keyof typeof CONTENT_TYPES];
-
-const CONTENT_TYPE_OPTIONS: Array<{value: ContentType; label: string}> = [
-    {value: CONTENT_TYPES.POSTS, label: 'Posts'},
-    {value: CONTENT_TYPES.PAGES, label: 'Pages'},
-    {value: CONTENT_TYPES.POSTS_AND_PAGES, label: 'Posts & pages'},
-    {value: CONTENT_TYPES.SOURCES, label: 'Sources'}
-];
 
 // Type for unified content data that combines top content with growth metrics
 interface UnifiedGrowthContentData {
@@ -47,7 +40,7 @@ type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
 const Growth: React.FC = () => {
     const {range} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopPostsOrder>('free_members desc');
-    const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
+    const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS);
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
@@ -93,11 +86,6 @@ const Growth: React.FC = () => {
             };
         });
     }, [topPostsData, sortBy]);
-
-    const getContentTypeLabel = () => {
-        const option = CONTENT_TYPE_OPTIONS.find(opt => opt.value === selectedContentType);
-        return option ? option.label : 'Posts & pages';
-    };
 
     const getContentTitle = () => {
         switch (selectedContentType) {
@@ -146,94 +134,65 @@ const Growth: React.FC = () => {
                         />
                     </CardContent>
                 </Card>
-                {selectedContentType === CONTENT_TYPES.SOURCES ? (
-                    <div className="relative">
-                        <div className="absolute right-6 top-6 z-10">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="dropdown">{getContentTypeLabel()}</Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align='end'>
-                                    {CONTENT_TYPE_OPTIONS.map(option => (
-                                        <DropdownMenuItem
-                                            key={option.value}
-                                            onClick={() => setSelectedContentType(option.value)}
-                                        >
-                                            {option.label}
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                        <GrowthSources
-                            limit={20}
-                            range={range}
-                            showViewAll={false}
-                        />
-                    </div>
-                ) : (
-                    isPageLoading
-                        ?
-                        <Card className='min-h-[460px]'>
-                            <CardHeader>
-                                <CardTitle>{getContentTitle()}</CardTitle>
-                                <CardDescription>{getContentDescription()}</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <SkeletonTable lines={5} />
-                            </CardContent>
-                        </Card>
-                        :
-                        <Card className='min-h-[460px]'>
-                            <div className="flex items-start justify-between">
-                                <CardHeader>
-                                    <CardTitle>{getContentTitle()}</CardTitle>
-                                    <CardDescription>{getContentDescription()}</CardDescription>
-                                </CardHeader>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger className='mr-6 mt-6' asChild>
-                                        <Button variant="dropdown">{getContentTypeLabel()}</Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align='end'>
-                                        {CONTENT_TYPE_OPTIONS.map(option => (
-                                            <DropdownMenuItem
-                                                key={option.value}
-                                                onClick={() => setSelectedContentType(option.value)}
-                                            >
-                                                {option.label}
-                                            </DropdownMenuItem>
-                                        ))}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                            <CardContent>
-                                <Separator/>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>
-                                            Title
-                                            </TableHead>
-                                            <TableHead className='text-right'>
-                                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='free_members desc'>
+                {isPageLoading ?
+                    <Card className='min-h-[460px]'>
+                        <CardHeader>
+                            <CardTitle>{getContentTitle()}</CardTitle>
+                            <CardDescription>{getContentDescription()}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <SkeletonTable lines={5} />
+                        </CardContent>
+                    </Card>
+                    :
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>{getContentTitle()}</CardTitle>
+                            <CardDescription>{getContentDescription()}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className='[&>th]:h-auto [&>th]:pb-2 [&>th]:pt-0'>
+                                        <TableHead className='pl-0'>
+                                            <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
+                                                setSelectedContentType(value as ContentType);
+                                            }}>
+                                                <TabsList>
+                                                    <TabsTrigger value={CONTENT_TYPES.POSTS_AND_PAGES}>Posts & pages</TabsTrigger>
+                                                    <TabsTrigger value={CONTENT_TYPES.POSTS}>Posts</TabsTrigger>
+                                                    <TabsTrigger value={CONTENT_TYPES.PAGES}>Pages</TabsTrigger>
+                                                    <TabsTrigger value={CONTENT_TYPES.SOURCES}>Sources</TabsTrigger>
+                                                </TabsList>
+                                            </Tabs>
+                                        </TableHead>
+                                        <TableHead className='w-[140px] text-right'>
+                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='free_members desc'>
                                                 Free members
-                                                </SortButton>
-                                            </TableHead>
-                                            <TableHead className='text-right'>
-                                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='paid_members desc'>
+                                            </SortButton>
+                                        </TableHead>
+                                        <TableHead className='w-[140px] text-right'>
+                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='paid_members desc'>
                                                 Paid members
-                                                </SortButton>
-                                            </TableHead>
-                                            <TableHead className='text-right'>
-                                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
+                                            </SortButton>
+                                        </TableHead>
+                                        <TableHead className='w-[140px] text-right'>
+                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
                                                 MRR impact
-                                                </SortButton>
-                                            </TableHead>
-                                        </TableRow>
-                                    </TableHeader>
+                                            </SortButton>
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                {selectedContentType === CONTENT_TYPES.SOURCES ?
+                                    <GrowthSources
+                                        limit={20}
+                                        range={range}
+                                        showViewAll={true}
+                                    />
+                                    :
                                     <TableBody>
                                         {transformedTopPosts.map(post => (
-                                            <TableRow key={post.post_id}>
+                                            <TableRow key={post.post_id} className='last:border-none'>
                                                 <TableCell className="font-medium">
                                                     <div className='group/link inline-flex items-center gap-2'>
                                                         {post.post_id ?
@@ -247,9 +206,6 @@ const Growth: React.FC = () => {
                                                                 {post.title}
                                                             </>
                                                         }
-                                                        {/* <a className='-mx-2 inline-flex min-h-6 items-center gap-1 rounded-sm px-2 opacity-0 hover:underline group-hover/link:opacity-75' href={`${row.pathname}`} rel="noreferrer" target='_blank'>
-                                                        <LucideIcon.SquareArrowOutUpRight size={12} strokeWidth={2.5} />
-                                                    </a> */}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className='text-right font-mono text-sm'>
@@ -264,10 +220,11 @@ const Growth: React.FC = () => {
                                             </TableRow>
                                         ))}
                                     </TableBody>
-                                </Table>
-                            </CardContent>
-                        </Card>
-                )}
+                                }
+                            </Table>
+                        </CardContent>
+                    </Card>
+                }
             </StatsView>
         </StatsLayout>
     );

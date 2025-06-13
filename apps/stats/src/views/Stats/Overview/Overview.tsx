@@ -6,7 +6,7 @@ import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
 import TopPosts from './components/TopPosts';
-import {GhAreaChartDataItem, H3, LucideIcon, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
+import {GhAreaChartDataItem, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {getAudienceQueryParam} from '../components/AudienceSelect';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -197,7 +197,7 @@ const Overview: React.FC = () => {
                         topPostsData={topPostsData}
                     />
                 </div>
-                <div className='grid grid-cols-1 gap-8 lg:grid-cols-2'>
+                {/* <div className='grid grid-cols-1 gap-8 lg:grid-cols-2'>
                     <H3 className='-mb-4 mt-4 lg:col-span-2'>Grow your audience</H3>
                     <HelpCard
                         description='Find out how to review the performance of your content and get the most out of post analytics in Ghost.'
@@ -215,7 +215,7 @@ const Overview: React.FC = () => {
                             <LucideIcon.Sprout className='text-muted-foreground' size={40} strokeWidth={1} />
                         </div>
                     </HelpCard>
-                </div>
+                </div> */}
             </StatsView>
         </StatsLayout>
     );

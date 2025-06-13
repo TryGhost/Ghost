@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import SortButton from '../../components/SortButton';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, centsToDollars, formatNumber} from '@tryghost/shade';
+import {Button, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, centsToDollars, formatNumber} from '@tryghost/shade';
 import {getFaviconDomain, getSymbol} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -57,7 +57,7 @@ const SOURCE_MAPPING = new Map<string, string>([
     ['medium', 'Medium'],
     ['medium.com', 'Medium'],
     ['www.medium.com', 'Medium'],
-    
+
     // Search Engines
     ['google', 'Google'],
     ['www.google.com', 'Google'],
@@ -82,7 +82,7 @@ const SOURCE_MAPPING = new Map<string, string>([
     ['ecosia', 'Ecosia'],
     ['www.ecosia.org', 'Ecosia'],
     ['ecosia.org', 'Ecosia'],
-    
+
     // Email Platforms
     ['gmail', 'Gmail'],
     ['mail.google.com', 'Gmail'],
@@ -96,7 +96,7 @@ const SOURCE_MAPPING = new Map<string, string>([
     ['icloud.com', 'Apple Mail'],
     ['me.com', 'Apple Mail'],
     ['mac.com', 'Apple Mail'],
-    
+
     // News Aggregators
     ['news.google.com', 'Google News'],
     ['apple.news', 'Apple News'],
@@ -112,7 +112,7 @@ const normalizeSource = (source: string): string => {
     if (!source || source === '') {
         return 'Direct';
     }
-    
+
     // Case-insensitive lookup
     const lowerSource = source.toLowerCase();
     return SOURCE_MAPPING.get(lowerSource) || source;
@@ -136,16 +136,15 @@ interface GrowthSourcesTableProps {
     limit?: number;
     defaultSourceIconUrl: string;
     sortBy: SourcesOrder;
-    setSortBy: (sortBy: SourcesOrder) => void;
 }
 
-const GrowthSourcesTable: React.FC<GrowthSourcesTableProps> = ({data, currencySymbol, limit, defaultSourceIconUrl, sortBy, setSortBy}) => {
+const GrowthSourcesTableBody: React.FC<GrowthSourcesTableProps> = ({data, currencySymbol, limit, defaultSourceIconUrl, sortBy}) => {
     const sortedData = React.useMemo(() => {
         const [field, direction = 'desc'] = sortBy.split(' ');
-        
+
         return [...data].sort((a, b) => {
             let valueA, valueB;
-            
+
             switch (field) {
             case 'source':
                 valueA = a.source.toLowerCase();
@@ -178,71 +177,45 @@ const GrowthSourcesTable: React.FC<GrowthSourcesTableProps> = ({data, currencySy
     const displayData = limit ? sortedData.slice(0, limit) : sortedData;
 
     return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>
-                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='source asc'>
-                            Source
-                        </SortButton>
-                    </TableHead>
-                    <TableHead className='w-[110px] text-right'>
-                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='free_members desc'>
-                            Free members
-                        </SortButton>
-                    </TableHead>
-                    <TableHead className='w-[110px] text-right'>
-                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='paid_members desc'>
-                            Paid members
-                        </SortButton>
-                    </TableHead>
-                    <TableHead className='w-[110px] text-right'>
-                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
-                            MRR impact
-                        </SortButton>
-                    </TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {displayData.map(row => (
-                    <TableRow key={row.source}>
-                        <TableCell className="font-medium">
-                            <div className="flex items-center gap-2">
-                                <img
-                                    alt=""
-                                    className="size-4"
-                                    src={row.iconSrc}
-                                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                        e.currentTarget.src = defaultSourceIconUrl;
-                                    }}
-                                />
-                                {row.linkUrl ? (
-                                    <a 
-                                        className="hover:underline"
-                                        href={row.linkUrl}
-                                        rel="noreferrer"
-                                        target="_blank"
-                                    >
-                                        {row.displayName}
-                                    </a>
-                                ) : (
-                                    <span>{row.displayName}</span>
-                                )}
-                            </div>
-                        </TableCell>
-                        <TableCell className='text-right font-mono text-sm'>
+        <TableBody>
+            {displayData.map(row => (
+                <TableRow key={row.source} className='last:border-none'>
+                    <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                            <img
+                                alt=""
+                                className="size-4"
+                                src={row.iconSrc}
+                                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                                    e.currentTarget.src = defaultSourceIconUrl;
+                                }}
+                            />
+                            {row.linkUrl ? (
+                                <a
+                                    className="hover:underline"
+                                    href={row.linkUrl}
+                                    rel="noreferrer"
+                                    target="_blank"
+                                >
+                                    {row.displayName}
+                                </a>
+                            ) : (
+                                <span>{row.displayName}</span>
+                            )}
+                        </div>
+                    </TableCell>
+                    <TableCell className='text-right font-mono text-sm'>
                             +{formatNumber(row.free_members)}
-                        </TableCell>
-                        <TableCell className='text-right font-mono text-sm'>
+                    </TableCell>
+                    <TableCell className='text-right font-mono text-sm'>
                             +{formatNumber(row.paid_members)}
-                        </TableCell>
-                        <TableCell className='text-right font-mono text-sm'>
+                    </TableCell>
+                    <TableCell className='text-right font-mono text-sm'>
                             +{currencySymbol}{centsToDollars(row.mrr)}
-                        </TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
+                    </TableCell>
+                </TableRow>
+            ))}
+        </TableBody>
     );
 };
 
@@ -294,7 +267,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
 
         // Group by source and sum metrics
         const sourceMap = new Map<string, {signups: number, paid_conversions: number, mrr: number}>();
-        
+
         referrersData.stats.forEach((item) => {
             const normalizedSource = normalizeSource(item.source || '');
             const existing = sourceMap.get(normalizedSource) || {signups: 0, paid_conversions: 0, mrr: 0};
@@ -330,74 +303,85 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
             .sort((a, b) => {
                 return (b.free_members + b.paid_members) - (a.free_members + a.paid_members); // Sort by total conversions
             });
-    }, [referrersData]);
+    }, [referrersData, siteUrl]);
 
     const title = 'Top sources';
     const description = `Where did your growth come from ${getPeriodText(range)}`;
 
     if (isLoading) {
         return (
-            <Card className='group/datalist'>
-                <CardHeader>
-                    <CardTitle>{title}</CardTitle>
-                    <CardDescription>{description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <SkeletonTable lines={5} />
-                </CardContent>
-            </Card>
+            <SkeletonTable lines={5} />
         );
     }
 
     return (
-        <Card className='group/datalist'>
-            <CardHeader>
-                <CardTitle>{title}</CardTitle>
-                <CardDescription>{description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Separator />
-                {processedData.length > 0 ? (
-                    <GrowthSourcesTable 
-                        currencySymbol={currencySymbol}
-                        data={processedData}
-                        defaultSourceIconUrl={defaultSourceIconUrl}
-                        limit={limit}
-                        setSortBy={setSortBy}
-                        sortBy={sortBy}
-                    />
-                ) : (
-                    <div className='py-20 text-center text-sm text-gray-700'>
-                        Once someone signs up, sources will show here.
-                    </div>
-                )}
-            </CardContent>
+        <>
+            {processedData.length > 0 ? (
+                <GrowthSourcesTableBody
+                    currencySymbol={currencySymbol}
+                    data={processedData}
+                    defaultSourceIconUrl={defaultSourceIconUrl}
+                    limit={limit}
+                    sortBy={sortBy}
+                />
+            ) : (
+                <div className='py-20 text-center text-sm text-gray-700'>
+                    Once someone signs up, sources will show here.
+                </div>
+            )}
             {showViewAll && processedData.length > limit &&
-                <CardFooter>
-                    <Sheet>
-                        <SheetTrigger asChild>
-                            <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
-                        </SheetTrigger>
-                        <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
-                                <SheetTitle>{title}</SheetTitle>
-                                <SheetDescription>{description}</SheetDescription>
-                            </SheetHeader>
-                            <div className='group/datalist'>
-                                <GrowthSourcesTable 
-                                    currencySymbol={currencySymbol}
-                                    data={processedData}
-                                    defaultSourceIconUrl={defaultSourceIconUrl}
-                                    setSortBy={setSortBy}
-                                    sortBy={sortBy}
-                                />
-                            </div>
-                        </SheetContent>
-                    </Sheet>
-                </CardFooter>
+                <TableFooter className='border-none bg-transparent hover:!bg-transparent'>
+                    <TableRow>
+                        <TableCell className='border-none bg-transparent px-0 pb-0 hover:!bg-transparent' colSpan={4}>
+                            <Sheet>
+                                <SheetTrigger asChild>
+                                    <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
+                                </SheetTrigger>
+                                <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
+                                    <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
+                                        <SheetTitle>{title}</SheetTitle>
+                                        <SheetDescription>{description}</SheetDescription>
+                                    </SheetHeader>
+                                    <div className='group/datalist'>
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>
+                                                    Source
+                                                    </TableHead>
+                                                    <TableHead className='w-[110px] text-right'>
+                                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='free_members desc'>
+                                                    Free members
+                                                        </SortButton>
+                                                    </TableHead>
+                                                    <TableHead className='w-[110px] text-right'>
+                                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='paid_members desc'>
+                                                    Paid members
+                                                        </SortButton>
+                                                    </TableHead>
+                                                    <TableHead className='w-[110px] text-right'>
+                                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
+                                                    MRR impact
+                                                        </SortButton>
+                                                    </TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <GrowthSourcesTableBody
+                                                currencySymbol={currencySymbol}
+                                                data={processedData}
+                                                defaultSourceIconUrl={defaultSourceIconUrl}
+                                                sortBy={sortBy}
+                                            />
+                                        </Table>
+                                    </div>
+                                </SheetContent>
+                            </Sheet>
+                        </TableCell>
+                    </TableRow>
+                </TableFooter>
             }
-        </Card>
+        </>
     );
 };
 
-export default GrowthSources; 
+export default GrowthSources;

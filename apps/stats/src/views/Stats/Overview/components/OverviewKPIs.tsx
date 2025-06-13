@@ -39,7 +39,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
-            <KpiCardHeader className='grow gap-2 border-none pb-2'>
+            <KpiCardHeader className='grow gap-2 border-none pb-0'>
                 <KpiCardHeaderLabel className={onClick && 'transition-all group-hover:text-foreground'}>
                     {color && <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color}}></span>}
                     {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
@@ -116,7 +116,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                     data={visitorsChartData}
                     id="visitors"
                     range={range}
-                    showHorizontalLines={false}
+                    showHorizontalLines={true}
                     showYAxisValues={false}
                     syncId="overview-charts"
                     yAxisRange={visitorsYRange}
@@ -141,7 +141,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                     data={membersChartData}
                     id="members"
                     range={range}
-                    showHorizontalLines={false}
+                    showHorizontalLines={true}
                     showYAxisValues={false}
                     syncId="overview-charts"
                 />
@@ -165,7 +165,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                     data={mrrChartData}
                     id="mrr"
                     range={range}
-                    showHorizontalLines={false}
+                    showHorizontalLines={true}
                     showYAxisValues={false}
                     syncId="overview-charts"
                 />
