@@ -96,7 +96,7 @@ const DataListRow = React.forwardRef<HTMLDivElement, DataListRowProps>(({childre
     return (
         <div
             ref={ref}
-            className={cn('py-0.5 overflow-hidden relative flex items-center justify-between gap-3', className)}
+            className={cn('group/row py-0.5 relative flex items-center justify-between gap-3 before:absolute before:z-0 before:-inset-x-0.5 before:inset-y-0.5 before:bg-muted/60 before:opacity-0 hover:before:opacity-100 before:rounded-[6px]', className)}
             {...props}
         >
             {children}
@@ -117,7 +117,7 @@ const DataListBar = React.forwardRef<HTMLDivElement, DataListBarProps>(({childre
     return (
         <div
             ref={ref}
-            className={cn('absolute inset-x-0 inset-y-1 z-0 origin-left rounded-[4px] bg-[#EEF6FC] transition-all', className)}
+            className={cn('absolute inset-x-0 inset-y-1 z-0 origin-left rounded-[4px] bg-[#EEF6FC] group-hover/row:bg-[#DDEEFB] transition-all', className)}
             {...props}
         >
             {children}

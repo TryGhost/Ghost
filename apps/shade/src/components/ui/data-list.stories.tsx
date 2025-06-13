@@ -18,7 +18,7 @@ export const Default: Story = {
                 <DataListHead>Title</DataListHead>
                 <DataListHead>Visitors</DataListHead>
             </DataListHeader>,
-            <DataListBody className='group/data'>
+            <DataListBody className='group/datalist'>
                 <DataListRow>
                     <DataListBar />
                     <DataListItemContent>
