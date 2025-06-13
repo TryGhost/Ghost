@@ -193,7 +193,7 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                 </Tabs>
                 <HTable className='mr-2'>Visitors</HTable>
             </div>
-            <CardContent>
+            <CardContent className='overflow-hidden'>
                 <Separator />
                 {isLoading ?
                     <SkeletonTable className='mt-3' / >

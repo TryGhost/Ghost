@@ -122,7 +122,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
                 </CardHeader>
                 <HTable className='mr-2'>Visitors</HTable>
             </div>
-            <CardContent>
+            <CardContent className='overflow-hidden'>
                 <Separator />
                 {topSources.length > 0 ? (
                     <SourcesTable

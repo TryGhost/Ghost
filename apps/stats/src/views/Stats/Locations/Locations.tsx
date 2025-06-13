@@ -239,7 +239,7 @@ const Locations:React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                            <div className='group/datalist flex flex-col justify-between border-l px-6'>
+                            <div className='group/datalist flex flex-col justify-between overflow-hidden border-l px-6'>
                                 {isLoading
                                     ?
                                     <DataList>

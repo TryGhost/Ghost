@@ -100,7 +100,7 @@ const Locations:React.FC<LocationsProps> = ({data, isLoading}) => {
                         </CardHeader>
                         <HTable className='mr-2'>Visitors</HTable>
                     </div>
-                    <CardContent>
+                    <CardContent className='overflow-hidden'>
                         <Separator />
                         <LocationsTable
                             data={topLocations}
