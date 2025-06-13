@@ -131,6 +131,7 @@ export type LatestPostStats = {
     email_count: number | null;
     opened_count: number | null;
     open_rate: number | null;
+    click_rate: number | null;
     member_delta: number;
     free_members: number;
     paid_members: number;
@@ -249,11 +250,11 @@ export const useNewsletterClickStats = createQuery<NewsletterStatsResponseType>(
 // Hook wrapper to accept a newsletterId parameter
 export const useNewsletterStatsByNewsletterId = (newsletterId?: string, options: Partial<NewsletterStatsSearchParams> = {}, queryOptions: {enabled?: boolean} = {}) => {
     const searchParams: Record<string, string> = {};
-    
+
     if (newsletterId) {
         searchParams.newsletter_id = newsletterId;
     }
-    
+
     // Add any additional search params
     if (options.date_from) {
         searchParams.date_from = options.date_from;
@@ -267,7 +268,7 @@ export const useNewsletterStatsByNewsletterId = (newsletterId?: string, options:
     if (options.limit) {
         searchParams.limit = options.limit.toString();
     }
-    
+
     return useNewsletterStats({searchParams, enabled: queryOptions.enabled});
 };
 
@@ -282,11 +283,11 @@ export const useSubscriberCount = createQuery<NewsletterSubscriberStatsResponseT
 // Hook wrapper to accept a newsletterId parameter
 export const useSubscriberCountByNewsletterId = (newsletterId?: string, options: Partial<SubscriberCountSearchParams> = {}) => {
     const searchParams: Record<string, string> = {};
-    
+
     if (newsletterId) {
         searchParams.newsletter_id = newsletterId;
     }
-    
+
     // Add any additional search params
     if (options.date_from) {
         searchParams.date_from = options.date_from;
@@ -294,6 +295,6 @@ export const useSubscriberCountByNewsletterId = (newsletterId?: string, options:
     if (options.date_to) {
         searchParams.date_to = options.date_to;
     }
-    
+
     return useSubscriberCount({searchParams});
 };
