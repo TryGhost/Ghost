@@ -12,7 +12,7 @@ import {useLocation} from '@tryghost/admin-x-framework';
 import {useNotificationsCountForUser, useResetNotificationsCountForUser} from '@src/hooks/use-activity-pub-queries';
 
 const Sidebar: React.FC = () => {
-    const {allFlags, flags, isEnabled} = useFeatureFlags();
+    const {allFlags, flags} = useFeatureFlags();
     const [isSearchOpen, setIsSearchOpen] = React.useState(false);
     const [searchQuery, setSearchQuery] = React.useState('');
     const {data: currentUser} = useCurrentUser();
@@ -57,7 +57,7 @@ const Sidebar: React.FC = () => {
                             Feed
                         </SidebarMenuLink>
                         <SidebarMenuLink 
-                            count={isEnabled('notification') && location.pathname !== '/notifications' ? notificationsCount : undefined} 
+                            count={location.pathname !== '/notifications' ? notificationsCount : undefined} 
                             to='/notifications'
                             onClick={handleNotificationsClick}
                         >

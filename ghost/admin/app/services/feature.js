@@ -76,7 +76,6 @@ export default class FeatureService extends Service {
     @feature('trafficAnalyticsAlpha') trafficAnalyticsAlpha;
     @feature('updatedMainNav') updatedMainNav;
     @feature('trafficAnalytics') trafficAnalytics;
-    @feature('apNotification') apNotification;
 
     _user = null;
 
