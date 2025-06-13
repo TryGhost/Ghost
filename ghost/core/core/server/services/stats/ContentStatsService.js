@@ -198,7 +198,7 @@ class ContentStatsService {
             }
 
             // Otherwise fallback to pathname (removing leading/trailing slashes)
-            const formattedPath = item.pathname.replace(/^\/|\/$/g, '') || 'Home';
+            const formattedPath = item.pathname.replace(/^\/|\/$/g, '') || 'Homepage';
             return {
                 ...item,
                 title: formattedPath,
