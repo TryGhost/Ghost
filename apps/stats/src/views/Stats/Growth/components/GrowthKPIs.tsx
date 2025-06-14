@@ -84,36 +84,58 @@ const GrowthKPIs: React.FC<{
 
         switch (currentTab) {
         case 'free-members':
-            processedData = sanitizedData.map(item => ({
-                ...item,
-                value: item.free,
-                formattedValue: formatNumber(item.free),
-                label: 'Free members'
-            }));
+            processedData = sanitizedData.map((item, index) => {
+                const diffValue = index === 0 ? null : item.free - sanitizedData[index - 1].free;
+                return {
+                    ...item,
+                    value: item.free,
+                    formattedValue: formatNumber(item.free),
+                    label: 'Free members',
+                    diffValue,
+                    formattedDiffValue: diffValue === null ? null : (diffValue < 0 ? `-${formatNumber(diffValue)}` : `+${formatNumber(diffValue)}`)
+                };
+            });
             break;
         case 'paid-members':
-            processedData = sanitizedData.map(item => ({
-                ...item,
-                value: item.paid,
-                formattedValue: formatNumber(item.paid),
-                label: 'Paid members'
-            }));
+            processedData = sanitizedData.map((item, index) => {
+                const diffValue = index === 0 ? null : item.paid - sanitizedData[index - 1].paid;
+                return {
+                    ...item,
+                    value: item.paid,
+                    formattedValue: formatNumber(item.paid),
+                    label: 'Paid members',
+                    diffValue,
+                    formattedDiffValue: diffValue === null ? null : (diffValue < 0 ? `-${formatNumber(diffValue)}` : `+${formatNumber(diffValue)}`)
+                };
+            });
             break;
         case 'mrr':
-            processedData = sanitizedData.map(item => ({
-                ...item,
-                value: centsToDollars(item.mrr),
-                formattedValue: `${currencySymbol}${formatNumber(centsToDollars(item.mrr))}`,
-                label: 'MRR'
-            }));
+            processedData = sanitizedData.map((item, index) => {
+                const diffValue = index === 0 ? null : centsToDollars(item.mrr) - centsToDollars(sanitizedData[index - 1].mrr);
+                return {
+                    ...item,
+                    value: centsToDollars(item.mrr),
+                    formattedValue: `${currencySymbol}${formatNumber(centsToDollars(item.mrr))}`,
+                    label: 'MRR',
+                    diffValue,
+                    formattedDiffValue: diffValue === null ? null : (diffValue < 0 ? `-${currencySymbol}${formatNumber(diffValue * -1)}` : `+${currencySymbol}${formatNumber(diffValue)}`)
+                };
+            });
             break;
         default:
-            processedData = sanitizedData.map(item => ({
-                ...item,
-                value: item.free + item.paid + item.comped,
-                formattedValue: formatNumber(item.free + item.paid + item.comped),
-                label: 'Total members'
-            }));
+            processedData = sanitizedData.map((item, index) => {
+                const currentTotal = item.free + item.paid + item.comped;
+                const previousTotal = index === 0 ? null : sanitizedData[index - 1].free + sanitizedData[index - 1].paid + sanitizedData[index - 1].comped;
+                const diffValue = index === 0 ? null : currentTotal - previousTotal!;
+                return {
+                    ...item,
+                    value: currentTotal,
+                    formattedValue: formatNumber(currentTotal),
+                    label: 'Total members',
+                    diffValue,
+                    formattedDiffValue: diffValue === null ? null : (diffValue < 0 ? `-${formatNumber(diffValue)}` : `+${formatNumber(diffValue)}`)
+                };
+            });
         }
 
         return processedData;
