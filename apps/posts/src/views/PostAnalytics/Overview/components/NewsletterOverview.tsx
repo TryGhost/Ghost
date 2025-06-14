@@ -2,7 +2,7 @@ import React, {useMemo} from 'react';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, HTable, LucideIcon, Separator, Table, TableBody, TableCell, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
 import {NewsletterRadialChart, NewsletterRadialChartData} from '../../Newsletter/components/NewsLetterRadialChart';
 import {Post} from '@tryghost/admin-x-framework/api/posts';
-import {cleanTrackedUrl} from '@src/utils/link-helpers';
+import {cleanTrackedUrl, processAndGroupTopLinks} from '@src/utils/link-helpers';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useTopLinks} from '@tryghost/admin-x-framework/api/links';
 
@@ -38,7 +38,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
     });
 
     const topLinks = useMemo(() => {
-        return linksResponse?.links || [];
+        return processAndGroupTopLinks(linksResponse);
     }, [linksResponse]);
 
     // "Clicked" Chart
@@ -138,7 +138,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                                                         {cleanTrackedUrl(link.link.to, true)}
                                                     </a>
                                                 </TableCell>
-                                                <TableCell className='w-[10%] py-2.5 text-right font-mono text-sm group-hover:!bg-transparent'>{formatNumber(link.count?.clicks || 0)}</TableCell>
+                                                <TableCell className='w-[10%] py-2.5 text-right font-mono text-sm group-hover:!bg-transparent'>{formatNumber(link.count || 0)}</TableCell>
                                             </TableRow>
                                         );
                                     })}

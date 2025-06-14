@@ -1,6 +1,6 @@
-import {type CleanedLink, cleanTrackedUrl} from '@src/utils/link-helpers';
 import {type NewsletterStatItem, useNewsletterBasicStats, useNewsletterClickStats} from '@tryghost/admin-x-framework/api/stats';
 import {type Post, getPost} from '@tryghost/admin-x-framework/api/posts';
+import {processAndGroupTopLinks} from '@src/utils/link-helpers';
 import {useMemo} from 'react';
 import {useTopLinks} from '@tryghost/admin-x-framework/api/links';
 
@@ -85,7 +85,7 @@ export const usePostNewsletterStats = (postId: string) => {
         return basicStatsResponse.stats.map(stat => stat.post_id);
     }, [basicStatsResponse]);
 
-    // 2. Click stats (potentially slower) - fetch separately 
+    // 2. Click stats (potentially slower) - fetch separately
     const {data: clickStatsResponse, isLoading: isClickStatsLoading} = useNewsletterClickStats({
         searchParams: newsletterId && postIds.length > 0 ? {
             newsletter_id: newsletterId,
@@ -134,13 +134,6 @@ export const usePostNewsletterStats = (postId: string) => {
         }
     });
 
-    const links = useMemo(() => {
-        return clicksResponse?.links.map(link => ({
-            link: link.link,
-            count: link.count?.clicks || 0
-        })) || [];
-    }, [clicksResponse]);
-
     // Calculate average open and click rates across newsletters
     const averages = useMemo(() => {
         if (!newsletterStatsResponse || !newsletterStatsResponse.stats) {
@@ -168,36 +161,8 @@ export const usePostNewsletterStats = (postId: string) => {
     }, [newsletterStatsResponse]);
 
     const topLinks = useMemo(() => {
-        const cleanedLinks = links.map((link) => {
-            return {
-                ...link,
-                link: {
-                    ...link.link,
-                    originalTo: link.link.to,
-                    to: cleanTrackedUrl(link.link.to, false),
-                    title: cleanTrackedUrl(link.link.to, true)
-                }
-            };
-        });
-
-        const linksByTitle = cleanedLinks.reduce((acc: Record<string, CleanedLink>, link: CleanedLink) => {
-            if (!acc[link.link.title]) {
-                acc[link.link.title] = link;
-            } else {
-                if (!acc[link.link.title].count) {
-                    acc[link.link.title].count = 0;
-                }
-                acc[link.link.title].count += (link.count ?? 0);
-            }
-            return acc;
-        }, {});
-
-        return Object.values(linksByTitle).sort((a, b) => {
-            const aClicks = a.count || 0;
-            const bClicks = b.count || 0;
-            return bClicks - aClicks;
-        });
-    }, [links]);
+        return processAndGroupTopLinks(clicksResponse);
+    }, [clicksResponse]);
 
     const averageStats = useMemo(() => {
         return {
