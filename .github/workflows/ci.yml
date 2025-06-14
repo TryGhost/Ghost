@@ -6,6 +6,8 @@ on:
     branches:
       - main
       - 'v5.*'
+      - '5.x'
+      - '6.x'
 
 env:
   FORCE_COLOR: 1
@@ -29,6 +31,7 @@ jobs:
     timeout-minutes: 15
     env:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
+      IS_DEVELOPMENT: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/5.x' || github.ref == 'refs/heads/6.x' }}
     permissions:
       pull-requests: read
     steps:
@@ -170,7 +173,7 @@ jobs:
         with:
           path: ${{ env.CACHED_DEPENDENCY_PATHS }}
           key: ${{ env.cachekey }}
-          restore-keys: ${{ env.IS_MAIN == 'false' && env.DEPENDENCY_CACHE_RESTORE_KEYS || 'dep-never-restore'}}
+          restore-keys: ${{ env.IS_DEVELOPMENT == 'false' && env.DEPENDENCY_CACHE_RESTORE_KEYS || 'dep-never-restore'}}
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -197,6 +200,7 @@ jobs:
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
       is_main: ${{ env.IS_MAIN }}
+      is_development: ${{ env.IS_DEVELOPMENT }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
@@ -306,7 +310,7 @@ jobs:
     runs-on:
       labels: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_main == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true')
+    if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_development == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true')
     concurrency:
       group: ${{ github.workflow }}
     steps:
@@ -378,7 +382,7 @@ jobs:
     runs-on:
       labels: ubuntu-latest-4-cores
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_main == 'true'
+    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true'
     name: Performance tests
     steps:
       - uses: actions/checkout@v4
