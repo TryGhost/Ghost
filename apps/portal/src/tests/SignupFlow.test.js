@@ -359,7 +359,12 @@ describe('Signup', () => {
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
 
             fireEvent.click(monthlyPlanContainer.parentNode);
-            await within(popupIframeDocument).findByText(benefitText);
+            // Wait for the benefit to appear in the UI - it may appear multiple times, so use findAllByText
+            await waitFor(() => {
+                expect(
+                    within(popupIframeDocument).queryAllByText(benefitText).length
+                ).toBeGreaterThan(0);
+            });
             expect(emailInput).toHaveValue('jamie@example.com');
             expect(nameInput).toHaveValue('Jamie Larsen');
             fireEvent.click(submitButton);
@@ -400,7 +405,12 @@ describe('Signup', () => {
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
 
             fireEvent.click(yearlyPlanContainer.parentNode);
-            await within(popupIframeDocument).findByText(benefitText);
+            // Wait for the benefit to appear in the UI - it may appear multiple times, so use findAllByText
+            await waitFor(() => {
+                expect(
+                    within(popupIframeDocument).queryAllByText(benefitText).length
+                ).toBeGreaterThan(0);
+            });
             expect(emailInput).toHaveValue('jamie@example.com');
             expect(nameInput).toHaveValue('Jamie Larsen');
             fireEvent.click(submitButton);
@@ -440,7 +450,12 @@ describe('Signup', () => {
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
 
             fireEvent.click(monthlyPlanContainer);
-            await within(popupIframeDocument).findByText(benefitText);
+            // Wait for the benefit to appear in the UI - it may appear multiple times, so use findAllByText
+            await waitFor(() => {
+                expect(
+                    within(popupIframeDocument).queryAllByText(benefitText).length
+                ).toBeGreaterThan(0);
+            });
 
             expect(emailInput).toHaveValue('jamie@example.com');
             fireEvent.click(submitButton);
