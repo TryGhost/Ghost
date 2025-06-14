@@ -27,7 +27,7 @@
     "locales"
   ],
   "devDependencies": {
-    "c8": "8.0.1",
+    "c8": "10.1.3",
     "i18next-parser": "8.13.0",
     "mocha": "11.6.0"
   },

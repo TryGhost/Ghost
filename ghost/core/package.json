@@ -236,7 +236,7 @@
     "@types/nodemailer": "6.4.17",
     "@types/sinon": "17.0.4",
     "@types/supertest": "6.0.3",
-    "c8": "8.0.1",
+    "c8": "10.1.3",
     "cli-progress": "3.12.0",
     "cssnano": "7.0.4",
     "detect-indent": "6.1.0",
