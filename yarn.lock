@@ -32587,10 +32587,10 @@ zip-stream@^4.1.0:
     compress-commons "^4.1.0"
     readable-stream "^3.6.0"
 
-zod@3.25.58:
-  version "3.25.58"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.58.tgz#7cd680cbbf01d0994cd2e943a08dc7e77c6d2b7a"
-  integrity sha512-DVLmMQzSZwNYzQoMaM3MQWnxr2eq+AtM9Hx3w1/Yl0pH8sLTSjN4jGP7w6f7uand6Hw44tsnSu1hz1AOA6qI2Q==
+zod@3.25.61:
+  version "3.25.61"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.61.tgz#2e09ece796c182d44b7defc8efb27aa792eb4c8b"
+  integrity sha512-fzfJgUw78LTNnHujj9re1Ov/JJQkRZZGDMcYqSx7Hp4rPOkKywaFHq0S6GoHeXs0wGNE/sIOutkXgnwzrVOGCQ==
 
 zrender@5.6.0:
   version "5.6.0"
