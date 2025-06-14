@@ -9712,7 +9712,7 @@ animejs@3.2.2:
   resolved "https://registry.yarnpkg.com/animejs/-/animejs-3.2.2.tgz#59be98c58834339d5847f4a70ddba74ac75b6afc"
   integrity sha512-Ao95qWLpDPXXM+WrmwcKbl6uNlC5tjnowlaRYtuVDHHoygjtIPfDUoK9NthrlZsQSKjZXlmji2TrBUAVbiH0LQ==
 
-ansi-colors@^4.1.1, ansi-colors@^4.1.3:
+ansi-colors@^4.1.1:
   version "4.1.3"
   resolved "https://registry.yarnpkg.com/ansi-colors/-/ansi-colors-4.1.3.tgz#37611340eb2243e70cc604cad35d63270d48781b"
   integrity sha512-/6w/C21Pm1A7aZitlI5Ni/2J6FFQN8i1Cvz3kHABAAbw93v/NlvKdVOqz7CCWz/3iv/JplRSEEZ83XION15ovw==
@@ -12858,6 +12858,13 @@ chokidar@^3.3.0, chokidar@^3.4.1, chokidar@^3.5.3, chokidar@^3.6.0:
   optionalDependencies:
     fsevents "~2.3.2"
 
+chokidar@^4.0.1:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-4.0.3.tgz#7be37a4c03c9aee1ecfe862a4a23b2c70c205d30"
+  integrity sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==
+  dependencies:
+    readdirp "^4.0.1"
+
 chownr@^1.1.1:
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/chownr/-/chownr-1.1.4.tgz#6fc9d7b42d32a583596337666e7d08084da2cc6b"
@@ -14700,10 +14707,15 @@ diff@^4.0.2:
   resolved "https://registry.yarnpkg.com/diff/-/diff-4.0.2.tgz#60f3aecb89d5fae520c11aa19efc2bb982aade7d"
   integrity sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==
 
-diff@^5.1.0, diff@^5.2.0:
+diff@^5.1.0:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/diff/-/diff-5.2.0.tgz#26ded047cd1179b78b9537d5ef725503ce1ae531"
   integrity sha512-uIFDxqpRZGZ6ThOk84hEfqWoHx2devRFvpTZcTHur85vImfaxUbTW9Ryh4CpCuDnToOP1CEtXKIgytHBPVff5A==
+
+diff@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/diff/-/diff-7.0.0.tgz#3fb34d387cd76d803f6eebea67b921dab0182a9a"
+  integrity sha512-PJWHUb1RFevKCwaFA9RlG5tCd+FO5iRh9A8HEtkmBH2Li03iJriB6m6JIN4rGz3K3JLawI7/veA1xzRKP6ISBw==
 
 diffie-hellman@^5.0.0:
   version "5.0.3"
@@ -18898,7 +18910,7 @@ glob@8.1.0, glob@^8.0.3, glob@^8.1.0:
     minimatch "^5.0.1"
     once "^1.3.0"
 
-glob@^10.0.0, glob@^10.2.2, glob@^10.3.10, glob@^10.3.7:
+glob@^10.0.0, glob@^10.2.2, glob@^10.3.10, glob@^10.3.7, glob@^10.4.5:
   version "10.4.5"
   resolved "https://registry.yarnpkg.com/glob/-/glob-10.4.5.tgz#f4d9f0b90ffdbab09c9d77f5f29b4262517b0956"
   integrity sha512-7Bv8RF0k6xjo7d4A/PxYLbUCfb6c+Vpd2/mB2yRDlew7Jb5hEXiCD9ibfO7wpk8i4sevK6DFny9h7EYbM3/sHg==
@@ -23596,14 +23608,14 @@ minimatch@9.0.3:
   dependencies:
     brace-expansion "^2.0.1"
 
-minimatch@^5.0.1, minimatch@^5.1.0, minimatch@^5.1.6:
+minimatch@^5.0.1, minimatch@^5.1.0:
   version "5.1.6"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-5.1.6.tgz#1cfcb8cf5522ea69952cd2af95ae09477f122a96"
   integrity sha512-lKwV/1brpG6mBUFHtb7NUmtABCb2WZZmm2wNiOA5hAb8VdCS4B3dtMWyvcoViccwAW/COERjXLt0zP1zXUN26g==
   dependencies:
     brace-expansion "^2.0.1"
 
-minimatch@^9.0.0, minimatch@^9.0.4:
+minimatch@^9.0.0, minimatch@^9.0.4, minimatch@^9.0.5:
   version "9.0.5"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-9.0.5.tgz#d74f9dd6b57d83d8e98cfb82133b03978bc929e5"
   integrity sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow==
@@ -23837,30 +23849,30 @@ mocha-slow-test-reporter@0.1.2:
     text-table "^0.2.0"
     wordwrap "^1.0.0"
 
-mocha@10.8.2:
-  version "10.8.2"
-  resolved "https://registry.yarnpkg.com/mocha/-/mocha-10.8.2.tgz#8d8342d016ed411b12a429eb731b825f961afb96"
-  integrity sha512-VZlYo/WE8t1tstuRmqgeyBgCbJc/lEdopaa+axcKzTBJ+UIdlAB9XnmvTCAH4pwR4ElNInaedhEBmZD8iCSVEg==
+mocha@11.6.0:
+  version "11.6.0"
+  resolved "https://registry.yarnpkg.com/mocha/-/mocha-11.6.0.tgz#8b695dff6386f18297d55b201ae598389198e8f7"
+  integrity sha512-i0JVb+OUBqw63X/1pC3jCyJsqYisgxySBbsQa8TKvefpA1oEnw7JXxXnftfMHRsw7bEEVGRtVlHcDYXBa7FzVw==
   dependencies:
-    ansi-colors "^4.1.3"
     browser-stdout "^1.3.1"
-    chokidar "^3.5.3"
+    chokidar "^4.0.1"
     debug "^4.3.5"
-    diff "^5.2.0"
+    diff "^7.0.0"
     escape-string-regexp "^4.0.0"
     find-up "^5.0.0"
-    glob "^8.1.0"
+    glob "^10.4.5"
     he "^1.2.0"
     js-yaml "^4.1.0"
     log-symbols "^4.1.0"
-    minimatch "^5.1.6"
+    minimatch "^9.0.5"
     ms "^2.1.3"
+    picocolors "^1.1.1"
     serialize-javascript "^6.0.2"
     strip-json-comments "^3.1.1"
     supports-color "^8.1.1"
-    workerpool "^6.5.1"
-    yargs "^16.2.0"
-    yargs-parser "^20.2.9"
+    workerpool "^9.2.0"
+    yargs "^17.7.2"
+    yargs-parser "^21.1.1"
     yargs-unparser "^2.0.0"
 
 mocha@^2.5.3:
@@ -27603,6 +27615,11 @@ readdirp@^3.6.0, readdirp@~3.6.0:
   integrity sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==
   dependencies:
     picomatch "^2.2.1"
+
+readdirp@^4.0.1:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/readdirp/-/readdirp-4.1.2.tgz#eb85801435fbf2a7ee58f19e0921b068fc69948d"
+  integrity sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==
 
 recast@^0.18.1:
   version "0.18.10"
@@ -32267,10 +32284,15 @@ workerpool@^3.1.1:
     object-assign "4.1.1"
     rsvp "^4.8.4"
 
-workerpool@^6.0.2, workerpool@^6.0.3, workerpool@^6.1.5, workerpool@^6.4.0, workerpool@^6.5.1:
+workerpool@^6.0.2, workerpool@^6.0.3, workerpool@^6.1.5, workerpool@^6.4.0:
   version "6.5.1"
   resolved "https://registry.yarnpkg.com/workerpool/-/workerpool-6.5.1.tgz#060f73b39d0caf97c6db64da004cd01b4c099544"
   integrity sha512-Fs4dNYcsdpYSAfVxhnl1L5zTksjvOJxtC5hzMNl+1t9B8hTJTdKDyZ5ju7ztgPy+ft9tBFXoOlDNiOT9WUXZlA==
+
+workerpool@^9.2.0:
+  version "9.3.2"
+  resolved "https://registry.yarnpkg.com/workerpool/-/workerpool-9.3.2.tgz#4c045a8b437ae1bc70c646af11929a8b4d238656"
+  integrity sha512-Xz4Nm9c+LiBHhDR5bDLnNzmj6+5F+cyEAWPMkbs2awq/dYazR/efelZzUAjB/y3kNHL+uzkHvxVVpaOfGCPV7A==
 
 world-countries@^5.0.0:
   version "5.1.0"
@@ -32501,7 +32523,7 @@ yargs-unparser@^2.0.0:
     flat "^5.0.2"
     is-plain-obj "^2.1.0"
 
-yargs@^16.1.1, yargs@^16.2.0:
+yargs@^16.1.1:
   version "16.2.0"
   resolved "https://registry.yarnpkg.com/yargs/-/yargs-16.2.0.tgz#1c82bf0f6b6a66eafce7ef30e376f49a12477f66"
   integrity sha512-D1mvvtDG0L5ft/jGWkLpG1+m0eQxOfaBvTNELraWj22wSVUMWxZUvYgJYcKh6jGGIkJFhH4IZPQhR4TKpc8mBw==
