@@ -7833,10 +7833,10 @@
     "@tryghost/root-utils" "^0.3.24"
     nconf "^0.12.0"
 
-"@tryghost/content-api@1.11.25":
-  version "1.11.25"
-  resolved "https://registry.yarnpkg.com/@tryghost/content-api/-/content-api-1.11.25.tgz#85c4bc438434db0d427e215dffc7e6a087edf9aa"
-  integrity sha512-OihtLg1jQjfbrn9Zv3htWT4PJcyfdSHYK5r8hGFZ2kaKXFbSraDOq/9BajCNfDzIw6wCEXn0Dz/PZ92J0fjGIA==
+"@tryghost/content-api@1.11.26":
+  version "1.11.26"
+  resolved "https://registry.yarnpkg.com/@tryghost/content-api/-/content-api-1.11.26.tgz#f589d2c59b2e80e3ebf17d65daf7debfa1f7621b"
+  integrity sha512-BhTLERo2onwxnSVcxsZKvbBpRjxuBA1gLge2VCoqIHBrt3HfML79+rjKt6rDoenwFh2BvDBxlY1HTVkNvpKOpQ==
   dependencies:
     axios "^1.0.0"
 
@@ -8370,6 +8370,19 @@
   version "4.4.12"
   resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-4.4.12.tgz#a02a279ba0837863bcca05faef5111352afd71db"
   integrity sha512-11tlNFymPNoUi3ds2PCuDxgMnHVLw4R6lkeF8vC6EYtYPpjuLaXMCG0PakCj7hTBISatOTvWy0ldm38KUfyaWg==
+  dependencies:
+    cheerio "^0.22.0"
+    lodash "^4.17.21"
+    moment "^2.27.0"
+    moment-timezone "^0.5.31"
+    remark "^11.0.2"
+    remark-footnotes "^1.0.0"
+    unist-util-visit "^2.0.0"
+
+"@tryghost/url-utils@4.4.13":
+  version "4.4.13"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-4.4.13.tgz#763a3ab391680e490e04c47cc5543d58418bf4cf"
+  integrity sha512-OOR1Tkg5ixS1vXfHcohtBvm/JMf3yJa/wi8NoMrlLj4oxf2OZNsXtswtCljF+FsvNC6PduccM3OI900ULoTsDg==
   dependencies:
     cheerio "^0.22.0"
     lodash "^4.17.21"
