@@ -21,6 +21,45 @@ class LockfileDriftDetector {
     this.workspaceDepsCount = new Map();
     this.ignoredWorkspaceDeps = new Set();
     this.renovateIgnoredDeps = new Set();
+
+    // Parse command line arguments
+    this.args = process.argv.slice(2);
+    this.filterSeverity = null;
+
+    // Check for severity filters
+    if (this.args.includes('--patch')) {
+      this.filterSeverity = 'patch';
+    } else if (this.args.includes('--minor')) {
+      this.filterSeverity = 'minor';
+    } else if (this.args.includes('--major')) {
+      this.filterSeverity = 'major';
+    }
+
+    // Check for help flag
+    if (this.args.includes('--help') || this.args.includes('-h')) {
+      this.showHelp();
+      process.exit(0);
+    }
+  }
+
+  /**
+   * Show help message
+   */
+  showHelp() {
+    console.log(`
+Dependency Inspector - Smart lockfile drift detector
+
+Usage: dependency-inspector.js [options]
+
+Options:
+  --patch      Show all packages with patch updates
+  --minor      Show all packages with minor updates
+  --major      Show all packages with major updates
+  --help, -h   Show this help message
+
+Without flags, shows high-priority updates sorted by impact.
+With a severity flag, shows all packages with that update type.
+`);
   }
 
   /**
@@ -360,6 +399,86 @@ class LockfileDriftDetector {
   }
 
   /**
+   * Display filtered results by severity
+   */
+  displayFilteredResults(results) {
+    const severityEmoji = {
+      major: '🔴',
+      minor: '🟡',
+      patch: '🟢'
+    };
+
+    const emoji = severityEmoji[this.filterSeverity];
+    const filterTitle = this.filterSeverity.toUpperCase();
+
+    console.log(`${emoji} ${filterTitle} UPDATES ONLY:\n`);
+
+    // Filter direct dependencies
+    const filteredDirect = results.direct.filter(pkg => pkg.severity === this.filterSeverity);
+    const filteredTransitive = results.transitive.filter(pkg => pkg.severity === this.filterSeverity);
+
+    console.log(`Found ${filteredDirect.length} direct and ${filteredTransitive.length} transitive ${this.filterSeverity} updates.\n`);
+
+    if (filteredDirect.length > 0) {
+      console.log('📦 DIRECT DEPENDENCIES:');
+      console.log('─'.repeat(80));
+
+      // Sort by workspace impact, then by package name
+      filteredDirect.sort((a, b) => {
+        if (a.impact !== b.impact) {
+          return b.impact - a.impact;
+        }
+        return a.name.localeCompare(b.name);
+      });
+
+      for (const pkg of filteredDirect) {
+        const workspaceList = pkg.workspaces.map(w => w.workspace).join(', ');
+        const impactNote = pkg.workspaceCount > 1 ? ` (${pkg.workspaceCount} workspaces)` : '';
+        console.log(`   ${emoji} ${pkg.name}: ${pkg.current} → ${pkg.latest}${impactNote}`);
+        console.log(`      Workspaces: ${workspaceList}`);
+      }
+
+      console.log('\n🚀 UPDATE COMMANDS:');
+      console.log('─'.repeat(80));
+      for (const pkg of filteredDirect) {
+        console.log(`   yarn upgrade ${pkg.name}@latest`);
+      }
+    }
+
+    if (filteredTransitive.length > 0) {
+      console.log('\n\n🔄 TRANSITIVE DEPENDENCIES:');
+      console.log('─'.repeat(80));
+      console.log('   These will likely be updated automatically when you update direct deps.\n');
+
+      // Sort by package name for easier scanning
+      filteredTransitive.sort((a, b) => a.name.localeCompare(b.name));
+
+      for (const pkg of filteredTransitive) {
+        console.log(`   ${emoji} ${pkg.name}: ${pkg.current} → ${pkg.latest}`);
+      }
+    }
+
+    // Show workspace-specific breakdown
+    console.log('\n\n🏢 WORKSPACE BREAKDOWN:');
+    console.log('─'.repeat(80));
+
+    for (const [workspaceName, stats] of this.workspaceStats.entries()) {
+      const severityCount = stats[this.filterSeverity];
+      if (severityCount > 0) {
+        const packages = stats.packages.filter(p => p.severity === this.filterSeverity);
+        console.log(`\n   📦 ${workspaceName}: ${severityCount} ${this.filterSeverity} update${severityCount !== 1 ? 's' : ''}`);
+
+        // Show all packages for this workspace with the selected severity
+        for (const pkg of packages) {
+          console.log(`      ${emoji} ${pkg.name}: ${pkg.current} → ${pkg.latest}`);
+        }
+      }
+    }
+
+    console.log('');
+  }
+
+  /**
    * Display results in a helpful format
    */
   displayResults(results) {
@@ -374,6 +493,12 @@ class LockfileDriftDetector {
     console.log(`   Patch updates: ${results.stats.patch}`);
     console.log(`   Direct deps: ${results.direct.length}`);
     console.log(`   Transitive deps: ${results.transitive.length}\n`);
+
+    // If filtering by severity, show filtered results
+    if (this.filterSeverity) {
+      this.displayFilteredResults(results);
+      return;
+    }
 
     // Workspace-specific statistics
     console.log('🏢 WORKSPACE BREAKDOWN:');
