@@ -108,7 +108,7 @@
     "ember-load-initializers": "2.1.2",
     "ember-mocha": "0.16.2",
     "ember-modifier": "4.2.0",
-    "ember-moment": "10.0.1",
+    "ember-moment": "10.0.2",
     "ember-one-way-select": "4.0.1",
     "ember-power-datepicker": "cibernox/ember-power-datepicker",
     "ember-power-select": "6.0.1",
