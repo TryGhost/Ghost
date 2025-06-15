@@ -39,11 +39,9 @@
         "@embroider/macros",
 
         // https://github.com/TryGhost/Ghost/commit/a10ad3767f60ed2c8e56feb49e7bf83d9618b2ab
-        // Caused linespacing issue, but no longer used and can be cleaned up
+        // Caused linespacing issues in the editor, but now it's used in different places
+        // So not sure if it's relevant - soon we will finish switching to react-codemirror
         "codemirror",
-
-        // No longer used, can be cleaned up
-        "faker",
 
         // https://github.com/TryGhost/Ghost/commit/3236891b80988924fbbdb625d30cb64a7bf2afd1
         // ember-cli-code-coverage@2.0.0 broke our code coverage
