@@ -4733,12 +4733,12 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.8.tgz#6b79032e760a0899cd4204710beede972a3a185f"
   integrity sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==
 
-"@prettier/sync@0.5.5":
-  version "0.5.5"
-  resolved "https://registry.yarnpkg.com/@prettier/sync/-/sync-0.5.5.tgz#6d02d07a55d25c4aae57a111ba2ae8a5844b9e9e"
-  integrity sha512-6BMtNr7aQhyNcGzmumkL0tgr1YQGfm9d7ZdmRpWqWuqpc9vZBind4xMe5NMiRECOhjuSiWHfBWLBnXkpeE90bw==
+"@prettier/sync@0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@prettier/sync/-/sync-0.6.1.tgz#d868fe826610b689acd79c5520f357c0e0be0eda"
+  integrity sha512-yF9G8vK/LYUTF3Cijd7VC9La3b20F20/J/fgoR4H0B8JGOWnZVZX6+I6+vODPosjmMcpdlUV+gUqJQZp3kLOcw==
   dependencies:
-    make-synchronized "^0.4.2"
+    make-synchronized "^0.8.0"
 
 "@prisma/instrumentation@6.8.2":
   version "6.8.2"
@@ -23312,10 +23312,10 @@ make-iterator@^1.0.0:
   dependencies:
     kind-of "^6.0.2"
 
-make-synchronized@^0.4.2:
-  version "0.4.2"
-  resolved "https://registry.yarnpkg.com/make-synchronized/-/make-synchronized-0.4.2.tgz#a6e07c7f422bc61af0fd7d82503d0fe1513b6182"
-  integrity sha512-EwEJSg8gSGLicKXp/VzNi1tvzhdmNBxOzslkkJSoNUCQFZKH/NIUIp7xlfN+noaHrz4BJDN73gne8IHnjl/F/A==
+make-synchronized@^0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/make-synchronized/-/make-synchronized-0.8.0.tgz#19cb3745cebd1f0916b04fffa432c3671e834407"
+  integrity sha512-DZu4lwc0ffoFz581BSQa/BJl+1ZqIkoRQ+VejMlH0VrP4E86StAODnZujZ4sepumQj8rcP7wUnUBGM8Gu+zKUA==
 
 makeerror@1.0.12:
   version "1.0.12"
