@@ -29,34 +29,32 @@
     ],
     "packageRules": [
         {
-        "groupName": "ember-basic-dropdown addons",
-        "packagePatterns": [
-            "^ember-basic",
-            "^ember-power"
-        ]
+            "groupName": "ember-basic-dropdown addons",
+            "matchPackageNames": [
+                "/^ember-basic/",
+                "/^ember-power/"
+            ]
         },
         {
-        "groupName": "ember core",
-        "packageNames": [
-            "ember-source",
-            "ember-cli",
-            "ember-data"
-        ]
+            "groupName": "ember core",
+            "matchPackageNames": [
+                "ember-source",
+                "ember-cli",
+                "ember-data"
+            ]
         },
         {
-        "groupName": "disable css",
-        "matchFiles": [
-            "ghost/admin/package.json"
-        ],
-        "packagePatterns": [
-            "^postcss",
-            "^css"
-        ],
-        "packageNames": [
-            "autoprefixer",
-            "ember-cli-postcss"
-        ],
-        "enabled": false
+            "groupName": "disable css",
+            "matchFileNames": [
+                "ghost/admin/package.json"
+            ],
+            "matchPackageNames": [
+                "autoprefixer",
+                "ember-cli-postcss",
+                "/^postcss/",
+                "/^css/"
+            ],
+            "enabled": false
         }
     ]
 }
