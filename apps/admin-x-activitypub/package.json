@@ -66,7 +66,7 @@
     }
   },
   "dependencies": {
-    "@radix-ui/react-form": "0.1.6",
+    "@radix-ui/react-form": "0.1.7",
     "@tryghost/admin-x-framework": "0.0.0",
     "@tryghost/shade": "0.0.0",
     "clsx": "2.1.1",
