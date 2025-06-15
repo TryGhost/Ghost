@@ -65,7 +65,7 @@
     "@testing-library/user-event": "14.6.1",
     "@tryghost/i18n": "0.0.0",
     "@vitejs/plugin-react": "4.5.2",
-    "@vitest/coverage-v8": "0.34.3",
+    "@vitest/coverage-v8": "0.34.6",
     "autoprefixer": "10.4.19",
     "bson-objectid": "2.0.4",
     "concurrently": "8.2.2",
