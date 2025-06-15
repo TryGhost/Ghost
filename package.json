@@ -82,6 +82,7 @@
     "eslint-plugin-react": "7.37.5",
     "husky": "8.0.3",
     "inquirer": "8.2.6",
+    "jsonc-parser": "3.3.1",
     "lint-staged": "15.5.2",
     "nx": "20.8.2",
     "patch-package": "8.0.0",

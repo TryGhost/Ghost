@@ -4,6 +4,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const jsonc = require('jsonc-parser');
 const { execSync } = require('child_process');
 
 /**
@@ -30,8 +31,8 @@ class LockfileDriftDetector {
 
     try {
       // Read renovate.json from project root (two levels up from .github/scripts/)
-      const renovateConfigPath = path.join(__dirname, '../../.github/renovate.json');
-      const renovateConfig = JSON.parse(fs.readFileSync(renovateConfigPath, 'utf8'));
+      const renovateConfigPath = path.join(__dirname, '../../.github/renovate.json5');
+      const renovateConfig = jsonc.parse(fs.readFileSync(renovateConfigPath, 'utf8'));
 
       if (renovateConfig.ignoreDeps) {
         for (const dep of renovateConfig.ignoreDeps) {
