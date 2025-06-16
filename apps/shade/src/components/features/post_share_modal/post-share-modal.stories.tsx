@@ -21,6 +21,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const defaultProps = {
+    description: <>
+        Your post was published on your site and sent to <strong>3 subscribers</strong> of <strong>Handcrafted questioner</strong>, on <strong>June 13th</strong> at <strong>12:02</strong>.
+    </>,
     featureImageURL: 'https://loremflickr.com/800/600',
     faviconURL: 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64',
     postURL: 'https://ghost.org/sample-post-url',
@@ -48,6 +51,18 @@ export const WithCustomTrigger: Story = {
             </Button>
         ),
         ...defaultProps
+    }
+};
+
+export const NoFeatureImage: Story = {
+    args: {
+        children: (
+            <Button size="sm" variant="outline">
+                Open Share Modal
+            </Button>
+        ),
+        ...defaultProps,
+        featureImageURL: ''
     }
 };
 

@@ -92,11 +92,12 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 <>
                                     <PostShareModal
                                         author="John Doe"
+                                        description=''
                                         faviconURL="https://www.google.com/s2/favicons?domain=ghost.org&sz=64"
-                                        featureImageURL="https://loremflickr.com/800/600"
+                                        featureImageURL={post.feature_image}
                                         open={isShareOpen}
-                                        postExcerpt="Here's your post excerpt"
-                                        postTitle="Post title"
+                                        postExcerpt=''
+                                        postTitle={post.title}
                                         postURL={post.url}
                                         siteTitle="Ghost Site"
                                         onClose={() => setIsShareOpen(false)}

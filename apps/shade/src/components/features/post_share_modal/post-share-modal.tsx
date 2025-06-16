@@ -58,24 +58,30 @@ const PostShareModal: React.FC<PostShareModalProps> = (
             <DialogTrigger className="cursor-pointer" asChild>
                 {children}
             </DialogTrigger>
-            <DialogContent className='max-w-[600px] p-8'>
+            <DialogContent className='max-w-[540px] p-8'>
                 <DialogHeader className='relative'>
                     <DialogTitle className='text-3xl font-bold leading-[1.15em]'>
                         <span className='text-green-500'>{primaryTitle}</span><br />
                         <span>{secondaryTitle}</span>
                     </DialogTitle>
-                    <DialogDescription className='pt-1 text-lg text-foreground'>
-                        {description}
-                    </DialogDescription>
+                    {description &&
+                        <DialogDescription className='mb-0 pb-0 pt-1 text-lg text-foreground'>
+                            {description}
+                        </DialogDescription>
+                    }
                     <Button className='absolute -right-5 -top-6 cursor-pointer p-2 text-muted-foreground hover:text-foreground [&_svg]:!size-6' size='lg' variant='link' onClick={onClose}><X size={24} strokeWidth={1} /></Button>
                 </DialogHeader>
                 <a className='flex flex-col items-stretch overflow-hidden rounded-md border transition-all hover:border-muted-foreground/40' href={postURL} rel="noopener noreferrer" target='_blank'>
-                    <div className='aspect-video bg-cover bg-center' style={{
-                        backgroundImage: `url(${featureImageURL})`
-                    }}></div>
-                    <div className='p-6'>
+                    {featureImageURL &&
+                        <div className='aspect-video bg-cover bg-center' style={{
+                            backgroundImage: `url(${featureImageURL})`
+                        }}></div>
+                    }
+                    <div className='p-6 pt-5'>
                         <H3>{postTitle}</H3>
-                        <p>{postExcerpt}</p>
+                        {postExcerpt &&
+                            <p>{postExcerpt}</p>
+                        }
                         <div className='mt-2 flex items-start gap-2'>
                             <div className='mt-0.5 size-4 bg-cover bg-center' style={{
                                 backgroundImage: `url(${faviconURL})`
