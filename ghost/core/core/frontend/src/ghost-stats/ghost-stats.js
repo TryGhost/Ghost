@@ -86,7 +86,7 @@ export class GhostStats {
             const headers = {
                 'Content-Type': 'application/json',
             };
-            if (config.globalAttributes.site_uuid) {
+            if (config.globalAttributes?.site_uuid) {
                 headers['x-site-uuid'] = config.globalAttributes.site_uuid;
             }
 
