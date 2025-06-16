@@ -97,6 +97,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                         open={isShareOpen}
                                         postExcerpt="Here's your post excerpt"
                                         postTitle="Post title"
+                                        postURL={post.url}
                                         siteTitle="Ghost Site"
                                         onClose={() => setIsShareOpen(false)}
                                         onOpenChange={setIsShareOpen}
