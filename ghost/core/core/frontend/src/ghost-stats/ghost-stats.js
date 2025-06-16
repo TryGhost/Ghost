@@ -83,11 +83,16 @@ export class GhostStats {
             const controller = new AbortController();
             const timeoutId = this.browser.setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            if (config.globalAttributes?.site_uuid) {
+                headers['x-site-uuid'] = config.globalAttributes.site_uuid;
+            }
+
             const response = await this.browser.fetch(url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers,
                 body: JSON.stringify(data),
                 signal: controller.signal
             });
