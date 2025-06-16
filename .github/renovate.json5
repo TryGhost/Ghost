@@ -55,22 +55,27 @@
         "ghost/admin/lib/koenig-editor/package.json"
     ],
     "packageRules": [
-        // Special package rules for ember / admin
+
+        // Ignore all ember-related packages in admin
+        // Our ember codebase is being replaced with react and
+        // Most of the dependencies have breaking changes and it's too hard to update
+        // Therefore, we'll leave these as-is for now
         {
-            "groupName": "ember-basic-dropdown addons",
+            "groupName": "Disable ember updates",
+            "matchFileNames": [
+                "ghost/admin/package.json"
+            ],
             "matchPackageNames": [
-                "/^ember-basic/",
-                "/^ember-power/"
-            ]
+                // `ember-foo` style packages
+                "/^ember(-|$)/",
+                // scoped `@ember/*` packages
+                "/^@ember\\//",
+                // foo/ember-something style packages
+                "/\\/ember(-|$)/"
+            ],
+            "enabled": false
         },
-        {
-            "groupName": "ember core",
-            "matchPackageNames": [
-                "ember-source",
-                "ember-cli",
-                "ember-data"
-            ]
-        },
+
         // Don't allow css preprocessor updates in admin
         {
             "groupName": "disable css",
