@@ -68,24 +68,6 @@ Object {
     min-width: 100%;
   }
 
-  table.header {
-    width: 100% !important;
-    min-width: 100% !important;
-  }
-
-  table.header .header-container {
-    width: 100% !important;
-    margin: 0 auto !important;
-  }
-
-  table.header .header-container table {
-    width: 100% !important;
-  }
-
-  table.header .header-content {
-    padding: 0 10px !important;
-  }
-
   .hide-mobile {
     display: none;
   }
@@ -137,7 +119,7 @@ table.body td {
   }
 
   table.body .main,
-table.header .header-container {
+table.header .header-main {
     border-spacing: 10px 0 !important;
     border-left-width: 0 !important;
     border-radius: 0 !important;
@@ -477,15 +459,16 @@ table.body h2 span {
                 <![endif]-->
                 <tr>
                     <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
-                    <td class=\\"header-bg\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 0;\\" valign=\\"top\\">
+                    <td class=\\"container title-serif\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                        <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- Header content constrained to 600px -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header-container\\" width=\\"600\\" style=\\"mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 600px; border-spacing: 0; border-collapse: collapse;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header-main\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: transparent;\\" width=\\"100%\\" bgcolor=\\"transparent\\">
                             <tr>
-                                <td class=\\"header-content container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 0 20px; margin: 0 auto;\\" valign=\\"top\\">
+                                <td class=\\"header-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 0; margin: 0 auto;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 24px; padding-bottom: 16px;\\" valign=\\"top\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
                                                         <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
                                                     </a>
                                                 </td>
@@ -495,10 +478,10 @@ table.body h2 span {
                                                 <td class=\\"site-info\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 32px;\\" valign=\\"top\\">
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
-                                                                <td class=\\"site-url \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-title\\" style=\\"text-decoration: none; color: #15212A;\\" target=\\"_blank\\">Ghost</a></div></td>
+                                                                <td class=\\"site-url \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-title\\" style=\\"text-decoration: none; color: #15212A; overflow-wrap: anywhere;\\" target=\\"_blank\\">Ghost</a></div></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class=\\"site-url site-url-bottom-padding\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center; padding-bottom: 12px;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-subtitle\\" style=\\"text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-transform: none;\\" target=\\"_blank\\">Daily newsletter</a></div></td>
+                                                                <td class=\\"site-url site-url-bottom-padding\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center; padding-bottom: 12px;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-subtitle\\" style=\\"text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-transform: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">Daily newsletter</a></div></td>
                                                             </tr>
 
                                                     </table>
@@ -507,7 +490,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif post-title-color\\" style=\\"vertical-align: top; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; color: #15212A; color: #000000; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; color: #000000;\\" target=\\"_blank\\">A random test post</a>
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -518,12 +501,12 @@ table.body h2 span {
                                                                 By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">date </span>
                                                             </td>
                                                             <td class=\\"post-meta post-meta-center view-online desktop\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center; display: none;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                         <tr class=\\"post-meta post-meta-center view-online-mobile\\" style=\\"color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center;\\" align=\\"center\\">
                                                             <td height=\\"20\\" class=\\"view-online\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center; text-decoration: underline;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -534,6 +517,7 @@ table.body h2 span {
                                 </td>
                             </tr>
                         </table>
+                        </div>
                     </td>
                     <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
                 </tr>
@@ -635,6 +619,7 @@ table.body h2 span {
 
 
 
+
 http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
@@ -678,6 +663,7 @@ View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
 
 
 
@@ -832,24 +818,6 @@ Object {
     min-width: 100%;
   }
 
-  table.header {
-    width: 100% !important;
-    min-width: 100% !important;
-  }
-
-  table.header .header-container {
-    width: 100% !important;
-    margin: 0 auto !important;
-  }
-
-  table.header .header-container table {
-    width: 100% !important;
-  }
-
-  table.header .header-content {
-    padding: 0 10px !important;
-  }
-
   .hide-mobile {
     display: none;
   }
@@ -901,7 +869,7 @@ table.body td {
   }
 
   table.body .main,
-table.header .header-container {
+table.header .header-main {
     border-spacing: 10px 0 !important;
     border-left-width: 0 !important;
     border-radius: 0 !important;
@@ -1241,15 +1209,16 @@ table.body h2 span {
                 <![endif]-->
                 <tr>
                     <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
-                    <td class=\\"header-bg\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 0;\\" valign=\\"top\\">
+                    <td class=\\"container title-serif\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                        <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- Header content constrained to 600px -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header-container\\" width=\\"600\\" style=\\"mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 600px; border-spacing: 0; border-collapse: collapse;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header-main\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: transparent;\\" width=\\"100%\\" bgcolor=\\"transparent\\">
                             <tr>
-                                <td class=\\"header-content container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 0 20px; margin: 0 auto;\\" valign=\\"top\\">
+                                <td class=\\"header-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 0; margin: 0 auto;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 24px; padding-bottom: 16px;\\" valign=\\"top\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
                                                         <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
                                                     </a>
                                                 </td>
@@ -1259,10 +1228,10 @@ table.body h2 span {
                                                 <td class=\\"site-info\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 32px;\\" valign=\\"top\\">
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
-                                                                <td class=\\"site-url \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-title\\" style=\\"text-decoration: none; color: #15212A;\\" target=\\"_blank\\">Ghost</a></div></td>
+                                                                <td class=\\"site-url \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-title\\" style=\\"text-decoration: none; color: #15212A; overflow-wrap: anywhere;\\" target=\\"_blank\\">Ghost</a></div></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class=\\"site-url site-url-bottom-padding\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center; padding-bottom: 12px;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-subtitle\\" style=\\"text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-transform: none;\\" target=\\"_blank\\">Daily newsletter</a></div></td>
+                                                                <td class=\\"site-url site-url-bottom-padding\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center; padding-bottom: 12px;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-subtitle\\" style=\\"text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-transform: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">Daily newsletter</a></div></td>
                                                             </tr>
 
                                                     </table>
@@ -1271,7 +1240,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif post-title-color\\" style=\\"vertical-align: top; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; color: #15212A; color: #000000; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; color: #000000;\\" target=\\"_blank\\">A random test post</a>
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -1282,12 +1251,12 @@ table.body h2 span {
                                                                 By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">date </span>
                                                             </td>
                                                             <td class=\\"post-meta post-meta-center view-online desktop\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center; display: none;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                         <tr class=\\"post-meta post-meta-center view-online-mobile\\" style=\\"color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center;\\" align=\\"center\\">
                                                             <td height=\\"20\\" class=\\"view-online\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center; text-decoration: underline;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -1298,6 +1267,7 @@ table.body h2 span {
                                 </td>
                             </tr>
                         </table>
+                        </div>
                     </td>
                     <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
                 </tr>
@@ -1399,6 +1369,7 @@ table.body h2 span {
 
 
 
+
 http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
@@ -1442,6 +1413,7 @@ View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
 
 
 
@@ -4348,24 +4320,6 @@ Object {
     min-width: 100%;
   }
 
-  table.header {
-    width: 100% !important;
-    min-width: 100% !important;
-  }
-
-  table.header .header-container {
-    width: 100% !important;
-    margin: 0 auto !important;
-  }
-
-  table.header .header-container table {
-    width: 100% !important;
-  }
-
-  table.header .header-content {
-    padding: 0 10px !important;
-  }
-
   .hide-mobile {
     display: none;
   }
@@ -4417,7 +4371,7 @@ table.body td {
   }
 
   table.body .main,
-table.header .header-container {
+table.header .header-main {
     border-spacing: 10px 0 !important;
     border-left-width: 0 !important;
     border-radius: 0 !important;
@@ -4785,15 +4739,16 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                 <![endif]-->
                 <tr>
                     <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
-                    <td class=\\"header-bg\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 0;\\" valign=\\"top\\">
+                    <td class=\\"container title-serif\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                        <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- Header content constrained to 600px -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header-container\\" width=\\"600\\" style=\\"mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 600px; border-spacing: 0; border-collapse: collapse;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header-main\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: transparent;\\" width=\\"100%\\" bgcolor=\\"transparent\\">
                             <tr>
-                                <td class=\\"header-content container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 0 20px; margin: 0 auto;\\" valign=\\"top\\">
+                                <td class=\\"header-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 0; margin: 0 auto;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 24px; padding-bottom: 16px;\\" valign=\\"top\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
                                                         <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
                                                     </a>
                                                 </td>
@@ -4803,10 +4758,10 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                                 <td class=\\"site-info\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 32px;\\" valign=\\"top\\">
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
-                                                                <td class=\\"site-url \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-title\\" style=\\"text-decoration: none; color: #15212A;\\" target=\\"_blank\\">Ghost</a></div></td>
+                                                                <td class=\\"site-url \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-title\\" style=\\"text-decoration: none; color: #15212A; overflow-wrap: anywhere;\\" target=\\"_blank\\">Ghost</a></div></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class=\\"site-url site-url-bottom-padding\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center; padding-bottom: 12px;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-subtitle\\" style=\\"text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-transform: none;\\" target=\\"_blank\\">Daily newsletter</a></div></td>
+                                                                <td class=\\"site-url site-url-bottom-padding\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center; padding-bottom: 12px;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-subtitle\\" style=\\"text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-transform: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">Daily newsletter</a></div></td>
                                                             </tr>
 
                                                     </table>
@@ -4815,7 +4770,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif post-title-color\\" style=\\"vertical-align: top; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; color: #15212A; color: #000000; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; color: #000000;\\" target=\\"_blank\\">A random test post</a>
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -4826,12 +4781,12 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                                                 By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">date </span>
                                                             </td>
                                                             <td class=\\"post-meta post-meta-center view-online desktop\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center; display: none;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                         <tr class=\\"post-meta post-meta-center view-online-mobile\\" style=\\"color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center;\\" align=\\"center\\">
                                                             <td height=\\"20\\" class=\\"view-online\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center; text-decoration: underline;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -4842,6 +4797,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                 </td>
                             </tr>
                         </table>
+                        </div>
                     </td>
                     <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
                 </tr>
@@ -5228,6 +5184,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
 
 
 
+
 http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
@@ -5271,6 +5228,7 @@ View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
 
 
 
@@ -5762,24 +5720,6 @@ Object {
     min-width: 100%;
   }
 
-  table.header {
-    width: 100% !important;
-    min-width: 100% !important;
-  }
-
-  table.header .header-container {
-    width: 100% !important;
-    margin: 0 auto !important;
-  }
-
-  table.header .header-container table {
-    width: 100% !important;
-  }
-
-  table.header .header-content {
-    padding: 0 10px !important;
-  }
-
   .hide-mobile {
     display: none;
   }
@@ -5831,7 +5771,7 @@ table.body td {
   }
 
   table.body .main,
-table.header .header-container {
+table.header .header-main {
     border-spacing: 10px 0 !important;
     border-left-width: 0 !important;
     border-radius: 0 !important;
@@ -6213,15 +6153,16 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                 <![endif]-->
                 <tr>
                     <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
-                    <td class=\\"header-bg\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 0;\\" valign=\\"top\\">
+                    <td class=\\"container title-serif\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                        <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
                         <!-- Header content constrained to 600px -->
-                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header-container\\" width=\\"600\\" style=\\"mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 600px; border-spacing: 0; border-collapse: collapse;\\">
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header-main\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 20px 0; width: 100%; max-width: 600px; background: #ffffff; background-color: transparent;\\" width=\\"100%\\" bgcolor=\\"transparent\\">
                             <tr>
-                                <td class=\\"header-content container title-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 0 20px; margin: 0 auto;\\" valign=\\"top\\">
+                                <td class=\\"header-content\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding: 0; margin: 0 auto;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 24px; padding-bottom: 16px;\\" valign=\\"top\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
                                                         <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
                                                     </a>
                                                 </td>
@@ -6231,10 +6172,10 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                                 <td class=\\"site-info\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 32px;\\" valign=\\"top\\">
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
-                                                                <td class=\\"site-url \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-title\\" style=\\"text-decoration: none; color: #15212A;\\" target=\\"_blank\\">Ghost</a></div></td>
+                                                                <td class=\\"site-url \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-title\\" style=\\"text-decoration: none; color: #15212A; overflow-wrap: anywhere;\\" target=\\"_blank\\">Ghost</a></div></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class=\\"site-url site-url-bottom-padding\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center; padding-bottom: 12px;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-subtitle\\" style=\\"text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-transform: none;\\" target=\\"_blank\\">Daily newsletter</a></div></td>
+                                                                <td class=\\"site-url site-url-bottom-padding\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center; padding-bottom: 12px;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-subtitle\\" style=\\"text-decoration: none; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-transform: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">Daily newsletter</a></div></td>
                                                             </tr>
 
                                                     </table>
@@ -6243,7 +6184,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif post-title-color\\" style=\\"vertical-align: top; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; color: #15212A; color: #000000; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; color: #000000;\\" target=\\"_blank\\">A random test post</a>
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -6254,12 +6195,12 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                                                 By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">date </span>
                                                             </td>
                                                             <td class=\\"post-meta post-meta-center view-online desktop\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center; display: none;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                         <tr class=\\"post-meta post-meta-center view-online-mobile\\" style=\\"color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center;\\" align=\\"center\\">
                                                             <td height=\\"20\\" class=\\"view-online\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212a; color: rgba(0, 0, 0, 0.6); font-size: 13px; font-weight: 400; text-align: center; text-decoration: underline;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #15212a; color: rgba(0, 0, 0, 0.6); overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -6270,6 +6211,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                 </td>
                             </tr>
                         </table>
+                        </div>
                     </td>
                     <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
                 </tr>
@@ -6656,6 +6598,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
 
 
 
+
 http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
@@ -6699,6 +6642,7 @@ View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
 
 
 

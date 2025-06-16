@@ -22,11 +22,12 @@
                 <![endif]-->
                 <tr>
                     <td>&nbsp;</td>
-                    <td class="header-bg" align="center">
+                    <td class="{{classes.container}}" align="center">
+                        <div class="content">
                         <!-- Header content constrained to 600px -->
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="header-container" width="600">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="header-main">
                             <tr>
-                                <td class="header-content {{classes.container}}">
+                                <td class="header-content">
                                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                         {{#if headerImage}}
                                             <tr class="header-image-row">
@@ -138,6 +139,7 @@
                                 </td>
                             </tr>
                         </table>
+                        </div>
                     </td>
                     <td>&nbsp;</td>
                 </tr>

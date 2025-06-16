@@ -2464,30 +2464,25 @@ img.kg-cta-image {
     border-collapse: collapse;
 }
 
-.header-bg {
-    padding: 0;
-    /* Background color for the header */
-    {{#if headerBackgroundColor}}
-    background-color: {{headerBackgroundColor}};
-    {{/if}}
-}
-
-.header-container {
-    width: 600px;
-    border-spacing: 0;
-    border-collapse: collapse;
-}
-
 .header-content {
-    padding: 0 20px;
     margin: 0 auto !important;
+    padding: 0;
 }
 
-.main {
+.main,
+.header-main {
     border-spacing: 20px 0;
     width: 100%;
     max-width: 600px;
     background: #ffffff;
+}
+
+.header-main {
+    {{#if headerBackgroundColor}}
+    background-color: {{headerBackgroundColor}};
+    {{else}}
+    background-color: transparent;
+    {{/if}}
 }
 {{else}}
 .main {
@@ -2750,26 +2745,6 @@ table.btn-accent a {
         min-width: 100%;
     }
 
-    {{#hasFeature "emailCustomization"}}
-    table.header {
-        width: 100% !important;
-        min-width: 100% !important;
-    }
-
-    table.header .header-container {
-        width: 100% !important;
-        margin: 0 auto !important;
-    }
-
-    table.header .header-container table {
-        width: 100% !important;
-    }
-
-    table.header .header-content {
-        padding: 0 10px !important;
-    }
-    {{/hasFeature}}
-
     .hide-mobile {
         display: none;
     }
@@ -2828,7 +2803,7 @@ table.btn-accent a {
 
     {{#hasFeature "emailCustomization"}}
     table.body .main,
-    table.header .header-container {
+    table.header .header-main {
         border-spacing: 10px 0 !important;
         border-left-width: 0 !important;
         border-radius: 0 !important;
