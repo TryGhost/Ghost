@@ -2,8 +2,8 @@ import {H3} from '@/components/layout/heading';
 import {Button} from '@/components/ui/button';
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger} from '@/components/ui/dialog';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import {Link, X} from 'lucide-react';
-import React from 'react';
+import {Check, Link, X} from 'lucide-react';
+import React, {useState} from 'react';
 
 interface PostShareModalProps extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Root> {
     emailOnly?: boolean;
@@ -36,6 +36,18 @@ const PostShareModal: React.FC<PostShareModalProps> = (
         onClose = () => {},
         children,
         ...props}) => {
+    const [isCopied, setIsCopied] = useState(false);
+
+    const handleCopyLink = async () => {
+        try {
+            await navigator.clipboard.writeText(postURL);
+            setIsCopied(true);
+            // Reset the copied state after 2 seconds
+            setTimeout(() => setIsCopied(false), 2000);
+        } catch {
+            // Could add toast notification for copy failure
+        }
+    };
     return (
         <Dialog {...props}>
             <DialogTrigger className="cursor-pointer" asChild>
@@ -50,9 +62,9 @@ const PostShareModal: React.FC<PostShareModalProps> = (
                     <DialogDescription className='pt-1 text-lg text-foreground'>
                         {description}
                     </DialogDescription>
-                    <Button className='absolute -right-5 -top-5 cursor-pointer p-2 text-muted-foreground hover:text-foreground [&_svg]:!size-6' size='lg' variant='link' onClick={onClose}><X size={24} strokeWidth={1} /></Button>
+                    <Button className='absolute -right-5 -top-6 cursor-pointer p-2 text-muted-foreground hover:text-foreground [&_svg]:!size-6' size='lg' variant='link' onClick={onClose}><X size={24} strokeWidth={1} /></Button>
                 </DialogHeader>
-                <a className='flex flex-col items-stretch overflow-hidden rounded-md border transition-all hover:border-muted-foreground/40' href={postURL}>
+                <a className='flex flex-col items-stretch overflow-hidden rounded-md border transition-all hover:border-muted-foreground/40' href={postURL} rel="noopener noreferrer" target='_blank'>
                     <div className='aspect-video bg-cover bg-center' style={{
                         backgroundImage: `url(${featureImageURL})`
                     }}></div>
@@ -91,8 +103,14 @@ const PostShareModal: React.FC<PostShareModalProps> = (
                             <a className='flex h-[34px] w-14 items-center justify-center rounded-sm bg-muted px-3 hover:bg-muted-foreground/20 [&_svg]:h-4' href="">
                                 <svg fill="none" viewBox="0 0 16 16"><g clipPath="url(#social-linkedin_svg__clip0_537_833)"><path className="social-linkedin_svg__linkedin" clipRule="evenodd" d="M1.778 16h12.444c.982 0 1.778-.796 1.778-1.778V1.778C16 .796 15.204 0 14.222 0H1.778C.796 0 0 .796 0 1.778v12.444C0 15.204.796 16 1.778 16z" fill="#007ebb" fillRule="evenodd"></path><path clipRule="evenodd" d="M13.778 13.778h-2.374V9.734c0-1.109-.421-1.729-1.299-1.729-.955 0-1.453.645-1.453 1.729v4.044H6.363V6.074h2.289v1.038s.688-1.273 2.322-1.273c1.634 0 2.804.997 2.804 3.061v4.878zM3.634 5.065c-.78 0-1.411-.636-1.411-1.421s.631-1.422 1.41-1.422c.78 0 1.411.637 1.411 1.422 0 .785-.631 1.421-1.41 1.421zm-1.182 8.713h2.386V6.074H2.452v7.704z" fill="#fff" fillRule="evenodd"></path></g><defs><clipPath id="social-linkedin_svg__clip0_537_833"><path d="M0 0h16v16H0z" fill="#fff"></path></clipPath></defs></svg>
                             </a>
-                            <Button className='grow cursor-pointer' type="submit">
-                                <Link /> Copy link
+                            <Button
+                                className='grow cursor-pointer'
+                                disabled={!postURL}
+                                type="button"
+                                onClick={handleCopyLink}
+                            >
+                                {isCopied ? <Check /> : <Link />}
+                                {isCopied ? 'Copied!' : 'Copy link'}
                             </Button>
                         </>
                     }

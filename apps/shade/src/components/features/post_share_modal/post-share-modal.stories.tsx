@@ -21,14 +21,15 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const defaultProps = {
-    featureImageURL: 'https://loremflickr.com/i/width-800/height-600',
+    featureImageURL: 'https://loremflickr.com/800/600',
     faviconURL: 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64',
-    postTitle: 'Post title',
-    postExcerpt: 'Post excerpt',
-    siteTitle: 'Site title',
-    author: 'Bjorn',
+    postURL: 'https://ghost.org/sample-post-url',
+    postTitle: 'How to Build Amazing React Components',
+    postExcerpt: 'Learn the best practices for creating reusable and maintainable React components that scale with your application.',
+    siteTitle: 'Ghost Blog',
+    author: 'John Doe',
     onClose: () => {
-        alert('Close');
+        alert('Modal closed');
     }
 };
 
@@ -71,17 +72,50 @@ export const WithWorkingCloseButton: Story = {
                     open={isOpen}
                     postExcerpt="Learn the best practices for creating reusable and maintainable React components that scale with your application."
                     postTitle="How to Build Amazing React Components"
+                    postURL="https://myblog.com/amazing-react-components"
                     siteTitle="Ghost Blog"
                     onClose={() => setIsOpen(false)}
                     onOpenChange={setIsOpen}
                 >
                     <Button onClick={() => setIsOpen(true)}>
-                        Open Modal (Working Close)
+                        Open Modal (Working Close & Copy)
                     </Button>
                 </PostShareModal>
             );
         };
 
         return <InteractiveExample />;
+    }
+};
+
+export const CopyLinkDemo: Story = {
+    render: () => {
+        const CopyExample = () => {
+            const [isOpen, setIsOpen] = useState(false);
+
+            return (
+                <div className="space-y-4">
+                    <PostShareModal
+                        author="Jane Smith"
+                        defaultOpen={isOpen}
+                        faviconURL="https://www.google.com/s2/favicons?domain=example.com&sz=64"
+                        featureImageURL="https://picsum.photos/800/600?random=1"
+                        open={isOpen}
+                        postExcerpt="A comprehensive guide to implementing copy-to-clipboard functionality in React applications with proper error handling and user feedback."
+                        postTitle="Copy to Clipboard in React: Complete Guide"
+                        postURL="https://example.com/copy-clipboard-react-guide"
+                        siteTitle="Tech Blog"
+                        onClose={() => setIsOpen(false)}
+                        onOpenChange={setIsOpen}
+                    >
+                        <Button onClick={() => setIsOpen(true)}>
+                            Demo Copy Link Feature
+                        </Button>
+                    </PostShareModal>
+                </div>
+            );
+        };
+
+        return <CopyExample />;
     }
 };
