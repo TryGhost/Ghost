@@ -14,7 +14,7 @@ describe('Site API', function () {
             .matchBodySnapshot({
                 site: {
                     version: stringMatching(/\d+\.\d+/),
-                    site_uuid: anyUuid()
+                    site_uuid: anyUuid
                 }
             })
             .matchHeaderSnapshot({
