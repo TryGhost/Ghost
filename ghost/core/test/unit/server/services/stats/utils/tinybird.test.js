@@ -20,13 +20,13 @@ describe('Tinybird Client', function () {
         // Configure mocks
         mockConfig.get.withArgs('timezone').returns('UTC');
         mockConfig.get.withArgs('tinybird:stats').returns({
-            id: 'site-id',
             endpoint: 'https://api.tinybird.co',
             token: 'tb-token'
         });
 
         // Create tinybird client with mocked dependencies
         tinybirdClient = tinybird.create({
+            siteUuid: '77f09c60-5a34-4b4c-a3f6-e1b1d78f7412',
             config: mockConfig,
             request: mockRequest
         });
@@ -45,7 +45,7 @@ describe('Tinybird Client', function () {
 
             should.exist(url);
             url.should.startWith('https://api.tinybird.co/v0/pipes/test_pipe.json?');
-            url.should.containEql('site_uuid=site-id');
+            url.should.containEql('site_uuid=77f09c60-5a34-4b4c-a3f6-e1b1d78f7412');
             url.should.containEql('date_from=2023-01-01');
             url.should.containEql('date_to=2023-01-31');
             // url.should.containEql('timezone=UTC');
@@ -74,7 +74,7 @@ describe('Tinybird Client', function () {
                 memberStatus: 'paid'
             });
 
-            url.should.containEql('site_uuid=site-id');
+            url.should.containEql('site_uuid=77f09c60-5a34-4b4c-a3f6-e1b1d78f7412');
             url.should.containEql('timezone=America%2FNew_York');
             url.should.containEql('member_status=paid');
         });
