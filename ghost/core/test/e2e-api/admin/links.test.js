@@ -23,7 +23,10 @@ describe('Links API', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'links');
         await agent.loginAsOwner();
-        clock = sinon.useFakeTimers(new Date());
+        clock = sinon.useFakeTimers({
+            now: new Date(),
+            toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date']
+        });
     });
 
     afterEach(async function () {
