@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import moment from 'moment-timezone';
-import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
+import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, PostShareModal, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
 import {Post, useBrowsePosts, useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useAppContext} from '../../../App';
@@ -88,38 +88,43 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 {/* <Button variant='outline'><LucideIcon.RefreshCw /></Button> */}
                                 {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                                 {!isPostLoading &&
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant='outline'><LucideIcon.Ellipsis /></Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align='end'>
-                                        <DropdownMenuGroup>
-                                            <DropdownMenuItem asChild>
-                                                <a href={post.url} rel="noopener noreferrer" target="_blank">
-                                                    <LucideIcon.ExternalLink />
+                                <>
+                                    <PostShareModal>
+                                        <Button variant='outline'><LucideIcon.Share /> Share</Button>
+                                    </PostShareModal>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant='outline'><LucideIcon.Ellipsis /></Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align='end'>
+                                            <DropdownMenuGroup>
+                                                <DropdownMenuItem asChild>
+                                                    <a href={post.url} rel="noopener noreferrer" target="_blank">
+                                                        <LucideIcon.ExternalLink />
                                                     View in browser
-                                                </a>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => {
-                                                navigate(`/editor/post/${postId}`, {crossApp: true});
-                                            }}>
-                                                <LucideIcon.Pen />
+                                                    </a>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => {
+                                                    navigate(`/editor/post/${postId}`, {crossApp: true});
+                                                }}>
+                                                    <LucideIcon.Pen />
                                                 Edit post
-                                                {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
-                                            </DropdownMenuItem>
-                                        </DropdownMenuGroup>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuGroup>
-                                            <DropdownMenuItem
-                                                className='text-destructive focus:text-destructive'
-                                                onClick={handleDeletePost}
-                                            >
-                                                <LucideIcon.Trash />
+                                                    {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
+                                                </DropdownMenuItem>
+                                            </DropdownMenuGroup>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuGroup>
+                                                <DropdownMenuItem
+                                                    className='text-destructive focus:text-destructive'
+                                                    onClick={handleDeletePost}
+                                                >
+                                                    <LucideIcon.Trash />
                                                 Delete post
-                                            </DropdownMenuItem>
-                                        </DropdownMenuGroup>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                                </DropdownMenuItem>
+                                            </DropdownMenuGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </>
                                 }
                             </div>
                         </div>
