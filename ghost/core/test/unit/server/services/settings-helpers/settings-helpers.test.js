@@ -250,14 +250,5 @@ describe('Settings Helpers', function () {
             assert.deepEqual(domains, ['configdomain.com', 'configexample.com', 'domain.com', 'example.com', 'spam.xyz']);
         });
     });
-
-    describe('getSiteUuid', function () {
-        it('returns the site UUID', function () {
-            const fakeSettings = createSettingsMock({setDirect: true, setConnect: true});
-            const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils: {}, labs: {}});
-            const uuid = settingsHelpers.getSiteUuid();
-            assert.equal(uuid, 'a592f6b7-bbc1-413c-933b-afc7fe92a32e');
-        });
-    });
 });
 

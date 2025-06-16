@@ -16,7 +16,7 @@ module.exports = function getSiteProperties() {
         url: urlUtils.urlFor('home', true),
         version: ghostVersion.safe,
         allow_external_signup: settingsCache.get('allow_self_signup') && !(settingsCache.get('portal_signup_checkbox_required') && settingsCache.get('portal_signup_terms_html')),
-        site_uuid: settingsHelpers.getSiteUuid()
+        site_uuid: settingsCache.get('site_uuid')
     };
 
     if (config.get('client_sentry') && !config.get('client_sentry').disabled) {

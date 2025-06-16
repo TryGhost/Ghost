@@ -219,10 +219,6 @@ class SettingsHelpers {
         ]));
     }
 
-    getSiteUuid() {
-        return this.settingsCache.get('site_uuid');
-    }
-
     // PRIVATE
 
     #managedEmailEnabled() {
