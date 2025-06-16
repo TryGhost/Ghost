@@ -27,13 +27,19 @@ describe('Unit: models/user', function () {
                 save: sinon.stub().resolves()
             };
 
-            const now = new Date();
-            const clock = sinon.useFakeTimers(now.getTime());
+            const fixedTime = new Date().getTime();
+            const clock = sinon.useFakeTimers({
+                now: fixedTime,
+                toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date']
+            });
+
+            // Create the expected date using the same faked Date constructor
+            const expectedDate = new Date();
 
             const returnVal = models.User.prototype.updateLastSeen.call(instance);
 
             should.deepEqual(instance.set.args[0][0], {
-                last_seen: now
+                last_seen: expectedDate
             });
 
             should.equal(returnVal, instance.save.returnValues[0]);
