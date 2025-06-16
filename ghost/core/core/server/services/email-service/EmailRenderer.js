@@ -326,10 +326,12 @@ class EmailRenderer {
 
         const labs = this.getLabs();
         const accentColor = this.#getAccentColor();
+        const accentContrastColor = this.#getAccentContrastColor();
 
         if (labs?.isSet('emailCustomization')) {
             renderOptions.design = {
                 accentColor,
+                accentContrastColor,
                 backgroundColor: newsletter?.get('background_color'),
                 backgroundIsDark: this.#checkIfBackgroundIsDark(newsletter),
                 headerBackgroundColor: this.#getHeaderBackgroundColor(newsletter, accentColor),
@@ -937,6 +939,11 @@ class EmailRenderer {
         return accentColor;
     }
 
+    #getAccentContrastColor() {
+        const accentColor = this.#getAccentColor();
+        return textColorForBackgroundColor(accentColor).hex();
+    }
+
     #getBackgroundColor(newsletter) {
         /** @type {'light' | string | null} */
         const value = newsletter?.get('background_color');
@@ -1117,8 +1124,10 @@ class EmailRenderer {
     async getTemplateData({post, newsletter, html, addPaywall, segment}) {
         const labs = this.getLabs();
 
-        let accentColor = this.#getAccentColor();
+        const accentColor = this.#getAccentColor();
+        const accentContrastColor = this.#getAccentContrastColor();
 
+        // TODO: remove adjusted accent colors when emailCustomization flag is cleaned up
         let adjustedAccentColor;
         let adjustedAccentContrastColor;
         try {
@@ -1300,6 +1309,7 @@ class EmailRenderer {
 
             //CSS
             accentColor: accentColor, // default to #15212A
+            accentContrastColor,
             adjustedAccentColor: adjustedAccentColor || '#3498db', // default to #3498db
             adjustedAccentContrastColor: adjustedAccentContrastColor || '#ffffff', // default to #ffffff
             showBadge: newsletter.get('show_badge'),

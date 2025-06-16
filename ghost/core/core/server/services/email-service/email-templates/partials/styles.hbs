@@ -1698,8 +1698,8 @@ img.kg-cta-image {
 .kg-cta-minimal table.btn td.kg-style-accent {
     {{#if hasOutlineButtons}}
     background-color: transparent !important;
-    color: {{adjustedAccentColor}} !important;
-    border: 1px solid {{adjustedAccentColor}} !important;
+    color: {{accentColor}} !important;
+    border: 1px solid {{accentColor}} !important;
     {{else}}
     background-color: {{accentColor}} !important;
     {{/if}}
@@ -1708,8 +1708,8 @@ img.kg-cta-image {
 .kg-cta-immersive table.btn td.kg-style-accent {
     {{#if hasOutlineButtons}}
     background-color: transparent !important;
-    color: {{adjustedAccentColor}} !important;
-    border: 1px solid {{adjustedAccentColor}} !important;
+    color: {{accentColor}} !important;
+    border: 1px solid {{accentColor}} !important;
     {{else}}
     background-color: {{accentColor}} !important;
     color: #fff !important;
@@ -1719,7 +1719,7 @@ img.kg-cta-image {
 .kg-cta-card .btn a.kg-style-accent {
     {{#if hasOutlineButtons}}
     background-color: transparent !important;
-    color: {{adjustedAccentColor}} !important;
+    color: {{accentColor}} !important;
     {{else}}
     background-color: {{accentColor}} !important;
     color: #fff !important;
@@ -2603,22 +2603,22 @@ table.btn a {
 
 table.btn-accent td {
     {{#if hasOutlineButtons}}
-    border: 1px solid {{adjustedAccentColor}};
+    border: 1px solid {{accentColor}};
     background-color: transparent;
     {{else}}
-    background-color: {{adjustedAccentColor}};
+    background-color: {{accentColor}};
     {{/if}}
 }
 
 table.btn-accent a {
     {{#if hasOutlineButtons}}
     background-color: transparent;
-    border-color: {{adjustedAccentColor}};
-    color: {{adjustedAccentColor}};
+    border-color: {{accentColor}};
+    color: {{accentColor}};
     {{else}}
-    background-color: {{adjustedAccentColor}};
-    border-color: {{adjustedAccentColor}};
-    color: {{adjustedAccentContrastColor}};
+    background-color: {{accentColor}};
+    border-color: {{accentColor}};
+    color: {{accentContrastColor}};
     {{/if}}
 }
 {{else}}
