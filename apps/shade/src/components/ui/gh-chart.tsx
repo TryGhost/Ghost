@@ -2,7 +2,7 @@ import {calculateYAxisWidth, cn, formatDisplayDateWithRange, formatNumber, getYR
 import React from 'react';
 import {AlignedAxisTick, ChartConfig, ChartContainer, ChartTooltip} from './chart';
 import {Area, AreaChart, CartesianGrid, XAxis, YAxis} from 'recharts';
-import {ArrowDown, ArrowUp} from 'lucide-react';
+import {TrendingDown, TrendingUp} from 'lucide-react';
 
 // A Ghost specific charts for analytics re-using ShadCN/UI and Recharts components
 
@@ -35,22 +35,22 @@ const GhCustomTooltipContent = ({active, payload, range, color}: TooltipProps) =
     return (
         <div className="min-w-[120px] rounded-lg border bg-background px-3 py-2 shadow-lg">
             {date && <div className="text-sm text-foreground">{formatDisplayDateWithRange(date, range || 0)}</div>}
-            <div className='flex items-center gap-2'>
-                <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color || 'hsl(var(--chart-blue))'}}></span>
-                <div className='flex grow items-center justify-between gap-5'>
+            <div className='flex items-start gap-2'>
+                <span className='mt-1.5 inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color || 'hsl(var(--chart-blue))'}}></span>
+                <div className='flex grow items-start justify-between gap-5'>
                     {label && <div className="text-sm text-muted-foreground">{label}</div>}
-                    <div className="flex items-center gap-1.5 font-mono font-medium">
+                    <div className="flex flex-col items-end font-mono font-medium">
                         {displayValue}
 
                         {diffValue ? diffValue < 0 && (
-                            <div className='flex items-center text-red-600'>
-                                <ArrowDown size={14} strokeWidth={1.5} />
+                            <div className='flex items-center gap-0.5 text-red-600'>
+                                <TrendingDown size={14} strokeWidth={1.5} />
                                 <span>{formattedDiffValue}</span>
                             </div>
                         ) : <></>}
                         {diffValue ? diffValue > 0 && (
-                            <div className='flex items-center text-green-600'>
-                                <ArrowUp size={14} strokeWidth={1.5} />
+                            <div className='flex items-center gap-0.5 text-green-600'>
+                                <TrendingUp size={14} strokeWidth={1.5} />
                                 <span>{formattedDiffValue}</span>
                             </div>
                         ) : <></>}
