@@ -2127,6 +2127,7 @@ describe('Email renderer', function () {
             await testLexicalRenderDesignOptions({
                 expectedObject: {
                     accentColor: '#ffffff',
+                    accentContrastColor: '#000000',
                     backgroundColor: '#000000',
                     backgroundIsDark: true,
                     headerBackgroundColor: '#000044',
@@ -2226,6 +2227,13 @@ describe('Email renderer', function () {
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
             return data;
         }
+
+        it('Includes accent and accent contrast colors', async function () {
+            settings.accent_color = '#15212A';
+            const data = await templateDataWithSettings({});
+            assert.equal(data.accentColor, '#15212A');
+            assert.equal(data.accentContrastColor, '#FFFFFF');
+        });
 
         it('Uses the correct background colors based on settings', async function () {
             const tests = [
