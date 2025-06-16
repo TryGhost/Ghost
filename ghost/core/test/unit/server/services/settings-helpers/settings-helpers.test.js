@@ -31,6 +31,8 @@ function createSettingsMock({setDirect, setConnect}) {
     getStub.withArgs('stripe_connect_display_name').returns('Test');
     getStub.withArgs('stripe_connect_account_id').returns('ac_XXXXXXXXXXXXX');
 
+    getStub.withArgs('site_uuid').returns('a592f6b7-bbc1-413c-933b-afc7fe92a32e');
+
     getStub.withArgs('members_email_auth_secret').returns(mockValidationKey);
 
     return {

@@ -67,6 +67,11 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "site_uuid": {
+            "defaultValue": null,
+            "type": "string",
+            "flags": "PUBLIC,RO"
         }
     },
     "site": {
