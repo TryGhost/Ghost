@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, stringMatching, anyContentLength} = matchers;
+const {anyEtag, stringMatching, anyContentLength, anyUuid} = matchers;
 const assert = require('assert/strict');
 const models = require('../../../core/server/models');
 
@@ -23,7 +23,8 @@ describe('Site Public Settings', function () {
             .get('/api/site')
             .matchBodySnapshot({
                 site: {
-                    version: stringMatching(/\d+\.\d+/)
+                    version: stringMatching(/\d+\.\d+/),
+                    site_uuid: anyUuid
                 }
             })
             .matchHeaderSnapshot({
@@ -43,7 +44,8 @@ describe('Site Public Settings', function () {
             .get('/api/site')
             .matchBodySnapshot({
                 site: {
-                    version: stringMatching(/\d+\.\d+/)
+                    version: stringMatching(/\d+\.\d+/),
+                    site_uuid: anyUuid
                 }
             })
             .matchHeaderSnapshot({
@@ -72,7 +74,8 @@ describe('Site Public Settings', function () {
             .get('/api/site')
             .matchBodySnapshot({
                 site: {
-                    version: stringMatching(/\d+\.\d+/)
+                    version: stringMatching(/\d+\.\d+/),
+                    site_uuid: anyUuid
                 }
             })
             .matchHeaderSnapshot({
