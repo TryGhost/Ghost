@@ -60,7 +60,6 @@ export class GhostStats {
     }
 
     async trackEvent(name, payload) {
-        console.log(config);
         try {
             // Check if we have required configuration
             if (!config.host || !config.token) {
@@ -84,12 +83,16 @@ export class GhostStats {
             const controller = new AbortController();
             const timeoutId = this.browser.setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            if (config.globalAttributes.site_uuid) {
+                headers['x-site-uuid'] = config.globalAttributes.site_uuid;
+            }
+
             const response = await this.browser.fetch(url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-site-uuid': config.globalAttributes.site_uuid
-                },
+                headers,
                 body: JSON.stringify(data),
                 signal: controller.signal
             });
