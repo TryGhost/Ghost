@@ -25,6 +25,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const {mutateAsync: deletePost} = useDeletePost();
     const handleError = useHandleError();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [isShareOpen, setIsShareOpen] = useState(false);
 
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
@@ -89,8 +90,18 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                                 {!isPostLoading &&
                                 <>
-                                    <PostShareModal>
-                                        <Button variant='outline'><LucideIcon.Share /> Share</Button>
+                                    <PostShareModal
+                                        author="John Doe"
+                                        faviconURL="https://www.google.com/s2/favicons?domain=ghost.org&sz=64"
+                                        featureImageURL="https://loremflickr.com/800/600"
+                                        open={isShareOpen}
+                                        postExcerpt="Here's your post excerpt"
+                                        postTitle="Post title"
+                                        siteTitle="Ghost Site"
+                                        onClose={() => setIsShareOpen(false)}
+                                        onOpenChange={setIsShareOpen}
+                                    >
+                                        <Button variant='outline' onClick={() => setIsShareOpen(true)}><LucideIcon.Share /> Share</Button>
                                     </PostShareModal>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
