@@ -60,6 +60,7 @@ export class GhostStats {
     }
 
     async trackEvent(name, payload) {
+        console.log(config);
         try {
             // Check if we have required configuration
             if (!config.host || !config.token) {
@@ -86,7 +87,8 @@ export class GhostStats {
             const response = await this.browser.fetch(url, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'x-site-uuid': config.globalAttributes.site_uuid
                 },
                 body: JSON.stringify(data),
                 signal: controller.signal

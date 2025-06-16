@@ -183,7 +183,17 @@ describe('ghost-stats.js', function () {
         beforeEach(function () {
             mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
             mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
+            mockDocument.currentScript.attributes = [
+                {name: 'tb_site_uuid', value: 'test-site-uuid'}
+            ];
             ghostStats.initConfig();
+        });
+
+        it('should set the x-site-uuid header', async function () {
+            await ghostStats.trackEvent('test_event', {data: 'test'});
+
+            expect(mockFetch.calledOnce).to.be.true;
+            expect(mockFetch.firstCall.args[1].headers['x-site-uuid']).to.equal('test-site-uuid');
         });
 
         it('should track custom events with correct data', async function () {
