@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
 
 /**
  * Creates a configured Tinybird client
@@ -9,6 +10,11 @@ const logging = require('@tryghost/logging');
  * @returns {Object} Tinybird client with methods
  */
 const create = ({siteUuid, config, request}) => {
+    if (!siteUuid) {
+        throw new errors.IncorrectUsageError({
+            message: 'site_uuid is required to create a Tinybird client'
+        });
+    }
     /**
      * Builds a Tinybird API request
      * @param {string} pipeName - The name of the Tinybird pipe to query
