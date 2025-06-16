@@ -1,20 +1,13 @@
 const logging = require('@tryghost/logging');
-const errors = require('@tryghost/errors');
 
 /**
  * Creates a configured Tinybird client
  * @param {object} deps - Configuration and request dependencies
- * @param {string} deps.siteUuid - Site UUID
  * @param {object} deps.config - Ghost configuration
  * @param {object} deps.request - HTTP request client
  * @returns {Object} Tinybird client with methods
  */
-const create = ({siteUuid, config, request}) => {
-    if (!siteUuid) {
-        throw new errors.IncorrectUsageError({
-            message: 'site_uuid is required to create a Tinybird client'
-        });
-    }
+const create = ({config, request}) => {
     /**
      * Builds a Tinybird API request
      * @param {string} pipeName - The name of the Tinybird pipe to query
@@ -42,7 +35,7 @@ const create = ({siteUuid, config, request}) => {
 
         // Use snake_case for query parameters as expected by Tinybird API
         const searchParams = {
-            site_uuid: siteUuid
+            site_uuid: statsConfig.id
         };
 
         // todo: refactor all uses to simply pass options through
