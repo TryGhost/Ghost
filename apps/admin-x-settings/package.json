@@ -52,7 +52,7 @@
     "@tryghost/custom-fonts": "1.0.1",
     "@types/react": "18.3.23",
     "@types/react-dom": "18.3.7",
-    "@types/validator": "13.15.1",
+    "@types/validator": "13.15.2",
     "@vitejs/plugin-react": "4.5.2",
     "eslint-plugin-react-hooks": "4.6.2",
     "eslint-plugin-react-refresh": "0.4.20",
