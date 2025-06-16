@@ -1794,6 +1794,39 @@ export function useDeleteMutationForUser(handle: string) {
                 };
             });
 
+            // Update reply chain cache
+            if (parentId) {
+                queryClient.setQueriesData(
+                    {queryKey: ['reply_chain'], exact: false},
+                    (current?: ReplyChainResponse) => {
+                        if (!current) {
+                            return current;
+                        }
+
+                        const updatedChildren = current.children
+                            .filter(child => child.post.id !== id)
+                            .map(child => ({
+                                ...child,
+                                chain: child.chain.filter(post => post.id !== id)
+                            }));
+
+                        let updatedPost = current.post;
+                        if (current.post.id === parentId) {
+                            updatedPost = {
+                                ...current.post,
+                                replyCount: Math.max(0, (current.post.replyCount || 0) - 1)
+                            };
+                        }
+
+                        return {
+                            ...current,
+                            post: updatedPost,
+                            children: updatedChildren
+                        };
+                    }
+                );
+            }
+
             return {
                 previousFeed: {
                     key: QUERY_KEYS.feed,
@@ -1850,6 +1883,16 @@ export function useDeleteMutationForUser(handle: string) {
             }
             if (context.previousPostsLikedByAccount) {
                 queryClient.setQueryData(QUERY_KEYS.postsLikedByAccount, context.previousPostsLikedByAccount);
+            }
+        },
+        onSuccess: (_data, {parentId}) => {
+            queryClient.invalidateQueries({
+                queryKey: ['reply_chain']
+            });
+
+            if (parentId) {
+                queryClient.invalidateQueries({queryKey: QUERY_KEYS.feed});
+                queryClient.invalidateQueries({queryKey: QUERY_KEYS.inbox});
             }
         }
     });
