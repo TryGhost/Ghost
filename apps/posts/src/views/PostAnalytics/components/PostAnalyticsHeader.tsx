@@ -4,10 +4,15 @@ import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, A
 import {Post, useBrowsePosts, useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useAppContext} from '../../../App';
+import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
-interface PostWithPublishedAt extends Post {
+interface ExtendedPost extends Post {
     published_at?: string;
+    excerpt?: string;
+    authors?: {
+        name: string;
+    }[];
 }
 
 interface PostAnalyticsHeaderProps {
@@ -26,16 +31,17 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const handleError = useHandleError();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
+    const {site} = useGlobalData();
 
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid,feature_image,url,email,status',
-            include: 'email'
+            // fields: 'title,slug,published_at,uuid,feature_image,url,email,status'
+            include: 'email,authors'
         }
     });
 
-    const typedPost = post as PostWithPublishedAt;
+    const typedPost = post as ExtendedPost;
     // Use the utility function from admin-x-framework
     const showNewsletterTab = hasBeenEmailed(typedPost);
 
@@ -91,15 +97,15 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 {!isPostLoading &&
                                 <>
                                     <PostShareModal
-                                        author="John Doe"
+                                        author={typedPost.authors?.[0]?.name || ''}
                                         description=''
-                                        faviconURL="https://www.google.com/s2/favicons?domain=ghost.org&sz=64"
-                                        featureImageURL={post.feature_image}
+                                        faviconURL={site?.icon || ''}
+                                        featureImageURL={typedPost.feature_image}
                                         open={isShareOpen}
-                                        postExcerpt=''
-                                        postTitle={post.title}
-                                        postURL={post.url}
-                                        siteTitle="Ghost Site"
+                                        postExcerpt={typedPost.excerpt || ''}
+                                        postTitle={typedPost.title}
+                                        postURL={typedPost.url}
+                                        siteTitle={site?.title || ''}
                                         onClose={() => setIsShareOpen(false)}
                                         onOpenChange={setIsShareOpen}
                                     >
