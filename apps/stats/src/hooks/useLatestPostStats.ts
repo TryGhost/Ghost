@@ -8,6 +8,7 @@ interface ExtendedPost extends Post {
         name: string;
     }[];
     excerpt?: string;
+    email_only?: boolean;
 }
 
 export interface LatestPostWithStats {
@@ -18,6 +19,7 @@ export interface LatestPostWithStats {
     published_at: string;
     url?: string;
     excerpt?: string;
+    email_only?: boolean;
     authors?: {
         name: string;
     }[];
@@ -36,7 +38,7 @@ export const useLatestPostStats = () => {
     // Fetch the latest published post
     const {data: {posts: [latestPost]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
-            filter: 'status:published',
+            filter: 'status:[published,sent]',
             order: 'published_at DESC',
             limit: '1',
             include: 'authors'
@@ -55,11 +57,21 @@ export const useLatestPostStats = () => {
 
     // Combine the data
     const latestPostWithStats = useMemo((): LatestPostWithStats | null => {
-        if (!extendedPost || !postStatsData?.stats?.[0]) {
+        if (!extendedPost) {
             return null;
         }
 
-        const statsData = postStatsData.stats[0];
+        // If we have a post but no stats, return the post with default stats
+        const statsData = postStatsData?.stats?.[0] || {
+            id: extendedPost.id,
+            recipient_count: null,
+            opened_count: null,
+            open_rate: null,
+            member_delta: 0,
+            free_members: 0,
+            paid_members: 0,
+            visitors: 0
+        };
 
         return {
             // Post content from Posts API
@@ -70,6 +82,7 @@ export const useLatestPostStats = () => {
             published_at: extendedPost.published_at || '',
             url: extendedPost.url || '',
             excerpt: extendedPost.excerpt || '',
+            email_only: extendedPost.email_only || false,
             authors: extendedPost.authors || [],
             // Analytics data from Stats API
             recipient_count: statsData.recipient_count,

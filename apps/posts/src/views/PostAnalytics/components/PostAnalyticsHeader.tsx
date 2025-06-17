@@ -95,21 +95,23 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                                 {!isPostLoading &&
                                 <>
-                                    <PostShareModal
-                                        author={typedPost.authors?.[0]?.name || ''}
-                                        description=''
-                                        faviconURL={site?.icon || ''}
-                                        featureImageURL={typedPost.feature_image}
-                                        open={isShareOpen}
-                                        postExcerpt={typedPost.excerpt || ''}
-                                        postTitle={typedPost.title}
-                                        postURL={typedPost.url}
-                                        siteTitle={site?.title || ''}
-                                        onClose={() => setIsShareOpen(false)}
-                                        onOpenChange={setIsShareOpen}
-                                    >
-                                        <Button variant='outline' onClick={() => setIsShareOpen(true)}><LucideIcon.Share /> Share</Button>
-                                    </PostShareModal>
+                                    {!typedPost.email_only && (
+                                        <PostShareModal
+                                            author={typedPost.authors?.[0]?.name || ''}
+                                            description=''
+                                            faviconURL={site?.icon || ''}
+                                            featureImageURL={typedPost.feature_image}
+                                            open={isShareOpen}
+                                            postExcerpt={typedPost.excerpt || ''}
+                                            postTitle={typedPost.title}
+                                            postURL={typedPost.url}
+                                            siteTitle={site?.title || ''}
+                                            onClose={() => setIsShareOpen(false)}
+                                            onOpenChange={setIsShareOpen}
+                                        >
+                                            <Button variant='outline' onClick={() => setIsShareOpen(true)}><LucideIcon.Share /> Share</Button>
+                                        </PostShareModal>
+                                    )}
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant='outline'><LucideIcon.Ellipsis /></Button>

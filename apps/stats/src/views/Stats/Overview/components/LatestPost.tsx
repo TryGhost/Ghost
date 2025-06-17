@@ -160,22 +160,25 @@ const LatestPost: React.FC<LatestPostProps> = ({
             </CardContent>
             {!isLoading && latestPostStats &&
                 <CardFooter className='flex items-center justify-stretch gap-2'>
-                    <PostShareModal
-                        author={latestPostStats.authors?.map(author => author.name).join(', ') || ''}
-                        description=''
-                        faviconURL={site.icon || ''}
-                        featureImageURL={latestPostStats.feature_image || ''}
-                        open={isShareOpen}
-                        postExcerpt={latestPostStats.excerpt || ''}
-                        postTitle={latestPostStats.title}
-                        postURL={latestPostStats.url || ''}
-                        siteTitle={siteTitle}
-                        onClose={() => setIsShareOpen(false)}
-                        onOpenChange={setIsShareOpen}
-                    >
-                        <Button className='w-full grow' onClick={() => setIsShareOpen(true)}><LucideIcon.Share /> Share</Button>
-                    </PostShareModal>
+                    {!latestPostStats.email_only && (
+                        <PostShareModal
+                            author={latestPostStats.authors?.map(author => author.name).join(', ') || ''}
+                            description=''
+                            faviconURL={site.icon || ''}
+                            featureImageURL={latestPostStats.feature_image || ''}
+                            open={isShareOpen}
+                            postExcerpt={latestPostStats.excerpt || ''}
+                            postTitle={latestPostStats.title}
+                            postURL={latestPostStats.url || ''}
+                            siteTitle={siteTitle}
+                            onClose={() => setIsShareOpen(false)}
+                            onOpenChange={setIsShareOpen}
+                        >
+                            <Button className='w-full grow' onClick={() => setIsShareOpen(true)}><LucideIcon.Share /> Share</Button>
+                        </PostShareModal>
+                    )}
                     <Button
+                        className={latestPostStats.email_only ? 'w-full' : ''}
                         variant='outline'
                         onClick={() => {
                             navigate(`/posts/analytics/beta/${latestPostStats.id}`, {crossApp: true});

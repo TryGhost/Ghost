@@ -195,7 +195,7 @@ export const useMrrHistory = createQuery<MrrHistoryResponseType>({
 
 export const usePostStats = createQueryWithId<PostStatsResponseType>({
     dataType: 'PostStatsResponseType',
-    path: id => `/stats/posts/${id}/stats`
+    path: id => `/stats/posts/${id}/stats/`
 });
 
 export const useTopPostsViews = createQuery<TopPostViewsResponseType>({
