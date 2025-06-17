@@ -675,4 +675,49 @@ describe(`Admin Comments API`, function () {
             res.body.comments[0].liked.should.eql(true);
         });
     });
+
+    describe('Add comments via Admin API', function () {
+        it('Can add a comment as a member via Admin API', async function () {
+            // Get a valid post ID from fixtures
+            const posts = await adminApi.get('posts/').expectStatus(200);
+            const targetPostId = posts.body.posts[0].id;
+
+            // Get a valid member ID from fixtures
+            const members = await adminApi.get('members/').expectStatus(200);
+            const memberId = members.body.members[0].id;
+
+            const commentData = {
+                post_id: targetPostId,
+                member_id: memberId,
+                html: '<p>This is a test comment via Admin API</p>'
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [commentData]})
+                .expectStatus(201);
+
+            // Validate response structure
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const comment = response.body.comments[0];
+            comment.should.have.property('id').which.is.a.String();
+            comment.should.have.property('html', '<p>This is a test comment via Admin API</p>');
+            comment.should.have.property('status', 'published');
+            comment.should.have.property('member');
+            comment.member.should.have.property('id', memberId);
+        });
+
+        it('Returns validation error for missing required fields', async function () {
+            const commentData = {
+                // Missing post_id, member_id, and html
+            };
+
+            await adminApi
+                .post('comments/')
+                .body({comments: [commentData]})
+                .expectStatus(400);
+        });
+    });
 });
