@@ -2833,10 +2833,9 @@ describe('Email renderer', function () {
 
         [
             // button_color, expectedButtonColor, expectedButtonTextColor, otherSettings
-            [null, '#15212A', '#FFFFFF'],
+            [null, '#000000', '#FFFFFF', {background_color: '#dddddd'}], // light bg
+            [null, '#FFFFFF', '#000000', {background_color: '#222222'}], // dark bg
             ['accent', '#15212A', '#FFFFFF'],
-            ['auto', '#000000', '#FFFFFF', {background_color: '#dddddd'}], // light bg
-            ['auto', '#FFFFFF', '#000000', {background_color: '#222222'}], // dark bg
             ['#BADA55', '#BADA55', '#000000'],
             ['#nothex', '#15212A', '#FFFFFF']
         ].forEach(([settingValue, expectedValue, expectedTextValue, otherSettings]) => {
