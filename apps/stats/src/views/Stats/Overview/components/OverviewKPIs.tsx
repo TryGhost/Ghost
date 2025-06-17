@@ -39,8 +39,8 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
-            <KpiCardHeader className='relative flex grow flex-row items-start justify-between gap-5 border-none'>
-                <div className='flex grow flex-col gap-2 border-none pb-0'>
+            <KpiCardHeader className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
+                <div className='flex grow flex-col gap-1.5 border-none pb-0'>
                     <KpiCardHeaderLabel className={onClick && 'transition-all group-hover:text-foreground'}>
                         {color && <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color}}></span>}
                         {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
