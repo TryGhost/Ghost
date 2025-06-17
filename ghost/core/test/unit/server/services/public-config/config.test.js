@@ -30,7 +30,9 @@ const allowedKeys = [
 describe('Public-config Service', function () {
     describe('Config Properties', function () {
         beforeEach(async function () {
-            sinon.stub(settingsCache, 'get').returns('931ade9e-a4f1-4217-8625-34bd34250c16');
+            sinon.stub(settingsCache, 'get')
+                .withArgs('site_uuid')
+                .returns('931ade9e-a4f1-4217-8625-34bd34250c16');
         });
         afterEach(async function () {
             await configUtils.restore();

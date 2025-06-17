@@ -26,9 +26,7 @@ const create = ({config, request, settingsCache}) => {
         // Use tinybird:stats:id if provided, otherwise use site_uuid from settings cache
         // Allows overriding site_uuid via config
         // This is temporary until we have a proper way to use mock data locally
-        if (!statsConfig.id) {
-            statsConfig.id = settingsCache.get('site_uuid');
-        }
+        const siteUuid = statsConfig.id || settingsCache.get('site_uuid');
         const localEnabled = statsConfig?.local?.enabled ?? false;
         const endpoint = localEnabled ? statsConfig.local.endpoint : statsConfig.endpoint;
         const token = localEnabled ? statsConfig.local.token : statsConfig.token;
@@ -42,7 +40,7 @@ const create = ({config, request, settingsCache}) => {
 
         // Use snake_case for query parameters as expected by Tinybird API
         const searchParams = {
-            site_uuid: statsConfig.id
+            site_uuid: siteUuid
         };
 
         // todo: refactor all uses to simply pass options through
