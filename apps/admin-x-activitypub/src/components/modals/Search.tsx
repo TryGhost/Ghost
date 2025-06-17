@@ -135,7 +135,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                 <Input
                     ref={queryInputRef}
                     autoComplete='off'
-                    className='flex h-10 w-full items-center rounded-lg border-0 bg-transparent px-0 py-1.5 focus-visible:border-0 focus-visible:bg-transparent focus-visible:shadow-none focus-visible:outline-0 dark:text-white dark:placeholder:text-gray-800'
+                    className='flex h-10 w-full items-center rounded-lg border-0 bg-transparent px-0 py-1.5 focus-visible:border-0 focus-visible:bg-transparent focus-visible:shadow-none focus-visible:outline-0 dark:bg-[#101114] dark:text-white dark:placeholder:text-gray-800'
                     placeholder='Enter a handle or account URL...'
                     title="Search"
                     type='text'
