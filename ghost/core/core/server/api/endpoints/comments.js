@@ -69,6 +69,56 @@ const controller = {
             const result = await commentsService.controller.adminBrowse(frame);
             return result;
         }
+    },
+    add: {
+        statusCode: 201,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'include'
+        ],
+        validation: {
+            options: {
+                include: {
+                    values: ['post', 'member', 'replies', 'replies.member']
+                }
+            },
+            data: {
+                post_id: {
+                    required: true
+                },
+                member_id: {
+                    required: true
+                },
+                html: {
+                    required: true
+                }
+            }
+        },
+        permissions: true,
+        async query(frame) {
+            const data = frame.data.comments[0];
+            
+            // For admin API, set up the member context to impersonate the specified member
+            if (!frame.options.context) {
+                frame.options.context = {};
+            }
+            if (!frame.options.context.member) {
+                frame.options.context.member = {};
+            }
+            frame.options.context.member.id = data.member_id;
+            
+            // Set internal flag to avoid email notifications for admin API
+            frame.options.context.internal = true;
+            
+            // Use the controller's add method which handles both comments and replies
+            const result = await commentsService.controller.add(frame);
+            
+            handleCacheHeaders(result, frame);
+            
+            return result;
+        }
     }
 };
 
