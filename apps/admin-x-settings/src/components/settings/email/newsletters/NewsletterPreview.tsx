@@ -9,11 +9,8 @@ import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
-    const hasEmailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
     const {currentUser, settings, siteData, config} = useGlobalData();
     const [title, icon, commentsEnabled, supportEmailAddress, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'icon', 'comments_enabled', 'support_email_address', 'default_email_address']);
-
-    const hasAnyEmailCustomization = hasEmailCustomization || hasEmailCustomizationAlpha;
 
     let headerTitle: string | null = null;
     if (newsletter.show_header_title) {
@@ -34,10 +31,6 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
 
         if (validHex.test(value)) {
             return value;
-        }
-
-        if (value === 'dark') {
-            return '#15212a';
         }
 
         return '#ffffff';
@@ -76,6 +69,17 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         return siteData.accent_color;
     };
 
+    const buttonTextColor = () => {
+        const buttonStyle = newsletter.button_style;
+        const calcButtonColor = buttonColor();
+
+        if (calcButtonColor && buttonStyle === 'fill') {
+            return textColorForBackgroundColor(calcButtonColor).hex();
+        }
+
+        return undefined;
+    };
+
     const linkColor = () => {
         const value = newsletter.link_color === undefined ? 'accent' : newsletter.link_color;
 
@@ -105,7 +109,10 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
             return siteData.accent_color;
         }
 
-        return textColorForBackgroundColor(backgroundColor()).hex();
+        const headerBgColor = headerBackgroundColor();
+        const bgColor = headerBgColor === 'transparent' ? backgroundColor() : headerBgColor;
+
+        return textColorForBackgroundColor(bgColor).hex();
     };
 
     const sectionTitleColor = () => {
@@ -152,6 +159,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         postTitleColor?: string;
         sectionTitleColor?: string;
         buttonColor?: string;
+        buttonTextColor?: string;
         linkColor?: string;
         dividerColor?: string;
         textColor?: string;
@@ -161,13 +169,14 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
     }
 
     let colors: Colors = {};
-    if (hasEmailCustomizationAlpha) {
+    if (hasEmailCustomization) {
         colors = {
             backgroundColor: backgroundColor(),
             headerBackgroundColor: headerBackgroundColor(),
             postTitleColor: postTitleColor() || undefined,
             sectionTitleColor: sectionTitleColor() || undefined,
             buttonColor: buttonColor() || undefined,
+            buttonTextColor: buttonTextColor() || undefined,
             linkColor: linkColor() || undefined,
             dividerColor: dividerColor() || undefined,
             textColor,
@@ -175,29 +184,24 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
             headerTextColor,
             secondaryHeaderTextColor
         };
-    } else if (hasEmailCustomization) {
-        colors = {
-            postTitleColor: postTitleColor() || undefined,
-            sectionTitleColor: sectionTitleColor() || undefined
-        };
     }
 
     return <NewsletterPreviewContent
         accentColor={siteData.accent_color}
         authorPlaceholder={currentUser.name || currentUser.email}
-        backgroundColor={hasEmailCustomizationAlpha && colors.backgroundColor || '#ffffff'}
+        backgroundColor={hasEmailCustomization && colors.backgroundColor || '#ffffff'}
         bodyFontCategory={newsletter.body_font_category}
-        buttonCorners={hasAnyEmailCustomization && newsletter.button_corners || 'rounded'}
-        buttonStyle={hasAnyEmailCustomization && newsletter.button_style || 'fill'}
+        buttonCorners={hasEmailCustomization && newsletter.button_corners || 'rounded'}
+        buttonStyle={hasEmailCustomization && newsletter.button_style || 'fill'}
         dividerStyle={newsletter.divider_style || 'solid'}
         footerContent={newsletter.footer_content}
-        headerBackgroundColor={hasEmailCustomizationAlpha ? (colors.headerBackgroundColor || headerBackgroundColor()) : 'transparent'}
+        headerBackgroundColor={hasEmailCustomization ? (colors.headerBackgroundColor || headerBackgroundColor()) : 'transparent'}
         headerIcon={newsletter.show_header_icon ? icon : undefined}
         headerImage={newsletter.header_image}
         headerSubtitle={headerSubtitle}
         headerTitle={headerTitle}
-        imageCorners={hasAnyEmailCustomization ? (newsletter.image_corners || 'square') : 'square'}
-        linkStyle={(hasAnyEmailCustomization) && newsletter.link_style || 'underline'}
+        imageCorners={hasEmailCustomization ? (newsletter.image_corners || 'square') : 'square'}
+        linkStyle={(hasEmailCustomization) && newsletter.link_style || 'underline'}
         senderEmail={renderSenderEmail(newsletter, config, defaultEmailAddress)}
         senderName={newsletter.sender_name || title}
         senderReplyTo={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress)}
@@ -212,7 +216,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         siteTitle={title}
         titleAlignment={newsletter.title_alignment}
         titleFontCategory={newsletter.title_font_category}
-        titleFontWeight={hasAnyEmailCustomization && newsletter.title_font_weight || 'bold'}
+        titleFontWeight={hasEmailCustomization && newsletter.title_font_weight || 'bold'}
         {...colors}
     />;
 };

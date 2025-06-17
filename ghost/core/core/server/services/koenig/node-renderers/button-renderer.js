@@ -37,7 +37,7 @@ function emailTemplate(node, options, document) {
     const {buttonUrl, buttonText} = node;
 
     let cardHtml;
-    if (options.feature?.emailCustomization || options.feature?.emailCustomizationAlpha) {
+    if (options.feature?.emailCustomization) {
         const buttonHtml = renderEmailButton({
             alignment: node.alignment,
             url: buttonUrl,

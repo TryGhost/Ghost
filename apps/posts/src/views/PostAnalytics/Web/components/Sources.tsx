@@ -1,74 +1,63 @@
 import React from 'react';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, formatNumber, formatPercentage} from '@tryghost/shade';
-import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
-import {getFaviconDomain, getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
+import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
-import {useGlobalData} from '@src/providers/PostAnalyticsContext';
-import {useQuery} from '@tinybirdco/charts';
 
-interface SourcesProps {
-    queryParams: Record<string, string | number>
-}
-
-interface SourceData {
-    source: string;
-    visits: number;
-}
-
-interface SourceDataWithPercentage extends SourceData {
-    percentage: number;
-}
+// Default source icon URL - apps can override this
+const DEFAULT_SOURCE_ICON_URL = 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64';
 
 interface SourcesTableProps {
-    data: SourceDataWithPercentage[] | null;
-    range: number;
-    siteUrl?: string;
+    data: ProcessedSourceData[] | null;
+    range?: number;
+    defaultSourceIconUrl?: string;
+    dataTableHeader: boolean;
 }
 
-const SourcesTable: React.FC<SourcesTableProps> = ({data, siteUrl}) => {
+const SourcesTable: React.FC<SourcesTableProps> = ({dataTableHeader, data, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL}) => {
     return (
         <DataList>
-            <DataListHeader>
-                <DataListHead>Source</DataListHead>
-                <DataListHead>Visitors</DataListHead>
-            </DataListHeader>
+            {dataTableHeader &&
+                <DataListHeader>
+                    <DataListHead>Source</DataListHead>
+                    <DataListHead>Visitors</DataListHead>
+                </DataListHeader>
+            }
             <DataListBody>
                 {data?.map((row) => {
-                    const {domain, isDirectTraffic} = getFaviconDomain(row.source, siteUrl);
-                    const displayName = isDirectTraffic ? 'Direct' : (row.source || 'Direct');
-                    
                     return (
-                        <DataListRow key={row.source || 'direct'} className='group/row'>
-                            <DataListBar className='opacity-15 transition-all group-hover/row:opacity-30' style={{
-                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
-                                backgroundColor: 'hsl(var(--chart-orange))'
+                        <DataListRow key={row.source} className='group/row'>
+                            <DataListBar style={{
+                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
                             }} />
                             <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
                                 <div className='flex items-center space-x-4 overflow-hidden'>
-                                    <div className={`truncate font-medium`}>
-                                        {domain && !isDirectTraffic ?
-                                            <a className='group/link flex items-center gap-2' href={`https://${domain}`} rel="noreferrer" target="_blank">
+                                    <div className='truncate font-medium'>
+                                        {row.linkUrl ?
+                                            <a className='group/link flex items-center gap-2' href={row.linkUrl} rel="noreferrer" target="_blank">
                                                 <img
                                                     className="size-4"
-                                                    src={`https://www.faviconextractor.com/favicon/${domain}?larger=true`}
+                                                    src={row.iconSrc}
                                                     onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                        e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
+                                                        e.currentTarget.src = defaultSourceIconUrl;
                                                     }} />
-                                                <span className='group-hover/link:underline'>{displayName}</span>
+                                                <span className='group-hover/link:underline'>{row.displayName}</span>
                                             </a>
                                             :
                                             <span className='flex items-center gap-2'>
                                                 <img
                                                     className="size-4"
-                                                    src={STATS_DEFAULT_SOURCE_ICON_URL} />
-                                                <span>{displayName}</span>
+                                                    src={row.iconSrc}
+                                                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                                                        e.currentTarget.src = defaultSourceIconUrl;
+                                                    }} />
+                                                <span>{row.displayName}</span>
                                             </span>
                                         }
                                     </div>
                                 </div>
                             </DataListItemContent>
                             <DataListItemValue>
-                                <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
+                                <DataListItemValueAbs>{formatNumber(row.visits)}</DataListItemValueAbs>
                                 <DataListItemValuePerc>{formatPercentage(row.percentage || 0)}</DataListItemValuePerc>
                             </DataListItemValue>
                         </DataListRow>
@@ -79,122 +68,99 @@ const SourcesTable: React.FC<SourcesTableProps> = ({data, siteUrl}) => {
     );
 };
 
-const Sources:React.FC<SourcesProps> = ({queryParams}) => {
-    const {statsConfig, data: globalData, isLoading: isConfigLoading, range} = useGlobalData();
-    
-    // Get site URL from global data
-    const siteUrl = globalData?.url as string | undefined;
-    
-    // TEMPORARY: For testing levernews.com direct traffic grouping
-    // Remove this line when done testing
-    const testingSiteUrl = siteUrl || 'https://levernews.com';
+interface SourcesCardProps {
+    title?: string;
+    description?: string;
+    data: BaseSourceData[] | null;
+    range?: number;
+    totalVisitors?: number;
+    siteUrl?: string;
+    siteIcon?: string;
+    defaultSourceIconUrl?: string;
+    getPeriodText?: (range: number) => string;
+}
 
-    const {data, loading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
-        token: getToken(statsConfig),
-        params: queryParams
-    });
-
-    const totalVisits = React.useMemo(() => {
-        if (!data) {
-            return 0;
-        }
-        return (data as unknown as SourceData[]).reduce((sum: number, source: SourceData) => sum + Number(source.visits), 0);
-    }, [data]);
-
-    // Process and group sources data with direct traffic consolidation
+export const Sources: React.FC<SourcesCardProps> = ({
+    data,
+    range = 30,
+    totalVisitors = 0,
+    siteUrl,
+    siteIcon,
+    defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL
+}) => {
+    // Process and group sources data with pre-computed icons and display values
     const processedData = React.useMemo(() => {
-        if (!data) {
-            return [];
-        }
-        
-        const sourceMap = new Map<string, {source: string, visits: number, isDirectTraffic: boolean}>();
-        let directTrafficTotal = 0;
-        
-        // Process each source and group direct traffic
-        (data as unknown as SourceData[]).forEach((item) => {
-            const {isDirectTraffic} = getFaviconDomain(item.source, testingSiteUrl);
-            const visits = Number(item.visits);
-            
-            if (isDirectTraffic || !item.source || item.source === '') {
-                // Accumulate all direct traffic
-                directTrafficTotal += visits;
-            } else {
-                // Keep other sources as-is
-                const sourceKey = String(item.source);
-                if (sourceMap.has(sourceKey)) {
-                    const existing = sourceMap.get(sourceKey)!;
-                    existing.visits += visits;
-                } else {
-                    sourceMap.set(sourceKey, {
-                        source: sourceKey,
-                        visits,
-                        isDirectTraffic: false
-                    });
-                }
-            }
+        return processSources({
+            data,
+            mode: 'visits',
+            siteUrl,
+            siteIcon,
+            defaultSourceIconUrl
         });
-        
-        // Add consolidated direct traffic entry if there's any
-        if (directTrafficTotal > 0) {
-            sourceMap.set('Direct', {
-                source: 'Direct',
-                visits: directTrafficTotal,
-                isDirectTraffic: true
-            });
-        }
-        
-        // Convert back to array and sort by visits
-        return Array.from(sourceMap.values())
-            .sort((a, b) => b.visits - a.visits);
-    }, [data, testingSiteUrl]);
+    }, [data, siteUrl, siteIcon, defaultSourceIconUrl]);
 
-    const dataWithPercentages = React.useMemo(() => {
-        return processedData.map(item => ({
-            ...item,
-            percentage: totalVisits > 0 ? (item.visits / totalVisits) : 0
-        })) as SourceDataWithPercentage[];
-    }, [processedData, totalVisits]);
+    // Extend processed data with percentage values for visits mode
+    const extendedData = React.useMemo(() => {
+        return extendSourcesWithPercentages({
+            processedData,
+            totalVisitors,
+            mode: 'visits'
+        });
+    }, [processedData, totalVisitors]);
 
-    const isLoading = isConfigLoading || loading;
+    const topSources = extendedData.slice(0, 10);
+
+    // Generate description based on mode and range
+    const cardDescription = `How readers found your ${range ? 'site' : 'post'}${range && ` ${getPeriodText(range)}`}`;
 
     return (
-        <>
-            {isLoading ? '' :
-                <>
-                    {dataWithPercentages.length > 0 &&
-                        <Card className='group/datalist'>
-                            <CardHeader>
-                                <CardTitle>Top Sources</CardTitle>
-                                <CardDescription>How readers found your post</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <Separator />
-                                <SourcesTable data={dataWithPercentages} range={range} siteUrl={testingSiteUrl} />
-                            </CardContent>
-                            {dataWithPercentages.length > 10 &&
-                                <CardFooter>
-                                    <Sheet>
-                                        <SheetTrigger asChild>
-                                            <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
-                                        </SheetTrigger>
-                                        <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
-                                                <SheetTitle>Top sources</SheetTitle>
-                                                <SheetDescription>How readers found this post {getPeriodText(range)}</SheetDescription>
-                                            </SheetHeader>
-                                            <div className='group/datalist'>
-                                                <SourcesTable data={dataWithPercentages} range={range} siteUrl={testingSiteUrl} />
-                                            </div>
-                                        </SheetContent>
-                                    </Sheet>
-                                </CardFooter>
-                            }
-                        </Card>
-                    }
-                </>
+        <Card className='group/datalist'>
+            <div className='flex items-center justify-between p-6'>
+                <CardHeader className='p-0'>
+                    <CardTitle>Top sources</CardTitle>
+                    <CardDescription>{cardDescription}</CardDescription>
+                </CardHeader>
+                <HTable className='mr-2'>Visitors</HTable>
+            </div>
+            <CardContent className='overflow-hidden'>
+                <Separator />
+                {topSources.length > 0 ? (
+                    <SourcesTable
+                        data={topSources}
+                        dataTableHeader={false}
+                        defaultSourceIconUrl={defaultSourceIconUrl}
+                        range={range}
+                    />
+                ) : (
+                    <div className='py-20 text-center text-sm text-gray-700'>
+                        No sources data available.
+                    </div>
+                )}
+            </CardContent>
+            {extendedData.length > 10 &&
+                <CardFooter>
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
+                        </SheetTrigger>
+                        <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
+                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
+                                <SheetTitle>Sources</SheetTitle>
+                                <SheetDescription>{cardDescription}</SheetDescription>
+                            </SheetHeader>
+                            <div className='group/datalist'>
+                                <SourcesTable
+                                    data={extendedData}
+                                    dataTableHeader={true}
+                                    defaultSourceIconUrl={defaultSourceIconUrl}
+                                    range={range}
+                                />
+                            </div>
+                        </SheetContent>
+                    </Sheet>
+                </CardFooter>
             }
-        </>
+        </Card>
     );
 };
 

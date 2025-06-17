@@ -43,13 +43,13 @@ export interface Thread {
 export interface ReplyChainResponse {
     ancestors: {
         chain: Post[];
-        next: string | null;
+        hasMore: boolean;
     };
     post: Post;
     children: Array<{
         post: Post;
         chain: Post[];
-        next: string | null;
+        hasMore: boolean;
     }>;
     next: string | null;
 }
@@ -123,6 +123,10 @@ export interface Notification {
 export interface GetNotificationsResponse {
     notifications: Notification[];
     next: string | null;
+}
+
+export interface GetNotificationsCountResponse {
+    count: number;
 }
 
 export interface GetBlockedAccountsResponse {
@@ -463,6 +467,32 @@ export class ActivityPubAPI {
         };
     }
 
+    async getNotificationsCount(): Promise<GetNotificationsCountResponse> {
+        const url = new URL('.ghost/activitypub/notifications/unread/count', this.apiUrl);
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null) {
+            return {
+                count: 0
+            };
+        }
+
+        const count = typeof (json as Record<string, unknown>).count === 'number'
+            ? (json as {count: number}).count
+            : 0;
+
+        return {count};
+    }
+
+    async resetNotificationsCount() {
+        const url = new URL('.ghost/activitypub/notifications/unread/reset', this.apiUrl);
+
+        await this.fetchJSON(url, 'PUT');
+
+        return true;
+    }
+
     async getBlockedAccounts(next?: string): Promise<GetBlockedAccountsResponse> {
         const url = new URL('.ghost/activitypub/blocks/accounts', this.apiUrl);
         if (next) {
@@ -522,8 +552,11 @@ export class ActivityPubAPI {
         return json as Post;
     }
 
-    async getReplies(postApId: string): Promise<ReplyChainResponse> {
+    async getReplies(postApId: string, next?: string): Promise<ReplyChainResponse> {
         const url = new URL(`.ghost/activitypub/replies/${encodeURIComponent(postApId)}`, this.apiUrl);
+        if (next) {
+            url.searchParams.set('next', next);
+        }
         const json = await this.fetchJSON(url);
         return json as ReplyChainResponse;
     }

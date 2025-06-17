@@ -14,7 +14,7 @@ import {vi} from 'vitest';
 
 // Import types from API modules
 import type {LinkResponseType} from '@tryghost/admin-x-framework/api/links';
-import type {NewsletterStatsResponseType, PostGrowthStatsResponseType, PostReferrersResponseType} from '@tryghost/admin-x-framework/api/stats';
+import type {MrrHistoryResponseType, NewsletterStatsResponseType, PostGrowthStatsResponseType, PostReferrersResponseType} from '@tryghost/admin-x-framework/api/stats';
 import type {PostsResponseType} from '@tryghost/admin-x-framework/api/posts';
 
 // Create a test wrapper with QueryClient
@@ -103,8 +103,11 @@ export const defaultMockData = {
 export const setupPostsAppMocks = async () => {
     const mockGetPost = vi.mocked(await import('@tryghost/admin-x-framework/api/posts')).getPost;
     const mockUseNewsletterStatsByNewsletterId = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).useNewsletterStatsByNewsletterId;
+    const mockUseNewsletterBasicStats = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).useNewsletterBasicStats;
+    const mockUseNewsletterClickStats = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).useNewsletterClickStats;
     const mockUsePostReferrers = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).usePostReferrers;
     const mockUsePostGrowthStats = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).usePostGrowthStats;
+    const mockUseMrrHistory = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).useMrrHistory;
     const mockUseTopLinks = vi.mocked(await import('@tryghost/admin-x-framework/api/links')).useTopLinks;
     const mockUseGlobalData = vi.mocked(await import('@src/providers/PostAnalyticsContext')).useGlobalData;
     const mockGetSettingValue = vi.mocked(await import('@tryghost/admin-x-framework/api/settings')).getSettingValue;
@@ -112,8 +115,11 @@ export const setupPostsAppMocks = async () => {
     // Set up ALL mocks with sensible defaults using centralized fixtures
     mockApiHook<PostsResponseType>(mockGetPost, defaultMockData.postsResponse);
     mockApiHook<NewsletterStatsResponseType>(mockUseNewsletterStatsByNewsletterId, responseFixtures.newsletterStats);
+    mockApiHook<NewsletterStatsResponseType>(mockUseNewsletterBasicStats, responseFixtures.newsletterStats);
+    mockApiHook<NewsletterStatsResponseType>(mockUseNewsletterClickStats, responseFixtures.newsletterStats);
     mockApiHook<PostReferrersResponseType>(mockUsePostReferrers, responseFixtures.postReferrers);
     mockApiHook<PostGrowthStatsResponseType>(mockUsePostGrowthStats, defaultMockData.growthStats);
+    mockApiHook<MrrHistoryResponseType>(mockUseMrrHistory, responseFixtures.mrrHistory);
     mockApiHook<LinkResponseType>(mockUseTopLinks, responseFixtures.links);
     mockUseGlobalData.mockReturnValue(defaultMockData.globalData);
     mockGetSettingValue.mockReturnValue('{}');
@@ -121,8 +127,11 @@ export const setupPostsAppMocks = async () => {
     return {
         mockGetPost,
         mockUseNewsletterStatsByNewsletterId,
+        mockUseNewsletterBasicStats,
+        mockUseNewsletterClickStats,
         mockUsePostReferrers,
         mockUsePostGrowthStats,
+        mockUseMrrHistory,
         mockUseTopLinks,
         mockUseGlobalData,
         mockGetSettingValue

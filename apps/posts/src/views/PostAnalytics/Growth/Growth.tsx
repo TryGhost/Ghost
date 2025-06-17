@@ -1,28 +1,15 @@
+import GrowthSources from './components/GrowthSources';
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {BarChartLoadingIndicator, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber} from '@tryghost/shade';
-import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
-import {getFaviconDomain, useParams} from '@tryghost/admin-x-framework';
+import React from 'react';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Skeleton, SkeletonTable, formatNumber} from '@tryghost/shade';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
+import {useParams} from '@tryghost/admin-x-framework';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
 
 export const centsToDollars = (value : number) => {
     return Math.round(value / 100);
-};
-
-// Check if the source has a valid URL that should be linked
-const hasLinkableUrl = (url: string | undefined): boolean => {
-    if (!url) {
-        return false;
-    }
-
-    try {
-        new URL(url);
-        return true;
-    } catch (e) {
-        return false;
-    }
 };
 
 interface postAnalyticsProps {}
@@ -30,13 +17,14 @@ interface postAnalyticsProps {}
 const Growth: React.FC<postAnalyticsProps> = () => {
     const {data: globalData} = useGlobalData();
     const {postId} = useParams();
-    const {stats: postReferrers, totals, isLoading} = usePostReferrers(postId || '');
-    
-    // Get site URL from global data
+    const {stats: postReferrers, totals, isLoading, currencySymbol} = usePostReferrers(postId || '');
+
+    // Get site URL and icon from global data
     const siteUrl = globalData?.url as string | undefined;
-    
+    const siteIcon = globalData?.icon as string | undefined;
+
     // TEMPORARY: For testing levernews.com direct traffic grouping
-    // Remove this line when done testing  
+    // Remove this line when done testing
     const testingSiteUrl = siteUrl || 'https://levernews.com';
 
     return (
@@ -44,8 +32,28 @@ const Growth: React.FC<postAnalyticsProps> = () => {
             <PostAnalyticsHeader currentTab='Growth' />
             <PostAnalyticsContent>
                 {isLoading ?
-                    <div className='flex size-full grow items-center justify-center'>
-                        <BarChartLoadingIndicator />
+                    <div className='flex flex-col items-stretch gap-6'>
+                        <Card>
+                            <CardContent className='grid grid-cols-3 p-0'>
+                                {Array.from({length: 3}, (_, i) => (
+                                    <div key={i} className='h-[98px] gap-1 border-r px-6 py-5 last:border-r-0'>
+                                        <Skeleton className='w-2/3' />
+                                        <Skeleton className='h-7 w-12' />
+                                    </div>
+                                ))}
+
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Top sources</CardTitle>
+                                <CardDescription>Where did your growth come from?</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <Separator />
+                                <SkeletonTable className='pt-6' />
+                            </CardContent>
+                        </Card>
                     </div>
                     :
                     <div className='flex flex-col items-stretch gap-6'>
@@ -80,72 +88,18 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                             MRR
                                         </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardValue>+${centsToDollars(totals?.mrr || 0)}</KpiCardValue>
+                                            <KpiCardValue>+{currencySymbol}{centsToDollars(totals?.mrr || 0)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
                                 </div>
                             </CardContent>
                         </Card>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Sources</CardTitle>
-                                <CardDescription>Where did your growth come from?</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <Separator />
-                                {postReferrers.length > 0
-                                    ?
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Source</TableHead>
-                                                <TableHead className='w-[110px] text-right'>Free members</TableHead>
-                                                <TableHead className='w-[110px] text-right'>Paid members</TableHead>
-                                                <TableHead className='w-[110px] text-right'>MRR impact</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {postReferrers?.map((row) => {
-                                                const {domain, isDirectTraffic} = getFaviconDomain(row.source, testingSiteUrl);
-                                                const displayName = isDirectTraffic ? 'Direct' : (row.source || 'Direct');
-                                                
-                                                return (
-                                                    <TableRow key={row.source}>
-                                                        <TableCell>
-                                                            {row.source && row.referrer_url && hasLinkableUrl(row.referrer_url) ?
-                                                                <a className='group flex items-center gap-2' href={row.referrer_url} rel="noreferrer" target="_blank">
-                                                                    <img
-                                                                        className="size-4"
-                                                                        src={domain ? `https://www.faviconextractor.com/favicon/${domain}?larger=true` : STATS_DEFAULT_SOURCE_ICON_URL}
-                                                                        onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                                            e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
-                                                                        }} />
-                                                                    <span className='group-hover:underline'>{displayName}</span>
-                                                                </a>
-                                                                :
-                                                                <span className='flex items-center gap-2'>
-                                                                    <img
-                                                                        className="size-4"
-                                                                        src={STATS_DEFAULT_SOURCE_ICON_URL} />
-                                                                    <span>{displayName}</span>
-                                                                </span>
-                                                            }
-                                                        </TableCell>
-                                                        <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.free_members)}</TableCell>
-                                                        <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.paid_members)}</TableCell>
-                                                        <TableCell className='text-right font-mono text-sm'>+${centsToDollars(row.mrr)}</TableCell>
-                                                    </TableRow>
-                                                );
-                                            })}
-                                        </TableBody>
-                                    </Table>
-                                    :
-                                    <div className='py-20 text-center text-sm text-gray-700'>
-                                    Once someone signs up on this post, sources will show here.
-                                    </div>
-                                }
-                            </CardContent>
-                        </Card>
+                        <GrowthSources
+                            data={postReferrers}
+                            mode="growth"
+                            siteIcon={siteIcon}
+                            siteUrl={testingSiteUrl}
+                        />
                     </div>
                 }
             </PostAnalyticsContent>

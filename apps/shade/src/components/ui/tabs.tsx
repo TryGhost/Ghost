@@ -6,7 +6,7 @@ import {cva} from 'class-variance-authority';
 import {TrendingDown, TrendingUp, type LucideIcon} from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 
-type TabsVariant = 'segmented' | 'button' | 'underline' | 'navbar' | 'pill' | 'kpis';
+type TabsVariant = 'segmented' | 'segmented-sm' | 'button' | 'button-sm' | 'underline' | 'navbar' | 'pill' | 'kpis';
 
 const TabsVariantContext = React.createContext<TabsVariant>('segmented');
 
@@ -20,7 +20,9 @@ const tabsVariants = cva(
         variants: {
             variant: {
                 segmented: '',
+                'segmented-sm': '',
                 button: '',
+                'button-sm': '',
                 underline: '',
                 navbar: '',
                 pill: '',
@@ -49,11 +51,13 @@ const tabsListVariants = cva(
         variants: {
             variant: {
                 segmented: 'h-[34px] rounded-lg bg-muted px-[3px]',
+                'segmented-sm': 'h-8 rounded-lg bg-muted px-[3px]',
                 button: 'gap-2',
+                'button-sm': 'gap-1',
                 underline: 'w-full gap-5 border-b border-b-gray-200 dark:border-gray-950',
                 navbar: 'h-[52px] items-end gap-6',
                 pill: '-ml-0.5 h-[30px] gap-px',
-                kpis: 'border-b'
+                kpis: 'border-b ring-0'
             }
         },
         defaultVariants: {
@@ -83,11 +87,13 @@ const tabsTriggerVariants = cva(
         variants: {
             variant: {
                 segmented: 'h-7 rounded-md text-sm font-medium data-[state=active]:shadow-md',
-                button: 'h-[34px] gap-1.5 rounded-md border border-input py-2 text-sm font-medium hover:bg-muted/50 data-[state=active]:bg-muted/70 data-[state=active]:font-semibold',
+                'segmented-sm': 'h-[26px] rounded-md text-xs font-medium data-[state=active]:shadow-md',
+                button: 'h-[34px] gap-1.5 rounded-md py-2 text-sm font-normal hover:bg-muted data-[state=active]:bg-muted-foreground/15 data-[state=active]:font-medium',
+                'button-sm': 'font-regular h-6 gap-1.5 rounded-md p-2 text-xs text-gray-800 hover:bg-muted data-[state=active]:bg-muted-foreground/15 data-[state=active]:font-medium data-[state=active]:text-foreground',
                 underline: 'relative h-[36px] px-0 text-md font-semibold text-gray-700 after:absolute after:inset-x-0 after:bottom-[-1px] after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:!opacity-100',
                 navbar: 'relative h-[52px] px-px text-md font-semibold text-muted-foreground after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:!opacity-100',
                 pill: 'relative h-[30px] rounded-full px-3 text-md font-medium text-gray-800 hover:text-foreground data-[state=active]:bg-muted-foreground/15 data-[state=active]:font-semibold data-[state=active]:text-foreground dark:text-gray-500 dark:data-[state=active]:text-foreground',
-                kpis: 'relative rounded-none border-border bg-transparent px-6 py-5 text-foreground transition-all after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] first:rounded-tl-md last:rounded-tr-md hover:bg-accent/50 data-[state=active]:bg-transparent data-[state=active]:after:opacity-100 [&:not(:last-child)]:border-r [&[data-state=active]_[data-type="value"]]:text-foreground'
+                kpis: 'relative rounded-none border-border bg-transparent px-6 py-5 text-foreground ring-0 transition-all after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] first:rounded-tl-md last:rounded-tr-md hover:bg-accent/50 data-[state=active]:bg-transparent data-[state=active]:after:opacity-100 [&:not(:last-child)]:border-r [&[data-state=active]_[data-type="value"]]:text-foreground'
             }
         },
         defaultVariants: {
@@ -129,11 +135,13 @@ const tabsContentVariants = cva(
         variants: {
             variant: {
                 segmented: '',
+                'segmented-sm': '',
                 button: '',
+                'button-sm': '',
                 underline: '',
                 navbar: '',
                 pill: '',
-                kpis: ''
+                kpis: 'ring-0'
             }
         },
         defaultVariants: {
@@ -174,11 +182,20 @@ interface KpiTabValueProps {
     icon?: keyof typeof LucideIcons;
     label: string;
     value: string | number;
-    diffDirection?: 'up' | 'down' | 'same';
+    diffDirection?: 'up' | 'down' | 'same' | 'hidden';
     diffValue?: string | number;
+    className?: string;
 }
 
-const KpiTabValue: React.FC<KpiTabValueProps> = ({color, icon: iconName, label, value, diffDirection, diffValue}) => {
+const KpiTabValue: React.FC<KpiTabValueProps> = ({
+    color,
+    icon: iconName,
+    label,
+    value,
+    diffDirection,
+    diffValue,
+    className
+}) => {
     const IconComponent = iconName ? LucideIcons[iconName] as LucideIcon : null;
 
     const diffContainerClassName = cn(
@@ -188,9 +205,9 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({color, icon: iconName, label, 
         diffDirection === 'same' && 'text-gray-700'
     );
     return (
-        <div className='group flex w-full flex-col items-start gap-2'>
+        <div className={cn('group flex w-full flex-col items-start gap-2', className)}>
             <div className='flex h-[22px] items-center gap-1.5 text-base font-medium text-muted-foreground transition-all group-hover:text-foreground' data-type="value">
-                {color && <div className='ml-1 size-2 rounded-full' style={{backgroundColor: color}}></div>}
+                {color && <div className='ml-1 size-2 rounded-full opacity-50' style={{backgroundColor: color}}></div>}
                 {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
                 {label}
             </div>
@@ -198,7 +215,7 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({color, icon: iconName, label, 
                 <div className='text-[2.3rem] font-semibold leading-none tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>
                     {value}
                 </div>
-                {diffValue &&
+                {diffDirection && diffDirection !== 'hidden' &&
                     <>
                         <div className={diffContainerClassName}>
                             {diffDirection === 'up' &&

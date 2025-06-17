@@ -96,34 +96,6 @@ describe('services/koenig/node-renderers/button-renderer', function () {
         it('matches snapshot for default test data', function () {
             const result = renderForEmail(getTestData(), {feature: {emailCustomization: true}});
 
-            assert.ok(result.html);
-
-            assertPrettifiesTo(result.html, html`
-                <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
-                    <tbody>
-                        <tr>
-                            <td class="kg-card-spacing">
-                                <table class="btn" border="0" cellspacing="0" cellpadding="0" align="center">
-                                    <tbody>
-                                        <tr>
-                                            <td align="center">
-                                                <a href="http://blog.com/post1">click me</a>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            `);
-        });
-    });
-
-    describe('email (emailCustomizationAlpha)', function () {
-        it('matches snapshot for default test data', function () {
-            const result = renderForEmail(getTestData(), {feature: {emailCustomizationAlpha: true}});
-
             assertPrettifiesTo(result.html, html`
                 <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
                     <tbody>

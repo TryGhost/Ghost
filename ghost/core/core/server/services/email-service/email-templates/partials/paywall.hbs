@@ -1,4 +1,4 @@
-{{#hasFeature "emailCustomization" "emailCustomizationAlpha"}}
+{{#hasFeature "emailCustomization"}}
     <div class="kg-paywall align-center">
         <table class="kg-paywall-hr" role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
             <tbody>
@@ -23,7 +23,11 @@
             <table border="0" cellpadding="0" cellspacing="0">
                 <tr>
                     <td>
-                        <table class="btn{{^hasFeature "emailCustomizationAlpha"}} btn-accent{{/hasFeature}}" border="0" cellspacing="0" cellpadding="0" align="center">
+                        {{#hasFeature "emailCustomization"}}
+                        <table class="btn" border="0" cellspacing="0" cellpadding="0" align="center">
+                        {{else}}
+                        <table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0" align="center">
+                        {{/hasFeature}}
                             <tr>
                                 <td align="center">
                                     <a href="{{paywall.signupUrl}}">{{t 'Upgrade'}}</a>

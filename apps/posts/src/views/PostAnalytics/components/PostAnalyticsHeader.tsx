@@ -1,8 +1,10 @@
-import React from 'react';
+import React, {useState} from 'react';
 import moment from 'moment-timezone';
-import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
-import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
+import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
+import {Post, useBrowsePosts, useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {useAppContext} from '../../../App';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 interface PostWithPublishedAt extends Post {
     published_at?: string;
@@ -19,6 +21,10 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
 }) => {
     const {postId} = useParams();
     const navigate = useNavigate();
+    const {fromAnalytics} = useAppContext();
+    const {mutateAsync: deletePost} = useDeletePost();
+    const handleError = useHandleError();
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
@@ -32,6 +38,26 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     // Use the utility function from admin-x-framework
     const showNewsletterTab = hasBeenEmailed(typedPost);
 
+    const handleDeletePost = () => {
+        if (!post) {
+            return;
+        }
+
+        // We'll implement this as a controlled AlertDialog with React state
+        setShowDeleteDialog(true);
+    };
+
+    const performDelete = async () => {
+        try {
+            await deletePost(postId as string);
+            setShowDeleteDialog(false);
+            // Navigate back to posts list
+            navigate('/posts/', {crossApp: true});
+        } catch (e) {
+            handleError(e);
+        }
+    };
+
     return (
         <>
             <header className='z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-black'>
@@ -40,15 +66,20 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                         <div className='flex w-full items-center justify-between'>
                             <Breadcrumb>
                                 <BreadcrumbList>
-                                    <BreadcrumbItem>
-                                        <BreadcrumbLink className='cursor-pointer leading-[24px]' onClick={() => navigate('/posts/', {crossApp: true})}>
-                                    Posts
-                                        </BreadcrumbLink>
-                                    </BreadcrumbItem>
+                                    {fromAnalytics
+                                        ?
+                                        <BreadcrumbItem>
+                                            <BreadcrumbLink className='cursor-pointer leading-[24px]' onClick={() => navigate('/analytics/', {crossApp: true})}>Analytics</BreadcrumbLink>
+                                        </BreadcrumbItem>
+                                        :
+                                        <BreadcrumbItem>
+                                            <BreadcrumbLink className='cursor-pointer leading-[24px]' onClick={() => navigate('/posts/', {crossApp: true})}>Posts</BreadcrumbLink>
+                                        </BreadcrumbItem>
+                                    }
                                     <BreadcrumbSeparator />
                                     <BreadcrumbItem>
                                         <BreadcrumbPage className='leading-[24px]'>
-                                        Analytics
+                                        Post analytics
                                         </BreadcrumbPage>
                                     </BreadcrumbItem>
                                 </BreadcrumbList>
@@ -64,13 +95,27 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                     <DropdownMenuContent align='end'>
                                         <DropdownMenuGroup>
                                             <DropdownMenuItem asChild>
-                                                <a href={post.url} rel="noopener noreferrer" target="_blank">View in browser</a>
+                                                <a href={post.url} rel="noopener noreferrer" target="_blank">
+                                                    <LucideIcon.ExternalLink />
+                                                    View in browser
+                                                </a>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => {
                                                 navigate(`/editor/post/${postId}`, {crossApp: true});
                                             }}>
+                                                <LucideIcon.Pen />
                                                 Edit post
                                                 {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
+                                            </DropdownMenuItem>
+                                        </DropdownMenuGroup>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuItem
+                                                className='text-destructive focus:text-destructive'
+                                                onClick={handleDeletePost}
+                                            >
+                                                <LucideIcon.Trash />
+                                                Delete post
                                             </DropdownMenuItem>
                                         </DropdownMenuGroup>
                                     </DropdownMenuContent>
@@ -131,6 +176,29 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     {children}
                 </NavbarActions>
             </Navbar>
+
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Are you sure you want to delete this post?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            You&apos;re about to delete &quot;<strong>{post?.title}</strong>&quot;.
+                            This is permanent! We warned you, k?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            className="hover:bg-red-700 bg-red-600 text-white"
+                            onClick={performDelete}
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </>
     );
 };

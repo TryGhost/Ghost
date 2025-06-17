@@ -7,7 +7,7 @@ module.exports = {
         preflight: false // we're providing our own scoped CSS reset
     },
     // darkMode: 'selector',
-    darkMode: ['variant', [':is(.dark &):not(.light &)']],
+    darkMode: ['variant', ['&:is(.dark *):not(.light *)']],
     theme: {
         screens: {
             sm: '480px',
@@ -420,7 +420,17 @@ module.exports = {
                     2: 'hsl(var(--chart-2))',
                     3: 'hsl(var(--chart-3))',
                     4: 'hsl(var(--chart-4))',
-                    5: 'hsl(var(--chart-5))'
+                    5: 'hsl(var(--chart-5))',
+                    gray: 'hsl(var(--chart-gray))',
+                    darkgray: 'hsl(var(--chart-darkgray))',
+                    rose: 'hsl(var(--chart-rose))',
+                    orange: 'hsl(var(--chart-orange))',
+                    amber: 'hsl(var(--chart-amber))',
+                    yellow: 'hsl(var(--chart-yellow))',
+                    green: 'hsl(var(--chart-green))',
+                    teal: 'hsl(var(--chart-teal))',
+                    blue: 'hsl(var(--chart-blue))',
+                    purple: 'hsl(var(--chart-purple))'
                 },
                 sidebar: {
                     DEFAULT: 'hsl(var(--sidebar-background))',
