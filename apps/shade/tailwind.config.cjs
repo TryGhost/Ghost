@@ -7,7 +7,7 @@ module.exports = {
         preflight: false // we're providing our own scoped CSS reset
     },
     // darkMode: 'selector',
-    darkMode: ['variant', [':is(.dark &):not(.light &)']],
+    darkMode: ['variant', ['&:is(.dark *):not(.light *)']],
     theme: {
         screens: {
             sm: '480px',
