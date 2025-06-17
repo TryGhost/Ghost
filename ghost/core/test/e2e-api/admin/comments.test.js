@@ -678,13 +678,9 @@ describe(`Admin Comments API`, function () {
 
     describe('Add comments via Admin API', function () {
         it('Can add a comment as a member via Admin API', async function () {
-            // Get a valid post ID from fixtures
-            const posts = await adminApi.get('posts/').expectStatus(200);
-            const targetPostId = posts.body.posts[0].id;
-
-            // Get a valid member ID from fixtures
-            const members = await adminApi.get('members/').expectStatus(200);
-            const memberId = members.body.members[0].id;
+            // Use existing fixture data
+            const targetPostId = postId;
+            const memberId = fixtureManager.get('members', 0).id;
 
             const commentData = {
                 post_id: targetPostId,
