@@ -15,7 +15,6 @@ Sample config:
         "tracker": {
             "endpoint": "https://e.ghost.org/tb/web_analytics",
             "token": "xxxxx",
-            "id": "local-ghost",
             "datasource": "analytics_events",
             "local": {
                 "enabled": true,
@@ -27,7 +26,6 @@ Sample config:
         "stats": {
             "endpoint": "https://api.tinybird.co",
             "token": "xxxxx",
-            "id": "local-ghost",
             "local": {
                 "enabled": true,
                 "token": "xxxxx",
