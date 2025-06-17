@@ -231,7 +231,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
                 <table class="btn" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
-                            <td align="center" style="border: 1px solid #000000; background-color: transparent; color: #000000 !important;">
+                            <td align="center" style="color: #000000 !important; border: 1px solid #000000; border-color: currentColor; background-color: transparent;">
                                 <a href="http://blog.com/post1" style="color: #000000 !important;">
                                     click me
                                 </a>
