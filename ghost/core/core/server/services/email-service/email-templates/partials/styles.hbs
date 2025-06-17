@@ -2571,7 +2571,9 @@ table.btn {
 table.btn td {
     padding: 8px 20px 9px;
     {{#if hasOutlineButtons}}
+    color: {{buttonColor}};
     border: 1px solid {{buttonColor}};
+    border-color: currentColor; {{!-- match text color in dark mode inversions --}}
     background-color: transparent;
     {{else}}
     background-color: {{buttonColor}};
@@ -2598,7 +2600,9 @@ table.btn a {
 
 table.btn-accent td {
     {{#if hasOutlineButtons}}
+    color: {{accentColor}};
     border: 1px solid {{accentColor}};
+    border-color: currentColor; {{!-- match text color in dark mode inversions --}}
     background-color: transparent;
     {{else}}
     background-color: {{accentColor}};
@@ -2607,12 +2611,8 @@ table.btn-accent td {
 
 table.btn-accent a {
     {{#if hasOutlineButtons}}
-    background-color: transparent;
-    border-color: {{accentColor}};
     color: {{accentColor}};
     {{else}}
-    background-color: {{accentColor}};
-    border-color: {{accentColor}};
     color: {{accentContrastColor}};
     {{/if}}
 }

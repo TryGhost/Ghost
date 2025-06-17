@@ -111,9 +111,10 @@ function _getButtonStyle({color, style}) {
             backgroundColor: color
         },
         _isColoredOutline({color, style}) && {
+            color: `${color} !important`,
             border: `1px solid ${color}`,
-            backgroundColor: 'transparent',
-            color: `${color} !important`
+            borderColor: 'currentColor', // match text color in dark mode inversions
+            backgroundColor: 'transparent'
         }
     );
 }

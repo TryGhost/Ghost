@@ -194,7 +194,7 @@ describe('services/koenig/node-renderers/header-v2-renderer', function () {
             const result = renderForEmail(getTestData(), {design: {buttonStyle: 'outline'}, feature: {emailCustomization: true}});
 
             assertPrettifiedIncludes(result.html, html`
-                <td align="center" style="border: 1px solid #ffffff; background-color: transparent; color: #ffffff !important">
+                <td align="center" style="color: #ffffff !important; border: 1px solid #ffffff; border-color: currentColor; background-color: transparent;">
                     <a href="https://example.com/" style="color: #ffffff !important">The button</a>
                 </td>
             `);
