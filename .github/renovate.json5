@@ -1,6 +1,6 @@
 {
     "extends": [
-        "github>tryghost/renovate-config:quiet.json5"
+        "github>tryghost/renovate-config"
     ],
     // This reduces PR churn when managing lots of dependencies
     "rebaseWhen": "never",
