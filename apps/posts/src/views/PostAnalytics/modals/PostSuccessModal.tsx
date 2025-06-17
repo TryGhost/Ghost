@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
     Button,
     Card,
@@ -34,18 +34,22 @@ const PostSuccessModal: React.FC<PostSuccessModalProps> = ({
 }) => {
     const [copyLinkSuccess, setCopyLinkSuccess] = useState(false);
     const {site} = useGlobalData();
+    const timerRef = useRef<NodeJS.Timeout>();
 
     const handleCopyLink = async () => {
         if (post.url) {
             try {
                 await navigator.clipboard.writeText(post.url);
                 setCopyLinkSuccess(true);
-                setTimeout(() => setCopyLinkSuccess(false), 1000);
+                clearTimeout(timerRef.current);
+                timerRef.current = setTimeout(() => setCopyLinkSuccess(false), 1000);
             } catch (err) {
                 // Error is handled silently as it's not critical
             }
         }
     };
+
+    useEffect(() => () => clearTimeout(timerRef.current), []);
 
     const encodedUrl = encodeURIComponent(post.url || '');
     const encodedTitleAndUrl = encodeURIComponent(`${post.title} ${post.url}`);

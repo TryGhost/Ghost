@@ -141,7 +141,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                                 Click rate
                                             </div>
                                             <span className='text-[2.3rem] font-semibold leading-none tracking-tighter'>
-                                                {formatPercentage(latestPostStats.click_rate || 0 / 100)}
+                                                {formatPercentage((latestPostStats.click_rate || 0) / 100)}
                                             </span>
                                         </div>
                                     </>
