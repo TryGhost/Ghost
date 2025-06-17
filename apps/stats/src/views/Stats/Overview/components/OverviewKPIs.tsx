@@ -1,5 +1,5 @@
 import React from 'react';
-import {BarChartLoadingIndicator, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, centsToDollars, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, centsToDollars, formatNumber} from '@tryghost/shade';
 import {STATS_RANGES} from '@src/utils/constants';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -34,22 +34,27 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     const IconComponent = iconName && LucideIcon[iconName] as LucideIcon.LucideIcon;
 
     return (
-        <Card className={onClick && 'group transition-all hover:!cursor-pointer hover:bg-accent/50'} onClick={onClick}>
+        <Card className='group overflow-hidden transition-all hover:bg-accent/50'>
             <CardHeader className='hidden'>
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
-            <KpiCardHeader className='grow gap-2 border-none pb-0'>
-                <KpiCardHeaderLabel className={onClick && 'transition-all group-hover:text-foreground'}>
-                    {color && <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color}}></span>}
-                    {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
-                    {title}
-                </KpiCardHeaderLabel>
-                <KpiCardHeaderValue
-                    diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : diffDirection}
-                    diffValue={diffValue}
-                    value={formattedValue}
-                />
+            <KpiCardHeader className='relative flex grow flex-row items-start justify-between gap-5 border-none'>
+                <div className='flex grow flex-col gap-2 border-none pb-0'>
+                    <KpiCardHeaderLabel className={onClick && 'transition-all group-hover:text-foreground'}>
+                        {color && <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color}}></span>}
+                        {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
+                        {title}
+                    </KpiCardHeaderLabel>
+                    <KpiCardHeaderValue
+                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : diffDirection}
+                        diffValue={diffValue}
+                        value={formattedValue}
+                    />
+                </div>
+                {onClick &&
+                    <Button className='absolute right-6 translate-x-full opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={onClick}>View more</Button>
+                }
             </KpiCardHeader>
             <CardContent>
                 {children}
@@ -100,10 +105,10 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
     return (
         <div className='grid grid-cols-3 gap-8'>
             <OverviewKPICard
-                color='hsl(var(--chart-blue))'
                 description='Number of individual people who visited your website'
                 diffDirection='empty'
                 formattedValue={kpiValues.visits}
+                iconName='Eye'
                 linkto='/web/'
                 title='Unique visitors'
                 onClick={() => {
@@ -124,11 +129,11 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
             </OverviewKPICard>
 
             <OverviewKPICard
-                color='hsl(var(--chart-teal))'
                 description='How number of members of your publication changed over time'
                 diffDirection={growthTotals.directions.total}
                 diffValue={growthTotals.percentChanges.total}
                 formattedValue={formatNumber(growthTotals.totalMembers)}
+                iconName='User'
                 linkto='/growth/'
                 title='Members'
                 onClick={() => {
@@ -148,11 +153,11 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
             </OverviewKPICard>
 
             <OverviewKPICard
-                color='hsl(var(--chart-purple))'
                 description='Monthly recurring revenue changes over time'
                 diffDirection={growthTotals.directions.mrr}
                 diffValue={growthTotals.percentChanges.mrr}
                 formattedValue={`${currencySymbol}${formatNumber(centsToDollars(growthTotals.mrr))}`}
+                iconName='Coins'
                 linkto='/growth/'
                 title='MRR'
                 onClick={() => {
