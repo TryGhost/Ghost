@@ -36,7 +36,6 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            // fields: 'title,slug,published_at,uuid,feature_image,url,email,status'
             include: 'email,authors'
         }
     });
