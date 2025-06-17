@@ -86,10 +86,12 @@ function emailTemplate(nodeData, options) {
         style: options?.design?.buttonStyle
     });
 
+    const hasDarkBg = nodeData.textColor?.toLowerCase() === '#ffffff';
+
     if (options?.feature?.emailCustomization) {
         return (
             `
-            <div class="kg-header-card kg-v2" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
+            <div class="kg-header-card kg-v2${hasDarkBg ? ' kg-header-card-dark-bg' : 'kg-header-card-light-bg'}" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
                 ${nodeData.layout === 'split' && nodeData.backgroundImageSrc ? `
                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                         <tr>

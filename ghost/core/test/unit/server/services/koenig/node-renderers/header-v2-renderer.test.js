@@ -121,7 +121,7 @@ describe('services/koenig/node-renderers/header-v2-renderer', function () {
 
             assertPrettifiesTo(result.html, html`
                 <div
-                    class="kg-header-card kg-v2"
+                    class="kg-header-card kg-v2 kg-header-card-dark-bg"
                     style="
                         color: #ffffff;
                         text-align: center;
