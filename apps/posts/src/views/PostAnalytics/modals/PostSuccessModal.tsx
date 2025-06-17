@@ -11,10 +11,16 @@ import {
 import {Post} from '@tryghost/admin-x-framework/api/posts';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 
+interface ExtendedPost extends Post {
+    authors?: {
+        name: string;
+    }[];
+}
+
 interface PostSuccessModalProps {
     isOpen: boolean;
     onClose: () => void;
-    post: Post;
+    post: ExtendedPost;
     postCount?: number;
     showPostCount?: boolean;
 }
@@ -122,8 +128,10 @@ const PostSuccessModal: React.FC<PostSuccessModalProps> = ({
                                 </div>
                                 <div className="flex items-center space-x-2 text-sm text-gray-500">
                                     {site?.title && <span>{site.title}</span>}
-                                    {site?.title && <span>•</span>}
-                                    <span>slarsbot</span>
+                                    {site?.title && post.authors?.length && <span>•</span>}
+                                    {post.authors?.length && (
+                                        <span>{post.authors.map(author => author.name).join(', ')}</span>
+                                    )}
                                 </div>
                             </div>
                         </CardContent>
