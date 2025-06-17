@@ -21,7 +21,15 @@ export default class NotificationsCountService extends Service {
                 return 0;
             }
 
-            const response = await this.ajax.request('/.ghost/activitypub/notifications/unread/count', {
+            const siteInfoResponse = await this.ajax.request('/ghost/api/admin/site');
+            const siteUrl = siteInfoResponse?.site?.url;
+
+            if (!siteUrl) {
+                this.count = 0;
+                return 0;
+            }
+            const notificationCountUrl = new URL('/.ghost/activitypub/notifications/unread/count', siteUrl).toString();
+            const response = await this.ajax.request(notificationCountUrl, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     Accept: 'application/activity+json'
