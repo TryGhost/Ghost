@@ -384,6 +384,7 @@ describe('{{ghost_head}} helper', function () {
         getStub.withArgs('amp').returns(true);
         getStub.withArgs('comments_enabled').returns('off');
         getStub.withArgs('members_track_sources').returns(true);
+        getStub.withArgs('site_uuid').returns('77f09c60-5a34-4b4c-a3f6-e1b1d78f7412');
 
         // Force the usage of a fixed asset hash so we have reliable snapshots
         configUtils.set('assetHash', 'asset-hash');
@@ -1414,7 +1415,6 @@ describe('{{ghost_head}} helper', function () {
                     tracker: {
                         endpoint: 'https://e.ghost.org/tb/web_analytics',
                         token: 'tinybird_token',
-                        id: 'tb_test_site_uuid',
                         datasource: 'analytics_events',
                         local: {
                             enabled: false,
