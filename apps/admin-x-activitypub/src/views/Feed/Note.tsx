@@ -47,6 +47,7 @@ const Note = () => {
     const object = currentPost?.object;
 
     const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
+    const [hasScrolledToPost, setHasScrolledToPost] = useState(false);
 
     useEffect(() => {
         if (object?.replyCount !== undefined) {
@@ -55,13 +56,14 @@ const Note = () => {
     }, [object?.replyCount]);
 
     useEffect(() => {
-        if (postRef.current && threadParents.length > 0) {
+        if (postRef.current && threadParents.length > 0 && !hasScrolledToPost) {
             postRef.current.scrollIntoView({
                 behavior: 'instant',
                 block: 'start'
             });
+            setHasScrolledToPost(true);
         }
-    }, [threadParents]);
+    }, [threadParents, hasScrolledToPost]);
 
     useEffect(() => {
         if (observerRef.current) {
