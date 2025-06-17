@@ -1409,6 +1409,10 @@ describe('{{ghost_head}} helper', function () {
 
     describe('includes tinybird tracker script when config is set', function () {
         let labsStub;
+        function setAnalyticsFlags({analytics = false, tracking = false} = {}) {
+            labsStub.withArgs('trafficAnalytics').returns(analytics);
+            labsStub.withArgs('trafficAnalyticsTracking').returns(tracking);
+        }
         beforeEach(function () {
             configUtils.set({
                 tinybird: {
@@ -1426,7 +1430,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             });
             labsStub = sinon.stub(labs, 'isSet');
-            labsStub.withArgs('trafficAnalytics').returns(true);
+            setAnalyticsFlags({analytics: true, tracking: false});
             labsStub.withArgs('i18n').returns(true);
         });
 
@@ -1443,7 +1447,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not include tracker script when trafficAnalytics is not set', async function () {
-            labsStub.withArgs('trafficAnalytics').returns(false);
+            setAnalyticsFlags({analytics: false, tracking: false});
 
             const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1457,8 +1461,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('includes tracker script when trafficAnalyticsTracking is set', async function () {
-            labsStub.withArgs('trafficAnalytics').returns(false);
-            labsStub.withArgs('trafficAnalyticsTracking').returns(true);
+            setAnalyticsFlags({analytics: false, tracking: true});
 
             const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1472,8 +1475,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('includes tracker script when both trafficAnalytics and trafficAnalyticsTracking are set', async function () {
-            labsStub.withArgs('trafficAnalytics').returns(true);
-            labsStub.withArgs('trafficAnalyticsTracking').returns(true);
+            setAnalyticsFlags({analytics: true, tracking: true});
 
             const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1487,8 +1489,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not include tracker script when neither trafficAnalytics nor trafficAnalyticsTracking is set', async function () {
-            labsStub.withArgs('trafficAnalytics').returns(false);
-            labsStub.withArgs('trafficAnalyticsTracking').returns(false);
+            setAnalyticsFlags({analytics: false, tracking: false});
 
             const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {

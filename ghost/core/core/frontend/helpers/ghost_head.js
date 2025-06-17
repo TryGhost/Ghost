@@ -360,8 +360,9 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             if (!_.isEmpty(tagCodeInjection)) {
                 head.push(tagCodeInjection);
             }
-
-            if ((labs.isSet('trafficAnalytics') || labs.isSet('trafficAnalyticsTracking')) && config.get('tinybird') && config.get('tinybird:tracker')) {
+            const isTbTrackingEnabled = labs.isSet('trafficAnalytics') || labs.isSet('trafficAnalyticsTracking');
+            const hasTbConfig = config.get('tinybird') && config.get('tinybird:tracker');
+            if (isTbTrackingEnabled && hasTbConfig) {
                 head.push(getTinybirdTrackerScript(dataRoot));
                 // Set a flag in response locals to indicate tracking script is being served
                 if (dataRoot._locals) {
