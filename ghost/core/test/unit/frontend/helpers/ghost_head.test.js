@@ -1456,6 +1456,51 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js/);
         });
 
+        it('includes tracker script when trafficAnalyticsTracking is set', async function () {
+            labsStub.withArgs('trafficAnalytics').returns(false);
+            labsStub.withArgs('trafficAnalyticsTracking').returns(true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/script defer src="\/public\/ghost-stats\.min\.js/);
+        });
+
+        it('includes tracker script when both trafficAnalytics and trafficAnalyticsTracking are set', async function () {
+            labsStub.withArgs('trafficAnalytics').returns(true);
+            labsStub.withArgs('trafficAnalyticsTracking').returns(true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/script defer src="\/public\/ghost-stats\.min\.js/);
+        });
+
+        it('does not include tracker script when neither trafficAnalytics nor trafficAnalyticsTracking is set', async function () {
+            labsStub.withArgs('trafficAnalytics').returns(false);
+            labsStub.withArgs('trafficAnalyticsTracking').returns(false);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js/);
+        });
+
         it('includes tracker script with subdir', async function () {
             configUtils.set('url', 'http://localhost:2388/blog/');
 
