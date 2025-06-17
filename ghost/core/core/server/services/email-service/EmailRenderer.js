@@ -957,8 +957,8 @@ class EmailRenderer {
     }
 
     #getPostTitleColor(newsletter, accentColor) {
-        /** @type {'accent' | 'auto' | string | null} */
-        const value = newsletter.get('post_title_color');
+        /** @type {'accent' | string | null} */
+        const value = newsletter?.get('post_title_color');
 
         if (VALID_HEX_REGEX.test(value)) {
             return value;
@@ -968,7 +968,7 @@ class EmailRenderer {
             return accentColor;
         }
 
-        // value === 'auto', value === null, value is not valid hex
+        // value === null, value is not valid hex
         const backgroundColor = this.#getHeaderBackgroundColor(newsletter, accentColor) || this.#getBackgroundColor(newsletter);
         return textColorForBackgroundColor(backgroundColor).hex();
     }
@@ -979,7 +979,7 @@ class EmailRenderer {
             return null;
         }
 
-        /** @type {'accent' | 'auto' | string | null} */
+        /** @type {'accent' | string | null} */
         const value = newsletter.get('section_title_color');
 
         if (VALID_HEX_REGEX.test(value)) {
@@ -1069,14 +1069,14 @@ class EmailRenderer {
     }
 
     #getButtonColor(newsletter, accentColor) {
-        /** @type {'accent' | 'auto' | string | null} */
-        const buttonColor = newsletter?.get('button_color') || 'accent';
+        /** @type {'accent' | string | null} */
+        const buttonColor = newsletter?.get('button_color');
 
         if (buttonColor === 'accent') {
             return accentColor;
         }
 
-        if (buttonColor === 'auto') {
+        if (buttonColor === null) {
             const backgroundColor = this.#getBackgroundColor(newsletter);
             return textColorForBackgroundColor(backgroundColor).hex();
         }
