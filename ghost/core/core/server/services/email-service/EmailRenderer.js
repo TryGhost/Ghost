@@ -4,6 +4,7 @@
 const logging = require('@tryghost/logging');
 const fs = require('fs').promises;
 const path = require('path');
+const clsx = require('clsx');
 const {isUnsplashImage} = require('@tryghost/kg-default-cards/lib/utils');
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const {DateTime} = require('luxon');
@@ -1249,15 +1250,10 @@ class EmailRenderer {
             }
         }
 
-        let excerptFontClass = '';
         const bodyFont = newsletter.get('body_font_category');
         const titleFont = newsletter.get('title_font_category');
-
-        if (titleFont === 'serif' && bodyFont === 'serif') {
-            excerptFontClass = 'post-excerpt-serif-serif';
-        } else if (titleFont === 'serif' && bodyFont !== 'serif') {
-            excerptFontClass = 'post-excerpt-serif-sans';
-        }
+        const titleAlignment = newsletter.get('title_alignment');
+        const showFeatureImage = newsletter.get('show_feature_image') && !!postFeatureImage;
 
         const linkStyle = (hasEmailCustomization && newsletter.get('link_style')) || 'underline';
 
@@ -1301,7 +1297,7 @@ class EmailRenderer {
                 newsletter.get('show_header_title') ||
                 newsletter.get('show_header_name') ||
                 newsletter.get('show_post_title_section') ||
-                (newsletter.get('show_feature_image') && !!postFeatureImage)
+                showFeatureImage
             ),
 
             latestPosts,
@@ -1335,18 +1331,40 @@ class EmailRenderer {
             // TODO: consider moving these to newsletter property
             showHeaderTitle: newsletter.get('show_header_title'),
             showHeaderName: newsletter.get('show_header_name'),
-            showFeatureImage: newsletter.get('show_feature_image') && !!postFeatureImage,
+            showFeatureImage: showFeatureImage,
             footerContent: newsletter.get('footer_content'),
             linkStyle,
             hasOutlineButtons,
 
             classes: {
-                container: 'container' + (newsletter.get('title_font_category') === 'serif' ? ` title-serif` : ``),
-                title: 'post-title' + ` ` + (post.get('custom_excerpt') ? 'post-title-with-excerpt' : 'post-title-no-excerpt') + (newsletter.get('title_font_category') === 'serif' ? ` post-title-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-title-left` : ``) + (hasEmailCustomization ? ` post-title-color` : ``),
-                titleLink: 'post-title-link' + (newsletter.get('title_alignment') === 'left' ? ` post-title-link-left` : ``),
-                excerpt: 'post-excerpt' + ` ` + (newsletter.get('show_feature_image') && !!postFeatureImage ? 'post-excerpt-with-feature-image' : 'post-excerpt-no-feature-image') + ` ` + excerptFontClass + (newsletter.get('title_alignment') === 'left' ? ` post-excerpt-left` : ``),
-                meta: 'post-meta' + (newsletter.get('title_alignment') === 'left' ? ` post-meta-left` : ` post-meta-center`),
-                body: newsletter.get('body_font_category') === 'sans_serif' ? `post-content-sans-serif` : `post-content`
+                container: clsx('container', {
+                    'title-serif': titleFont === 'serif'
+                }),
+                title: clsx('post-title', {
+                    'post-title-with-excerpt': post.get('custom_excerpt'),
+                    'post-title-no-excerpt': !post.get('custom_excerpt'),
+                    'post-title-serif': titleFont === 'serif',
+                    'post-title-left': titleAlignment === 'left',
+                    'post-title-color': hasEmailCustomization
+                }),
+                titleLink: clsx('post-title-link', {
+                    'post-title-link-left': titleAlignment === 'left'
+                }),
+                excerpt: clsx('post-excerpt', {
+                    'post-excerpt-with-feature-image': showFeatureImage,
+                    'post-excerpt-no-feature-image': !showFeatureImage,
+                    'post-excerpt-serif-serif': titleFont === 'serif' && bodyFont === 'serif',
+                    'post-excerpt-serif-sans': titleFont === 'serif' && bodyFont !== 'serif',
+                    'post-excerpt-left': titleAlignment === 'left'
+                }),
+                meta: clsx('post-meta', {
+                    'post-meta-left': titleAlignment === 'left',
+                    'post-meta-center': titleAlignment !== 'left'
+                }),
+                body: clsx({
+                    'post-content-sans-serif': bodyFont === 'sans_serif',
+                    'post-content': bodyFont !== 'sans_serif'
+                })
             },
 
             // Audience feedback
