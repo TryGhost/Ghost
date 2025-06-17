@@ -167,14 +167,16 @@ module.exports = class CommentsController {
                 data.in_reply_to_id,
                 frame.options.context.member.id,
                 data.html,
-                frame.options
+                frame.options,
+                data.created_at
             );
         } else {
             result = await this.service.commentOnPost(
                 data.post_id,
                 frame.options.context.member.id,
                 data.html,
-                frame.options
+                frame.options,
+                data.created_at
             );
         }
 

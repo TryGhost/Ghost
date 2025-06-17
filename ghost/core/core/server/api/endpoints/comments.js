@@ -1,5 +1,6 @@
 const models = require('../../models');
 const commentsService = require('../../services/comments');
+const errors = require('@tryghost/errors');
 function handleCacheHeaders(model, frame) {
     if (model) {
         const postId = model.get('post_id');
@@ -10,6 +11,25 @@ function handleCacheHeaders(model, frame) {
         ].filter(path => path !== null);
         frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
     }
+}
+
+function validateCommentData(data) {
+    if (!data.post_id && !data.parent_id) {
+        throw new errors.ValidationError({
+            message: 'Either post_id (for top-level comments) or parent_id (for replies) must be provided'
+        });
+    }
+}
+
+function setupMemberContext(frame, memberId) {
+    if (!frame.options.context) {
+        frame.options.context = {};
+    }
+    if (!frame.options.context.member) {
+        frame.options.context.member = {};
+    }
+    frame.options.context.member.id = memberId;
+    frame.options.context.internal = true;
 }
 
 /** @type {import('@tryghost/api-framework').Controller} */
@@ -85,9 +105,6 @@ const controller = {
                 }
             },
             data: {
-                post_id: {
-                    required: true
-                },
                 member_id: {
                     required: true
                 },
@@ -100,21 +117,10 @@ const controller = {
         async query(frame) {
             const data = frame.data.comments[0];
             
-            // For admin API, set up the member context to impersonate the specified member
-            if (!frame.options.context) {
-                frame.options.context = {};
-            }
-            if (!frame.options.context.member) {
-                frame.options.context.member = {};
-            }
-            frame.options.context.member.id = data.member_id;
+            validateCommentData(data);
+            setupMemberContext(frame, data.member_id);
             
-            // Set internal flag to avoid email notifications for admin API
-            frame.options.context.internal = true;
-            
-            // Use the controller's add method which handles both comments and replies
             const result = await commentsService.controller.add(frame);
-            
             handleCacheHeaders(result, frame);
             
             return result;
