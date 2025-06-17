@@ -1,10 +1,14 @@
 import React, {useState} from 'react';
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, PostShareModal, Separator, Skeleton, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
-import {LatestPostStats} from '@tryghost/admin-x-framework/api/stats';
+
+import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
+// Import the interface from the hook
+import {LatestPostWithStats} from '@src/hooks/useLatestPostStats';
+
 interface LatestPostProps {
-    latestPostStats: LatestPostStats | null;
+    latestPostStats: LatestPostWithStats | null;
     isLoading: boolean;
 }
 
@@ -14,6 +18,10 @@ const LatestPost: React.FC<LatestPostProps> = ({
 }) => {
     const navigate = useNavigate();
     const [isShareOpen, setIsShareOpen] = useState(false);
+    const {site, settings} = useGlobalData();
+    
+    // Get site title from settings or site data
+    const siteTitle = site.title || String(settings.find(setting => setting.key === 'title')?.value || 'Ghost Site');
 
     return (
         <Card className='group/card bg-gradient-to-tr from-muted/30 to-muted/0 to-50%'>
@@ -72,7 +80,12 @@ const LatestPost: React.FC<LatestPostProps> = ({
                             }
                             <div className='flex flex-col justify-center'>
                                 <div className='text-lg font-semibold leading-tighter tracking-tight'>{latestPostStats.title}</div>
-                                <div className='mt-1 text-sm text-muted-foreground'>Published {formatDisplayDate(latestPostStats.published_at)}</div>
+                                <div className='mt-1 text-sm text-muted-foreground'>
+                                    {latestPostStats.authors && latestPostStats.authors.length > 0 && (
+                                        <span>By {latestPostStats.authors.map(author => author.name).join(', ')} • </span>
+                                    )}
+                                    Published {formatDisplayDate(latestPostStats.published_at)}
+                                </div>
                             </div>
                         </div>
                         <div className='flex flex-col items-stretch gap-2 text-sm'>
@@ -148,30 +161,28 @@ const LatestPost: React.FC<LatestPostProps> = ({
             {!isLoading && latestPostStats &&
                 <CardFooter className='flex items-center justify-stretch gap-2'>
                     <PostShareModal
-                        author="John Doe"
+                        author={latestPostStats.authors?.map(author => author.name).join(', ') || ''}
                         description=''
-                        faviconURL="https://www.google.com/s2/favicons?domain=ghost.org&sz=64"
+                        faviconURL={site.icon || ''}
                         featureImageURL={latestPostStats.feature_image || ''}
                         open={isShareOpen}
-                        postExcerpt=''
+                        postExcerpt={latestPostStats.excerpt || ''}
                         postTitle={latestPostStats.title}
-                        postURL='https://ghost.org'
-                        siteTitle="Ghost Site"
+                        postURL={latestPostStats.url || ''}
+                        siteTitle={siteTitle}
                         onClose={() => setIsShareOpen(false)}
                         onOpenChange={setIsShareOpen}
                     >
                         <Button className='w-full grow' onClick={() => setIsShareOpen(true)}><LucideIcon.Share /> Share</Button>
                     </PostShareModal>
-                    <PostShareModal>
-                    </PostShareModal>
-                    {/* <Button
+                    <Button
                         variant='outline'
                         onClick={() => {
                             navigate(`/posts/analytics/beta/${latestPostStats.id}`, {crossApp: true});
                         }}
                     >
                         <LucideIcon.ChartNoAxesColumn />
-                    </Button> */}
+                    </Button>
                 </CardFooter>
             }
         </Card>

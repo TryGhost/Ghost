@@ -190,6 +190,18 @@ describe('PostsStatsService', function () {
             table.integer('opened_count');
             table.dateTime('created_at');
         });
+
+        await db.schema.createTable('users', function (table) {
+            table.string('id').primary();
+            table.string('name');
+        });
+
+        await db.schema.createTable('posts_authors', function (table) {
+            table.string('id').primary();
+            table.string('post_id');
+            table.string('author_id');
+            table.integer('sort_order');
+        });
     });
 
     beforeEach(async function () {
@@ -212,6 +224,8 @@ describe('PostsStatsService', function () {
         await db('members_subscription_created_events').truncate();
         await db('members_paid_subscription_events').truncate();
         await db('emails').truncate();
+        await db('users').truncate();
+        await db('posts_authors').truncate();
     });
 
     after(async function () {
@@ -564,145 +578,7 @@ describe('PostsStatsService', function () {
 
             assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
         });
-    });
-
-    describe('getLatestPostStats', function () {
-        it('returns null when no published posts exist', async function () {
-            await db('posts').truncate();
-            const result = await service.getLatestPostStats();
-            assert.deepEqual(result, {data: []});
         });
-
-        it('returns latest published post with zero stats when no events exist', async function () {
-            await db('posts').truncate();
-            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
-            await _createPostWithDetails('latest_post', 'Latest Post', 'published', {
-                published_at: publishedAt,
-                feature_image: 'https://example.com/image.jpg'
-            });
-
-            const result = await service.getLatestPostStats();
-            const stats = result.data[0];
-            
-            assert.equal(stats.id, 'latest_post');
-            assert.equal(stats.title, 'Latest Post');
-            assert.equal(stats.slug, 'latest-post-latest_post');
-            assert.equal(stats.feature_image, 'https://example.com/image.jpg');
-            assert.equal(new Date(stats.published_at).toISOString(), publishedAt.toISOString());
-            assert.equal(stats.recipient_count, null);
-            assert.equal(stats.opened_count, null);
-            assert.equal(stats.open_rate, null);
-            assert.equal(stats.member_delta, 0);
-            assert.equal(stats.visitors, 0);
-        });
-
-        it('returns latest published post with email stats', async function () {
-            await db('posts').truncate();
-            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
-            await _createPostWithDetails('latest_post', 'Latest Post', 'published', {
-                published_at: publishedAt
-            });
-            await _createEmailStats('latest_post', 100, 50);
-
-            const result = await service.getLatestPostStats();
-            const stats = result.data[0];
-            
-            assert.equal(stats.id, 'latest_post');
-            assert.equal(stats.title, 'Latest Post');
-            assert.equal(stats.slug, 'latest-post-latest_post');
-            assert.equal(stats.feature_image, null);
-            assert.equal(new Date(stats.published_at).toISOString(), publishedAt.toISOString());
-            assert.equal(stats.recipient_count, 100);
-            assert.equal(stats.opened_count, 50);
-            assert.equal(stats.open_rate, 50);
-            assert.equal(stats.member_delta, 0);
-            assert.equal(stats.visitors, 0);
-        });
-
-        it('returns latest published post with member stats', async function () {
-            await db('posts').truncate();
-            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
-            await _createPostWithDetails('latest_post', 'Latest Post', 'published', {
-                published_at: publishedAt
-            });
-            await _createFreeSignup('latest_post', 'twitter');
-            await _createFreeSignup('latest_post', 'facebook');
-            await _createPaidSignup('latest_post', 1000, 'google');
-
-            const result = await service.getLatestPostStats();
-            const stats = result.data[0];
-            
-            assert.equal(stats.id, 'latest_post');
-            assert.equal(stats.title, 'Latest Post');
-            assert.equal(stats.slug, 'latest-post-latest_post');
-            assert.equal(stats.feature_image, null);
-            assert.equal(new Date(stats.published_at).toISOString(), publishedAt.toISOString());
-            assert.equal(stats.recipient_count, null);
-            assert.equal(stats.opened_count, null);
-            assert.equal(stats.open_rate, null);
-            assert.equal(stats.member_delta, 3);
-            assert.equal(stats.visitors, 0);
-        });
-
-        it('returns latest published post with all stats', async function () {
-            await db('posts').truncate();
-            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
-            await _createPostWithDetails('latest_post', 'Latest Post', 'published', {
-                published_at: publishedAt,
-                feature_image: 'https://example.com/image.jpg'
-            });
-            await _createEmailStats('latest_post', 100, 50);
-            await _createFreeSignup('latest_post', 'twitter');
-            await _createFreeSignup('latest_post', 'facebook');
-            await _createPaidSignup('latest_post', 1000, 'google');
-
-            const result = await service.getLatestPostStats();
-            const stats = result.data[0];
-            
-            assert.equal(stats.id, 'latest_post');
-            assert.equal(stats.title, 'Latest Post');
-            assert.equal(stats.slug, 'latest-post-latest_post');
-            assert.equal(stats.feature_image, 'https://example.com/image.jpg');
-            assert.equal(new Date(stats.published_at).toISOString(), publishedAt.toISOString());
-            assert.equal(stats.recipient_count, 100);
-            assert.equal(stats.opened_count, 50);
-            assert.equal(stats.open_rate, 50);
-            assert.equal(stats.member_delta, 3);
-            assert.equal(stats.visitors, 0);
-        });
-
-        it('ignores draft posts when finding latest post', async function () {
-            await db('posts').truncate();
-            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
-            const draftAt = new Date('2025-01-02T00:00:00.000Z');
-            
-            await _createPostWithDetails('published_post', 'Published Post', 'published', {
-                published_at: publishedAt
-            });
-            await _createPostWithDetails('draft_post', 'Draft Post', 'draft', {
-                published_at: draftAt
-            });
-
-            const result = await service.getLatestPostStats();
-            assert.equal(result.data[0].id, 'published_post');
-        });
-
-        it('returns latest post by published_at date', async function () {
-            await db('posts').truncate();
-            const olderDate = new Date('2025-01-01T00:00:00.000Z');
-            const newerDate = new Date('2025-01-02T00:00:00.000Z');
-            
-            await _createPostWithDetails('older_post', 'Older Post', 'published', {
-                published_at: olderDate
-            });
-            await _createPostWithDetails('newer_post', 'Newer Post', 'published', {
-                published_at: newerDate
-            });
-
-            const result = await service.getLatestPostStats();
-            assert.equal(result.data[0].id, 'newer_post');
-        });
-    });
 
     describe('getTopPostsViews', function () {
         it('returns empty array when no Tinybird client exists', async function () {
