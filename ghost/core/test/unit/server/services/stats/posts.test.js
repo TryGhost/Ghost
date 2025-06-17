@@ -578,7 +578,7 @@ describe('PostsStatsService', function () {
 
             assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
         });
-        });
+    });
 
     describe('getTopPostsViews', function () {
         it('returns empty array when no Tinybird client exists', async function () {
