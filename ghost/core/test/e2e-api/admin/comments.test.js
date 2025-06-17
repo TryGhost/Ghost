@@ -826,5 +826,122 @@ describe(`Admin Comments API`, function () {
                 .body({comments: [commentData]})
                 .expectStatus(422);
         });
+
+        it('Handles invalid created_at dates gracefully', async function () {
+            const targetPostId = postId;
+            const memberId = fixtureManager.get('members', 0).id;
+
+            // Test with invalid date string
+            const commentData = {
+                post_id: targetPostId,
+                member_id: memberId,
+                html: '<p>Comment with invalid date</p>',
+                created_at: 'invalid-date-string'
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [commentData]})
+                .expectStatus(201);
+
+            // Should succeed but use current timestamp instead of invalid date
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const comment = response.body.comments[0];
+            comment.should.have.property('created_at');
+            // The created_at should be a valid recent timestamp, not the invalid input
+            const createdAt = new Date(comment.created_at);
+            const now = new Date();
+            const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
+            // Should be created within the last few seconds
+            timeDiff.should.be.lessThan(10000);
+        });
+
+        it('Handles future dates by using current timestamp', async function () {
+            const targetPostId = postId;
+            const memberId = fixtureManager.get('members', 0).id;
+            const futureDate = new Date();
+            futureDate.setFullYear(futureDate.getFullYear() + 1);
+
+            const commentData = {
+                post_id: targetPostId,
+                member_id: memberId,
+                html: '<p>Comment with future date</p>',
+                created_at: futureDate.toISOString()
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [commentData]})
+                .expectStatus(201);
+
+            // Should succeed but use current timestamp instead of future date
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const comment = response.body.comments[0];
+            comment.should.have.property('created_at');
+            // The created_at should not be the future date
+            const createdAt = new Date(comment.created_at);
+            const now = new Date();
+            createdAt.should.not.eql(futureDate);
+            // Should be created recently (within the last few seconds)
+            const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
+            timeDiff.should.be.lessThan(10000);
+        });
+
+        it('Handles non-string/non-Date created_at values gracefully', async function () {
+            const targetPostId = postId;
+            const memberId = fixtureManager.get('members', 0).id;
+
+            const commentData = {
+                post_id: targetPostId,
+                member_id: memberId,
+                html: '<p>Comment with numeric timestamp</p>',
+                created_at: 12345 // Invalid type - should be string or Date
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [commentData]})
+                .expectStatus(201);
+
+            // Should succeed but use current timestamp instead of invalid type
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const comment = response.body.comments[0];
+            comment.should.have.property('created_at');
+            // The created_at should be a valid recent timestamp
+            const createdAt = new Date(comment.created_at);
+            const now = new Date();
+            const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
+            timeDiff.should.be.lessThan(10000);
+        });
+
+        it('Works correctly with valid Date object as created_at', async function () {
+            const targetPostId = postId;
+            const memberId = fixtureManager.get('members', 0).id;
+            const validDate = new Date('2023-01-15T10:30:00.000Z');
+
+            const commentData = {
+                post_id: targetPostId,
+                member_id: memberId,
+                html: '<p>Comment with Date object</p>',
+                created_at: validDate
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [commentData]})
+                .expectStatus(201);
+
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const comment = response.body.comments[0];
+            comment.should.have.property('created_at', validDate.toISOString());
+        });
     });
 });
