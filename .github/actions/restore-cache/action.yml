@@ -1,5 +1,9 @@
 name: "Restore dependency cache"
 description: "Restore the dependency cache."
+outputs:
+  cache-miss:
+    description: "Whether the cache was missed"
+    value: ${{ steps.check-cache.outputs.cache-miss }}
 
 runs:
   using: "composite"
@@ -12,7 +16,10 @@ runs:
         key: ${{ env.DEPENDENCY_CACHE_KEY }}
 
     - name: Check if caches are restored
+      id: check-cache
       uses: actions/github-script@v6
       if: steps.dep-cache.outputs.cache-hit != 'true'
       with:
-        script: core.setFailed('Dependency cache could not be restored - please re-run ALL jobs.')
+        script: |
+          core.warning('Dependency cache could not be restored - proceeding with cold cache.');
+          core.setOutput('cache-miss', 'true');
