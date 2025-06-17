@@ -23,7 +23,9 @@ const create = ({config, request, settingsCache}) => {
      */
     const buildRequest = (pipeName, options = {}) => {
         const statsConfig = config.get('tinybird:stats');
-        // TEMP HACK: allow override of site_uuid via config
+        // Use tinybird:stats:id if provided, otherwise use site_uuid from settings cache
+        // Allows overriding site_uuid via config
+        // This is temporary until we have a proper way to use mock data locally
         if (!statsConfig.id) {
             statsConfig.id = settingsCache.get('site_uuid');
         }
