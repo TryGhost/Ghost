@@ -5,9 +5,10 @@ const logging = require('@tryghost/logging');
  * @param {object} deps - Configuration and request dependencies
  * @param {object} deps.config - Ghost configuration
  * @param {object} deps.request - HTTP request client
+ * @param {object} deps.settingsCache - Settings cache client
  * @returns {Object} Tinybird client with methods
  */
-const create = ({config, request}) => {
+const create = ({config, request, settingsCache}) => {
     /**
      * Builds a Tinybird API request
      * @param {string} pipeName - The name of the Tinybird pipe to query
@@ -22,6 +23,10 @@ const create = ({config, request}) => {
      */
     const buildRequest = (pipeName, options = {}) => {
         const statsConfig = config.get('tinybird:stats');
+        // TEMP HACK: allow override of site_uuid via config
+        if (!statsConfig.id) {
+            statsConfig.id = settingsCache.get('site_uuid');
+        }
         const localEnabled = statsConfig?.local?.enabled ?? false;
         const endpoint = localEnabled ? statsConfig.local.endpoint : statsConfig.endpoint;
         const token = localEnabled ? statsConfig.local.token : statsConfig.token;
