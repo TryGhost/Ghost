@@ -15,11 +15,9 @@ runs:
         path: ${{ env.CACHED_DEPENDENCY_PATHS }}
         key: ${{ env.DEPENDENCY_CACHE_KEY }}
 
-    - name: Check if caches are restored
-      id: check-cache
-      uses: actions/github-script@v6
+    - name: Install dependencies on cache miss
       if: steps.dep-cache.outputs.cache-hit != 'true'
-      with:
-        script: |
-          core.warning('Dependency cache could not be restored - proceeding with cold cache.');
-          core.setOutput('cache-miss', 'true');
+      shell: bash
+      run: |
+        echo "::warning::Dependency cache could not be restored - installing dependencies from scratch"
+        yarn install --prefer-offline --frozen-lockfile
