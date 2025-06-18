@@ -2056,13 +2056,26 @@ export function useExploreProfilesForUser(handle: string) {
     const queryKey = QUERY_KEYS.exploreProfiles(handle);
 
     const {data: followingData, hasNextPage, fetchNextPage, isLoading: isLoadingFollowing} = useAccountFollowsForUser('me', 'following');
+    const {data: blockedAccountsData, hasNextPage: hasNextBlockedAccounts, fetchNextPage: fetchNextBlockedAccounts, isLoading: isLoadingBlockedAccounts} = useBlockedAccountsForUser('me');
+    const {data: blockedDomainsData, hasNextPage: hasNextBlockedDomains, fetchNextPage: fetchNextBlockedDomains, isLoading: isLoadingBlockedDomains} = useBlockedDomainsForUser('me');
 
-    // Fetch all pages of following data
     useEffect(() => {
         if (hasNextPage && !isLoadingFollowing) {
             fetchNextPage();
         }
     }, [hasNextPage, fetchNextPage, isLoadingFollowing]);
+
+    useEffect(() => {
+        if (hasNextBlockedAccounts && !isLoadingBlockedAccounts) {
+            fetchNextBlockedAccounts();
+        }
+    }, [hasNextBlockedAccounts, fetchNextBlockedAccounts, isLoadingBlockedAccounts]);
+
+    useEffect(() => {
+        if (hasNextBlockedDomains && !isLoadingBlockedDomains) {
+            fetchNextBlockedDomains();
+        }
+    }, [hasNextBlockedDomains, fetchNextBlockedDomains, isLoadingBlockedDomains]);
 
     const followingIds = useMemo(() => {
         const ids = new Set<string>();
@@ -2076,6 +2089,39 @@ export function useExploreProfilesForUser(handle: string) {
         return ids;
     }, [followingData]);
 
+    const blockedAccountIds = useMemo(() => {
+        const ids = new Set<string>();
+        if (blockedAccountsData?.pages) {
+            blockedAccountsData.pages.forEach((page) => {
+                page.accounts?.forEach((account: Account) => {
+                    ids.add(account.id);
+                });
+            });
+        }
+        return ids;
+    }, [blockedAccountsData]);
+
+    const blockedDomains = useMemo(() => {
+        const domains = new Set<string>();
+        if (blockedDomainsData?.pages) {
+            blockedDomainsData.pages.forEach((page) => {
+                page.domains?.forEach((domain: Account | string) => {
+                    if (typeof domain === 'string') {
+                        domains.add(domain);
+                    } else if (domain.url) {
+                        try {
+                            const url = new URL(domain.url);
+                            domains.add(url.hostname);
+                        } catch {
+                            // Ignore invalid URLs
+                        }
+                    }
+                });
+            });
+        }
+        return domains;
+    }, [blockedDomainsData]);
+
     const fetchExploreProfilesFromJSON = useCallback(async () => {
         try {
             const response = await fetch('https://storage.googleapis.com/prd-activitypub-populate-explore-json/explore/accounts.json');
@@ -2086,7 +2132,21 @@ export function useExploreProfilesForUser(handle: string) {
             const data = await response.json();
             const accounts = data.accounts as Account[];
 
-            const accountsWithDefaults = accounts.map(account => ({
+            const filteredAccounts = accounts.filter((account) => {
+                if (blockedAccountIds.has(account.id)) {
+                    return false;
+                }
+
+                const parts = account.handle.split('@').filter(part => part.length > 0);
+                const accountDomain = parts.length > 1 ? parts[parts.length - 1] : null;
+                if (accountDomain && blockedDomains.has(accountDomain)) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            const accountsWithDefaults = filteredAccounts.map(account => ({
                 ...account,
                 followedByMe: followingIds.has(account.id),
                 blockedByMe: false,
@@ -2115,14 +2175,14 @@ export function useExploreProfilesForUser(handle: string) {
                 nextPage: undefined
             };
         }
-    }, [followingIds]);
+    }, [followingIds, blockedAccountIds, blockedDomains]);
 
     const exploreProfilesQuery = useInfiniteQuery({
         queryKey,
         queryFn: () => fetchExploreProfilesFromJSON(),
         getNextPageParam: () => undefined,
         staleTime: 60 * 60 * 1000,
-        enabled: !isLoadingFollowing
+        enabled: !isLoadingFollowing && !isLoadingBlockedAccounts && !isLoadingBlockedDomains
     });
 
     const updateExploreProfile = (id: string, updated: Partial<Account>) => {
@@ -2172,13 +2232,26 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     const queryKey = QUERY_KEYS.suggestedProfiles(handle, limit);
 
     const {data: followingData, hasNextPage, fetchNextPage, isLoading: isLoadingFollowing} = useAccountFollowsForUser('me', 'following');
+    const {data: blockedAccountsData, hasNextPage: hasNextBlockedAccounts, fetchNextPage: fetchNextBlockedAccounts, isLoading: isLoadingBlockedAccounts} = useBlockedAccountsForUser('me');
+    const {data: blockedDomainsData, hasNextPage: hasNextBlockedDomains, fetchNextPage: fetchNextBlockedDomains, isLoading: isLoadingBlockedDomains} = useBlockedDomainsForUser('me');
 
-    // Fetch all pages of following data
     useEffect(() => {
         if (hasNextPage && !isLoadingFollowing) {
             fetchNextPage();
         }
     }, [hasNextPage, fetchNextPage, isLoadingFollowing]);
+
+    useEffect(() => {
+        if (hasNextBlockedAccounts && !isLoadingBlockedAccounts) {
+            fetchNextBlockedAccounts();
+        }
+    }, [hasNextBlockedAccounts, fetchNextBlockedAccounts, isLoadingBlockedAccounts]);
+
+    useEffect(() => {
+        if (hasNextBlockedDomains && !isLoadingBlockedDomains) {
+            fetchNextBlockedDomains();
+        }
+    }, [hasNextBlockedDomains, fetchNextBlockedDomains, isLoadingBlockedDomains]);
 
     const followingIds = useMemo(() => {
         const ids = new Set<string>();
@@ -2192,6 +2265,39 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
         return ids;
     }, [followingData]);
 
+    const blockedAccountIds = useMemo(() => {
+        const ids = new Set<string>();
+        if (blockedAccountsData?.pages) {
+            blockedAccountsData.pages.forEach((page) => {
+                page.accounts?.forEach((account: Account) => {
+                    ids.add(account.id);
+                });
+            });
+        }
+        return ids;
+    }, [blockedAccountsData]);
+
+    const blockedDomains = useMemo(() => {
+        const domains = new Set<string>();
+        if (blockedDomainsData?.pages) {
+            blockedDomainsData.pages.forEach((page) => {
+                page.domains?.forEach((domain: Account | string) => {
+                    if (typeof domain === 'string') {
+                        domains.add(domain);
+                    } else if (domain.url) {
+                        try {
+                            const url = new URL(domain.url);
+                            domains.add(url.hostname);
+                        } catch {
+                            // Ignore invalid URLs
+                        }
+                    }
+                });
+            });
+        }
+        return domains;
+    }, [blockedDomainsData]);
+
     const suggestedProfilesQuery = useQuery({
         queryKey,
         async queryFn() {
@@ -2204,7 +2310,21 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
                 const data = await response.json();
                 const accounts = data.accounts as Account[];
 
-                const randomAccounts = accounts
+                const filteredAccounts = accounts.filter((account) => {
+                    if (blockedAccountIds.has(account.id)) {
+                        return false;
+                    }
+
+                    const parts = account.handle.split('@').filter(part => part.length > 0);
+                    const accountDomain = parts.length > 1 ? parts[parts.length - 1] : null;
+                    if (accountDomain && blockedDomains.has(accountDomain)) {
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                const randomAccounts = filteredAccounts
                     .sort(() => Math.random() - 0.5)
                     .slice(0, limit);
 
@@ -2221,7 +2341,8 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
             }
         },
         retry: false,
-        staleTime: 60 * 60 * 1000
+        staleTime: 60 * 60 * 1000,
+        enabled: !isLoadingFollowing && !isLoadingBlockedAccounts && !isLoadingBlockedDomains
     });
 
     const updateSuggestedProfile = (id: string, updated: Partial<Account>) => {
