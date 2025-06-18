@@ -13,7 +13,7 @@ interface SourcesTableProps {
     dataTableHeader: boolean;
 }
 
-const SourcesTable: React.FC<SourcesTableProps> = ({dataTableHeader, data, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL}) => {
+export const SourcesTable: React.FC<SourcesTableProps> = ({dataTableHeader, data, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL}) => {
     return (
         <DataList>
             {dataTableHeader &&
@@ -78,6 +78,7 @@ interface SourcesCardProps {
     siteIcon?: string;
     defaultSourceIconUrl?: string;
     getPeriodText?: (range: number) => string;
+    tableOnly?: boolean;
 }
 
 export const Sources: React.FC<SourcesCardProps> = ({
@@ -86,7 +87,8 @@ export const Sources: React.FC<SourcesCardProps> = ({
     totalVisitors = 0,
     siteUrl,
     siteIcon,
-    defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL
+    defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL,
+    tableOnly = false
 }) => {
     // Process and group sources data with pre-computed icons and display values
     const processedData = React.useMemo(() => {
@@ -112,6 +114,17 @@ export const Sources: React.FC<SourcesCardProps> = ({
 
     // Generate description based on mode and range
     const cardDescription = `How readers found your ${range ? 'site' : 'post'}${range && ` ${getPeriodText(range)}`}`;
+
+    if (tableOnly) {
+        return (
+            <SourcesTable
+                data={extendedData}
+                dataTableHeader={true}
+                defaultSourceIconUrl={defaultSourceIconUrl}
+                range={range}
+            />
+        );
+    }
 
     return (
         <Card className='group/datalist'>

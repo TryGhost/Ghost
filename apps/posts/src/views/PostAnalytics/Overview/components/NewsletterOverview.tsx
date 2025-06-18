@@ -109,7 +109,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                     <Separator />
                     <div className='mx-auto my-6 h-[240px]'>
                         <NewsletterRadialChart
-                            className='pointer-events-none h-[240px]'
+                            className='pointer-events-none aspect-square h-[240px]'
                             config={commonChartConfig}
                             data={commonChartData}
                             tooltip={false}
@@ -118,7 +118,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                     <Separator />
                     <div className='pt-3'>
                         <div className='flex items-center justify-between gap-3 py-3'>
-                            <span className='font-medium'>Top clicked links in this email</span>
+                            <span className='font-semibold'>Top clicked links in this email</span>
                             <HTable>Members</HTable>
                         </div>
                         <Table>

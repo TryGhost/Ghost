@@ -3,7 +3,7 @@ import NewsletterOverview from './components/NewsletterOverview';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import WebOverview from './components/WebOverview';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Skeleton, formatNumber, formatQueryDate, getRangeDates, getRangeForStartDate, sanitizeChartData} from '@tryghost/shade';
+import {Button, Card, CardContent, CardHeader, CardTitle, LucideIcon, Skeleton, formatNumber, formatQueryDate, getRangeDates, getRangeForStartDate, sanitizeChartData} from '@tryghost/shade';
 import {KPI_METRICS} from '../Web/components/Kpis';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
@@ -126,28 +126,12 @@ const Overview: React.FC = () => {
             </PostAnalyticsHeader>
             <PostAnalyticsContent>
                 <div className='grid grid-cols-2 gap-8'>
-                    <Card className='group/card'>
-                        <div className='flex items-center justify-between gap-6'>
-                            <CardHeader>
-                                <CardTitle>Web performance</CardTitle>
-                                <CardDescription>Unique visitors since you published this post</CardDescription>
-                            </CardHeader>
-                            <Button className='mr-6 opacity-0 transition-all group-hover/card:opacity-100' variant='outline' onClick={() => {
-                                navigate(`/analytics/beta/${postId}/web`);
-                            }}>
-                                View more
-                                <LucideIcon.ArrowRight />
-                            </Button>
-                        </div>
-                        <CardContent>
-                            <Separator />
-                            <WebOverview
-                                chartData={processedChartData}
-                                isLoading={chartIsLoading}
-                                range={chartRange}
-                            />
-                        </CardContent>
-                    </Card>
+                    <WebOverview
+                        chartData={processedChartData}
+                        isLoading={chartIsLoading || kpiIsLoading}
+                        range={chartRange}
+                        visitors={kpiValues.visits}
+                    />
                     {showNewsletterSection && (
                         <NewsletterOverview isNewsletterStatsLoading={isPostLoading} post={typedPost} />
                     )}
@@ -156,7 +140,7 @@ const Overview: React.FC = () => {
                     <CardHeader className='hidden'>
                         <CardTitle>Post performance</CardTitle>
                     </CardHeader>
-                    <CardContent className='grid grid-cols-4 items-stretch p-0'>
+                    <CardContent className='grid grid-cols-2 items-stretch p-0'>
                         {kpiIsLoading ?
                             Array.from({length: 4}, (_, i) => (
                                 <div key={i} className='h-[98px] gap-1 border-r px-6 py-5 last:border-r-0'>
@@ -166,28 +150,6 @@ const Overview: React.FC = () => {
                             ))
                             :
                             <>
-                                <KpiCard className='grow' onClick={() => {
-                                    navigate(`/analytics/beta/${postId}/web`);
-                                }}>
-                                    <KpiCardLabel>
-                                        <LucideIcon.MousePointer size={16} strokeWidth={1.5} />
-                                    Unique visitors
-                                    </KpiCardLabel>
-                                    <KpiCardContent>
-                                        <KpiCardValue>{kpiValues.visits}</KpiCardValue>
-                                    </KpiCardContent>
-                                </KpiCard>
-                                <KpiCard className='grow' onClick={() => {
-                                    navigate(`/analytics/beta/${postId}/web/?tab=views`);
-                                }}>
-                                    <KpiCardLabel>
-                                        <LucideIcon.Eye size={16} strokeWidth={1.5} />
-                                    Pageviews
-                                    </KpiCardLabel>
-                                    <KpiCardContent>
-                                        <KpiCardValue>{kpiValues.views}</KpiCardValue>
-                                    </KpiCardContent>
-                                </KpiCard>
                                 <KpiCard className='grow' onClick={() => {
                                     navigate(`/analytics/beta/${postId}/growth`);
                                 }}>
