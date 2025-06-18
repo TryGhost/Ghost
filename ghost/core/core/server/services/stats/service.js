@@ -12,10 +12,12 @@ class StatsServiceWrapper {
 
         const StatsService = require('./StatsService');
         const db = require('../../data/db');
+        const models = require('../../models');
         const urlService = require('../url');
 
         this.api = StatsService.create({
             knex: db.knex,
+            models,
             urlService
         });
 

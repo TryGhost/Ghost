@@ -165,11 +165,12 @@ class StatsService {
     }
 
     /**
-     * Get stats for the latest published post
+     * Get stats for a specific post by ID
+     * @param {string} postId - The post ID to get stats for
      * @returns {Promise<{data: Object}>}
      */
-    async getLatestPostStats() {
-        return await this.posts.getLatestPostStats();
+    async getPostStats(postId) {
+        return await this.posts.getPostStats(postId);
     }
 
     /**

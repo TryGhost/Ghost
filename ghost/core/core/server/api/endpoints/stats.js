@@ -426,22 +426,36 @@ const controller = {
             return await statsService.api.getGrowthStatsForPost(frame.data.id);
         }
     },
-    latestPost: {
+    postStats: {
         headers: {
             cacheInvalidate: false
+        },
+        data: [
+            'id'
+        ],
+        validation: {
+            data: {
+                id: {
+                    type: 'string',
+                    required: true
+                }
+            }
         },
         permissions: {
             docName: 'posts',
             method: 'browse'
         },
         cache: statsService.cache,
-        generateCacheKeyData() {
+        generateCacheKeyData(frame) {
             return {
-                method: 'getLatestPostStats'
+                method: 'getPostStats',
+                data: {
+                    id: frame.data.id
+                }
             };
         },
-        async query() {
-            return await statsService.api.getLatestPostStats();
+        async query(frame) {
+            return await statsService.api.getPostStats(frame.data.id);
         }
     }
 };

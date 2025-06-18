@@ -88,6 +88,7 @@ export const defaultMockData = {
         isLoading: false,
         settings: [],
         data: undefined,
+        site: undefined,
         statsConfig: undefined,
         range: 30,
         audience: 7,
