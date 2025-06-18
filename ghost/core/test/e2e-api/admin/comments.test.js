@@ -943,5 +943,134 @@ describe(`Admin Comments API`, function () {
             const comment = response.body.comments[0];
             comment.should.have.property('created_at', validDate.toISOString());
         });
+
+        it('Can set in_reply_to_id when creating a reply to a specific reply', async function () {
+            // Create a parent comment first
+            const parentComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>This is the parent comment</p>'
+            });
+
+            // Create a first reply to the parent
+            const firstReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 1).id,
+                parent_id: parentComment.id,
+                html: '<p><strong>This is the first reply</strong> to the parent</p>'
+            });
+
+            // Now create a reply to the first reply using the Admin API
+            const memberId = fixtureManager.get('members', 2).id;
+            const replyData = {
+                parent_id: parentComment.id,
+                in_reply_to_id: firstReply.id,
+                member_id: memberId,
+                html: '<p>This is a reply to the first reply via Admin API</p>'
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [replyData]})
+                .expectStatus(201);
+
+            // Validate response structure
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const reply = response.body.comments[0];
+            reply.should.have.property('id').which.is.a.String();
+            reply.should.have.property('html', '<p>This is a reply to the first reply via Admin API</p>');
+            reply.should.have.property('status', 'published');
+            reply.should.have.property('in_reply_to_id', firstReply.id);
+            reply.should.have.property('in_reply_to_snippet', 'This is the first reply to the parent');
+            reply.should.have.property('member');
+            reply.member.should.have.property('id', memberId);
+        });
+
+        it('Ignores in_reply_to_id when no parent_id is specified', async function () {
+            // Create a comment to reference
+            const existingComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>This is an existing comment</p>'
+            });
+
+            const targetPostId = postId;
+            const memberId = fixtureManager.get('members', 1).id;
+
+            // Try to create a top-level comment with in_reply_to_id (should be ignored)
+            const commentData = {
+                post_id: targetPostId,
+                in_reply_to_id: existingComment.id, // This should be ignored since no parent_id
+                member_id: memberId,
+                html: '<p>This is a top-level comment that incorrectly references another comment</p>'
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [commentData]})
+                .expectStatus(201);
+
+            // Validate response structure
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const comment = response.body.comments[0];
+            comment.should.have.property('id').which.is.a.String();
+            comment.should.have.property('html', '<p>This is a top-level comment that incorrectly references another comment</p>');
+            comment.should.have.property('status', 'published');
+            // For top-level comments, in_reply_to_id should be null
+            comment.should.have.property('in_reply_to_id', null);
+            comment.should.have.property('in_reply_to_snippet', null);
+            comment.should.have.property('member');
+            comment.member.should.have.property('id', memberId);
+        });
+
+        it('Ignores in_reply_to_id when referenced comment has different parent', async function () {
+            // Create two separate parent comments
+            const parentComment1 = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>This is parent comment 1</p>'
+            });
+
+            const parentComment2 = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 1).id,
+                html: '<p>This is parent comment 2</p>'
+            });
+
+            // Create a reply under parent comment 1
+            const replyToParent1 = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 2).id,
+                parent_id: parentComment1.id,
+                html: '<p>This is a reply to parent 1</p>'
+            });
+
+            const memberId = fixtureManager.get('members', 3).id;
+
+            // Try to create a reply under parent comment 2 but reference a reply from parent comment 1
+            const replyData = {
+                parent_id: parentComment2.id,
+                in_reply_to_id: replyToParent1.id, // This should be ignored - different parent
+                member_id: memberId,
+                html: '<p>This reply has mismatched parent and in_reply_to</p>'
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [replyData]})
+                .expectStatus(201);
+
+            // Validate response structure
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const reply = response.body.comments[0];
+            reply.should.have.property('id').which.is.a.String();
+            reply.should.have.property('html', '<p>This reply has mismatched parent and in_reply_to</p>');
+            reply.should.have.property('status', 'published');
+            // in_reply_to should be ignored due to parent mismatch  
+            reply.should.have.property('in_reply_to_id', null);
+            reply.should.have.property('in_reply_to_snippet', null);
+            reply.should.have.property('member');
+            reply.member.should.have.property('id', memberId);
+        });
     });
 });
