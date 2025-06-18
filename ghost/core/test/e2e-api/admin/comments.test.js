@@ -677,6 +677,13 @@ describe(`Admin Comments API`, function () {
     });
 
     describe('Add comments via Admin API', function () {
+        let emailMockReceiver;
+
+        beforeEach(async function () {
+            // Set up email mocking to test notifications
+            emailMockReceiver = mockManager.mockMail();
+        });
+
         it('Can add a comment as a member via Admin API', async function () {
             // Use existing fixture data
             const targetPostId = postId;
@@ -1071,6 +1078,71 @@ describe(`Admin Comments API`, function () {
             reply.should.have.property('in_reply_to_snippet', null);
             reply.should.have.property('member');
             reply.member.should.have.property('id', memberId);
+        });
+
+        it('Does not send notifications when adding comments via Admin API', async function () {
+            // Create a comment that would normally trigger notifications
+            const targetPostId = postId;
+            const memberId = fixtureManager.get('members', 1).id;
+
+            const commentData = {
+                post_id: targetPostId,
+                member_id: memberId,
+                html: '<p>This comment should not trigger notifications</p>'
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [commentData]})
+                .expectStatus(201);
+
+            // Validate the comment was created successfully
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const comment = response.body.comments[0];
+            comment.should.have.property('id').which.is.a.String();
+            comment.should.have.property('html', '<p>This comment should not trigger notifications</p>');
+            comment.should.have.property('status', 'published');
+
+            // Verify NO emails were sent (internal context should prevent notifications)
+            emailMockReceiver.assertSentEmailCount(0);
+        });
+
+        it('Does not send notifications when adding replies via Admin API', async function () {
+            // Create a parent comment first
+            const parentComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>This is the parent comment</p>'
+            });
+
+            // Clear any emails from the parent comment creation
+            emailMockReceiver = mockManager.mockMail();
+
+            // Create a reply that would normally trigger notifications
+            const memberId = fixtureManager.get('members', 1).id;
+            const replyData = {
+                parent_id: parentComment.id,
+                member_id: memberId,
+                html: '<p>This reply should not trigger notifications</p>'
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [replyData]})
+                .expectStatus(201);
+
+            // Validate the reply was created successfully
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const reply = response.body.comments[0];
+            reply.should.have.property('id').which.is.a.String();
+            reply.should.have.property('html', '<p>This reply should not trigger notifications</p>');
+            reply.should.have.property('status', 'published');
+
+            // Verify NO emails were sent (internal context should prevent notifications)
+            emailMockReceiver.assertSentEmailCount(0);
         });
     });
 });
