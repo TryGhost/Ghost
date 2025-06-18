@@ -187,16 +187,14 @@ const Overview: React.FC = () => {
                     visitorsChartData={visitorsChartData}
                     visitorsYRange={visitorsYRange}
                 />
-                <div className='grid grid-cols-3 gap-8'>
-                    <LatestPost
-                        isLoading={isLatestPostLoading}
-                        latestPostStats={latestPostStats}
-                    />
-                    <TopPosts
-                        isLoading={isTopPostsLoading}
-                        topPostsData={topPostsData}
-                    />
-                </div>
+                <LatestPost
+                    isLoading={isLatestPostLoading}
+                    latestPostStats={latestPostStats}
+                />
+                <TopPosts
+                    isLoading={isTopPostsLoading}
+                    topPostsData={topPostsData}
+                />
                 {/* <div className='grid grid-cols-1 gap-8 lg:grid-cols-2'>
                     <H3 className='-mb-4 mt-4 lg:col-span-2'>Grow your audience</H3>
                     <HelpCard
