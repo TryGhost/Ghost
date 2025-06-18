@@ -37,3 +37,13 @@ runs:
       run: |
         echo "::warning::Dependency cache could not be restored after retry - installing dependencies from scratch"
         yarn install --prefer-offline --frozen-lockfile
+
+    - name: Set cache miss output
+      id: check-cache
+      shell: bash
+      run: |
+        if [ "${{ steps.dep-cache.outputs.cache-hit }}" = "true" ] || [ "${{ steps.dep-cache-retry-attempt.outputs.cache-hit }}" = "true" ]; then
+          echo "cache-miss=false" >> $GITHUB_OUTPUT
+        else
+          echo "cache-miss=true" >> $GITHUB_OUTPUT
+        fi
