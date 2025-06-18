@@ -12,7 +12,6 @@ const {cardAssets} = require('../services/assets-minification');
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('ghost_head');
-const crypto = require('crypto');
 const templateStyles = require('./tpl/styles');
 const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-apps');
 
@@ -167,15 +166,12 @@ function getTinybirdTrackerScript(dataRoot) {
     const token = localEnabled ? localConfig.token : statsConfig.token;
     const datasource = localEnabled ? localConfig.datasource : statsConfig.datasource;
 
-    const isTrackingOnly = labs.isSet('trafficAnalyticsTracking') && !labs.isSet('trafficAnalytics');
-    const siteUuid = isTrackingOnly ? 'anon_' + crypto.createHash('sha256').update(settingsCache.get('site_uuid')).digest('hex').substring(0, 16) : settingsCache.get('site_uuid');
-    
     const tbParams = _.map({
-        site_uuid: siteUuid,
-        post_uuid: isTrackingOnly ? undefined : dataRoot.post?.uuid,
+        site_uuid: settingsCache.get('site_uuid'),
+        post_uuid: dataRoot.post?.uuid,
         post_type: dataRoot.context.includes('post') ? 'post' : dataRoot.context.includes('page') ? 'page' : null,
-        member_uuid: isTrackingOnly ? undefined : dataRoot.member?.uuid,
-        member_status: isTrackingOnly ? undefined : dataRoot.member?.status
+        member_uuid: dataRoot.member?.uuid,
+        member_status: dataRoot.member?.status
     }, (value, key) => `tb_${key}="${value}"`).join(' ');
 
     return `<script defer src="${src}" data-stringify-payload="false" ${datasource ? `data-datasource="${datasource}"` : ''} data-storage="localStorage" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;

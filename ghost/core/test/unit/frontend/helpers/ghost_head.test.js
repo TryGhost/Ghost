@@ -1578,69 +1578,6 @@ describe('{{ghost_head}} helper', function () {
             }));
         });
 
-        it('anonymizes site_uuid when trafficAnalyticsTracking is enabled but trafficAnalytics is not', async function () {
-            setAnalyticsFlags({analytics: false, tracking: true});
-
-            const rendered = await testGhostHead(testUtils.createHbsResponse({
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '4.3'
-                }
-            }));
-
-            rendered.should.match(/tb_site_uuid="anon_[a-f0-9]{16}"/);
-            rendered.should.not.match(/tb_site_uuid="site_uuid"/);
-        });
-
-        it('omits member and post data when trafficAnalyticsTracking is enabled but trafficAnalytics is not', async function () {
-            setAnalyticsFlags({analytics: false, tracking: true});
-
-            const renderObject = {
-                member: {
-                    uuid: 'member_uuid',
-                    status: 'paid'
-                },
-                post: posts[10]
-            };
-
-            const rendered = await testGhostHead(testUtils.createHbsResponse({
-                renderObject: renderObject,
-                locals: {
-                    relativeUrl: '/post/',
-                    context: ['post'],
-                    safeVersion: '4.3'
-                }
-            }));
-
-            rendered.should.match(/tb_member_uuid="undefined"/);
-            rendered.should.match(/tb_member_status="undefined"/);
-            rendered.should.match(/tb_post_uuid="undefined"/);
-        });
-
-        it('includes member data when both trafficAnalytics and trafficAnalyticsTracking are enabled', async function () {
-            setAnalyticsFlags({analytics: true, tracking: true});
-
-            const renderObject = {
-                member: {
-                    uuid: 'member_uuid',
-                    status: 'paid'
-                }
-            };
-
-            const rendered = await testGhostHead(testUtils.createHbsResponse({
-                renderObject: renderObject,
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '4.3'
-                }
-            }));
-
-            rendered.should.match(/tb_member_uuid="member_uuid"/);
-            rendered.should.match(/tb_member_status="paid"/);
-        });
-
         it('includes datasource when set', async function () {
             const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
