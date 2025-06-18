@@ -14,13 +14,9 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const navigate = useNavigate();
 
-    const {searchQuery: threadsSearchQuery} = useSearchForUser('index', '@ghost@threads.net');
-    const {data: threadsData, isFetching: threadsIsFetching} = threadsSearchQuery;
-
     const {searchQuery: blueskySearchQuery} = useSearchForUser('index', '@bsky.brid.gy@bsky.brid.gy');
     const {data: blueskyData, isFetching: blueskyIsFetching} = blueskySearchQuery;
 
-    const threadsEnabled = threadsData?.accounts[0]?.followedByMe;
     const blueskyEnabled = blueskyData?.accounts[0]?.followedByMe;
 
     return (
@@ -51,16 +47,6 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                     <SettingDescription>Manage blocked users and domains</SettingDescription>
                 </SettingHeader>
                 <SettingAction className='flex items-center gap-2'>
-                    <LucideIcon.ChevronRight size={20} />
-                </SettingAction>
-            </SettingItem>
-            <SettingItem withHover onClick={() => !threadsIsFetching && navigate('/preferences/threads-sharing', {state: {account, threadsAccount: threadsData?.accounts[0], isEnabled: threadsEnabled}})}>
-                <SettingHeader>
-                    <SettingTitle>Threads sharing</SettingTitle>
-                    <SettingDescription>Share content directly on Threads</SettingDescription>
-                </SettingHeader>
-                <SettingAction className='flex items-center gap-2'>
-                    {threadsIsFetching ? <LoadingIndicator size='sm' /> : threadsEnabled ? <span className='font-medium text-black'>On</span> : <span>Off</span>}
                     <LucideIcon.ChevronRight size={20} />
                 </SettingAction>
             </SettingItem>
