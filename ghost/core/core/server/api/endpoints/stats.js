@@ -454,6 +454,7 @@ const controller = {
         validation: {
             data: {
                 postUuids: {
+                    type: 'array',
                     required: true
                 }
             }
@@ -490,6 +491,7 @@ const controller = {
         validation: {
             data: {
                 postIds: {
+                    type: 'array',
                     required: true
                 }
             }

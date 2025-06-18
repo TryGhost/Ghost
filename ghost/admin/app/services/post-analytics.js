@@ -12,13 +12,13 @@ export default class PostAnalyticsService extends Service {
      * @type {?Object} Post visitor counts by UUID
      */
     @tracked
-        visitorCounts = null;
+        visitorCounts = {};
 
     /**
      * @type {?Object} Post member conversion counts by UUID
      */
     @tracked
-        memberCounts = null;
+        memberCounts = {};
 
     /**
      * @type {Set} UUIDs of posts we've already fetched analytics for
@@ -132,8 +132,10 @@ export default class PostAnalyticsService extends Service {
                 ...statsData
             };
         } catch (error) {
+            // Rollback: remove failed UUIDs from fetched set to allow retry
+            postUuids.forEach(uuid => this._fetchedUuids.delete(uuid));
             // Silent failure - visitor counts are not critical
-            this.visitorCounts = {};
+            this.visitorCounts = this.visitorCounts || {};
         }
     }
 
@@ -169,8 +171,10 @@ export default class PostAnalyticsService extends Service {
                 ...memberCountsByUuid
             };
         } catch (error) {
+            // Rollback: remove failed post IDs from fetched set to allow retry
+            posts.forEach(post => this._fetchedMemberIds.delete(post.id));
             // Silent failure - member counts are not critical
-            this.memberCounts = {};
+            this.memberCounts = this.memberCounts || {};
         }
     }
 } 

@@ -5,7 +5,7 @@
   expected_result: |
     {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","visits":8}
 
-- name: null
+- name: post_visitor_counts_multiple_posts
   description: Test visitor counts for multiple post UUIDs
   parameters: site_uuid=mock_site_uuid&post_uuids=06b1b0c9-fb53-4a15-a060-3db3fde7b1fc,6b8635fb-292f-4422-9fe4-d76cfab2ba31,06b1b0c9-fb53-4a15-a060-3db3fde7b1dd
   expected_result: |
@@ -13,7 +13,7 @@
     {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","visits":8}
     {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","visits":1}
 
-- name: null
+- name: post_visitor_counts_no_data
   description: Test visitor counts for a single post with no data
   parameters: site_uuid=mock_site_uuid&post_uuids=abcd-efgh-ijkl-mnop
   expected_result: ''

@@ -10,9 +10,14 @@ import {inject as service} from '@ember/service';
 @classic
 class PostsWithAnalytics extends InfinityModel {
     @service postAnalytics;
+    @service feature;
 
     async afterInfinityModel(posts) {
-        // Only fetch analytics for published/sent posts
+        // Only fetch analytics for published/sent posts when feature is enabled
+        if (!this.feature.trafficAnalyticsAlpha) {
+            return posts;
+        }
+        
         const publishedPosts = posts.filter(post => ['published', 'sent'].includes(post.status));
         if (publishedPosts.length > 0) {
             const postUuids = publishedPosts.map(post => post.uuid);
@@ -62,7 +67,9 @@ export default class PostsRoute extends AdminRoute {
 
     model(params) {
         // Reset analytics cache when model changes (filters change)
-        this.postAnalytics.reset();
+        if (this.feature.trafficAnalyticsAlpha) {
+            this.postAnalytics.reset();
+        }
         
         const user = this.session.user;
         let filterParams = {tag: params.tag, visibility: params.visibility};
@@ -148,6 +155,11 @@ export default class PostsRoute extends AdminRoute {
      * @param {Object} model - The posts model containing infinity models
      */
     async _fetchAnalyticsForPosts(model) {
+        // Only fetch analytics when feature is enabled
+        if (!this.feature.trafficAnalyticsAlpha) {
+            return;
+        }
+        
         const posts = [];
         if (model.publishedAndSentInfinityModel?.content) {
             posts.push(...model.publishedAndSentInfinityModel.content);
