@@ -61,8 +61,13 @@ const create = ({config, request, settingsCache}) => {
         }
         // Add any other options that might be needed
         Object.entries(options).forEach(([key, value]) => {
-            if (!['dateFrom', 'dateTo', 'timezone', 'memberStatus'].includes(key)) {
-                searchParams[key] = value;
+            if (!['dateFrom', 'dateTo', 'timezone', 'memberStatus', 'postType', 'tbVersion'].includes(key)) {
+                // Handle arrays by converting them to comma-separated strings for Tinybird
+                if (Array.isArray(value)) {
+                    searchParams[key] = value.join(',');
+                } else {
+                    searchParams[key] = value;
+                }
             }
         });
         

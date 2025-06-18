@@ -1,14 +1,40 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import InfinityModel from 'ember-infinity/lib/infinity-model';
 import RSVP from 'rsvp';
+import classic from 'ember-classic-decorator';
 import {action} from '@ember/object';
 import {assign} from '@ember/polyfills';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 
+@classic
+class PostsWithAnalytics extends InfinityModel {
+    @service postAnalytics;
+    @service feature;
+
+    async afterInfinityModel(posts) {
+        // Only fetch analytics for published/sent posts when feature is enabled
+        if (!this.feature.trafficAnalyticsAlpha) {
+            return posts;
+        }
+        
+        const publishedPosts = posts.filter(post => ['published', 'sent'].includes(post.status));
+        if (publishedPosts.length > 0) {
+            const postUuids = publishedPosts.map(post => post.uuid);
+            await Promise.all([
+                this.postAnalytics.loadVisitorCounts(postUuids),
+                this.postAnalytics.loadMemberCounts(publishedPosts)
+            ]);
+        }
+        return posts;
+    }
+}
+
 export default class PostsRoute extends AuthenticatedRoute {
     @service infinity;
     @service router;
     @service feature;
+    @service postAnalytics;
 
     queryParams = {
         type: {refreshModel: true},
@@ -39,6 +65,11 @@ export default class PostsRoute extends AuthenticatedRoute {
     }
 
     model(params) {
+        // Reset analytics cache when model changes (filters change)
+        if (this.feature.trafficAnalyticsAlpha) {
+            this.postAnalytics.reset();
+        }
+        
         const user = this.session.user;
         let filterParams = {tag: params.tag, visibility: params.visibility};
         let paginationParams = {
@@ -84,7 +115,7 @@ export default class PostsRoute extends AuthenticatedRoute {
             } else {
                 publishedAndSentInfinityModelParams = {...queryParams, order: params.order || 'published_at desc', filter: this._filterString({...filterParams, status: filterStatuses.includes('published') ? 'published' : 'sent'})};
             }
-            models.publishedAndSentInfinityModel = this.infinity.model(this.modelName, assign({perPage, startingPage: 1}, paginationParams, publishedAndSentInfinityModelParams));
+            models.publishedAndSentInfinityModel = this.infinity.model(this.modelName, assign({perPage, startingPage: 1}, paginationParams, publishedAndSentInfinityModelParams), PostsWithAnalytics);
         }
 
         return RSVP.hash(models);
@@ -112,6 +143,32 @@ export default class PostsRoute extends AuthenticatedRoute {
             }
             controller.selectionList.infinityModel = model;
             controller.selectionList.clearSelection();
+        }
+
+        // Fetch analytics data for visible posts
+        this._fetchAnalyticsForPosts(model);
+    }
+
+    /**
+     * Fetch analytics data for all visible posts
+     * @param {Object} model - The posts model containing infinity models
+     */
+    async _fetchAnalyticsForPosts(model) {
+        // Only fetch analytics when feature is enabled
+        if (!this.feature.trafficAnalyticsAlpha) {
+            return;
+        }
+        
+        const posts = [];
+        if (model.publishedAndSentInfinityModel?.content) {
+            posts.push(...model.publishedAndSentInfinityModel.content);
+        }
+        if (posts.length > 0) {
+            const postUuids = posts.map(post => post.uuid);
+            await Promise.all([
+                this.postAnalytics.loadVisitorCounts(postUuids),
+                this.postAnalytics.loadMemberCounts(posts)
+            ]);
         }
     }
 
