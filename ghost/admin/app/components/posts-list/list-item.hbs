@@ -162,9 +162,9 @@
                 </span>
             </LinkTo>
         {{else}}
-            <LinkTo @route={{this.editorRoute}} @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data">
-                {{!-- Empty on purpose --}}
-            </LinkTo>
+            <div class="permalink gh-list-data gh-post-list-metrics">
+                {{!-- Empty column to maintain spacing --}}
+            </div>
         {{/if}}
 
         {{!-- Clicked / Conversions column --}}
@@ -196,9 +196,9 @@
                     </span>
                 </LinkTo>
             {{else}}
-                <LinkTo @route={{this.editorRoute}} @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data">
-                    {{!-- Empty on purpose --}}
-                </LinkTo>
+                <div class="permalink gh-list-data gh-post-list-metrics">
+                    {{!-- Empty column to maintain spacing --}}
+                </div>
             {{/if}}
         {{/if}}
 
