@@ -1,4 +1,4 @@
-import AdminRoute from 'ghost-admin/routes/admin';
+import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import InfinityModel from 'ember-infinity/lib/infinity-model';
 import RSVP from 'rsvp';
 import classic from 'ember-classic-decorator';
@@ -30,10 +30,9 @@ class PostsWithAnalytics extends InfinityModel {
     }
 }
 
-export default class PostsRoute extends AdminRoute {
+export default class PostsRoute extends AuthenticatedRoute {
     @service infinity;
     @service router;
-    @service session;
     @service feature;
     @service postAnalytics;
 
