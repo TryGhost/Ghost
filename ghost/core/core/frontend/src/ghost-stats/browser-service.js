@@ -3,6 +3,7 @@
  * @property {any} [__nightmare]
  * @property {any} [Cypress]
  * @property {any} [Tinybird]
+ * @property {boolean} [__GHOST_SYNTHETIC_MONITORING__]
  */
 
 /**
@@ -82,6 +83,11 @@ export class BrowserService {
     }
 
     isTestEnvironment() {
+        // Allow synthetic monitoring to bypass test environment detection
+        if (this.window?.__GHOST_SYNTHETIC_MONITORING__ === true) {
+            return false;
+        }
+        
         return !!(
             this.window && (
                 this.window.__nightmare ||
