@@ -52,7 +52,7 @@
     "@codemirror/lang-javascript": "6.2.4",
     "@emoji-mart/data": "^1.1.2",
     "@emoji-mart/react": "^1.1.1",
-    "@etchteam/storybook-addon-status": "^5.0.0",
+    "@etchteam/storybook-addon-status": "^6.0.0",
     "@lexical/clipboard": "0.13.1",
     "@lexical/list": "0.13.1",
     "@lexical/react": "0.13.1",
