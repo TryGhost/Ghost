@@ -6,9 +6,7 @@ SQL >
     select
         post_uuid,
         uniqExact(session_id) as visits
-    from _mv_hits h
-    -- inner join filtered_sessions fs
-    --     on fs.session_id = h.session_id
+    from _mv_hits
     where
         site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Site UUID", required=True)}}
         and post_uuid IN {{ Array(post_uuids, description="Array of post UUIDs to get visitor counts for", required=True) }}
