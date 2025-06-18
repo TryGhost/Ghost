@@ -69,10 +69,9 @@ export default class PostAnalyticsService extends Service {
         try {
             const statsUrl = this.ghostPaths.url.api('stats/posts-visitor-counts');
             const result = yield this.ajax.request(statsUrl, {
-                method: 'GET',
-                data: {
-                    postUuids: postUuids.join(',')
-                }
+                method: 'POST',
+                data: JSON.stringify({postUuids}),
+                contentType: 'application/json'
             });
             // Parse the nested response structure
             const statsData = result.stats?.[0]?.data?.visitor_counts || {};

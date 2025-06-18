@@ -1,11 +1,13 @@
 import AdminRoute from 'ghost-admin/routes/admin';
 import InfinityModel from 'ember-infinity/lib/infinity-model';
 import RSVP from 'rsvp';
+import classic from 'ember-classic-decorator';
 import {action} from '@ember/object';
 import {assign} from '@ember/polyfills';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 
+@classic
 class PostsWithAnalytics extends InfinityModel {
     @service postAnalytics;
 
