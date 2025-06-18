@@ -3,6 +3,7 @@
  * @property {any} [__nightmare]
  * @property {any} [Cypress]
  * @property {any} [Tinybird]
+ * @property {boolean} [__GHOST_SYNTHETIC_MONITORING__]
  */
 
 /**
