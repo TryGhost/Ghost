@@ -1,5 +1,5 @@
 import React, {useMemo} from 'react';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, HTable, LucideIcon, Separator, Table, TableBody, TableCell, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, ChartConfig, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, Table, TableBody, TableCell, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
 import {NewsletterRadialChart, NewsletterRadialChartData} from '../../Newsletter/components/NewsLetterRadialChart';
 import {Post} from '@tryghost/admin-x-framework/api/posts';
 import {cleanTrackedUrl, processAndGroupTopLinks} from '@src/utils/link-helpers';
@@ -60,76 +60,80 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
     } satisfies ChartConfig;
 
     return (
-        <div className='grid grid-cols-1 gap-8 xl:grid-cols-2'>
-            <Card className='group/card hover:cursor-pointer' onClick={() => {
-                navigate(`/analytics/beta/${postId}/newsletter`);
-            }}>
-                <div className='flex items-center justify-between gap-6'>
-                    <CardHeader>
-                        <CardTitle>Newsletter performance</CardTitle>
-                        <CardDescription>How members interacted with this email</CardDescription>
-                    </CardHeader>
-                </div>
-                {isNewsletterStatsLoading ?
-                    <CardContent>
-                        <div className='mx-auto flex min-h-[250px] items-center justify-center xl:size-full'>
-                            <BarChartLoadingIndicator />
-                        </div>
-                    </CardContent>
-                    :
-                    <CardContent>
-                        <Separator />
-                        <div className='mx-auto mt-4 h-[240px]'>
-                            <NewsletterRadialChart
-                                className='pointer-events-none h-[240px]'
-                                config={commonChartConfig}
-                                data={commonChartData}
-                                percentageLabel='Sent'
-                                percentageValue={formatNumber(stats.sent)}
-                                tooltip={false}
-                            />
-                        </div>
-                        <div className='mt-2 flex items-center justify-center gap-8'>
-                            <div className='flex gap-1.5 text-sm text-muted-foreground'>
-                                <div className='flex items-center gap-1.5'>
-                                    <div className='size-2 rounded-full bg-chart-blue/50'></div>
-                                    <span className='font-medium'>Opened</span>
-                                </div>
-                                <span className='text-lg font-semibold tracking-tighter text-foreground'>{formatPercentage(stats.openedRate)}</span>
-                            </div>
-                            <div className='flex gap-1.5 text-sm text-muted-foreground'>
-                                <div className='flex items-center gap-1.5'>
-                                    <div className='size-2 rounded-full bg-chart-teal/50'></div>
-                                    <span className='font-medium'>Clicked</span>
-                                </div>
-                                <span className='text-lg font-semibold tracking-tighter text-foreground'>{formatPercentage(stats.clickedRate)}</span>
-                            </div>
-                        </div>
-                    </CardContent>
-                }
-
-            </Card>
-            <Card className='group/card'>
-                <div className='flex items-center justify-between gap-6 p-6'>
-                    <CardHeader className='p-0'>
-                        <CardTitle>Top links</CardTitle>
-                        <CardDescription>Links in your newsletter people clicked on the most</CardDescription>
-                    </CardHeader>
-                    <HTable className='mr-2 text-right'>No. of members</HTable>
-                </div>
+        <Card className='group/card'>
+            <div className='relative flex items-center justify-between gap-6'>
+                <CardHeader>
+                    <CardTitle className='flex items-center gap-1.5 text-lg'>
+                        <LucideIcon.Mail size={16} strokeWidth={1.5} />
+                        Newsletter performance
+                    </CardTitle>
+                </CardHeader>
+                <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover/card:translate-x-0 group-hover/card:opacity-100' size='sm' variant='outline' onClick={() => {
+                    navigate(`/analytics/beta/${postId}/newsletter`);
+                }}>View more</Button>
+            </div>
+            {isNewsletterStatsLoading ?
                 <CardContent>
+                    <div className='mx-auto flex min-h-[250px] items-center justify-center xl:size-full'>
+                        <BarChartLoadingIndicator />
+                    </div>
+                </CardContent>
+                :
+                <CardContent>
+                    <div className='grid grid-cols-2 gap-6'>
+                        <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0'>
+                            <div className='flex grow flex-col gap-1.5 border-none pb-0'>
+                                <KpiCardHeaderLabel color='hsl(var(--chart-blue))'>
+                                    Open rate
+                                </KpiCardHeaderLabel>
+                                <KpiCardHeaderValue
+                                    // diffDirection={'up'}
+                                    // diffTooltip={'Better than the average'}
+                                    // diffValue={1.45}
+                                    value={formatPercentage(stats.openedRate)}
+                                />
+                            </div>
+                        </KpiCardHeader>
+                        <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0'>
+                            <div className='flex grow flex-col gap-1.5 border-none pb-0'>
+                                <KpiCardHeaderLabel color='hsl(var(--chart-teal))'>
+                                    Click rate
+                                </KpiCardHeaderLabel>
+                                <KpiCardHeaderValue
+                                    // diffDirection={'up'}
+                                    // diffTooltip={'Better than the average'}
+                                    // diffValue={1.45}
+                                    value={formatPercentage(stats.clickedRate)}
+                                />
+                            </div>
+
+                        </KpiCardHeader>
+                    </div>
+                    <Separator />
+                    <div className='mx-auto my-6 h-[240px]'>
+                        <NewsletterRadialChart
+                            className='pointer-events-none aspect-square h-[240px]'
+                            config={commonChartConfig}
+                            data={commonChartData}
+                            tooltip={false}
+                        />
+                    </div>
                     <Separator />
                     <div className='pt-3'>
+                        <div className='flex items-center justify-between gap-3 py-3'>
+                            <span className='font-medium text-muted-foreground'>Top clicked links in this email</span>
+                            <HTable>Members</HTable>
+                        </div>
                         <Table>
                             {topLinks.length > 0
                                 ?
                                 <TableBody>
-                                    {topLinks.slice(0, 5).map((link) => {
+                                    {topLinks.slice(0, 3).map((link) => {
                                         return (
                                             <TableRow key={link.link.link_id} className='border-none'>
-                                                <TableCell className='max-w-0 py-2.5 group-hover:!bg-transparent'>
+                                                <TableCell className='max-w-0 px-0 group-hover:!bg-transparent'>
                                                     <a
-                                                        className='block truncate font-medium hover:underline'
+                                                        className='block truncate hover:underline'
                                                         href={link.link.to}
                                                         rel="noreferrer"
                                                         target='_blank'
@@ -138,7 +142,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                                                         {cleanTrackedUrl(link.link.to, true)}
                                                     </a>
                                                 </TableCell>
-                                                <TableCell className='w-[10%] py-2.5 text-right font-mono text-sm group-hover:!bg-transparent'>{formatNumber(link.count || 0)}</TableCell>
+                                                <TableCell className='w-[10%] pl-3 pr-0 text-right font-mono text-sm group-hover:!bg-transparent'>{formatNumber(link.count || 0)}</TableCell>
                                             </TableRow>
                                         );
                                     })}
@@ -156,19 +160,15 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                             }
                         </Table>
                     </div>
-                </CardContent>
-                {topLinks.length > 0 &&
-                <CardFooter>
-                    <Button variant='outline' onClick={() => {
+                    {/* <Button variant='outline' onClick={() => {
                         navigate(`/analytics/beta/${postId}/newsletter`);
                     }}>
                         View all
                         <LucideIcon.ArrowRight />
-                    </Button>
-                </CardFooter>
-                }
-            </Card>
-        </div>
+                    </Button> */}
+                </CardContent>
+            }
+        </Card>
     );
 };
 

@@ -117,8 +117,8 @@ const LatestPost: React.FC<LatestPostProps> = ({
                             </div>
                         </div>
 
-                        <div className='flex h-full flex-col items-stretch gap-2 pr-6 text-sm'>
-                            <div className='grid h-full grid-cols-2 gap-x-6 border-l pl-6'>
+                        <div className='-ml-4 flex h-full flex-col items-stretch gap-2 pr-6 text-sm'>
+                            <div className='grid h-full grid-cols-2 gap-x-6 border-l pl-10'>
                                 <div className='group mr-2 flex flex-col gap-1.5 hover:cursor-pointer' onClick={() => {
                                     navigate(`/posts/analytics/beta/${latestPostStats.id}/web`, {crossApp: true});
                                 }}>
@@ -126,7 +126,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         <LucideIcon.Eye size={16} strokeWidth={1.25} />
                                         Visitors
                                     </div>
-                                    <span className='text-[2.3rem] font-semibold leading-none tracking-tighter'>
+                                    <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
                                         {formatNumber(latestPostStats.visitors)}
                                     </span>
                                 </div>
@@ -137,7 +137,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         <LucideIcon.UserPlus size={16} strokeWidth={1.25} />
                                         Members
                                     </div>
-                                    <span className='text-[2.3rem] font-semibold leading-none tracking-tighter'>
+                                    <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
                                         {latestPostStats.member_delta ?
                                             <>
                                                 +{formatNumber(latestPostStats.member_delta)}
@@ -155,7 +155,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                                 <LucideIcon.MailOpen size={16} strokeWidth={1.25} />
                                                 Open rate
                                             </div>
-                                            <span className='text-[2.3rem] font-semibold leading-none tracking-tighter'>
+                                            <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
                                                 {formatPercentage(latestPostStats.open_rate / 100)}
                                             </span>
                                         </div>
@@ -166,7 +166,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                                 <LucideIcon.MousePointerClick size={16} strokeWidth={1.25} />
                                                 Click rate
                                             </div>
-                                            <span className='text-[2.3rem] font-semibold leading-none tracking-tighter'>
+                                            <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
                                                 {formatPercentage((latestPostStats.click_rate || 0) / 100)}
                                             </span>
                                         </div>

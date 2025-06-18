@@ -51,10 +51,18 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
             .replace(/^\(|\)$/g, ''); // Remove parentheses for "(all time)"
 
         if (diffDirection === 'same') {
-            return `You're trending at the same level as ${formattedValue} compared to the ${timeRangeText}`;
+            return (
+                <span>
+                    You&apos;re trending at the same level as <span className='font-semibold'>{formattedValue}</span> compared to the <span className='font-semibold'>{timeRangeText}</span>
+                </span>
+            );
         }
 
-        return `You're trending ${directionText} ${diffValue} from ${trendingFromValue} compared to the ${timeRangeText}`;
+        return (
+            <span>
+                You&apos;re trending <span className='font-semibold'>{directionText} {diffValue}</span> from <span className='font-semibold'>{trendingFromValue}</span> compared to the {timeRangeText}
+            </span>
+        );
     }, [diffDirection, diffValue, trendingFromValue, formattedValue, range]);
 
     return (
@@ -186,7 +194,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                 iconName='Coins'
                 linkto='/growth/'
                 title='MRR'
-                trendingFromValue={`${formatNumber(mrrChartData[0].value)}`}
+                trendingFromValue={`${currencySymbol}${formatNumber(mrrChartData[0].value)}`}
                 onClick={() => {
                     navigate('/growth/?tab=mrr');
                 }}
