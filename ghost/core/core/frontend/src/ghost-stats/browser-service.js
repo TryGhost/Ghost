@@ -82,6 +82,11 @@ export class BrowserService {
     }
 
     isTestEnvironment() {
+        // Allow synthetic monitoring to bypass test environment detection
+        if (this.window?.__GHOST_SYNTHETIC_MONITORING__ === true) {
+            return false;
+        }
+        
         return !!(
             this.window && (
                 this.window.__nightmare ||
