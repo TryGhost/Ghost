@@ -106,6 +106,13 @@ const Overview: React.FC = () => {
         };
     });
 
+    // Get sources data
+    const {data: sourcesData, loading: isSourcesLoading} = useQuery({
+        endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
+        token: getToken(statsConfig),
+        params: params
+    });
+
     const kpiIsLoading = isConfigLoading || isTotalsLoading || isPostLoading || tbLoading;
     const chartIsLoading = isPostLoading || isConfigLoading || chartLoading;
     const typedPost = post as Post;
@@ -125,11 +132,13 @@ const Overview: React.FC = () => {
                 </div>
             </PostAnalyticsHeader>
             <PostAnalyticsContent>
-                <div className='grid grid-cols-2 gap-8'>
+                <div className={showNewsletterSection ? 'grid grid-cols-2 gap-8' : ''}>
                     <WebOverview
                         chartData={processedChartData}
-                        isLoading={chartIsLoading || kpiIsLoading}
+                        fullWidth={!showNewsletterSection}
+                        isLoading={chartIsLoading || kpiIsLoading || isSourcesLoading}
                         range={chartRange}
+                        sourcesData={sourcesData}
                         visitors={kpiValues.visits}
                     />
                     {showNewsletterSection && (

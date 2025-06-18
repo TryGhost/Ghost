@@ -1,5 +1,5 @@
 import React, {useMemo} from 'react';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, ChartConfig, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, Separator, Table, TableBody, TableCell, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, ChartConfig, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, Table, TableBody, TableCell, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
 import {NewsletterRadialChart, NewsletterRadialChartData} from '../../Newsletter/components/NewsLetterRadialChart';
 import {Post} from '@tryghost/admin-x-framework/api/posts';
 import {cleanTrackedUrl, processAndGroupTopLinks} from '@src/utils/link-helpers';
@@ -63,7 +63,10 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
         <Card className='group/card'>
             <div className='relative flex items-center justify-between gap-6'>
                 <CardHeader>
-                    <CardTitle>Newsletter performance</CardTitle>
+                    <CardTitle className='flex items-center gap-1.5 text-lg'>
+                        <LucideIcon.Mail size={16} strokeWidth={1.5} />
+                        Newsletter performance
+                    </CardTitle>
                 </CardHeader>
                 <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover/card:translate-x-0 group-hover/card:opacity-100' size='sm' variant='outline' onClick={() => {
                     navigate(`/analytics/beta/${postId}/newsletter`);
@@ -118,7 +121,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                     <Separator />
                     <div className='pt-3'>
                         <div className='flex items-center justify-between gap-3 py-3'>
-                            <span className='font-semibold'>Top clicked links in this email</span>
+                            <span className='font-medium text-muted-foreground'>Top clicked links in this email</span>
                             <HTable>Members</HTable>
                         </div>
                         <Table>
