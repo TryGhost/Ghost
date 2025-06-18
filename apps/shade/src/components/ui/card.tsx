@@ -178,17 +178,18 @@ interface KpiCardValueProps {
     value: string | number;
     diffDirection?: 'up' | 'down' | 'same' | 'empty' | 'hidden';
     diffValue?: string | number;
+    diffTooltip?: React.ReactNode;
 }
 
-const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, diffValue}) => {
+const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, diffValue, diffTooltip}) => {
     const diffContainerClassName = cn(
-        'hidden xl:!flex xl:!visible items-center gap-1 text-xs h-[22px] px-1.5 rounded-sm',
-        diffDirection === 'up' && 'text-green-600 bg-green/10',
-        diffDirection === 'down' && 'text-red-600 bg-red/10',
+        'hidden xl:!flex xl:!visible items-center gap-1 text-xs h-[22px] px-1.5 rounded-sm group/diff cursor-default',
+        diffDirection === 'up' && `text-green-600 bg-green/10 ${diffTooltip && 'hover:bg-green/20'}`,
+        diffDirection === 'down' && `text-red-600 bg-red/10 ${diffTooltip && 'hover:bg-red/20'}`,
         diffDirection === 'same' && 'text-gray-700'
     );
     return (
-        <div className='flex items-center gap-3'>
+        <div className='relative flex items-center gap-3'>
             <div className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
                 {value}
             </div>
@@ -201,6 +202,11 @@ const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, 
                     }
                     {diffDirection === 'down' &&
                         <TrendingDown className='!size-[12px]' size={14} strokeWidth={2} />
+                    }
+                    {diffTooltip &&
+                        <div className='pointer-events-none absolute inset-x-0 top-0 z-50 -translate-y-full rounded-sm bg-background px-3 py-2 text-sm text-foreground opacity-0 shadow-md transition-all group-hover/diff:translate-y-[calc(-100%-8px)] group-hover/diff:opacity-100'>
+                            {diffTooltip}
+                        </div>
                     }
                 </div>
             </>

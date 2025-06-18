@@ -1,6 +1,7 @@
 import React from 'react';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, centsToDollars, formatNumber} from '@tryghost/shade';
 import {STATS_RANGES} from '@src/utils/constants';
+import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
@@ -13,6 +14,7 @@ interface OverviewKPICardProps {
     diffValue?: string;
     color?: string;
     formattedValue: string;
+    trendingFromValue?: string;
     children?: React.ReactNode;
     onClick?: () => void;
 }
@@ -26,6 +28,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     diffDirection,
     diffValue,
     formattedValue,
+    trendingFromValue,
     children,
     onClick
 }) => {
@@ -33,8 +36,29 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     const {range} = useGlobalData();
     const IconComponent = iconName && LucideIcon[iconName] as LucideIcon.LucideIcon;
 
+    // Construct tooltip message based on input parameters
+    const diffTooltip = React.useMemo(() => {
+        if (!diffDirection || diffDirection === 'empty' || range === STATS_RANGES.allTime.value || !diffValue) {
+            return '';
+        }
+
+        const directionText = diffDirection === 'up' ? 'up' : diffDirection === 'down' ? 'down' : 'at';
+
+        // Get period text and clean it up for tooltip
+        const periodText = getPeriodText(range);
+        const timeRangeText = periodText
+            .replace('in the ', '') // Remove "in the " prefix
+            .replace(/^\(|\)$/g, ''); // Remove parentheses for "(all time)"
+
+        if (diffDirection === 'same') {
+            return `You're trending at the same level as ${formattedValue} compared to the ${timeRangeText}`;
+        }
+
+        return `You're trending ${directionText} ${diffValue} from ${trendingFromValue} compared to the ${timeRangeText}`;
+    }, [diffDirection, diffValue, trendingFromValue, formattedValue, range]);
+
     return (
-        <Card className='group overflow-hidden transition-all hover:bg-accent/50'>
+        <Card className='group'>
             <CardHeader className='hidden'>
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
@@ -48,12 +72,13 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
                     </KpiCardHeaderLabel>
                     <KpiCardHeaderValue
                         diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : diffDirection}
+                        diffTooltip={diffTooltip}
                         diffValue={diffValue}
                         value={formattedValue}
                     />
                 </div>
                 {onClick &&
-                    <Button className='absolute right-6 translate-x-full opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={onClick}>View more</Button>
+                    <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={onClick}>View more</Button>
                 }
             </KpiCardHeader>
             <CardContent>
@@ -136,6 +161,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                 iconName='User'
                 linkto='/growth/'
                 title='Members'
+                trendingFromValue={`${formatNumber(membersChartData[0].value)}`}
                 onClick={() => {
                     navigate('/growth/?tab=total-members');
                 }}
@@ -160,6 +186,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                 iconName='Coins'
                 linkto='/growth/'
                 title='MRR'
+                trendingFromValue={`${formatNumber(mrrChartData[0].value)}`}
                 onClick={() => {
                     navigate('/growth/?tab=mrr');
                 }}
