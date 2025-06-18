@@ -792,53 +792,49 @@ class PostsStatsService {
     }
 
     /**
-     * Get stats for the latest published post including open rate, member attribution counts, and visitor count
-     * @returns {Promise<{data: Array<{id: string, title: string, slug: string, feature_image: string|null, published_at: string, recipient_count: number|null, opened_count: number|null, open_rate: number|null, member_delta: number, free_members: number, paid_members: number, visitors: number}>}>}
+     * Get stats for a specific post by ID (analytics only, no post content)
+     * @param {string} postId - The post ID to get stats for
+     * @returns {Promise<{data: Array<{id: string, recipient_count: number|null, opened_count: number|null, open_rate: number|null, member_delta: number, free_members: number, paid_members: number, visitors: number}>}>}
      */
-    async getLatestPostStats() {
+    async getPostStats(postId) {
         try {
-            // Get the latest published post
-            const latestPost = await this.knex('posts as p')
-                .select(
-                    'p.id',
-                    'p.uuid',
-                    'p.title',
-                    'p.slug',
-                    'p.feature_image',
-                    'p.published_at',
-                    'e.email_count',
-                    'e.opened_count'
-                )
-                .leftJoin('emails as e', 'p.id', 'e.post_id')
-                .where('p.status', 'published')
-                .whereNotNull('p.published_at')
-                .orderBy('p.published_at', 'desc')
+            // Validate postId parameter
+            if (!postId || postId.trim() === '') {
+                return {data: []};
+            }
+            
+            // Get basic post info for stats calculations
+            const postData = await this.knex('posts')
+                .select('posts.id', 'posts.uuid', 'posts.published_at', 'e.email_count', 'e.opened_count')
+                .leftJoin('emails as e', 'posts.id', 'e.post_id')
+                .where('posts.id', postId)
+                .where('posts.status', 'published')
                 .first();
-
-            if (!latestPost) {
+                
+            if (!postData) {
                 return {data: []};
             }
 
-            // Get member attribution counts using the same logic as other methods
-            const memberAttributionCounts = await this._getMemberAttributionCounts([latestPost.id]);
-            const attributionCount = memberAttributionCounts.find(ac => ac.post_id === latestPost.id);
+            // Get member attribution counts
+            const memberAttributionCounts = await this._getMemberAttributionCounts([postData.id]);
+            const attributionCount = memberAttributionCounts.find(ac => ac.post_id === postData.id);
             
             const freeMembers = attributionCount ? attributionCount.free_members : 0;
             const paidMembers = attributionCount ? attributionCount.paid_members : 0;
             const totalMembers = freeMembers + paidMembers;
 
             // Calculate open rate
-            const openRate = latestPost.email_count ? 
-                (latestPost.opened_count / latestPost.email_count) * 100 : 
+            const openRate = postData.email_count ? 
+                (postData.opened_count / postData.email_count) * 100 : 
                 null;
 
             // Get visitor count from Tinybird
             let visitors = 0;
-            if (this.tinybirdClient) {
+            if (this.tinybirdClient && postData.uuid) {
                 try {
-                    const dateFrom = new Date(latestPost.published_at).toISOString().split('T')[0];
+                    const dateFrom = new Date(postData.published_at).toISOString().split('T')[0];
                     const visitorData = await this.tinybirdClient.fetch('api_top_pages', {
-                        post_uuid: latestPost.uuid,
+                        post_uuid: postData.uuid,
                         dateFrom: dateFrom
                     });
 
@@ -850,13 +846,9 @@ class PostsStatsService {
 
             return {
                 data: [{
-                    id: latestPost.id,
-                    title: latestPost.title,
-                    slug: latestPost.slug,
-                    feature_image: latestPost.feature_image ? urlUtils.transformReadyToAbsolute(latestPost.feature_image) : latestPost.feature_image,
-                    published_at: latestPost.published_at,
-                    recipient_count: latestPost.email_count,
-                    opened_count: latestPost.opened_count,
+                    id: postData.id,
+                    recipient_count: postData.email_count || null,
+                    opened_count: postData.opened_count || null,
                     open_rate: openRate,
                     member_delta: totalMembers,
                     free_members: freeMembers,
@@ -865,8 +857,7 @@ class PostsStatsService {
                 }]
             };
         } catch (error) {
-            // Log the error but return a valid response
-            logging.error('Error fetching latest post stats:', error);
+            logging.error(`Error fetching post stats for post ${postId}:`, error);
             return {data: []};
         }
     }
@@ -948,6 +939,9 @@ class PostsStatsService {
             let additionalPosts = [];
             let additionalMemberAttributionCounts = [];
             if (remainingCount > 0) {
+                // Get post IDs that we already have to exclude them
+                const existingPostIds = postsWithViews.map(p => p.post_id);
+                
                 additionalPosts = await this.knex('posts as p')
                     .select(
                         'p.id as post_id',
@@ -960,6 +954,7 @@ class PostsStatsService {
                     )
                     .leftJoin('emails', 'emails.post_id', 'p.id')
                     .whereNotIn('p.uuid', postUuids)
+                    .whereNotIn('p.id', existingPostIds)
                     .where('p.status', 'published')
                     .whereNotNull('p.published_at')
                     .orderBy('p.published_at', 'desc')

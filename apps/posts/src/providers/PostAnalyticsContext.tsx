@@ -7,6 +7,11 @@ import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 
 type PostAnalyticsContextType = {
     data: Config | undefined;
+    site: {
+        url?: string;
+        icon?: string;
+        title?: string;
+    } | undefined;
     statsConfig: StatsConfig | undefined;
     isLoading: boolean;
     range: number;
@@ -43,15 +48,15 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
         throw error;
     }
 
-    // Add url and icon from site data to config data
-    const dataWithUrl = config.data ? {
-        ...config.data,
-        url: site.data?.site.url,
-        icon: site.data?.site.icon
+    const siteData = site.data?.site ? {
+        url: site.data.site.url as string,
+        icon: site.data.site.icon as string,
+        title: site.data.site.title as string
     } : undefined;
 
     return <PostAnalyticsContext.Provider value={{
-        data: dataWithUrl as Config | undefined,
+        data: config.data?.config,
+        site: siteData,
         statsConfig: config.data?.config?.stats as StatsConfig | undefined,
         isLoading,
         range,

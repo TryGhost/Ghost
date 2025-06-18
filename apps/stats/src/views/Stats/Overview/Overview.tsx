@@ -11,8 +11,9 @@ import {getAudienceQueryParam} from '../components/AudienceSelect';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
-import {useLatestPostStats, useTopPostsViews} from '@tryghost/admin-x-framework/api/stats';
+import {useLatestPostStats} from '@src/hooks/useLatestPostStats';
 import {useQuery} from '@tinybirdco/charts';
+import {useTopPostsViews} from '@tryghost/admin-x-framework/api/stats';
 
 interface HelpCardProps {
     className?: string;
@@ -66,8 +67,7 @@ const Overview: React.FC = () => {
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals, currencySymbol} = useGrowthStats(range);
-    const {isLoading: isLatestPostLoading, data: latestPostStatsData} = useLatestPostStats();
-    const latestPostStats = latestPostStatsData?.stats?.[0] || null;
+    const {data: latestPostStats, isLoading: isLatestPostLoading} = useLatestPostStats();
     const {data: topPostsData, isLoading: isTopPostsLoading} = useTopPostsViews({
         searchParams: {
             date_from: formatQueryDate(startDate),
