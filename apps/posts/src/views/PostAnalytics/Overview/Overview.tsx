@@ -145,13 +145,21 @@ const Overview: React.FC = () => {
                         <NewsletterOverview isNewsletterStatsLoading={isPostLoading} post={typedPost} />
                     )}
                 </div>
-                <Card className='overflow-hidden p-0'>
-                    <CardHeader className='hidden'>
-                        <CardTitle>Post performance</CardTitle>
-                    </CardHeader>
-                    <CardContent className='grid grid-cols-2 items-stretch p-0'>
+                <Card className='group overflow-hidden p-0'>
+                    <div className='relative flex items-center justify-between gap-6'>
+                        <CardHeader>
+                            <CardTitle className='flex items-center gap-1.5 text-lg'>
+                                <LucideIcon.Sprout size={16} strokeWidth={1.5} />
+                                Growth
+                            </CardTitle>
+                        </CardHeader>
+                        <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={() => {
+                            navigate(`/analytics/beta/${postId}/growth`);
+                        }}>View more</Button>
+                    </div>
+                    <CardContent className='grid grid-cols-3 items-stretch px-0'>
                         {kpiIsLoading ?
-                            Array.from({length: 4}, (_, i) => (
+                            Array.from({length: 3}, (_, i) => (
                                 <div key={i} className='h-[98px] gap-1 border-r px-6 py-5 last:border-r-0'>
                                     <Skeleton className='w-2/3' />
                                     <Skeleton className='h-7 w-12' />
@@ -159,26 +167,28 @@ const Overview: React.FC = () => {
                             ))
                             :
                             <>
-                                <KpiCard className='grow' onClick={() => {
-                                    navigate(`/analytics/beta/${postId}/growth`);
-                                }}>
+                                <KpiCard className='grow py-0'>
                                     <KpiCardLabel>
-                                        <LucideIcon.UserPlus size={16} strokeWidth={1.5} />
-                                    Conversions
+                                        Free members
                                     </KpiCardLabel>
                                     <KpiCardContent>
-                                        <KpiCardValue>{formatNumber((totals?.free_members || 0) + (totals?.paid_members || 0))}</KpiCardValue>
+                                        <KpiCardValue className='text-[2.2rem]'>{formatNumber((totals?.free_members || 0))}</KpiCardValue>
                                     </KpiCardContent>
                                 </KpiCard>
-                                <KpiCard className='grow' onClick={() => {
-                                    navigate(`/analytics/beta/${postId}/growth`);
-                                }}>
+                                <KpiCard className='grow py-0'>
                                     <KpiCardLabel>
-                                        <LucideIcon.DollarSign size={16} strokeWidth={1.5} />
-                                    MRR impact
+                                        Paid members
                                     </KpiCardLabel>
                                     <KpiCardContent>
-                                        <KpiCardValue>{currencySymbol}{centsToDollars(totals?.mrr || 0)}</KpiCardValue>
+                                        <KpiCardValue className='text-[2.2rem]'>{formatNumber((totals?.paid_members || 0))}</KpiCardValue>
+                                    </KpiCardContent>
+                                </KpiCard>
+                                <KpiCard className='grow py-0'>
+                                    <KpiCardLabel>
+                                        MRR impact
+                                    </KpiCardLabel>
+                                    <KpiCardContent>
+                                        <KpiCardValue className='text-[2.2rem]'>{currencySymbol}{centsToDollars(totals?.mrr || 0)}</KpiCardValue>
                                     </KpiCardContent>
                                 </KpiCard>
                             </>
