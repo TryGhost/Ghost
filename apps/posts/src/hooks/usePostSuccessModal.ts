@@ -1,3 +1,4 @@
+import React from 'react';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useEffect, useMemo, useState} from 'react';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
@@ -12,6 +13,9 @@ interface ExtendedPost extends Post {
         name: string;
     }[];
     excerpt?: string;
+    newsletter?: {
+        name: string;
+    };
 }
 
 export const usePostSuccessModal = () => {
@@ -24,7 +28,7 @@ export const usePostSuccessModal = () => {
     const {data: postResponse} = useBrowsePosts({
         searchParams: publishedPostData ? {
             filter: `id:${publishedPostData.id}`,
-            include: 'authors,tags'
+            include: 'authors,tags,newsletter,email'
         } : {},
         enabled: !!publishedPostData
     });
@@ -66,39 +70,49 @@ export const usePostSuccessModal = () => {
 
         const showPostCount = !!postCount;
         
-        // Build description to match Ember modal format
-        let description = '';
-        
-        if (post.email_only) {
-            description = 'Your email was sent to';
-        } else if (post.email?.email_count) {
-            description = 'Your post was published on your site and sent to';
-        } else {
-            description = 'Your post was published on your site';
-        }
-        
-        if (post.email?.email_count) {
-            const subscriberText = formatSubscriberCount(post.email.email_count);
-            description += ` ${subscriberText}`;
-            if (site?.title) {
-                description += ` of ${site.title}`;
-            }
-            description += ',';
-        }
-        
-        if (post.published_at) {
-            const publishedDate = new Date(post.published_at);
-            const isToday = publishedDate.toDateString() === new Date().toDateString();
+        // Build description with React elements to match Ember modal format with bold text
+        const getDescription = () => {
+            const parts = [];
             
-            if (isToday) {
-                description += ' today';
+            if (post.email_only) {
+                parts.push('Your email was sent to');
+            } else if (post.email?.email_count) {
+                parts.push('Your post was published on your site and sent to');
             } else {
-                description += ` on ${publishedDate.toLocaleDateString('en-US', {month: 'long', day: 'numeric'})}`;
+                parts.push('Your post was published on your site');
             }
-            description += ` at ${formatPublicationTime(post.published_at)}`;
-        }
-        
-        description += '.';
+            
+            if (post.email?.email_count) {
+                const subscriberText = formatSubscriberCount(post.email.email_count);
+                parts.push(' ');
+                parts.push(React.createElement('strong', {key: 'subscriber-count'}, subscriberText));
+                
+                if (post.newsletter?.name) {
+                    parts.push(' of ');
+                    parts.push(React.createElement('strong', {key: 'newsletter-name'}, post.newsletter.name));
+                }
+                parts.push(',');
+            }
+            
+            if (post.published_at) {
+                const publishedDate = new Date(post.published_at);
+                const isToday = publishedDate.toDateString() === new Date().toDateString();
+                
+                if (isToday) {
+                    parts.push(' ');
+                    parts.push(React.createElement('strong', {key: 'today'}, 'today'));
+                } else {
+                    parts.push(' on ');
+                    parts.push(React.createElement('strong', {key: 'date'}, publishedDate.toLocaleDateString('en-US', {month: 'long', day: 'numeric'})));
+                }
+                parts.push(' at ');
+                parts.push(React.createElement('strong', {key: 'time'}, formatPublicationTime(post.published_at)));
+            }
+            
+            parts.push('.');
+            
+            return React.createElement('span', {}, ...parts);
+        };
         
         const handleClose = () => {
             setIsModalOpen(false);
@@ -119,7 +133,7 @@ export const usePostSuccessModal = () => {
             secondaryTitle: showPostCount && postCount ? 
                 `That's ${postCount} post${postCount !== 1 ? 's' : ''} published.` : 
                 'Spread the word!',
-            description,
+            description: getDescription(),
             featureImageURL: post.feature_image || '',
             postTitle: post.title || '',
             postExcerpt: post.excerpt || '',
