@@ -202,31 +202,33 @@
             {{/if}}
         {{/if}}
 
-        {{!-- Visitor count column (only show for published posts) --}}
-        {{#if @post.isPublished}}
-            {{#if this.hasVisitorData}}
-                <div class="permalink gh-list-data gh-post-list-metrics">
-                    <span class="gh-content-email-stats-value">
-                        {{format-number this.visitorCount}}
-                    </span>
-                    <span class="gh-content-email-stats">
-                        visitors
-                    </span>
-                </div>
+        {{!-- Visitor count column (only show for published posts when traffic analytics is enabled) --}}
+        {{#if (feature "trafficAnalytics")}}
+            {{#if @post.isPublished}}
+                {{#if this.hasVisitorData}}
+                    <div class="permalink gh-list-data gh-post-list-metrics">
+                        <span class="gh-content-email-stats-value">
+                            {{format-number this.visitorCount}}
+                        </span>
+                        <span class="gh-content-email-stats">
+                            visitors
+                        </span>
+                    </div>
+                {{else}}
+                    <div class="permalink gh-list-data gh-post-list-metrics">
+                        <span class="gh-content-email-stats-value">
+                            —
+                        </span>
+                        <span class="gh-content-email-stats">
+                            visitors
+                        </span>
+                    </div>
+                {{/if}}
             {{else}}
-                <div class="permalink gh-list-data gh-post-list-metrics">
-                    <span class="gh-content-email-stats-value">
-                        —
-                    </span>
-                    <span class="gh-content-email-stats">
-                        visitors
-                    </span>
+                <div class="permalink gh-list-data">
+                    {{!-- Empty column for non-published posts --}}
                 </div>
             {{/if}}
-        {{else}}
-            <div class="permalink gh-list-data">
-                {{!-- Empty column for non-published posts --}}
-            </div>
         {{/if}}
     </div>
 
