@@ -9,6 +9,7 @@ export default class PostsListItemClicks extends Component {
     @service feature;
     @service session;
     @service settings;
+    @service postAnalytics;
 
     @tracked isHovered = false;
 
@@ -35,6 +36,14 @@ export default class PostsListItemClicks extends Component {
         text.push(formattedTime);
 
         return text.join(' ');
+    }
+
+    get visitorCount() {
+        return this.postAnalytics.getVisitorCount(this.post.uuid);
+    }
+
+    get hasVisitorData() {
+        return this.visitorCount !== null;
     }
 
     @action

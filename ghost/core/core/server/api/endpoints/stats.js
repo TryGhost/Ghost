@@ -448,11 +448,11 @@ const controller = {
         headers: {
             cacheInvalidate: false
         },
-        data: [
+        options: [
             'postUuids'
         ],
         validation: {
-            data: {
+            options: {
                 postUuids: {
                     required: true
                 }
@@ -466,13 +466,23 @@ const controller = {
         generateCacheKeyData(frame) {
             return {
                 method: 'getPostsVisitorCounts',
-                data: {
-                    postUuids: frame.data.postUuids
+                options: {
+                    postUuids: frame.options.postUuids
                 }
             };
         },
         async query(frame) {
-            return await statsService.api.getPostsVisitorCounts(frame.data.postUuids);
+            // Parse comma-separated postUuids from query parameter
+            const postUuids = typeof frame.options.postUuids === 'string' 
+                ? frame.options.postUuids.split(',') 
+                : frame.options.postUuids;
+            
+            const visitorCounts = await statsService.api.getPostsVisitorCounts(postUuids);
+            
+            // Return in format expected by serializer
+            return {
+                data: [visitorCounts]
+            };
         }
     }
 };

@@ -1,14 +1,16 @@
-import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import AdminRoute from 'ghost-admin/routes/admin';
 import RSVP from 'rsvp';
 import {action} from '@ember/object';
 import {assign} from '@ember/polyfills';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 
-export default class PostsRoute extends AuthenticatedRoute {
+export default class PostsRoute extends AdminRoute {
     @service infinity;
     @service router;
+    @service session;
     @service feature;
+    @service postAnalytics;
 
     queryParams = {
         type: {refreshModel: true},
@@ -112,6 +114,25 @@ export default class PostsRoute extends AuthenticatedRoute {
             }
             controller.selectionList.infinityModel = model;
             controller.selectionList.clearSelection();
+        }
+
+        // Fetch analytics data for visible posts
+        this._fetchAnalyticsForPosts(model);
+    }
+
+    /**
+     * Fetch Tinybird analytics data for all visible posts
+     * @param {Object} model - The posts model containing infinity models
+     */
+    async _fetchAnalyticsForPosts(model) {
+        const postUuids = [];
+        if (model.publishedAndSentInfinityModel?.content) {
+            postUuids.push(...model.publishedAndSentInfinityModel.content.map(post => post.uuid));
+        }
+        if (postUuids.length > 0) {
+            this.postAnalytics.loadVisitorCounts(postUuids);
+        } else {
+            // console.log('No published posts found for analytics');
         }
     }
 
