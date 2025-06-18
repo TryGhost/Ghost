@@ -125,6 +125,33 @@ const Overview: React.FC = () => {
                 </div>
             </PostAnalyticsHeader>
             <PostAnalyticsContent>
+                <div className='grid grid-cols-2 gap-8'>
+                    <Card className='group/card'>
+                        <div className='flex items-center justify-between gap-6'>
+                            <CardHeader>
+                                <CardTitle>Web performance</CardTitle>
+                                <CardDescription>Unique visitors since you published this post</CardDescription>
+                            </CardHeader>
+                            <Button className='mr-6 opacity-0 transition-all group-hover/card:opacity-100' variant='outline' onClick={() => {
+                                navigate(`/analytics/beta/${postId}/web`);
+                            }}>
+                                View more
+                                <LucideIcon.ArrowRight />
+                            </Button>
+                        </div>
+                        <CardContent>
+                            <Separator />
+                            <WebOverview
+                                chartData={processedChartData}
+                                isLoading={chartIsLoading}
+                                range={chartRange}
+                            />
+                        </CardContent>
+                    </Card>
+                    {showNewsletterSection && (
+                        <NewsletterOverview isNewsletterStatsLoading={isPostLoading} post={typedPost} />
+                    )}
+                </div>
                 <Card className='overflow-hidden p-0'>
                     <CardHeader className='hidden'>
                         <CardTitle>Post performance</CardTitle>
@@ -185,31 +212,6 @@ const Overview: React.FC = () => {
                                 </KpiCard>
                             </>
                         }
-                    </CardContent>
-                </Card>
-                {showNewsletterSection && (
-                    <NewsletterOverview isNewsletterStatsLoading={isPostLoading} post={typedPost} />
-                )}
-                <Card className='group/card'>
-                    <div className='flex items-center justify-between gap-6'>
-                        <CardHeader>
-                            <CardTitle>Web performance</CardTitle>
-                            <CardDescription>Unique visitors since you published this post</CardDescription>
-                        </CardHeader>
-                        <Button className='mr-6 opacity-0 transition-all group-hover/card:opacity-100' variant='outline' onClick={() => {
-                            navigate(`/analytics/beta/${postId}/web`);
-                        }}>
-                                View more
-                            <LucideIcon.ArrowRight />
-                        </Button>
-                    </div>
-                    <CardContent>
-                        <Separator />
-                        <WebOverview
-                            chartData={processedChartData}
-                            isLoading={chartIsLoading}
-                            range={chartRange}
-                        />
                     </CardContent>
                 </Card>
             </PostAnalyticsContent>
