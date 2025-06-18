@@ -108,8 +108,8 @@ export default class PostAnalyticsService extends Service {
      * Reset the analytics cache - call this when filters change or on route transitions
      */
     reset() {
-        this.visitorCounts = null;
-        this.memberCounts = null;
+        this.visitorCounts = {};
+        this.memberCounts = {};
         this._fetchedUuids.clear();
         this._fetchedMemberIds.clear();
     }
