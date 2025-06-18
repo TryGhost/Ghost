@@ -121,7 +121,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
                     onClick={handleCommentClick}
                 >
                     <LucideIcon.MessageCircle className='-mr-px' />
-                    {layout !== 'inbox' && formatNumber(commentCount)}
+                    {(layout !== 'inbox' && commentCount > 0) && formatNumber(commentCount)}
                 </Button>
                 <Button
                     className={`${buttonClass} ${isReposted && 'text-green-500 hover:text-green-500'}`}
