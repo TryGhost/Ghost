@@ -46,6 +46,21 @@ export default class PostsListItemClicks extends Component {
         return this.visitorCount !== null;
     }
 
+    get memberCounts() {
+        return this.postAnalytics.getMemberCounts(this.post.uuid);
+    }
+
+    get hasMemberData() {
+        return this.memberCounts !== null;
+    }
+
+    get totalMemberConversions() {
+        if (!this.memberCounts) {
+            return 0;
+        }
+        return this.memberCounts.free + this.memberCounts.paid;
+    }
+
     @action
     mouseOver() {
         this.isHovered = true;

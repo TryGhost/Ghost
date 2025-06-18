@@ -1070,6 +1070,32 @@ class PostsStatsService {
     }
 
     /**
+     * Get member attribution counts for multiple posts
+     * @param {string[]} postIds - Array of post IDs
+     * @param {Object} options - Date filter options
+     * @returns {Promise<Object>} Map of post ID to member counts
+     */
+    async getPostsMemberCounts(postIds, options = {}) {
+        try {
+            const attributionCounts = await this._getMemberAttributionCounts(postIds, options);
+            
+            // Convert array to object mapping post_id -> counts
+            const memberCounts = {};
+            attributionCounts.forEach((count) => {
+                memberCounts[count.post_id] = {
+                    free_members: count.free_members,
+                    paid_members: count.paid_members
+                };
+            });
+            
+            return memberCounts;
+        } catch (error) {
+            logging.error('Error fetching member counts:', error);
+            return {};
+        }
+    }
+
+    /**
      * Get visitor counts for multiple posts from Tinybird
      * @param {string[]} postUuids - Array of post UUIDs
      * @returns {Promise<Object>} Map of post UUID to visitor count

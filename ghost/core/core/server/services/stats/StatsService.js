@@ -119,6 +119,13 @@ class StatsService {
     }
 
     /**
+     * @param {string[]} postIds
+     */
+    async getPostsMemberCounts(postIds) {
+        return await this.posts.getPostsMemberCounts(postIds);
+    }
+
+    /**
      * Get newsletter stats for sent posts
      * @param {Object} options
      * @param {string} [options.newsletter_id] - ID of the specific newsletter to get stats for

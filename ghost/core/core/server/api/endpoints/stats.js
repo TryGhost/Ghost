@@ -479,6 +479,42 @@ const controller = {
                 data: [visitorCounts]
             };
         }
+    },
+    postsMemberCounts: {
+        headers: {
+            cacheInvalidate: false
+        },
+        data: [
+            'postIds'
+        ],
+        validation: {
+            data: {
+                postIds: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'getPostsMemberCounts',
+                data: {
+                    postIds: frame.data.postIds
+                }
+            };
+        },
+        async query(frame) {
+            const memberCounts = await statsService.api.getPostsMemberCounts(frame.data.postIds);
+            
+            // Return in format expected by serializer
+            return {
+                data: [memberCounts]
+            };
+        }
     }
 };
 

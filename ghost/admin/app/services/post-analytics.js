@@ -15,9 +15,20 @@ export default class PostAnalyticsService extends Service {
         visitorCounts = null;
 
     /**
+     * @type {?Object} Post member conversion counts by UUID
+     */
+    @tracked
+        memberCounts = null;
+
+    /**
      * @type {Set} UUIDs of posts we've already fetched analytics for
      */
     _fetchedUuids = new Set();
+
+    /**
+     * @type {Set} Post IDs we've already fetched member conversions for
+     */
+    _fetchedMemberIds = new Set();
 
     /**
      * Load visitor counts for the given post UUIDs
@@ -57,11 +68,50 @@ export default class PostAnalyticsService extends Service {
     }
 
     /**
+     * Load member conversion counts for the given posts
+     * @param {Object[]} posts - Array of post objects with id and uuid
+     * @returns {Promise}
+     */
+    loadMemberCounts(posts) {
+        if (!posts || posts.length === 0) {
+            return Promise.resolve();
+        }
+        
+        // Check if traffic analytics is enabled
+        if (!this.feature.trafficAnalytics) {
+            return Promise.resolve();
+        }
+        
+        // Filter out posts we've already fetched
+        const newPosts = posts.filter(post => !this._fetchedMemberIds.has(post.id));
+        
+        if (newPosts.length === 0) {
+            return Promise.resolve();
+        }
+        
+        // Mark these post IDs as being fetched
+        newPosts.forEach(post => this._fetchedMemberIds.add(post.id));
+        
+        return this._loadMemberCounts.perform(newPosts);
+    }
+
+    /**
+     * Get member conversion counts for a specific post
+     * @param {string} postUuid - Post UUID
+     * @returns {Object|null} Member counts object {free: number, paid: number} or null if not available
+     */
+    getMemberCounts(postUuid) {
+        return this.memberCounts && this.memberCounts[postUuid] ? this.memberCounts[postUuid] : null;
+    }
+
+    /**
      * Reset the analytics cache - call this when filters change or on route transitions
      */
     reset() {
         this.visitorCounts = null;
+        this.memberCounts = null;
         this._fetchedUuids.clear();
+        this._fetchedMemberIds.clear();
     }
 
     @task
@@ -84,6 +134,43 @@ export default class PostAnalyticsService extends Service {
         } catch (error) {
             // Silent failure - visitor counts are not critical
             this.visitorCounts = {};
+        }
+    }
+
+    @task
+    *_loadMemberCounts(posts) {
+        try {
+            const postIds = posts.map(post => post.id);
+            const statsUrl = this.ghostPaths.url.api('stats/posts-member-counts');
+            const result = yield this.ajax.request(statsUrl, {
+                method: 'POST',
+                data: JSON.stringify({postIds}),
+                contentType: 'application/json'
+            });
+            
+            // Parse the nested response structure - similar to visitor counts
+            const memberData = result.stats?.[0] || {};
+            
+            // Convert from post ID -> counts to post UUID -> counts for consistency
+            const memberCountsByUuid = {};
+            posts.forEach((post) => {
+                const memberCount = memberData[post.id];
+                if (memberCount) {
+                    memberCountsByUuid[post.uuid] = {
+                        free: memberCount.free_members || 0,
+                        paid: memberCount.paid_members || 0
+                    };
+                }
+            });
+            
+            // Merge with existing member counts instead of replacing
+            this.memberCounts = {
+                ...this.memberCounts,
+                ...memberCountsByUuid
+            };
+        } catch (error) {
+            // Silent failure - member counts are not critical
+            this.memberCounts = {};
         }
     }
 } 

@@ -230,6 +230,39 @@
                 </div>
             {{/if}}
         {{/if}}
+
+        {{!-- Member conversions column (only show for published posts when traffic analytics is enabled) --}}
+        {{#if (feature "trafficAnalytics")}}
+            {{#if @post.isPublished}}
+                {{#if this.hasMemberData}}
+                    <div class="permalink gh-list-data gh-post-list-metrics">
+                        <span class="gh-content-email-stats-value">
+                            {{#if this.isHovered}}
+                                +{{format-number this.memberCounts.free}} free, +{{format-number this.memberCounts.paid}} paid
+                            {{else}}
+                                +{{format-number this.totalMemberConversions}}
+                            {{/if}}
+                        </span>
+                        <span class="gh-content-email-stats">
+                            members
+                        </span>
+                    </div>
+                {{else}}
+                    <div class="permalink gh-list-data gh-post-list-metrics">
+                        <span class="gh-content-email-stats-value">
+                            —
+                        </span>
+                        <span class="gh-content-email-stats">
+                            members
+                        </span>
+                    </div>
+                {{/if}}
+            {{else}}
+                <div class="permalink gh-list-data">
+                    {{!-- Empty column for non-published posts --}}
+                </div>
+            {{/if}}
+        {{/if}}
     </div>
 
     {{!-- Button column --}}

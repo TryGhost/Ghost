@@ -16,7 +16,10 @@ class PostsWithAnalytics extends InfinityModel {
         const publishedPosts = posts.filter(post => ['published', 'sent'].includes(post.status));
         if (publishedPosts.length > 0) {
             const postUuids = publishedPosts.map(post => post.uuid);
-            await this.postAnalytics.loadVisitorCounts(postUuids);
+            await Promise.all([
+                this.postAnalytics.loadVisitorCounts(postUuids),
+                this.postAnalytics.loadMemberCounts(publishedPosts)
+            ]);
         }
         return posts;
     }
@@ -141,18 +144,20 @@ export default class PostsRoute extends AdminRoute {
     }
 
     /**
-     * Fetch Tinybird analytics data for all visible posts
+     * Fetch analytics data for all visible posts
      * @param {Object} model - The posts model containing infinity models
      */
     async _fetchAnalyticsForPosts(model) {
-        const postUuids = [];
+        const posts = [];
         if (model.publishedAndSentInfinityModel?.content) {
-            postUuids.push(...model.publishedAndSentInfinityModel.content.map(post => post.uuid));
+            posts.push(...model.publishedAndSentInfinityModel.content);
         }
-        if (postUuids.length > 0) {
-            this.postAnalytics.loadVisitorCounts(postUuids);
-        } else {
-            // console.log('No published posts found for analytics');
+        if (posts.length > 0) {
+            const postUuids = posts.map(post => post.uuid);
+            await Promise.all([
+                this.postAnalytics.loadVisitorCounts(postUuids),
+                this.postAnalytics.loadMemberCounts(posts)
+            ]);
         }
     }
 
