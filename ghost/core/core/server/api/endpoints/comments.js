@@ -21,15 +21,23 @@ function validateCommentData(data) {
     }
 }
 
-function setupMemberContext(frame, memberId) {
-    if (!frame.options.context) {
-        frame.options.context = {};
+function validateCreatedAt(createdAt) {
+    if (!createdAt) {
+        return undefined;
     }
-    if (!frame.options.context.member) {
-        frame.options.context.member = {};
+    
+    // Only accept string or Date objects, reject other types like numbers
+    if (typeof createdAt !== 'string' && !(createdAt instanceof Date)) {
+        return undefined;
     }
-    frame.options.context.member.id = memberId;
-    frame.options.context.internal = true;
+    
+    const date = new Date(createdAt);
+    // Check if the date is valid and not in the future
+    if (!isNaN(date.getTime()) && date <= new Date()) {
+        return date;
+    }
+    
+    return undefined;
 }
 
 /** @type {import('@tryghost/api-framework').Controller} */
@@ -118,9 +126,31 @@ const controller = {
             const data = frame.data.comments[0];
             
             validateCommentData(data);
-            setupMemberContext(frame, data.member_id);
+            const validatedCreatedAt = validateCreatedAt(data.created_at);
             
-            const result = await commentsService.controller.add(frame);
+            // Set internal context to prevent notifications
+            if (!frame.options.context) {
+                frame.options.context = {};
+            }
+            frame.options.context.internal = true;
+            
+            const result = data.parent_id
+                ? await commentsService.api.replyToComment(
+                    data.parent_id,
+                    data.in_reply_to_id,
+                    data.member_id,
+                    data.html,
+                    frame.options,
+                    validatedCreatedAt
+                )
+                : await commentsService.api.commentOnPost(
+                    data.post_id,
+                    data.member_id,
+                    data.html,
+                    frame.options,
+                    validatedCreatedAt
+                );
+            
             handleCacheHeaders(result, frame);
             
             return result;
