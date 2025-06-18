@@ -849,7 +849,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
             const accountFollowsQueryKey = QUERY_KEYS.accountFollows(handle, 'following');
             queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
 
-            // Update JSON-based explore profiles cache
+            // Update explore profiles cache
             queryClient.setQueryData(QUERY_KEYS.exploreProfiles(handle), (current: {pages: Array<{results: Record<string, { categoryName: string; sites: Account[] }>}>} | undefined) => {
                 if (!current) {
                     return current;
@@ -888,7 +888,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                 };
             });
 
-            // Update JSON-based suggested profiles cache (for all limit values)
+            // Update suggested profiles cache (for all limit values)
             queryClient.setQueriesData({queryKey: ['suggested_profiles_json'], exact: false}, (current: Account[] | undefined) => {
                 if (!current) {
                     return current;
@@ -961,7 +961,7 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
 
             queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
 
-            // Update JSON-based explore profiles cache
+            // Update explore profiles cache
             queryClient.setQueryData(QUERY_KEYS.exploreProfiles(handle), (current: {pages: Array<{results: Record<string, { categoryName: string; sites: Account[] }>}>} | undefined) => {
                 if (!current) {
                     return current;
@@ -1000,7 +1000,7 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                 };
             });
 
-            // Update JSON-based suggested profiles cache (for all limit values)
+            // Update suggested profiles cache (for all limit values)
             queryClient.setQueriesData({queryKey: ['suggested_profiles_json'], exact: false}, (current: Account[] | undefined) => {
                 if (!current) {
                     return current;
