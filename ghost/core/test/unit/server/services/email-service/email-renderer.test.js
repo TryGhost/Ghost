@@ -2331,21 +2331,6 @@ describe('Email renderer', function () {
             }
         });
 
-        it('Sets the linkColor correctly', async function () {
-            settings.accent_color = '#A1B2C3';
-            const tests = [
-                {background_color: '#15212A', expected: '#ffffff'},
-                {background_color: '#ffffff', expected: settings.accent_color}
-            ];
-
-            for (const test of tests) {
-                const data = await templateDataWithSettings({
-                    background_color: test.background_color
-                });
-                assert.equal(data.linkColor, test.expected);
-            }
-        });
-
         it('Uses the correct link colour best on settings when emailCustomization is enabled', async function () {
             labsEnabled = true;
             settings.accent_color = '#A1B2C3';
@@ -2353,12 +2338,15 @@ describe('Email renderer', function () {
                 {input: '#BADA55', expected: '#BADA55'},
                 {input: 'accent', expected: settings.accent_color},
                 {input: 'Invalid Color', expected: settings.accent_color}, // default to accent color
-                {input: null, expected: settings.accent_color} // default to accent color
+                // null = "auto" based on background color
+                {input: null, expected: '#FFFFFF', settings: {background_color: '#000000'}},
+                {input: null, expected: '#000000', settings: {background_color: '#FFFFFF'}}
             ];
 
             for (const test of tests) {
                 const data = await templateDataWithSettings({
-                    link_color: test.input
+                    link_color: test.input,
+                    ...(test.settings || {})
                 });
                 assert.equal(data.linkColor, test.expected);
             }
