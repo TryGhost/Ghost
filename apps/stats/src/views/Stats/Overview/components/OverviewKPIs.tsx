@@ -142,7 +142,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
             >
                 <GhAreaChart
                     className={areaChartClassName}
-                    color='hsl(var(--chart-blue))'
+                    color='hsl(var(--chart-darkblue))'
                     data={visitorsChartData}
                     id="visitors"
                     range={range}
@@ -168,7 +168,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
             >
                 <GhAreaChart
                     className={areaChartClassName}
-                    color='hsl(var(--chart-teal))'
+                    color='hsl(var(--chart-blue))'
                     data={membersChartData}
                     id="members"
                     range={range}
@@ -193,7 +193,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
             >
                 <GhAreaChart
                     className={areaChartClassName}
-                    color='hsl(var(--chart-purple))'
+                    color='hsl(var(--chart-teal))'
                     data={mrrChartData}
                     id="mrr"
                     range={range}
