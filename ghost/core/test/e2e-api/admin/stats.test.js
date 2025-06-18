@@ -311,28 +311,32 @@ describe('Stats API', function () {
                 });
         });
 
-        it('Validates postUuids parameter', async function () {
+        it('Returns empty results when postUuids parameter is missing', async function () {
             await agent
                 .post('/stats/posts-visitor-counts')
                 .body({})
-                .expectStatus(422)
+                .expectStatus(200)
                 .matchBodySnapshot({
-                    errors: [{
-                        id: anyObjectId
+                    stats: [{
+                        data: {
+                            visitor_counts: {}
+                        }
                     }]
                 });
         });
 
-        it('Validates postUuids is an array', async function () {
+        it('Returns empty results when postUuids is not an array', async function () {
             await agent
                 .post('/stats/posts-visitor-counts')
                 .body({
                     postUuids: 'not-an-array'
                 })
-                .expectStatus(422)
+                .expectStatus(200)
                 .matchBodySnapshot({
-                    errors: [{
-                        id: anyObjectId
+                    stats: [{
+                        data: {
+                            visitor_counts: {}
+                        }
                     }]
                 });
         });
@@ -371,29 +375,25 @@ describe('Stats API', function () {
                 });
         });
 
-        it('Validates postIds parameter', async function () {
+        it('Returns empty results when postIds parameter is missing', async function () {
             await agent
                 .post('/stats/posts-member-counts')
                 .body({})
-                .expectStatus(422)
+                .expectStatus(200)
                 .matchBodySnapshot({
-                    errors: [{
-                        id: anyObjectId
-                    }]
+                    stats: [{}]
                 });
         });
 
-        it('Validates postIds is an array', async function () {
+        it('Returns empty results when postIds is not an array', async function () {
             await agent
                 .post('/stats/posts-member-counts')
                 .body({
                     postIds: 'not-an-array'
                 })
-                .expectStatus(422)
+                .expectStatus(200)
                 .matchBodySnapshot({
-                    errors: [{
-                        id: anyObjectId
-                    }]
+                    stats: [{}]
                 });
         });
     });
