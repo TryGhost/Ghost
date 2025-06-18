@@ -443,6 +443,37 @@ const controller = {
         async query() {
             return await statsService.api.getLatestPostStats();
         }
+    },
+    postsVisitorCounts: {
+        headers: {
+            cacheInvalidate: false
+        },
+        data: [
+            'postUuids'
+        ],
+        validation: {
+            data: {
+                postUuids: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'getPostsVisitorCounts',
+                data: {
+                    postUuids: frame.data.postUuids
+                }
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getPostsVisitorCounts(frame.data.postUuids);
+        }
     }
 };
 

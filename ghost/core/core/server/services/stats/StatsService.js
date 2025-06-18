@@ -173,6 +173,20 @@ class StatsService {
     }
 
     /**
+     * Get visitor counts for multiple posts
+     * @param {string[]} postUuids - Array of post UUIDs
+     * @returns {Promise<{data: Object}>} Visitor counts mapped by post UUID
+     */
+    async getPostsVisitorCounts(postUuids) {
+        const visitorCounts = await this.posts.getPostsVisitorCounts(postUuids);
+        return {
+            data: {
+                visitor_counts: visitorCounts
+            }
+        };
+    }
+
+    /**
      * Get newsletter basic stats for sent posts (without click data)
      * @param {Object} options
      * @param {string} [options.newsletter_id] - ID of the specific newsletter to get stats for

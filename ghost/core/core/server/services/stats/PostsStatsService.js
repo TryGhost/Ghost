@@ -1068,6 +1068,44 @@ class PostsStatsService {
             }));
         }
     }
+
+    /**
+     * Get visitor counts for multiple posts from Tinybird
+     * @param {string[]} postUuids - Array of post UUIDs
+     * @returns {Promise<Object>} Map of post UUID to visitor count
+     */
+    async getPostsVisitorCounts(postUuids) {
+        try {
+            if (!postUuids || !Array.isArray(postUuids) || postUuids.length === 0) {
+                return {};
+            }
+
+            if (!this.tinybirdClient) {
+                // Return empty object if Tinybird is not configured
+                return {};
+            }
+
+            // Fetch visitor counts from Tinybird for all posts
+            const visitorData = await this.tinybirdClient.fetch('api_post_visitor_counts', {
+                post_uuids: postUuids
+            });
+
+            // Convert the response to a simple UUID -> count mapping
+            const visitorCounts = {};
+            if (visitorData && Array.isArray(visitorData)) {
+                visitorData.forEach((row) => {
+                    if (row.post_uuid && row.visits !== undefined) {
+                        visitorCounts[row.post_uuid] = row.visits;
+                    }
+                });
+            }
+
+            return visitorCounts;
+        } catch (error) {
+            logging.error('Error fetching visitor counts from Tinybird:', error);
+            return {};
+        }
+    }
 }
 
 module.exports = PostsStatsService;
