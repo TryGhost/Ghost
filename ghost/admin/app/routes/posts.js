@@ -1,9 +1,24 @@
 import AdminRoute from 'ghost-admin/routes/admin';
+import InfinityModel from 'ember-infinity/lib/infinity-model';
 import RSVP from 'rsvp';
 import {action} from '@ember/object';
 import {assign} from '@ember/polyfills';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
+
+class PostsWithAnalytics extends InfinityModel {
+    @service postAnalytics;
+
+    async afterInfinityModel(posts) {
+        // Only fetch analytics for published/sent posts
+        const publishedPosts = posts.filter(post => ['published', 'sent'].includes(post.status));
+        if (publishedPosts.length > 0) {
+            const postUuids = publishedPosts.map(post => post.uuid);
+            await this.postAnalytics.loadVisitorCounts(postUuids);
+        }
+        return posts;
+    }
+}
 
 export default class PostsRoute extends AdminRoute {
     @service infinity;
@@ -41,6 +56,9 @@ export default class PostsRoute extends AdminRoute {
     }
 
     model(params) {
+        // Reset analytics cache when model changes (filters change)
+        this.postAnalytics.reset();
+        
         const user = this.session.user;
         let filterParams = {tag: params.tag, visibility: params.visibility};
         let paginationParams = {
@@ -86,7 +104,7 @@ export default class PostsRoute extends AdminRoute {
             } else {
                 publishedAndSentInfinityModelParams = {...queryParams, order: params.order || 'published_at desc', filter: this._filterString({...filterParams, status: filterStatuses.includes('published') ? 'published' : 'sent'})};
             }
-            models.publishedAndSentInfinityModel = this.infinity.model(this.modelName, assign({perPage, startingPage: 1}, paginationParams, publishedAndSentInfinityModelParams));
+            models.publishedAndSentInfinityModel = this.infinity.model(this.modelName, assign({perPage, startingPage: 1}, paginationParams, publishedAndSentInfinityModelParams), PostsWithAnalytics);
         }
 
         return RSVP.hash(models);

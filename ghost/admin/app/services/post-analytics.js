@@ -15,6 +15,11 @@ export default class PostAnalyticsService extends Service {
         visitorCounts = null;
 
     /**
+     * @type {Set} UUIDs of posts we've already fetched analytics for
+     */
+    _fetchedUuids = new Set();
+
+    /**
      * Load visitor counts for the given post UUIDs
      * @param {string[]} postUuids - Array of post UUIDs
      * @returns {Promise}
@@ -29,7 +34,17 @@ export default class PostAnalyticsService extends Service {
             return Promise.resolve();
         }
         
-        return this._loadVisitorCounts.perform(postUuids);
+        // Filter out UUIDs we've already fetched
+        const newUuids = postUuids.filter(uuid => !this._fetchedUuids.has(uuid));
+        
+        if (newUuids.length === 0) {
+            return Promise.resolve();
+        }
+        
+        // Mark these UUIDs as being fetched
+        newUuids.forEach(uuid => this._fetchedUuids.add(uuid));
+        
+        return this._loadVisitorCounts.perform(newUuids);
     }
 
     /**
@@ -39,6 +54,14 @@ export default class PostAnalyticsService extends Service {
      */
     getVisitorCount(postUuid) {
         return this.visitorCounts && this.visitorCounts[postUuid] ? this.visitorCounts[postUuid] : null;
+    }
+
+    /**
+     * Reset the analytics cache - call this when filters change or on route transitions
+     */
+    reset() {
+        this.visitorCounts = null;
+        this._fetchedUuids.clear();
     }
 
     @task
@@ -53,7 +76,12 @@ export default class PostAnalyticsService extends Service {
             });
             // Parse the nested response structure
             const statsData = result.stats?.[0]?.data?.visitor_counts || {};
-            this.visitorCounts = statsData;
+            
+            // Merge with existing visitor counts instead of replacing
+            this.visitorCounts = {
+                ...this.visitorCounts,
+                ...statsData
+            };
         } catch (error) {
             // Silent failure - visitor counts are not critical
             this.visitorCounts = {};
