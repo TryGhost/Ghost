@@ -134,3 +134,40 @@ export const CopyLinkDemo: Story = {
         return <CopyExample />;
     }
 };
+
+export const PostSuccess: Story = {
+    render: () => {
+        const CopyExample = () => {
+            const [isOpen, setIsOpen] = useState(false);
+
+            return (
+                <div className="space-y-4">
+                    <PostShareModal
+                        author="Jane Smith"
+                        defaultOpen={isOpen}
+                        description={<>
+                            Your post was published on your site of <strong>The Utegaard</strong>, today at 12:40
+                        </>}
+                        faviconURL="https://www.google.com/s2/favicons?domain=example.com&sz=64"
+                        featureImageURL="https://picsum.photos/800/600?random=1"
+                        open={isOpen}
+                        postExcerpt="A comprehensive guide to implementing copy-to-clipboard functionality in React applications with proper error handling and user feedback."
+                        postTitle="Copy to Clipboard in React: Complete Guide"
+                        postURL="https://example.com/copy-clipboard-react-guide"
+                        primaryTitle="Boom it's out there"
+                        secondaryTitle="That's 519 post published"
+                        siteTitle="Tech Blog"
+                        onClose={() => setIsOpen(false)}
+                        onOpenChange={setIsOpen}
+                    >
+                        <Button onClick={() => setIsOpen(true)}>
+                            Post success dialog
+                        </Button>
+                    </PostShareModal>
+                </div>
+            );
+        };
+
+        return <CopyExample />;
+    }
+};
