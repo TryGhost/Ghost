@@ -73,7 +73,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         backgroundImage: `url(${latestPostStats.feature_image})`
                                     }}></div>
                             }
-                            <div className='flex flex-col justify-center'>
+                            <div className='flex flex-col items-start justify-center'>
                                 <div className='text-lg font-semibold leading-tighter tracking-tight hover:cursor-pointer hover:opacity-75' onClick={() => {
                                     if (!isLoading && latestPostStats) {
                                         navigate(`/posts/analytics/beta/${latestPostStats.id}`, {crossApp: true});
@@ -111,7 +111,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         }}
                                     >
                                         <LucideIcon.ChartNoAxesColumn />
-                                        Analytics
+                                        {!latestPostStats.email_only ? 'Analytics' : 'Post analytics' }
                                     </Button>
                                 </div>
                             </div>
