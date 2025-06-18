@@ -1044,8 +1044,7 @@ class EmailRenderer {
             const value = newsletter?.get('divider_color');
 
             if (value === 'accent') {
-                const accentColor = this.#settingsCache?.get('accent_color') || DEFAULT_ACCENT_COLOR;
-                return VALID_HEX_REGEX.test(accentColor) ? accentColor : DEFAULT_ACCENT_COLOR;
+                return this.#getAccentColor();
             } else if (VALID_HEX_REGEX.test(value)) {
                 return value;
             }
@@ -1060,6 +1059,10 @@ class EmailRenderer {
 
         if (value === 'accent') {
             return accentColor;
+        }
+
+        if (value === null) {
+            return textColorForBackgroundColor(this.#getBackgroundColor(newsletter)).hex();
         }
 
         if (VALID_HEX_REGEX.test(value)) {
