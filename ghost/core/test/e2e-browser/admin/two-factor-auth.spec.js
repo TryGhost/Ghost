@@ -1,8 +1,11 @@
 const DataGenerator = require('../../utils/fixtures/data-generator');
 const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
-const AdminLoginPage = require('./pages/admin-login.page');
-const AdminDashboardPage = require('./pages/admin-dashboard.page');
+
+const {
+    AdminLoginPage,
+    AdminDashboardPage
+} = require('./pages/index');
 
 // NOTE: The tests do not use the shared page, as it needs to clear cookies
 test.describe('Two-Factor authentication', () => {
