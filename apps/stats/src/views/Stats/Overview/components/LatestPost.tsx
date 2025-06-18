@@ -117,8 +117,8 @@ const LatestPost: React.FC<LatestPostProps> = ({
                             </div>
                         </div>
 
-                        <div className='flex h-full flex-col items-stretch gap-2 pr-6 text-sm'>
-                            <div className='grid h-full grid-cols-2 gap-x-6 border-l pl-6'>
+                        <div className='-ml-4 flex h-full flex-col items-stretch gap-2 pr-6 text-sm'>
+                            <div className='grid h-full grid-cols-2 gap-x-6 border-l pl-10'>
                                 <div className='group mr-2 flex flex-col gap-1.5 hover:cursor-pointer' onClick={() => {
                                     navigate(`/posts/analytics/beta/${latestPostStats.id}/web`, {crossApp: true});
                                 }}>
