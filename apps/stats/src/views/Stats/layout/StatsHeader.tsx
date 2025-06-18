@@ -16,14 +16,14 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
 
     return (
         <>
-            <header className='z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-black'>
+            <header className='z-40 -mx-8 bg-white/70 backdrop-blur-md dark:bg-black'>
                 <div className='relative flex w-full items-start justify-between gap-5 px-8 pb-0 pt-8'>
                     <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
                         Analytics
                     </H1>
                 </div>
             </header>
-            <Navbar className='sticky top-0 z-50 items-center border-none bg-white/70 py-8 backdrop-blur-md dark:bg-black'>
+            <Navbar className='sticky top-0 z-40 items-center border-none bg-white/70 py-8 backdrop-blur-md dark:bg-black'>
                 <Tabs className="w-full" defaultValue={location.pathname} variant='pill'>
                     <TabsList>
                         <TabsTrigger value="/" onClick={() => {

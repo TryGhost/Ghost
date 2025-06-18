@@ -1,6 +1,7 @@
 import React from 'react';
-import {BarChartLoadingIndicator, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, centsToDollars, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, centsToDollars, formatNumber} from '@tryghost/shade';
 import {STATS_RANGES} from '@src/utils/constants';
+import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
@@ -13,6 +14,7 @@ interface OverviewKPICardProps {
     diffValue?: string;
     color?: string;
     formattedValue: string;
+    trendingFromValue?: string;
     children?: React.ReactNode;
     onClick?: () => void;
 }
@@ -26,6 +28,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     diffDirection,
     diffValue,
     formattedValue,
+    trendingFromValue,
     children,
     onClick
 }) => {
@@ -33,23 +36,50 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     const {range} = useGlobalData();
     const IconComponent = iconName && LucideIcon[iconName] as LucideIcon.LucideIcon;
 
+    // Construct tooltip message based on input parameters
+    const diffTooltip = React.useMemo(() => {
+        if (!diffDirection || diffDirection === 'empty' || range === STATS_RANGES.allTime.value || !diffValue) {
+            return '';
+        }
+
+        const directionText = diffDirection === 'up' ? 'up' : diffDirection === 'down' ? 'down' : 'at';
+
+        // Get period text and clean it up for tooltip
+        const periodText = getPeriodText(range);
+        const timeRangeText = periodText
+            .replace('in the ', '') // Remove "in the " prefix
+            .replace(/^\(|\)$/g, ''); // Remove parentheses for "(all time)"
+
+        if (diffDirection === 'same') {
+            return `You're trending at the same level as ${formattedValue} compared to the ${timeRangeText}`;
+        }
+
+        return `You're trending ${directionText} ${diffValue} from ${trendingFromValue} compared to the ${timeRangeText}`;
+    }, [diffDirection, diffValue, trendingFromValue, formattedValue, range]);
+
     return (
-        <Card className={onClick && 'group transition-all hover:!cursor-pointer hover:bg-accent/50'} onClick={onClick}>
+        <Card className='group'>
             <CardHeader className='hidden'>
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
-            <KpiCardHeader className='grow gap-2 border-none pb-0'>
-                <KpiCardHeaderLabel className={onClick && 'transition-all group-hover:text-foreground'}>
-                    {color && <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color}}></span>}
-                    {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
-                    {title}
-                </KpiCardHeaderLabel>
-                <KpiCardHeaderValue
-                    diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : diffDirection}
-                    diffValue={diffValue}
-                    value={formattedValue}
-                />
+            <KpiCardHeader className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
+                <div className='flex grow flex-col gap-1.5 border-none pb-0'>
+                    <KpiCardHeaderLabel className={onClick && 'transition-all group-hover:text-foreground'}>
+                        {color && <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color}}></span>}
+                        {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
+                        {title}
+                    </KpiCardHeaderLabel>
+                    <KpiCardHeaderValue
+                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : diffDirection}
+                        diffTooltip={diffTooltip}
+                        diffValue={diffValue}
+                        value={formattedValue}
+                    />
+                </div>
+                {onClick &&
+                    <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={onClick}>View more</Button>
+                }
             </KpiCardHeader>
             <CardContent>
                 {children}
@@ -100,10 +130,10 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
     return (
         <div className='grid grid-cols-3 gap-8'>
             <OverviewKPICard
-                color='hsl(var(--chart-blue))'
                 description='Number of individual people who visited your website'
                 diffDirection='empty'
                 formattedValue={kpiValues.visits}
+                iconName='Eye'
                 linkto='/web/'
                 title='Unique visitors'
                 onClick={() => {
@@ -112,7 +142,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
             >
                 <GhAreaChart
                     className={areaChartClassName}
-                    color='hsl(var(--chart-blue))'
+                    color='hsl(var(--chart-darkblue))'
                     data={visitorsChartData}
                     id="visitors"
                     range={range}
@@ -124,20 +154,21 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
             </OverviewKPICard>
 
             <OverviewKPICard
-                color='hsl(var(--chart-teal))'
                 description='How number of members of your publication changed over time'
                 diffDirection={growthTotals.directions.total}
                 diffValue={growthTotals.percentChanges.total}
                 formattedValue={formatNumber(growthTotals.totalMembers)}
+                iconName='User'
                 linkto='/growth/'
                 title='Members'
+                trendingFromValue={`${formatNumber(membersChartData[0].value)}`}
                 onClick={() => {
                     navigate('/growth/?tab=total-members');
                 }}
             >
                 <GhAreaChart
                     className={areaChartClassName}
-                    color='hsl(var(--chart-teal))'
+                    color='hsl(var(--chart-blue))'
                     data={membersChartData}
                     id="members"
                     range={range}
@@ -148,20 +179,21 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
             </OverviewKPICard>
 
             <OverviewKPICard
-                color='hsl(var(--chart-purple))'
                 description='Monthly recurring revenue changes over time'
                 diffDirection={growthTotals.directions.mrr}
                 diffValue={growthTotals.percentChanges.mrr}
                 formattedValue={`${currencySymbol}${formatNumber(centsToDollars(growthTotals.mrr))}`}
+                iconName='Coins'
                 linkto='/growth/'
                 title='MRR'
+                trendingFromValue={`${formatNumber(mrrChartData[0].value)}`}
                 onClick={() => {
                     navigate('/growth/?tab=mrr');
                 }}
             >
                 <GhAreaChart
                     className={areaChartClassName}
-                    color='hsl(var(--chart-purple))'
+                    color='hsl(var(--chart-teal))'
                     data={mrrChartData}
                     id="mrr"
                     range={range}

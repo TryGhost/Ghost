@@ -30,15 +30,15 @@ const TopPosts: React.FC<TopPostsProps> = ({
                         <TableRow>
                             <TableHead variant='cardhead'>
                                 <CardHeader>
-                                    <CardTitle className='flex items-baseline justify-between leading-snug'>
+                                    <CardTitle className='flex items-baseline justify-between leading-snug  text-muted-foreground'>
                                         Top posts {getPeriodText(range)}
                                     </CardTitle>
                                     <CardDescription className='hidden'>Most viewed posts in this period</CardDescription>
                                 </CardHeader>
                             </TableHead>
-                            <TableHead className='w-[92px] text-right'>Visitors</TableHead>
-                            <TableHead className='w-[92px] whitespace-nowrap text-right'>Open rate</TableHead>
-                            <TableHead className='w-[92px] text-right'>Members</TableHead>
+                            <TableHead className='w-[12%] text-right'>Visitors</TableHead>
+                            <TableHead className='w-[12%] whitespace-nowrap text-right'>Open rate</TableHead>
+                            <TableHead className='w-[12%] text-right'>Members</TableHead>
                         </TableRow>
                     </TableHeader>
                     {isLoading ?
@@ -46,16 +46,16 @@ const TopPosts: React.FC<TopPostsProps> = ({
                             <TableRow key={i} className='border-none hover:bg-transparent'>
                                 <TableCell className='group-hover:bg-transparent'>
                                     <div className='flex w-full items-center gap-4'>
-                                        <Skeleton className='aspect-[16/10] w-20 rounded-sm' />
+                                        <Skeleton className='aspect-[16/10] w-24 rounded-sm' />
                                         <div className='flex w-full flex-col'>
                                             <Skeleton className='w-2/3' />
                                             <Skeleton className='w-20' />
                                         </div>
                                     </div>
                                 </TableCell>
-                                <TableCell className='w-[10%] group-hover:bg-transparent'><Skeleton /></TableCell>
-                                <TableCell className='w-[10%] group-hover:bg-transparent'><Skeleton /></TableCell>
-                                <TableCell className='w-[10%] group-hover:bg-transparent'><Skeleton /></TableCell>
+                                <TableCell className='w-[12%] group-hover:bg-transparent'><Skeleton /></TableCell>
+                                <TableCell className='w-[12%] group-hover:bg-transparent'><Skeleton /></TableCell>
+                                <TableCell className='w-[12%] group-hover:bg-transparent'><Skeleton /></TableCell>
                             </TableRow>
                         ))
                         :
@@ -70,15 +70,15 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                     <TableCell>
                                         <div className='flex items-center gap-4'>
                                             {post.feature_image ?
-                                                <div className='aspect-[16/10] w-20 shrink-0 rounded-sm bg-cover bg-center' style={{
+                                                <div className='aspect-[16/10] w-24 shrink-0 rounded-sm bg-cover bg-center' style={{
                                                     backgroundImage: `url(${post.feature_image})`
                                                 }}></div>
                                                 :
-                                                <FeatureImagePlaceholder className='aspect-[16/10] h-[50px] w-20 shrink-0' />
+                                                <FeatureImagePlaceholder className='aspect-[16/10] w-24 shrink-0' />
                                             }
                                             <div className='flex flex-col'>
-                                                <span className='font-semibold leading-[1.35em]'>{post.title}</span>
-                                                <span className='text-xs text-muted-foreground'>{formatDisplayDate(post.published_at)}</span>
+                                                <span className='text-base font-semibold leading-[1.35em]'>{post.title}</span>
+                                                <span className='text-sm text-muted-foreground'>{formatDisplayDate(post.published_at)}</span>
                                             </div>
                                         </div>
                                     </TableCell>
