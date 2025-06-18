@@ -1,15 +1,24 @@
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
+import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 
 interface PublishedPostData {
     id: string;
     type: string;
 }
 
+interface ExtendedPost extends Post {
+    authors?: {
+        name: string;
+    }[];
+    excerpt?: string;
+}
+
 export const usePostSuccessModal = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [publishedPostData, setPublishedPostData] = useState<PublishedPostData | null>(null);
     const [postCount, setPostCount] = useState<number | null>(null);
+    const {site} = useGlobalData();
     
     // Fetch the published post data if we have it
     const {data: postResponse} = useBrowsePosts({
@@ -30,7 +39,96 @@ export const usePostSuccessModal = () => {
         enabled: !!publishedPostData
     });
     
-    const post = postResponse?.posts?.[0] as Post | undefined;
+    const post = postResponse?.posts?.[0] as ExtendedPost | undefined;
+
+    // Helper functions for formatting
+    const formatSubscriberCount = (count: number) => {
+        return `${count} subscriber${count !== 1 ? 's' : ''}`;
+    };
+
+    const formatPublicationTime = (publishedAt: string) => {
+        return new Date(publishedAt).toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: false 
+        });
+    };
+
+    const getAuthorsText = (authors?: {name: string}[]) => {
+        return authors?.map(author => author.name).join(', ') || '';
+    };
+
+    // Memoized modal props
+    const modalProps = useMemo(() => {
+        if (!post) {
+            return null;
+        }
+
+        const showPostCount = !!postCount;
+        
+        // Build description to match Ember modal format
+        let description = '';
+        
+        if (post.email_only) {
+            description = 'Your email was sent to';
+        } else if (post.email?.email_count) {
+            description = 'Your post was published on your site and sent to';
+        } else {
+            description = 'Your post was published on your site';
+        }
+        
+        if (post.email?.email_count) {
+            const subscriberText = formatSubscriberCount(post.email.email_count);
+            description += ` ${subscriberText}`;
+            if (site?.title) {
+                description += ` of ${site.title}`;
+            }
+            description += ',';
+        }
+        
+        if (post.published_at) {
+            const publishedDate = new Date(post.published_at);
+            const isToday = publishedDate.toDateString() === new Date().toDateString();
+            
+            if (isToday) {
+                description += ' today';
+            } else {
+                description += ` on ${publishedDate.toLocaleDateString('en-US', {month: 'long', day: 'numeric'})}`;
+            }
+            description += ` at ${formatPublicationTime(post.published_at)}`;
+        }
+        
+        description += '.';
+        
+        const handleClose = () => {
+            setIsModalOpen(false);
+            setPublishedPostData(null);
+            setPostCount(null);
+        };
+
+        return {
+            open: isModalOpen,
+            onOpenChange: (open: boolean) => {
+                if (!open) {
+                    handleClose();
+                }
+            },
+            emailOnly: post.email_only,
+            postURL: post.url || '',
+            primaryTitle: 'Boom! It\'s out there.',
+            secondaryTitle: showPostCount && postCount ? 
+                `That's ${postCount} post${postCount !== 1 ? 's' : ''} published.` : 
+                'Spread the word!',
+            description,
+            featureImageURL: post.feature_image || '',
+            postTitle: post.title || '',
+            postExcerpt: post.excerpt || '',
+            faviconURL: '', // Could add favicon URL if available
+            siteTitle: site?.title || '',
+            author: getAuthorsText(post.authors),
+            onClose: handleClose
+        };
+    }, [post, isModalOpen, postCount, site?.title]);
 
     useEffect(() => {
         const checkForPublishedPost = () => {
@@ -73,7 +171,8 @@ export const usePostSuccessModal = () => {
         isModalOpen,
         post,
         postCount,
-        showPostCount: !!postCount, // Show post count if we have it
-        closeModal
+        showPostCount: !!postCount,
+        closeModal,
+        modalProps
     };
 }; 
