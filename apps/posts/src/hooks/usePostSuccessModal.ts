@@ -28,7 +28,7 @@ export const usePostSuccessModal = () => {
     const {data: postResponse} = useBrowsePosts({
         searchParams: publishedPostData ? {
             filter: `id:${publishedPostData.id}`,
-            include: 'authors,tags,newsletter,email'
+            include: 'authors,newsletter,email'
         } : {},
         enabled: !!publishedPostData
     });
