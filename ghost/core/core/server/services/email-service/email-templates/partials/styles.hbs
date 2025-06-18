@@ -589,18 +589,31 @@ figure blockquote p {
 }
 {{/hasFeature}}
 
-.post-title {
-    font-size: 36px;
-    line-height: 1.1em;
-    font-weight: {{titleWeight}};
-    text-align: center;
-}
-
 {{#hasFeature "emailCustomization"}}
 .post-title {
-    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    text-align: center;
+    {{#if headerBackgroundColor}}
+    background-color: {{headerBackgroundColor}};
+    {{/if}}
+
     {{#if postTitleColor}}
     color: {{postTitleColor}};
+    {{else}}
+    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
+    {{/if}}
+}
+.post-title > table td {
+    font-size: 36px;
+    line-height: 1.1;
+    font-weight: {{titleWeight}};
+    text-align: center;
+    {{#if headerBackgroundColor}}
+    background-color: {{headerBackgroundColor}};
+    {{/if}}
+    {{#if postTitleColor}}
+    color: {{postTitleColor}};
+    {{else}}
+    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
     {{/if}}
 }
 
@@ -609,6 +622,13 @@ figure blockquote p {
     color: {{postTitleColor}} !important;
 }
 {{/if}}
+{{else}}
+.post-title {
+    font-size: 36px;
+    line-height: 1.1em;
+    font-weight: {{titleWeight}};
+    text-align: center;
+}
 {{/hasFeature}}
 
 .post-title-with-excerpt {
@@ -624,6 +644,9 @@ figure blockquote p {
     letter-spacing: -0.01em;
 }
 .post-title-left {
+    text-align: left;
+}
+.post-title-left > table td {
     text-align: left;
 }
 
