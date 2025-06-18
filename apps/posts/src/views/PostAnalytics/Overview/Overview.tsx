@@ -116,10 +116,10 @@ const Overview: React.FC = () => {
     return (
         <>
             <PostAnalyticsHeader currentTab='Overview'>
-                <div className='flex items-center gap-1 text-nowrap rounded-full bg-green/10 px-3 py-px pr-4 text-xs text-green-600'>
+                <div className='flex items-center gap-1 text-nowrap rounded-md bg-purple/10 px-2 py-px pr-3 text-xs text-purple-600'>
                     <LucideIcon.FlaskConical size={16} strokeWidth={1.5} />
                     Viewing Analytics (beta)
-                    <Button className='pl-1 pr-0 text-green-600 !underline' size='sm' variant='link' onClick={() => {
+                    <Button className='pl-1 pr-0 text-purple-600 !underline' size='sm' variant='link' onClick={() => {
                         navigate(`/posts/analytics/${postId}`, {crossApp: true});
                     }}>Switch back</Button>
                 </div>
