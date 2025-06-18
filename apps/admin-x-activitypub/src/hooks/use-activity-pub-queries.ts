@@ -2051,10 +2051,7 @@ export function useResetNotificationsCountForUser(handle: string) {
     });
 }
 
-export function useExploreProfilesForUser(handle: string) {
-    const queryClient = useQueryClient();
-    const queryKey = QUERY_KEYS.exploreProfiles(handle);
-
+function useFilteredAccountsFromJSON() {
     const {data: followingData, hasNextPage, fetchNextPage, isLoading: isLoadingFollowing} = useAccountFollowsForUser('me', 'following');
     const {data: blockedAccountsData, hasNextPage: hasNextBlockedAccounts, fetchNextPage: fetchNextBlockedAccounts, isLoading: isLoadingBlockedAccounts} = useBlockedAccountsForUser('me');
     const {data: blockedDomainsData, hasNextPage: hasNextBlockedDomains, fetchNextPage: fetchNextBlockedDomains, isLoading: isLoadingBlockedDomains} = useBlockedDomainsForUser('me');
@@ -2122,7 +2119,7 @@ export function useExploreProfilesForUser(handle: string) {
         return domains;
     }, [blockedDomainsData]);
 
-    const fetchExploreProfilesFromJSON = useCallback(async () => {
+    const fetchAndFilterAccounts = useCallback(async () => {
         try {
             const response = await fetch('https://storage.googleapis.com/prd-activitypub-populate-explore-json/explore/accounts.json');
             if (!response.ok) {
@@ -2153,36 +2150,47 @@ export function useExploreProfilesForUser(handle: string) {
                 domainBlockedByMe: false
             }));
 
-            const results = {
-                uncategorized: {
-                    categoryName: 'Recommended',
-                    sites: accountsWithDefaults
-                }
-            };
-
-            return {
-                results,
-                nextPage: undefined
-            };
+            return accountsWithDefaults;
         } catch (error) {
-            return {
-                results: {
-                    uncategorized: {
-                        categoryName: 'Recommended',
-                        sites: []
-                    }
-                },
-                nextPage: undefined
-            };
+            return [];
         }
     }, [followingIds, blockedAccountIds, blockedDomains]);
+
+    const isLoading = isLoadingFollowing || isLoadingBlockedAccounts || isLoadingBlockedDomains;
+
+    return {
+        fetchAndFilterAccounts,
+        isLoading
+    };
+}
+
+export function useExploreProfilesForUser(handle: string) {
+    const queryClient = useQueryClient();
+    const queryKey = QUERY_KEYS.exploreProfiles(handle);
+    const {fetchAndFilterAccounts, isLoading} = useFilteredAccountsFromJSON();
+
+    const fetchExploreProfilesFromJSON = useCallback(async () => {
+        const accounts = await fetchAndFilterAccounts();
+
+        const results = {
+            uncategorized: {
+                categoryName: 'Recommended',
+                sites: accounts
+            }
+        };
+
+        return {
+            results,
+            nextPage: undefined
+        };
+    }, [fetchAndFilterAccounts]);
 
     const exploreProfilesQuery = useInfiniteQuery({
         queryKey,
         queryFn: () => fetchExploreProfilesFromJSON(),
         getNextPageParam: () => undefined,
         staleTime: 60 * 60 * 1000,
-        enabled: !isLoadingFollowing && !isLoadingBlockedAccounts && !isLoadingBlockedDomains
+        enabled: !isLoading
     });
 
     const updateExploreProfile = (id: string, updated: Partial<Account>) => {
@@ -2230,119 +2238,22 @@ export function useExploreProfilesForUser(handle: string) {
 export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.suggestedProfiles(handle, limit);
-
-    const {data: followingData, hasNextPage, fetchNextPage, isLoading: isLoadingFollowing} = useAccountFollowsForUser('me', 'following');
-    const {data: blockedAccountsData, hasNextPage: hasNextBlockedAccounts, fetchNextPage: fetchNextBlockedAccounts, isLoading: isLoadingBlockedAccounts} = useBlockedAccountsForUser('me');
-    const {data: blockedDomainsData, hasNextPage: hasNextBlockedDomains, fetchNextPage: fetchNextBlockedDomains, isLoading: isLoadingBlockedDomains} = useBlockedDomainsForUser('me');
-
-    useEffect(() => {
-        if (hasNextPage && !isLoadingFollowing) {
-            fetchNextPage();
-        }
-    }, [hasNextPage, fetchNextPage, isLoadingFollowing]);
-
-    useEffect(() => {
-        if (hasNextBlockedAccounts && !isLoadingBlockedAccounts) {
-            fetchNextBlockedAccounts();
-        }
-    }, [hasNextBlockedAccounts, fetchNextBlockedAccounts, isLoadingBlockedAccounts]);
-
-    useEffect(() => {
-        if (hasNextBlockedDomains && !isLoadingBlockedDomains) {
-            fetchNextBlockedDomains();
-        }
-    }, [hasNextBlockedDomains, fetchNextBlockedDomains, isLoadingBlockedDomains]);
-
-    const followingIds = useMemo(() => {
-        const ids = new Set<string>();
-        if (followingData?.pages) {
-            followingData.pages.forEach((page) => {
-                page.accounts.forEach((account) => {
-                    ids.add(account.id);
-                });
-            });
-        }
-        return ids;
-    }, [followingData]);
-
-    const blockedAccountIds = useMemo(() => {
-        const ids = new Set<string>();
-        if (blockedAccountsData?.pages) {
-            blockedAccountsData.pages.forEach((page) => {
-                page.accounts?.forEach((account: Account) => {
-                    ids.add(account.id);
-                });
-            });
-        }
-        return ids;
-    }, [blockedAccountsData]);
-
-    const blockedDomains = useMemo(() => {
-        const domains = new Set<string>();
-        if (blockedDomainsData?.pages) {
-            blockedDomainsData.pages.forEach((page) => {
-                page.domains?.forEach((domain: Account | string) => {
-                    if (typeof domain === 'string') {
-                        domains.add(domain);
-                    } else if (domain.url) {
-                        try {
-                            const url = new URL(domain.url);
-                            domains.add(url.hostname);
-                        } catch {
-                            // Ignore invalid URLs
-                        }
-                    }
-                });
-            });
-        }
-        return domains;
-    }, [blockedDomainsData]);
+    const {fetchAndFilterAccounts, isLoading} = useFilteredAccountsFromJSON();
 
     const suggestedProfilesQuery = useQuery({
         queryKey,
         async queryFn() {
-            try {
-                const response = await fetch('https://storage.googleapis.com/prd-activitypub-populate-explore-json/explore/accounts.json');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch explore accounts');
-                }
+            const accounts = await fetchAndFilterAccounts();
 
-                const data = await response.json();
-                const accounts = data.accounts as Account[];
+            const randomAccounts = accounts
+                .sort(() => Math.random() - 0.5)
+                .slice(0, limit);
 
-                const filteredAccounts = accounts.filter((account) => {
-                    if (blockedAccountIds.has(account.id)) {
-                        return false;
-                    }
-
-                    const parts = account.handle.split('@').filter(part => part.length > 0);
-                    const accountDomain = parts.length > 1 ? parts[parts.length - 1] : null;
-                    if (accountDomain && blockedDomains.has(accountDomain)) {
-                        return false;
-                    }
-
-                    return true;
-                });
-
-                const randomAccounts = filteredAccounts
-                    .sort(() => Math.random() - 0.5)
-                    .slice(0, limit);
-
-                const accountsWithDefaults = randomAccounts.map(account => ({
-                    ...account,
-                    followedByMe: followingIds ? followingIds.has(account.id) : false,
-                    blockedByMe: false,
-                    domainBlockedByMe: false
-                }));
-
-                return accountsWithDefaults;
-            } catch (error) {
-                return [];
-            }
+            return randomAccounts;
         },
         retry: false,
         staleTime: 60 * 60 * 1000,
-        enabled: !isLoadingFollowing && !isLoadingBlockedAccounts && !isLoadingBlockedDomains
+        enabled: !isLoading
     });
 
     const updateSuggestedProfile = (id: string, updated: Partial<Account>) => {
