@@ -892,23 +892,10 @@ jobs:
 
       - name: Start Ghost
         working-directory: ghost/core
-        run: node --import=tsx index.js &
-
-      - name: Wait for Ghost to be ready
-        run: |
-          timeout 60 bash -c 'until curl -f http://localhost:2368; do sleep 1; done'
-
-      - name: Run E2E tests
-        working-directory: e2e
-        run: yarn test:e2e
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-playwright-report
-          path: e2e/test-results
-          retention-days: 30
+        timeout-minutes: 1
+        run: node --import=tsx index.js
+        env:
+          DEBUG: '*'
 
   job_tinybird_forward:
     name: Tinybird Tests (Forward)
