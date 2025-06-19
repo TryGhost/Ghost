@@ -108,10 +108,10 @@ const Overview: React.FC = () => {
 
     const kpiIsLoading = isConfigLoading || isTotalsLoading || isPostLoading || tbLoading;
     const chartIsLoading = isPostLoading || isConfigLoading || chartLoading;
-    const typedPost = post as Post;
 
     // Use the utility function from admin-x-framework
-    const showNewsletterSection = hasBeenEmailed(typedPost);
+    const showNewsletterSection = hasBeenEmailed(post as Post);
+    const showWebSection = !post?.email_only;
 
     return (
         <>
@@ -125,19 +125,23 @@ const Overview: React.FC = () => {
                 </div>
             </PostAnalyticsHeader>
             <PostAnalyticsContent>
-                <div className={showNewsletterSection ? 'grid grid-cols-2 gap-8' : ''}>
-                    <WebOverview
-                        chartData={processedChartData}
-                        fullWidth={!showNewsletterSection}
-                        isLoading={chartIsLoading || kpiIsLoading || isSourcesLoading}
-                        range={chartRange}
-                        sourcesData={sourcesData}
-                        visitors={kpiValues.visits}
-                    />
-                    {showNewsletterSection && (
-                        <NewsletterOverview isNewsletterStatsLoading={isPostLoading} post={typedPost} />
-                    )}
-                </div>
+                {(showWebSection || showNewsletterSection) && (
+                    <div className={showWebSection && showNewsletterSection ? 'grid grid-cols-2 gap-8' : ''}>
+                        {showWebSection && (
+                            <WebOverview
+                                chartData={processedChartData}
+                                fullWidth={!showNewsletterSection}
+                                isLoading={chartIsLoading || kpiIsLoading || isSourcesLoading}
+                                range={chartRange}
+                                sourcesData={sourcesData}
+                                visitors={kpiValues.visits}
+                            />
+                        )}
+                        {showNewsletterSection && (
+                            <NewsletterOverview isNewsletterStatsLoading={isPostLoading} post={post as Post} />
+                        )}
+                    </div>
+                )}
                 <Card className='group overflow-hidden p-0'>
                     <div className='relative flex items-center justify-between gap-6'>
                         <CardHeader>
