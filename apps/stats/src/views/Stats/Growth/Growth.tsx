@@ -244,9 +244,11 @@ const Growth: React.FC = () => {
                                                             </svg>
                                                         </div>
                                                         <div className='space-y-1'>
-                                                            <h3 className='text-sm font-medium text-foreground'>No {selectedContentType === CONTENT_TYPES.PAGES ? 'pages' : selectedContentType === CONTENT_TYPES.POSTS_AND_PAGES ? 'content' : 'posts'} found</h3>
+                                                            <h3 className='text-sm font-medium text-foreground'>
+                                                                No conversions {selectedContentType === CONTENT_TYPES.PAGES ? 'on pages' : selectedContentType === CONTENT_TYPES.POSTS ? 'on posts' : ''} {getPeriodText(range).toLowerCase()}
+                                                            </h3>
                                                             <p className='text-sm text-muted-foreground'>
-                                                                No {selectedContentType === CONTENT_TYPES.PAGES ? 'pages' : selectedContentType === CONTENT_TYPES.POSTS_AND_PAGES ? 'posts or pages' : 'posts'} with member activity were published {getPeriodText(range).toLowerCase()}
+                                                                Try adjusting your date range to see more data.
                                                             </p>
                                                         </div>
                                                     </div>
