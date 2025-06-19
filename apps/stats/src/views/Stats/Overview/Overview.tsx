@@ -98,10 +98,11 @@ const Overview: React.FC = () => {
     const visitorsChartData = useMemo(() => {
         return sanitizeChartData<WebKpiDataItem>(visitorsData as WebKpiDataItem[] || [], range, 'visits' as keyof WebKpiDataItem, 'sum')?.map((item: WebKpiDataItem) => {
             const value = Number(item.visits);
+            const safeValue = isNaN(value) ? 0 : value;
             return {
                 date: String(item.date),
-                value,
-                formattedValue: formatNumber(value),
+                value: safeValue,
+                formattedValue: formatNumber(safeValue),
                 label: 'Visitors'
             };
         });
@@ -164,7 +165,10 @@ const Overview: React.FC = () => {
             return {visits: '0'};
         }
 
-        const totalVisits = visitorsData.reduce((sum, item) => sum + Number(item.visits), 0);
+        const totalVisits = visitorsData.reduce((sum, item) => {
+            const visits = Number(item.visits);
+            return sum + (isNaN(visits) ? 0 : visits);
+        }, 0);
 
         return {
             visits: formatNumber(totalVisits)

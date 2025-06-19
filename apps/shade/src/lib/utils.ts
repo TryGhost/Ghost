@@ -221,6 +221,9 @@ export const formatTimestamp = (timestamp: string) => {
 
 // Add thousands indicator to numbers
 export const formatNumber = (value: number): string => {
+    if (isNaN(value) || !isFinite(value)) {
+        return '0';
+    }
     return new Intl.NumberFormat('en-US').format(Math.round(value));
 };
 
