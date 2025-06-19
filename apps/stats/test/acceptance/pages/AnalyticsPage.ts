@@ -1,4 +1,4 @@
-import {Page} from "@playwright/test";
+import {Page} from '@playwright/test';
 
 class AnalyticsPage {
     protected pageUrl:string;
@@ -12,20 +12,6 @@ class AnalyticsPage {
     async visit(url = null) {
         const urlToVisit = url || this.pageUrl;
         await this.page.goto(urlToVisit);
-    }
-
-    protected debugHttp() {
-        this.page.on('request', request => {
-            console.debug('>>', request.method(), request.url());
-        });
-
-        this.page.on('response', async response => {
-            console.debug('<<', response.status(), response.url());
-
-            if (response.request().resourceType() === 'xhr') {
-                console.debug('Body:', await response.text());
-            }
-        });
     }
 }
 
