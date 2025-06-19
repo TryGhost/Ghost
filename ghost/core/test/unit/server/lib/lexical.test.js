@@ -1,7 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
 const jsdom = require('jsdom');
-const labs = require('../../../../core/shared/labs');
 const lexicalLib = require('../../../../core/server/lib/lexical');
 
 describe('lib/lexical', function () {
@@ -52,49 +51,44 @@ describe('lib/lexical', function () {
             rendered.should.containEql('<div class="kg-card kg-audio-card">');
         });
 
-        ['emailCustomization'].forEach(function (feature) {
-            it(`calls custom renderers (${feature})`, async function () {
-                // stub labs
-                sinon.stub(labs, 'isSet').withArgs(feature).returns(true);
+        it(`calls custom renderers`, async function () {
+            const {JSDOM} = jsdom;
+            const dom = new JSDOM();
+            const document = dom.window.document;
 
-                const {JSDOM} = jsdom;
-                const dom = new JSDOM();
-                const document = dom.window.document;
+            const customNodeRenderers = {
+                image: () => {
+                    const element = document.createElement('div');
+                    element.innerHTML = '<span>CUSTOM</span>';
+                    return {element, type: 'inner'};
+                }
+            };
 
-                const customNodeRenderers = {
-                    image: () => {
-                        const element = document.createElement('div');
-                        element.innerHTML = '<span>CUSTOM</span>';
-                        return {element, type: 'inner'};
-                    }
-                };
+            sinon.stub(lexicalLib, 'customNodeRenderers').get(() => customNodeRenderers);
 
-                sinon.stub(lexicalLib, 'customNodeRenderers').get(() => customNodeRenderers);
-
-                const lexicalState = JSON.stringify({
-                    root: {
-                        children: [
-                            {
-                                type: 'image',
-                                cardWidth: 'wide',
-                                src: '/content/images/2018/04/NatGeo06.jpg',
-                                width: 4000,
-                                height: 2000,
-                                caption: 'Birdies'
-                            }
-                        ],
-                        direction: null,
-                        format: '',
-                        indent: 0,
-                        type: 'root',
-                        version: 1
-                    }
-                });
-
-                const rendered = await lexicalLib.render(lexicalState);
-
-                rendered.should.containEql('<span>CUSTOM</span>');
+            const lexicalState = JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            type: 'image',
+                            cardWidth: 'wide',
+                            src: '/content/images/2018/04/NatGeo06.jpg',
+                            width: 4000,
+                            height: 2000,
+                            caption: 'Birdies'
+                        }
+                    ],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
             });
+
+            const rendered = await lexicalLib.render(lexicalState);
+
+            rendered.should.containEql('<span>CUSTOM</span>');
         });
     });
 });

@@ -60,12 +60,6 @@ function ctaCardTemplate(dataset) {
 }
 
 function emailCTATemplate(dataset, options = {}) {
-    // accent button color backgrounds are set in main template styles,
-    // for other button colors we need to set the background color explicitly
-    let buttonStyle = dataset.buttonColor === 'accent'
-        ? `color: ${dataset.buttonTextColor};`
-        : `background-color: ${dataset.buttonColor}; color: ${dataset.buttonTextColor};`;
-
     let imageDimensions;
 
     if (dataset.imageUrl && dataset.imageWidth && dataset.imageHeight) {
@@ -87,229 +81,111 @@ function emailCTATemplate(dataset, options = {}) {
         }
     }
 
-    if (options.feature?.emailCustomization) {
-        const isTransparentCTA = dataset.backgroundColor === 'none' || dataset.backgroundColor === 'white';
-        const isDarkBackground = options.design?.backgroundIsDark;
-        const isBlackButton = dataset.buttonColor === 'black' || dataset.buttonColor === '#000000' || dataset.buttonColor === '#000';
+    const isTransparentCTA = dataset.backgroundColor === 'none' || dataset.backgroundColor === 'white';
+    const isDarkBackground = options.design?.backgroundIsDark;
+    const isBlackButton = dataset.buttonColor === 'black' || dataset.buttonColor === '#000000' || dataset.buttonColor === '#000';
 
-        if (isTransparentCTA && isDarkBackground && isBlackButton) {
-            buttonStyle = `color: #000000;`;
-            dataset.buttonColor = 'white';
-        }
+    if (isTransparentCTA && isDarkBackground && isBlackButton) {
+        dataset.buttonColor = 'white';
     }
 
-    if (options.feature?.emailCustomization) {
-        const buttonHtml = renderEmailButton({
-            url: dataset.buttonUrl,
-            text: dataset.buttonText,
-            color: dataset.buttonColor,
-            style: options?.design?.buttonStyle
-        });
+    const buttonHtml = renderEmailButton({
+        url: dataset.buttonUrl,
+        text: dataset.buttonText,
+        color: dataset.buttonColor,
+        style: options?.design?.buttonStyle
+    });
 
-        const renderContent = () => {
-            if (dataset.layout === 'minimal') {
-                return `
-                    <tr>
-                        <td class="kg-cta-content">
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%" class="kg-cta-content-wrapper">
-                                <tr>
-                                    ${dataset.imageUrl ? `
-                                        <td class="kg-cta-image-container" width="64">
-                                            ${wrapWithLink(dataset, `<img src="${dataset.imageUrl}" alt="CTA Image" class="kg-cta-image" width="64" height="64">`)}
-                                        </td>
-                                    ` : ''}
-                                    <td class="kg-cta-content-inner">
-                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                            ${dataset.textValue ? `
-                                                <tr>
-                                                    <td class="kg-cta-text">
-                                                        ${dataset.textValue}
-                                                    </td>
-                                                </tr>
-                                            ` : ''}
-                                            ${showButton(dataset) ? `
+    const renderContent = () => {
+        if (dataset.layout === 'minimal') {
+            return `
+                <tr>
+                    <td class="kg-cta-content">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" class="kg-cta-content-wrapper">
+                            <tr>
+                                ${dataset.imageUrl ? `
+                                    <td class="kg-cta-image-container" width="64">
+                                        ${wrapWithLink(dataset, `<img src="${dataset.imageUrl}" alt="CTA Image" class="kg-cta-image" width="64" height="64">`)}
+                                    </td>
+                                ` : ''}
+                                <td class="kg-cta-content-inner">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        ${dataset.textValue ? `
+                                            <tr>
+                                                <td class="kg-cta-text">
+                                                    ${dataset.textValue}
+                                                </td>
+                                            </tr>
+                                        ` : ''}
+                                        ${showButton(dataset) ? `
                                             <tr>
                                                 <td class="kg-cta-button-container">
                                                     ${buttonHtml}
                                                 </td>
                                             </tr>
-                                            ` : ''}
-                                        </table>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                `;
-            }
-
-            return `
-                <tr>
-                    <td class="kg-cta-content">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" class="kg-cta-content-wrapper">
-                            ${dataset.imageUrl ? `
-                                <tr>
-                                    <td class="kg-cta-image-container">
-                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                            <tr>
-                                                <td>
-                                                    ${wrapWithLink(dataset, `<img src="${dataset.imageUrl}" alt="CTA Image" class="kg-cta-image" ${imageDimensions ? `width="${imageDimensions.width}"` : ''} ${imageDimensions ? `height="${imageDimensions.height}"` : ''}>`)}
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-                            ` : ''}
-                            <tr>
-                                <td class="kg-cta-text">
-                                    ${dataset.textValue}
+                                        ` : ''}
+                                    </table>
                                 </td>
                             </tr>
-                            ${showButton(dataset) ? `
-                                <tr>
-                                    <td class="kg-cta-button-container" align="${dataset.alignment}">
-                                        ${buttonHtml}
-                                    </td>
-                                </tr>
-                            ` : ''}
                         </table>
                     </td>
                 </tr>
             `;
-        };
+        }
 
         return `
-            <table class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} ${dataset.showDividers ? '' : 'kg-cta-no-dividers'} kg-cta-${dataset.layout} ${dataset.hasSponsorLabel ? '' : 'kg-cta-no-label'} ${dataset.textValue ? '' : 'kg-cta-no-text'} ${dataset.imageUrl ? 'kg-cta-has-img' : ''} ${dataset.linkColor === 'accent' ? 'kg-cta-link-accent' : ''} ${dataset.alignment === 'center' ? 'kg-cta-centered' : ''}" border="0" cellpadding="0" cellspacing="0" width="100%">
-                ${dataset.hasSponsorLabel ? `
-                    <tr>
-                        <td>
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                <tr>
-                                    <td class="kg-cta-sponsor-label">
-                                        ${dataset.sponsorLabel}
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                ` : ''}
-                ${renderContent()}
-            </table>
-        `;
-    } else {
-        const renderContent = () => {
-            if (dataset.layout === 'minimal') {
-                return `
-                    <tr>
-                        <td class="kg-cta-content">
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%" class="kg-cta-content-wrapper">
-                                <tr>
-                                    ${dataset.imageUrl ? `
-                                        <td class="kg-cta-image-container" width="64">
-                                            ${wrapWithLink(dataset, `<img src="${dataset.imageUrl}" alt="CTA Image" class="kg-cta-image" width="64" height="64">`)}
-                                        </td>
-                                    ` : ''}
-                                    <td class="kg-cta-content-inner">
-                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                            ${dataset.textValue ? `
-                                                <tr>
-                                                    <td class="kg-cta-text">
-                                                        ${dataset.textValue}
-                                                    </td>
-                                                </tr>
-                                            ` : ''}
-                                            ${showButton(dataset) ? `
-                                            <tr>
-                                                <td class="kg-cta-button-container">
-                                                    <table border="0" cellpadding="0" cellspacing="0" class="kg-cta-button-wrapper">
-                                                        <tr>
-                                                            <td class="${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}" style="${buttonStyle}">
-                                                                <a href="${dataset.buttonUrl}"
-                                                                   class="kg-cta-button ${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}"
-                                                                   style="${buttonStyle}"
-                                                                >
-                                                                    ${dataset.buttonText}
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                            ` : ''}
-                                        </table>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                `;
-            }
-
-            return `
-                <tr>
-                    <td class="kg-cta-content">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" class="kg-cta-content-wrapper">
-                            ${dataset.imageUrl ? `
-                                <tr>
-                                    <td class="kg-cta-image-container">
-                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                            <tr>
-                                                <td>
-                                                    ${wrapWithLink(dataset, `<img src="${dataset.imageUrl}" alt="CTA Image" class="kg-cta-image" ${imageDimensions ? `width="${imageDimensions.width}"` : ''} ${imageDimensions ? `height="${imageDimensions.height}"` : ''}>`)}
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-                            ` : ''}
+            <tr>
+                <td class="kg-cta-content">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" class="kg-cta-content-wrapper">
+                        ${dataset.imageUrl ? `
                             <tr>
-                                <td class="kg-cta-text">
-                                    ${dataset.textValue}
+                                <td class="kg-cta-image-container">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td>
+                                                ${wrapWithLink(dataset, `<img src="${dataset.imageUrl}" alt="CTA Image" class="kg-cta-image" ${imageDimensions ? `width="${imageDimensions.width}"` : ''} ${imageDimensions ? `height="${imageDimensions.height}"` : ''}>`)}
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </td>
                             </tr>
-                            ${showButton(dataset) ? `
-                                <tr>
-                                    <td class="kg-cta-button-container">
-                                        <table border="0" cellpadding="0" cellspacing="0">
-                                            <tr>
-                                                <td class="kg-cta-button-wrapper ${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}" style="${buttonStyle}">
-                                                    <a href="${dataset.buttonUrl}"
-                                                       class="kg-cta-button ${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}"
-                                                       style="${buttonStyle}"
-                                                    >
-                                                        ${dataset.buttonText}
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-                            ` : ''}
+                        ` : ''}
+                        <tr>
+                            <td class="kg-cta-text">
+                                ${dataset.textValue}
+                            </td>
+                        </tr>
+                        ${showButton(dataset) ? `
+                            <tr>
+                                <td class="kg-cta-button-container" align="${dataset.alignment}">
+                                    ${buttonHtml}
+                                </td>
+                            </tr>
+                        ` : ''}
+                    </table>
+                </td>
+            </tr>
+        `;
+    };
+
+    return `
+        <table class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} ${dataset.showDividers ? '' : 'kg-cta-no-dividers'} kg-cta-${dataset.layout} ${dataset.hasSponsorLabel ? '' : 'kg-cta-no-label'} ${dataset.textValue ? '' : 'kg-cta-no-text'} ${dataset.imageUrl ? 'kg-cta-has-img' : ''} ${dataset.linkColor === 'accent' ? 'kg-cta-link-accent' : ''} ${dataset.alignment === 'center' ? 'kg-cta-centered' : ''}" border="0" cellpadding="0" cellspacing="0" width="100%">
+            ${dataset.hasSponsorLabel ? `
+                <tr>
+                    <td>
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                                <td class="kg-cta-sponsor-label">
+                                    ${dataset.sponsorLabel}
+                                </td>
+                            </tr>
                         </table>
                     </td>
                 </tr>
-            `;
-        };
-
-        return `
-            <table class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} ${dataset.showDividers ? '' : 'kg-cta-no-dividers'} kg-cta-${dataset.layout} ${dataset.hasSponsorLabel ? '' : 'kg-cta-no-label'} ${dataset.textValue ? '' : 'kg-cta-no-text'} ${dataset.imageUrl ? 'kg-cta-has-img' : ''} ${dataset.linkColor === 'accent' ? 'kg-cta-link-accent' : ''} ${dataset.alignment === 'center' ? 'kg-cta-centered' : ''}" border="0" cellpadding="0" cellspacing="0" width="100%">
-                ${dataset.hasSponsorLabel ? `
-                    <tr>
-                        <td>
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                <tr>
-                                    <td class="kg-cta-sponsor-label">
-                                        ${dataset.sponsorLabel}
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                ` : ''}
-                ${renderContent()}
-            </table>
-        `;
-    }
+            ` : ''}
+            ${renderContent()}
+        </table>
+    `;
 }
 
 function renderCallToActionNode(node, options = {}) {

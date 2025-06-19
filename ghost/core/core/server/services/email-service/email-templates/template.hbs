@@ -9,24 +9,25 @@
     </head>
     <body>
         <span class="preheader">{{preheader}}</span>
-        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body" width="100%">
-            <!-- Outlook doesn't respect max-width so we need an extra centered table -->
-            <!--[if mso]>
-            <tr>
-                <td>
-                    <center>
-                        <table border="0" cellpadding="0" cellspacing="0" width="600">
-            <![endif]-->
-            <tr>
-                <td>&nbsp;</td>
-                <td class="{{classes.container}}">
-                    <div class="content">
-                        <!-- START CENTERED WHITE CONTAINER -->
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="main" width="100%">
 
-                            <!-- START MAIN CONTENT AREA -->
+        <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
+        {{#if hasHeaderContent}}
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="header" width="100%">
+                <!-- Outlook doesn't respect max-width so we need an extra centered table -->
+                <!--[if mso]>
+                <tr>
+                    <td>
+                        <center>
+                            <table border="0" cellpadding="0" cellspacing="0" width="600">
+                <![endif]-->
+                <tr>
+                    <td>&nbsp;</td>
+                    <td class="{{classes.container}}" align="center">
+                        <div class="content">
+                        <!-- Header content constrained to 600px -->
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="header-main">
                             <tr>
-                                <td class="wrapper">
+                                <td class="header-content">
                                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                         {{#if headerImage}}
                                             <tr class="header-image-row">
@@ -76,7 +77,13 @@
                                         {{#if newsletter.showPostTitleSection}}
                                             <tr>
                                                 <td class="{{classes.title}}">
-                                                    <a href="{{post.url}}" class="{{classes.titleLink}}">{{post.title}}</a>
+                                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                                        <tr>
+                                                            <td>
+                                                                <a href="{{post.url}}" class="{{classes.titleLink}}">{{post.title}}</a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
                                                 </td>
                                             </tr>
                                             {{#if (and newsletter.showExcerpt post.customExcerpt)}}
@@ -87,7 +94,7 @@
                                                 </tr>
                                             {{/if}}
                                             <tr>
-                                                <td style="width: 100%">
+                                                <td width="100%" style="width: 100%" align="center">
                                                     <table class="post-meta-wrapper" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-bottom: 32px;">
                                                         <tr>
                                                             <td height="20" class="{{classes.meta}}" style="padding: 0;">
@@ -124,7 +131,7 @@
                                                 ></td>
                                             </tr>
 
-                                             {{#if post.feature_image_caption }}
+                                            {{#if post.feature_image_caption }}
                                                 <tr>
                                                     <td align="center">
                                                         <div class="feature-image-caption">
@@ -134,6 +141,40 @@
                                                 </tr>
                                             {{/if}}
                                         {{/if}}
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        </div>
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+                <!--[if mso]>
+                            </table>
+                        </center>
+                    </td>
+                </tr>
+                <![endif]-->
+            </table>
+        {{/if}}
+
+        <!-- MAIN CONTENT AREA -->
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body" width="100%">
+            <!-- Outlook doesn't respect max-width so we need an extra centered table -->
+            <!--[if mso]>
+            <tr>
+                <td>
+                    <center>
+                        <table border="0" cellpadding="0" cellspacing="0" width="600">
+            <![endif]-->
+            <tr>
+                <td>&nbsp;</td>
+                <td class="{{classes.container}}">
+                    <div class="content">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="main" width="100%">
+                            <tr>
+                                <td class="wrapper">
+                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                         <tr class="post-content-row">
                                             <td class="{{classes.body}}">
                                                 <!-- POST CONTENT START -->
@@ -210,7 +251,7 @@
                                         <tr>
                                             <td class="footer">{{site.title}} &copy; {{year}} – <a href="%%{unsubscribe_url}%%">{{t 'Unsubscribe'}}</a></td>
                                         </tr>
-                                        
+
                                         {{#if showBadge }}
                                             <tr>
                                                 <td class="footer-powered"><a href="https://ghost.org/?via=pbg-newsletter"><img src="https://static.ghost.org/v4.0.0/images/powered.png" border="0" width="142" height="30" class="gh-powered" alt="Powered by Ghost"></a></td>
@@ -219,9 +260,9 @@
                                     </table>
                                 </td>
                             </tr>
+
                         </table>
                         <!-- END CENTERED WHITE CONTAINER -->
-
                     </div>
                 </td>
                 <td>&nbsp;</td>

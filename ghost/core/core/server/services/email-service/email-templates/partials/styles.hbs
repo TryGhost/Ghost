@@ -55,13 +55,10 @@ table td {
     width: 100%;
 }
 
-{{#hasFeature "emailCustomization"}}
 .body {
     background-color: {{backgroundColor}} !important;
 }
-{{/hasFeature}}
 
-{{#hasFeature "emailCustomization"}}
 .header {
     {{#if headerBackgroundColor}}
     background-color: {{headerBackgroundColor}};
@@ -69,7 +66,6 @@ table td {
     background-color: {{backgroundColor}};
     {{/if}}
 }
-{{/hasFeature}}
 
 /* Set a max-width, and make it display as block so it will automatically stretch to that width, but will also shrink down on a phone or something */
 .body .container {
@@ -181,11 +177,7 @@ dt {
     float: left;
     margin: 0 20px 0 0;
     width: 120px;
-    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
-    {{else}}
-    color: #15212A;
-    {{/hasFeature}}
     font-weight: 500;
     text-align: right;
 }
@@ -210,17 +202,13 @@ blockquote.kg-blockquote-alt {
     text-align: center;
     font-size: 1.2em;
     font-style: italic;
-    {{#hasFeature "emailCustomization"}}
-        {{#if backgroundIsDark}}
-            color: #ffffff;
-            color: rgba(255, 255, 255, .6);
-        {{else}}
-            color: #15212a;
-            color: rgba(0, 0, 0, 0.6);
-        {{/if}}
+    {{#if backgroundIsDark}}
+        color: #ffffff;
+        color: rgba(255, 255, 255, .6);
     {{else}}
-        color: #73818c;
-    {{/hasFeature}}
+        color: #15212a;
+        color: rgba(0, 0, 0, 0.6);
+    {{/if}}
 }
 
 blockquote p {
@@ -364,13 +352,10 @@ h6 + .kg-paywall .kg-paywall-hr td {
     {{#if sectionTitleColor}}
     color: {{sectionTitleColor}};
     {{else}}
-    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
-    {{/hasFeature}}
     {{/if}}
 }
 
-{{#hasFeature "emailCustomization"}}
 /* Apply custom content text color to main content elements */
 .post-content-row > td > p,
 .post-content-row .post-content > p,
@@ -406,9 +391,7 @@ h6 + .kg-paywall .kg-paywall-hr td {
 .post-content-row .kg-cta-bg-purple .kg-cta-text p {
     color: inherit !important;
 }
-{{/hasFeature}}
 
-{{#hasFeature "emailCustomization"}}
 .kg-cta-bg-none .kg-cta-sponsor-label span,
 .kg-cta-bg-white .kg-cta-sponsor-label span {
     {{#if backgroundIsDark}}
@@ -419,9 +402,7 @@ h6 + .kg-paywall .kg-paywall-hr td {
         color: rgba(0, 0, 0, 0.6);
     {{/if}}
 }
-{{/hasFeature}}
 
-{{#hasFeature "emailCustomization"}}
 /* Links in captions */
 .feature-image-caption a,
 .kg-toggle-card:not(.kg-cta-card) a {
@@ -440,7 +421,6 @@ h6 + .kg-paywall .kg-paywall-hr td {
 .subscription-box .manage-subscription a {
     color: {{linkColor}} !important;
 }
-{{/hasFeature}}
 
 h1 strong,
 h2 strong,
@@ -467,17 +447,13 @@ figcaption {
     padding-top: 10px;
     padding-bottom: 10px;
     line-height: 1.5em;
-    {{#hasFeature "emailCustomization"}}
-        {{#if backgroundIsDark}}
-            color: #ffffff;
-            color: rgba(255, 255, 255, .6);
-        {{else}}
-            color: #15212a;
-            color: rgba(0, 0, 0, 0.6);
-        {{/if}}
+    {{#if backgroundIsDark}}
+        color: #ffffff;
+        color: rgba(255, 255, 255, .6);
     {{else}}
-        color: #73818c;
-    {{/hasFeature}}
+        color: #15212a;
+        color: rgba(0, 0, 0, 0.6);
+    {{/if}}
 }
 
 figcaption a {
@@ -533,7 +509,6 @@ figure blockquote p {
     padding-top: 32px;
 }
 
-{{#hasFeature "emailCustomization"}}
 .site-url {
     color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
     font-size: 16px;
@@ -542,32 +517,15 @@ figure blockquote p {
     text-transform: uppercase;
     text-align: center;
 }
-{{else}}
-.site-url {
-    color: #15212A;
-    font-size: 16px;
-    letter-spacing: -0.1px;
-    font-weight: 700;
-    text-transform: uppercase;
-    text-align: center;
-}
-{{/hasFeature}}
 
 .site-url-bottom-padding {
     padding-bottom: 12px;
 }
 
-{{#hasFeature "emailCustomization"}}
 .site-title {
     color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
 }
-{{else}}
-.site-title {
-    color: #15212A;
-}
-{{/hasFeature}}
 
-{{#hasFeature "emailCustomization"}}
 .site-subtitle {
     {{#if headerBackgroundIsDark}}
         color: #ffffff;
@@ -580,27 +538,13 @@ figure blockquote p {
     font-weight: 400;
     text-transform: none;
 }
-{{else}}
-.site-subtitle {
-    color: #73818c;
-    font-size: 13px;
-    font-weight: 400;
-    text-transform: none;
-}
-{{/hasFeature}}
 
-{{#hasFeature "emailCustomization"}}
 .post-title {
     text-align: center;
     {{#if headerBackgroundColor}}
     background-color: {{headerBackgroundColor}};
     {{/if}}
-
-    {{#if postTitleColor}}
     color: {{postTitleColor}};
-    {{else}}
-    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
-    {{/if}}
 }
 .post-title > table td {
     font-size: 36px;
@@ -610,26 +554,13 @@ figure blockquote p {
     {{#if headerBackgroundColor}}
     background-color: {{headerBackgroundColor}};
     {{/if}}
-    {{#if postTitleColor}}
     color: {{postTitleColor}};
-    {{else}}
-    color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
-    {{/if}}
 }
 
-{{#if postTitleColor}}
-.post-title-color a {
+.post-title a {
     color: {{postTitleColor}} !important;
 }
-{{/if}}
-{{else}}
-.post-title {
-    font-size: 36px;
-    line-height: 1.1em;
-    font-weight: {{titleWeight}};
-    text-align: center;
-}
-{{/hasFeature}}
+
 
 .post-title-with-excerpt {
     padding-bottom: 8px;
@@ -669,11 +600,7 @@ figure blockquote p {
 
 .post-excerpt {
     margin: 0;
-    {{#hasFeature "emailCustomization"}}
     color: {{#if headerBackgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
-    {{else}}
-    color: #15212A;
-    {{/hasFeature}}
     font-size: 19px;
     line-height: 1.4em;
     text-align: center;
@@ -701,7 +628,6 @@ figure blockquote p {
     text-align: left;
 }
 
-{{#hasFeature "emailCustomization"}}
 .post-meta,
 .view-online {
     {{#if headerBackgroundIsDark}}
@@ -715,15 +641,6 @@ figure blockquote p {
     font-weight: 400;
     text-align: center;
 }
-{{else}}
-.post-meta,
-.view-online {
-    color: #73818c;
-    font-size: 13px;
-    font-weight: 400;
-    text-align: center;
-}
-{{/hasFeature}}
 
 .post-meta-left {
     text-align: left;
@@ -750,7 +667,6 @@ figure blockquote p {
     white-space: nowrap;
 }
 
-{{#hasFeature "emailCustomization"}}
 .view-online-link {
     word-wrap: none;
     white-space: nowrap;
@@ -763,14 +679,6 @@ figure blockquote p {
     {{/if}}
     text-decoration: underline !important;
 }
-{{else}}
-.view-online-link {
-    word-wrap: none;
-    white-space: nowrap;
-    color: #73818c;
-    text-decoration: underline !important;
-}
-{{/hasFeature}}
 
 .feature-image {
     padding-bottom: 30px;
@@ -796,7 +704,6 @@ figure blockquote p {
     padding-bottom: 32px;
     text-align: center;
     font-size: 13px !important;
-    {{#hasFeature "emailCustomization"}}
     {{#if headerBackgroundIsDark}}
         color: #ffffff;
         color: rgba(255, 255, 255, .6);
@@ -804,9 +711,6 @@ figure blockquote p {
         color: #15212a;
         color: rgba(0, 0, 0, 0.6);
     {{/if}}
-    {{else}}
-    color: #73818c;
-    {{/hasFeature}}
     line-height: 1.5em;
 }
 
@@ -825,11 +729,9 @@ figure blockquote p {
     text-align: center;
 }
 
-{{#hasFeature "emailCustomization"}}
 .feedback-buttons-container {
     background-color: {{backgroundColor}};
 }
-{{/hasFeature}}
 
 .feedback-buttons {
     /*width: auto !important;*/
@@ -843,7 +745,6 @@ figure blockquote p {
     vertical-align: middle;
 }
 
-{{#hasFeature "emailCustomization"}}
 .feedback-button-text {
     display: inline-block;
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
@@ -854,18 +755,6 @@ figure blockquote p {
     line-height: 1.4em;
     word-break: break-word;
 }
-{{else}}
-.feedback-button-text {
-    display: inline-block;
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-    color: #15212A;
-    font-size: 13px !important;
-    font-weight: 500;
-    margin: 1em 0 0 0;
-    line-height: 1.4em;
-    word-break: break-word;
-}
-{{/hasFeature}}
 
 /* -------------------------------------
     LATEST POSTS TABLE
@@ -876,7 +765,6 @@ figure blockquote p {
     border-bottom: 1px solid {{dividerColor}};
 }
 
-{{#hasFeature "emailCustomization"}}
 h3.latest-posts-header {
     margin: 0;
     padding: 8px 0 8px;
@@ -886,17 +774,6 @@ h3.latest-posts-header {
     font-weight: 600;
     text-transform: uppercase;
 }
-{{else}}
-h3.latest-posts-header {
-    margin: 0;
-    padding: 8px 0 8px;
-    color: #15212A;
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-{{/hasFeature}}
 
 .latest-post {
     max-width: 600px !important;
@@ -941,37 +818,10 @@ h3.latest-posts-header {
 .latest-post p {
     margin: 0;
     padding: 0;
-    color: #73818c; {{!-- TODO: replaced with emailCustomization feature below --}}
     font-size: 15px;
     font-weight: 400;
 }
 
-.latest-post p a {
-    color: #73818c !important; {{!-- TODO: replaced with emailCustomization feature below --}}
-}
-
-/* Custom heading colors for latest posts */
-.latest-post-title h4 {
-    {{#if sectionTitleColor}}
-    color: {{sectionTitleColor}};
-    {{else}}
-    {{#hasFeature "emailCustomization"}}
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
-    {{/hasFeature}}
-    {{/if}}
-}
-
-.latest-post-title h4 a {
-    {{#if sectionTitleColor}}
-    color: {{sectionTitleColor}} !important;
-    {{else}}
-    {{#hasFeature "emailCustomization"}}
-    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
-    {{/hasFeature}}
-    {{/if}}
-}
-
-{{#hasFeature "emailCustomization"}}
 /* Override latest post text colors with custom content color */
 .latest-post-excerpt,
 .latest-post-excerpt a,
@@ -985,7 +835,23 @@ h3.latest-posts-header {
         color: rgba(0, 0, 0, 0.6) !important;
     {{/if}}
 }
-{{/hasFeature}}
+
+/* Custom heading colors for latest posts */
+.latest-post-title h4 {
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}};
+    {{else}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{/if}}
+}
+
+.latest-post-title h4 a {
+    {{#if sectionTitleColor}}
+    color: {{sectionTitleColor}} !important;
+    {{else}}
+    color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
+    {{/if}}
+}
 
 /* -------------------------------------
     SUBSCRIPTION DETAILS BOX
@@ -994,11 +860,7 @@ h3.latest-posts-header {
 .subscription-box {
     padding: 32px 0;
     border-bottom: 1px solid {{dividerColor}};
-    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
-    {{else}}
-    color: #15212A;
-    {{/hasFeature}}
 }
 
 .subscription-box h3 {
@@ -1009,7 +871,6 @@ h3.latest-posts-header {
     margin: 0 0 18px;
 }
 
-{{#hasFeature "emailCustomization"}}
 .subscription-box p {
     margin-bottom: 0;
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
@@ -1018,24 +879,10 @@ h3.latest-posts-header {
     line-height: 1.45em;
     text-decoration: none;
 }
-{{else}}
-.subscription-box p {
-    margin-bottom: 0;
-    color: #15212A !important;
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 1.45em;
-    text-decoration: none;
-}
-{{/hasFeature}}
 
 
 .subscription-box p a {
-    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
-    {{else}}
-    color: #15212A !important;
-    {{/hasFeature}}
     text-decoration: none;
 }
 .manage-subscription {
@@ -1047,7 +894,6 @@ h3.latest-posts-header {
 }
 
 .manage-subscription a {
-    {{#hasFeature "emailCustomization"}}
     color: {{linkColor}};
     {{#if (eq linkStyle "regular")}}
     text-decoration: none;
@@ -1057,10 +903,6 @@ h3.latest-posts-header {
     {{else}}
     text-decoration: underline;
     {{/if}}
-    {{else}}
-    color: {{accentColor}};
-    text-decoration: underline;
-    {{/hasFeature}}
 }
 
 /* -------------------------------------
@@ -1086,7 +928,6 @@ h3.latest-posts-header {
     border-bottom: 1px solid {{dividerColor}};
 }
 
-{{#hasFeature "emailCustomization"}}
 {{#if headerBackgroundColor}}
 .post-content-row > td {
     padding-top: 32px;
@@ -1104,20 +945,10 @@ h3.latest-posts-header {
     padding-bottom: 32px;
 }
 {{/if}}
-{{else}}
-.post-content-row:first-child > td,
-.header-image-row + .post-content-row > td {
-    padding-top: 32px;
-}
-{{/hasFeature}}
 
 .post-content a,
 .post-content-sans-serif a {
-    {{#hasFeature "emailCustomization"}}
     color: {{linkColor}};
-    {{else}}
-    color: {{accentColor}};
-    {{/hasFeature}}
     {{#if (eq linkStyle "regular")}}
     text-decoration: none;
     {{else if (eq linkStyle "bold")}}
@@ -1147,10 +978,6 @@ td.kg-card-spacing {
 
 .kg-bookmark-card {
     width: 100%;
-    {{#hasFeature "emailCustomization"}}
-    {{else}}
-    background: #ffffff;
-    {{/hasFeature}}
 }
 
 .kg-bookmark-card a {
@@ -1181,7 +1008,6 @@ td.kg-card-spacing {
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     text-decoration: none;
     border-radius: 3px;
-    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
         color: #ffffff;
         background-color: #15212A;
@@ -1195,10 +1021,6 @@ td.kg-card-spacing {
         border: 1px solid #e0e7eb;
         border: 1px solid rgba(0, 0, 0, 0.12);
     {{/if}}
-    {{else}}
-    color: #15212A;
-    border: 1px solid #e0e7eb;
-    {{/hasFeature}}
 }
 
 .kg-bookmark-content {
@@ -1208,11 +1030,7 @@ td.kg-card-spacing {
 }
 
 .kg-bookmark-title {
-    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
-    {{else}}
-    color: #15212A;
-    {{/hasFeature}}
     font-size: 15px;
     line-height: 1.5em;
     font-weight: 600;
@@ -1223,7 +1041,6 @@ td.kg-card-spacing {
     overflow-y: hidden;
     margin-top: 12px;
     max-height: 40px;
-    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
     color: #ffffff;
     color: rgba(255, 255, 255, 0.6);
@@ -1231,9 +1048,6 @@ td.kg-card-spacing {
     color: #15212a;
     color: rgba(0, 0, 0, 0.6);
     {{/if}}
-    {{else}}
-    color: #73818c;
-    {{/hasFeature}}
     font-size: 13px;
     line-height: 1.5em;
     font-weight: 400;
@@ -1260,11 +1074,7 @@ td.kg-card-spacing {
     flex-wrap: wrap;
     align-items: center;
     margin-top: 14px;
-    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
-    {{else}}
-    color: #15212A;
-    {{/hasFeature}}
     font-size: 13px;
     font-weight: 400;
 }
@@ -1432,7 +1242,6 @@ td.kg-card-spacing {
     font-size: 20px;
 }
 
-{{#hasFeature "emailCustomization"}}
 .kg-cta-card {
     margin: 0 0 1.5em 0;
     padding: 0 24px;
@@ -1442,13 +1251,6 @@ td.kg-card-spacing {
         border-radius: 0;
     {{/if}}
 }
-{{else}}
-.kg-cta-card {
-    margin: 0 0 1.5em 0;
-    padding: 0 24px;
-    border-radius: 8px;
-}
-{{/hasFeature}}
 
 .kg-cta-card + * {
     margin-top: 1.5em !important;
@@ -1472,7 +1274,6 @@ td.kg-card-spacing {
 }
 
 .kg-cta-bg-white {
-    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
         background-color: #15212A;
         background-color: rgba(0, 0, 0, 0.15);
@@ -1484,10 +1285,6 @@ td.kg-card-spacing {
         border: 1px solid #e0e7eb;
         border: 1px solid rgba(0, 0, 0, 0.12);
     {{/if}}
-    {{else}}
-    background: #fff;
-    border: 1px solid #e0e7eb;
-    {{/hasFeature}}
 }
 
 .kg-cta-bg-grey {
@@ -1633,7 +1430,6 @@ table.kg-cta-content-wrapper:not(.kg-cta-bg-none.kg-cta-no-dividers table.kg-cta
     padding-bottom: 0;
 }
 
-{{#hasFeature "emailCustomization"}}
 img.kg-cta-image {
     display: block;
     border: 0;
@@ -1651,13 +1447,6 @@ img.kg-cta-image {
         border-radius: 0;
     {{/if}}
 }
-{{else}}
-img.kg-cta-image {
-    display: block;
-    border-radius: 6px;
-    border: 0;
-}
-{{/hasFeature}}
 
 .kg-cta-minimal img.kg-cta-image {
     width: 64px;
@@ -1707,7 +1496,6 @@ img.kg-cta-image {
     text-align: center;
 }
 
-{{#hasFeature "emailCustomization"}}
 .kg-cta-button-container {
     padding-top: 20px;
 }
@@ -1751,71 +1539,6 @@ img.kg-cta-image {
 .kg-cta-has-img.kg-cta-immersive table.btn {
     width: 100%;
 }
-{{else}}
-.kg-cta-button-container {
-    padding-top: 20px;
-}
-
-.kg-cta-minimal table.kg-cta-button-wrapper,
-.kg-cta-immersive:not(.kg-cta-has-img) .kg-cta-button-container table {
-    width: unset !important;
-}
-
-.kg-cta-immersive.kg-cta-centered .kg-cta-button-container table {
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.kg-cta-minimal table.kg-cta-button-wrapper td {
-    padding: 6px 18px 8px;
-    border-radius: {{buttonBorderRadius}};
-}
-
-.kg-cta-minimal table.kg-cta-button-wrapper td.kg-style-accent {
-    background-color: {{accentColor}} !important;
-}
-
-.kg-cta-immersive .kg-cta-button-wrapper {
-    padding: 8px 20px 9px;
-    border-radius: {{buttonBorderRadius}};
-    text-align: center;
-}
-
-.kg-cta-immersive .kg-cta-button-wrapper.kg-style-accent {
-    background-color: {{accentColor}} !important;
-    color: #fff !important;
-}
-
-.kg-cta-minimal a.kg-cta-button {
-    display: inline-block;
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-    font-size: 0.85em;
-    font-weight: 600;
-    font-weight: 500;
-    text-decoration: none;
-}
-
-.kg-cta-minimal a.kg-cta-button.kg-style-accent {
-    background-color: {{accentColor}} !important;
-    color: #fff !important;
-}
-
-.kg-cta-immersive a.kg-cta-button {
-    display: inline-block;
-    width: 100%;
-    font-size: 0.9em;
-    font-weight: 600;
-    font-weight: 500;
-    text-align: center;
-    text-decoration: none;
-    border-radius: {{buttonBorderRadius}};
-}
-
-.kg-cta-immersive a.kg-cta-button.kg-style-accent {
-    background-color: {{accentColor}} !important;
-    color: #fff !important;
-}
-{{/hasFeature}}
 
 .kg-header-card {
     margin: 0 0 1.5em 0;
@@ -1844,7 +1567,6 @@ img.kg-cta-image {
     color: #ffffff;
 }
 
-{{#hasFeature "emailCustomization"}}
 .kg-header-card h2 {
     font-size: 32px;
     font-weight: {{titleWeight}};
@@ -1920,117 +1642,6 @@ img.kg-cta-image {
     color: #000000 !important;
 }
 
-{{else}}
-.kg-header-card h2 {
-    font-size: 3em;
-    font-weight: 700;
-    line-height: 1.1em;
-    margin: 0 0 0.125em;
-}
-
-.kg-header-card h2 strong {
-    font-weight: 800;
-}
-
-.kg-header-card.kg-size-small h2 {
-    font-size: 2.5em;
-}
-
-.kg-header-card.kg-size-large h2 {
-    font-size: 3.5em;
-}
-
-.kg-header-card h3 {
-    font-size: 1.125em;
-    font-weight: 500;
-    line-height: 1.3em;
-    margin: 0;
-}
-
-.kg-header-card h3 strong {
-    font-weight: 700;
-}
-
-.kg-header-card.kg-size-large h3 {
-    font-size: 1.25em;
-}
-
-.kg-header-card.kg-size-small h3 {
-    font-size: 1em;
-}
-
-.kg-header-card-button {
-    margin: 0;
-    margin-top: 1.75em;
-    background: #ffffff;
-    border-radius: 5px;
-    box-sizing: border-box;
-    cursor: pointer;
-    display: inline-block;
-    font-size: 14px;
-    font-weight: bold;
-    padding: 8px 16px;
-    text-decoration: none !important;
-    color: #15171A;
-}
-
-.kg-size-large .kg-header-card-button {
-    margin-top: 2em;
-}
-
-.kg-size-small .kg-header-card-button {
-    margin-top: 1.5em;
-}
-
-.kg-style-light .kg-header-card-button {
-    background: {{accentColor}} !important;
-    color: #ffffff !important;
-}
-
-/* Header v2 */
-
-.kg-header-card.kg-v2 {
-    padding: 0;
-    text-align: inherit;
-}
-
-.kg-header-card.kg-v2 .kg-header-card-image {
-    height: 320px;
-    background-repeat: no-repeat;
-}
-
-.kg-header-card.kg-v2 .kg-header-card-content {
-    padding: 80px 48px;
-}
-
-.kg-header-card.kg-v2 .kg-header-card-image + .kg-header-card-content {
-    padding-top: 64px;
-    padding-bottom: 64px;
-}
-
-.kg-header-card.kg-v2 .kg-header-card-heading {
-    margin: 0;
-    line-height: 1em;
-}
-
-.kg-header-card.kg-v2 .kg-header-card-subheading {
-    margin: 0.75em 0 0;
-}
-
-.kg-header-card.kg-v2 .kg-header-card-heading a,
-.kg-header-card.kg-v2 .kg-header-card-subheading a {
-    color: inherit;
-}
-
-.kg-header-card.kg-v2 .kg-header-card-button {
-    margin-top: 24px;
-    padding: 10px 20px;
-    font-size: 16px;
-    font-weight: 500;
-}
-{{/hasFeature}}
-
-{{#hasFeature "emailCustomization"}}
 .kg-product-card {
     margin: 0 0 1.5em;
     {{#if hasRoundedImageCorners}}
@@ -2122,87 +1733,12 @@ img.kg-cta-image {
 .kg-product-button-wrapper table.btn {
     width: 100%;
 }
-{{else}}
-.kg-product-card {
-    margin: 0 0 1.5em;
-    padding: 20px;
-    border-radius: 5px;
-    border: 1px solid #e9e9e9;
-}
-
-.kg-product-image {
-    margin-bottom: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-}
-
-.kg-product-image img {
-    width: 100%;
-    height: auto;
-    padding-bottom: 16px;
-    border: none;
-}
-
-.kg-product-title {
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
-    font-size: 22px !important;
-    font-weight: 700;
-}
-
-.kg-product-rating {
-    margin-bottom: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-}
-
-.kg-product-rating img {
-    width: 96px;
-}
-
-.kg-product-description-wrapper {
-    margin-bottom: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-}
-
-.kg-product-description {
-    margin-bottom: -24px;
-    padding-top: 8px;
-    font-size: 17px;
-    line-height: 1.4;
-    opacity: 0.7;
-}
-
-.kg-product-button-wrapper {
-    margin-top: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-}
-
-.kg-product-button-wrapper .btn {
-    padding-top: 16px;
-}
-
-.kg-product-button-wrapper .btn a {
-    width: 100%;
-    padding: 0;
-    text-align: center;
-    color: #ffffff;
-}
-
-.kg-product-button-wrapper .btn a span {
-    display: block;
-    padding: 12px 25px;
-}
-{{/hasFeature}}
 
 .kg-audio-card {
     width: auto;
     width: 100%;
     margin: 0 auto 1.5em;
     border-radius: 3px;
-    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
         background-color: #15212A;
         background-color: rgba(0, 0, 0, 0.15);
@@ -2214,10 +1750,6 @@ img.kg-cta-image {
         border: 1px solid #e0e7eb;
         border: 1px solid rgba(0, 0, 0, 0.12);
     {{/if}}
-    {{else}}
-    border: 1px solid #e0e7eb;
-    background-color: #ffffff;
-    {{/hasFeature}}
 }
 .kg-audio-title {
     display: block;
@@ -2228,22 +1760,14 @@ img.kg-cta-image {
     font-weight: 600;
     line-height: 18px;
     text-decoration: none !important;
-    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
-    {{else}}
-    color: #15212A !important;
-    {{/hasFeature}}
 }
 .kg-audio-play-button {
     display: block;
     box-sizing: border-box;
     width: 16px;
     height: 16px;
-    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
-    {{else}}
-    color: #15212A !important;
-    {{/hasFeature}}
     border-style: solid;
     border-width: 8px 0px 8px 16px;
     border-color: transparent transparent transparent currentColor;
@@ -2252,7 +1776,6 @@ img.kg-cta-image {
     display: block;
     text-decoration: none !important;
     font-size: 13px;
-    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
     color: #ffffff !important;
     color: rgba(255, 255, 255, 0.6) !important;
@@ -2260,12 +1783,8 @@ img.kg-cta-image {
     color: #15212a !important;
     color: rgba(0, 0, 0, 0.6) !important;
     {{/if}}
-    {{else}}
-    color: #73818c !important;
-    {{/hasFeature}}
 }
 .kg-audio-link {
-    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
     color: #ffffff !important;
     color: rgba(255, 255, 255, 0.6) !important;
@@ -2273,16 +1792,12 @@ img.kg-cta-image {
     color: #15212a !important;
     color: rgba(0, 0, 0, 0.6) !important;
     {{/if}}
-    {{else}}
-    color: #73818c !important;
-    {{/hasFeature}}
 }
 .kg-file-card {
     width: auto;
     width: 100%;
     margin: 0 0 1.5em 0;
     border-radius: 3px;
-    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
         background-color: #15212A;
         background-color: rgba(0, 0, 0, 0.15);
@@ -2294,10 +1809,6 @@ img.kg-cta-image {
         border: 1px solid #e0e7eb;
         border: 1px solid rgba(0, 0, 0, 0.12);
     {{/if}}
-    {{else}}
-    border: 1px solid #e0e7eb;
-    background-color: #ffffff;
-    {{/hasFeature}}
 }
 .kg-file-title {
     display: block;
@@ -2308,11 +1819,7 @@ img.kg-cta-image {
     font-weight: bold;
     line-height: 1.3em;
     text-decoration: none !important;
-    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
-    {{else}}
-    color: #15212A !important;
-    {{/hasFeature}}
 }
 .kg-file-description {
     display: block;
@@ -2322,7 +1829,6 @@ img.kg-cta-image {
     font-size: 15px;
     line-height: 1.4em;
     text-decoration: none !important;
-    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
     color: #ffffff !important;
     color: rgba(255, 255, 255, 0.6) !important;
@@ -2330,9 +1836,6 @@ img.kg-cta-image {
     color: #15212a !important;
     color: rgba(0, 0, 0, 0.6) !important;
     {{/if}}
-    {{else}}
-    color: #73818c !important;
-    {{/hasFeature}}
 }
 .kg-file-meta {
     display: block;
@@ -2343,7 +1846,6 @@ img.kg-cta-image {
     font-size: 13px;
     line-height: 1.4em;
     text-decoration: none !important;
-    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
     color: #ffffff;
     color: rgba(255, 255, 255, 0.6);
@@ -2351,17 +1853,10 @@ img.kg-cta-image {
     color: #15212a;
     color: rgba(0, 0, 0, 0.6);
     {{/if}}
-    {{else}}
-    color: #73818c;
-    {{/hasFeature}}
 }
 .kg-file-name {
     font-weight: 500;
-    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
-    {{else}}
-    color: #15212A !important;
-    {{/hasFeature}}
 }
 .kg-file-thumbnail {
     position: relative;
@@ -2378,12 +1873,10 @@ img.kg-cta-image {
     border: 1px solid #e0e7eb;
 }
 
-{{#hasFeature "emailCustomization"}}
 .kg-toggle-card {
     border-radius: 4px;
     margin-bottom: 24px;
     width: 100%;
-    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
         background-color: #15212A;
         background-color: rgba(0, 0, 0, 0.15);
@@ -2395,9 +1888,6 @@ img.kg-cta-image {
         border: 1px solid #e0e7eb;
         border: 1px solid rgba(0, 0, 0, 0.12);
     {{/if}}
-    {{else}}
-    border: 1px solid #E5ECF0;
-    {{/hasFeature}}
 }
 
 .kg-toggle-heading {
@@ -2410,27 +1900,19 @@ img.kg-cta-image {
     font-weight: {{titleWeight}};
     {{#if sectionTitleColor}}
     color: {{sectionTitleColor}};
-    {{else}}
-    {{#hasFeature "emailCustomization"}}
-    {{#if backgroundIsDark}}
+    {{else if backgroundIsDark}}
     color: #ffffff !important;
     {{else}}
     color: #15212A !important;
     {{/if}}
-    {{/hasFeature}}
-    {{/if}}
 }
 
 .kg-toggle-content {
-    {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
     color: #ffffff;
     {{else}}
     color: #15212A;
     {{/if}}
-    {{else}}
-    color: #15212A;
-    {{/hasFeature}}
     font-size: 16px;
     line-height: 1.5;
     padding: 0 24px 24px;
@@ -2439,17 +1921,7 @@ img.kg-cta-image {
 .kg-toggle-content > *:last-of-type {
     margin-bottom: 0;
 }
-{{else}}
-.kg-toggle-card {
-    background: transparent;
-    padding: 20px;
-    margin-bottom: 1.5em;
-    border-radius: 4px;
-    border: 1px solid #73818c;
-}
-{{/hasFeature}}
 
-{{#hasFeature "emailCustomization"}}
 .kg-paywall {
     text-align: center;
 }
@@ -2462,18 +1934,14 @@ img.kg-cta-image {
     max-width: 440px;
     margin: 0 auto 1.5em auto;
     text-wrap: pretty;
-    {{#hasFeature "emailCustomization"}}
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}};
-    {{/hasFeature}}
 }
-{{/hasFeature}}
 
 
 /* -------------------------------------
     HEADER, FOOTER, MAIN
 ------------------------------------- */
 
-{{#hasFeature "emailCustomization"}}
 .header {
     width: 100%;
     border-spacing: 0;
@@ -2500,20 +1968,10 @@ img.kg-cta-image {
     background-color: transparent;
     {{/if}}
 }
-{{else}}
-.main {
-    background: #ffffff;
-    border-radius: 3px;
-    border-spacing: 20px 0;
-    width: 100%;
-}
-{{/hasFeature}}
 
-{{#hasFeature "emailCustomization"}}
 .main {
     background-color: {{backgroundColor}} !important;
 }
-{{/hasFeature}}
 
 .wrapper {
     box-sizing: border-box;
@@ -2524,7 +1982,6 @@ img.kg-cta-image {
     padding-top: 10px;
 }
 
-{{#hasFeature "emailCustomization"}}
 .footer {
     {{#if backgroundIsDark}}
         color: #ffffff;
@@ -2554,31 +2011,11 @@ img.kg-cta-image {
     text-decoration: underline;
     font-size: 13px;
 }
-{{else}}
-.footer {
-    color: #73818c;
-    margin-top: 20px;
-    text-align: center;
-    font-size: 13px!important;
-    padding-bottom: 10px;
-    padding-top: 10px;
-    padding-left: 30px;
-    padding-right: 30px;
-    line-height: 1.5em;
-}
-
-.footer a {
-    color: #73818c;
-    text-decoration: underline;
-    font-size: 13px;
-}
-{{/hasFeature}}
 
 /* -------------------------------------
     BUTTONS
 ------------------------------------- */
 
-{{#hasFeature "emailCustomization"}}
 table.btn {
     box-sizing: border-box;
     width: auto;
@@ -2632,69 +2069,7 @@ table.btn-accent a {
     color: {{accentContrastColor}};
     {{/if}}
 }
-{{else}}
-.btn {
-    box-sizing: border-box;
-    width: 100%;
-    display: table;
-}
 
-.btn>tbody>tr>td {
-    padding-bottom: 15px;
-}
-
-.btn table {
-    width: auto;
-}
-
-.btn table td {
-    background-color: #ffffff;
-    border-radius: 5px;
-    {{#hasFeature "emailCustomization"}}
-    border-radius: {{buttonBorderRadius}};
-    {{/hasFeature}}
-    text-align: center;
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-}
-
-.btn a {
-    background-color: #ffffff;
-    border: solid 1px #3498db;
-    border-radius: 5px;
-    {{#hasFeature "emailCustomization"}}
-    border-radius: {{buttonBorderRadius}};
-    {{/hasFeature}}
-    box-sizing: border-box;
-    color: #3498db;
-    cursor: pointer;
-    display: inline-block;
-    font-size: 14px;
-    font-weight: bold;
-    margin: 0;
-    padding: 12px 25px;
-    text-decoration: none;
-}
-
-.btn-primary table td {
-    background-color: #3498db;
-}
-
-.btn-primary a {
-    background-color: #3498db;
-    border-color: #3498db;
-    color: #ffffff;
-}
-
-.btn-accent table td {
-    background-color: {{adjustedAccentColor}};
-}
-
-.btn-accent a {
-    background-color: {{adjustedAccentColor}};
-    border-color: {{adjustedAccentColor}};
-    color: {{adjustedAccentContrastColor}};
-}
-{{/hasFeature}}
 /* -------------------------------------
     OTHER STYLES THAT MIGHT BE USEFUL
 ------------------------------------- */
@@ -2784,15 +2159,9 @@ table.btn-accent a {
         font-size: 16px;
     }
 
-    {{#hasFeature "emailCustomization"}}
     table.header .post-excerpt {
         font-size: 16px !important;
     }
-    {{else}}
-    table.body .post-excerpt {
-        font-size: 16px !important;
-    }
-    {{/hasFeature}}
 
     table.body .kg-callout-card {
         padding: 16px 24px !important;
@@ -2817,7 +2186,6 @@ table.btn-accent a {
         width: 100% !important;
     }
 
-    {{#hasFeature "emailCustomization"}}
     table.body .main,
     table.header .header-main {
         border-spacing: 10px 0 !important;
@@ -2825,25 +2193,6 @@ table.btn-accent a {
         border-radius: 0 !important;
         border-right-width: 0 !important;
     }
-    {{else}}
-    table.body .main {
-        border-spacing: 10px 0 !important;
-        border-left-width: 0 !important;
-        border-radius: 0 !important;
-        border-right-width: 0 !important;
-    }
-    {{/hasFeature}}
-
-    {{#hasFeature "emailCustomization"}}
-    {{else}}
-    table.body .btn table {
-        width: 100% !important;
-    }
-
-    table.body .btn a {
-        width: 100% !important;
-    }
-    {{/hasFeature}}
 
     table.body .img-responsive {
         height: auto !important;
@@ -2851,7 +2200,6 @@ table.btn-accent a {
         width: auto !important;
     }
 
-    {{#hasFeature "emailCustomization"}}
     table.header .site-icon {
         padding-top: 0 !important;
     }
@@ -2928,84 +2276,6 @@ table.btn-accent a {
         font-size: 26px !important;
         line-height: 1.1em !important;
     }
-    {{else}}
-        table.body .site-icon {
-        padding-top: 0 !important;
-    }
-
-    table.body .site-info {
-        padding-top: 24px !important;
-    }
-
-    table.body .post-title-link {
-        margin-top: 24px !important;
-    }
-
-    table.body .post-meta-wrapper {
-        padding-bottom: 24px !important;
-    }
-
-    table.body .site-icon img {
-        width: 36px !important;
-        height: 36px !important;
-    }
-
-    table.body .site-url a {
-        font-size: 13px !important;
-        padding-bottom: 16px !important;
-    }
-
-    table.body .post-meta,
-    table.body .post-meta-date {
-        white-space: normal !important;
-        font-size: 13px !important;
-        line-height: 1.2em;
-    }
-
-    table.body .post-meta,
-    table.body .view-online {
-        width: 100% !important;
-    }
-
-    table.body .post-meta-left,
-    table.body .post-meta-left.view-online {
-        width: 100% !important;
-        text-align: left !important;
-    }
-
-    table.body .post-meta.view-online-mobile {
-        display: table-row !important;
-    }
-
-    table.body .post-meta-left.view-online-mobile,
-    table.body .post-meta-left.view-online-mobile .view-online {
-        text-align: left !important;
-    }
-
-    table.body .post-meta.view-online.desktop {
-        display: none !important;
-    }
-
-    table.body .view-online {
-        text-decoration: underline;
-    }
-
-
-    table.body .footer p, table.body .footer p span {
-        font-size: 13px !important;
-    }
-
-    table.body .view-online-link,
-    table.body .footer,
-    table.body .footer a {
-        font-size: 13px !important;
-    }
-
-    table.body .post-title a {
-        font-size: 26px !important;
-        line-height: 1.1em !important;
-    }
-    {{/hasFeature}}
 
     table.feedback-buttons {
         display: table !important;
@@ -3137,32 +2407,6 @@ table.btn-accent a {
         margin: 2em 0 !important;
     }
 
-    {{#hasFeature "emailCustomization"}}
-    {{else}}
-        table.body .kg-header-card.kg-v2 span {
-        font-size: inherit !important;
-    }
-
-    table.body .kg-header-card.kg-v2 .kg-header-card-content {
-        padding-top: 64px !important;
-        padding-bottom: 64px !important;
-    }
-
-    table.body .kg-header-card.kg-v2 .kg-header-card-image + .kg-header-card-content {
-        padding-top: 52px !important;
-        padding-bottom: 52px !important;
-    }
-
-    table.body .kg-header-card.kg-v2 .kg-header-card-heading {
-        font-size: 2.2em !important;
-        line-height: 1.1 !important;
-    }
-
-    table.body .kg-header-card.kg-v2 .kg-header-card-subheading {
-        line-height: 1.3em !important;
-    }
-    {{/hasFeature}}
-
    .feature-image-caption {
         font-size: 13px!important;
    }
@@ -3229,21 +2473,6 @@ table.btn-accent a {
         width: 52px !important;
         height: 52px !important;
     }
-
-    {{#hasFeature "emailCustomization"}}
-    {{else}}
-    table.body .kg-cta-minimal a.kg-cta-button {
-        display: inline-block !important;
-    }
-
-    table.body .kg-cta-minimal table.kg-cta-button-wrapper td {
-        padding: 4px 16px 5px;
-    }
-
-    table.body .kg-cta-immersive .kg-cta-button-wrapper {
-        padding: 6px 18px 7px;
-    }
-    {{/hasFeature}}
 }
 
 /* -------------------------------------
@@ -3284,18 +2513,6 @@ table.btn-accent a {
         font-weight: inherit;
         line-height: inherit;
     }
-
-    {{#hasFeature "emailCustomization"}}
-    {{else}}
-    .btn-primary table td:hover {
-        background-color: #34495e !important;
-    }
-
-    .btn-primary a:hover {
-        background-color: #34495e !important;
-        border-color: #34495e !important;
-    }
-    {{/hasFeature}}
 }
 
 {{#if showBadge}}
