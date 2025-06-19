@@ -892,10 +892,13 @@ jobs:
 
       - name: Start Ghost
         working-directory: ghost/core
-        timeout-minutes: 1
-        run: node --import=tsx index.js
+        run: node --import=tsx index.js &
         env:
           DEBUG: '*'
+
+      - name: Wait for Ghost to be ready
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:2368; do sleep 1; done'
 
   job_tinybird_forward:
     name: Tinybird Tests (Forward)
