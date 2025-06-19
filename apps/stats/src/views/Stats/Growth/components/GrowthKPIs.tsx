@@ -5,6 +5,7 @@ import {STATS_RANGES} from '@src/utils/constants';
 import {sanitizeChartData} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 
 type ChartDataItem = {
     date: string;
@@ -46,11 +47,21 @@ const GrowthKPIs: React.FC<{
     const [currentTab, setCurrentTab] = useState(initialTab);
     const {range} = useGlobalData();
     const {appSettings} = useAppContext();
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
     // Update current tab if initialTab changes
     useEffect(() => {
         setCurrentTab(initialTab);
     }, [initialTab]);
+
+    // Function to update tab and URL
+    const handleTabChange = (tabValue: string) => {
+        setCurrentTab(tabValue);
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.set('tab', tabValue);
+        navigate(`?${newSearchParams.toString()}`, {replace: true});
+    };
 
     const {totalMembers, freeMembers, paidMembers, mrr, percentChanges, directions} = totals;
 
@@ -171,7 +182,7 @@ const GrowthKPIs: React.FC<{
             <TabsList className="-mx-6 grid grid-cols-4">
                 <KpiTabTrigger className={!appSettings?.paidMembersEnabled ? 'cursor-auto after:hidden' : ''} value="total-members" onClick={() => {
                     if (appSettings?.paidMembersEnabled) {
-                        setCurrentTab('total-members');
+                        handleTabChange('total-members');
                     }
                 }}>
                     <KpiTabValue
@@ -186,7 +197,7 @@ const GrowthKPIs: React.FC<{
                 <>
 
                     <KpiTabTrigger value="free-members" onClick={() => {
-                        setCurrentTab('free-members');
+                        handleTabChange('free-members');
                     }}>
                         <KpiTabValue
                             color='hsl(var(--chart-blue))'
@@ -197,7 +208,7 @@ const GrowthKPIs: React.FC<{
                         />
                     </KpiTabTrigger>
                     <KpiTabTrigger value="paid-members" onClick={() => {
-                        setCurrentTab('paid-members');
+                        handleTabChange('paid-members');
                     }}>
                         <KpiTabValue
                             color='hsl(var(--chart-purple))'
@@ -208,7 +219,7 @@ const GrowthKPIs: React.FC<{
                         />
                     </KpiTabTrigger>
                     <KpiTabTrigger value="mrr" onClick={() => {
-                        setCurrentTab('mrr');
+                        handleTabChange('mrr');
                     }}>
                         <KpiTabValue
                             color='hsl(var(--chart-teal))'

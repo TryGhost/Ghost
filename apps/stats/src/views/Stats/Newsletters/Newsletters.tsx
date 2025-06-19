@@ -11,7 +11,7 @@ import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Skele
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {useNewsletterStatsWithRangeSplit, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
 import type {TopNewslettersOrder} from '@src/hooks/useNewsletterStatsWithRange';
 
@@ -30,6 +30,10 @@ const Newsletters: React.FC = () => {
     const {range, selectedNewsletterId} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
+    // Get the initial tab from URL search parameters
+    const initialTab = searchParams.get('tab') || 'total-subscribers';
 
     // Get newsletters list for dropdown (without expensive counts)
     const {data: newslettersData, isLoading: isNewslettersLoading} = useBrowseNewsletters({
@@ -164,6 +168,7 @@ const Newsletters: React.FC = () => {
                     <CardContent>
                         <NewsletterKPIs
                             avgsData={avgsData}
+                            initialTab={initialTab}
                             isAvgsLoading={isStatsLoading}
                             isLoading={isKPIsLoading}
                             subscribersData={subscribersData}
