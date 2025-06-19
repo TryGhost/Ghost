@@ -48,7 +48,6 @@ const PRIVATE_FEATURES = [
     'importMemberTier',
     'urlCache',
     'mailEvents',
-    'collectionsCard',
     'lexicalIndicators',
     'trafficAnalyticsAlpha',
     'updatedMainNav',

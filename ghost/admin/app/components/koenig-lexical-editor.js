@@ -440,7 +440,6 @@ export default class KoenigLexicalEditor extends Component {
             fetchLabels,
             renderLabels: !this.session.user.isContributor,
             feature: {
-                collectionsCard: this.feature.collectionsCard,
                 contentVisibility: this.feature.contentVisibility,
                 contentVisibilityAlpha: this.feature.contentVisibilityAlpha
             },
