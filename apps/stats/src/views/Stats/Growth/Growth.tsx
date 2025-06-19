@@ -201,38 +201,60 @@ const Growth: React.FC = () => {
                                     />
                                     :
                                     <TableBody>
-                                        {transformedTopPosts.map(post => (
-                                            <TableRow key={post.post_id} className='last:border-none'>
-                                                <TableCell className="font-medium">
-                                                    <div className='group/link inline-flex items-center gap-2'>
-                                                        {post.post_id ?
-                                                            <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
-                                                                navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
-                                                            }}>
-                                                                {post.title}
-                                                            </Button>
-                                                            :
-                                                            <>
-                                                                {post.title}
-                                                            </>
-                                                        }
+                                        {transformedTopPosts.length > 0 ? (
+                                            transformedTopPosts.map(post => (
+                                                <TableRow key={post.post_id} className='last:border-none'>
+                                                    <TableCell className="font-medium">
+                                                        <div className='group/link inline-flex items-center gap-2'>
+                                                            {post.post_id ?
+                                                                <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
+                                                                    navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
+                                                                }}>
+                                                                    {post.title}
+                                                                </Button>
+                                                                :
+                                                                <>
+                                                                    {post.title}
+                                                                </>
+                                                            }
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className='text-right font-mono text-sm'>
+                                                        {(post.free_members > 0 && '+')}{formatNumber(post.free_members)}
+                                                    </TableCell>
+                                                    {appSettings?.paidMembersEnabled &&
+                                                    <>
+                                                        <TableCell className='text-right font-mono text-sm'>
+                                                            {(post.paid_members > 0 && '+')}{formatNumber(post.paid_members)}
+                                                        </TableCell>
+                                                        <TableCell className='text-right font-mono text-sm'>
+                                                            {(post.mrr > 0 && '+')}{currencySymbol}{centsToDollars(post.mrr).toFixed(0)}
+                                                        </TableCell>
+                                                    </>
+                                                    }
+                                                </TableRow>
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell className='py-12' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                                                    <div className='flex flex-col items-center justify-center space-y-3 text-center'>
+                                                        <div className='flex size-12 items-center justify-center rounded-full bg-muted'>
+                                                            <svg className='size-6 text-muted-foreground' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                                                <path d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' strokeLinecap='round' strokeLinejoin='round' strokeWidth={1.5} />
+                                                            </svg>
+                                                        </div>
+                                                        <div className='space-y-1'>
+                                                            <h3 className='text-sm font-medium text-foreground'>
+                                                                No conversions {selectedContentType === CONTENT_TYPES.PAGES ? 'on pages' : selectedContentType === CONTENT_TYPES.POSTS ? 'on posts' : ''} {getPeriodText(range).toLowerCase()}
+                                                            </h3>
+                                                            <p className='text-sm text-muted-foreground'>
+                                                                Try adjusting your date range to see more data.
+                                                            </p>
+                                                        </div>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className='text-right font-mono text-sm'>
-                                                    {(post.free_members > 0 && '+')}{formatNumber(post.free_members)}
-                                                </TableCell>
-                                                {appSettings?.paidMembersEnabled &&
-                                                <>
-                                                    <TableCell className='text-right font-mono text-sm'>
-                                                        {(post.paid_members > 0 && '+')}{formatNumber(post.paid_members)}
-                                                    </TableCell>
-                                                    <TableCell className='text-right font-mono text-sm'>
-                                                        {(post.mrr > 0 && '+')}{currencySymbol}{centsToDollars(post.mrr).toFixed(0)}
-                                                    </TableCell>
-                                                </>
-                                                }
                                             </TableRow>
-                                        ))}
+                                        )}
                                     </TableBody>
                                 }
                             </Table>
