@@ -1,20 +1,15 @@
-import { Page } from '@playwright/test';
+import AnalyticsPage from './AnalyticsPage.ts';
+import {Page} from '@playwright/test';
 
-class OverviewPage {
-    private readonly pageUrl:string;
-    private readonly page: Page;
+class OverviewPage extends AnalyticsPage {
     public readonly header;
+    public readonly body;
 
     constructor(page: Page) {
-        this.page = page;
-        this.pageUrl = '/ghost/#/analytics';
+        super(page);
 
         this.header = page.getByRole('heading', {name: 'Analytics'});
-    }
-
-    async visit(url = null) {
-        const urlToVisit = url || this.pageUrl;
-        await this.page.goto(urlToVisit);
+        this.body = page.locator('body');
     }
 }
 

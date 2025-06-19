@@ -1,5 +1,8 @@
 import OverviewPage from './pages/OverviewPage.ts';
-import {createMockRequests, mockApi} from '@tryghost/admin-x-framework/test/acceptance';
+import {
+    createMockRequests,
+    mockApi,
+} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
 
 test.describe('Stats App', () => {
@@ -13,7 +16,6 @@ test.describe('Stats App', () => {
         await expect(overviewPage.header).toBeVisible();
     });
 
-    // TODO: we should show a proper error in this case?
     test('shows an error without mocked data', async ({page}) => {
         const overviewPage = new OverviewPage(page);
         await overviewPage.visit();
