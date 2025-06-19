@@ -5,6 +5,13 @@ import {TopLevelFrameworkProps} from './FrameworkProvider';
 // Shared app settings type for all Ghost Admin apps
 export interface AppSettings {
     paidMembersEnabled: boolean;
+    analytics: {
+        emailTrackOpens: boolean;
+        emailTrackClicks: boolean;
+        membersTrackSources: boolean;
+        outboundLinkTagging: boolean;
+        webAnalytics: boolean;
+    };
 }
 
 // Base props that all Ghost Admin apps will have
