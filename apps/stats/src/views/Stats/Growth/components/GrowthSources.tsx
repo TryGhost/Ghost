@@ -325,9 +325,27 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
                     sortBy={sortBy}
                 />
             ) : (
-                <div className='py-20 text-center text-sm text-gray-700'>
-                    Once someone signs up, sources will show here.
-                </div>
+                <TableBody>
+                    <TableRow>
+                        <TableCell className='py-12' colSpan={4}>
+                            <div className='flex flex-col items-center justify-center space-y-3 text-center'>
+                                <div className='flex size-12 items-center justify-center rounded-full bg-muted'>
+                                    <svg className='size-6 text-muted-foreground' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                        <path d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' strokeLinecap='round' strokeLinejoin='round' strokeWidth={1.5} />
+                                    </svg>
+                                </div>
+                                <div className='space-y-1'>
+                                    <h3 className='text-sm font-medium text-foreground'>
+                                        No conversions {getPeriodText(range).toLowerCase()}
+                                    </h3>
+                                    <p className='text-sm text-muted-foreground'>
+                                        Try adjusting your date range to see more data.
+                                    </p>
+                                </div>
+                            </div>
+                        </TableCell>
+                    </TableRow>
+                </TableBody>
             )}
             {showViewAll && processedData.length > limit &&
                 <TableFooter className='border-none bg-transparent hover:!bg-transparent'>

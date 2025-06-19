@@ -240,18 +240,7 @@ describe('PostsStatsService', function () {
         it('returns all posts with zero stats when no events exist', async function () {
             const result = await service.getTopPosts({});
             assert.ok(result.data, 'Result should have a data property');
-            assert.equal(result.data.length, 4, 'Should return all 4 posts');
-
-            const expectedResults = [
-                {post_id: 'post1', title: 'Post 1', free_members: 0, paid_members: 0, mrr: 0},
-                {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 0, mrr: 0},
-                {post_id: 'post3', title: 'Post 3', free_members: 0, paid_members: 0, mrr: 0},
-                {post_id: 'post4', title: 'Post 4', free_members: 0, paid_members: 0, mrr: 0}
-            ];
-
-            const sortedResults = result.data.sort((a, b) => a.post_id.localeCompare(b.post_id));
-
-            assert.deepEqual(sortedResults, expectedResults, 'Should return all posts with zero stats');
+            assert.equal(result.data.length, 0, 'Should return no posts when all have zero stats');
         });
 
         it('correctly ranks posts by free_members', async function () {
@@ -264,23 +253,15 @@ describe('PostsStatsService', function () {
             const result = await service.getTopPosts({order: 'free_members desc'});
 
             assert.ok(result.data, 'Result should have a data property');
-            assert.equal(result.data.length, 4, 'Should return all 4 posts');
+            assert.equal(result.data.length, 3, 'Should return 3 posts with attribution data');
 
             const expectedResults = [
                 {post_id: 'post1', title: 'Post 1', free_members: 2, paid_members: 1, mrr: 500},
                 {post_id: 'post2', title: 'Post 2', free_members: 1, paid_members: 1, mrr: 500},
-                {post_id: 'post3', title: 'Post 3', free_members: 0, paid_members: 1, mrr: 1000},
-                {post_id: 'post4', title: 'Post 4', free_members: 0, paid_members: 0, mrr: 0}
+                {post_id: 'post3', title: 'Post 3', free_members: 0, paid_members: 1, mrr: 1000}
             ];
 
-            const sortedResults = result.data.sort((a, b) => {
-                if (a.free_members === 0 && b.free_members === 0) {
-                    return a.post_id.localeCompare(b.post_id);
-                }
-                return 0;
-            });
-
-            assert.deepEqual(sortedResults, expectedResults, 'Results should match expected order and counts for free_members desc');
+            assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
         });
 
         it('correctly ranks posts by paid_members', async function () {
@@ -292,7 +273,7 @@ describe('PostsStatsService', function () {
             const result = await service.getTopPosts({order: 'paid_members desc'});
 
             assert.ok(result.data, 'Result should have a data property');
-            assert.equal(result.data.length, 4, 'Should return all 4 posts');
+            assert.equal(result.data.length, 4, 'Should return all 4 posts with attribution data');
 
             const expectedResults = [
                 {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200},
@@ -320,7 +301,7 @@ describe('PostsStatsService', function () {
             const result = await service.getTopPosts({order: 'mrr desc'});
 
             assert.ok(result.data, 'Result should have a data property');
-            assert.equal(result.data.length, 4, 'Should return all 4 posts');
+            assert.equal(result.data.length, 4, 'Should return all 4 posts with attribution data');
 
             const expectedResults = [
                 {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200},
@@ -354,8 +335,10 @@ describe('PostsStatsService', function () {
                 date_to: new Date()
             });
 
-            assert.equal(lastFifteenDaysResult.data.find(p => p.post_id === 'post1').free_members, 1);
-            assert.equal(lastFifteenDaysResult.data.find(p => p.post_id === 'post2').free_members, 0);
+            // Only post1 should be returned since post2 has no events in the date range
+            assert.equal(lastFifteenDaysResult.data.length, 1, 'Should return only posts with events in date range');
+            assert.equal(lastFifteenDaysResult.data[0].post_id, 'post1');
+            assert.equal(lastFifteenDaysResult.data[0].free_members, 1);
 
             // Test filtering to include both dates
             const lastThirtyDaysResult = await service.getTopPosts({
@@ -363,8 +346,12 @@ describe('PostsStatsService', function () {
                 date_to: new Date()
             });
 
-            assert.equal(lastThirtyDaysResult.data.find(p => p.post_id === 'post1').free_members, 1);
-            assert.equal(lastThirtyDaysResult.data.find(p => p.post_id === 'post2').free_members, 1);
+            // Both posts should be returned
+            assert.equal(lastThirtyDaysResult.data.length, 2, 'Should return both posts when date range includes both events');
+            const post1Result = lastThirtyDaysResult.data.find(p => p.post_id === 'post1');
+            const post2Result = lastThirtyDaysResult.data.find(p => p.post_id === 'post2');
+            assert.equal(post1Result.free_members, 1);
+            assert.equal(post2Result.free_members, 1);
         });
 
         it('respects the limit parameter', async function () {

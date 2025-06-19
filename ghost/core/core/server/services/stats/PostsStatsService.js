@@ -113,7 +113,11 @@ class PostsStatsService {
                 .orderBy(orderField, orderDirection)
                 .limit(limit);
 
-            return {data: results};
+            // Filter out posts with zero attribution across all metrics
+            const filteredResults = results.filter(post => post.free_members > 0 || post.paid_members > 0 || post.mrr > 0
+            ).slice(0, limit);
+            
+            return {data: filteredResults};
         } catch (error) {
             logging.error('Error fetching top posts by attribution:', error);
             return {data: []};
