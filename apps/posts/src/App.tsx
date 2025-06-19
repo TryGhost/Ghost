@@ -3,14 +3,20 @@ import {APP_ROUTE_PREFIX, routes} from '@src/routes';
 import {FrameworkProvider, Outlet, RouterProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
 import {ShadeApp, ShadeAppProps} from '@tryghost/shade';
 
+type AppSettingsType = {
+    paidMembersEnabled: boolean;
+}
+
 interface AppProps {
     framework: TopLevelFrameworkProps;
     designSystem: ShadeAppProps;
     fromAnalytics?: boolean;
+    appSettings: AppSettingsType;
 }
 
 interface AppContextType {
     fromAnalytics: boolean;
+    appSettings: AppSettingsType;
     externalNavigate: (url: string) => void;
 }
 
@@ -24,9 +30,10 @@ export const useAppContext = () => {
     return context;
 };
 
-const App: React.FC<AppProps> = ({framework, designSystem, fromAnalytics = false}) => {
+const App: React.FC<AppProps> = ({framework, designSystem, fromAnalytics = false, appSettings}) => {
     const appContextValue: AppContextType = {
         fromAnalytics,
+        appSettings,
         externalNavigate: (url: string) => {
             window.location.href = url;
         }
