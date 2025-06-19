@@ -189,3 +189,4 @@ temp*.sql
 # yalc — for linking local packages in a docker compatible way
 yalc.lock
 .yalc
+.github/instructions/nx.instructions.md

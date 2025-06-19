@@ -281,11 +281,23 @@ async function handleStripe() {
     debug('at least one command provided');
 
     debug('resetting nx');
-    process.env.NX_DISABLE_DB = "true";
     await exec("yarn nx reset --onlyDaemon");
     debug('nx reset');
     await exec("yarn nx daemon --start");
     debug('nx daemon started');
+    
+    // Initialize database schema to prevent race conditions during concurrent execution
+    debug('initializing nx cache database schema');
+    try {
+        // Force full database schema creation by running a command that writes to cache
+        // This ensures all tables (including cache_outputs and task_details) are created
+        await exec("yarn nx reset --cache-only");
+        await exec("yarn nx run-many --projects=ghost --targets=build --dry-run");
+        debug('nx cache database schema fully initialized');
+    } catch (error) {
+        debug('nx cache database initialization warning:', error.message);
+        // Continue anyway - concurrent processes will still try to work
+    }
 
     console.log(`Running projects: ${commands.map(c => chalk.green(c.name)).join(', ')}`);
 

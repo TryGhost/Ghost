@@ -1,0 +1,3472 @@
+{
+  "graph": {
+    "nodes": {
+      "@tryghost/admin-x-design-system": {
+        "name": "@tryghost/admin-x-design-system",
+        "type": "lib",
+        "data": {
+          "root": "apps/admin-x-design-system",
+          "name": "@tryghost/admin-x-design-system",
+          "tags": [
+            "npm:private"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "build",
+                "prepare",
+                "test",
+                "test:unit",
+                "test:types",
+                "lint:code",
+                "lint",
+                "lint:test",
+                "storybook",
+                "build-storybook"
+              ]
+            },
+            "js": {
+              "packageName": "@tryghost/admin-x-design-system",
+              "packageMain": "es/index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "build": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "tsc -p tsconfig.declaration.json && vite build",
+                "runCommand": "yarn build"
+              },
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "script": "build"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                {
+                  "env": "GHOST_CDN_URL"
+                },
+                "default",
+                "^default"
+              ],
+              "outputs": [
+                "{projectRoot}/dist",
+                "{projectRoot}/es",
+                "{projectRoot}/types",
+                "{projectRoot}/umd"
+              ],
+              "cache": true
+            },
+            "prepare": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "prepare"
+              },
+              "metadata": {
+                "scriptContent": "yarn build",
+                "runCommand": "yarn prepare"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:unit",
+                "runCommand": "yarn test"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test:unit": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "yarn test:types && vitest run",
+                "runCommand": "yarn test:unit"
+              },
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "script": "test:unit"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test:types": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:types"
+              },
+              "metadata": {
+                "scriptContent": "tsc --noEmit",
+                "runCommand": "yarn test:types"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint:code": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:code"
+              },
+              "metadata": {
+                "scriptContent": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
+                "runCommand": "yarn lint:code"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint"
+              },
+              "metadata": {
+                "scriptContent": "yarn lint:code && yarn lint:test",
+                "runCommand": "yarn lint"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "lint:test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:test"
+              },
+              "metadata": {
+                "scriptContent": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache",
+                "runCommand": "yarn lint:test"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "storybook": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "storybook"
+              },
+              "metadata": {
+                "scriptContent": "storybook dev -p 6006",
+                "runCommand": "yarn storybook"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build-storybook": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build-storybook"
+              },
+              "metadata": {
+                "scriptContent": "storybook build",
+                "runCommand": "yarn build-storybook"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "dev": {
+              "dependsOn": [
+                "^build"
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true,
+              "executor": "nx:noop"
+            }
+          },
+          "implicitDependencies": []
+        }
+      },
+      "@tryghost/admin-x-activitypub": {
+        "name": "@tryghost/admin-x-activitypub",
+        "type": "lib",
+        "data": {
+          "root": "apps/admin-x-activitypub",
+          "name": "@tryghost/admin-x-activitypub",
+          "tags": [
+            "npm:public"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "dev",
+                "dev:start",
+                "build",
+                "lint",
+                "lint:code",
+                "lint:test",
+                "test:unit",
+                "test:acceptance",
+                "test:acceptance:slowmo",
+                "test:acceptance:full",
+                "preview"
+              ]
+            },
+            "js": {
+              "packageName": "@tryghost/admin-x-activitypub",
+              "packageMain": "./dist/admin-x-activitypub.umd.cjs",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "dev": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "vite build --watch",
+                "runCommand": "yarn dev"
+              },
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "script": "dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "dev:start": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev:start"
+              },
+              "metadata": {
+                "scriptContent": "vite",
+                "runCommand": "yarn dev:start"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "tsc && vite build",
+                "runCommand": "yarn build"
+              },
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "script": "build"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                {
+                  "env": "GHOST_CDN_URL"
+                },
+                "default",
+                "^default"
+              ],
+              "outputs": [
+                "{projectRoot}/dist",
+                "{projectRoot}/es",
+                "{projectRoot}/types",
+                "{projectRoot}/umd"
+              ],
+              "cache": true
+            },
+            "lint": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint"
+              },
+              "metadata": {
+                "scriptContent": "yarn run lint:code && yarn run lint:test",
+                "runCommand": "yarn lint"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "lint:code": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:code"
+              },
+              "metadata": {
+                "scriptContent": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
+                "runCommand": "yarn lint:code"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint:test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:test"
+              },
+              "metadata": {
+                "scriptContent": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx --cache test",
+                "runCommand": "yarn lint:test"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:unit": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "tsc --noEmit && vitest run",
+                "runCommand": "yarn test:unit"
+              },
+              "dependsOn": [
+                "^build",
+                "test:unit"
+              ],
+              "options": {
+                "script": "test:unit"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test:acceptance": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
+                "runCommand": "yarn test:acceptance"
+              },
+              "dependsOn": [
+                "^build",
+                "test:acceptance"
+              ],
+              "options": {
+                "script": "test:acceptance"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:acceptance:slowmo": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:acceptance:slowmo"
+              },
+              "metadata": {
+                "scriptContent": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 yarn test:acceptance --headed",
+                "runCommand": "yarn test:acceptance:slowmo"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:acceptance:full": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:acceptance:full"
+              },
+              "metadata": {
+                "scriptContent": "ALL_BROWSERS=1 yarn test:acceptance",
+                "runCommand": "yarn test:acceptance:full"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "preview": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "preview"
+              },
+              "metadata": {
+                "scriptContent": "vite preview",
+                "runCommand": "yarn preview"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "implicitDependencies": []
+        }
+      },
+      "@tryghost/admin-x-framework": {
+        "name": "@tryghost/admin-x-framework",
+        "type": "lib",
+        "data": {
+          "root": "apps/admin-x-framework",
+          "name": "@tryghost/admin-x-framework",
+          "tags": [
+            "npm:private"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "build",
+                "prepare",
+                "test",
+                "test:types",
+                "test:unit",
+                "lint:code",
+                "lint",
+                "lint:test"
+              ]
+            },
+            "js": {
+              "packageName": "@tryghost/admin-x-framework",
+              "packageExports": {
+                ".": {
+                  "import": "./dist/index.js",
+                  "require": "./dist/index.cjs",
+                  "types": "./types/index.d.ts"
+                },
+                "./errors": {
+                  "import": "./dist/errors.js",
+                  "require": "./dist/errors.cjs",
+                  "types": "./types/errors.d.ts"
+                },
+                "./helpers": {
+                  "import": "./dist/helpers.js",
+                  "require": "./dist/helpers.cjs",
+                  "types": "./types/helpers.d.ts"
+                },
+                "./hooks": {
+                  "import": "./dist/hooks.js",
+                  "require": "./dist/hooks.cjs",
+                  "types": "./types/hooks.d.ts"
+                },
+                "./routing": {
+                  "import": "./dist/routing.js",
+                  "require": "./dist/routing.cjs",
+                  "types": "./types/routing.d.ts"
+                },
+                "./api/*": {
+                  "import": "./dist/api/*.js",
+                  "require": "./dist/api/*.cjs",
+                  "types": "./types/api/*.d.ts"
+                },
+                "./utils/post-utils": {
+                  "import": "./dist/utils/post-utils.js",
+                  "require": "./dist/utils/post-utils.cjs",
+                  "types": "./types/utils/post-utils.d.ts"
+                },
+                "./vite": {
+                  "import": "./dist/vite.js",
+                  "require": "./dist/vite.cjs",
+                  "types": "./types/vite.d.ts"
+                },
+                "./playwright": {
+                  "import": "./dist/playwright.js",
+                  "require": "./dist/playwright.cjs",
+                  "types": "./types/playwright.d.ts"
+                },
+                "./test/*": {
+                  "import": "./dist/test/*.js",
+                  "require": "./dist/test/*.cjs",
+                  "types": "./types/test/*.d.ts"
+                }
+              },
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "build": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "tsc -p tsconfig.declaration.json && vite build",
+                "runCommand": "yarn build"
+              },
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "script": "build"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                {
+                  "env": "GHOST_CDN_URL"
+                },
+                "default",
+                "^default"
+              ],
+              "outputs": [
+                "{projectRoot}/dist",
+                "{projectRoot}/es",
+                "{projectRoot}/types",
+                "{projectRoot}/umd"
+              ],
+              "cache": true
+            },
+            "prepare": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "prepare"
+              },
+              "metadata": {
+                "scriptContent": "yarn build",
+                "runCommand": "yarn prepare"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:types && yarn test:unit",
+                "runCommand": "yarn test"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test:types": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:types"
+              },
+              "metadata": {
+                "scriptContent": "tsc --noEmit",
+                "runCommand": "yarn test:types"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:unit": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "vitest run --coverage",
+                "runCommand": "yarn test:unit"
+              },
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "script": "test:unit"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "lint:code": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:code"
+              },
+              "metadata": {
+                "scriptContent": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
+                "runCommand": "yarn lint:code"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint"
+              },
+              "metadata": {
+                "scriptContent": "yarn lint:code && yarn lint:test",
+                "runCommand": "yarn lint"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "lint:test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:test"
+              },
+              "metadata": {
+                "scriptContent": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache",
+                "runCommand": "yarn lint:test"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "dev": {
+              "dependsOn": [
+                "^build"
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true,
+              "executor": "nx:noop"
+            }
+          },
+          "implicitDependencies": []
+        }
+      },
+      "@tryghost/admin-x-settings": {
+        "name": "@tryghost/admin-x-settings",
+        "type": "lib",
+        "data": {
+          "root": "apps/admin-x-settings",
+          "name": "@tryghost/admin-x-settings",
+          "tags": [
+            "npm:private"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "dev",
+                "dev:start",
+                "build",
+                "lint",
+                "lint:js",
+                "test:unit",
+                "test:acceptance",
+                "test:acceptance:slowmo",
+                "test:acceptance:full",
+                "preview"
+              ]
+            },
+            "js": {
+              "packageName": "@tryghost/admin-x-settings",
+              "packageExports": {
+                ".": {
+                  "import": "./dist/admin-x-settings.js",
+                  "require": "./dist/admin-x-settings.umd.cjs"
+                }
+              },
+              "packageMain": "./dist/admin-x-settings.umd.cjs",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "dev": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "vite build --watch",
+                "runCommand": "yarn dev"
+              },
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "script": "dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "dev:start": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev:start"
+              },
+              "metadata": {
+                "scriptContent": "vite",
+                "runCommand": "yarn dev:start"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build"
+              },
+              "metadata": {
+                "scriptContent": "tsc && vite build",
+                "runCommand": "yarn build"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                {
+                  "env": "GHOST_CDN_URL"
+                },
+                "default",
+                "^default"
+              ],
+              "outputs": [
+                "{projectRoot}/dist",
+                "{projectRoot}/es",
+                "{projectRoot}/types",
+                "{projectRoot}/umd"
+              ],
+              "cache": true
+            },
+            "lint": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint"
+              },
+              "metadata": {
+                "scriptContent": "yarn run lint:js",
+                "runCommand": "yarn lint"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "lint:js": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:js"
+              },
+              "metadata": {
+                "scriptContent": "eslint --ext .js,.ts,.cjs,.tsx --cache src test",
+                "runCommand": "yarn lint:js"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:unit": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:unit"
+              },
+              "metadata": {
+                "scriptContent": "vitest run --config vitest.config.ts",
+                "runCommand": "yarn test:unit"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test:acceptance": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' playwright test",
+                "runCommand": "yarn test:acceptance"
+              },
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "script": "test:acceptance"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:acceptance:slowmo": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:acceptance:slowmo"
+              },
+              "metadata": {
+                "scriptContent": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 yarn test:acceptance --headed",
+                "runCommand": "yarn test:acceptance:slowmo"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:acceptance:full": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:acceptance:full"
+              },
+              "metadata": {
+                "scriptContent": "ALL_BROWSERS=1 yarn test:acceptance",
+                "runCommand": "yarn test:acceptance:full"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "preview": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "preview"
+              },
+              "metadata": {
+                "scriptContent": "vite preview",
+                "runCommand": "yarn preview"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "implicitDependencies": []
+        }
+      },
+      "@tryghost/announcement-bar": {
+        "name": "@tryghost/announcement-bar",
+        "type": "lib",
+        "data": {
+          "root": "apps/announcement-bar",
+          "name": "@tryghost/announcement-bar",
+          "tags": [
+            "npm:public"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "dev",
+                "build",
+                "build:watch",
+                "test",
+                "test:ci",
+                "test:unit",
+                "lint",
+                "preship",
+                "ship",
+                "prepublishOnly"
+              ]
+            },
+            "js": {
+              "packageName": "@tryghost/announcement-bar",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "dev": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev"
+              },
+              "metadata": {
+                "scriptContent": "concurrently \"vite preview -l silent\" \"yarn build:watch\"",
+                "runCommand": "yarn dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build"
+              },
+              "metadata": {
+                "scriptContent": "vite build",
+                "runCommand": "yarn build"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                {
+                  "env": "GHOST_CDN_URL"
+                },
+                "default",
+                "^default"
+              ],
+              "outputs": [
+                "{projectRoot}/dist",
+                "{projectRoot}/es",
+                "{projectRoot}/types",
+                "{projectRoot}/umd"
+              ],
+              "cache": true
+            },
+            "build:watch": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build:watch"
+              },
+              "metadata": {
+                "scriptContent": "vite build --watch",
+                "runCommand": "yarn build:watch"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test"
+              },
+              "metadata": {
+                "scriptContent": "vitest run",
+                "runCommand": "yarn test"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test:ci": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:ci"
+              },
+              "metadata": {
+                "scriptContent": "yarn test --coverage",
+                "runCommand": "yarn test:ci"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:unit": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:unit"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:ci",
+                "runCommand": "yarn test:unit"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "lint": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint"
+              },
+              "metadata": {
+                "scriptContent": "eslint src --ext .js --cache",
+                "runCommand": "yarn lint"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "preship": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "preship"
+              },
+              "metadata": {
+                "scriptContent": "yarn lint",
+                "runCommand": "yarn preship"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "ship": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "ship"
+              },
+              "metadata": {
+                "scriptContent": "node ../../.github/scripts/release-apps.js",
+                "runCommand": "yarn ship"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "prepublishOnly": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "prepublishOnly"
+              },
+              "metadata": {
+                "scriptContent": "yarn build",
+                "runCommand": "yarn prepublishOnly"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "implicitDependencies": []
+        }
+      },
+      "@tryghost/comments-ui": {
+        "name": "@tryghost/comments-ui",
+        "type": "lib",
+        "data": {
+          "root": "apps/comments-ui",
+          "name": "@tryghost/comments-ui",
+          "tags": [
+            "npm:public"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "dev",
+                "dev:test",
+                "build",
+                "build:watch",
+                "preview",
+                "test",
+                "test:unit",
+                "test:e2e",
+                "test:slowmo",
+                "test:e2e:full",
+                "lint",
+                "preship",
+                "ship",
+                "prepublishOnly"
+              ]
+            },
+            "js": {
+              "packageName": "@tryghost/comments-ui",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "dev": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev"
+              },
+              "metadata": {
+                "scriptContent": "concurrently \"yarn preview --host -l silent\" \"yarn build:watch\"",
+                "runCommand": "yarn dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "dev:test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev:test"
+              },
+              "metadata": {
+                "scriptContent": "vite build && vite preview --port 7175",
+                "runCommand": "yarn dev:test"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build"
+              },
+              "metadata": {
+                "scriptContent": "vite build",
+                "runCommand": "yarn build"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                {
+                  "env": "GHOST_CDN_URL"
+                },
+                "default",
+                "^default"
+              ],
+              "outputs": [
+                "{projectRoot}/dist",
+                "{projectRoot}/es",
+                "{projectRoot}/types",
+                "{projectRoot}/umd"
+              ],
+              "cache": true
+            },
+            "build:watch": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build:watch"
+              },
+              "metadata": {
+                "scriptContent": "vite build --watch",
+                "runCommand": "yarn build:watch"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "preview": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "preview"
+              },
+              "metadata": {
+                "scriptContent": "vite preview",
+                "runCommand": "yarn preview"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:unit && yarn test:e2e",
+                "runCommand": "yarn test"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test:unit": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:unit"
+              },
+              "metadata": {
+                "scriptContent": "vitest run --coverage",
+                "runCommand": "yarn test:unit"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test:e2e": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:e2e"
+              },
+              "metadata": {
+                "scriptContent": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
+                "runCommand": "yarn test:e2e"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:slowmo": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:slowmo"
+              },
+              "metadata": {
+                "scriptContent": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=1000 yarn test:e2e --headed",
+                "runCommand": "yarn test:slowmo"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:e2e:full": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:e2e:full"
+              },
+              "metadata": {
+                "scriptContent": "ALL_BROWSERS=1 yarn test:e2e",
+                "runCommand": "yarn test:e2e:full"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint"
+              },
+              "metadata": {
+                "scriptContent": "eslint src --ext .js,.ts,.jsx,.tsx --cache",
+                "runCommand": "yarn lint"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "preship": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "preship"
+              },
+              "metadata": {
+                "scriptContent": "yarn lint",
+                "runCommand": "yarn preship"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "ship": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "ship"
+              },
+              "metadata": {
+                "scriptContent": "node ../../.github/scripts/release-apps.js",
+                "runCommand": "yarn ship"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "prepublishOnly": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "prepublishOnly"
+              },
+              "metadata": {
+                "scriptContent": "yarn build",
+                "runCommand": "yarn prepublishOnly"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "implicitDependencies": []
+        }
+      },
+      "@tryghost/signup-form": {
+        "name": "@tryghost/signup-form",
+        "type": "lib",
+        "data": {
+          "root": "apps/signup-form",
+          "name": "@tryghost/signup-form",
+          "tags": [
+            "npm:public"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "dev",
+                "preview",
+                "dev:test",
+                "build",
+                "lint",
+                "lint:js",
+                "test:unit",
+                "test:e2e",
+                "test:slowmo",
+                "test:e2e:full",
+                "storybook",
+                "build-storybook",
+                "preship",
+                "ship",
+                "postship",
+                "prepublishOnly"
+              ]
+            },
+            "js": {
+              "packageName": "@tryghost/signup-form",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "dev": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev"
+              },
+              "metadata": {
+                "scriptContent": "concurrently \"vite --port 6173\" \"vite preview -l silent\" \"vite build --watch\"",
+                "runCommand": "yarn dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "preview": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "preview"
+              },
+              "metadata": {
+                "scriptContent": "concurrently \"vite preview -l silent\" \"vite build --watch\"",
+                "runCommand": "yarn preview"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "dev:test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev:test"
+              },
+              "metadata": {
+                "scriptContent": "vite build && vite preview --port 6175",
+                "runCommand": "yarn dev:test"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build"
+              },
+              "metadata": {
+                "scriptContent": "tsc && vite build",
+                "runCommand": "yarn build"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                {
+                  "env": "GHOST_CDN_URL"
+                },
+                "default",
+                "^default"
+              ],
+              "outputs": [
+                "{projectRoot}/dist",
+                "{projectRoot}/es",
+                "{projectRoot}/types",
+                "{projectRoot}/umd"
+              ],
+              "cache": true
+            },
+            "lint": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint"
+              },
+              "metadata": {
+                "scriptContent": "yarn run lint:js",
+                "runCommand": "yarn lint"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "lint:js": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:js"
+              },
+              "metadata": {
+                "scriptContent": "eslint --ext .js,.ts,.cjs,.tsx --cache src test",
+                "runCommand": "yarn lint:js"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:unit": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:unit"
+              },
+              "metadata": {
+                "scriptContent": "yarn build",
+                "runCommand": "yarn test:unit"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test:e2e": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:e2e"
+              },
+              "metadata": {
+                "scriptContent": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
+                "runCommand": "yarn test:e2e"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:slowmo": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:slowmo"
+              },
+              "metadata": {
+                "scriptContent": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 yarn test:e2e --headed",
+                "runCommand": "yarn test:slowmo"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:e2e:full": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:e2e:full"
+              },
+              "metadata": {
+                "scriptContent": "ALL_BROWSERS=1 yarn test:e2e",
+                "runCommand": "yarn test:e2e:full"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "storybook": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "storybook"
+              },
+              "metadata": {
+                "scriptContent": "storybook dev -p 6006",
+                "runCommand": "yarn storybook"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build-storybook": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build-storybook"
+              },
+              "metadata": {
+                "scriptContent": "storybook build",
+                "runCommand": "yarn build-storybook"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "preship": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "preship"
+              },
+              "metadata": {
+                "scriptContent": "yarn lint",
+                "runCommand": "yarn preship"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "ship": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "ship"
+              },
+              "metadata": {
+                "scriptContent": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; fi",
+                "runCommand": "yarn ship"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "postship": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "postship"
+              },
+              "metadata": {
+                "scriptContent": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && npm publish",
+                "runCommand": "yarn postship"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "prepublishOnly": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "prepublishOnly"
+              },
+              "metadata": {
+                "scriptContent": "yarn build",
+                "runCommand": "yarn prepublishOnly"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "implicitDependencies": []
+        }
+      },
+      "@tryghost/sodo-search": {
+        "name": "@tryghost/sodo-search",
+        "type": "lib",
+        "data": {
+          "root": "apps/sodo-search",
+          "name": "@tryghost/sodo-search",
+          "tags": [
+            "npm:public"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "dev",
+                "build",
+                "build:watch",
+                "tailwind",
+                "tailwind:base",
+                "test",
+                "test:ci",
+                "test:unit",
+                "lint",
+                "preship",
+                "ship",
+                "prepublishOnly"
+              ]
+            },
+            "js": {
+              "packageName": "@tryghost/sodo-search",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "dev": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev"
+              },
+              "metadata": {
+                "scriptContent": "concurrently \"vite preview -l silent\" \"yarn build:watch\" \"yarn tailwind\"",
+                "runCommand": "yarn dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build"
+              },
+              "metadata": {
+                "scriptContent": "vite build && yarn tailwind:base",
+                "runCommand": "yarn build"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                {
+                  "env": "GHOST_CDN_URL"
+                },
+                "default",
+                "^default"
+              ],
+              "outputs": [
+                "{projectRoot}/dist",
+                "{projectRoot}/es",
+                "{projectRoot}/types",
+                "{projectRoot}/umd"
+              ],
+              "cache": true
+            },
+            "build:watch": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build:watch"
+              },
+              "metadata": {
+                "scriptContent": "vite build --watch",
+                "runCommand": "yarn build:watch"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "tailwind": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "tailwind"
+              },
+              "metadata": {
+                "scriptContent": "yarn tailwind:base --watch ",
+                "runCommand": "yarn tailwind"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "tailwind:base": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "tailwind:base"
+              },
+              "metadata": {
+                "scriptContent": "npx tailwindcss -i ./src/index.css -o ./umd/main.css --minify",
+                "runCommand": "yarn tailwind:base"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test"
+              },
+              "metadata": {
+                "scriptContent": "vitest run",
+                "runCommand": "yarn test"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test:ci": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:ci"
+              },
+              "metadata": {
+                "scriptContent": "yarn test --coverage",
+                "runCommand": "yarn test:ci"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:unit": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:unit"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:ci",
+                "runCommand": "yarn test:unit"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "lint": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint"
+              },
+              "metadata": {
+                "scriptContent": "eslint src --ext .js --cache",
+                "runCommand": "yarn lint"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "preship": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "preship"
+              },
+              "metadata": {
+                "scriptContent": "yarn lint",
+                "runCommand": "yarn preship"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "ship": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "ship"
+              },
+              "metadata": {
+                "scriptContent": "node ../../.github/scripts/release-apps.js",
+                "runCommand": "yarn ship"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "prepublishOnly": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "prepublishOnly"
+              },
+              "metadata": {
+                "scriptContent": "yarn build",
+                "runCommand": "yarn prepublishOnly"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "implicitDependencies": []
+        }
+      },
+      "@tryghost/portal": {
+        "name": "@tryghost/portal",
+        "type": "lib",
+        "data": {
+          "root": "apps/portal",
+          "name": "@tryghost/portal",
+          "tags": [
+            "npm:public"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "dev",
+                "build",
+                "build:watch",
+                "preview",
+                "test",
+                "test:watch",
+                "test:ci",
+                "test:unit",
+                "lint",
+                "preship",
+                "ship",
+                "prepublishOnly"
+              ]
+            },
+            "js": {
+              "packageName": "@tryghost/portal",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "dev": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev"
+              },
+              "metadata": {
+                "scriptContent": "concurrently \"yarn preview -l silent\" \"yarn build:watch\"",
+                "runCommand": "yarn dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build"
+              },
+              "metadata": {
+                "scriptContent": "vite build",
+                "runCommand": "yarn build"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                {
+                  "env": "GHOST_CDN_URL"
+                },
+                "default",
+                "^default"
+              ],
+              "outputs": [
+                "{projectRoot}/dist",
+                "{projectRoot}/es",
+                "{projectRoot}/types",
+                "{projectRoot}/umd"
+              ],
+              "cache": true
+            },
+            "build:watch": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build:watch"
+              },
+              "metadata": {
+                "scriptContent": "vite build --watch",
+                "runCommand": "yarn build:watch"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "preview": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "preview"
+              },
+              "metadata": {
+                "scriptContent": "vite preview",
+                "runCommand": "yarn preview"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test"
+              },
+              "metadata": {
+                "scriptContent": "vitest run",
+                "runCommand": "yarn test"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test:watch": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:watch"
+              },
+              "metadata": {
+                "scriptContent": "vitest",
+                "runCommand": "yarn test:watch"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:ci": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:ci"
+              },
+              "metadata": {
+                "scriptContent": "yarn test --coverage",
+                "runCommand": "yarn test:ci"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:unit": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:unit"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:ci",
+                "runCommand": "yarn test:unit"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "lint": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint"
+              },
+              "metadata": {
+                "scriptContent": "eslint src --ext .js --cache",
+                "runCommand": "yarn lint"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "preship": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "preship"
+              },
+              "metadata": {
+                "scriptContent": "yarn lint",
+                "runCommand": "yarn preship"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "ship": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "ship"
+              },
+              "metadata": {
+                "scriptContent": "node ../../.github/scripts/release-apps.js",
+                "runCommand": "yarn ship"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "prepublishOnly": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "prepublishOnly"
+              },
+              "metadata": {
+                "scriptContent": "yarn build",
+                "runCommand": "yarn prepublishOnly"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "implicitDependencies": []
+        }
+      },
+      "ghost-admin": {
+        "name": "ghost-admin",
+        "type": "lib",
+        "data": {
+          "root": "ghost/admin",
+          "name": "ghost-admin",
+          "tags": [
+            "npm:private"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "dev",
+                "build",
+                "build:dev",
+                "test:unit",
+                "test",
+                "lint:js",
+                "lint:hbs",
+                "lint"
+              ]
+            },
+            "description": "Ember.js admin client for Ghost",
+            "js": {
+              "packageName": "ghost-admin",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "dev": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev"
+              },
+              "metadata": {
+                "scriptContent": "ember serve",
+                "runCommand": "yarn dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "ember build --environment=production --silent",
+                "runCommand": "yarn build"
+              },
+              "outputs": [
+                "{projectRoot}/dist",
+                "{workspaceRoot}/ghost/core/core/built/admin"
+              ],
+              "dependsOn": [
+                "build",
+                {
+                  "projects": [
+                    "@tryghost/admin-x-settings",
+                    "@tryghost/admin-x-activitypub",
+                    "@tryghost/posts",
+                    "@tryghost/stats"
+                  ],
+                  "target": "build"
+                }
+              ],
+              "options": {
+                "script": "build"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                {
+                  "env": "GHOST_CDN_URL"
+                },
+                "default",
+                "^default"
+              ],
+              "cache": true
+            },
+            "build:dev": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "yarn build --environment=development",
+                "runCommand": "yarn build:dev"
+              },
+              "dependsOn": [
+                "build:dev",
+                {
+                  "projects": [
+                    "@tryghost/admin-x-settings",
+                    "@tryghost/admin-x-activitypub",
+                    "@tryghost/posts",
+                    "@tryghost/stats"
+                  ],
+                  "target": "build"
+                }
+              ],
+              "options": {
+                "script": "build:dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:unit": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:unit"
+              },
+              "metadata": {
+                "scriptContent": "true",
+                "runCommand": "yarn test:unit"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test"
+              },
+              "metadata": {
+                "scriptContent": "ember exam --split 2 --parallel",
+                "runCommand": "yarn test"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "lint:js": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:js"
+              },
+              "metadata": {
+                "scriptContent": "eslint . --cache",
+                "runCommand": "yarn lint:js"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint:hbs": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:hbs"
+              },
+              "metadata": {
+                "scriptContent": "ember-template-lint .",
+                "runCommand": "yarn lint:hbs"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint"
+              },
+              "metadata": {
+                "scriptContent": "yarn lint:js && yarn lint:hbs",
+                "runCommand": "yarn lint"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            }
+          },
+          "implicitDependencies": []
+        }
+      },
+      "@tryghost/i18n": {
+        "name": "@tryghost/i18n",
+        "type": "lib",
+        "data": {
+          "root": "ghost/i18n",
+          "name": "@tryghost/i18n",
+          "tags": [
+            "npm:private"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "dev",
+                "test:base",
+                "test",
+                "lint:code",
+                "lint",
+                "lint:test",
+                "lint:translations",
+                "translate",
+                "translate:ghost",
+                "translate:portal",
+                "translate:signup-form",
+                "translate:comments",
+                "translate:search"
+              ]
+            },
+            "js": {
+              "packageName": "@tryghost/i18n",
+              "packageMain": "index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "dev": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev"
+              },
+              "metadata": {
+                "scriptContent": "echo \"Implement me!\"",
+                "runCommand": "yarn dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:base": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:base"
+              },
+              "metadata": {
+                "scriptContent": "NODE_ENV=testing c8 --include index.js --include lib --check-coverage --100  --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
+                "runCommand": "yarn test:base"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:base && yarn translate",
+                "runCommand": "yarn test"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "lint:code": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:code"
+              },
+              "metadata": {
+                "scriptContent": "eslint *.js lib/ --ext .js --cache",
+                "runCommand": "yarn lint:code"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint"
+              },
+              "metadata": {
+                "scriptContent": "yarn lint:code && yarn lint:test && yarn lint:translations",
+                "runCommand": "yarn lint"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "lint:test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:test"
+              },
+              "metadata": {
+                "scriptContent": "eslint -c test/.eslintrc.js test/ --ext .js --cache",
+                "runCommand": "yarn lint:test"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint:translations": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:translations"
+              },
+              "metadata": {
+                "scriptContent": "node ./test/i18n.lint.js",
+                "runCommand": "yarn lint:translations"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "translate": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "translate"
+              },
+              "metadata": {
+                "scriptContent": "yarn translate:ghost && yarn translate:portal && yarn translate:signup-form && yarn translate:comments && yarn translate:search && node generate-context.js",
+                "runCommand": "yarn translate"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "translate:ghost": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "translate:ghost"
+              },
+              "metadata": {
+                "scriptContent": "NAMESPACE=ghost i18next '../core/core/{frontend,server,shared}/**/*.{js,jsx}' '../core/core/server/services/email-service/email-templates/**/*.hbs' '../core/core/server/services/comments/email-templates/**/*.hbs'",
+                "runCommand": "yarn translate:ghost"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "translate:portal": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "translate:portal"
+              },
+              "metadata": {
+                "scriptContent": "NAMESPACE=portal i18next '../../apps/portal/src/**/*.{js,jsx}'",
+                "runCommand": "yarn translate:portal"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "translate:signup-form": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "translate:signup-form"
+              },
+              "metadata": {
+                "scriptContent": "NAMESPACE=signup-form i18next '../../apps/signup-form/src/**/*.{ts,tsx}'",
+                "runCommand": "yarn translate:signup-form"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "translate:comments": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "translate:comments"
+              },
+              "metadata": {
+                "scriptContent": "NAMESPACE=comments i18next '../../apps/comments-ui/src/**/*.{ts,tsx}'",
+                "runCommand": "yarn translate:comments"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "translate:search": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "translate:search"
+              },
+              "metadata": {
+                "scriptContent": "NAMESPACE=search i18next '../../apps/sodo-search/src/**/*.{js,jsx,ts,tsx}'",
+                "runCommand": "yarn translate:search"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "implicitDependencies": []
+        }
+      },
+      "@tryghost/posts": {
+        "name": "@tryghost/posts",
+        "type": "lib",
+        "data": {
+          "root": "apps/posts",
+          "name": "@tryghost/posts",
+          "tags": [
+            "npm:private"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "dev",
+                "dev:start",
+                "build",
+                "test:unit",
+                "lint",
+                "lint:code",
+                "lint:code:fix",
+                "lint:test",
+                "lint:fix",
+                "preview",
+                "test"
+              ]
+            },
+            "js": {
+              "packageName": "@tryghost/posts",
+              "packageMain": "./dist/posts.umd.cjs",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "dev": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "vite build --watch",
+                "runCommand": "yarn dev"
+              },
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "script": "dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "dev:start": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev:start"
+              },
+              "metadata": {
+                "scriptContent": "vite",
+                "runCommand": "yarn dev:start"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build"
+              },
+              "metadata": {
+                "scriptContent": "tsc && vite build",
+                "runCommand": "yarn build"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                {
+                  "env": "GHOST_CDN_URL"
+                },
+                "default",
+                "^default"
+              ],
+              "outputs": [
+                "{projectRoot}/dist",
+                "{projectRoot}/es",
+                "{projectRoot}/types",
+                "{projectRoot}/umd"
+              ],
+              "cache": true
+            },
+            "test:unit": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "vitest run test/unit",
+                "runCommand": "yarn test:unit"
+              },
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "script": "test:unit"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "lint": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint"
+              },
+              "metadata": {
+                "scriptContent": "yarn run lint:code && yarn run lint:test",
+                "runCommand": "yarn lint"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "lint:code": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:code"
+              },
+              "metadata": {
+                "scriptContent": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
+                "runCommand": "yarn lint:code"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint:code:fix": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:code:fix"
+              },
+              "metadata": {
+                "scriptContent": "eslint --ext .js,.ts,.cjs,.tsx --cache --fix src",
+                "runCommand": "yarn lint:code:fix"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint:test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:test"
+              },
+              "metadata": {
+                "scriptContent": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx --cache test",
+                "runCommand": "yarn lint:test"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint:fix": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:fix"
+              },
+              "metadata": {
+                "scriptContent": "eslint --ext .js,.ts,.cjs,.tsx --cache src --fix",
+                "runCommand": "yarn lint:fix"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "preview": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "preview"
+              },
+              "metadata": {
+                "scriptContent": "vite preview",
+                "runCommand": "yarn preview"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:unit --coverage",
+                "runCommand": "yarn test"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test:acceptance": {
+              "dependsOn": [
+                "^build"
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true,
+              "executor": "nx:noop"
+            }
+          },
+          "implicitDependencies": []
+        }
+      },
+      "@tryghost/shade": {
+        "name": "@tryghost/shade",
+        "type": "lib",
+        "data": {
+          "root": "apps/shade",
+          "name": "@tryghost/shade",
+          "tags": [
+            "npm:private"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "build",
+                "prepare",
+                "test",
+                "test:unit",
+                "test:types",
+                "lint:code",
+                "lint",
+                "lint:test",
+                "storybook",
+                "build-storybook"
+              ]
+            },
+            "js": {
+              "packageName": "@tryghost/shade",
+              "packageMain": "es/index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "build": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "tsc -p tsconfig.declaration.json && vite build",
+                "runCommand": "yarn build"
+              },
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "script": "build"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                {
+                  "env": "GHOST_CDN_URL"
+                },
+                "default",
+                "^default"
+              ],
+              "outputs": [
+                "{projectRoot}/dist",
+                "{projectRoot}/es",
+                "{projectRoot}/types",
+                "{projectRoot}/umd"
+              ],
+              "cache": true
+            },
+            "prepare": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "prepare"
+              },
+              "metadata": {
+                "scriptContent": "yarn build",
+                "runCommand": "yarn prepare"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:types && vitest run --coverage",
+                "runCommand": "yarn test"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test:unit": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "yarn test:types && vitest run",
+                "runCommand": "yarn test:unit"
+              },
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "script": "test:unit"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test:types": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:types"
+              },
+              "metadata": {
+                "scriptContent": "tsc --noEmit",
+                "runCommand": "yarn test:types"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint:code": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:code"
+              },
+              "metadata": {
+                "scriptContent": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
+                "runCommand": "yarn lint:code"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint"
+              },
+              "metadata": {
+                "scriptContent": "yarn lint:code && yarn lint:test",
+                "runCommand": "yarn lint"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "lint:test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:test"
+              },
+              "metadata": {
+                "scriptContent": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache",
+                "runCommand": "yarn lint:test"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "storybook": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "storybook"
+              },
+              "metadata": {
+                "scriptContent": "storybook dev -p 6006",
+                "runCommand": "yarn storybook"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build-storybook": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build-storybook"
+              },
+              "metadata": {
+                "scriptContent": "storybook build",
+                "runCommand": "yarn build-storybook"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "dev": {
+              "dependsOn": [
+                "^build"
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true,
+              "executor": "nx:noop"
+            }
+          },
+          "implicitDependencies": []
+        }
+      },
+      "@tryghost/stats": {
+        "name": "@tryghost/stats",
+        "type": "lib",
+        "data": {
+          "root": "apps/stats",
+          "name": "@tryghost/stats",
+          "tags": [
+            "npm:private"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "dev",
+                "dev:start",
+                "test",
+                "test:unit",
+                "test:acceptance",
+                "test:acceptance:slowmo",
+                "test:acceptance:full",
+                "test:watch",
+                "test:coverage",
+                "build",
+                "lint",
+                "lint:code",
+                "lint:code:fix",
+                "lint:test",
+                "preview"
+              ]
+            },
+            "js": {
+              "packageName": "@tryghost/stats",
+              "packageMain": "./dist/stats.umd.cjs",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "dev": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "vite build --watch",
+                "runCommand": "yarn dev"
+              },
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "script": "dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "dev:start": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev:start"
+              },
+              "metadata": {
+                "scriptContent": "vite",
+                "runCommand": "yarn dev:start"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:unit --coverage",
+                "runCommand": "yarn test"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test:unit": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "vitest run test/unit",
+                "runCommand": "yarn test:unit"
+              },
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "script": "test:unit"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test:acceptance": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' playwright test",
+                "runCommand": "yarn test:acceptance"
+              },
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "script": "test:acceptance"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:acceptance:slowmo": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:acceptance:slowmo"
+              },
+              "metadata": {
+                "scriptContent": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 yarn test:acceptance --headed",
+                "runCommand": "yarn test:acceptance:slowmo"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:acceptance:full": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:acceptance:full"
+              },
+              "metadata": {
+                "scriptContent": "ALL_BROWSERS=1 yarn test:acceptance",
+                "runCommand": "yarn test:acceptance:full"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:watch": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:watch"
+              },
+              "metadata": {
+                "scriptContent": "vitest",
+                "runCommand": "yarn test:watch"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:coverage": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:coverage"
+              },
+              "metadata": {
+                "scriptContent": "vitest run --coverage",
+                "runCommand": "yarn test:coverage"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build"
+              },
+              "metadata": {
+                "scriptContent": "tsc && vite build",
+                "runCommand": "yarn build"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                {
+                  "env": "GHOST_CDN_URL"
+                },
+                "default",
+                "^default"
+              ],
+              "outputs": [
+                "{projectRoot}/dist",
+                "{projectRoot}/es",
+                "{projectRoot}/types",
+                "{projectRoot}/umd"
+              ],
+              "cache": true
+            },
+            "lint": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint"
+              },
+              "metadata": {
+                "scriptContent": "yarn run lint:code && yarn run lint:test",
+                "runCommand": "yarn lint"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "lint:code": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:code"
+              },
+              "metadata": {
+                "scriptContent": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
+                "runCommand": "yarn lint:code"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint:code:fix": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:code:fix"
+              },
+              "metadata": {
+                "scriptContent": "eslint --ext .js,.ts,.cjs,.tsx --cache --fix src",
+                "runCommand": "yarn lint:code:fix"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint:test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:test"
+              },
+              "metadata": {
+                "scriptContent": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx --cache test",
+                "runCommand": "yarn lint:test"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "preview": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "preview"
+              },
+              "metadata": {
+                "scriptContent": "vite preview",
+                "runCommand": "yarn preview"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "implicitDependencies": []
+        }
+      },
+      "ghost": {
+        "name": "ghost",
+        "type": "lib",
+        "data": {
+          "root": "ghost/core",
+          "name": "ghost",
+          "tags": [
+            "npm:public",
+            "npm:ghost",
+            "npm:blog",
+            "npm:cms",
+            "npm:headless",
+            "npm:content",
+            "npm:markdown"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "archive",
+                "dev",
+                "build:assets",
+                "build:assets:js",
+                "build:assets:css",
+                "build:tsc",
+                "pretest",
+                "test",
+                "test:base",
+                "test:single",
+                "test:all",
+                "test:debug",
+                "test:unit",
+                "test:unit:base",
+                "test:integration",
+                "test:e2e",
+                "test:legacy",
+                "test:browser",
+                "test:browser:admin",
+                "test:browser:portal",
+                "test:browser:setup",
+                "test:ci:e2e",
+                "test:ci:legacy",
+                "test:ci:integration",
+                "test:unit:slow",
+                "test:int:slow",
+                "test:e2e:slow",
+                "test:leg:slow",
+                "lint:server",
+                "lint:shared",
+                "lint:frontend",
+                "lint:test",
+                "lint:code",
+                "lint:types",
+                "lint",
+                "prepack"
+              ]
+            },
+            "description": "The professional publishing platform",
+            "js": {
+              "packageName": "ghost",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "archive": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "npm pack",
+                "runCommand": "yarn archive"
+              },
+              "dependsOn": [
+                "build:assets",
+                "build:tsc",
+                {
+                  "projects": [
+                    "ghost-admin"
+                  ],
+                  "target": "build"
+                }
+              ],
+              "options": {
+                "script": "archive"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "dev": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "node --watch --import=tsx index.js",
+                "runCommand": "yarn dev"
+              },
+              "dependsOn": [
+                "build:assets"
+              ],
+              "options": {
+                "script": "dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build:assets": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build:assets"
+              },
+              "metadata": {
+                "scriptContent": "yarn build:assets:css && yarn build:assets:js",
+                "runCommand": "yarn build:assets"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build:assets:js": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build:assets:js"
+              },
+              "metadata": {
+                "scriptContent": "node bin/minify-assets.js",
+                "runCommand": "yarn build:assets:js"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build:assets:css": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build:assets:css"
+              },
+              "metadata": {
+                "scriptContent": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
+                "runCommand": "yarn build:assets:css"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build:tsc": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build:tsc"
+              },
+              "metadata": {
+                "scriptContent": "tsc",
+                "runCommand": "yarn build:tsc"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "pretest": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "pretest"
+              },
+              "metadata": {
+                "scriptContent": "yarn build:assets",
+                "runCommand": "yarn pretest"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:unit",
+                "runCommand": "yarn test"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test:base": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:base"
+              },
+              "metadata": {
+                "scriptContent": "mocha --reporter dot --require tsx --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js,test.ts",
+                "runCommand": "yarn test:base"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:single": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:single"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:base --timeout=60000",
+                "runCommand": "yarn test:single"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:all": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "yarn test:unit && yarn test:integration && yarn test:e2e && yarn lint",
+                "runCommand": "yarn test:all"
+              },
+              "dependsOn": [
+                "build:assets"
+              ],
+              "options": {
+                "script": "test:all"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:debug": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:debug"
+              },
+              "metadata": {
+                "scriptContent": "DEBUG=ghost:test* yarn test",
+                "runCommand": "yarn test:debug"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:unit": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "c8 yarn test:unit:base",
+                "runCommand": "yarn test:unit"
+              },
+              "dependsOn": [
+                "build:assets"
+              ],
+              "options": {
+                "script": "test:unit"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "test:unit:base": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:unit:base"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:base './test/unit' --timeout=2000",
+                "runCommand": "yarn test:unit:base"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:integration": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:integration"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:base './test/integration' --timeout=10000",
+                "runCommand": "yarn test:integration"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:e2e": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:e2e"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:base ./test/e2e-* --timeout=15000",
+                "runCommand": "yarn test:e2e"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:legacy": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:legacy"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:base './test/legacy' --timeout=60000",
+                "runCommand": "yarn test:legacy"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:browser": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "NODE_ENV=testing-browser playwright test",
+                "runCommand": "yarn test:browser"
+              },
+              "dependsOn": [
+                "build:assets",
+                "ghost-admin:build"
+              ],
+              "options": {
+                "script": "test:browser"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:browser:admin": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "NODE_ENV=testing-browser  playwright test test/e2e-browser --project=admin",
+                "runCommand": "yarn test:browser:admin"
+              },
+              "dependsOn": [
+                "build:assets",
+                "ghost-admin:build"
+              ],
+              "options": {
+                "script": "test:browser:admin"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:browser:portal": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "NODE_ENV=testing-browser playwright test test/e2e-browser --project=portal",
+                "runCommand": "yarn test:browser:portal"
+              },
+              "dependsOn": [
+                "build:assets",
+                "ghost-admin:build"
+              ],
+              "options": {
+                "script": "test:browser:portal"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:browser:setup": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:browser:setup"
+              },
+              "metadata": {
+                "scriptContent": "npx playwright install",
+                "runCommand": "yarn test:browser:setup"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:ci:e2e": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:ci:e2e"
+              },
+              "metadata": {
+                "scriptContent": "c8 -c ./.c8rc.e2e.json -o coverage-e2e yarn test:e2e -b",
+                "runCommand": "yarn test:ci:e2e"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:ci:legacy": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:ci:legacy"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:legacy -b",
+                "runCommand": "yarn test:ci:legacy"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:ci:integration": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:ci:integration"
+              },
+              "metadata": {
+                "scriptContent": "c8 -c ./.c8rc.e2e.json -o coverage-integration --lines 52 --functions 47 --branches 73 --statements 52 yarn test:integration -b",
+                "runCommand": "yarn test:ci:integration"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:unit:slow": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:unit:slow"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:unit --reporter=mocha-slow-test-reporter",
+                "runCommand": "yarn test:unit:slow"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:int:slow": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:int:slow"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:integration --reporter=mocha-slow-test-reporter",
+                "runCommand": "yarn test:int:slow"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:e2e:slow": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:e2e:slow"
+              },
+              "metadata": {
+                "scriptContent": "yarn test:e2e --reporter=mocha-slow-test-reporter",
+                "runCommand": "yarn test:e2e:slow"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:leg:slow": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:leg:slow"
+              },
+              "metadata": {
+                "scriptContent": "mocha --reporter dot --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js  './test/legacy' --timeout=60000 --reporter=mocha-slow-test-reporter",
+                "runCommand": "yarn test:leg:slow"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint:server": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:server"
+              },
+              "metadata": {
+                "scriptContent": "eslint --ignore-path .eslintignore 'core/server/**/*.js' 'core/*.js' '*.js' --cache",
+                "runCommand": "yarn lint:server"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint:shared": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:shared"
+              },
+              "metadata": {
+                "scriptContent": "eslint --ignore-path .eslintignore 'core/shared/**/*.js' --cache",
+                "runCommand": "yarn lint:shared"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint:frontend": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:frontend"
+              },
+              "metadata": {
+                "scriptContent": "eslint --ignore-path .eslintignore 'core/frontend/**/*.js' --cache",
+                "runCommand": "yarn lint:frontend"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint:test": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:test"
+              },
+              "metadata": {
+                "scriptContent": "eslint -c test/.eslintrc.js --ignore-path test/.eslintignore 'test/**/*.js' --cache",
+                "runCommand": "yarn lint:test"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint:code": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:code"
+              },
+              "metadata": {
+                "scriptContent": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
+                "runCommand": "yarn lint:code"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint:types": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint:types"
+              },
+              "metadata": {
+                "scriptContent": "eslint --ignore-path .eslintignore '**/*.ts' --cache && tsc --noEmit",
+                "runCommand": "yarn lint:types"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "lint"
+              },
+              "metadata": {
+                "scriptContent": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test && yarn lint:types",
+                "runCommand": "yarn lint"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "prepack": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "prepack"
+              },
+              "metadata": {
+                "scriptContent": "node monobundle.js",
+                "runCommand": "yarn prepack"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "implicitDependencies": []
+        }
+      }
+    },
+    "dependencies": {
+      "@tryghost/admin-x-design-system": [],
+      "@tryghost/admin-x-activitypub": [
+        {
+          "source": "@tryghost/admin-x-activitypub",
+          "target": "@tryghost/admin-x-framework",
+          "type": "static"
+        },
+        {
+          "source": "@tryghost/admin-x-activitypub",
+          "target": "@tryghost/shade",
+          "type": "static"
+        }
+      ],
+      "@tryghost/admin-x-framework": [
+        {
+          "source": "@tryghost/admin-x-framework",
+          "target": "@tryghost/admin-x-design-system",
+          "type": "static"
+        },
+        {
+          "source": "@tryghost/admin-x-framework",
+          "target": "@tryghost/shade",
+          "type": "static"
+        }
+      ],
+      "@tryghost/admin-x-settings": [
+        {
+          "source": "@tryghost/admin-x-settings",
+          "target": "@tryghost/admin-x-design-system",
+          "type": "static"
+        },
+        {
+          "source": "@tryghost/admin-x-settings",
+          "target": "@tryghost/admin-x-framework",
+          "type": "static"
+        }
+      ],
+      "@tryghost/announcement-bar": [],
+      "@tryghost/comments-ui": [
+        {
+          "source": "@tryghost/comments-ui",
+          "target": "@tryghost/i18n",
+          "type": "static"
+        }
+      ],
+      "@tryghost/signup-form": [
+        {
+          "source": "@tryghost/signup-form",
+          "target": "@tryghost/i18n",
+          "type": "static"
+        }
+      ],
+      "@tryghost/sodo-search": [],
+      "@tryghost/portal": [
+        {
+          "source": "@tryghost/portal",
+          "target": "@tryghost/i18n",
+          "type": "static"
+        }
+      ],
+      "ghost-admin": [],
+      "@tryghost/i18n": [],
+      "@tryghost/posts": [
+        {
+          "source": "@tryghost/posts",
+          "target": "@tryghost/admin-x-framework",
+          "type": "static"
+        },
+        {
+          "source": "@tryghost/posts",
+          "target": "@tryghost/shade",
+          "type": "static"
+        }
+      ],
+      "@tryghost/shade": [],
+      "@tryghost/stats": [
+        {
+          "source": "@tryghost/stats",
+          "target": "@tryghost/admin-x-framework",
+          "type": "static"
+        },
+        {
+          "source": "@tryghost/stats",
+          "target": "@tryghost/shade",
+          "type": "static"
+        }
+      ],
+      "ghost": [
+        {
+          "source": "ghost",
+          "target": "@tryghost/i18n",
+          "type": "static"
+        }
+      ]
+    }
+  }
+}
