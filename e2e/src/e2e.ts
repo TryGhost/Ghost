@@ -1,2 +1,0 @@
-// Main module file
-export {};

@@ -1,1 +1,2 @@
-export * from './e2e';
+// Page Objects
+export * from './pages/HomePage';

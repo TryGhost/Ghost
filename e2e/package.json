@@ -1,5 +1,5 @@
 {
-  "name": "@tryghost/e-2-e",
+  "name": "@tryghost/e2e",
   "version": "0.0.0",
   "repository": "https://github.com/TryGhost/Ghost/tree/main/e2e",
   "author": "Ghost Foundation",
@@ -12,10 +12,9 @@
     "build:ts": "tsc",
     "prepare": "tsc",
     "test": "playwright test",
+    "test:frontend": "playwright test test/frontend",
     "test:types": "tsc --noEmit",
-    "lint:code": "eslint src/ --ext .ts --cache",
-    "lint": "yarn lint:code && yarn lint:test",
-    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .ts --cache"
+    "lint": "eslint src/ --ext .ts --cache"
   },
   "files": [
     "build"
@@ -23,8 +22,6 @@
   "devDependencies": {
     "@playwright/test": "1.53.1",
     "c8": "10.1.3",
-    "mocha": "11.6.0",
-    "sinon": "21.0.0",
     "ts-node": "10.9.2",
     "typescript": "5.8.3"
   },
