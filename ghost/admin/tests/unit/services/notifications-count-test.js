@@ -137,18 +137,14 @@ describe('Unit: Service: notifications-count', function () {
             });
 
             const service = this.owner.lookup('service:notifications-count');
-            
-            // Start the fetch
+
             const fetchPromise = service.fetchCount();
-            
-            // Check loading state
+
             expect(service.isLoading).to.equal(true);
-            
-            // Wait for fetch to complete
+
             await fetchPromise;
-            
-            // Check loading state after completion
+
             expect(service.isLoading).to.equal(false);
         });
     });
-}); 
+});
