@@ -268,13 +268,14 @@ const Locations:React.FC = () => {
                                                                 <div className='flex items-center space-x-3 overflow-hidden'>
                                                                     <Flag
                                                                         countryCode={`${normalizeCountryCode(row.location as string)}`}
+                                                                        data-testid='country-flag'
                                                                         fallback={
                                                                             <span className='flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-black text-white'>
                                                                                 <Icon.SkullAndBones className='size-3' />
                                                                             </span>
                                                                         }
                                                                     />
-                                                                    <div className='truncate font-medium'>{countryName}</div>
+                                                                    <div className='truncate font-medium' data-testid='country-name'>{countryName}</div>
                                                                 </div>
                                                             </DataListItemContent>
                                                             <DataListItemValue>
