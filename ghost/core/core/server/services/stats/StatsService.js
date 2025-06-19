@@ -119,6 +119,13 @@ class StatsService {
     }
 
     /**
+     * @param {string[]} postIds
+     */
+    async getPostsMemberCounts(postIds) {
+        return await this.posts.getPostsMemberCounts(postIds);
+    }
+
+    /**
      * Get newsletter stats for sent posts
      * @param {Object} options
      * @param {string} [options.newsletter_id] - ID of the specific newsletter to get stats for
@@ -165,11 +172,26 @@ class StatsService {
     }
 
     /**
-     * Get stats for the latest published post
+     * Get stats for a specific post by ID
+     * @param {string} postId - The post ID to get stats for
      * @returns {Promise<{data: Object}>}
      */
-    async getLatestPostStats() {
-        return await this.posts.getLatestPostStats();
+    async getPostStats(postId) {
+        return await this.posts.getPostStats(postId);
+    }
+
+    /**
+     * Get visitor counts for multiple posts
+     * @param {string[]} postUuids - Array of post UUIDs
+     * @returns {Promise<{data: Object}>} Visitor counts mapped by post UUID
+     */
+    async getPostsVisitorCounts(postUuids) {
+        const visitorCounts = await this.posts.getPostsVisitorCounts(postUuids);
+        return {
+            data: {
+                visitor_counts: visitorCounts
+            }
+        };
     }
 
     /**

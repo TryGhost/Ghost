@@ -158,7 +158,7 @@ module.exports = function apiRoutes() {
     router.get('/stats/referrers', mw.authAdminApi, http(api.stats.referrersHistory));
     router.get('/stats/referrers-growth', mw.authAdminApi, http(api.stats.referrersHistoryWithRange));
     if (labs.isSet('trafficAnalytics')) {
-        router.get('/stats/latest-post', mw.authAdminApi, http(api.stats.latestPost));
+        router.get('/stats/posts/:id/stats', mw.authAdminApi, http(api.stats.postStats));
         router.get('/stats/top-posts', mw.authAdminApi, http(api.stats.topPosts));
         router.get('/stats/top-posts-views', mw.authAdminApi, http(api.stats.topPostsViews));
         router.get('/stats/top-content', mw.authAdminApi, http(api.stats.topContent));
@@ -168,6 +168,8 @@ module.exports = function apiRoutes() {
         router.get('/stats/subscriber-count', mw.authAdminApi, http(api.stats.subscriberCount));
         router.get('/stats/posts/:id/top-referrers', mw.authAdminApi, http(api.stats.postReferrersAlpha));
         router.get('/stats/posts/:id/growth', mw.authAdminApi, http(api.stats.postGrowthStats));
+        router.post('/stats/posts-visitor-counts', mw.authAdminApi, http(api.stats.postsVisitorCounts));
+        router.post('/stats/posts-member-counts', mw.authAdminApi, http(api.stats.postsMemberCounts));
     }
 
     // ## Labels

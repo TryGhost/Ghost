@@ -426,22 +426,110 @@ const controller = {
             return await statsService.api.getGrowthStatsForPost(frame.data.id);
         }
     },
-    latestPost: {
+    postStats: {
         headers: {
             cacheInvalidate: false
+        },
+        data: [
+            'id'
+        ],
+        validation: {
+            data: {
+                id: {
+                    type: 'string',
+                    required: true
+                }
+            }
         },
         permissions: {
             docName: 'posts',
             method: 'browse'
         },
         cache: statsService.cache,
-        generateCacheKeyData() {
+        generateCacheKeyData(frame) {
             return {
-                method: 'getLatestPostStats'
+                method: 'getPostStats',
+                data: {
+                    id: frame.data.id
+                }
             };
         },
-        async query() {
-            return await statsService.api.getLatestPostStats();
+        async query(frame) {
+            return await statsService.api.getPostStats(frame.data.id);
+        }
+    },
+    postsVisitorCounts: {
+        headers: {
+            cacheInvalidate: false
+        },
+        data: [
+            'postUuids'
+        ],
+        validation: {
+            data: {
+                postUuids: {
+                    type: 'array',
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'getPostsVisitorCounts',
+                data: {
+                    postUuids: frame.data.postUuids
+                }
+            };
+        },
+        async query(frame) {
+            const visitorCounts = await statsService.api.getPostsVisitorCounts(frame.data.postUuids);
+            
+            // Return in format expected by serializer
+            return {
+                data: [visitorCounts]
+            };
+        }
+    },
+    postsMemberCounts: {
+        headers: {
+            cacheInvalidate: false
+        },
+        data: [
+            'postIds'
+        ],
+        validation: {
+            data: {
+                postIds: {
+                    type: 'array',
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'getPostsMemberCounts',
+                data: {
+                    postIds: frame.data.postIds
+                }
+            };
+        },
+        async query(frame) {
+            const memberCounts = await statsService.api.getPostsMemberCounts(frame.data.postIds);
+            
+            // Return in format expected by serializer
+            return {
+                data: [memberCounts]
+            };
         }
     }
 };

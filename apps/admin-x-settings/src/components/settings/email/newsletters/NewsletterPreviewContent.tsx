@@ -261,10 +261,10 @@ const NewsletterPreviewContent: React.FC<{
                                                 titleFontWeight === 'bold' && 'font-bold'
                                             )}
                                             style={{color: sectionTitleColor}}>Need inspiration?</h3>
-                                        <p className="mb-[27px]" style={{color: textColor}}>We&apos;ve put together a <a className={clsx(linkStyle === 'underline' && 'underline', linkStyle === 'bold' && 'font-bold')} href="#" style={{color: linkColor || accentColor}}>quick guide</a> that walks through all of the available settings, along with a few examples of what&apos;s possible.</p>
-                                        <button
+                                        <p className="mb-[27px]" style={{color: textColor}}>We&apos;ve put together a <a className={clsx(linkStyle === 'underline' && 'underline', linkStyle === 'bold' && 'font-bold')} href="https://ghost.org/help/email-design/" rel="noopener noreferrer" style={{color: linkColor || accentColor}} target="_blank">quick guide</a> that walks through all of the available settings, along with a few examples of what&apos;s possible.</p>
+                                        <a
                                             className={clsx(
-                                                'border px-[18px] py-2 font-sans text-[15px]',
+                                                'inline-block border px-[18px] py-2 font-sans text-[15px]',
                                                 buttonCorners === 'rounded' && 'rounded-[6px]',
                                                 buttonCorners === 'pill' && 'rounded-full',
                                                 buttonCorners === 'square' && 'rounded-none',
@@ -273,6 +273,8 @@ const NewsletterPreviewContent: React.FC<{
                                                     : 'border-transparent text-white',
                                                 linkStyle === 'bold' ? 'font-bold' : 'font-semibold'
                                             )}
+                                            href="https://ghost.org/help/email-design/"
+                                            rel="noopener noreferrer"
                                             style={
                                                 buttonStyle === 'outline'
                                                     ? {
@@ -284,10 +286,10 @@ const NewsletterPreviewContent: React.FC<{
                                                         color: buttonTextColor
                                                     }
                                             }
-                                            type="button"
+                                            target="_blank"
                                         >
                                             Learn more
-                                        </button>
+                                        </a>
                                     </>
                                 ) : (
                                     <>
