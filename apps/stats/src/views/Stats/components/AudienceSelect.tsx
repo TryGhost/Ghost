@@ -57,6 +57,25 @@ const AudienceSelect: React.FC = () => {
         if (isAudienceSelected(AUDIENCE_BITS.FREE)) {
             selectedAudiences.push('Free members');
         }
+
+        if (!appSettings?.paidMembersEnabled) {
+            if (selectedAudiences.length === 2) {
+                return 'All audiences';
+            }
+
+            if (selectedAudiences.length === 1) {
+                if (isAudienceSelected(AUDIENCE_BITS.FREE)) {
+                    return 'Free members';
+                } else {
+                    return 'Public visitors';
+                }
+            }
+
+            if (selectedAudiences.length === 0) {
+                return 'Select audience';
+            }
+        }
+
         if (isAudienceSelected(AUDIENCE_BITS.PAID)) {
             selectedAudiences.push('Paid members');
         }
