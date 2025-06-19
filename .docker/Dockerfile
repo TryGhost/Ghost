@@ -12,7 +12,8 @@ RUN apt-get update && \
     libjemalloc2 \
     python3 \
     tar  \
-    git && \
+    git \
+    procps && \
     rm -rf /var/lib/apt/lists/* && \
     apt clean
 

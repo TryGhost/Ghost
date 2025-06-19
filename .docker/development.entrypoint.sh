@@ -26,7 +26,13 @@ set -euo pipefail
     fi
 )
 
-yarn nx reset
+# Clean Nx setup for Nx 21.2 with database-backed cache
+yarn nx reset --onlyDaemon
+yarn nx daemon --start
+
+# Initialize database schema to prevent race conditions between services
+echo "INFO: Initializing Nx cache database schema..."
+yarn nx show projects > /dev/null 2>&1 || echo "WARNING: Failed to initialize Nx cache database"
 
 # Execute the CMD
 exec "$@"
