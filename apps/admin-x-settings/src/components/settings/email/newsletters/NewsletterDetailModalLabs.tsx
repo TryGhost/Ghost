@@ -1,7 +1,6 @@
 import NewsletterPreview from './NewsletterPreview';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
-import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
 import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, SelectOption, Separator, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
@@ -67,13 +66,11 @@ const Sidebar: React.FC<{
     errors: ErrorMessages;
     clearError: (field: string) => void;
 }> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
-    const hasEmailCustomizationAlpha = useFeatureFlag('emailCustomizationAlpha');
-
     const {updateRoute} = useRouting();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const limiter = useLimiter();
     const {settings, config, siteData} = useGlobalData();
-    const [defaultEmailAddress] = getSettingValues<string>(settings, ['default_email_address']);
+    const [icon, defaultEmailAddress] = getSettingValues<string>(settings, ['icon', 'default_email_address']);
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
     const {localSettings} = useSettingGroup();
@@ -95,17 +92,28 @@ const Sidebar: React.FC<{
         {value: 'sans_serif', label: 'Clean sans-serif'}
     ];
 
-    const fontWeightOptions: SelectOption[] = [
-        {value: 'normal', label: 'Regular', className: 'font-normal'},
-        {value: 'medium', label: 'Medium', className: 'font-medium'},
-        {value: 'semibold', label: 'Semi-bold', className: 'font-semibold'},
-        {value: 'bold', label: 'Bold', className: 'font-bold'}
-    ];
+    const fontWeightOptions: Record<string, {options: SelectOption[], map?: Record<string, string>}> = {
+        sans_serif: {
+            options: [
+                {value: 'normal', label: 'Regular', className: 'font-normal'},
+                {value: 'medium', label: 'Medium', className: 'font-medium'},
+                {value: 'semibold', label: 'Semi-bold', className: 'font-semibold'},
+                {value: 'bold', label: 'Bold', className: 'font-bold'}
+            ]
+        },
+        serif: {
+            options: [
+                {value: 'normal', label: 'Regular', className: 'font-normal'},
+                {value: 'bold', label: 'Bold', className: 'font-bold'}
+            ],
+            map: {
+                medium: 'normal',
+                semibold: 'bold'
+            }
+        }
+    };
 
     const backgroundColorIsDark = () => {
-        if (newsletter.background_color === 'dark') {
-            return true;
-        }
         if (newsletter.background_color === 'light') {
             return false;
         }
@@ -206,6 +214,34 @@ const Sidebar: React.FC<{
         // We're not showing the field since it's not editable
     };
 
+    const headingFontWeightOptions = fontWeightOptions[newsletter.title_font_category || 'sans_serif'].options;
+
+    // not all weights will be available for all fonts, if it doesn't exist find the closest match
+    const getSelectedFontWeightOption = () => {
+        const category = newsletter.title_font_category || 'sans_serif';
+        const fontWeight = newsletter.title_font_weight;
+        const weightMap = fontWeightOptions[category].map;
+        const mappedWeight = weightMap ? (weightMap[fontWeight] || fontWeight) : fontWeight;
+        const option = headingFontWeightOptions.find(o => o.value === mappedWeight);
+        return option || headingFontWeightOptions[0];
+    };
+    // changing font category changes available weights so we may need to map to the closest match
+    const changeSelectedTitleFont = (option: SelectOption | null) => {
+        const categoryValue = option?.value || 'sans_serif';
+
+        // ensure the weight is valid for the new font by switching to closest match
+        const currentWeight = newsletter.title_font_weight;
+        let newWeight = currentWeight;
+        if (!fontWeightOptions[categoryValue].options.find(o => o.value === currentWeight)) {
+            newWeight = fontWeightOptions[categoryValue].map?.[currentWeight] || 'bold';
+        }
+
+        return updateNewsletter({
+            title_font_category: categoryValue,
+            title_font_weight: newWeight
+        });
+    };
+
     const tabs: Tab[] = [
         {
             id: 'generalSettings',
@@ -274,10 +310,16 @@ const Sidebar: React.FC<{
                             >
                                 <Icon colorClass='text-grey-700 dark:text-grey-300' name='picture' />
                             </ImageUpload>
-                            <Hint>1200x600, optional</Hint>
+                            <Hint>1200×600 recommended. Use a transparent PNG for best results on any background.</Hint>
                         </div>
                     </div>
                     <ToggleGroup>
+                        {icon && <Toggle
+                            checked={newsletter.show_header_icon}
+                            direction="rtl"
+                            label='Publication icon'
+                            onChange={e => updateNewsletter({show_header_icon: e.target.checked})}
+                        />}
                         <Toggle
                             checked={newsletter.show_header_title}
                             direction="rtl"
@@ -380,7 +422,7 @@ const Sidebar: React.FC<{
             contents:
             <>
                 <Form className='mt-6' gap='xs' margins='lg' title='Global'>
-                    {/* <div className='mb-1'>
+                    <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
                             eyedropper={true}
@@ -395,23 +437,22 @@ const Sidebar: React.FC<{
                             value={newsletter.background_color || 'light'}
                             onChange={color => updateNewsletter({background_color: color!})}
                         />
-                    </div> */}
+                    </div>
                     <div className='flex w-full items-center justify-between gap-2'>
                         <div className='shrink-0'>Heading font</div>
                         <Select
                             containerClassName='max-w-[200px]'
-                            disabled={!newsletter.show_post_title_section}
                             options={fontOptions}
                             selectedOption={fontOptions.find(option => option.value === newsletter.title_font_category)}
-                            onSelect={option => updateNewsletter({title_font_category: option?.value})}
+                            onSelect={changeSelectedTitleFont}
                         />
                     </div>
                     <div className='flex w-full items-center justify-between gap-2'>
                         <div className='shrink-0'>Heading weight</div>
                         <Select
                             containerClassName='max-w-[200px]'
-                            options={fontWeightOptions}
-                            selectedOption={fontWeightOptions.find(option => option.value === newsletter.title_font_weight)}
+                            options={headingFontWeightOptions}
+                            selectedOption={getSelectedFontWeightOption()}
                             onSelect={option => updateNewsletter({title_font_weight: option?.value})}
                         />
                     </div>
@@ -427,7 +468,7 @@ const Sidebar: React.FC<{
                     </div>
                 </Form>
                 <Form className='mt-6' gap='xs' margins='lg' title='Header'>
-                    {/* <div className='mb-1'>
+                    <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
                             eyedropper={true}
@@ -442,7 +483,7 @@ const Sidebar: React.FC<{
                             value={newsletter.header_background_color || 'transparent'}
                             onChange={color => updateNewsletter({header_background_color: color!})}
                         />
-                    </div> */}
+                    </div>
                     <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
@@ -517,7 +558,7 @@ const Sidebar: React.FC<{
                             onChange={color => updateNewsletter({section_title_color: color})}
                         />
                     </div>
-                    {/* <div className='mb-1'>
+                    <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
                             eyedropper={true}
@@ -537,7 +578,7 @@ const Sidebar: React.FC<{
                             value={newsletter.button_color}
                             onChange={color => updateNewsletter({button_color: color})}
                         />
-                    </div> */}
+                    </div>
                     <div className='flex w-full justify-between'>
                         <div>Button style</div>
                         <ButtonGroup activeKey={newsletter.button_style || 'fill'} buttons={[
@@ -603,7 +644,7 @@ const Sidebar: React.FC<{
                             }
                         ]} clearBg={false} />
                     </div>
-                    {/* <div className='mb-1'>
+                    <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
                             eyedropper={true}
@@ -623,7 +664,7 @@ const Sidebar: React.FC<{
                             value={newsletter.link_color}
                             onChange={color => updateNewsletter({link_color: color})}
                         />
-                    </div> */}
+                    </div>
                     <div className='flex w-full justify-between'>
                         <div>Link style</div>
                         <ButtonGroup activeKey={newsletter.link_style || 'underline'} buttons={[
@@ -689,29 +730,27 @@ const Sidebar: React.FC<{
                             }
                         ]} clearBg={false} />
                     </div>
-                    {hasEmailCustomizationAlpha &&
-                        <div className='mb-1'>
-                            <ColorPickerField
-                                direction='rtl'
-                                eyedropper={true}
-                                swatches={[
-                                    {
-                                        value: 'light',
-                                        title: 'Light',
-                                        hex: '#e0e7eb'
-                                    },
-                                    {
-                                        value: 'accent',
-                                        title: 'Accent',
-                                        hex: siteData.accent_color
-                                    }
-                                ]}
-                                title='Divider color'
-                                value={newsletter.divider_color || 'light'}
-                                onChange={color => updateNewsletter({divider_color: color})}
-                            />
-                        </div>
-                    }
+                    <div className='mb-1'>
+                        <ColorPickerField
+                            direction='rtl'
+                            eyedropper={true}
+                            swatches={[
+                                {
+                                    value: 'light',
+                                    title: 'Light',
+                                    hex: '#e0e7eb'
+                                },
+                                {
+                                    value: 'accent',
+                                    title: 'Accent',
+                                    hex: siteData.accent_color
+                                }
+                            ]}
+                            title='Divider color'
+                            value={newsletter.divider_color || 'light'}
+                            onChange={color => updateNewsletter({divider_color: color})}
+                        />
+                    </div>
                 </Form>
             </>
         }

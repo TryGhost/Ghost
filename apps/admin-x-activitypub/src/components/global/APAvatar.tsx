@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
-import getUsername from '../../utils/get-username';
+import getUsername from '@utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {LucideIcon, Skeleton} from '@tryghost/shade';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -89,6 +89,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
             >
                 <img
                     className={imageClass}
+                    referrerPolicy='no-referrer'
                     src={iconUrl}
                     onError={() => setIconUrl(undefined)}
                 />

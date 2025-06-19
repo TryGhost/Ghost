@@ -26,7 +26,8 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'announcementBar',
     'customFonts',
-    'contentVisibility'
+    'contentVisibility',
+    'emailCustomization'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -43,14 +44,14 @@ const PRIVATE_FEATURES = [
     'stripeAutomaticTax',
     'webmentions',
     'trafficAnalytics',
+    'trafficAnalyticsTracking',
     'importMemberTier',
     'urlCache',
-    'emailCustomization',
-    'emailCustomizationAlpha',
     'mailEvents',
     'collectionsCard',
     'lexicalIndicators',
     'trafficAnalyticsAlpha',
+    'updatedMainNav',
     'contentVisibilityAlpha',
     'explore'
 ];

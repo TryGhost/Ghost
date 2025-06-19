@@ -100,27 +100,4 @@ describe('services/koenig/node-renderers/toggle-renderer', function () {
             `);
         });
     });
-
-    describe('email (emailCustomizationAlpha)', function () {
-        it('matches snapshot for default test data', function () {
-            const result = renderForEmail(getTestData(), {feature: {emailCustomizationAlpha: true}});
-
-            assert.ok(result.html);
-
-            assertPrettifiesTo(result.html, html`
-                <table cellspacing="0" cellpadding="0" border="0" width="100%" class="kg-toggle-card">
-                    <tbody>
-                        <tr>
-                            <td class="kg-toggle-heading">
-                                <h4>Toggle Heading</h4>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="kg-toggle-content">Collapsible content</td>
-                        </tr>
-                    </tbody>
-                </table>
-            `);
-        });
-    });
 });

@@ -6,6 +6,8 @@ on:
     branches:
       - main
       - 'v5.*'
+      - '5.x'
+      - '6.x'
 
 env:
   FORCE_COLOR: 1
@@ -29,6 +31,7 @@ jobs:
     timeout-minutes: 15
     env:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
+      IS_DEVELOPMENT: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/5.x' || github.ref == 'refs/heads/6.x' }}
     permissions:
       pull-requests: read
     steps:
@@ -107,6 +110,11 @@ jobs:
               - 'apps/admin-x-settings/**'
               - 'apps/admin-x-design-system/**'
               - 'apps/admin-x-framework/**'
+            admin-x-activitypub:
+              - *shared
+              - 'apps/shade/**'
+              - 'apps/admin-x-framework/**'
+              - 'apps/admin-x-activitypub/**'
             announcement-bar:
               - *shared
               - 'apps/announcement-bar/**'
@@ -165,7 +173,7 @@ jobs:
         with:
           path: ${{ env.CACHED_DEPENDENCY_PATHS }}
           key: ${{ env.cachekey }}
-          restore-keys: ${{ env.IS_MAIN == 'false' && env.DEPENDENCY_CACHE_RESTORE_KEYS || 'dep-never-restore'}}
+          restore-keys: ${{ env.IS_DEVELOPMENT == 'false' && env.DEPENDENCY_CACHE_RESTORE_KEYS || 'dep-never-restore'}}
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -181,6 +189,7 @@ jobs:
       changed_admin: ${{ steps.changed.outputs.admin }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_admin_x_settings: ${{ steps.changed.outputs.admin-x-settings }}
+      changed_admin_x_activitypub: ${{ steps.changed.outputs.admin-x-activitypub }}
       changed_announcement_bar: ${{ steps.changed.outputs.announcement-bar }}
       changed_comments_ui: ${{ steps.changed.outputs.comments-ui }}
       changed_portal: ${{ steps.changed.outputs.portal }}
@@ -191,6 +200,7 @@ jobs:
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
       is_main: ${{ env.IS_MAIN }}
+      is_development: ${{ env.IS_DEVELOPMENT }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
@@ -300,7 +310,7 @@ jobs:
     runs-on:
       labels: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_main == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true')
+    if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_development == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true')
     concurrency:
       group: ${{ github.workflow }}
     steps:
@@ -372,7 +382,7 @@ jobs:
     runs-on:
       labels: ubuntu-latest-4-cores
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_main == 'true'
+    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true'
     name: Performance tests
     steps:
       - uses: actions/checkout@v4
@@ -705,6 +715,46 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+  job_admin_x_activitypub:
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_admin_x_activitypub == 'true'
+    name: ActivityPub tests
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Setup Playwright
+        uses: ./.github/actions/setup-playwright
+
+      - run: yarn nx run @tryghost/admin-x-activitypub:test:acceptance
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-x-activitypub-playwright-report
+          path: apps/admin-x-activitypub/playwright-report
+          retention-days: 30
+
+      - uses: tryghost/actions/actions/slack-build@main
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
   job_comments_ui:
     runs-on: ubuntu-latest
     needs: [job_setup]
@@ -960,6 +1010,7 @@ jobs:
         job_legacy-tests,
         job_browser-tests,
         job_admin_x_settings,
+        job_admin_x_activitypub,
         job_comments_ui,
         job_signup_form,
         job_tinybird_forward

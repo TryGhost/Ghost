@@ -54,6 +54,14 @@ class StatsService {
     }
 
     /**
+     * @param {string} startDate - Start date in YYYY-MM-DD format
+     * @param {string} endDate - End date in YYYY-MM-DD format
+     */
+    async getReferrersHistoryWithRange(startDate, endDate) {
+        return this.referrers.getReferrersHistoryWithRange(startDate, endDate);
+    }
+
+    /**
      * @param {string} postId
      */
     async getPostReferrers(postId) {
@@ -90,10 +98,31 @@ class StatsService {
     }
 
     /**
+     * Get top posts by views
+     * @param {Object} options
+     * @param {string} options.date_from - Start date in YYYY-MM-DD format
+     * @param {string} options.date_to - End date in YYYY-MM-DD format
+     * @param {string} options.timezone - Timezone to use for date interpretation
+     * @param {number} [options.limit=5] - Maximum number of posts to return
+     * @returns {Promise<{data: import('./PostsStatsService').TopPostResult[]}>}
+     */
+    async getTopPostsViews(options) {
+        const result = await this.posts.getTopPostsViews(options);
+        return result;
+    }
+
+    /**
      * @param {string} postId
      */
     async getGrowthStatsForPost(postId) {
         return await this.posts.getGrowthStatsForPost(postId);
+    }
+
+    /**
+     * @param {string[]} postIds
+     */
+    async getPostsMemberCounts(postIds) {
+        return await this.posts.getPostsMemberCounts(postIds);
     }
 
     /**
@@ -143,6 +172,74 @@ class StatsService {
     }
 
     /**
+     * Get stats for a specific post by ID
+     * @param {string} postId - The post ID to get stats for
+     * @returns {Promise<{data: Object}>}
+     */
+    async getPostStats(postId) {
+        return await this.posts.getPostStats(postId);
+    }
+
+    /**
+     * Get visitor counts for multiple posts
+     * @param {string[]} postUuids - Array of post UUIDs
+     * @returns {Promise<{data: Object}>} Visitor counts mapped by post UUID
+     */
+    async getPostsVisitorCounts(postUuids) {
+        const visitorCounts = await this.posts.getPostsVisitorCounts(postUuids);
+        return {
+            data: {
+                visitor_counts: visitorCounts
+            }
+        };
+    }
+
+    /**
+     * Get newsletter basic stats for sent posts (without click data)
+     * @param {Object} options
+     * @param {string} [options.newsletter_id] - ID of the specific newsletter to get stats for
+     * @param {string} [options.order='published_at desc'] - Order field and direction
+     * @param {number} [options.limit=20] - Max number of results to return
+     * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
+     * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
+     * @returns {Promise<{data: Object[]}>}
+     */
+    async getNewsletterBasicStats(options = {}) {
+        // Extract newsletter_id from options
+        const {newsletter_id: newsletterId, ...otherOptions} = options;
+        
+        // If no newsletterId is provided, we can't get specific stats
+        if (!newsletterId) {
+            return {data: []};
+        }
+        
+        // Return newsletter basic stats for the specific newsletter
+        const result = await this.posts.getNewsletterBasicStats(newsletterId, otherOptions);
+        return result;
+    }
+
+    /**
+     * Get newsletter click stats for specific posts
+     * @param {Object} options
+     * @param {string} [options.newsletter_id] - ID of the specific newsletter to get stats for
+     * @param {string} [options.post_ids] - Comma-separated string of post IDs to get click data for
+     * @returns {Promise<{data: Object[]}>}
+     */
+    async getNewsletterClickStats(options = {}) {
+        // Extract newsletter_id and post_ids from options
+        const {newsletter_id: newsletterId, post_ids: postIds} = options;
+        
+        // If no newsletterId is provided, we can't get specific stats
+        if (!newsletterId) {
+            return {data: []};
+        }
+        
+        // Return newsletter click stats for the specific newsletter and posts
+        const result = await this.posts.getNewsletterClickStats(newsletterId, postIds);
+        return result;
+    }
+
+    /**
      * @param {object} deps
      *
      * @returns {StatsService}
@@ -152,12 +249,14 @@ class StatsService {
         let tinybirdClient = null;
         const config = deps.config || require('../../../shared/config');
         const request = deps.request || require('../../lib/request-external');
+        const settingsCache = deps.settingsCache || require('../../../shared/settings-cache');
 
         // Only create the client if Tinybird is configured
         if (config.get('tinybird') && config.get('tinybird:stats')) {
             tinybirdClient = tinybird.create({
                 config,
-                request
+                request,
+                settingsCache
             });
         }
 
@@ -172,7 +271,7 @@ class StatsService {
             members: new MembersService(deps),
             subscriptions: new SubscriptionStatsService(deps),
             referrers: new ReferrersStatsService(deps),
-            posts: new PostsStatsService(deps),
+            posts: new PostsStatsService(depsWithTinybird),
             content: new ContentStatsService(depsWithTinybird)
         });
     }

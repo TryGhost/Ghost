@@ -54,10 +54,7 @@ module.exports = {
     },
 
     get customNodeRenderers() {
-        if (
-            !labs.isSet('emailCustomizationAlpha') &&
-            !labs.isSet('emailCustomization')
-        ) {
+        if (!labs.isSet('emailCustomization')) {
             return undefined;
         }
 
@@ -100,8 +97,7 @@ module.exports = {
             },
             feature: {
                 contentVisibility: labs.isSet('contentVisibility'),
-                emailCustomization: labs.isSet('emailCustomization'),
-                emailCustomizationAlpha: labs.isSet('emailCustomizationAlpha')
+                emailCustomization: labs.isSet('emailCustomization')
             },
             nodeRenderers: this.customNodeRenderers
         }, userOptions);
