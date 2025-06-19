@@ -890,7 +890,7 @@ jobs:
 
       - name: Start Ghost
         working-directory: ghost/core
-        run: yarn start:server &
+        run: yarn dev &
 
       - name: Wait for Ghost to be ready
         run: |
