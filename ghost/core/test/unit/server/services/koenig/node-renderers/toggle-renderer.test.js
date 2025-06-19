@@ -46,41 +46,7 @@ describe('services/koenig/node-renderers/toggle-renderer', function () {
 
     describe('email', function () {
         it('matches snapshot for default test data', function () {
-            const result = renderForEmail(getTestData());
-
-            assert.ok(result.html);
-
-            assertPrettifiesTo(result.html, html`
-                <div
-                    style="
-                        background: transparent;
-                        border: 1px solid rgba(124, 139, 154, 0.25);
-                        border-radius: 4px;
-                        padding: 20px;
-                        margin-bottom: 1.5em;
-                    "
-                >
-                    <h4
-                        style="
-                            font-size: 1.375rem;
-                            font-weight: 600;
-                            margin-bottom: 8px;
-                            margin-top: 0px;
-                        "
-                    >
-                        Toggle Heading
-                    </h4>
-                    <div style="font-size: 1rem; line-height: 1.5; margin-bottom: -1.5em">
-                        Collapsible content
-                    </div>
-                </div>
-            `);
-        });
-    });
-
-    describe('email (emailCustomization)', function () {
-        it('matches snapshot for default test data', function () {
-            const result = renderForEmail(getTestData(), {feature: {emailCustomization: true}});
+            const result = renderForEmail(getTestData(), {feature: {}});
 
             assert.ok(result.html);
 
