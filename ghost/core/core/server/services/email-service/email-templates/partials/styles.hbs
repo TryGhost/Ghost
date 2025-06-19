@@ -210,17 +210,7 @@ blockquote.kg-blockquote-alt {
     text-align: center;
     font-size: 1.2em;
     font-style: italic;
-    {{#hasFeature "emailCustomization"}}
-        {{#if backgroundIsDark}}
-            color: #ffffff;
-            color: rgba(255, 255, 255, .6);
-        {{else}}
-            color: #15212a;
-            color: rgba(0, 0, 0, 0.6);
-        {{/if}}
-    {{else}}
-        color: #73818c;
-    {{/hasFeature}}
+    {{> secondaryTextColorStyles isDark=backgroundIsDark}}
 }
 
 blockquote p {
@@ -411,13 +401,7 @@ h6 + .kg-paywall .kg-paywall-hr td {
 {{#hasFeature "emailCustomization"}}
 .kg-cta-bg-none .kg-cta-sponsor-label span,
 .kg-cta-bg-white .kg-cta-sponsor-label span {
-    {{#if backgroundIsDark}}
-        color: #ffffff;
-        color: rgba(255, 255, 255, .6);
-    {{else}}
-        color: #15212a;
-        color: rgba(0, 0, 0, 0.6);
-    {{/if}}
+    {{> secondaryTextColorStyles isDark=backgroundIsDark}}
 }
 {{/hasFeature}}
 
@@ -467,17 +451,7 @@ figcaption {
     padding-top: 10px;
     padding-bottom: 10px;
     line-height: 1.5em;
-    {{#hasFeature "emailCustomization"}}
-        {{#if backgroundIsDark}}
-            color: #ffffff;
-            color: rgba(255, 255, 255, .6);
-        {{else}}
-            color: #15212a;
-            color: rgba(0, 0, 0, 0.6);
-        {{/if}}
-    {{else}}
-        color: #73818c;
-    {{/hasFeature}}
+    {{> secondaryTextColorStyles isDark=backgroundIsDark}}
 }
 
 figcaption a {
@@ -569,13 +543,7 @@ figure blockquote p {
 
 {{#hasFeature "emailCustomization"}}
 .site-subtitle {
-    {{#if headerBackgroundIsDark}}
-        color: #ffffff;
-        color: rgba(255, 255, 255, .6);
-    {{else}}
-        color: #15212a;
-        color: rgba(0, 0, 0, 0.6);
-    {{/if}}
+    {{> secondaryTextColorStyles isDark=headerBackgroundIsDark}}
     font-size: 13px;
     font-weight: 400;
     text-transform: none;
@@ -704,13 +672,7 @@ figure blockquote p {
 {{#hasFeature "emailCustomization"}}
 .post-meta,
 .view-online {
-    {{#if headerBackgroundIsDark}}
-        color: #ffffff;
-        color: rgba(255, 255, 255, .6);
-    {{else}}
-        color: #15212a;
-        color: rgba(0, 0, 0, 0.6);
-    {{/if}}
+    {{> secondaryTextColorStyles isDark=headerBackgroundIsDark}}
     font-size: 13px;
     font-weight: 400;
     text-align: center;
@@ -754,13 +716,7 @@ figure blockquote p {
 .view-online-link {
     word-wrap: none;
     white-space: nowrap;
-    {{#if headerBackgroundIsDark}}
-        color: #ffffff;
-        color: rgba(255, 255, 255, .6);
-    {{else}}
-        color: #15212a;
-        color: rgba(0, 0, 0, 0.6);
-    {{/if}}
+    {{> secondaryTextColorStyles isDark=headerBackgroundIsDark}}
     text-decoration: underline !important;
 }
 {{else}}
@@ -796,17 +752,7 @@ figure blockquote p {
     padding-bottom: 32px;
     text-align: center;
     font-size: 13px !important;
-    {{#hasFeature "emailCustomization"}}
-    {{#if headerBackgroundIsDark}}
-        color: #ffffff;
-        color: rgba(255, 255, 255, .6);
-    {{else}}
-        color: #15212a;
-        color: rgba(0, 0, 0, 0.6);
-    {{/if}}
-    {{else}}
-    color: #73818c;
-    {{/hasFeature}}
+    {{> secondaryTextColorStyles isDark=headerBackgroundIsDark}}
     line-height: 1.5em;
 }
 
@@ -977,13 +923,7 @@ h3.latest-posts-header {
 .latest-post-excerpt a,
 .latest-post p,
 .latest-post p a {
-    {{#if backgroundIsDark}}
-        color: #ffffff !important;
-        color: rgba(255, 255, 255, .6) !important;
-    {{else}}
-        color: #15212a !important;
-        color: rgba(0, 0, 0, 0.6) !important;
-    {{/if}}
+    {{> secondaryTextColorStyles isDark=backgroundIsDark important=true}}
 }
 {{/hasFeature}}
 
@@ -1184,21 +1124,13 @@ td.kg-card-spacing {
     {{#hasFeature "emailCustomization"}}
     {{#if backgroundIsDark}}
         color: #ffffff;
-        background-color: #15212A;
-        background-color: rgba(0, 0, 0, 0.15);
-        border: 1px solid #343434;
-        border: 1px solid rgba(255, 255, 255, 0.25);
     {{else}}
         color: #15212A;
-        background-color: #ffffff;
-        background-color: rgba(255, 255, 255, 0.25);
-        border: 1px solid #e0e7eb;
-        border: 1px solid rgba(0, 0, 0, 0.12);
     {{/if}}
     {{else}}
     color: #15212A;
-    border: 1px solid #e0e7eb;
     {{/hasFeature}}
+    {{> cardBackgroundStyles}}
 }
 
 .kg-bookmark-content {
@@ -1223,17 +1155,7 @@ td.kg-card-spacing {
     overflow-y: hidden;
     margin-top: 12px;
     max-height: 40px;
-    {{#hasFeature "emailCustomization"}}
-    {{#if backgroundIsDark}}
-    color: #ffffff;
-    color: rgba(255, 255, 255, 0.6);
-    {{else}}
-    color: #15212a;
-    color: rgba(0, 0, 0, 0.6);
-    {{/if}}
-    {{else}}
-    color: #73818c;
-    {{/hasFeature}}
+    {{> secondaryTextColorStyles isDark=backgroundIsDark}}
     font-size: 13px;
     line-height: 1.5em;
     font-weight: 400;
@@ -1472,22 +1394,7 @@ td.kg-card-spacing {
 }
 
 .kg-cta-bg-white {
-    {{#hasFeature "emailCustomization"}}
-    {{#if backgroundIsDark}}
-        background-color: #15212A;
-        background-color: rgba(0, 0, 0, 0.15);
-        border: 1px solid #343434;
-        border: 1px solid rgba(255, 255, 255, 0.25);
-    {{else}}
-        background-color: #ffffff;
-        background-color: rgba(255, 255, 255, 0.25);
-        border: 1px solid #e0e7eb;
-        border: 1px solid rgba(0, 0, 0, 0.12);
-    {{/if}}
-    {{else}}
-    background: #fff;
-    border: 1px solid #e0e7eb;
-    {{/hasFeature}}
+    {{> cardBackgroundStyles}}
 }
 
 .kg-cta-bg-grey {
@@ -2038,17 +1945,7 @@ img.kg-cta-image {
     {{else}}
         border-radius: 0;
     {{/if}}
-    {{#if backgroundIsDark}}
-        background-color: #15212A;
-        background-color: rgba(0, 0, 0, 0.15);
-        border: 1px solid #343434;
-        border: 1px solid rgba(255, 255, 255, 0.25);
-    {{else}}
-        background-color: #FFFFFF;
-        background-color: rgba(255, 255, 255, 0.25);
-        border: 1px solid #e0e7eb;
-        border: 1px solid rgba(0, 0, 0, 0.12);
-    {{/if}}
+    {{> cardBackgroundStyles}}
 }
 
 .kg-product-card h4 {
@@ -2202,22 +2099,7 @@ img.kg-cta-image {
     width: 100%;
     margin: 0 auto 1.5em;
     border-radius: 3px;
-    {{#hasFeature "emailCustomization"}}
-    {{#if backgroundIsDark}}
-        background-color: #15212A;
-        background-color: rgba(0, 0, 0, 0.15);
-        border: 1px solid #343434;
-        border: 1px solid rgba(255, 255, 255, 0.25);
-    {{else}}
-        background-color: #ffffff;
-        background-color: rgba(255, 255, 255, 0.25);
-        border: 1px solid #e0e7eb;
-        border: 1px solid rgba(0, 0, 0, 0.12);
-    {{/if}}
-    {{else}}
-    border: 1px solid #e0e7eb;
-    background-color: #ffffff;
-    {{/hasFeature}}
+    {{> cardBackgroundStyles}}
 }
 .kg-audio-title {
     display: block;
@@ -2252,52 +2134,17 @@ img.kg-cta-image {
     display: block;
     text-decoration: none !important;
     font-size: 13px;
-    {{#hasFeature "emailCustomization"}}
-    {{#if backgroundIsDark}}
-    color: #ffffff !important;
-    color: rgba(255, 255, 255, 0.6) !important;
-    {{else}}
-    color: #15212a !important;
-    color: rgba(0, 0, 0, 0.6) !important;
-    {{/if}}
-    {{else}}
-    color: #73818c !important;
-    {{/hasFeature}}
+    {{> secondaryTextColorStyles isDark=backgroundIsDark important=true}}
 }
 .kg-audio-link {
-    {{#hasFeature "emailCustomization"}}
-    {{#if backgroundIsDark}}
-    color: #ffffff !important;
-    color: rgba(255, 255, 255, 0.6) !important;
-    {{else}}
-    color: #15212a !important;
-    color: rgba(0, 0, 0, 0.6) !important;
-    {{/if}}
-    {{else}}
-    color: #73818c !important;
-    {{/hasFeature}}
+    {{> secondaryTextColorStyles isDark=backgroundIsDark important=true}}
 }
 .kg-file-card {
     width: auto;
     width: 100%;
     margin: 0 0 1.5em 0;
     border-radius: 3px;
-    {{#hasFeature "emailCustomization"}}
-    {{#if backgroundIsDark}}
-        background-color: #15212A;
-        background-color: rgba(0, 0, 0, 0.15);
-        border: 1px solid #343434;
-        border: 1px solid rgba(255, 255, 255, 0.25);
-    {{else}}
-        background-color: #ffffff;
-        background-color: rgba(255, 255, 255, 0.25);
-        border: 1px solid #e0e7eb;
-        border: 1px solid rgba(0, 0, 0, 0.12);
-    {{/if}}
-    {{else}}
-    border: 1px solid #e0e7eb;
-    background-color: #ffffff;
-    {{/hasFeature}}
+    {{> cardBackgroundStyles}}
 }
 .kg-file-title {
     display: block;
@@ -2322,17 +2169,7 @@ img.kg-cta-image {
     font-size: 15px;
     line-height: 1.4em;
     text-decoration: none !important;
-    {{#hasFeature "emailCustomization"}}
-    {{#if backgroundIsDark}}
-    color: #ffffff !important;
-    color: rgba(255, 255, 255, 0.6) !important;
-    {{else}}
-    color: #15212a !important;
-    color: rgba(0, 0, 0, 0.6) !important;
-    {{/if}}
-    {{else}}
-    color: #73818c !important;
-    {{/hasFeature}}
+    {{> secondaryTextColorStyles isDark=backgroundIsDark important=true}}
 }
 .kg-file-meta {
     display: block;
@@ -2343,17 +2180,7 @@ img.kg-cta-image {
     font-size: 13px;
     line-height: 1.4em;
     text-decoration: none !important;
-    {{#hasFeature "emailCustomization"}}
-    {{#if backgroundIsDark}}
-    color: #ffffff;
-    color: rgba(255, 255, 255, 0.6);
-    {{else}}
-    color: #15212a;
-    color: rgba(0, 0, 0, 0.6);
-    {{/if}}
-    {{else}}
-    color: #73818c;
-    {{/hasFeature}}
+    {{> secondaryTextColorStyles isDark=backgroundIsDark}}
 }
 .kg-file-name {
     font-weight: 500;
@@ -2383,21 +2210,7 @@ img.kg-cta-image {
     border-radius: 4px;
     margin-bottom: 24px;
     width: 100%;
-    {{#hasFeature "emailCustomization"}}
-    {{#if backgroundIsDark}}
-        background-color: #15212A;
-        background-color: rgba(0, 0, 0, 0.15);
-        border: 1px solid #343434;
-        border: 1px solid rgba(255, 255, 255, 0.25);
-    {{else}}
-        background-color: #ffffff;
-        background-color: rgba(255, 255, 255, 0.25);
-        border: 1px solid #e0e7eb;
-        border: 1px solid rgba(0, 0, 0, 0.12);
-    {{/if}}
-    {{else}}
-    border: 1px solid #E5ECF0;
-    {{/hasFeature}}
+    {{> cardBackgroundStyles}}
 }
 
 .kg-toggle-heading {
@@ -2526,13 +2339,7 @@ img.kg-cta-image {
 
 {{#hasFeature "emailCustomization"}}
 .footer {
-    {{#if backgroundIsDark}}
-        color: #ffffff;
-        color: rgba(255, 255, 255, .6);
-    {{else}}
-        color: #15212a;
-        color: rgba(0, 0, 0, 0.6);
-    {{/if}}
+    {{> secondaryTextColorStyles isDark=backgroundIsDark}}
     margin-top: 20px;
     text-align: center;
     font-size: 13px!important;
@@ -2544,13 +2351,7 @@ img.kg-cta-image {
 }
 
 .footer a {
-    {{#if backgroundIsDark}}
-        color: #ffffff;
-        color: rgba(255, 255, 255, .6);
-    {{else}}
-        color: #15212a;
-        color: rgba(0, 0, 0, 0.6);
-    {{/if}}
+    {{> secondaryTextColorStyles isDark=backgroundIsDark}}
     text-decoration: underline;
     font-size: 13px;
 }

@@ -1,0 +1,11 @@
+{{#hasFeature "emailCustomization"}}
+{{#if isDark}}
+color: #ffffff{{#if important}} !important{{/if}};
+color: rgba(255, 255, 255, 0.6){{#if important}} !important{{/if}};
+{{else}}
+color: #15212a{{#if important}} !important{{/if}};
+color: rgba(0, 0, 0, 0.6){{#if important}} !important{{/if}};
+{{/if}}
+{{else}}
+color: #73818c{{#if important}} !important{{/if}};
+{{/hasFeature}}
