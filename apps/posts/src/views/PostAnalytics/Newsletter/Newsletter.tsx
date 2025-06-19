@@ -240,8 +240,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
             <PostAnalyticsHeader currentTab='Newsletter' />
             <PostAnalyticsContent>
 
-                <div className='grid grid-cols-2 gap-8'>
-                    <Card className='col-span-2'>
+                <div className={`grid gap-8 ${isFeedbackEnabled ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                    <Card className={isFeedbackEnabled ? 'col-span-2' : 'col-span-1'}>
                         <CardHeader className='hidden'>
                             <CardTitle>Newsletters</CardTitle>
                             <CardDescription>How did this post perform</CardDescription>
@@ -334,7 +334,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                         }
                     </Card>
                     {isFeedbackEnabled && <Feedback feedbackStats={feedbackStats} />}
-                    <Card>
+                    <Card className={isFeedbackEnabled ? '' : 'col-span-1'}>
                         <div className='flex items-center justify-between p-6'>
                             <CardHeader className='p-0'>
                                 <CardTitle>Newsletter clicks</CardTitle>
