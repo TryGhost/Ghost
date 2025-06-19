@@ -145,16 +145,16 @@ const GrowthKPIs: React.FC<{
 
     const tabConfig = {
         'total-members': {
-            color: 'hsl(var(--chart-teal))'
+            color: 'hsl(var(--chart-darkblue))'
         },
         'free-members': {
             color: 'hsl(var(--chart-blue))'
         },
         'paid-members': {
-            color: 'hsl(var(--chart-yellow))'
+            color: 'hsl(var(--chart-purple))'
         },
         mrr: {
-            color: 'hsl(var(--chart-purple))'
+            color: 'hsl(var(--chart-teal))'
         }
     };
 
@@ -175,7 +175,7 @@ const GrowthKPIs: React.FC<{
                     }
                 }}>
                     <KpiTabValue
-                        color='hsl(var(--chart-teal))'
+                        color='hsl(var(--chart-darkblue))'
                         diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
                         diffValue={percentChanges.total}
                         label="Total members"
@@ -200,7 +200,7 @@ const GrowthKPIs: React.FC<{
                         setCurrentTab('paid-members');
                     }}>
                         <KpiTabValue
-                            color='hsl(var(--chart-yellow))'
+                            color='hsl(var(--chart-purple))'
                             diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.paid}
                             diffValue={percentChanges.paid}
                             label="Paid members"
@@ -211,7 +211,7 @@ const GrowthKPIs: React.FC<{
                         setCurrentTab('mrr');
                     }}>
                         <KpiTabValue
-                            color='hsl(var(--chart-purple))'
+                            color='hsl(var(--chart-teal))'
                             diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.mrr}
                             diffValue={percentChanges.mrr}
                             label="MRR"

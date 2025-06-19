@@ -129,7 +129,7 @@ const NewsletterKPIs: React.FC<{
 
     const tabConfig = {
         'total-subscribers': {
-            color: 'hsl(var(--chart-purple))',
+            color: 'hsl(var(--chart-darkblue))',
             datakey: 'value'
         },
         'avg-open-rate': {
