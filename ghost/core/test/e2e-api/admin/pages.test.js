@@ -29,7 +29,6 @@ describe('Pages API', function () {
     let agent;
 
     before(async function () {
-        mockManager.mockLabsEnabled('collectionsCard');
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts');
         await agent.loginAsOwner();

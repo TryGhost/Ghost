@@ -9,8 +9,6 @@ describe('Posts Bulk API', function () {
     let agent;
 
     before(async function () {
-        mockManager.mockLabsEnabled('collectionsCard');
-
         agent = await agentProvider.getAdminAPIAgent();
 
         // Note that we generate lots of fixtures here to test the bulk deletion correctly
