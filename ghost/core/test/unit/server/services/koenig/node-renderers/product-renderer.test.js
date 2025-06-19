@@ -82,60 +82,7 @@ describe('services/koenig/node-renderers/product-renderer', function () {
 
     describe('email', function () {
         it('matches snapshot for default test data', function () {
-            const result = renderForEmail(getTestData());
-
-            assert.ok(result.html);
-
-            assertPrettifiesTo(result.html, html`
-                <table cellspacing="0" cellpadding="0" border="0" style="width: 100%; padding: 20px; border: 1px solid #e9e9e9; border-radius: 5px; margin: 0 0 1.5em; width: 100%;">
-                    <tbody>
-                        <tr>
-                            <td align="center" style="padding-top: 0; padding-bottom: 0; margin-bottom: 0; padding-bottom: 0;">
-                                <img src="/content/images/2022/11/koenig-lexical.jpg" width="200" height="100" style="display: block; width: 100%; height: auto; max-width: 100%; border: none; padding-bottom: 16px;" border="0" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td valign="top">
-                                <h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 700;">
-                                    This is a <b>title</b>
-                                </h4>
-                            </td>
-                        </tr>
-                        <tr style="padding-top: 0; padding-bottom: 0; margin-bottom: 0; padding-bottom: 0;">
-                            <td valign="top">
-                                <img src="https://static.ghost.org/v4.0.0/images/star-rating-3.png" style="border: none; width: 96px" border="0" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding-top: 0; padding-bottom: 0; margin-bottom: 0; padding-bottom: 0;">
-                                <div style="padding-top: 8px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">
-                                    This is a <b>description</b>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding-top: 0; padding-bottom: 0; margin-bottom: 0; padding-bottom: 0;">
-                                <div class="btn btn-accent" style="box-sizing: border-box; display: table; width: 100%; padding-top: 16px;">
-                                    <a href="https://google.com/" style="overflow-wrap: anywhere; border: solid 1px; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 0; text-decoration: none; color: #ffffff; width: 100%; text-align: center;">
-                                        <span style="display: block; padding: 12px 25px">Button text</span>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            `);
-        });
-
-        it('renders nothing with a missing data', function () {
-            const result = renderForEmail(getTestData({isEmpty: () => true}));
-            assert.equal(result.html, '');
-        });
-    });
-
-    describe('email (emailCustomization)', function () {
-        it('matches snapshot for default test data', function () {
-            const result = renderForEmail(getTestData(), {feature: {emailCustomization: true}});
+            const result = renderForEmail(getTestData(), {feature: {}});
 
             assertPrettifiesTo(result.html, html`
                 <table class="kg-product-card" cellspacing="0" cellpadding="0" border="0">
@@ -197,12 +144,12 @@ describe('services/koenig/node-renderers/product-renderer', function () {
         });
 
         it('renders nothing with a missing data', function () {
-            const result = renderForEmail(getTestData({isEmpty: () => true}), {feature: {emailCustomization: true}});
+            const result = renderForEmail(getTestData({isEmpty: () => true}), {feature: {}});
             assert.equal(result.html, '');
         });
 
         it('renders dark mode rating image when background is dark', function () {
-            const result = renderForEmail(getTestData(), {feature: {emailCustomization: true}, design: {backgroundIsDark: true}});
+            const result = renderForEmail(getTestData(), {feature: {}, design: {backgroundIsDark: true}});
             assert.ok(result.html);
             assertPrettifiedIncludes(result.html, html`
                 <img src="https://static.ghost.org/v4.0.0/images/star-rating-darkmode-3.png" border="0" />
@@ -210,7 +157,7 @@ describe('services/koenig/node-renderers/product-renderer', function () {
         });
 
         it('renders light mode rating image when background is light', function () {
-            const result = renderForEmail(getTestData(), {feature: {emailCustomization: true}, design: {backgroundIsDark: false}});
+            const result = renderForEmail(getTestData(), {feature: {}, design: {backgroundIsDark: false}});
             assert.ok(result.html);
             assertPrettifiedIncludes(result.html, html`
                 <img src="https://static.ghost.org/v4.0.0/images/star-rating-3.png" border="0" />
