@@ -6,30 +6,21 @@ import WebOverview from './components/WebOverview';
 import {Button, Card, CardContent, CardHeader, CardTitle, LucideIcon, Skeleton, formatNumber, formatQueryDate, getRangeDates, getRangeForStartDate, sanitizeChartData} from '@tryghost/shade';
 import {KPI_METRICS} from '../Web/components/Kpis';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
-import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
+import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars} from '../Growth/Growth';
-import {getStatEndpointUrl, getToken, hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {getStatEndpointUrl, getToken, hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/App';
-import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useMemo} from 'react';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
 import {useQuery} from '@tinybirdco/charts';
 
 const Overview: React.FC = () => {
-    const {postId} = useParams();
     const navigate = useNavigate();
-    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    const {totals, isLoading: isTotalsLoading, currencySymbol} = usePostReferrers(postId || '');
+    const {statsConfig, isLoading: isConfigLoading, post, isPostLoading, postId} = useGlobalData();
+    const {totals, isLoading: isTotalsLoading, currencySymbol} = usePostReferrers(postId);
     const {startDate, endDate, timezone} = getRangeDates(STATS_RANGES.ALL_TIME.value);
     const {appSettings} = useAppContext();
-
-    const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
-        searchParams: {
-            filter: `id:${postId}`,
-            include: 'email,authors,tags,tiers,count.clicks,count.signups,count.paid_conversions'
-        }
-    });
 
     // Calculate chart range based on days between today and post publication date
     const chartRange = useMemo(() => {
