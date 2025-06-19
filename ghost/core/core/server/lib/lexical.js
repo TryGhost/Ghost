@@ -54,10 +54,6 @@ module.exports = {
     },
 
     get customNodeRenderers() {
-        if (!labs.isSet('emailCustomization')) {
-            return undefined;
-        }
-
         if (!customNodeRenderers) {
             try {
                 customNodeRenderers = require('../services/koenig/node-renderers');

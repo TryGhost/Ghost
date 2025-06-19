@@ -179,7 +179,7 @@ describe('Can send cards via email', function () {
             await matchEmailSnapshot();
         });
 
-        ['contentVisibility', 'emailCustomization'].forEach(function (flag) {
+        ['contentVisibility'].forEach(function (flag) {
             it(`renders the golden post correctly (labs flag(s): ${flag}) (${status})`, async function () {
                 sinon.stub(labs, 'isSet').callsFake((key) => {
                     if (flag.split(',').includes(key)) {
@@ -226,10 +226,7 @@ describe('Can send cards via email', function () {
         }
     });
 
-    it('calls custom node renderers for all cards in golden post (emailCustomization)', async function () {
-        // enable the emailCustomization labs flag
-        sinon.stub(labs, 'isSet').withArgs('emailCustomization').returns(true);
-
+    it('calls custom node renderers for all cards in golden post', async function () {
         // get list of card nodes in the golden post
         const nodesInGoldenPost = goldenPost.root.children.map((child) => {
             return child.type;
