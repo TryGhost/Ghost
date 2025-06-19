@@ -910,7 +910,7 @@ jobs:
 
       - name: Wait for Ghost to be ready
         run: |
-          timeout 60 bash -c 'until curl -f http://localhost:2368; do sleep 1; done'
+          timeout 60 bash -c 'until curl -f http://localhost:2369; do sleep 1; done'
 
   job_tinybird_forward:
     name: Tinybird Tests (Forward)
