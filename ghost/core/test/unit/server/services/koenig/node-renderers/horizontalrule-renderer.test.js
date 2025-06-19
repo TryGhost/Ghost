@@ -30,19 +30,7 @@ describe('services/koenig/node-renderers/horizontalrule-renderer', function () {
 
     describe('email', function () {
         it('matches snapshot for default test data', function () {
-            const result = renderForEmail(getTestData());
-
-            assert.ok(result.html);
-
-            assertPrettifiesTo(result.html, html`
-                <hr />
-            `);
-        });
-    });
-
-    describe('email (emailCustomization)', function () {
-        it('matches snapshot for default test data', function () {
-            const result = renderForEmail(getTestData(), {feature: {emailCustomization: true}});
+            const result = renderForEmail(getTestData(), {feature: {}});
 
             assert.ok(result.html);
 

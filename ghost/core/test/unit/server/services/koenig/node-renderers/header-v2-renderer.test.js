@@ -84,38 +84,7 @@ describe('services/koenig/node-renderers/header-v2-renderer', function () {
 
     describe('email', function () {
         it('matches snapshot for default test data', function () {
-            const result = renderForEmail(getTestData());
-
-            assert.ok(result.html);
-
-            assertPrettifiesTo(result.html, html`
-                <div
-                    class="kg-header-card kg-v2"
-                    style="
-                    color: #ffffff;
-                    text-align: center;
-                    background-image: url(https://example.com/image.jpg);
-                    background-size: cover;
-                    background-position: center center;
-                ">
-                    <div class="kg-header-card-content" style="">
-                        <h2 class="kg-header-card-heading" style="color: #ffffff">
-                            This is the header card
-                        </h2>
-                        <p class="kg-header-card-subheading" style="color: #ffffff">hello</p>
-                        <a
-                        class="kg-header-card-button"
-                        href="https://example.com/"
-                        style="color: #000000; background-color: #ffffff; #ffffff">The button</a>
-                    </div>
-                </div>
-            `);
-        });
-    });
-
-    describe('email (emailCustomization)', function () {
-        it('matches snapshot for default test data', function () {
-            const result = renderForEmail(getTestData(), {feature: {emailCustomization: true}});
+            const result = renderForEmail(getTestData(), {feature: {}});
 
             assert.ok(result.html);
 
@@ -191,7 +160,7 @@ describe('services/koenig/node-renderers/header-v2-renderer', function () {
         });
 
         it('has expected button output for outline buttons', function () {
-            const result = renderForEmail(getTestData(), {design: {buttonStyle: 'outline'}, feature: {emailCustomization: true}});
+            const result = renderForEmail(getTestData(), {design: {buttonStyle: 'outline'}, feature: {}});
 
             assertPrettifiedIncludes(result.html, html`
                 <td align="center" style="color: #ffffff !important; border: 1px solid #ffffff; border-color: currentColor; background-color: transparent;">

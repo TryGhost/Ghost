@@ -19,35 +19,23 @@ function cardTemplate({node}) {
     );
 }
 
-function emailCardTemplate({node}, options = {}) {
-    if (options.feature?.emailCustomization) {
-        return (
-            html`
-            <table cellspacing="0" cellpadding="0" border="0" width="100%" class="kg-toggle-card">
-                <tbody>
-                    <tr>
-                        <td class="kg-toggle-heading">
-                            <h4>${node.heading}</h4>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="kg-toggle-content">
-                            ${node.content}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            `
-        );
-    }
-
+function emailCardTemplate({node}) {
     return (
-        `
-        <div style="background: transparent;
-        border: 1px solid rgba(124, 139, 154, 0.25); border-radius: 4px; padding: 20px; margin-bottom: 1.5em;">
-            <h4 style="font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top:0px">${node.heading}</h4>
-            <div style="font-size: 1rem; line-height: 1.5; margin-bottom: -1.5em;">${node.content}</div>
-        </div>
+        html`
+        <table cellspacing="0" cellpadding="0" border="0" width="100%" class="kg-toggle-card">
+            <tbody>
+                <tr>
+                    <td class="kg-toggle-heading">
+                        <h4>${node.heading}</h4>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="kg-toggle-content">
+                        ${node.content}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
         `
     );
 }
