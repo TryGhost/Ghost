@@ -52,6 +52,7 @@ const EDITABLE_SETTINGS = [
     'email_track_opens',
     'email_track_clicks',
     'members_track_sources',
+    'web_analytics',
     'amp',
     'amp_gtag_id',
     'slack_url',
