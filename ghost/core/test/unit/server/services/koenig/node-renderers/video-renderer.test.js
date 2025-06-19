@@ -84,6 +84,35 @@ describe('services/koenig/node-renderers/video-renderer', function () {
             const result = renderForWeb(getTestData({src: ''}));
             assert.equal(result.html, '');
         });
+
+        it('renders card width', function () {
+            const result = renderForWeb(getTestData({
+                cardWidth: 'wide'
+            }));
+
+            const output = result.html;
+            assert(output.includes('kg-card kg-video-card kg-width-wide'));
+        });
+
+        it('renders loop attribute', function () {
+            const result = renderForWeb(getTestData({
+                loop: true
+            }));
+
+            const output = result.html;
+            assert(output.includes('loop'));
+        });
+
+        it('renders caption when provided', function () {
+            const result = renderForWeb(getTestData({
+                caption: '<strong>Caption</strong>'
+            }));
+
+            const output = result.html;
+            assert(output.includes('kg-card kg-video-card'));
+            assert(output.includes('kg-card-hascaption'));
+            assert(output.includes('<figcaption><strong>Caption</strong></figcaption>'));
+        });
     });
 
     describe('email', function () {

@@ -57,6 +57,16 @@ describe('services/koenig/node-renderers/embed-renderer', function () {
             const result = renderForWeb(getTestData({isEmpty: () => true}));
             assert.equal(result.html, '');
         });
+
+        it('renders with no metadata', function () {
+            const result = renderForWeb(getTestData({html: '<p>test</p>', metadata: null, caption: 'caption text'}));
+            assertPrettifiesTo(result.html, html`
+                <figure class="kg-card kg-embed-card kg-card-hascaption">
+                    <p>test</p>
+                    <figcaption>caption text</figcaption>
+                </figure>
+            `);
+        });
     });
 
     describe('email', function () {
@@ -151,6 +161,175 @@ describe('services/koenig/node-renderers/embed-renderer', function () {
         it('renders nothing with a missing data', function () {
             const result = renderForEmail(getTestData({isEmpty: () => true}));
             assert.equal(result.html, '');
+        });
+
+        it('renders with no metadata', function () {
+            const result = renderForEmail(getTestData({html: '<p>test</p>', metadata: null, caption: 'caption text'}));
+            assertPrettifiesTo(result.html, html`
+                <figure class="kg-card kg-embed-card kg-card-hascaption">
+                    <p>test</p>
+                    <figcaption>caption text</figcaption>
+                </figure>
+            `);
+        });
+
+        it('renders a twitter embed with API data', function () {
+            const tweetData = {
+                id: '1630581157568839683',
+                created_at: '2023-02-28T14:50:17.000Z',
+                author_id: '767545134',
+                edit_history_tweet_ids: ['1630581157568839683'],
+                public_metrics: {
+                    retweet_count: 10,
+                    reply_count: 2,
+                    like_count: 38,
+                    quote_count: 6,
+                    impression_count: 10770
+                },
+                text: 'With the decline of traditional local news outlets, publishers like @MadisonMinutes, @RANGEMedia4all, and @sfsimplified are leading the charge in creating sustainable, community-driven journalism through websites and newsletters.\n' +
+                    '\n' +
+                    'Check out their impact 👇\n' +
+                    'https://t.co/RdNNyY18Iv',
+                lang: 'en',
+                conversation_id: '1630581157568839683',
+                possibly_sensitive: false,
+                reply_settings: 'everyone',
+                entities: {
+                    mentions: [
+                        {
+                            start: 68,
+                            end: 83,
+                            username: 'MadisonMinutes',
+                            id: '1371572739333632001'
+                        },
+                        {
+                            start: 85,
+                            end: 100,
+                            username: 'RANGEMedia4all',
+                            id: '1448389854207770627'
+                        },
+                        {
+                            start: 106,
+                            end: 119,
+                            username: 'sfsimplified',
+                            id: '1351509902548738048'
+                        }
+                    ]
+                }
+            };
+
+            const data = {
+                url: 'https://twitter.com/ghost/status/1395670367216619520',
+                embedType: 'twitter',
+                html: '<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Ghost 4.0 is out now! 🎉</p>&mdash; Ghost (@ghost) <a href="https://twitter.com/ghost/status/1395670367216619520?ref_src=twsrc%5Etfw">May 21, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>',
+                metadata: {
+                    tweet_data: tweetData,
+                    height: 500,
+                    provider_name: 'Twitter',
+                    provider_url: 'https://twitter.com',
+                    thumbnail_height: 150,
+                    thumbnail_url: 'https://pbs.twimg.com/media/E1Y1q3bXMAU7m4n?format=jpg&name=small',
+                    thumbnail_width: 150,
+                    title: 'Ghost on Twitter: "Ghost 4.0 is out now! 🎉"',
+                    type: 'rich',
+                    version: '1.0',
+                    width: 550
+                },
+                caption: 'caption text'
+            };
+
+            const result = renderForEmail(getTestData(data));
+
+            assertPrettifiesTo(result.html, html`
+                <figure class="kg-card kg-embed-card kg-card-hascaption">
+                    <table cellspacing="0" cellpadding="0" border="0" class="kg-twitter-card">
+                      <tbody>
+                        <tr>
+                          <td>
+                            <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                              <tbody>
+                                <tr>
+                                  <td colspan="3">
+                                    <a
+                                      href="https://twitter.com/twitter/status/1630581157568839683"
+                                      class="kg-twitter-link"
+                                      style="
+                                        font-size: 15px;
+                                        line-height: 1.4em;
+                                        padding-top: 8px;
+                                        padding-left: 16px;
+                                        padding-right: 16px;
+                                        padding-bottom: 16px;
+                                      ">With the decline of traditional local news outlets,
+                                      publishers like<span style="color: #1da1f2">@MadisonMinutes,</span><span
+                                        style="color: #1da1f2">@RANGEMedia4all,</span>and<span
+                                        style="color: #1da1f2">@sfsimplified</span>are
+                                      leading the charge in creating sustainable, community-driven
+                                      journalism through websites and newsletters.<br /><br />Check
+                                      out their impact 👇<br />https://t.co/RdNNyY18Iv</a>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td colspan="3" style="width: 100%">
+                                    <table
+                                      cellspacing="0"
+                                      cellpadding="0"
+                                      border="0"
+                                      width="100%">
+                                      <tbody>
+                                        <tr>
+                                          <td>
+                                            <a
+                                              href="https://twitter.com/twitter/status/1630581157568839683"
+                                              class="kg-twitter-link"
+                                              style="
+                                                padding-top: 4px;
+                                                padding-right: 16px;
+                                                padding-bottom: 12px;
+                                                padding-left: 16px;
+                                              "><span style="color: #838383">14:50 • 28 Feb 2023</span></a>
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td colspan="3" style="width: 100%">
+                                    <table
+                                      cellspacing="0"
+                                      cellpadding="0"
+                                      border="0"
+                                      width="100%"
+                                      style="border-top: 1px solid #e9e9e9">
+                                      <tbody>
+                                        <tr>
+                                          <td>
+                                            <a
+                                              href="https://twitter.com/twitter/status/1630581157568839683"
+                                              class="kg-twitter-link"
+                                              style="
+                                                padding-top: 12px;
+                                                padding-right: 16px;
+                                                padding-bottom: 12px;
+                                                padding-left: 16px;
+                                              "><span style="font-weight: 600">38</span><span style="color: #838383">likes •</span><span
+                                                style="font-weight: 600">10</span><span style="color: #838383">retweets</span></a>
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <figcaption>caption text</figcaption>
+                </figure>
+            `);
         });
     });
 });
