@@ -1,4 +1,4 @@
-const {createDocument, dom, html} = require('../test-utils');
+const {createDocument, html} = require('../test-utils');
 const {$getRoot} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
@@ -10,7 +10,6 @@ const editorNodes = [ButtonNode];
 describe('ButtonNode', function () {
     let editor;
     let dataset;
-    let exportOptions;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
@@ -32,9 +31,6 @@ describe('ButtonNode', function () {
             buttonText: 'click me',
             buttonUrl: 'http://blog.com/post1',
             alignment: 'center'
-        };
-        exportOptions = {
-            dom
         };
     });
 
@@ -107,100 +103,6 @@ describe('ButtonNode', function () {
         it('returns true', editorTest(function () {
             const buttonNode = $createButtonNode(dataset);
             buttonNode.hasEditMode().should.be.true();
-        }));
-    });
-
-    describe('exportDOM', function () {
-        it('creates a button card', editorTest(function () {
-            const buttonNode = $createButtonNode(dataset);
-            const {element} = buttonNode.exportDOM(exportOptions);
-
-            element.outerHTML.should.prettifyTo(html`<div class="kg-card kg-button-card kg-align-center"><a href="http://blog.com/post1" class="kg-btn kg-btn-accent">click me</a></div>`);
-        }));
-
-        it('renders for email target', editorTest(function () {
-            const buttonNode = $createButtonNode(dataset);
-            const options = {
-                target: 'email'
-            };
-            const {element} = buttonNode.exportDOM({...exportOptions, ...options});
-            const output = element.outerHTML;
-
-            output.should.not.containEql('kg-card');
-            output.should.containEql('<div class="btn btn-accent">');
-            output.should.containEql('<table border="0" cellspacing="0" cellpadding="0"');
-            output.should.containEql('<td align="center">');
-        }));
-
-        it('renders for email target (emailCustomization)', editorTest(function () {
-            const buttonNode = $createButtonNode(dataset);
-            const options = {
-                target: 'email',
-                feature: {
-                    emailCustomization: true
-                }
-            };
-            const {element} = buttonNode.exportDOM({...exportOptions, ...options});
-            const output = element.innerHTML;
-
-            output.should.prettifyTo(html`
-                <table border="0" cellpadding="0" cellspacing="0">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0" align="center">
-                                    <tbody>
-                                        <tr>
-                                            <td align="center">
-                                                <a href="http://blog.com/post1">click me</a>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            `);
-        }));
-
-        it('renders for email target (emailCustomizationAlpha)', editorTest(function () {
-            const buttonNode = $createButtonNode(dataset);
-            const options = {
-                target: 'email',
-                feature: {
-                    emailCustomizationAlpha: true
-                }
-            };
-            const {element} = buttonNode.exportDOM({...exportOptions, ...options});
-            const output = element.innerHTML;
-
-            output.should.prettifyTo(html`
-                <table border="0" cellpadding="0" cellspacing="0">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0" align="center">
-                                    <tbody>
-                                        <tr>
-                                            <td align="center">
-                                                <a href="http://blog.com/post1">click me</a>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            `);
-        }));
-
-        it('renders an empty span with a missing buttonUrl', editorTest(function () {
-            const buttonNode = $createButtonNode();
-            const {element} = buttonNode.exportDOM(exportOptions);
-
-            element.outerHTML.should.equal('<span></span>');
         }));
     });
 

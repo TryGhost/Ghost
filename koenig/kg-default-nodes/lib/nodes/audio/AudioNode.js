@@ -1,7 +1,6 @@
 /* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
 import {parseAudioNode} from './audio-parser';
-import {renderAudioNode} from './audio-renderer';
 
 export class AudioNode extends generateDecoratorNode({
     nodeType: 'audio',
@@ -11,8 +10,7 @@ export class AudioNode extends generateDecoratorNode({
         {name: 'src', default: '', urlType: 'url'},
         {name: 'title', default: ''},
         {name: 'thumbnailSrc', default: ''}
-    ],
-    defaultRenderFn: renderAudioNode
+    ]
 }) {
     static importDOM() {
         return parseAudioNode(this);

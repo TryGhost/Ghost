@@ -118,7 +118,7 @@ describe('Utils: generateDecoratorNode', function () {
             });
 
             const node = new NodeWithoutRender();
-            (() => node.exportDOM()).should.throw('[generateDecoratorNode] no-render-test: "defaultRenderFn" is required');
+            (() => node.exportDOM()).should.throw(`[generateDecoratorNode] no-render-test: "options.nodeRenderers['no-render-test']" or "defaultRenderFn" is required for exportDOM`);
         }));
 
         it('throws error when default versioned renderer is missing for node version', editorTest(function () {
@@ -132,38 +132,31 @@ describe('Utils: generateDecoratorNode', function () {
             });
 
             const node = new VersionedNode();
-            (() => node.exportDOM()).should.throw('[generateDecoratorNode] versioned-render-test: "defaultRenderFn" for version 2 is required');
+            (() => node.exportDOM()).should.throw(`[generateDecoratorNode] versioned-render-test: "options.nodeRenderers['versioned-render-test']" or "defaultRenderFn" for version 2 is required for exportDOM`);
         }));
 
-        // eslint-disable-next-line ghost/mocha/no-setup-in-describe
-        ['emailCustomizationAlpha', 'emailCustomization'].forEach((feature) => {
-            it(`uses custom renderer if passed in (${feature})`, editorTest(function () {
-                const node = $createNodeWithRender();
-                const customRenderer = () => ({
-                    element: 'span',
-                    type: 'inner',
-                    content: 'custom render'
-                });
+        it(`uses custom renderer if passed in`, editorTest(function () {
+            const node = $createNodeWithRender();
+            const customRenderer = () => ({
+                element: 'span',
+                type: 'inner',
+                content: 'custom render'
+            });
 
-                const featureOption = {};
-                featureOption[feature] = true;
+            const result = node.exportDOM({
+                nodeRenderers: {
+                    'render-test': customRenderer
+                }
+            });
 
-                const result = node.exportDOM({
-                    feature: featureOption,
-                    nodeRenderers: {
-                        'render-test': customRenderer
-                    }
-                });
+            result.should.deepEqual({
+                element: 'span',
+                type: 'inner',
+                content: 'custom render'
+            });
+        }));
 
-                result.should.deepEqual({
-                    element: 'span',
-                    type: 'inner',
-                    content: 'custom render'
-                });
-            }));
-        });
-
-        it('throws error when custom versioned renderer is missing for node version (emailCustomizationAlpha)', editorTest(function () {
+        it('throws error when custom versioned renderer is missing for node version', editorTest(function () {
             const VersionedNode = utils.generateDecoratorNode({
                 nodeType: 'versioned-render-test',
                 properties: [{name: 'version', default: 1}],
@@ -185,15 +178,12 @@ describe('Utils: generateDecoratorNode', function () {
             const node = new VersionedNode({version: 2});
 
             (() => node.exportDOM({
-                feature: {
-                    emailCustomizationAlpha: true
-                },
                 nodeRenderers: {
                     'versioned-render-test': {
                         1: () => ({})
                     }
                 }
-            })).should.throw('[generateDecoratorNode] versioned-render-test: options.nodeRenderers[\'versioned-render-test\'] for version 2 is required');
+            })).should.throw(`[generateDecoratorNode] versioned-render-test: "options.nodeRenderers['versioned-render-test']" or "defaultRenderFn" for version 2 is required for exportDOM`);
         }));
     });
 

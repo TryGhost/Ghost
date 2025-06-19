@@ -1,7 +1,7 @@
 /* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
 import {parseVideoNode} from './video-parser';
-import {renderVideoNode} from './video-renderer';
+
 export class VideoNode extends generateDecoratorNode({
     nodeType: 'video',
     properties: [
@@ -18,8 +18,7 @@ export class VideoNode extends generateDecoratorNode({
         {name: 'thumbnailHeight', default: null},
         {name: 'cardWidth', default: 'regular'},
         {name: 'loop', default: false}
-    ],
-    defaultRenderFn: renderVideoNode
+    ]
 }) {
     /* override */
     exportJSON() {

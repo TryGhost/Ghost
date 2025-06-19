@@ -180,17 +180,13 @@ export function generateDecoratorNode({nodeType, properties = [], defaultRenderF
             // means it's set from the serialized version data at runtime
             const nodeVersion = this.__version || version;
 
-            const hasEmailCustomization =
-                options.feature?.emailCustomizationAlpha ||
-                options.feature?.emailCustomization;
-
-            if (hasEmailCustomization && options.nodeRenderers?.[nodeType]) {
+            if (options.nodeRenderers?.[nodeType]) {
                 const render = options.nodeRenderers[nodeType];
 
                 if (typeof render === 'object') {
                     const versionRenderer = render[nodeVersion];
                     if (!versionRenderer) {
-                        throw new Error(`[generateDecoratorNode] ${nodeType}: options.nodeRenderers['${nodeType}'] for version ${nodeVersion} is required`);
+                        throw new Error(`[generateDecoratorNode] ${nodeType}: "options.nodeRenderers['${nodeType}']" or "defaultRenderFn" for version ${nodeVersion} is required for exportDOM`);
                     }
                     return versionRenderer(this, options);
                 } else {
@@ -201,13 +197,13 @@ export function generateDecoratorNode({nodeType, properties = [], defaultRenderF
             if (typeof defaultRenderFn === 'object') {
                 const render = defaultRenderFn[nodeVersion];
                 if (!render) {
-                    throw new Error(`[generateDecoratorNode] ${nodeType}: "defaultRenderFn" for version ${nodeVersion} is required`);
+                    throw new Error(`[generateDecoratorNode] ${nodeType}: "options.nodeRenderers['${nodeType}']" or "defaultRenderFn" for version ${nodeVersion} is required for exportDOM`);
                 }
                 return render(this, options);
             }
 
             if (!defaultRenderFn) {
-                throw new Error(`[generateDecoratorNode] ${nodeType}: "defaultRenderFn" is required`);
+                throw new Error(`[generateDecoratorNode] ${nodeType}: "options.nodeRenderers['${nodeType}']" or "defaultRenderFn" is required for exportDOM`);
             }
 
             const render = defaultRenderFn;

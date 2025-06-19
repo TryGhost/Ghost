@@ -1,7 +1,7 @@
 /* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
 import {parseImageNode} from './image-parser';
-import {renderImageNode} from './image-renderer';
+
 export class ImageNode extends generateDecoratorNode({
     nodeType: 'image',
     properties: [
@@ -13,8 +13,7 @@ export class ImageNode extends generateDecoratorNode({
         {name: 'width', default: null},
         {name: 'height', default: null},
         {name: 'href', default: '', urlType: 'url'}
-    ],
-    defaultRenderFn: renderImageNode
+    ]
 }) {
     /* @override */
     exportJSON() {

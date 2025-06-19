@@ -1,7 +1,6 @@
 /* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
 import {parseEmbedNode} from './embed-parser';
-import {renderEmbedNode} from './embed-renderer';
 
 export class EmbedNode extends generateDecoratorNode({
     nodeType: 'embed',
@@ -11,8 +10,7 @@ export class EmbedNode extends generateDecoratorNode({
         {name: 'html', default: ''},
         {name: 'metadata', default: {}},
         {name: 'caption', default: '', wordCount: true}
-    ],
-    defaultRenderFn: renderEmbedNode
+    ]
 }) {
     static importDOM() {
         return parseEmbedNode(this);

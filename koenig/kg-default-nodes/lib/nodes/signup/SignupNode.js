@@ -1,6 +1,5 @@
 /* eslint-disable ghost/filenames/match-exported-class */
 import {signupParser} from './signup-parser';
-import {renderSignupCardToDOM} from './signup-renderer';
 import {generateDecoratorNode} from '../../generate-decorator-node';
 
 export class SignupNode extends generateDecoratorNode({
@@ -21,8 +20,7 @@ export class SignupNode extends generateDecoratorNode({
         {name: 'subheader', default: '', wordCount: true},
         {name: 'successMessage', default: 'Email sent! Check your inbox to complete your signup.'},
         {name: 'swapped', default: false}
-    ],
-    defaultRenderFn: renderSignupCardToDOM
+    ]
 }) {
     /* override */
     constructor({alignment, backgroundColor, backgroundImageSrc, backgroundSize, textColor, buttonColor, buttonTextColor, buttonText, disclaimer, header, labels, layout, subheader, successMessage, swapped} = {}, key) {

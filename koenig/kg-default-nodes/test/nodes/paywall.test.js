@@ -1,6 +1,6 @@
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$getRoot} = require('lexical');
-const {createDocument, dom, html} = require('../test-utils');
+const {createDocument, html} = require('../test-utils');
 const {PaywallNode, $createPaywallNode, $isPaywallNode} = require('../../');
 const {$generateNodesFromDOM} = require('@lexical/html');
 
@@ -9,7 +9,6 @@ const editorNodes = [PaywallNode];
 describe('PaywallNode', function () {
     let editor;
     let dataset;
-    let exportOptions;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
@@ -31,11 +30,6 @@ describe('PaywallNode', function () {
         });
 
         dataset = {};
-
-        exportOptions = {
-            exportFormat: 'html',
-            dom
-        };
     });
 
     it('matches node with $isPaywallNode', editorTest(function () {
@@ -82,15 +76,6 @@ describe('PaywallNode', function () {
                 }
             });
         });
-    });
-
-    describe('exportDOM', function () {
-        it('renders a paywall node', editorTest(function () {
-            const paywallNode = $createPaywallNode();
-            const {element} = paywallNode.exportDOM(exportOptions);
-
-            element.innerHTML.should.equal('<!--members-only-->');
-        }));
     });
 
     describe('importDOM', function () {
