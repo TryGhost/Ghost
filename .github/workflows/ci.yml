@@ -912,6 +912,20 @@ jobs:
         run: |
           timeout 60 bash -c 'until curl -f http://localhost:2369; do sleep 1; done'
 
+      - name: Run E2E tests
+        working-directory: e2e
+        run: yarn test:e2e
+        env:
+          GHOST_BASE_URL: http://localhost:2369
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-playwright-report
+          path: e2e/test-results
+          retention-days: 30
+
   job_tinybird_forward:
     name: Tinybird Tests (Forward)
     runs-on: ubuntu-latest

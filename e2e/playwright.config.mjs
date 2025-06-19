@@ -8,6 +8,7 @@ const config = {
     workers: process.env.CI ? 2 : 1,
     reporter: process.env.CI ? [['list', {printSteps: true}], ['html']] : [['list', {printSteps: true}]],
     use: {
+        baseURL: process.env.GHOST_BASE_URL || 'http://localhost:2368',
         trace: 'retain-on-failure',
         browserName: 'chromium',
         headless: !process.env.PLAYWRIGHT_DEBUG
