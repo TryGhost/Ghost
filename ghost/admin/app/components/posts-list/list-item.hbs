@@ -231,7 +231,7 @@
         {{#if (feature "trafficAnalyticsAlpha")}}
             {{#if @post.isPublished}}
                 {{#if this.hasMemberData}}
-                    <div class="permalink gh-list-data gh-post-list-metrics" data-tooltip={{if this.totalMemberConversions (concat format-number this.memberCounts.free " free " format-number this.memberCounts.paid " paid ")}}>
+                    <div class="permalink gh-list-data gh-post-list-metrics" data-tooltip={{if this.totalMemberConversions (concat (format-number this.memberCounts.free) " free " (format-number this.memberCounts.paid) " paid ")}}>
                         <span class="gh-content-email-stats-value">
                             +{{format-number this.totalMemberConversions}}
                             {{!-- {{#if this.isHovered}}
