@@ -64,6 +64,12 @@ export const useGlobalData = () => {
 
 const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
     const {postId} = useParams();
+    
+    // Validate that postId exists - the app cannot function without it
+    if (!postId) {
+        throw new Error('Post ID is required for PostAnalyticsProvider');
+    }
+    
     const config = useBrowseConfig();
     const site = useBrowseSite();
     const [range, setRange] = useState(STATS_RANGES.LAST_30_DAYS.value);
@@ -104,8 +110,8 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
         audience,
         setAudience,
         settings: settings.data?.settings || [],
-        postId: postId as string,
-        post: post as Post,
+        postId: postId, 
+        post: post as Post | undefined, 
         isPostLoading
     }}>
         {children}
