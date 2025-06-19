@@ -117,7 +117,7 @@ const DataListBar = React.forwardRef<HTMLDivElement, DataListBarProps>(({childre
     return (
         <div
             ref={ref}
-            className={cn('absolute inset-x-0 inset-y-1 z-0 origin-left rounded-[4px] bg-[#EEF6FC] group-hover/row:bg-[#DDEEFB] transition-all', className)}
+            className={cn('absolute inset-x-0 inset-y-1 z-0 origin-left rounded-[4px] bg-[#EFF5FB] group-hover/row:bg-[#BDE1FF] transition-all', className)}
             {...props}
         >
             {children}

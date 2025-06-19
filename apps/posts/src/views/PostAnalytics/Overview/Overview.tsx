@@ -10,6 +10,7 @@ import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars} from '../Growth/Growth';
 import {getStatEndpointUrl, getToken, hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useMemo} from 'react';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
@@ -21,6 +22,7 @@ const Overview: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const {totals, isLoading: isTotalsLoading, currencySymbol} = usePostReferrers(postId || '');
     const {startDate, endDate, timezone} = getRangeDates(STATS_RANGES.ALL_TIME.value);
+    const {appSettings} = useAppContext();
 
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
@@ -167,7 +169,7 @@ const Overview: React.FC = () => {
                             ))
                             :
                             <>
-                                <KpiCard className='grow py-0'>
+                                <KpiCard className='grow gap-1 py-0'>
                                     <KpiCardLabel>
                                         Free members
                                     </KpiCardLabel>
@@ -175,22 +177,26 @@ const Overview: React.FC = () => {
                                         <KpiCardValue className='text-[2.2rem]'>{formatNumber((totals?.free_members || 0))}</KpiCardValue>
                                     </KpiCardContent>
                                 </KpiCard>
-                                <KpiCard className='grow py-0'>
-                                    <KpiCardLabel>
+                                {appSettings?.paidMembersEnabled &&
+                                <>
+                                    <KpiCard className='grow gap-1 py-0'>
+                                        <KpiCardLabel>
                                         Paid members
-                                    </KpiCardLabel>
-                                    <KpiCardContent>
-                                        <KpiCardValue className='text-[2.2rem]'>{formatNumber((totals?.paid_members || 0))}</KpiCardValue>
-                                    </KpiCardContent>
-                                </KpiCard>
-                                <KpiCard className='grow py-0'>
-                                    <KpiCardLabel>
+                                        </KpiCardLabel>
+                                        <KpiCardContent>
+                                            <KpiCardValue className='text-[2.2rem]'>{formatNumber((totals?.paid_members || 0))}</KpiCardValue>
+                                        </KpiCardContent>
+                                    </KpiCard>
+                                    <KpiCard className='grow gap-1 py-0'>
+                                        <KpiCardLabel>
                                         MRR impact
-                                    </KpiCardLabel>
-                                    <KpiCardContent>
-                                        <KpiCardValue className='text-[2.2rem]'>{currencySymbol}{centsToDollars(totals?.mrr || 0)}</KpiCardValue>
-                                    </KpiCardContent>
-                                </KpiCard>
+                                        </KpiCardLabel>
+                                        <KpiCardContent>
+                                            <KpiCardValue className='text-[2.2rem]'>{currencySymbol}{centsToDollars(totals?.mrr || 0)}</KpiCardValue>
+                                        </KpiCardContent>
+                                    </KpiCard>
+                                </>
+                                }
                             </>
                         }
                     </CardContent>

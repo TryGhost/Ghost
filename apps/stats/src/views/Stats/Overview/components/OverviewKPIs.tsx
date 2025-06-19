@@ -2,6 +2,7 @@ import React from 'react';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, centsToDollars, formatNumber} from '@tryghost/shade';
 import {STATS_RANGES} from '@src/utils/constants';
 import {getPeriodText} from '@src/utils/chart-helpers';
+import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
@@ -124,6 +125,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
 }) => {
     const navigate = useNavigate();
     const {range} = useGlobalData();
+    const {appSettings} = useAppContext();
 
     const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] hover:!cursor-pointer';
 
@@ -135,8 +137,15 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
         );
     }
 
+    let containerClass = '';
+    if (appSettings?.paidMembersEnabled) {
+        containerClass = 'grid grid-cols-3 gap-8';
+    } else {
+        containerClass = 'grid grid-cols-2 gap-8';
+    }
+
     return (
-        <div className='grid grid-cols-3 gap-8'>
+        <div className={containerClass}>
             <OverviewKPICard
                 description='Number of individual people who visited your website'
                 diffDirection='empty'
@@ -150,7 +159,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
             >
                 <GhAreaChart
                     className={areaChartClassName}
-                    color='hsl(var(--chart-darkblue))'
+                    color='hsl(var(--chart-blue))'
                     data={visitorsChartData}
                     id="visitors"
                     range={range}
@@ -176,7 +185,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
             >
                 <GhAreaChart
                     className={areaChartClassName}
-                    color='hsl(var(--chart-blue))'
+                    color='hsl(var(--chart-darkblue))'
                     data={membersChartData}
                     id="members"
                     range={range}
@@ -186,30 +195,32 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                 />
             </OverviewKPICard>
 
-            <OverviewKPICard
-                description='Monthly recurring revenue changes over time'
-                diffDirection={growthTotals.directions.mrr}
-                diffValue={growthTotals.percentChanges.mrr}
-                formattedValue={`${currencySymbol}${formatNumber(centsToDollars(growthTotals.mrr))}`}
-                iconName='Coins'
-                linkto='/growth/'
-                title='MRR'
-                trendingFromValue={`${currencySymbol}${formatNumber(mrrChartData[0].value)}`}
-                onClick={() => {
-                    navigate('/growth/?tab=mrr');
-                }}
-            >
-                <GhAreaChart
-                    className={areaChartClassName}
-                    color='hsl(var(--chart-teal))'
-                    data={mrrChartData}
-                    id="mrr"
-                    range={range}
-                    showHorizontalLines={true}
-                    showYAxisValues={false}
-                    syncId="overview-charts"
-                />
-            </OverviewKPICard>
+            {appSettings?.paidMembersEnabled === true &&
+                <OverviewKPICard
+                    description='Monthly recurring revenue changes over time'
+                    diffDirection={growthTotals.directions.mrr}
+                    diffValue={growthTotals.percentChanges.mrr}
+                    formattedValue={`${currencySymbol}${formatNumber(centsToDollars(growthTotals.mrr))}`}
+                    iconName='Coins'
+                    linkto='/growth/'
+                    title='MRR'
+                    trendingFromValue={`${currencySymbol}${formatNumber(mrrChartData[0].value)}`}
+                    onClick={() => {
+                        navigate('/growth/?tab=mrr');
+                    }}
+                >
+                    <GhAreaChart
+                        className={areaChartClassName}
+                        color='hsl(var(--chart-teal))'
+                        data={mrrChartData}
+                        id="mrr"
+                        range={range}
+                        showHorizontalLines={true}
+                        showYAxisValues={false}
+                        syncId="overview-charts"
+                    />
+                </OverviewKPICard>
+            }
         </div>
     );
 };

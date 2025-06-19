@@ -1,5 +1,6 @@
 import React from 'react';
 import {Button, DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger, LucideIcon} from '@tryghost/shade';
+import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
 const AUDIENCE_BITS = {
@@ -32,6 +33,7 @@ export const getAudienceQueryParam = (audience: number) => {
 
 const AudienceSelect: React.FC = () => {
     const {audience, setAudience} = useGlobalData();
+    const {appSettings} = useAppContext();
 
     const toggleAudience = (bit: number) => {
         setAudience(audience ^ bit);
@@ -55,6 +57,25 @@ const AudienceSelect: React.FC = () => {
         if (isAudienceSelected(AUDIENCE_BITS.FREE)) {
             selectedAudiences.push('Free members');
         }
+
+        if (!appSettings?.paidMembersEnabled) {
+            if (selectedAudiences.length === 2) {
+                return 'All audiences';
+            }
+
+            if (selectedAudiences.length === 1) {
+                if (isAudienceSelected(AUDIENCE_BITS.FREE)) {
+                    return 'Free members';
+                } else {
+                    return 'Public visitors';
+                }
+            }
+
+            if (selectedAudiences.length === 0) {
+                return 'Select audience';
+            }
+        }
+
         if (isAudienceSelected(AUDIENCE_BITS.PAID)) {
             selectedAudiences.push('Paid members');
         }
@@ -68,7 +89,7 @@ const AudienceSelect: React.FC = () => {
         }
 
         if (isAudienceSelected(AUDIENCE_BITS.FREE) && isAudienceSelected(AUDIENCE_BITS.PAID) && !isAudienceSelected(AUDIENCE_BITS.PUBLIC)) {
-            return 'Members-only';
+            return 'All members';
         }
 
         return selectedAudiences.join(' & ');
@@ -92,12 +113,14 @@ const AudienceSelect: React.FC = () => {
                 >
                     Free members
                 </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                    checked={isAudienceSelected(AUDIENCE_BITS.PAID)}
-                    onSelect={e => handleSelect(e, AUDIENCE_BITS.PAID)}
-                >
-                    Paid members
-                </DropdownMenuCheckboxItem>
+                {appSettings?.paidMembersEnabled &&
+                    <DropdownMenuCheckboxItem
+                        checked={isAudienceSelected(AUDIENCE_BITS.PAID)}
+                        onSelect={e => handleSelect(e, AUDIENCE_BITS.PAID)}
+                    >
+                        Paid members
+                    </DropdownMenuCheckboxItem>
+                }
             </DropdownMenuContent>
         </DropdownMenu>
     );
