@@ -3,149 +3,60 @@ import Feedback from './components/Feedback';
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Input, LucideIcon, Recharts, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, Tabs, TabsContent, calculateYAxisWidth, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, HTable, Input, LucideIcon, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
+import {NewsletterRadialChart, NewsletterRadialChartData} from './components/NewsLetterRadialChart';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {getLinkById} from '@src/utils/link-helpers';
 import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useEditLinks} from '@src/hooks/useEditLinks';
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
 
 interface postAnalyticsProps {}
-
-type NewsletterRadialChartData = {
-    datatype: string,
-    value: number,
-    fill: string,
-    color: string
-}
-
-interface NewsletterRadialChartProps {
-    data: NewsletterRadialChartData[],
-    config: ChartConfig,
-    percentageValue: number,
-    percentageLabel: string
-}
-
-const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
-    config,
-    data,
-    percentageValue
-}) => {
-    const barWidth = 46;
-    const innerRadiusStart = data.length > 1 ? 72 : 89;
-
-    const chartComponentConfig = {
-        innerRadius: innerRadiusStart,
-        outerRadius: innerRadiusStart + barWidth,
-        startAngle: 90,
-        endAngle: -270
-    };
-
-    return (
-        <ChartContainer
-            className='mx-auto aspect-square'
-            config={config}
-        >
-            <Recharts.RadialBarChart
-                data={data}
-                endAngle={chartComponentConfig.endAngle}
-                innerRadius={chartComponentConfig.innerRadius}
-                outerRadius={chartComponentConfig.outerRadius}
-                startAngle={chartComponentConfig.startAngle}
-            >
-                <defs>
-                    {/* Define gradients for each data type */}
-                    <radialGradient cx="30%" cy="30%" id="gradientPurple" r="70%">
-                        <stop offset="0%" stopColor="hsl(var(--chart-purple))" stopOpacity={0.5} />
-                        <stop offset="100%" stopColor="hsl(var(--chart-purple))" stopOpacity={1} />
-                    </radialGradient>
-                    <radialGradient cx="30%" cy="30%" id="gradientBlue" r="70%">
-                        <stop offset="0%" stopColor="hsl(var(--chart-blue))" stopOpacity={0.5} />
-                        <stop offset="100%" stopColor="hsl(var(--chart-blue))" stopOpacity={1} />
-                    </radialGradient>
-                    <radialGradient cx="30%" cy="30%" id="gradientTeal" r="70%">
-                        <stop offset="0%" stopColor="hsl(var(--chart-teal))" stopOpacity={0.5} />
-                        <stop offset="100%" stopColor="hsl(var(--chart-teal))" stopOpacity={1} />
-                    </radialGradient>
-                    <radialGradient cx="30%" cy="30%" id="gradientGray" r="70%">
-                        <stop offset="0%" stopColor="hsl(var(--chart-gray))" stopOpacity={0.5} />
-                        <stop offset="100%" stopColor="hsl(var(--chart-gray))" stopOpacity={1} />
-                    </radialGradient>
-                </defs>
-                <Recharts.PolarAngleAxis angleAxisId={0} domain={[0, 1]} tick={false} type="number" />
-                <Recharts.RadialBar
-                    cornerRadius={10}
-                    dataKey="value"
-                    minPointSize={-2}
-                    background
-                >
-                    {data.length > 1 &&
-                        <Recharts.LabelList
-                            className="fill-black opacity-60"
-                            dataKey="datatype"
-                            fontSize={11}
-                            position="insideStart"
-                        />
-                    }
-                </Recharts.RadialBar>
-                <Recharts.PolarRadiusAxis axisLine={false} tick={false} tickLine={false}>
-                    <Recharts.Label
-                        content={({viewBox}) => {
-                            if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
-                                return (
-                                    <text
-                                        dominantBaseline="middle"
-                                        textAnchor="middle"
-                                        x={viewBox.cx}
-                                        y={viewBox.cy}
-                                    >
-                                        <tspan
-                                            className="fill-foreground text-[1.6rem] font-semibold tracking-tight"
-                                            x={viewBox.cx}
-                                            y={viewBox.cy}
-                                        >
-                                            {formatPercentage(percentageValue)}
-                                        </tspan>
-                                        {/* <tspan
-                                                className="fill-muted-foreground font-medium"
-                                                x={viewBox.cx}
-                                                y={(viewBox.cy || 0) + 24}
-                                                >
-                                                {percentageLabel}
-                                                </tspan> */}
-                                    </text>
-                                );
-                            }
-                        }}
-                    />
-                </Recharts.PolarRadiusAxis>
-                <ChartTooltip
-                    content={<ChartTooltipContent
-                        formatter={(value, _, props) => {
-                            return (
-                                <div className='flex items-center gap-1'>
-                                    <div className='size-2 rounded-full opacity-50' style={{backgroundColor: props.payload?.color}}></div>
-                                    <div className='text-xs text-muted-foreground'>{props.payload?.datatype}</div>
-                                    <div className='ml-3 font-mono text-xs'>{formatPercentage(value)}</div>
-                                </div>
-                            );
-                        }}
-                        nameKey="datatype"
-                        hideLabel
-                    />}
-                    cursor={false}
-                    isAnimationActive={false}
-                />
-            </Recharts.RadialBarChart>
-        </ChartContainer>
-    );
-};
 
 const FunnelArrow: React.FC = () => {
     return (
         <div className='absolute -right-4 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground'>
             <LucideIcon.ChevronRight className='ml-0.5' size={16} strokeWidth={1.5}/>
+        </div>
+    );
+};
+
+interface BlockTooltipProps {
+    dataColor: string;
+    value: string;
+    avgValue: string;
+}
+
+const BlockTooltip:React.FC<BlockTooltipProps> = ({
+    dataColor,
+    value,
+    avgValue
+}) => {
+    return (
+        <div className='absolute left-1/2 top-6 z-50 flex w-[200px] -translate-x-1/2 flex-col items-stretch gap-1.5 rounded-md bg-background px-4 py-2 text-sm opacity-0 shadow-md transition-all group-hover/block:top-3 group-hover/block:opacity-100'>
+            <div className='flex items-center justify-between gap-4'>
+                <div className='flex items-center gap-2 text-muted-foreground'>
+                    <div className='size-2 rounded-full bg-chart-blue opacity-50'
+                        style={{
+                            backgroundColor: dataColor
+                        }}
+                    ></div>
+                    This newsletter
+                </div>
+                <div className='text-right font-mono'>
+                    {value}
+                </div>
+            </div>
+            <div className='flex items-center justify-between gap-4'>
+                <div className='flex items-center gap-2 text-muted-foreground'>
+                    <div className='size-2 rounded-full bg-chart-gray opacity-80'></div>
+                    Average
+                </div>
+                <div className='text-right font-mono'>
+                    {avgValue}
+                </div>
+            </div>
         </div>
     );
 };
@@ -162,8 +73,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid,status',
-            include: 'email'
+            include: 'email,count.positive_feedback,count.negative_feedback'
         }
     });
 
@@ -180,6 +90,27 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
 
     const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId || '');
     const {editLinks} = useEditLinks();
+
+    // Calculate feedback stats from the post data
+    const feedbackStats = useMemo(() => {
+        if (!typedPost?.count) {
+            return {
+                positiveFeedback: 0,
+                negativeFeedback: 0,
+                totalFeedback: 0
+            };
+        }
+
+        const positiveFeedback = typedPost.count.positive_feedback || 0;
+        const negativeFeedback = typedPost.count.negative_feedback || 0;
+        const totalFeedback = positiveFeedback + negativeFeedback;
+
+        return {
+            positiveFeedback,
+            negativeFeedback,
+            totalFeedback
+        };
+    }, [typedPost]);
 
     const handleEdit = (linkId: string) => {
         const link = getLinkById(topLinks, linkId);
@@ -250,24 +181,6 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         }
     }, [editingLinkId, editedUrl, topLinks]);
 
-    const barDomain = [0, 1];
-    const barTicks = [0, 0.25, 0.5, 0.75, 1];
-    const barChartData = [
-        // {metric: 'Sent', current: 1, average: 1},
-        {metric: 'Opened', current: stats.openedRate, average: averageStats.openedRate},
-        {metric: 'Clicked', current: stats.clickedRate, average: averageStats.clickedRate}
-    ];
-    const barChartConfig = {
-        current: {
-            label: 'This newsletter',
-            color: 'hsl(var(--chart-blue))'
-        },
-        average: {
-            label: 'Average',
-            color: 'hsl(var(--chart-gray))'
-        }
-    } satisfies ChartConfig;
-
     const isLoading = isNewsletterStatsLoading || isPostLoading;
 
     // "Sent" Chart
@@ -327,36 +240,37 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         <>
             <PostAnalyticsHeader currentTab='Newsletter' />
             <PostAnalyticsContent>
-                {isLoading ?
-                    <div className='flex size-full grow items-center justify-center'>
-                        <BarChartLoadingIndicator />
-                    </div>
-                    :
-                    <div className='grid grid-cols-2 gap-8'>
-                        <Card className='col-span-2'>
-                            <CardHeader className='hidden'>
-                                <CardTitle>Newsletters</CardTitle>
-                                <CardDescription>How did this post perform</CardDescription>
-                            </CardHeader>
+
+                <div className='grid grid-cols-2 gap-8'>
+                    <Card className='col-span-2'>
+                        <CardHeader className='hidden'>
+                            <CardTitle>Newsletters</CardTitle>
+                            <CardDescription>How did this post perform</CardDescription>
+                        </CardHeader>
+                        {isLoading ?
+                            <CardContent className='h-[25vw] p-6'>
+                                <BarChartLoadingIndicator />
+                            </CardContent>
+                            :
                             <CardContent className='p-0'>
                                 <div className='grid grid-cols-3 items-stretch border-b'>
                                     <KpiCard className='relative grow'>
-                                        <FunnelArrow />
+                                        {/* <FunnelArrow /> */}
                                         <KpiCardLabel>
                                             <div className='ml-0.5 size-[9px] rounded-full bg-chart-purple opacity-50'></div>
                                             {/* <LucideIcon.Send strokeWidth={1.5} /> */}
-                                            Sent
+                                    Sent
                                         </KpiCardLabel>
                                         <KpiCardContent>
                                             <KpiCardValue>{formatNumber(stats.sent)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
                                     <KpiCard className='relative grow'>
-                                        <FunnelArrow />
+                                        {/* <FunnelArrow /> */}
                                         <KpiCardLabel>
                                             <div className='ml-0.5 size-[9px] rounded-full bg-chart-blue opacity-50'></div>
                                             {/* <LucideIcon.Eye strokeWidth={1.5} /> */}
-                                            Opened
+                                    Opened
                                         </KpiCardLabel>
                                         <KpiCardContent>
                                             <KpiCardValue>{formatNumber(stats.opened)}</KpiCardValue>
@@ -366,215 +280,144 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                         <KpiCardLabel>
                                             <div className='ml-0.5 size-[9px] rounded-full bg-chart-teal opacity-50'></div>
                                             {/* <LucideIcon.MousePointer strokeWidth={1.5} /> */}
-                                            Clicked
+                                    Clicked
                                         </KpiCardLabel>
                                         <KpiCardContent>
                                             <KpiCardValue>{formatNumber(stats.clicked)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
                                 </div>
-                                <Tabs className="relative" defaultValue="radial">
-                                    {/* <TabsList className="absolute right-3 top-3 grid grid-cols-2">
-                                        <TabsTrigger value="radial"><LucideIcon.LoaderCircle /></TabsTrigger>
-                                        <TabsTrigger value="bar"><LucideIcon.ChartNoAxesColumnDecreasing /></TabsTrigger>
-                                    </TabsList> */}
-                                    <TabsContent value="radial">
-                                        <div className='mx-auto grid grid-cols-3 items-center justify-center'>
-                                            <div className='border-r px-6'>
-                                                <NewsletterRadialChart
-                                                    config={sentChartConfig}
-                                                    data={sentChartData}
-                                                    percentageLabel='Sent'
-                                                    percentageValue={1}
-                                                />
-                                            </div>
-                                            <div className='border-r px-6'>
-                                                <NewsletterRadialChart
-                                                    config={openedChartConfig}
-                                                    data={openedChartData}
-                                                    percentageLabel='Opened'
-                                                    percentageValue={stats.openedRate}
-                                                />
-                                            </div>
-                                            <div className='px-6'>
-                                                <NewsletterRadialChart
-                                                    config={clickedChartConfig}
-                                                    data={clickedChartData}
-                                                    percentageLabel='Clicked'
-                                                    percentageValue={stats.clickedRate}
-                                                />
-                                            </div>
-                                        </div>
-                                    </TabsContent>
-                                    <TabsContent value="bar">
-                                        <div>
-                                            <ChartContainer className='max-h-[380px] w-full pb-6 pt-14' config={barChartConfig}>
-                                                <Recharts.BarChart barCategoryGap={24} data={barChartData}>
-                                                    <Recharts.CartesianGrid vertical={false} />
-                                                    <Recharts.YAxis
-                                                        axisLine={false}
-                                                        domain={barDomain}
-                                                        tickFormatter={value => formatPercentage(value)}
-                                                        tickLine={false}
-                                                        ticks={barTicks}
-                                                        width={calculateYAxisWidth(barTicks, (value: number) => formatPercentage(value))}
-                                                    />
-                                                    <Recharts.XAxis
-                                                        axisLine={false}
-                                                        dataKey="metric"
-                                                        tickFormatter={value => (value)}
-                                                        tickLine={false}
-                                                        tickMargin={10}
-                                                    />
-                                                    <ChartTooltip
-                                                        content={
-                                                            <ChartTooltipContent
-                                                                className="text-muted-foreground"
-                                                                formatter={(value, name, props) => {
-                                                                    const metric = props.payload.metric;
-                                                                    const color = (name === 'average' ?
-                                                                        'hsl(var(--chart-gray))'
-                                                                        :
-                                                                        metric === 'Sent' ? 'hsl(var(--chart-purple))' :
-                                                                            metric === 'Opened' ? 'hsl(var(--chart-blue))' :
-                                                                                metric === 'Clicked' ? 'hsl(var(--chart-green))' :
-                                                                                    'hsl(var(--chart-blue))'
-                                                                    );
-
-                                                                    return (
-                                                                        <>
-                                                                            <div
-                                                                                className="size-2.5 shrink-0 rounded-[2px]"
-                                                                                style={{backgroundColor: color}}
-                                                                            />
-                                                                            {barChartConfig[name as keyof typeof barChartConfig]?.label || name}
-                                                                            <div className="ml-auto flex items-baseline gap-0.5 pl-2 font-mono font-medium tabular-nums text-foreground">
-                                                                                {formatPercentage(value)}
-                                                                            </div>
-                                                                        </>
-                                                                    );
-                                                                }}
-                                                                hideLabel
-                                                            />
-                                                        }
-                                                        cursor={false}
-                                                    />
-                                                    <Recharts.Bar
-                                                        barSize={48}
-                                                        dataKey="current"
-                                                        fill="hsl(var(--chart-blue))"
-                                                        minPointSize={2}
-                                                        radius={0}
-                                                    >
-                                                        {barChartData.map(entry => (
-                                                            <Recharts.Cell
-                                                                key={`cell-${entry.metric}`}
-                                                                fill={
-                                                                    entry.metric === 'Sent' ? 'hsl(var(--chart-purple))' :
-                                                                        entry.metric === 'Opened' ? 'hsl(var(--chart-blue))' :
-                                                                            entry.metric === 'Clicked' ? 'hsl(var(--chart-green))' :
-                                                                                'hsl(var(--chart-blue))'
-                                                                }
-                                                            />
-                                                        ))}
-                                                    </Recharts.Bar>
-                                                    <Recharts.Bar
-                                                        barSize={48}
-                                                        dataKey="average"
-                                                        fill="var(--color-average)"
-                                                        minPointSize={2}
-                                                        radius={0}
-                                                    />
-                                                    {/* <ChartLegend content={<ChartLegendContent />} /> */}
-                                                </Recharts.BarChart>
-                                            </ChartContainer>
-                                        </div>
-                                    </TabsContent>
-                                </Tabs>
+                                <div className='mx-auto grid grid-cols-3 items-center justify-center transition-all'>
+                                    <div className='relative border-r px-6'>
+                                        <NewsletterRadialChart
+                                            className='aspect-square'
+                                            config={sentChartConfig}
+                                            data={sentChartData}
+                                            percentageLabel='Sent'
+                                            percentageValue={formatPercentage(1)}
+                                            tooltip={false}
+                                        />
+                                        <FunnelArrow />
+                                    </div>
+                                    <div className='group/block relative border-r px-6 transition-all hover:bg-muted/25'>
+                                        <BlockTooltip
+                                            avgValue={formatPercentage(averageStats.openedRate)}
+                                            dataColor='hsl(var(--chart-blue))'
+                                            value={formatPercentage(stats.openedRate)}
+                                        />
+                                        <NewsletterRadialChart
+                                            className='aspect-square'
+                                            config={openedChartConfig}
+                                            data={openedChartData}
+                                            percentageLabel='Open rate'
+                                            percentageValue={formatPercentage(stats.openedRate)}
+                                            tooltip={false}
+                                        />
+                                        <FunnelArrow />
+                                    </div>
+                                    <div className='group/block relative px-6 transition-all hover:bg-muted/25'>
+                                        <BlockTooltip
+                                            avgValue={formatPercentage(averageStats.clickedRate)}
+                                            dataColor='hsl(var(--chart-teal))'
+                                            value={formatPercentage(stats.clickedRate)}
+                                        />
+                                        <NewsletterRadialChart
+                                            className='aspect-square'
+                                            config={clickedChartConfig}
+                                            data={clickedChartData}
+                                            percentageLabel='Click rate'
+                                            percentageValue={formatPercentage(stats.clickedRate)}
+                                            tooltip={false}
+                                        />
+                                    </div>
+                                </div>
                             </CardContent>
-                        </Card>
-                        <Feedback />
-                        <Card>
-                            <CardHeader className='pb-3'>
+                        }
+                    </Card>
+                    <Feedback feedbackStats={feedbackStats} />
+                    <Card>
+                        <div className='flex items-center justify-between p-6'>
+                            <CardHeader className='p-0'>
                                 <CardTitle>Newsletter clicks</CardTitle>
                                 <CardDescription>Which links resonated with your readers</CardDescription>
                             </CardHeader>
+                            <HTable className='mr-2'>No. of members</HTable>
+                        </div>
+                        {isLoading ?
+                            <CardContent className='p-6'>
+                                <Separator />
+                                <SkeletonTable />
+                            </CardContent>
+                            :
                             <CardContent className='pb-0'>
-                                {topLinks.length > 0
-                                    ?
-                                    <>
+                                <Separator />
+                                {topLinks.length > 0 ?
+                                    <div className='flex w-full flex-col py-3'>
+                                        {paginatedTopLinks?.map((row) => {
+                                            const linkId = row.link.link_id;
+                                            const title = row.link.title;
+                                            const url = row.link.to;
+                                            const edited = row.link.edited;
 
-                                        <div className='flex w-full flex-col'>
-                                            <div className='flex h-12 w-full items-center justify-between border-b text-sm text-muted-foreground'>
-                                                <div>Link</div>
-                                                <div>No. of members</div>
-                                            </div>
-                                            <div className='flex w-full flex-col py-3'>
-                                                {paginatedTopLinks?.map((row) => {
-                                                    const linkId = row.link.link_id;
-                                                    const title = row.link.title;
-                                                    const url = row.link.to;
-                                                    const edited = row.link.edited;
-
-                                                    return (
-                                                        <div key={linkId} className='flex h-10 w-full items-center justify-between gap-3 rounded-sm border-none px-2 text-sm hover:cursor-pointer hover:bg-accent'>
-                                                            <div className='flex grow items-center gap-2 overflow-hidden'>
-                                                                {editingLinkId === linkId ? (
-                                                                    <div ref={containerRef} className='flex w-full items-center gap-2'>
-                                                                        <Input
-                                                                            ref={inputRef}
-                                                                            className="h-7 w-full border-border bg-background text-sm"
-                                                                            value={editedUrl}
-                                                                            onChange={e => setEditedUrl(e.target.value)}
-                                                                        />
-                                                                        <Button
-                                                                            size='sm'
-                                                                            onClick={handleUpdate}
-                                                                        >
-                                                                            Update
-                                                                        </Button>
-                                                                    </div>
-                                                                ) : (
-                                                                    <>
-                                                                        <Button
-                                                                            className='shrink-0 bg-background'
-                                                                            size='sm'
-                                                                            variant='outline'
-                                                                            onClick={() => handleEdit(linkId)}
-                                                                        >
-                                                                            <LucideIcon.Pen />
-                                                                        </Button>
-                                                                        <a
-                                                                            className='block truncate font-medium hover:underline'
-                                                                            href={url}
-                                                                            rel="noreferrer"
-                                                                            target='_blank'
-                                                                            title={title}
-                                                                        >
-                                                                            {title}
-                                                                        </a>
-                                                                        {edited && (
-                                                                            <span className='text-xs text-gray-500'>(edited)</span>
-                                                                        )}
-                                                                    </>
+                                            return (
+                                                <div key={linkId} className='flex h-10 w-full items-center justify-between gap-3 rounded-sm border-none px-2 text-sm hover:cursor-pointer hover:bg-accent'>
+                                                    <div className='flex grow items-center gap-2 overflow-hidden'>
+                                                        {editingLinkId === linkId ? (
+                                                            <div ref={containerRef} className='flex w-full items-center gap-2'>
+                                                                <Input
+                                                                    ref={inputRef}
+                                                                    className="h-7 w-full border-border bg-background text-sm"
+                                                                    value={editedUrl}
+                                                                    onChange={e => setEditedUrl(e.target.value)}
+                                                                />
+                                                                <Button
+                                                                    size='sm'
+                                                                    onClick={handleUpdate}
+                                                                >
+                                                                        Update
+                                                                </Button>
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                <Button
+                                                                    className='shrink-0 bg-background'
+                                                                    size='sm'
+                                                                    variant='outline'
+                                                                    onClick={() => handleEdit(linkId)}
+                                                                >
+                                                                    <LucideIcon.Pen />
+                                                                </Button>
+                                                                <a
+                                                                    className='block truncate font-medium hover:underline'
+                                                                    href={url}
+                                                                    rel="noreferrer"
+                                                                    target='_blank'
+                                                                    title={title}
+                                                                >
+                                                                    {title}
+                                                                </a>
+                                                                {edited && (
+                                                                    <span className='text-xs text-gray-500'>(edited)</span>
                                                                 )}
-                                                            </div>
-                                                            <div className='font-mono'>
-                                                                {formatNumber(row.count)}
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    </>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                    <div className='font-mono'>
+                                                        {formatNumber(row.count)}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                     :
                                     <div className='py-20 text-center text-sm text-gray-700'>
-                                    You have no links in your post.
+                                        You have no links in your post.
                                     </div>
                                 }
                             </CardContent>
-                            {topLinks.length > 1 &&
+                        }
+
+                        {!isLoading && topLinks.length > 1 &&
                                 <CardFooter>
                                     <div className='flex w-full items-start justify-between gap-3'>
                                         <div className='mt-1 flex items-start gap-2 pl-4 text-sm text-green'>
@@ -587,20 +430,21 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                     <SimplePaginationPreviousButton
                                                         disabled={!hasPreviousPage}
                                                         onClick={previousPage}
+                                                        // size='default'
                                                     />
                                                     <SimplePaginationNextButton
                                                         disabled={!hasNextPage}
                                                         onClick={nextPage}
+                                                        // size='default'
                                                     />
                                                 </SimplePaginationNavigation>
                                             </SimplePagination>
                                         )}
                                     </div>
                                 </CardFooter>
-                            }
-                        </Card>
-                    </div>
-                }
+                        }
+                    </Card>
+                </div>
             </PostAnalyticsContent>
         </>
     );

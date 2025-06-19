@@ -1,90 +1,107 @@
 import React, {useMemo} from 'react';
-import {BarChartLoadingIndicator, GhAreaChart, formatQueryDate, getRangeDates, getRangeForStartDate, sanitizeChartData} from '@tryghost/shade';
-import {KPI_METRICS} from '../../Web/components/Kpis';
-import {KpiDataItem} from '@src/utils/kpi-helpers';
-import {STATS_RANGES} from '@src/utils/constants';
-import {getStatEndpointUrl, getToken, useParams} from '@tryghost/admin-x-framework';
-import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
+import Sources from '../../Web/components/Sources';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, formatNumber} from '@tryghost/shade';
+import {BaseSourceData, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
-import {useQuery} from '@tinybirdco/charts';
 
-const WebOverview:React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    const currentMetric = KPI_METRICS.visits;
+interface WebOverviewProps {
+    sourcesData: BaseSourceData[] | null;
+    chartData?: GhAreaChartDataItem[];
+    range: number;
+    isLoading: boolean;
+    visitors: number;
+    fullWidth?: boolean;
+}
+
+const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, visitors, sourcesData, fullWidth = false}) => {
     const {postId} = useParams();
+    const navigate = useNavigate();
 
-    const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
-        searchParams: {
-            filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid'
+    // Get global data for site info
+    const {data: globalData} = useGlobalData();
+    const siteUrl = globalData?.url as string | undefined;
+    const siteIcon = globalData?.icon as string | undefined;
+
+    // Calculate total visits for sources percentage calculation
+    const totalSourcesVisits = useMemo(() => {
+        if (!sourcesData) {
+            return 0;
         }
-    });
-
-    // Calculate range based on days between today and post publication date
-    const range = useMemo(() => {
-        if (!post?.published_at) {
-            return STATS_RANGES.ALL_TIME.value; // Fallback if no publication date
-        }
-        const calculatedRange = getRangeForStartDate(post.published_at);
-        return calculatedRange;
-    }, [post?.published_at]);
-
-    const {startDate, endDate, timezone} = getRangeDates(range);
-
-    const params = useMemo(() => {
-        const baseParams = {
-            site_uuid: statsConfig?.id || '',
-            date_from: formatQueryDate(startDate),
-            date_to: formatQueryDate(endDate),
-            timezone: timezone,
-            post_uuid: ''
-        };
-
-        if (!isPostLoading && post?.uuid) {
-            return {
-                ...baseParams,
-                post_uuid: post.uuid
-            };
-        }
-
-        return baseParams;
-    }, [isPostLoading, post, statsConfig?.id, startDate, endDate, timezone]);
-
-    const {data, loading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
-        params: params
-    });
-
-    const chartData = sanitizeChartData<KpiDataItem>(data as KpiDataItem[] || [], range, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item: KpiDataItem) => {
-        const value = Number(item[currentMetric.dataKey]);
-        return {
-            date: String(item.date),
-            value,
-            formattedValue: currentMetric.formatter(value),
-            label: currentMetric.label
-        };
-    });
-
-    const isLoading = isPostLoading || isConfigLoading || loading;
+        return sourcesData.reduce((sum, source) => sum + Number(source.visits || 0), 0);
+    }, [sourcesData]);
 
     return (
-        <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
-            {isLoading ?
-                <div className='flex min-h-[250px] items-center justify-center'>
-                    <BarChartLoadingIndicator />
+        <>
+            <Card className='group/datalist'>
+                <div className='relative flex items-center justify-between gap-6'>
+                    <CardHeader>
+                        <CardTitle className='flex items-center gap-1.5 text-lg'>
+                            <LucideIcon.Globe size={16} strokeWidth={1.5} />
+                            Web performance
+                        </CardTitle>
+                    </CardHeader>
+                    <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100' size='sm' variant='outline' onClick={() => {
+                        navigate(`/analytics/beta/${postId}/web`);
+                    }}>View more</Button>
                 </div>
-                :
-                <GhAreaChart
-                    className={'-mb-3 h-[16vw] max-h-[320px] w-full'}
-                    color='hsl(var(--chart-blue))'
-                    data={chartData}
-                    id="visitors"
-                    range={range}
-                    syncId="overview-charts"
-                />
-            }
-        </div>
+                <CardContent>
+                    <div>
+                        <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0'>
+                            <div className='flex grow flex-col gap-1.5 border-none pb-0'>
+                                <KpiCardHeaderLabel color='hsl(var(--chart-blue))'>
+                            Unique visitors
+                                </KpiCardHeaderLabel>
+                                <KpiCardHeaderValue
+                                    value={formatNumber(visitors)}
+                                />
+                            </div>
+                        </KpiCardHeader>
+                        <Separator />
+                        <div className='max-h-[288px] py-6 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
+                            {isLoading ?
+                                <div className='flex h-[16vw] min-h-[240px] items-center justify-center'>
+                                    <BarChartLoadingIndicator />
+                                </div>
+                                :
+                                <GhAreaChart
+                                    className={'h-[240px] w-full'}
+                                    color='hsl(var(--chart-blue))'
+                                    data={chartData || []}
+                                    id="visitors"
+                                    range={range}
+                                    syncId="overview-charts"
+                                />
+                            }
+                        </div>
+                    </div>
+                    {!fullWidth &&
+                        <div className={fullWidth ? '-mt-3' : 'border-t pt-3'}>
+                            <div>
+                                <div className='flex items-center justify-between gap-3 py-3'>
+                                    <span className='font-medium text-muted-foreground'>How readers found this post</span>
+                                    <HTable>Visitors</HTable>
+                                </div>
+                            </div>
+                            {sourcesData && sourcesData.length > 0 ?
+                                <Sources
+                                    data={sourcesData as BaseSourceData[] | null}
+                                    range={range}
+                                    siteIcon={siteIcon}
+                                    siteUrl={siteUrl}
+                                    tableOnly={true}
+                                    topSourcesLimit={3}
+                                    totalVisitors={totalSourcesVisits}
+                                />
+                                :
+                                <div className='py-10 text-center text-sm text-muted-foreground'>
+                                    No data available.
+                                </div>
+                            }
+                        </div>
+                    }
+                </CardContent>
+            </Card>
+        </>
     );
 };
 

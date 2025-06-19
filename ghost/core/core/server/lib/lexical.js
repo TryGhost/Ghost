@@ -54,13 +54,6 @@ module.exports = {
     },
 
     get customNodeRenderers() {
-        if (
-            !labs.isSet('emailCustomizationAlpha') &&
-            !labs.isSet('emailCustomization')
-        ) {
-            return undefined;
-        }
-
         if (!customNodeRenderers) {
             try {
                 customNodeRenderers = require('../services/koenig/node-renderers');
@@ -100,8 +93,7 @@ module.exports = {
             },
             feature: {
                 contentVisibility: labs.isSet('contentVisibility'),
-                emailCustomization: labs.isSet('emailCustomization'),
-                emailCustomizationAlpha: labs.isSet('emailCustomizationAlpha')
+                emailCustomization: labs.isSet('emailCustomization')
             },
             nodeRenderers: this.customNodeRenderers
         }, userOptions);

@@ -120,6 +120,26 @@ describe('ghost-stats.js', function () {
             expect(browserService.isTestEnvironment()).to.be.true;
         });
 
+        it('should allow synthetic monitoring to bypass test environment detection', function () {
+            // Set up webdriver environment (normally would be detected as test)
+            Object.defineProperty(mockWindow.navigator, 'webdriver', {
+                value: true,
+                configurable: true
+            });
+            expect(browserService.isTestEnvironment()).to.be.true;
+
+            // Enable synthetic monitoring flag - should bypass test detection
+            Object.defineProperty(mockWindow, '__GHOST_SYNTHETIC_MONITORING__', {
+                value: true,
+                configurable: true
+            });
+            expect(browserService.isTestEnvironment()).to.be.false;
+
+            // Clean up
+            delete mockWindow.__GHOST_SYNTHETIC_MONITORING__;
+            delete mockWindow.navigator.webdriver;
+        });
+
         it('should handle browser APIs safely', function () {
             expect(browserService.getNavigator()).to.equal(mockWindow.navigator);
             expect(browserService.getLocation()).to.equal(mockWindow.location);
@@ -183,7 +203,17 @@ describe('ghost-stats.js', function () {
         beforeEach(function () {
             mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
             mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
+            mockDocument.currentScript.attributes = [
+                {name: 'tb_site_uuid', value: 'test-site-uuid'}
+            ];
             ghostStats.initConfig();
+        });
+
+        it('should set the x-site-uuid header', async function () {
+            await ghostStats.trackEvent('test_event', {data: 'test'});
+
+            expect(mockFetch.calledOnce).to.be.true;
+            expect(mockFetch.firstCall.args[1].headers['x-site-uuid']).to.equal('test-site-uuid');
         });
 
         it('should track custom events with correct data', async function () {

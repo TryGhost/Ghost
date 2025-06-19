@@ -190,6 +190,18 @@ describe('PostsStatsService', function () {
             table.integer('opened_count');
             table.dateTime('created_at');
         });
+
+        await db.schema.createTable('users', function (table) {
+            table.string('id').primary();
+            table.string('name');
+        });
+
+        await db.schema.createTable('posts_authors', function (table) {
+            table.string('id').primary();
+            table.string('post_id');
+            table.string('author_id');
+            table.integer('sort_order');
+        });
     });
 
     beforeEach(async function () {
@@ -212,6 +224,8 @@ describe('PostsStatsService', function () {
         await db('members_subscription_created_events').truncate();
         await db('members_paid_subscription_events').truncate();
         await db('emails').truncate();
+        await db('users').truncate();
+        await db('posts_authors').truncate();
     });
 
     after(async function () {
@@ -566,144 +580,6 @@ describe('PostsStatsService', function () {
         });
     });
 
-    describe('getLatestPostStats', function () {
-        it('returns null when no published posts exist', async function () {
-            await db('posts').truncate();
-            const result = await service.getLatestPostStats();
-            assert.deepEqual(result, {data: []});
-        });
-
-        it('returns latest published post with zero stats when no events exist', async function () {
-            await db('posts').truncate();
-            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
-            await _createPostWithDetails('latest_post', 'Latest Post', 'published', {
-                published_at: publishedAt,
-                feature_image: 'https://example.com/image.jpg'
-            });
-
-            const result = await service.getLatestPostStats();
-            const stats = result.data[0];
-            
-            assert.equal(stats.id, 'latest_post');
-            assert.equal(stats.title, 'Latest Post');
-            assert.equal(stats.slug, 'latest-post-latest_post');
-            assert.equal(stats.feature_image, 'https://example.com/image.jpg');
-            assert.equal(new Date(stats.published_at).toISOString(), publishedAt.toISOString());
-            assert.equal(stats.recipient_count, null);
-            assert.equal(stats.opened_count, null);
-            assert.equal(stats.open_rate, null);
-            assert.equal(stats.member_delta, 0);
-            assert.equal(stats.visitors, 0);
-        });
-
-        it('returns latest published post with email stats', async function () {
-            await db('posts').truncate();
-            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
-            await _createPostWithDetails('latest_post', 'Latest Post', 'published', {
-                published_at: publishedAt
-            });
-            await _createEmailStats('latest_post', 100, 50);
-
-            const result = await service.getLatestPostStats();
-            const stats = result.data[0];
-            
-            assert.equal(stats.id, 'latest_post');
-            assert.equal(stats.title, 'Latest Post');
-            assert.equal(stats.slug, 'latest-post-latest_post');
-            assert.equal(stats.feature_image, null);
-            assert.equal(new Date(stats.published_at).toISOString(), publishedAt.toISOString());
-            assert.equal(stats.recipient_count, 100);
-            assert.equal(stats.opened_count, 50);
-            assert.equal(stats.open_rate, 50);
-            assert.equal(stats.member_delta, 0);
-            assert.equal(stats.visitors, 0);
-        });
-
-        it('returns latest published post with member stats', async function () {
-            await db('posts').truncate();
-            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
-            await _createPostWithDetails('latest_post', 'Latest Post', 'published', {
-                published_at: publishedAt
-            });
-            await _createFreeSignup('latest_post', 'twitter');
-            await _createFreeSignup('latest_post', 'facebook');
-            await _createPaidSignup('latest_post', 1000, 'google');
-
-            const result = await service.getLatestPostStats();
-            const stats = result.data[0];
-            
-            assert.equal(stats.id, 'latest_post');
-            assert.equal(stats.title, 'Latest Post');
-            assert.equal(stats.slug, 'latest-post-latest_post');
-            assert.equal(stats.feature_image, null);
-            assert.equal(new Date(stats.published_at).toISOString(), publishedAt.toISOString());
-            assert.equal(stats.recipient_count, null);
-            assert.equal(stats.opened_count, null);
-            assert.equal(stats.open_rate, null);
-            assert.equal(stats.member_delta, 3);
-            assert.equal(stats.visitors, 0);
-        });
-
-        it('returns latest published post with all stats', async function () {
-            await db('posts').truncate();
-            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
-            await _createPostWithDetails('latest_post', 'Latest Post', 'published', {
-                published_at: publishedAt,
-                feature_image: 'https://example.com/image.jpg'
-            });
-            await _createEmailStats('latest_post', 100, 50);
-            await _createFreeSignup('latest_post', 'twitter');
-            await _createFreeSignup('latest_post', 'facebook');
-            await _createPaidSignup('latest_post', 1000, 'google');
-
-            const result = await service.getLatestPostStats();
-            const stats = result.data[0];
-            
-            assert.equal(stats.id, 'latest_post');
-            assert.equal(stats.title, 'Latest Post');
-            assert.equal(stats.slug, 'latest-post-latest_post');
-            assert.equal(stats.feature_image, 'https://example.com/image.jpg');
-            assert.equal(new Date(stats.published_at).toISOString(), publishedAt.toISOString());
-            assert.equal(stats.recipient_count, 100);
-            assert.equal(stats.opened_count, 50);
-            assert.equal(stats.open_rate, 50);
-            assert.equal(stats.member_delta, 3);
-            assert.equal(stats.visitors, 0);
-        });
-
-        it('ignores draft posts when finding latest post', async function () {
-            await db('posts').truncate();
-            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
-            const draftAt = new Date('2025-01-02T00:00:00.000Z');
-            
-            await _createPostWithDetails('published_post', 'Published Post', 'published', {
-                published_at: publishedAt
-            });
-            await _createPostWithDetails('draft_post', 'Draft Post', 'draft', {
-                published_at: draftAt
-            });
-
-            const result = await service.getLatestPostStats();
-            assert.equal(result.data[0].id, 'published_post');
-        });
-
-        it('returns latest post by published_at date', async function () {
-            await db('posts').truncate();
-            const olderDate = new Date('2025-01-01T00:00:00.000Z');
-            const newerDate = new Date('2025-01-02T00:00:00.000Z');
-            
-            await _createPostWithDetails('older_post', 'Older Post', 'published', {
-                published_at: olderDate
-            });
-            await _createPostWithDetails('newer_post', 'Newer Post', 'published', {
-                published_at: newerDate
-            });
-
-            const result = await service.getLatestPostStats();
-            assert.equal(result.data[0].id, 'newer_post');
-        });
-    });
-
     describe('getTopPostsViews', function () {
         it('returns empty array when no Tinybird client exists', async function () {
             service = new PostsStatsService({knex: db}); // No Tinybird client
@@ -712,7 +588,7 @@ describe('PostsStatsService', function () {
                 date_to: '2025-01-31',
                 timezone: 'UTC'
             });
-            assert.deepEqual(result, []);
+            assert.deepEqual(result, {data: []});
         });
 
         it('returns latest posts with zero views when no views data exists', async function () {
@@ -784,7 +660,7 @@ describe('PostsStatsService', function () {
                 }
             ];
 
-            assert.deepEqual(result, expected);
+            assert.deepEqual(result, {data: expected});
         });
 
         it('backfills with latest posts when not enough views data', async function () {
@@ -878,7 +754,7 @@ describe('PostsStatsService', function () {
                 }
             ];
 
-            assert.deepEqual(result, expected);
+            assert.deepEqual(result, {data: expected});
         });
 
         it('passes correct parameters to Tinybird client', async function () {
@@ -919,7 +795,7 @@ describe('PostsStatsService', function () {
                 timezone: 'UTC'
             });
 
-            assert.deepEqual(result, []);
+            assert.deepEqual(result, {data: []});
         });
 
         it('returns correct member attribution counts when member events exist', async function () {
@@ -979,15 +855,15 @@ describe('PostsStatsService', function () {
             });
 
             // Basic verification that the method works and returns expected structure
-            assert.ok(Array.isArray(result), 'Result should be an array');
+            assert.ok(result.data && Array.isArray(result.data), 'Result should have data array');
             
             // With current implementation and date filtering issues, we expect posts but with 0 members
             // This test mainly verifies the method structure works correctly
-            if (result.length > 0) {
-                assert.ok(result[0].hasOwnProperty('post_id'), 'Results should have post_id');
-                assert.ok(result[0].hasOwnProperty('title'), 'Results should have title');
-                assert.ok(result[0].hasOwnProperty('views'), 'Results should have views');
-                assert.ok(result[0].hasOwnProperty('members'), 'Results should have members');
+            if (result.data.length > 0) {
+                assert.ok(result.data[0].hasOwnProperty('post_id'), 'Results should have post_id');
+                assert.ok(result.data[0].hasOwnProperty('title'), 'Results should have title');
+                assert.ok(result.data[0].hasOwnProperty('views'), 'Results should have views');
+                assert.ok(result.data[0].hasOwnProperty('members'), 'Results should have members');
             }
         });
 
@@ -1033,12 +909,12 @@ describe('PostsStatsService', function () {
             });
 
             // Basic verification that the method works
-            assert.ok(Array.isArray(result), 'Result should be an array');
+            assert.ok(result.data && Array.isArray(result.data), 'Result should have data array');
             
             // This test verifies that the method handles the free + paid member scenario
             // The current implementation counts them separately (no deduplication)
-            if (result.length > 0) {
-                assert.ok(result[0].hasOwnProperty('members'), 'Results should have members property');
+            if (result.data.length > 0) {
+                assert.ok(result.data[0].hasOwnProperty('members'), 'Results should have members property');
             }
         });
 
@@ -1093,13 +969,13 @@ describe('PostsStatsService', function () {
             });
 
             // Basic verification that the method works for cross-post scenarios
-            assert.ok(Array.isArray(result), 'Result should be an array');
+            assert.ok(result.data && Array.isArray(result.data), 'Result should have data array');
             
             // This test verifies cross-post attribution handling
             // post1: should get credit for free signups
             // post2: should get credit for paid conversions
-            if (result.length > 0) {
-                assert.ok(result[0].hasOwnProperty('members'), 'Results should have members property');
+            if (result.data.length > 0) {
+                assert.ok(result.data[0].hasOwnProperty('members'), 'Results should have members property');
             }
         });
     });

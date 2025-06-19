@@ -568,6 +568,135 @@ class PostsStatsService {
     }
 
     /**
+     * Get newsletter basic statistics (without click data) for faster loading
+     *
+     * @param {string} newsletterId - ID of the newsletter to get stats for
+     * @param {Object} options - Query options
+     * @param {string} [options.order] - Sort order (e.g., 'date desc', 'open_rate desc')
+     * @param {number} [options.limit] - Number of results to return (default: 20)
+     * @param {string} [options.date_from] - Optional start date filter (YYYY-MM-DD)
+     * @param {string} [options.date_to] - Optional end date filter (YYYY-MM-DD)
+     * @returns {Promise<{data: Array}>} The newsletter basic stats (without click data)
+     */
+    async getNewsletterBasicStats(newsletterId, options = {}) {
+        try {
+            const order = options.order || 'date desc';
+            const limitRaw = Number.parseInt(String(options.limit ?? 20), 10);
+            const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 20;
+
+            // Parse order field and direction
+            let [orderField, orderDirection = 'desc'] = order.split(' ');
+
+            // Map frontend order fields to database fields (simplified for ORDER BY)
+            const orderFieldMap = {
+                date: 'send_date',
+                open_rate: 'open_rate',
+                sent_to: 'sent_to'
+            };
+
+            // Validate order field (excluding click_rate since we don't fetch click data)
+            if (!Object.keys(orderFieldMap).includes(orderField)) {
+                throw new errors.BadRequestError({
+                    message: `Invalid order field: ${orderField}. Must be one of: date, open_rate, sent_to`
+                });
+            }
+
+            // Validate order direction
+            if (!['asc', 'desc'].includes(orderDirection.toLowerCase())) {
+                throw new errors.BadRequestError({
+                    message: `Invalid order direction: ${orderDirection}`
+                });
+            }
+
+            // Build date filters if provided
+            let dateFilter = this.knex.raw('1=1');
+            if (options.date_from) {
+                dateFilter = this.knex.raw(`p.published_at >= ?`, [options.date_from]);
+            }
+            if (options.date_to) {
+                dateFilter = options.date_from
+                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, options.date_to])
+                    : this.knex.raw(`p.published_at <= ?`, [options.date_to]);
+            }
+
+            // Build the query to get newsletter basic stats (without click data)
+            const query = this.knex
+                .select(
+                    'p.id as post_id',
+                    'p.title as post_title',
+                    'p.published_at as send_date',
+                    this.knex.raw('COALESCE(e.email_count, 0) as sent_to'),
+                    this.knex.raw('COALESCE(e.opened_count, 0) as total_opens'),
+                    this.knex.raw('CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate')
+                )
+                .from('posts as p')
+                .leftJoin('emails as e', 'p.id', 'e.post_id')
+                .where('p.newsletter_id', newsletterId)
+                .whereIn('p.status', ['sent', 'published'])
+                .whereNotNull('e.id') // Ensure there is an associated email record
+                .whereRaw(dateFilter)
+                .orderBy(orderFieldMap[orderField], orderDirection)
+                .limit(limit);
+
+            const results = await query;
+
+            return {data: results};
+        } catch (error) {
+            logging.error(`Error fetching newsletter basic stats for newsletter ${newsletterId}:`, error);
+            return {data: []};
+        }
+    }
+
+    /**
+     * Get newsletter click statistics for specific posts
+     *
+     * @param {string} newsletterId - ID of the newsletter to get click stats for
+     * @param {Array<string>|string} postIds - Array of post IDs or comma-separated string of post IDs to get click data for
+     * @returns {Promise<{data: Array}>} The newsletter click stats
+     */
+    async getNewsletterClickStats(newsletterId, postIds = []) {
+        try {
+            // Handle postIds as either array or comma-separated string
+            let postIdsArray = [];
+            if (Array.isArray(postIds)) {
+                postIdsArray = postIds;
+            } else if (typeof postIds === 'string' && postIds.length > 0) {
+                postIdsArray = postIds.split(',').map(id => id.trim()).filter(id => id.length > 0);
+            }
+
+            if (postIdsArray.length === 0) {
+                return {data: []};
+            }
+
+            // Subquery to count clicks from members_click_events
+            const clicksQuery = this.knex
+                .select(
+                    'r.post_id',
+                    this.knex.raw('COALESCE(COUNT(DISTINCT mce.member_id), 0) as total_clicks'),
+                    this.knex.raw('MAX(COALESCE(e.email_count, 0)) as email_count')
+                )
+                .from('redirects as r')
+                .leftJoin('members_click_events as mce', 'r.id', 'mce.redirect_id')
+                .leftJoin('posts as p', 'r.post_id', 'p.id')
+                .leftJoin('emails as e', 'p.id', 'e.post_id')
+                .whereIn('r.post_id', postIdsArray)
+                .where('p.newsletter_id', newsletterId)
+                .whereNotNull('r.post_id')
+                .groupBy('r.post_id')
+                .select(
+                    this.knex.raw('CASE WHEN MAX(COALESCE(e.email_count, 0)) > 0 THEN COALESCE(COUNT(DISTINCT mce.member_id), 0) / MAX(COALESCE(e.email_count, 0)) ELSE 0 END as click_rate')
+                );
+
+            const results = await clicksQuery;
+
+            return {data: results};
+        } catch (error) {
+            logging.error(`Error fetching newsletter click stats for newsletter ${newsletterId}:`, error);
+            return {data: []};
+        }
+    }
+
+    /**
      * Get newsletter subscriber statistics including total count and daily deltas for a specific newsletter
      *
      * @param {string} newsletterId - ID of the newsletter to get subscriber stats for
@@ -578,37 +707,25 @@ class PostsStatsService {
      */
     async getNewsletterSubscriberStats(newsletterId, options = {}) {
         try {
-            // Get total subscriber count, filtering out members with email disabled
-            const totalResult = await this.knex('members_newsletters as mn')
-                .countDistinct('mn.member_id as total')
-                .join('members as m', 'm.id', 'mn.member_id')
-                .where('mn.newsletter_id', newsletterId)
-                .where('m.email_disabled', 0);
+            // Run both queries in parallel for better performance
+            const [totalResult, rawDeltas] = await Promise.all([
+                // Get total subscriber count (optimized query - avoid JOIN)
+                this.knex('members_newsletters as mn')
+                    .countDistinct('mn.member_id as total')
+                    .where('mn.newsletter_id', newsletterId)
+                    .whereNotExists(function () {
+                        this.select('*')
+                            .from('members as m')
+                            .whereRaw('m.id = mn.member_id')
+                            .where('m.email_disabled', 1);
+                    }),
+                
+                // Get daily deltas (optimized query)
+                this._getNewsletterSubscriberDeltas(newsletterId, options)
+            ]);
 
             const totalValue = totalResult[0] ? totalResult[0].total : 0;
             const total = parseInt(String(totalValue), 10);
-
-            // Get daily deltas within date range for the specific newsletter
-            let deltasQuery = this.knex('members_subscribe_events as mse')
-                .select(
-                    this.knex.raw(`DATE(mse.created_at) as date`),
-                    this.knex.raw(`SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as value`)
-                )
-                .join('members as m', 'm.id', 'mse.member_id')
-                .where('mse.newsletter_id', newsletterId)
-                .where('m.email_disabled', 0) // Only include events for members with emails enabled
-                .groupByRaw('DATE(mse.created_at)')
-                .orderBy('date', 'asc');
-
-            // Apply date filters
-            if (options.date_from) {
-                deltasQuery.where('mse.created_at', '>=', options.date_from);
-            }
-            if (options.date_to) {
-                deltasQuery.where('mse.created_at', '<=', `${options.date_to} 23:59:59`);
-            }
-
-            const rawDeltas = await deltasQuery;
 
             // Transform raw database results to properly typed objects
             const deltas = [];
@@ -643,53 +760,81 @@ class PostsStatsService {
     }
 
     /**
-     * Get stats for the latest published post including open rate, member attribution counts, and visitor count
-     * @returns {Promise<{data: Array<{id: string, title: string, slug: string, feature_image: string|null, published_at: string, recipient_count: number|null, opened_count: number|null, open_rate: number|null, member_delta: number, free_members: number, paid_members: number, visitors: number}>}>}
+     * Optimized query to get newsletter subscriber deltas
+     * @private
      */
-    async getLatestPostStats() {
-        try {
-            // Get the latest published post
-            const latestPost = await this.knex('posts as p')
-                .select(
-                    'p.id',
-                    'p.uuid',
-                    'p.title',
-                    'p.slug',
-                    'p.feature_image',
-                    'p.published_at',
-                    'e.email_count',
-                    'e.opened_count'
-                )
-                .leftJoin('emails as e', 'p.id', 'e.post_id')
-                .where('p.status', 'published')
-                .whereNotNull('p.published_at')
-                .orderBy('p.published_at', 'desc')
-                .first();
+    async _getNewsletterSubscriberDeltas(newsletterId, options = {}) {
+        // Build optimized deltas query - avoid expensive JOIN
+        let deltasQuery = this.knex('members_subscribe_events as mse')
+            .select(
+                this.knex.raw(`DATE(mse.created_at) as date`),
+                this.knex.raw(`SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as value`)
+            )
+            .where('mse.newsletter_id', newsletterId)
+            .whereNotExists(function () {
+                this.select('*')
+                    .from('members as m')
+                    .whereRaw('m.id = mse.member_id')
+                    .where('m.email_disabled', 1);
+            })
+            .groupByRaw('DATE(mse.created_at)')
+            .orderBy('date', 'asc');
 
-            if (!latestPost) {
+        // Apply date filters early to reduce dataset
+        if (options.date_from) {
+            deltasQuery.where('mse.created_at', '>=', options.date_from);
+        }
+        if (options.date_to) {
+            deltasQuery.where('mse.created_at', '<=', `${options.date_to} 23:59:59`);
+        }
+
+        return await deltasQuery;
+    }
+
+    /**
+     * Get stats for a specific post by ID (analytics only, no post content)
+     * @param {string} postId - The post ID to get stats for
+     * @returns {Promise<{data: Array<{id: string, recipient_count: number|null, opened_count: number|null, open_rate: number|null, member_delta: number, free_members: number, paid_members: number, visitors: number}>}>}
+     */
+    async getPostStats(postId) {
+        try {
+            // Validate postId parameter
+            if (!postId || postId.trim() === '') {
+                return {data: []};
+            }
+            
+            // Get basic post info for stats calculations
+            const postData = await this.knex('posts')
+                .select('posts.id', 'posts.uuid', 'posts.published_at', 'e.email_count', 'e.opened_count')
+                .leftJoin('emails as e', 'posts.id', 'e.post_id')
+                .where('posts.id', postId)
+                .where('posts.status', 'published')
+                .first();
+                
+            if (!postData) {
                 return {data: []};
             }
 
-            // Get member attribution counts using the same logic as other methods
-            const memberAttributionCounts = await this._getMemberAttributionCounts([latestPost.id]);
-            const attributionCount = memberAttributionCounts.find(ac => ac.post_id === latestPost.id);
+            // Get member attribution counts
+            const memberAttributionCounts = await this._getMemberAttributionCounts([postData.id]);
+            const attributionCount = memberAttributionCounts.find(ac => ac.post_id === postData.id);
             
             const freeMembers = attributionCount ? attributionCount.free_members : 0;
             const paidMembers = attributionCount ? attributionCount.paid_members : 0;
             const totalMembers = freeMembers + paidMembers;
 
             // Calculate open rate
-            const openRate = latestPost.email_count ? 
-                (latestPost.opened_count / latestPost.email_count) * 100 : 
+            const openRate = postData.email_count ? 
+                (postData.opened_count / postData.email_count) * 100 : 
                 null;
 
             // Get visitor count from Tinybird
             let visitors = 0;
-            if (this.tinybirdClient) {
+            if (this.tinybirdClient && postData.uuid) {
                 try {
-                    const dateFrom = new Date(latestPost.published_at).toISOString().split('T')[0];
+                    const dateFrom = new Date(postData.published_at).toISOString().split('T')[0];
                     const visitorData = await this.tinybirdClient.fetch('api_top_pages', {
-                        post_uuid: latestPost.uuid,
+                        post_uuid: postData.uuid,
                         dateFrom: dateFrom
                     });
 
@@ -701,13 +846,9 @@ class PostsStatsService {
 
             return {
                 data: [{
-                    id: latestPost.id,
-                    title: latestPost.title,
-                    slug: latestPost.slug,
-                    feature_image: latestPost.feature_image ? urlUtils.transformReadyToAbsolute(latestPost.feature_image) : latestPost.feature_image,
-                    published_at: latestPost.published_at,
-                    recipient_count: latestPost.email_count,
-                    opened_count: latestPost.opened_count,
+                    id: postData.id,
+                    recipient_count: postData.email_count || null,
+                    opened_count: postData.opened_count || null,
                     open_rate: openRate,
                     member_delta: totalMembers,
                     free_members: freeMembers,
@@ -716,8 +857,7 @@ class PostsStatsService {
                 }]
             };
         } catch (error) {
-            // Log the error but return a valid response
-            logging.error('Error fetching latest post stats:', error);
+            logging.error(`Error fetching post stats for post ${postId}:`, error);
             return {data: []};
         }
     }
@@ -727,20 +867,21 @@ class PostsStatsService {
      * @param {Object} options
      * @param {string} options.date_from - Start date in YYYY-MM-DD format
      * @param {string} options.date_to - End date in YYYY-MM-DD format
-     * @param {string} options.timezone - Timezone to use for date interpretation
+     * @param {string} [options.timezone] - Timezone to use for date interpretation (default: 'UTC')
      * @param {number} [options.limit] - Maximum number of posts to return (default: 5)
      * @returns {Promise<Object>} Top posts with view counts and additional Ghost data
      */
     async getTopPostsViews(options) {
         try {
             const limit = options.limit || 5;
+            const timezone = options.timezone || 'UTC';
             let viewsData = [];
 
             if (this.tinybirdClient) {
                 const tinybirdOptions = {
                     dateFrom: options.date_from,
                     dateTo: options.date_to,
-                    timezone: options.timezone,
+                    timezone: timezone,
                     post_type: 'post',
                     limit: limit
                 };
@@ -798,6 +939,9 @@ class PostsStatsService {
             let additionalPosts = [];
             let additionalMemberAttributionCounts = [];
             if (remainingCount > 0) {
+                // Get post IDs that we already have to exclude them
+                const existingPostIds = postsWithViews.map(p => p.post_id);
+                
                 additionalPosts = await this.knex('posts as p')
                     .select(
                         'p.id as post_id',
@@ -810,6 +954,7 @@ class PostsStatsService {
                     )
                     .leftJoin('emails', 'emails.post_id', 'p.id')
                     .whereNotIn('p.uuid', postUuids)
+                    .whereNotIn('p.id', existingPostIds)
                     .where('p.status', 'published')
                     .whereNotNull('p.published_at')
                     .orderBy('p.published_at', 'desc')
@@ -839,10 +984,10 @@ class PostsStatsService {
             });
 
             // Combine both sets of posts
-            return [...postsWithViews, ...additionalPostsWithZeroViews];
+            return {data: [...postsWithViews, ...additionalPostsWithZeroViews]};
         } catch (error) {
             logging.error('Error fetching top posts views:', error);
-            return [];
+            return {data: []};
         }
     }
 
@@ -916,6 +1061,70 @@ class PostsStatsService {
                 free_members: 0,
                 paid_members: 0
             }));
+        }
+    }
+
+    /**
+     * Get member attribution counts for multiple posts
+     * @param {string[]} postIds - Array of post IDs
+     * @param {Object} options - Date filter options
+     * @returns {Promise<Object>} Map of post ID to member counts
+     */
+    async getPostsMemberCounts(postIds, options = {}) {
+        try {
+            const attributionCounts = await this._getMemberAttributionCounts(postIds, options);
+            
+            // Convert array to object mapping post_id -> counts
+            const memberCounts = {};
+            attributionCounts.forEach((count) => {
+                memberCounts[count.post_id] = {
+                    free_members: count.free_members,
+                    paid_members: count.paid_members
+                };
+            });
+            
+            return memberCounts;
+        } catch (error) {
+            logging.error('Error fetching member counts:', error);
+            return {};
+        }
+    }
+
+    /**
+     * Get visitor counts for multiple posts from Tinybird
+     * @param {string[]} postUuids - Array of post UUIDs
+     * @returns {Promise<Object>} Map of post UUID to visitor count
+     */
+    async getPostsVisitorCounts(postUuids) {
+        try {
+            if (!postUuids || !Array.isArray(postUuids) || postUuids.length === 0) {
+                return {};
+            }
+
+            if (!this.tinybirdClient) {
+                // Return empty object if Tinybird is not configured
+                return {};
+            }
+
+            // Fetch visitor counts from Tinybird for all posts
+            const visitorData = await this.tinybirdClient.fetch('api_post_visitor_counts', {
+                post_uuids: postUuids
+            });
+
+            // Convert the response to a simple UUID -> count mapping
+            const visitorCounts = {};
+            if (visitorData && Array.isArray(visitorData)) {
+                visitorData.forEach((row) => {
+                    if (row.post_uuid && row.visits !== undefined) {
+                        visitorCounts[row.post_uuid] = row.visits;
+                    }
+                });
+            }
+
+            return visitorCounts;
+        } catch (error) {
+            logging.error('Error fetching visitor counts from Tinybird:', error);
+            return {};
         }
     }
 }

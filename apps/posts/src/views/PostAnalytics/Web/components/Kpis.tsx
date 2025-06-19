@@ -1,10 +1,8 @@
-import EmptyStatView from '../../components/EmptyStatView';
 import React, {useState} from 'react';
 import {Card, CardContent, GhAreaChart, KpiTabTrigger, KpiTabValue, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, sanitizeChartData} from '@tryghost/shade';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
-import {useQuery} from '@tinybirdco/charts';
+import {useSearchParams} from '@tryghost/admin-x-framework';
 
 export type KpiMetric = {
     dataKey: string;
@@ -41,20 +39,14 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
 };
 
 interface KpisProps {
-    queryParams: Record<string, string | number>
+    data: KpiDataItem[] | null | undefined;
 }
 
-const Kpis:React.FC<KpisProps> = ({queryParams}) => {
-    const {statsConfig, isLoading: isConfigLoading, range} = useGlobalData();
-    const [currentTab, setCurrentTab] = useState('visits');
-
-    const {data, loading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
-        params: queryParams
-    });
-
-    const isLoading = isConfigLoading || loading;
+const Kpis:React.FC<KpisProps> = ({data}) => {
+    const {range} = useGlobalData();
+    const [searchParams] = useSearchParams();
+    const initialTab = searchParams.get('tab') || 'visits';
+    const [currentTab, setCurrentTab] = useState(initialTab);
 
     const currentMetric = KPI_METRICS[currentTab];
 
@@ -71,46 +63,34 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
     const kpiValues = getWebKpiValues(data as unknown as KpiDataItem[] | null);
 
     return (
-        <>
-            {isLoading ? '' :
-                <>
-                    {(data && data.length !== 0 && kpiValues.visits !== '0') ?
-                        <Card>
-                            <CardContent>
-                                <Tabs defaultValue="visits" variant='kpis'>
-                                    <TabsList className="-mx-6 grid grid-cols-2">
-                                        <KpiTabTrigger value="visits" onClick={() => {
-                                            setCurrentTab('visits');
-                                        }}>
-                                            <KpiTabValue color={KPI_METRICS.visits.color} label="Unique visitors" value={kpiValues.visits} />
-                                        </KpiTabTrigger>
-                                        <KpiTabTrigger value="views" onClick={() => {
-                                            setCurrentTab('views');
-                                        }}>
-                                            <KpiTabValue color={KPI_METRICS.views.color} label="Total views" value={kpiValues.views} />
-                                        </KpiTabTrigger>
-                                    </TabsList>
-                                    <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
-                                        <GhAreaChart
-                                            className={'-mb-3 h-[16vw] max-h-[320px] w-full'}
-                                            color={currentMetric.color}
-                                            data={chartData}
-                                            id={currentMetric.dataKey}
-                                            range={range}
-                                            syncId="overview-charts"
-                                        />
-                                    </div>
-                                </Tabs>
-                            </CardContent>
-                        </Card>
-                        :
-                        <div className='mt-10 grow'>
-                            <EmptyStatView />
-                        </div>
-                    }
-                </>
-            }
-        </>
+        <Card>
+            <CardContent>
+                <Tabs defaultValue={currentTab} variant='kpis'>
+                    <TabsList className="-mx-6 grid grid-cols-2">
+                        <KpiTabTrigger value="visits" onClick={() => {
+                            setCurrentTab('visits');
+                        }}>
+                            <KpiTabValue color={KPI_METRICS.visits.color} label="Unique visitors" value={kpiValues.visits} />
+                        </KpiTabTrigger>
+                        <KpiTabTrigger value="views" onClick={() => {
+                            setCurrentTab('views');
+                        }}>
+                            <KpiTabValue color={KPI_METRICS.views.color} label="Total views" value={kpiValues.views} />
+                        </KpiTabTrigger>
+                    </TabsList>
+                    <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
+                        <GhAreaChart
+                            className={'-mb-3 h-[16vw] max-h-[320px] w-full'}
+                            color={currentMetric.color}
+                            data={chartData}
+                            id={currentMetric.dataKey}
+                            range={range}
+                            syncId="overview-charts"
+                        />
+                    </div>
+                </Tabs>
+            </CardContent>
+        </Card>
     );
 };
 

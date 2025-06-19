@@ -1,27 +1,49 @@
 import React, {useRef} from 'react';
-import {Button} from '@tryghost/shade';
+import {Button, LoadingIndicator} from '@tryghost/shade';
 
 interface ShowRepliesButtonProps {
-    count: number;
+    count?: number;
     onClick: () => void;
+    variant?: 'default' | 'expand' | 'loadMore';
+    preserveScroll?: boolean;
+    loading?: boolean;
 }
 
-const ShowRepliesButton: React.FC<ShowRepliesButtonProps> = ({count, onClick}) => {
+const ShowRepliesButton: React.FC<ShowRepliesButtonProps> = ({count, onClick, variant = 'default', preserveScroll = true, loading = false}) => {
     const buttonRef = useRef<HTMLDivElement>(null);
 
+    const getButtonText = () => {
+        if (count && count > 0) {
+            return `Show ${count} more ${count === 1 ? 'reply' : 'replies'}`;
+        }
+
+        switch (variant) {
+        case 'expand':
+            return 'Show replies';
+        case 'loadMore':
+            return 'Show more replies';
+        default:
+            return 'Show replies';
+        }
+    };
+
     const handleClick = () => {
-        const container = document.querySelector('[data-scrollable-container]') as HTMLElement;
-        const scrollTop = container ? container.scrollTop : window.scrollY;
+        if (preserveScroll) {
+            const container = document.querySelector('[data-scrollable-container]') as HTMLElement;
+            const scrollTop = container ? container.scrollTop : window.scrollY;
 
-        onClick();
+            onClick();
 
-        setTimeout(() => {
-            if (container) {
-                container.scrollTop = scrollTop;
-            } else {
-                window.scrollTo(0, scrollTop);
-            }
-        }, 0);
+            setTimeout(() => {
+                if (container) {
+                    container.scrollTop = scrollTop;
+                } else {
+                    window.scrollTo(0, scrollTop);
+                }
+            }, 0);
+        } else {
+            onClick();
+        }
     };
 
     return (
@@ -41,7 +63,14 @@ const ShowRepliesButton: React.FC<ShowRepliesButtonProps> = ({count, onClick}) =
                     handleClick();
                 }}
             >
-                Show {count} more {count === 1 ? 'reply' : 'replies'}
+                {loading ? (
+                    <div className='flex items-center gap-2'>
+                        <LoadingIndicator size='sm' />
+                        <span>Loading...</span>
+                    </div>
+                ) : (
+                    getButtonText()
+                )}
             </Button>
         </div>
     );
