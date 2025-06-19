@@ -893,20 +893,6 @@ jobs:
       - name: Start Ghost
         working-directory: ghost/core
         run: node --import=tsx index.js &
-        env:
-          DEBUG: '*'
-
-      - name: Debug Ghost process
-        run: |
-          sleep 5
-          echo "=== Checking if Ghost process is running ==="
-          ps aux | grep -v grep | grep node || echo "No Node processes found"
-          echo "=== Checking what's listening on ports ==="
-          netstat -tlnp | grep :2368 || echo "Nothing listening on port 2368"
-          netstat -tlnp | grep node || echo "No Node processes listening"
-          echo "=== Checking Ghost logs ==="
-          ls -la ghost/core/content/logs/ || echo "No logs directory"
-          cat ghost/core/content/logs/*.log 2>/dev/null || echo "No log files found"
 
       - name: Wait for Ghost to be ready
         run: |
