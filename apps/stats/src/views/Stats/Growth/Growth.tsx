@@ -8,6 +8,7 @@ import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatNumber} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
+import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
 import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
@@ -43,6 +44,7 @@ const Growth: React.FC = () => {
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS);
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const {appSettings} = useAppContext();
 
     // Get the initial tab from URL search parameters
     const initialTab = searchParams.get('tab') || 'total-members';
@@ -167,20 +169,28 @@ const Growth: React.FC = () => {
                                             </Tabs>
                                         </TableHead>
                                         <TableHead className='w-[140px] text-right'>
-                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='free_members desc'>
+                                            {appSettings?.paidMembersEnabled ?
+                                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='free_members desc'>
                                                 Free members
-                                            </SortButton>
+                                                </SortButton>
+                                                :
+                                                <>Free members</>
+                                            }
                                         </TableHead>
-                                        <TableHead className='w-[140px] text-right'>
-                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='paid_members desc'>
+                                        {appSettings?.paidMembersEnabled &&
+                                        <>
+                                            <TableHead className='w-[140px] text-right'>
+                                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='paid_members desc'>
                                                 Paid members
-                                            </SortButton>
-                                        </TableHead>
-                                        <TableHead className='w-[140px] text-right'>
-                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
+                                                </SortButton>
+                                            </TableHead>
+                                            <TableHead className='w-[140px] text-right'>
+                                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
                                                 MRR impact
-                                            </SortButton>
-                                        </TableHead>
+                                                </SortButton>
+                                            </TableHead>
+                                        </>
+                                        }
                                     </TableRow>
                                 </TableHeader>
                                 {selectedContentType === CONTENT_TYPES.SOURCES ?
@@ -211,12 +221,16 @@ const Growth: React.FC = () => {
                                                 <TableCell className='text-right font-mono text-sm'>
                                                     {(post.free_members > 0 && '+')}{formatNumber(post.free_members)}
                                                 </TableCell>
-                                                <TableCell className='text-right font-mono text-sm'>
-                                                    {(post.paid_members > 0 && '+')}{formatNumber(post.paid_members)}
-                                                </TableCell>
-                                                <TableCell className='text-right font-mono text-sm'>
-                                                    {(post.mrr > 0 && '+')}{currencySymbol}{centsToDollars(post.mrr).toFixed(0)}
-                                                </TableCell>
+                                                {appSettings?.paidMembersEnabled &&
+                                                <>
+                                                    <TableCell className='text-right font-mono text-sm'>
+                                                        {(post.paid_members > 0 && '+')}{formatNumber(post.paid_members)}
+                                                    </TableCell>
+                                                    <TableCell className='text-right font-mono text-sm'>
+                                                        {(post.mrr > 0 && '+')}{currencySymbol}{centsToDollars(post.mrr).toFixed(0)}
+                                                    </TableCell>
+                                                </>
+                                                }
                                             </TableRow>
                                         ))}
                                     </TableBody>
