@@ -38,7 +38,7 @@ function renderHorizontalRuleNode(_, options = {}) {
     const document = options.createDocument();
 
     let renderedHtml;
-    if (options.feature?.emailCustomization && options.target === 'email') {
+    if (options.target === 'email') {
         renderedHtml = horizontalRuleEmailTemplate();
     } else {
         renderedHtml = horizontalRuleFrontendTemplate();
