@@ -892,7 +892,7 @@ jobs:
 
       - name: Start Ghost
         working-directory: ghost/core
-        run: yarn dev &
+        run: node --import=tsx index.js &
 
       - name: Wait for Ghost to be ready
         run: |
