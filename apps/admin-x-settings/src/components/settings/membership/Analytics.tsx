@@ -117,7 +117,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            description='Decide what data you collect from your members'
+            description='Decide what data you collect across your publication'
             isEditing={isEditing}
             keywords={keywords}
             navid='analytics'
