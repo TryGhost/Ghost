@@ -11,11 +11,11 @@ type AppSettingsType = {
 interface AppProps {
     framework: TopLevelFrameworkProps;
     designSystem: ShadeAppProps;
-    appSettings: AppSettingsType;
+    appSettings?: AppSettingsType;
 }
 
 interface AppContextType {
-    appSettings: AppSettingsType;
+    appSettings?: AppSettingsType;
     externalNavigate: (url: string) => void;
 }
 

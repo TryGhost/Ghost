@@ -11,12 +11,12 @@ interface AppProps {
     framework: TopLevelFrameworkProps;
     designSystem: ShadeAppProps;
     fromAnalytics?: boolean;
-    appSettings: AppSettingsType;
+    appSettings?: AppSettingsType;
 }
 
 interface AppContextType {
     fromAnalytics: boolean;
-    appSettings: AppSettingsType;
+    appSettings?: AppSettingsType;
     externalNavigate: (url: string) => void;
 }
 
