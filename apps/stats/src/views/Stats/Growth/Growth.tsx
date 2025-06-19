@@ -34,6 +34,7 @@ interface UnifiedGrowthContentData {
     paid_members: number;
     mrr: number;
     percentage?: number;
+    published_at: string;
 }
 
 type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
@@ -84,7 +85,8 @@ const Growth: React.FC = () => {
                 free_members: item.free_members,
                 paid_members: item.paid_members,
                 mrr: item.mrr,
-                percentage
+                percentage,
+                published_at: item.published_at
             };
         });
     }, [topPostsData, sortBy]);
