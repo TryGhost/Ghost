@@ -109,9 +109,6 @@ class PostsStatsService {
                 query = query.where('p.type', options.post_type);
             }
 
-            // Apply date filters to posts' published_at date
-            this._applyDateFilter(query, options, 'p.published_at');
-
             const results = await query
                 .orderBy(orderField, orderDirection)
                 .limit(limit);
@@ -119,7 +116,7 @@ class PostsStatsService {
             // Filter out posts with zero attribution across all metrics
             const filteredResults = results.filter(post => post.free_members > 0 || post.paid_members > 0 || post.mrr > 0
             ).slice(0, limit);
-
+            
             return {data: filteredResults};
         } catch (error) {
             logging.error('Error fetching top posts by attribution:', error);
