@@ -89,7 +89,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                                     siteIcon={siteIcon}
                                     siteUrl={siteUrl}
                                     tableOnly={true}
-                                    topSourcesLimit={3}
+                                    topSourcesLimit={10}
                                     totalVisitors={totalSourcesVisits}
                                 />
                                 :
