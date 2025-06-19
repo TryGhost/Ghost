@@ -17,6 +17,7 @@ interface AppProps {
 vi.mock('@tryghost/admin-x-framework', () => ({
     FrameworkProvider: ({children}: {children: React.ReactNode}) => <div data-testid="framework-provider">{children}</div>,
     RouterProvider: ({children}: {children: React.ReactNode}) => <div data-testid="router-provider">{children}</div>,
+    AppProvider: ({children}: {children: React.ReactNode}) => <div data-testid="app-provider">{children}</div>,
     Outlet: () => <div data-testid="outlet">Outlet content</div>
 }));
 
@@ -44,6 +45,7 @@ describe('App Component', function () {
     
         // Verify the component tree renders
         expect(screen.getByTestId('framework-provider')).toBeInTheDocument();
+        expect(screen.getByTestId('app-provider')).toBeInTheDocument();
         expect(screen.getByTestId('router-provider')).toBeInTheDocument();
         expect(screen.getByTestId('global-data-provider')).toBeInTheDocument();
         expect(screen.getByTestId('shade-app')).toBeInTheDocument();

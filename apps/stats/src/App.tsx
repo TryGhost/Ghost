@@ -1,42 +1,11 @@
 import GlobalDataProvider from './providers/GlobalDataProvider';
 import {APP_ROUTE_PREFIX, routes} from '@src/routes';
-import {FrameworkProvider, Outlet, RouterProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
-import {ShadeApp, ShadeAppProps} from '@tryghost/shade';
-import {createContext, useContext} from 'react';
+import {AppProvider, BaseAppProps, FrameworkProvider, Outlet, RouterProvider} from '@tryghost/admin-x-framework';
+import {ShadeApp} from '@tryghost/shade';
 
-type AppSettingsType = {
-    paidMembersEnabled: boolean;
-}
+export {useAppContext} from '@tryghost/admin-x-framework';
 
-interface AppProps {
-    framework: TopLevelFrameworkProps;
-    designSystem: ShadeAppProps;
-    appSettings?: AppSettingsType;
-}
-
-interface AppContextType {
-    appSettings?: AppSettingsType;
-    externalNavigate: (url: string) => void;
-}
-
-const AppContext = createContext<AppContextType | undefined>(undefined);
-
-export const useAppContext = () => {
-    const context = useContext(AppContext);
-    if (context === undefined) {
-        throw new Error('useAppContext must be used within an AppProvider');
-    }
-    return context;
-};
-
-const App: React.FC<AppProps> = ({framework, designSystem, appSettings}) => {
-    const appContextValue: AppContextType = {
-        appSettings,
-        externalNavigate: (url: string) => {
-            window.location.href = url;
-        }
-    };
-
+const App: React.FC<BaseAppProps> = ({framework, designSystem, appSettings}) => {
     return (
         <FrameworkProvider
             {...framework}
@@ -46,7 +15,7 @@ const App: React.FC<AppProps> = ({framework, designSystem, appSettings}) => {
                 refetchOnWindowFocus: false // Disable window focus refetch (Ember admin doesn't have this)
             }}
         >
-            <AppContext.Provider value={appContextValue}>
+            <AppProvider appSettings={appSettings}>
                 <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
                     <GlobalDataProvider>
                         <ShadeApp darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
@@ -54,7 +23,7 @@ const App: React.FC<AppProps> = ({framework, designSystem, appSettings}) => {
                         </ShadeApp>
                     </GlobalDataProvider>
                 </RouterProvider>
-            </AppContext.Provider>
+            </AppProvider>
         </FrameworkProvider>
     );
 };

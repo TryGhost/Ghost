@@ -60,6 +60,7 @@ export default Model.extend(ValidationEngine, {
     emailTrackClicks: attr('boolean'),
     outboundLinkTagging: attr('boolean'),
     membersTrackSources: attr('boolean'),
+    webAnalytics: attr('boolean'),
     /**
      * Members settings
      */

@@ -1,5 +1,6 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
+import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {Button, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues, isSettingReadOnly} from '@tryghost/admin-x-framework/api/settings';
@@ -16,10 +17,11 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleEditingChange
     } = useSettingGroup();
 
-    const [trackEmailOpens, trackEmailClicks, trackMemberSources, outboundLinkTagging] = getSettingValues(localSettings, [
-        'email_track_opens', 'email_track_clicks', 'members_track_sources', 'outbound_link_tagging'
+    const [trackEmailOpens, trackEmailClicks, trackMemberSources, outboundLinkTagging, webAnalytics] = getSettingValues(localSettings, [
+        'email_track_opens', 'email_track_clicks', 'members_track_sources', 'outbound_link_tagging', 'web_analytics'
     ]) as boolean[];
 
+    const hasTrafficAnalytics = useFeatureFlag('trafficAnalytics');
     const isEmailTrackClicksReadOnly = isSettingReadOnly(localSettings, 'email_track_clicks');
 
     const handleToggleChange = (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,6 +53,21 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const inputs = (
         <SettingGroupContent className="analytics-settings !gap-y-0" columns={1}>
+            {hasTrafficAnalytics && (
+                <>
+                    <Toggle
+                        checked={webAnalytics}
+                        direction='rtl'
+                        gap='gap-0'
+                        label='Web analytics'
+                        labelClasses='py-4 w-full'
+                        onChange={(e) => {
+                            handleToggleChange('web_analytics', e);
+                        }}
+                    />
+                    <Separator className="border-grey-200 dark:border-grey-900" />
+                </>
+            )}
             <Toggle
                 checked={trackEmailOpens}
                 direction='rtl'
@@ -100,7 +117,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            description='Decide what data you collect from your members'
+            description='Decide what data you collect across your publication'
             isEditing={isEditing}
             keywords={keywords}
             navid='analytics'
