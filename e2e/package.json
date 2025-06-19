@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/e-2-e",
   "version": "0.0.0",
-  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/e2e",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/e2e",
   "author": "Ghost Foundation",
   "private": true,
   "main": "build/index.js",
