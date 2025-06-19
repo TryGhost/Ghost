@@ -913,7 +913,6 @@ jobs:
           timeout 60 bash -c 'until curl -f http://localhost:2369; do sleep 1; done'
 
       - name: Run E2E tests
-        working-directory: e2e
         run: yarn test:e2e
         env:
           GHOST_BASE_URL: http://localhost:2369
