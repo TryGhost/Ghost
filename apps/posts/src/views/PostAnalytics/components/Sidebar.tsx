@@ -1,45 +1,13 @@
 import React from 'react';
 import {LucideIcon, RightSidebarMenu, RightSidebarMenuLink} from '@tryghost/shade';
-// import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
-// import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
-import {useLocation, useNavigate, useParams} from '@tryghost/admin-x-framework';
-
-// Extended Email type to include status field
-interface ExtendedEmail {
-    opened_count: number;
-    email_count: number;
-    status?: string;
-}
-
-// Extended Post type with the ExtendedEmail and additional fields
-interface PostWithEmail extends Post {
-    email?: ExtendedEmail;
-    newsletter_id?: string;
-    newsletter?: object;
-    status?: string;
-    email_only?: boolean;
-    email_segment?: string;
-    email_recipient_filter?: string;
-    send_email_when_published?: boolean;
-    email_stats?: object;
-}
+import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
+import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
 
 const Sidebar:React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const {postId} = useParams();
-    // const {settings} = useGlobalData();
-    // const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
-
-    const {data: {posts: [post]} = {posts: []}} = useBrowsePosts({
-        searchParams: {
-            filter: `id:${postId}`,
-            fields: 'email,status,email_only,email_segment,newsletter,newsletter_id'
-        }
-    });
-
-    const typedPost = post as PostWithEmail;
+    const {post, postId} = useGlobalData();
+    const typedPost = post as Post;
     
     // In the Ember app, a post has been emailed if:
     // 1. It has an email object with non-failed status, or

@@ -1,19 +1,11 @@
 import React, {useState} from 'react';
 import moment from 'moment-timezone';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, PostShareModal, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
-import {Post, useBrowsePosts, useDeletePost} from '@tryghost/admin-x-framework/api/posts';
-import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
+import {hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '../../../App';
-import {useGlobalData} from '@src/providers/PostAnalyticsContext';
+import {useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-
-interface ExtendedPost extends Post {
-    published_at?: string;
-    excerpt?: string;
-    authors?: {
-        name: string;
-    }[];
-}
 
 interface PostAnalyticsHeaderProps {
     currentTab?: string;
@@ -24,7 +16,6 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     currentTab,
     children
 }) => {
-    const {postId} = useParams();
     const navigate = useNavigate();
     const {fromAnalytics} = useAppContext();
     const {mutateAsync: deletePost} = useDeletePost();
@@ -33,14 +24,9 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const [isShareOpen, setIsShareOpen] = useState(false);
     const {site} = useGlobalData();
 
-    const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
-        searchParams: {
-            filter: `id:${postId}`,
-            include: 'email,authors'
-        }
-    });
-
-    const typedPost = post as ExtendedPost;
+    // Use shared post data from context
+    const {post, isPostLoading, postId} = useGlobalData();
+    const typedPost = post as Post;
     // Use the utility function from admin-x-framework
     const showNewsletterTab = hasBeenEmailed(typedPost);
 
@@ -54,8 +40,11 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     };
 
     const performDelete = async () => {
+        if (!post) {
+            return;
+        }
         try {
-            await deletePost(postId as string);
+            await deletePost(postId);
             setShowDeleteDialog(false);
             // Navigate back to posts list
             navigate('/posts/', {crossApp: true});
@@ -119,7 +108,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                         <DropdownMenuContent align='end'>
                                             <DropdownMenuGroup>
                                                 <DropdownMenuItem asChild>
-                                                    <a href={post.url} rel="noopener noreferrer" target="_blank">
+                                                    <a href={post?.url} rel="noopener noreferrer" target="_blank">
                                                         <LucideIcon.ExternalLink />
                                                     View in browser
                                                     </a>

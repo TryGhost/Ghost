@@ -5,9 +5,9 @@ import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, HTable, Input, LucideIcon, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
 import {NewsletterRadialChart, NewsletterRadialChartData} from './components/NewsLetterRadialChart';
-import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
+import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {getLinkById} from '@src/utils/link-helpers';
-import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
@@ -62,7 +62,6 @@ const BlockTooltip:React.FC<BlockTooltipProps> = ({
 };
 
 const Newsletter: React.FC<postAnalyticsProps> = () => {
-    const {postId} = useParams();
     const navigate = useNavigate();
     const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
     const [editedUrl, setEditedUrl] = useState('');
@@ -70,13 +69,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const ITEMS_PER_PAGE = 5;
 
-    const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
-        searchParams: {
-            filter: `id:${postId}`,
-            include: 'email,count.positive_feedback,count.negative_feedback'
-        }
-    });
-
+    // Use shared post data from context
+    const {post, isPostLoading, postId} = useGlobalData();
     const typedPost = post as Post;
     // Use the utility function from admin-x-framework
     const showNewsletterSection = hasBeenEmailed(typedPost);
@@ -88,7 +82,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         }
     }, [navigate, postId, isPostLoading, showNewsletterSection]);
 
-    const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId || '');
+    const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId);
     const {editLinks} = useEditLinks();
 
     // Calculate feedback stats from the post data
@@ -110,6 +104,11 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
             negativeFeedback,
             totalFeedback
         };
+    }, [typedPost]);
+
+    // Check if feedback is enabled for the newsletter
+    const isFeedbackEnabled = useMemo(() => {
+        return typedPost?.newsletter?.feedback_enabled === true;
     }, [typedPost]);
 
     const handleEdit = (linkId: string) => {
@@ -137,7 +136,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         editLinks({
             originalUrl: link.link.originalTo,
             editedUrl: editedUrl,
-            postId: postId || ''
+            postId: postId
         }, {
             onSuccess: () => {
                 setEditingLinkId(null);
@@ -241,8 +240,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
             <PostAnalyticsHeader currentTab='Newsletter' />
             <PostAnalyticsContent>
 
-                <div className='grid grid-cols-2 gap-8'>
-                    <Card className='col-span-2'>
+                <div className={`grid gap-8 ${isFeedbackEnabled ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                    <Card className={isFeedbackEnabled ? 'col-span-2' : 'col-span-1'}>
                         <CardHeader className='hidden'>
                             <CardTitle>Newsletters</CardTitle>
                             <CardDescription>How did this post perform</CardDescription>
@@ -334,8 +333,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             </CardContent>
                         }
                     </Card>
-                    <Feedback feedbackStats={feedbackStats} />
-                    <Card>
+                    {isFeedbackEnabled && <Feedback feedbackStats={feedbackStats} />}
+                    <Card className={isFeedbackEnabled ? '' : 'col-span-1'}>
                         <div className='flex items-center justify-between p-6'>
                             <CardHeader className='p-0'>
                                 <CardTitle>Newsletter clicks</CardTitle>
