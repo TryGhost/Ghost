@@ -1,5 +1,5 @@
 import AnalyticsPage from './AnalyticsPage.ts';
-import { Page } from '@playwright/test';
+import {Page} from '@playwright/test';
 
 class LocationsPage extends AnalyticsPage {
     constructor(page: Page) {

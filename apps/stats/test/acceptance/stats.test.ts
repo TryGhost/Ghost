@@ -1,7 +1,7 @@
 import OverviewPage from './pages/OverviewPage.ts';
 import {
     createMockRequests,
-    mockApi,
+    mockApi
 } from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
 
@@ -20,7 +20,7 @@ test.describe('Stats App', () => {
         const overviewPage = new OverviewPage(page);
         await overviewPage.visit();
 
-        await expect(page.locator('body')).toContainText(/Unexpected Application Error/);
+        await expect(overviewPage.body).toContainText(/Unexpected Application Error/);
     });
 
     test('loads with custom mocked data', async ({page}) => {
@@ -42,7 +42,7 @@ test.describe('Stats App', () => {
         const overviewPage = new OverviewPage(page);
         await overviewPage.visit();
 
-        await expect(page.locator('body')).toContainText('155');
-        await expect(page.locator('body')).toContainText('$550');
+        await expect(overviewPage.body).toContainText('155');
+        await expect(overviewPage.body).toContainText('$550');
     });
 });

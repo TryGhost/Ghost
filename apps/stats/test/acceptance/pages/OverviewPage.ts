@@ -1,9 +1,9 @@
 import AnalyticsPage from './AnalyticsPage.ts';
-import {Page} from '@playwright/test';
+import {Page, Locator} from '@playwright/test';
 
 class OverviewPage extends AnalyticsPage {
-    public readonly header;
-    public readonly body;
+    public readonly header: Locator;
+    public readonly body: Locator;
 
     constructor(page: Page) {
         super(page);
