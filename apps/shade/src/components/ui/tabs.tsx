@@ -199,10 +199,10 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
     const IconComponent = iconName ? LucideIcons[iconName] as LucideIcon : null;
 
     const diffContainerClassName = cn(
-        'hidden xl:!flex xl:!visible items-center gap-1 text-xs -mb-1 h-[18px]',
-        diffDirection === 'up' && 'text-green-600',
-        diffDirection === 'down' && 'text-red-600',
-        diffDirection === 'same' && 'text-gray-700'
+        'hidden xl:!flex xl:!visible items-center gap-1 text-xs h-[22px] px-1.5 rounded-sm group/diff cursor-default mt-0.5',
+        diffDirection === 'up' && 'text-green-600 bg-green/10',
+        diffDirection === 'down' && 'text-red-600 bg-red/10',
+        diffDirection === 'same' && 'text-gray-700 bg-muted'
     );
     return (
         <div className={cn('group flex w-full flex-col items-start gap-2', className)}>
@@ -211,20 +211,20 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
                 {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
                 {label}
             </div>
-            <div className='flex flex-col items-start gap-1'>
+            <div className='flex items-start gap-3'>
                 <div className='text-[2.3rem] font-semibold leading-none tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>
                     {value}
                 </div>
                 {diffDirection && diffDirection !== 'hidden' &&
                     <>
                         <div className={diffContainerClassName}>
+                            <span className='font-medium leading-none'>{diffValue}</span>
                             {diffDirection === 'up' &&
                                 <TrendingUp className='!size-[12px]' size={14} strokeWidth={2} />
                             }
                             {diffDirection === 'down' &&
                                 <TrendingDown className='!size-[12px]' size={14} strokeWidth={2} />
                             }
-                            <span className='font-medium leading-none'>{diffValue}</span>
                         </div>
                     </>
                 }
