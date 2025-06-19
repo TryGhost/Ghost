@@ -846,6 +846,8 @@ jobs:
       NODE_ENV: testing-mysql
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
