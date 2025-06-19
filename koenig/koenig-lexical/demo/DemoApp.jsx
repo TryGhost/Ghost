@@ -23,7 +23,6 @@ import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fetchEmbed} from './utils/fetchEmbed';
 import {fileTypes, useFileUpload} from './utils/useFileUpload';
 import {tenorConfig} from './utils/tenorConfig';
-import {useCollections} from './utils/useCollections';
 import {useLocation, useSearchParams} from 'react-router-dom';
 import {useSnippets} from './utils/useSnippets';
 
@@ -60,8 +59,6 @@ const defaultCardConfig = {
     membersEnabled: true,
     stripeEnabled: true,
     feature: {
-        collections: true,
-        collectionsCard: true,
         contentVisibility: false,
         contentVisibilityAlpha: false
     },
@@ -174,7 +171,6 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sidebarView, setSidebarView] = useState('json');
     const {snippets, createSnippet, deleteSnippet} = useSnippets();
-    const {collections, fetchCollectionPosts} = useCollections();
 
     const skipFocusEditor = React.useRef(false);
 
@@ -315,8 +311,6 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
         snippets,
         createSnippet,
         deleteSnippet,
-        collections,
-        fetchCollectionPosts,
         feature: {
             ...defaultCardConfig.feature,
             contentVisibility: searchParams.get('labs')?.includes('contentVisibility') || defaultCardConfig.feature.contentVisibility,

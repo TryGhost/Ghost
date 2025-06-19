@@ -11,7 +11,6 @@ import AudioPlugin from './plugins/AudioPlugin';
 import CallToActionPlugin from './plugins/CallToActionPlugin';
 import CalloutPlugin from './plugins/CalloutPlugin';
 import CardMenuPlugin from './plugins/CardMenuPlugin';
-import CollectionPlugin from './plugins/CollectionPlugin';
 import DragDropPastePlugin from './plugins/DragDropPastePlugin';
 import DragDropReorderPlugin from './plugins/DragDropReorderPlugin';
 import EmojiPickerPlugin from './plugins/EmojiPickerPlugin';
@@ -68,7 +67,6 @@ export {
     CalloutPlugin,
     CallToActionPlugin,
     CardMenuPlugin,
-    CollectionPlugin,
     DragDropPastePlugin,
     DragDropReorderPlugin,
     EmojiPickerPlugin,

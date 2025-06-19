@@ -18,7 +18,6 @@ import {ButtonNode} from './ButtonNode';
 import {CallToActionNode} from './CallToActionNode';
 import {CalloutNode} from './CalloutNode';
 import {CodeBlockNode} from './CodeBlockNode';
-import {CollectionNode} from './CollectionNode';
 import {EmailCtaNode} from './EmailCtaNode';
 import {EmailNode} from './EmailNode';
 import {EmbedNode} from './EmbedNode';
@@ -72,7 +71,6 @@ const DEFAULT_NODES = [
     EmbedNode,
     GalleryNode,
     SignupNode,
-    CollectionNode,
     TKNode,
     AtLinkNode,
     AtLinkSearchNode,
