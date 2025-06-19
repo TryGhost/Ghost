@@ -274,7 +274,7 @@ class CommentsService {
      * @param {string} member - The ID of the Member to comment as
      * @param {string} comment - The HTML content of the Comment
      * @param {any} options
-     * @param {Date} createdAt - Optional custom created_at timestamp
+     * @param {Date} [createdAt] - Optional custom created_at timestamp
      */
     async replyToComment(parent, inReplyTo, member, comment, options, createdAt) {
         this.checkEnabled();
