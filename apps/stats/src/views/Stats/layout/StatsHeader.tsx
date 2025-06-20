@@ -25,7 +25,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                         Analytics
                     </H1>
                     {appSettings?.analytics.webAnalytics && (
-                        <div className='flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400'>
+                        <div className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400'>
                             {site?.url && (
                                 <div className='flex items-center gap-2'>
                                     {site.icon ? (
@@ -47,6 +47,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                                     >
                                         <LucideIcon.ExternalLink size={10} strokeWidth={1.5} />
                                     </a>
+                                    <span className='text-gray-400 dark:text-gray-500'>|</span>
                                 </div>
                             )}
                             <div 
