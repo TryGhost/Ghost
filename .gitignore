@@ -161,6 +161,7 @@ Caddyfile
 # Build files
 /apps/*/build
 /ghost/*/build
+/e2e/build
 
 # Typescript build artifacts
 tsconfig.tsbuildinfo
@@ -190,3 +191,6 @@ yalc.lock
 # A folder for AI generated files
 # useful for keeping local plans etc
 /ai
+
+# e2e test suite
+/e2e/test-results
