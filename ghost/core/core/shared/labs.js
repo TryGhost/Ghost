@@ -26,8 +26,7 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'announcementBar',
     'customFonts',
-    'contentVisibility',
-    'emailCustomization'
+    'contentVisibility'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -52,7 +51,8 @@ const PRIVATE_FEATURES = [
     'trafficAnalyticsAlpha',
     'updatedMainNav',
     'contentVisibilityAlpha',
-    'explore'
+    'explore',
+    'emailCustomization'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

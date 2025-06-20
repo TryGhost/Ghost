@@ -93,7 +93,7 @@ module.exports = {
             },
             feature: {
                 contentVisibility: labs.isSet('contentVisibility'),
-                emailCustomization: labs.isSet('emailCustomization')
+                emailCustomization: true // force on until Koenig has been bumped
             },
             nodeRenderers: this.customNodeRenderers
         }, userOptions);
