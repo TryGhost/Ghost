@@ -7,6 +7,7 @@ export default class GhMigrateIframe extends Component {
     @service router;
     @service feature;
     @service notifications;
+    @service billing;
 
     willDestroy() {
         super.willDestroy(...arguments);
@@ -56,7 +57,7 @@ export default class GhMigrateIframe extends Component {
 
     async _handleUrlRequest() {
         const theToken = await this.migrate.apiToken();
-        const theOwner = await this.migrate.ownerUser();
+        const theOwner = await this.billing.getOwnerUser();
 
         this.migrate.getMigrateIframe().contentWindow.postMessage({
             request: 'initialData',

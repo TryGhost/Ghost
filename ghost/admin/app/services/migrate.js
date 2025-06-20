@@ -10,7 +10,8 @@ export default class MigrateService extends Service {
     @service settings;
     @service store;
 
-    migrateUrl = 'https://migrate.ghost.org';
+    // migrateUrl = 'https://migrate.ghost.org';
+    migrateUrl = 'http://localhost:3010';
     migrateRouteRoot = '#/migrate';
 
     @tracked migrateWindowOpen = false;
@@ -62,19 +63,6 @@ export default class MigrateService extends Service {
         }).catch((error) => {
             throw error;
         });
-    }
-
-    async ownerUser() {
-        // Try to receive the owner user from the store
-        let user = this.store.peekAll('user').findBy('isOwnerOnly', true);
-
-        if (!user) {
-            // load it when it's not there yet
-            await this.store.findAll('user', {reload: true});
-            user = this.store.peekAll('user').findBy('isOwnerOnly', true);
-        }
-
-        return user;
     }
 
     get isStripeConnected() {
