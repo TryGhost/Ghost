@@ -1,6 +1,6 @@
 import React from 'react';
-import {H1, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
-// import {useFeatureFlag} from '@src/hooks/useFeatureFlag';
+import {H1, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger, formatNumber} from '@tryghost/shade';
+import {useActiveVisitors} from '@src/hooks/useActiveVisitors';
 import {useAppContext, useLocation, useNavigate} from '@tryghost/admin-x-framework';
 
 interface StatsHeaderProps {
@@ -13,7 +13,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
     const navigate = useNavigate();
     const location = useLocation();
     const {appSettings} = useAppContext();
-    // const alphaFlag = useFeatureFlag('trafficAnalyticsAlpha', '/');
+    const {activeVisitors, isLoading: isActiveVisitorsLoading} = useActiveVisitors();
 
     return (
         <>
@@ -22,6 +22,15 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                     <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
                         Analytics
                     </H1>
+                    <div 
+                        className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400' 
+                        title='Active visitors in the last 5 minutes · Updates every 60 seconds'
+                    >
+                        <div className={`size-2 rounded-full ${isActiveVisitorsLoading ? 'animate-pulse bg-gray-400' : 'bg-green-500'}`}></div>
+                        <span>
+                            {isActiveVisitorsLoading ? '—' : formatNumber(activeVisitors)} online
+                        </span>
+                    </div>
                 </div>
             </header>
             <Navbar className='sticky top-0 z-40 items-center border-none bg-white/70 py-8 backdrop-blur-md dark:bg-black'>
@@ -64,47 +73,6 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                     {children}
                 </NavbarActions>
             </Navbar>
-            {/* <header className='z-50 -mx-8'>
-                <div className='flex w-full flex-col items-stretch gap-8 p-8'>
-                    <H1 className='mt-1'>Stats</H1>
-                    <Navbar className='sticky top-0 border-none bg-white/70 pt-0.5 backdrop-blur-md dark:bg-black'>
-                        <Tabs className="w-full" defaultValue={location.pathname} variant='pill'>
-                            <TabsList>
-                                {alphaFlag.isEnabled &&
-                                <TabsTrigger value="/overview/" onClick={() => {
-                                    navigate('/overview/');
-                                }}>
-                                    Overview
-                                </TabsTrigger>
-                                }
-                                <TabsTrigger value="/" onClick={() => {
-                                    navigate('/');
-                                }}>
-                                Web traffic
-                                </TabsTrigger>
-                                <TabsTrigger value="/newsletters/" onClick={() => {
-                                    navigate('/newsletters/');
-                                }}>
-                                Newsletters
-                                </TabsTrigger>
-                                <TabsTrigger value="/growth/" onClick={() => {
-                                    navigate('/growth/');
-                                }}>
-                                Growth
-                                </TabsTrigger>
-                                <TabsTrigger value="/locations/" onClick={() => {
-                                    navigate('/locations/');
-                                }}>
-                                Locations
-                                </TabsTrigger>
-                            </TabsList>
-                        </Tabs>
-                        <NavbarActions>
-                            {children}
-                        </NavbarActions>
-                    </Navbar>
-                </div>
-            </header> */}
         </>
     );
 };
