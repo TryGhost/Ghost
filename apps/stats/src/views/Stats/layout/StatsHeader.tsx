@@ -1,7 +1,6 @@
 import React from 'react';
 import {H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger, formatNumber} from '@tryghost/shade';
-import {useActiveVisitors} from '@src/hooks/useActiveVisitors';
-import {useAppContext, useLocation, useNavigate} from '@tryghost/admin-x-framework';
+import {useActiveVisitors, useAppContext, useLocation, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
 interface StatsHeaderProps {
@@ -14,8 +13,10 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
     const navigate = useNavigate();
     const location = useLocation();
     const {appSettings} = useAppContext();
-    const {site} = useGlobalData();
-    const {activeVisitors, isLoading: isActiveVisitorsLoading} = useActiveVisitors(appSettings?.analytics.webAnalytics);
+    const {site, statsConfig} = useGlobalData();
+    const {activeVisitors, isLoading: isActiveVisitorsLoading} = useActiveVisitors({
+        statsConfig
+    });
 
     return (
         <>
