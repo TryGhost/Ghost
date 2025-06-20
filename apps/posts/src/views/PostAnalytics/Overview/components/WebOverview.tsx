@@ -32,7 +32,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
 
     return (
         <>
-            <Card className='group/datalist'>
+            <Card className={`group/datalist ${fullWidth && 'col-span-2'}`}>
                 <div className='relative flex items-center justify-between gap-6'>
                     <CardHeader>
                         <CardTitle className='flex items-center gap-1.5 text-lg'>
@@ -89,7 +89,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                                     siteIcon={siteIcon}
                                     siteUrl={siteUrl}
                                     tableOnly={true}
-                                    topSourcesLimit={3}
+                                    topSourcesLimit={10}
                                     totalVisitors={totalSourcesVisits}
                                 />
                                 :

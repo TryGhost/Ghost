@@ -6,28 +6,21 @@ import WebOverview from './components/WebOverview';
 import {Button, Card, CardContent, CardHeader, CardTitle, LucideIcon, Skeleton, formatNumber, formatQueryDate, getRangeDates, getRangeForStartDate, sanitizeChartData} from '@tryghost/shade';
 import {KPI_METRICS} from '../Web/components/Kpis';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
-import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
+import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars} from '../Growth/Growth';
-import {getStatEndpointUrl, getToken, hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@src/providers/PostAnalyticsContext';
+import {getStatEndpointUrl, getToken, hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
+import {useAppContext} from '@src/App';
 import {useMemo} from 'react';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
 import {useQuery} from '@tinybirdco/charts';
 
 const Overview: React.FC = () => {
-    const {postId} = useParams();
     const navigate = useNavigate();
-    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    const {totals, isLoading: isTotalsLoading, currencySymbol} = usePostReferrers(postId || '');
+    const {statsConfig, isLoading: isConfigLoading, post, isPostLoading, postId} = useGlobalData();
+    const {totals, isLoading: isTotalsLoading, currencySymbol} = usePostReferrers(postId);
     const {startDate, endDate, timezone} = getRangeDates(STATS_RANGES.ALL_TIME.value);
-
-    const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
-        searchParams: {
-            filter: `id:${postId}`,
-            include: 'email,authors,tags,tiers,count.clicks,count.signups,count.paid_conversions'
-        }
-    });
+    const {appSettings} = useAppContext();
 
     // Calculate chart range based on days between today and post publication date
     const chartRange = useMemo(() => {
@@ -115,10 +108,10 @@ const Overview: React.FC = () => {
 
     const kpiIsLoading = isConfigLoading || isTotalsLoading || isPostLoading || tbLoading;
     const chartIsLoading = isPostLoading || isConfigLoading || chartLoading;
-    const typedPost = post as Post;
 
     // Use the utility function from admin-x-framework
-    const showNewsletterSection = hasBeenEmailed(typedPost);
+    const showNewsletterSection = hasBeenEmailed(post as Post);
+    const showWebSection = !post?.email_only;
 
     return (
         <>
@@ -132,69 +125,75 @@ const Overview: React.FC = () => {
                 </div>
             </PostAnalyticsHeader>
             <PostAnalyticsContent>
-                <div className={showNewsletterSection ? 'grid grid-cols-2 gap-8' : ''}>
-                    <WebOverview
-                        chartData={processedChartData}
-                        fullWidth={!showNewsletterSection}
-                        isLoading={chartIsLoading || kpiIsLoading || isSourcesLoading}
-                        range={chartRange}
-                        sourcesData={sourcesData}
-                        visitors={kpiValues.visits}
-                    />
-                    {showNewsletterSection && (
-                        <NewsletterOverview isNewsletterStatsLoading={isPostLoading} post={typedPost} />
+                <div className='grid grid-cols-2 gap-8'>
+                    {showWebSection && (
+                        <WebOverview
+                            chartData={processedChartData}
+                            fullWidth={!showNewsletterSection}
+                            isLoading={chartIsLoading || kpiIsLoading || isSourcesLoading}
+                            range={chartRange}
+                            sourcesData={sourcesData}
+                            visitors={kpiValues.visits}
+                        />
                     )}
-                </div>
-                <Card className='group overflow-hidden p-0'>
-                    <div className='relative flex items-center justify-between gap-6'>
-                        <CardHeader>
-                            <CardTitle className='flex items-center gap-1.5 text-lg'>
-                                <LucideIcon.Sprout size={16} strokeWidth={1.5} />
+                    {showNewsletterSection && (
+                        <NewsletterOverview isNewsletterStatsLoading={isPostLoading} post={post as Post} />
+                    )}
+                    <Card className='group col-span-2 overflow-hidden p-0'>
+                        <div className='relative flex items-center justify-between gap-6'>
+                            <CardHeader>
+                                <CardTitle className='flex items-center gap-1.5 text-lg'>
+                                    <LucideIcon.Sprout size={16} strokeWidth={1.5} />
                                 Growth
-                            </CardTitle>
-                        </CardHeader>
-                        <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={() => {
-                            navigate(`/analytics/beta/${postId}/growth`);
-                        }}>View more</Button>
-                    </div>
-                    <CardContent className='grid grid-cols-3 items-stretch px-0'>
-                        {kpiIsLoading ?
-                            Array.from({length: 3}, (_, i) => (
-                                <div key={i} className='h-[98px] gap-1 border-r px-6 py-5 last:border-r-0'>
-                                    <Skeleton className='w-2/3' />
-                                    <Skeleton className='h-7 w-12' />
-                                </div>
-                            ))
-                            :
-                            <>
-                                <KpiCard className='grow py-0'>
-                                    <KpiCardLabel>
+                                </CardTitle>
+                            </CardHeader>
+                            <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={() => {
+                                navigate(`/analytics/beta/${postId}/growth`);
+                            }}>View more</Button>
+                        </div>
+                        <CardContent className='grid grid-cols-3 items-stretch px-0'>
+                            {kpiIsLoading ?
+                                Array.from({length: 3}, (_, i) => (
+                                    <div key={i} className='h-[98px] gap-1 border-r px-6 py-5 last:border-r-0'>
+                                        <Skeleton className='w-2/3' />
+                                        <Skeleton className='h-7 w-12' />
+                                    </div>
+                                ))
+                                :
+                                <>
+                                    <KpiCard className='grow gap-1 py-0'>
+                                        <KpiCardLabel>
                                         Free members
-                                    </KpiCardLabel>
-                                    <KpiCardContent>
-                                        <KpiCardValue className='text-[2.2rem]'>{formatNumber((totals?.free_members || 0))}</KpiCardValue>
-                                    </KpiCardContent>
-                                </KpiCard>
-                                <KpiCard className='grow py-0'>
-                                    <KpiCardLabel>
+                                        </KpiCardLabel>
+                                        <KpiCardContent>
+                                            <KpiCardValue className='text-[2.2rem]'>{formatNumber((totals?.free_members || 0))}</KpiCardValue>
+                                        </KpiCardContent>
+                                    </KpiCard>
+                                    {appSettings?.paidMembersEnabled &&
+                                <>
+                                    <KpiCard className='grow gap-1 py-0'>
+                                        <KpiCardLabel>
                                         Paid members
-                                    </KpiCardLabel>
-                                    <KpiCardContent>
-                                        <KpiCardValue className='text-[2.2rem]'>{formatNumber((totals?.paid_members || 0))}</KpiCardValue>
-                                    </KpiCardContent>
-                                </KpiCard>
-                                <KpiCard className='grow py-0'>
-                                    <KpiCardLabel>
+                                        </KpiCardLabel>
+                                        <KpiCardContent>
+                                            <KpiCardValue className='text-[2.2rem]'>{formatNumber((totals?.paid_members || 0))}</KpiCardValue>
+                                        </KpiCardContent>
+                                    </KpiCard>
+                                    <KpiCard className='grow gap-1 py-0'>
+                                        <KpiCardLabel>
                                         MRR impact
-                                    </KpiCardLabel>
-                                    <KpiCardContent>
-                                        <KpiCardValue className='text-[2.2rem]'>{currencySymbol}{centsToDollars(totals?.mrr || 0)}</KpiCardValue>
-                                    </KpiCardContent>
-                                </KpiCard>
-                            </>
-                        }
-                    </CardContent>
-                </Card>
+                                        </KpiCardLabel>
+                                        <KpiCardContent>
+                                            <KpiCardValue className='text-[2.2rem]'>{currencySymbol}{centsToDollars(totals?.mrr || 0)}</KpiCardValue>
+                                        </KpiCardContent>
+                                    </KpiCard>
+                                </>
+                                    }
+                                </>
+                            }
+                        </CardContent>
+                    </Card>
+                </div>
             </PostAnalyticsContent>
         </>
     );

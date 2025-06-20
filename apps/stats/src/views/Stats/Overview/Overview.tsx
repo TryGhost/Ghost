@@ -9,6 +9,7 @@ import TopPosts from './components/TopPosts';
 import {GhAreaChartDataItem, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {getAudienceQueryParam} from '../components/AudienceSelect';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
+import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
 import {useLatestPostStats} from '@src/hooks/useLatestPostStats';
@@ -63,6 +64,7 @@ type GrowthChartDataItem = {
 };
 
 const Overview: React.FC = () => {
+    const {appSettings} = useAppContext();
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
@@ -96,10 +98,11 @@ const Overview: React.FC = () => {
     const visitorsChartData = useMemo(() => {
         return sanitizeChartData<WebKpiDataItem>(visitorsData as WebKpiDataItem[] || [], range, 'visits' as keyof WebKpiDataItem, 'sum')?.map((item: WebKpiDataItem) => {
             const value = Number(item.visits);
+            const safeValue = isNaN(value) ? 0 : value;
             return {
                 date: String(item.date),
-                value,
-                formattedValue: formatNumber(value),
+                value: safeValue,
+                formattedValue: formatNumber(safeValue),
                 label: 'Visitors'
             };
         });
@@ -134,7 +137,7 @@ const Overview: React.FC = () => {
     /* ---------------------------------------------------------------------- */
     // Create chart data based on selected tab
     const mrrChartData = useMemo(() => {
-        if (!growthChartData || growthChartData.length === 0) {
+        if (!appSettings?.paidMembersEnabled || !growthChartData || growthChartData.length === 0) {
             return [];
         }
 
@@ -152,7 +155,7 @@ const Overview: React.FC = () => {
         }));
 
         return processedData;
-    }, [growthChartData, range, currencySymbol]);
+    }, [growthChartData, range, currencySymbol, appSettings]);
 
     /* Calculate KPI values
     /* ---------------------------------------------------------------------- */
@@ -162,7 +165,10 @@ const Overview: React.FC = () => {
             return {visits: '0'};
         }
 
-        const totalVisits = visitorsData.reduce((sum, item) => sum + Number(item.visits), 0);
+        const totalVisits = visitorsData.reduce((sum, item) => {
+            const visits = Number(item.visits);
+            return sum + (isNaN(visits) ? 0 : visits);
+        }, 0);
 
         return {
             visits: formatNumber(totalVisits)

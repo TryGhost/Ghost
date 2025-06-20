@@ -1,19 +1,11 @@
 import React, {useState} from 'react';
 import moment from 'moment-timezone';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, PostShareModal, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
-import {Post, useBrowsePosts, useDeletePost} from '@tryghost/admin-x-framework/api/posts';
-import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
+import {hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '../../../App';
-import {useGlobalData} from '@src/providers/PostAnalyticsContext';
+import {useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-
-interface ExtendedPost extends Post {
-    published_at?: string;
-    excerpt?: string;
-    authors?: {
-        name: string;
-    }[];
-}
 
 interface PostAnalyticsHeaderProps {
     currentTab?: string;
@@ -24,7 +16,6 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     currentTab,
     children
 }) => {
-    const {postId} = useParams();
     const navigate = useNavigate();
     const {fromAnalytics} = useAppContext();
     const {mutateAsync: deletePost} = useDeletePost();
@@ -33,16 +24,10 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const [isShareOpen, setIsShareOpen] = useState(false);
     const {site} = useGlobalData();
 
-    const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
-        searchParams: {
-            filter: `id:${postId}`,
-            include: 'email,authors'
-        }
-    });
-
-    const typedPost = post as ExtendedPost;
+    // Use shared post data from context
+    const {post, isPostLoading, postId} = useGlobalData();
     // Use the utility function from admin-x-framework
-    const showNewsletterTab = hasBeenEmailed(typedPost);
+    const showNewsletterTab = hasBeenEmailed(post as Post);
 
     const handleDeletePost = () => {
         if (!post) {
@@ -54,8 +39,11 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     };
 
     const performDelete = async () => {
+        if (!post) {
+            return;
+        }
         try {
-            await deletePost(postId as string);
+            await deletePost(postId);
             setShowDeleteDialog(false);
             // Navigate back to posts list
             navigate('/posts/', {crossApp: true});
@@ -95,16 +83,16 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                                 {!isPostLoading &&
                                 <>
-                                    {!typedPost.email_only && (
+                                    {!post?.email_only && (
                                         <PostShareModal
-                                            author={typedPost.authors?.[0]?.name || ''}
+                                            author={post?.authors?.[0]?.name || ''}
                                             description=''
                                             faviconURL={site?.icon || ''}
-                                            featureImageURL={typedPost.feature_image}
+                                            featureImageURL={post?.feature_image}
                                             open={isShareOpen}
-                                            postExcerpt={typedPost.excerpt || ''}
-                                            postTitle={typedPost.title}
-                                            postURL={typedPost.url}
+                                            postExcerpt={post?.excerpt || ''}
+                                            postTitle={post?.title}
+                                            postURL={post?.url}
                                             siteTitle={site?.title || ''}
                                             onClose={() => setIsShareOpen(false)}
                                             onOpenChange={setIsShareOpen}
@@ -119,7 +107,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                         <DropdownMenuContent align='end'>
                                             <DropdownMenuGroup>
                                                 <DropdownMenuItem asChild>
-                                                    <a href={post.url} rel="noopener noreferrer" target="_blank">
+                                                    <a href={post?.url} rel="noopener noreferrer" target="_blank">
                                                         <LucideIcon.ExternalLink />
                                                     View in browser
                                                     </a>
@@ -159,9 +147,9 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
                                     {post?.title}
                                 </H1>
-                                {typedPost && typedPost.published_at && (
+                                {post?.published_at && (
                                     <div className='mt-0.5 flex items-center justify-start text-sm leading-[1.65em] text-muted-foreground'>
-                            Published on your site on {moment.utc(typedPost.published_at).format('D MMM YYYY')} at {moment.utc(typedPost.published_at).format('HH:mm')}
+                            Published on your site on {moment.utc(post.published_at).format('D MMM YYYY')} at {moment.utc(post.published_at).format('HH:mm')}
                                     </div>
                                 )}
                             </div>
@@ -178,11 +166,13 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                         }}>
                             Overview
                         </TabsTrigger>
-                        <TabsTrigger value="Web" onClick={() => {
-                            navigate(`/analytics/beta/${postId}/web`);
-                        }}>
-                            Web traffic
-                        </TabsTrigger>
+                        {!post?.email_only && (
+                            <TabsTrigger value="Web" onClick={() => {
+                                navigate(`/analytics/beta/${postId}/web`);
+                            }}>
+                                Web traffic
+                            </TabsTrigger>
+                        )}
                         {showNewsletterTab && (
                             <TabsTrigger value="Newsletter" onClick={() => {
                                 navigate(`/analytics/beta/${postId}/newsletter`);

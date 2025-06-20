@@ -1,9 +1,9 @@
-import React, {useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {AvgsDataItem} from '../Newsletters';
 import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, GhAreaChart, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 import {sanitizeChartData} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 
 interface BarTooltipPayload {
     value: number;
@@ -73,19 +73,35 @@ const NewsletterKPIs: React.FC<{
     totals: Totals;
     isLoading: boolean;
     isAvgsLoading: boolean;
+    initialTab?: string;
 }> = ({
     subscribersData: allSubscribersData,
     avgsData,
     totals,
     isLoading,
-    isAvgsLoading
+    isAvgsLoading,
+    initialTab = 'total-subscribers'
 }) => {
-    const [currentTab, setCurrentTab] = useState('total-subscribers');
+    const [currentTab, setCurrentTab] = useState(initialTab);
     const [isHoveringClickable, setIsHoveringClickable] = useState(false);
     const {range} = useGlobalData();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
     const {totalSubscribers, avgOpenRate, avgClickRate} = totals;
+
+    // Update current tab if initialTab changes
+    useEffect(() => {
+        setCurrentTab(initialTab);
+    }, [initialTab]);
+
+    // Function to update tab and URL
+    const handleTabChange = (tabValue: string) => {
+        setCurrentTab(tabValue);
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.set('tab', tabValue);
+        navigate(`?${newSearchParams.toString()}`, {replace: true});
+    };
 
     // Sanitize subscribers data and convert deltas to cumulative values
     const subscribersData = useMemo(() => {
@@ -129,7 +145,7 @@ const NewsletterKPIs: React.FC<{
 
     const tabConfig = {
         'total-subscribers': {
-            color: 'hsl(var(--chart-purple))',
+            color: 'hsl(var(--chart-darkblue))',
             datakey: 'value'
         },
         'avg-open-rate': {
@@ -151,10 +167,10 @@ const NewsletterKPIs: React.FC<{
     }
 
     return (
-        <Tabs defaultValue="total-subscribers" variant='kpis'>
+        <Tabs defaultValue={initialTab} variant='kpis'>
             <TabsList className="-mx-6 grid grid-cols-3">
                 <KpiTabTrigger value="total-subscribers" onClick={() => {
-                    setCurrentTab('total-subscribers');
+                    handleTabChange('total-subscribers');
                 }}>
                     <KpiTabValue
                         color={tabConfig['total-subscribers'].color}
@@ -163,7 +179,7 @@ const NewsletterKPIs: React.FC<{
                     />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="avg-open-rate" onClick={() => {
-                    setCurrentTab('avg-open-rate');
+                    handleTabChange('avg-open-rate');
                 }}>
                     <KpiTabValue
                         className={isAvgsLoading ? 'opacity-50' : ''}
@@ -173,7 +189,7 @@ const NewsletterKPIs: React.FC<{
                     />
                 </KpiTabTrigger>
                 <KpiTabTrigger value="avg-click-rate" onClick={() => {
-                    setCurrentTab('avg-click-rate');
+                    handleTabChange('avg-click-rate');
                 }}>
                     <KpiTabValue
                         className={isAvgsLoading ? 'opacity-50' : ''}

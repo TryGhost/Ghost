@@ -118,13 +118,43 @@ export const Sources: React.FC<SourcesCardProps> = ({
     const cardDescription = `How readers found this post ${range && ` ${getPeriodText(range)}`}`;
 
     if (tableOnly) {
+        const limitedData = extendedData.slice(0, topSourcesLimit);
+        const hasMore = extendedData.length > topSourcesLimit;
+        
         return (
-            <SourcesTable
-                data={extendedData}
-                dataTableHeader={false}
-                defaultSourceIconUrl={defaultSourceIconUrl}
-                range={range}
-            />
+            <div>
+                <SourcesTable
+                    data={limitedData}
+                    dataTableHeader={false}
+                    defaultSourceIconUrl={defaultSourceIconUrl}
+                    range={range}
+                />
+                {hasMore && (
+                    <div className='mt-4'>
+                        <Sheet>
+                            <SheetTrigger asChild>
+                                <Button className='w-full' size='sm' variant='outline'>
+                                    View all ({extendedData.length}) <LucideIcon.ArrowRight size={14} />
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
+                                <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
+                                    <SheetTitle>Sources</SheetTitle>
+                                    <SheetDescription>{cardDescription}</SheetDescription>
+                                </SheetHeader>
+                                <div className='group/datalist'>
+                                    <SourcesTable
+                                        data={extendedData}
+                                        dataTableHeader={true}
+                                        defaultSourceIconUrl={defaultSourceIconUrl}
+                                        range={range}
+                                    />
+                                </div>
+                            </SheetContent>
+                        </Sheet>
+                    </div>
+                )}
+            </div>
         );
     }
 
