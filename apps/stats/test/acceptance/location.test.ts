@@ -1,22 +1,66 @@
-import {expect, test} from "@playwright/test";
-import {createMockRequests, mockApi} from "@tryghost/admin-x-framework/test/acceptance";
-import OverviewPage from "./pages/OverviewPage.ts";
+import 'dotenv/config';
+import LocationsPage from './pages/LocationsPage.ts';
+import {addAnalyticsEvent, statsConfig} from '../utils/tinybird-helpers.ts';
+import {expect, test} from '@playwright/test';
+import {faker} from '@faker-js/faker';
+import {
+    globalDataRequests,
+    mockApi,
+    responseFixtures
+} from '@tryghost/admin-x-framework/test/acceptance';
 
-test.describe('Stats App', () => {
-    test('loads with custom mocked data', async ({page}) => {
-        
-        await mockApi({page, requests: createMockRequests({
-                browseMemberCountHistory: {
-                    method: 'GET',
-                    path: /^\/stats\/member_count\//,
-                    response: customMemberHistory
+test.describe('Stats App - Locations', () => {
+    test('loads locations tab with correct country details', async ({page}) => {
+        const siteUuid = faker.string.uuid();
+
+        await mockApi({
+            page, requests: {
+                ...globalDataRequests,
+                browseConfig: {
+                    method: 'GET', path: '/config/', response: {
+                        config: {
+                            ...responseFixtures.config.config,
+                            stats: {
+                                ...statsConfig,
+                                id: siteUuid
+                            }
+                        }
+                    }
                 }
-            })});
+            }
+        });
 
-        const overviewPage = new OverviewPage(page);
-        await overviewPage.visit();
+        await addAnalyticsEvent({siteUuid: siteUuid, locale: 'en-GB', location: 'GB'});
 
-        await expect(overviewPage.body).toContainText('155');
-        await expect(overviewPage.body).toContainText('$550');
+        const locationsPage = new LocationsPage(page);
+        await locationsPage.visit();
+
+        await expect(locationsPage.body).toContainText('United Kingdom');
+    });
+
+    test('loads locations tab with info that there are no stats', async ({page}) => {
+        const siteUuid = faker.string.uuid();
+
+        await mockApi({
+            page, requests: {
+                ...globalDataRequests,
+                browseConfig: {
+                    method: 'GET', path: '/config/', response: {
+                        config: {
+                            ...responseFixtures.config.config,
+                            stats: {
+                                ...statsConfig,
+                                id: siteUuid
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const locationsPage = new LocationsPage(page);
+        await locationsPage.visit();
+
+        await expect(locationsPage.body).toContainText('No stats available');
     });
 });
