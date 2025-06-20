@@ -25,20 +25,13 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                         Analytics
                     </H1>
                     {appSettings?.analytics.webAnalytics && (
-                        <div className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400'>
+                        <div className='flex items-center gap-2 text-sm'>
                             {site?.url && (
-                                <div className='flex items-center gap-2'>
-                                    {site.icon ? (
-                                        <img 
-                                            alt="Site favicon" 
-                                            className='size-4 rounded-sm' 
-                                            src={site.icon} 
-                                        />
-                                    ) : (
-                                        <LucideIcon.Globe className='text-gray-400' size={16} strokeWidth={1.5} />
-                                    )}
+                                <div className='flex items-center gap-1.5'>
+                                    {/* No need for favicon as it's already shown in the left sidebar + globe icon represents "web" better */}
+                                    <LucideIcon.Globe className='text-muted-foreground' size={16} strokeWidth={1.5} />
                                     <a
-                                        className='text-sm font-semibold text-gray-900 transition-all hover:opacity-75 dark:text-gray-100'
+                                        className='text-sm font-medium transition-all hover:opacity-75 dark:text-gray-100'
                                         href={site.url}
                                         rel="noopener noreferrer"
                                         target="_blank"
@@ -46,15 +39,15 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                                     >
                                         {new URL(site.url).hostname}
                                     </a>
-                                    <span className='text-gray-400 dark:text-gray-500'>|</span>
+                                    <span className='text-border'>|</span>
                                 </div>
                             )}
-                            <div 
-                                className='flex items-center gap-2 text-sm' 
+                            <div
+                                className='flex items-center gap-2 text-sm text-muted-foreground'
                                 title='Active visitors in the last 5 minutes · Updates every 60 seconds'
                             >
                                 <span className='text-sm'>
-                                    {isActiveVisitorsLoading ? '—' : formatNumber(activeVisitors)} online
+                                    {isActiveVisitorsLoading ? '' : formatNumber(activeVisitors)} online
                                 </span>
                                 <div className={`size-2 rounded-full ${isActiveVisitorsLoading ? 'animate-pulse bg-muted' : activeVisitors ? 'bg-green-500' : 'border border-muted-foreground'}`}></div>
                             </div>
