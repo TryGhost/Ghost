@@ -17,7 +17,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     children
 }) => {
     const navigate = useNavigate();
-    const {fromAnalytics} = useAppContext();
+    const {fromAnalytics, appSettings} = useAppContext();
     const {mutateAsync: deletePost} = useDeletePost();
     const handleError = useHandleError();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -166,7 +166,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                         }}>
                             Overview
                         </TabsTrigger>
-                        {!post?.email_only && (
+                        {!post?.email_only || !appSettings?.analytics.webAnalytics && (
                             <TabsTrigger value="Web" onClick={() => {
                                 navigate(`/analytics/beta/${postId}/web`);
                             }}>

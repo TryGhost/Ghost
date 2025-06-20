@@ -42,7 +42,7 @@ type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
 const Growth: React.FC = () => {
     const {range} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopPostsOrder>('free_members desc');
-    const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS);
+    const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const {appSettings} = useAppContext();
@@ -163,9 +163,9 @@ const Growth: React.FC = () => {
                                                 setSelectedContentType(value as ContentType);
                                             }}>
                                                 <TabsList>
+                                                    <TabsTrigger value={CONTENT_TYPES.POSTS_AND_PAGES}>Posts & pages</TabsTrigger>
                                                     <TabsTrigger value={CONTENT_TYPES.POSTS}>Posts</TabsTrigger>
                                                     <TabsTrigger value={CONTENT_TYPES.PAGES}>Pages</TabsTrigger>
-                                                    <TabsTrigger value={CONTENT_TYPES.POSTS_AND_PAGES}>Posts & pages</TabsTrigger>
                                                     <TabsTrigger value={CONTENT_TYPES.SOURCES}>Sources</TabsTrigger>
                                                 </TabsList>
                                             </Tabs>

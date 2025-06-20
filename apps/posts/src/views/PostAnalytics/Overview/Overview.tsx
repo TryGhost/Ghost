@@ -111,7 +111,7 @@ const Overview: React.FC = () => {
 
     // Use the utility function from admin-x-framework
     const showNewsletterSection = hasBeenEmailed(post as Post);
-    const showWebSection = !post?.email_only;
+    const showWebSection = !post?.email_only && appSettings?.analytics.webAnalytics;
 
     return (
         <>
@@ -129,15 +129,19 @@ const Overview: React.FC = () => {
                     {showWebSection && (
                         <WebOverview
                             chartData={processedChartData}
-                            fullWidth={!showNewsletterSection}
                             isLoading={chartIsLoading || kpiIsLoading || isSourcesLoading}
+                            isNewsletterShown={showNewsletterSection}
                             range={chartRange}
                             sourcesData={sourcesData}
                             visitors={kpiValues.visits}
                         />
                     )}
                     {showNewsletterSection && (
-                        <NewsletterOverview isNewsletterStatsLoading={isPostLoading} post={post as Post} />
+                        <NewsletterOverview
+                            isNewsletterStatsLoading={isPostLoading}
+                            isWebShown={showWebSection}
+                            post={post as Post}
+                        />
                     )}
                     <Card className='group col-span-2 overflow-hidden p-0'>
                         <div className='relative flex items-center justify-between gap-6'>
