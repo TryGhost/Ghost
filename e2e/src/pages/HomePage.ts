@@ -8,7 +8,7 @@ export class HomePage {
 
     constructor(page: Page) {
         this.page = page;
-        this.title = page.locator('h1, .site-title');
+        this.title = page.getByRole('heading', { level: 1 });
         this.navigation = page.locator('.site-nav');
         this.posts = page.locator('.post-card');
     }
