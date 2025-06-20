@@ -909,7 +909,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '16.14.0'
+          node-version: '22.16.0'
 
       - name: Install latest v4
         run: |
