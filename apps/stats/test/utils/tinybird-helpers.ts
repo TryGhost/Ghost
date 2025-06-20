@@ -15,7 +15,7 @@ export const statsConfig = {
 export interface AnalyticsEventProps {
     siteUuid: string;
     timestamp?: Date;
-    location: string,
+    location: string;
     locale: string;
 }
 
@@ -86,5 +86,5 @@ export async function addAnalyticsEvent(eventProps: AnalyticsEventProps) {
         }
 
         throw new Error(`Request failed (${response.status}): ${errorMessage}`);
-    };
+    }
 }
