@@ -7,11 +7,11 @@ import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import Sources from './components/Sources';
 import {BarChartLoadingIndicator, Card, CardContent, formatQueryDate, getRangeDates} from '@tryghost/shade';
-import {BaseSourceData, getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
+import {BaseSourceData, getStatEndpointUrl, getToken, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 
+import {useEffect, useMemo} from 'react';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
-import {useMemo} from 'react';
 
 import {useQuery} from '@tinybirdco/charts';
 
@@ -27,6 +27,8 @@ interface ProcessedLocationData {
 interface postAnalyticsProps {}
 
 const Web: React.FC<postAnalyticsProps> = () => {
+    const navigate = useNavigate();
+    const {postId} = useParams();
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
@@ -36,6 +38,13 @@ const Web: React.FC<postAnalyticsProps> = () => {
 
     // Get post data from context
     const {post, isPostLoading} = useGlobalData();
+
+    // Redirect to Overview if this is an email-only post
+    useEffect(() => {
+        if (!isPostLoading && post?.email_only) {
+            navigate(`/analytics/beta/${postId}`);
+        }
+    }, [isPostLoading, post?.email_only, navigate, postId]);
 
     // Get params
     const params = useMemo(() => {

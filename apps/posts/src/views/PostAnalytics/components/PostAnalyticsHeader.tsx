@@ -26,9 +26,8 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
 
     // Use shared post data from context
     const {post, isPostLoading, postId} = useGlobalData();
-    const typedPost = post as Post;
     // Use the utility function from admin-x-framework
-    const showNewsletterTab = hasBeenEmailed(typedPost);
+    const showNewsletterTab = hasBeenEmailed(post as Post);
 
     const handleDeletePost = () => {
         if (!post) {
@@ -84,16 +83,16 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                                 {!isPostLoading &&
                                 <>
-                                    {!typedPost.email_only && (
+                                    {!post?.email_only && (
                                         <PostShareModal
-                                            author={typedPost.authors?.[0]?.name || ''}
+                                            author={post?.authors?.[0]?.name || ''}
                                             description=''
                                             faviconURL={site?.icon || ''}
-                                            featureImageURL={typedPost.feature_image}
+                                            featureImageURL={post?.feature_image}
                                             open={isShareOpen}
-                                            postExcerpt={typedPost.excerpt || ''}
-                                            postTitle={typedPost.title}
-                                            postURL={typedPost.url}
+                                            postExcerpt={post?.excerpt || ''}
+                                            postTitle={post?.title}
+                                            postURL={post?.url}
                                             siteTitle={site?.title || ''}
                                             onClose={() => setIsShareOpen(false)}
                                             onOpenChange={setIsShareOpen}
@@ -148,9 +147,9 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
                                     {post?.title}
                                 </H1>
-                                {typedPost && typedPost.published_at && (
+                                {post?.published_at && (
                                     <div className='mt-0.5 flex items-center justify-start text-sm leading-[1.65em] text-muted-foreground'>
-                            Published on your site on {moment.utc(typedPost.published_at).format('D MMM YYYY')} at {moment.utc(typedPost.published_at).format('HH:mm')}
+                            Published on your site on {moment.utc(post.published_at).format('D MMM YYYY')} at {moment.utc(post.published_at).format('HH:mm')}
                                     </div>
                                 )}
                             </div>
@@ -167,11 +166,13 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                         }}>
                             Overview
                         </TabsTrigger>
-                        <TabsTrigger value="Web" onClick={() => {
-                            navigate(`/analytics/beta/${postId}/web`);
-                        }}>
-                            Web traffic
-                        </TabsTrigger>
+                        {!post?.email_only && (
+                            <TabsTrigger value="Web" onClick={() => {
+                                navigate(`/analytics/beta/${postId}/web`);
+                            }}>
+                                Web traffic
+                            </TabsTrigger>
+                        )}
                         {showNewsletterTab && (
                             <TabsTrigger value="Newsletter" onClick={() => {
                                 navigate(`/analytics/beta/${postId}/newsletter`);
