@@ -10,10 +10,10 @@ interface WebOverviewProps {
     range: number;
     isLoading: boolean;
     visitors: number;
-    fullWidth?: boolean;
+    isNewsletterShown?: boolean;
 }
 
-const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, visitors, sourcesData, fullWidth = false}) => {
+const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, visitors, sourcesData, isNewsletterShown = true}) => {
     const {postId} = useParams();
     const navigate = useNavigate();
 
@@ -32,7 +32,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
 
     return (
         <>
-            <Card className={`group/datalist ${fullWidth && 'col-span-2'}`}>
+            <Card className={`group/datalist ${!isNewsletterShown && 'col-span-2'}`}>
                 <div className='relative flex items-center justify-between gap-6'>
                     <CardHeader>
                         <CardTitle className='flex items-center gap-1.5 text-lg'>
@@ -74,8 +74,8 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                             }
                         </div>
                     </div>
-                    {!fullWidth &&
-                        <div className={fullWidth ? '-mt-3' : 'border-t pt-3'}>
+                    {isNewsletterShown &&
+                        <div className={!isNewsletterShown ? '-mt-3' : 'border-t pt-3'}>
                             <div>
                                 <div className='flex items-center justify-between gap-3 py-3'>
                                     <span className='font-medium text-muted-foreground'>How readers found this post</span>

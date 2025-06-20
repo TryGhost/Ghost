@@ -9,9 +9,10 @@ import {useTopLinks} from '@tryghost/admin-x-framework/api/links';
 interface NewsletterOverviewProps {
     post: Post;
     isNewsletterStatsLoading: boolean;
+    isWebShown?: boolean;
 }
 
-const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewsletterStatsLoading}) => {
+const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewsletterStatsLoading, isWebShown}) => {
     const {postId} = useParams();
     const navigate = useNavigate();
 
@@ -59,8 +60,10 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
         }
     } satisfies ChartConfig;
 
+    const fullWidth = post.email_only || !isWebShown;
+
     return (
-        <Card className={`group/card ${post.email_only && 'col-span-2'}`}>
+        <Card className={`group/card ${fullWidth && 'col-span-2'}`}>
             <div className='relative flex items-center justify-between gap-6'>
                 <CardHeader>
                     <CardTitle className='flex items-center gap-1.5 text-lg'>
@@ -79,8 +82,8 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                     </div>
                 </CardContent>
                 :
-                <CardContent className={`${post.email_only && 'grid grid-cols-2'}`}>
-                    <div className={`${post.email_only && 'border-r pr-6'}`}>
+                <CardContent className={`${fullWidth && 'grid grid-cols-2'}`}>
+                    <div className={`${fullWidth && 'border-r pr-6'}`}>
                         <div className='grid grid-cols-2 gap-6'>
                             <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0'>
                                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
@@ -110,7 +113,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
 
                             </KpiCardHeader>
                         </div>
-                        {!post.email_only && <Separator />}
+                        {!fullWidth && <Separator />}
                         <div className='mx-auto my-6 h-[240px]'>
                             <NewsletterRadialChart
                                 className='pointer-events-none aspect-square h-[240px]'
@@ -121,10 +124,10 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                         </div>
                     </div>
 
-                    <div className={`${post.email_only && 'pl-6'}`}>
-                        {!post.email_only && <Separator />}
-                        <div className={post.email_only ? '' : 'pt-3'}>
-                            <div className={`flex items-center justify-between gap-3 ${post.email_only ? 'pb-3' : 'py-3'}`}>
+                    <div className={`${fullWidth && 'pl-6'}`}>
+                        {!fullWidth && <Separator />}
+                        <div className={fullWidth ? '' : 'pt-3'}>
+                            <div className={`flex items-center justify-between gap-3 ${fullWidth ? 'pb-3' : 'py-3'}`}>
                                 <span className='font-medium text-muted-foreground'>Top clicked links in this email</span>
                                 <HTable>Members</HTable>
                             </div>
@@ -132,7 +135,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                                 {topLinks.length > 0
                                     ?
                                     <TableBody>
-                                        {topLinks.slice(0, (post.email_only ? 6 : 3)).map((link) => {
+                                        {topLinks.slice(0, (fullWidth ? 6 : 3)).map((link) => {
                                             return (
                                                 <TableRow key={link.link.link_id} className='border-none'>
                                                     <TableCell className='max-w-0 px-0 group-hover:!bg-transparent'>
