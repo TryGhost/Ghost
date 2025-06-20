@@ -1,9 +1,27 @@
 import NewNoteModal from '@components/modals/NewNoteModal';
 import React, {useEffect, useRef, useState} from 'react';
+import {ActivityPubAPI} from '../../api/activitypub';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {AnimatedNumber, Button, LucideIcon, formatNumber} from '@tryghost/shade';
-import {useDerepostMutationForUser, useLikeMutationForUser, useRepostMutationForUser, useUnlikeMutationForUser} from '@hooks/use-activity-pub-queries';
+import {postsActions} from '../../stores/posts-store';
+import {toast} from 'sonner';
+import {useDerepostMutationForUser, useRepostMutationForUser} from '@hooks/use-activity-pub-queries';
 import {useKeyboardShortcuts} from '@hooks/use-keyboard-shortcuts';
+
+// API utilities for Valtio experiment
+async function getSiteUrl() {
+    const response = await fetch('/ghost/api/admin/site');
+    const json = await response.json();
+    return json.site.url;
+}
+
+function createActivityPubAPI(handle: string, siteUrl: string) {
+    return new ActivityPubAPI(
+        new URL(siteUrl),
+        new URL('/ghost/api/admin/identities/', window.location.origin),
+        handle
+    );
+}
 
 interface FeedItemStatsProps {
     actor: ActorProperties;
@@ -52,24 +70,40 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
         setRepostCount(initialRepostCount);
     }, [initialRepostCount]);
 
-    const likeMutation = useLikeMutationForUser('index');
-    const unlikeMutation = useUnlikeMutationForUser('index');
+    // Keep React Query mutations for repost (not converting yet)
     const repostMutation = useRepostMutationForUser('index');
     const derepostMutation = useDerepostMutationForUser('index');
     const [repostCount, setRepostCount] = useState(initialRepostCount);
 
+    // Valtio experiment: Simple like handling with direct API calls
     const handleLikeClick = async (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
-        if (!isLiked) {
-            likeMutation.mutate(object.id, {
-                onError() {
-                    setIsLiked(false);
-                }
-            });
-        } else {
-            unlikeMutation.mutate(object.id);
+
+        const newLikedState = !isLiked;
+
+        // Optimistically update the store immediately
+        postsActions.toggleLike(object.id, newLikedState);
+        setIsLiked(newLikedState);
+
+        try {
+            // Make the API call directly
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI('index', siteUrl);
+
+            if (newLikedState) {
+                await api.like(object.id);
+                toast.success('Liked');
+            } else {
+                await api.unlike(object.id);
+                toast.success('Unliked');
+            }
+        } catch (error) {
+            // Revert on error
+            postsActions.toggleLike(object.id, isLiked);
+            setIsLiked(isLiked);
+            toast.error('Failed to update like');
         }
-        setIsLiked(!isLiked);
+
         onLikeClick();
     };
 

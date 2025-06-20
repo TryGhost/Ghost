@@ -7,6 +7,7 @@ import UnblockButton from './UnblockButton';
 import {Account} from '@src/api/activitypub';
 import {Badge, Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H2, H4, LucideIcon, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from '@tryghost/shade';
 import {SettingAction} from '@src/views/Preferences/components/Settings';
+import {postsActions} from '../../../stores/posts-store';
 import {toast} from 'sonner';
 import {useAccountForUser, useBlockDomainMutationForUser, useBlockMutationForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@src/hooks/use-activity-pub-queries';
 import {useEffect, useRef, useState} from 'react';
@@ -92,6 +93,13 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
             setIsOverflowing(contentRef.current.scrollHeight > 160); // Compare content height to max height
         }
     }, [isExpanded]);
+
+    // Valtio experiment: Sync profile account with store for cross-component reactivity
+    useEffect(() => {
+        if (account && account.handle) {
+            postsActions.setProfileAccount(account.handle, account);
+        }
+    }, [account]);
 
     return (
         <Layout>
