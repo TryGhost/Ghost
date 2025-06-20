@@ -5,7 +5,7 @@ import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import WebOverview from './components/WebOverview';
 import {Button, Card, CardContent, CardHeader, CardTitle, LucideIcon, Skeleton, formatNumber, formatQueryDate, getRangeDates, getRangeForStartDate, sanitizeChartData} from '@tryghost/shade';
 import {KPI_METRICS} from '../Web/components/Kpis';
-import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
+import {KpiDataItem} from '@src/utils/kpi-helpers';
 import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars} from '../Growth/Growth';
@@ -85,7 +85,16 @@ const Overview: React.FC = () => {
         params: chartParams
     });
 
-    const kpiValues = getWebKpiValues(data as unknown as KpiDataItem[] | null);
+    // Calculate total visitors as a number for WebOverview component
+    const totalVisitors = useMemo(() => {
+        if (!data?.length) {
+            return 0;
+        }
+        return data.reduce((sum, item) => {
+            const visits = Number(item.visits);
+            return sum + (isNaN(visits) ? 0 : visits);
+        }, 0);
+    }, [data]);
 
     // Process chart data for WebOverview
     const currentMetric = KPI_METRICS.visits;
@@ -133,7 +142,7 @@ const Overview: React.FC = () => {
                             isNewsletterShown={showNewsletterSection}
                             range={chartRange}
                             sourcesData={sourcesData}
-                            visitors={kpiValues.visits}
+                            visitors={totalVisitors}
                         />
                     )}
                     {showNewsletterSection && (
