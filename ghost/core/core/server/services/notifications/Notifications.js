@@ -72,11 +72,11 @@ class Notifications {
     browse({user}) {
         let allNotifications = this.fetchAllNotifications();
         allNotifications = _.orderBy(allNotifications, 'addedAt', 'desc');
-        const blogVersion = ghostVersion.full.match(/^(\d+\.)(\d+\.)(\d+)/);
+        const blogVersion = semver.clean(ghostVersion.full);
 
         allNotifications = allNotifications.filter((notification) => {
             if (notification.createdAtVersion && !this.wasSeen(notification, user)) {
-                return semver.gte(notification.createdAtVersion, blogVersion[0]);
+                return semver.gte(semver.clean(notification.createdAtVersion), blogVersion);
             } else {
                 // NOTE: Filtering by version below is just a patch for bigger problem - notifications are not removed
                 //       after Ghost update. Logic below should be removed when Ghost upgrade detection
@@ -90,7 +90,7 @@ class Notifications {
                 // CASE: do not return old release notification
                 if (notification.message
                     && (!notification.custom || notification.message.match(ghostMajorRegEx) || notification.message.match(ghostSec43))) {
-                    let notificationVersion = notification.message.match(/(\d+\.)(\d+\.)(\d+)/);
+                    let notificationVersion = notification.message.match(/(\d+\.\d+\.\d+)/);
 
                     if (!notificationVersion && notification.message.match(ghostSec43)) {
                         // Treating "GHSA-9fgx-q25h-jxrg" notification as 4.3.3 because there's no way to detect version
@@ -106,7 +106,7 @@ class Notifications {
                         notificationVersion = notificationVersion[0];
                     }
 
-                    if (notificationVersion && blogVersion && semver.gt(notificationVersion, blogVersion[0])) {
+                    if (notificationVersion && blogVersion && semver.gt(notificationVersion, blogVersion)) {
                         return true;
                     } else {
                         return false;
