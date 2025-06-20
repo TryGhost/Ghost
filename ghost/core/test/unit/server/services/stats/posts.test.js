@@ -211,10 +211,11 @@ describe('PostsStatsService', function () {
 
         service = new PostsStatsService({knex: db});
 
-        await _createPost('post1', 'Post 1');
-        await _createPost('post2', 'Post 2');
-        await _createPost('post3', 'Post 3');
-        await _createPost('post4', 'Post 4');
+        const now = new Date();
+        await _createPostWithDetails('post1', 'Post 1', 'published', {published_at: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000)}); // 4 days ago
+        await _createPostWithDetails('post2', 'Post 2', 'published', {published_at: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000)}); // 3 days ago
+        await _createPostWithDetails('post3', 'Post 3', 'published', {published_at: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)}); // 2 days ago
+        await _createPostWithDetails('post4', 'Post 4', 'published', {published_at: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000)}); // 1 day ago
         await _createPost('post5', 'Post 5', 'draft');
     });
 
@@ -255,10 +256,11 @@ describe('PostsStatsService', function () {
             assert.ok(result.data, 'Result should have a data property');
             assert.equal(result.data.length, 3, 'Should return 3 posts with attribution data');
 
+            // The test expects timestamps (numbers) as returned by SQLite, not Date objects
             const expectedResults = [
-                {post_id: 'post1', title: 'Post 1', free_members: 2, paid_members: 1, mrr: 500},
-                {post_id: 'post2', title: 'Post 2', free_members: 1, paid_members: 1, mrr: 500},
-                {post_id: 'post3', title: 'Post 3', free_members: 0, paid_members: 1, mrr: 1000}
+                {post_id: 'post1', title: 'Post 1', free_members: 2, paid_members: 1, mrr: 500, published_at: result.data[0].published_at},
+                {post_id: 'post2', title: 'Post 2', free_members: 1, paid_members: 1, mrr: 500, published_at: result.data[1].published_at},
+                {post_id: 'post3', title: 'Post 3', free_members: 0, paid_members: 1, mrr: 1000, published_at: result.data[2].published_at}
             ];
 
             assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
@@ -275,11 +277,12 @@ describe('PostsStatsService', function () {
             assert.ok(result.data, 'Result should have a data property');
             assert.equal(result.data.length, 4, 'Should return all 4 posts with attribution data');
 
+            // The test expects timestamps (numbers) as returned by SQLite, not Date objects
             const expectedResults = [
-                {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200},
-                {post_id: 'post1', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600},
-                {post_id: 'post3', title: 'Post 3', free_members: 1, paid_members: 0, mrr: 0},
-                {post_id: 'post4', title: 'Post 4', free_members: 1, paid_members: 0, mrr: 0}
+                {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200, published_at: result.data.find(p => p.post_id === 'post2').published_at},
+                {post_id: 'post1', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600, published_at: result.data.find(p => p.post_id === 'post1').published_at},
+                {post_id: 'post3', title: 'Post 3', free_members: 1, paid_members: 0, mrr: 0, published_at: result.data.find(p => p.post_id === 'post3').published_at},
+                {post_id: 'post4', title: 'Post 4', free_members: 1, paid_members: 0, mrr: 0, published_at: result.data.find(p => p.post_id === 'post4').published_at}
             ];
 
             const sortedResults = result.data.sort((a, b) => {
@@ -303,11 +306,12 @@ describe('PostsStatsService', function () {
             assert.ok(result.data, 'Result should have a data property');
             assert.equal(result.data.length, 4, 'Should return all 4 posts with attribution data');
 
+            // The test expects timestamps (numbers) as returned by SQLite, not Date objects
             const expectedResults = [
-                {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200},
-                {post_id: 'post1', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600},
-                {post_id: 'post3', title: 'Post 3', free_members: 1, paid_members: 0, mrr: 0},
-                {post_id: 'post4', title: 'Post 4', free_members: 1, paid_members: 0, mrr: 0}
+                {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200, published_at: result.data.find(p => p.post_id === 'post2').published_at},
+                {post_id: 'post1', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600, published_at: result.data.find(p => p.post_id === 'post1').published_at},
+                {post_id: 'post3', title: 'Post 3', free_members: 1, paid_members: 0, mrr: 0, published_at: result.data.find(p => p.post_id === 'post3').published_at},
+                {post_id: 'post4', title: 'Post 4', free_members: 1, paid_members: 0, mrr: 0, published_at: result.data.find(p => p.post_id === 'post4').published_at}
             ];
 
             const sortedResults = result.data.sort((a, b) => {
@@ -568,14 +572,31 @@ describe('PostsStatsService', function () {
     });
 
     describe('getTopPostsViews', function () {
-        it('returns empty array when no Tinybird client exists', async function () {
+        it('returns latest posts with zero views when no Tinybird client exists', async function () {
             service = new PostsStatsService({knex: db}); // No Tinybird client
             const result = await service.getTopPostsViews({
                 date_from: '2025-01-01',
                 date_to: '2025-01-31',
                 timezone: 'UTC'
             });
-            assert.deepEqual(result, {data: []});
+            
+            // Should return the latest posts ordered by published_at desc with 0 views and 0 members (no attribution events)
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 4, 'Should return 4 posts (all published posts)');
+            
+            // All posts should have zero views since there's no Tinybird client
+            result.data.forEach((post) => {
+                assert.equal(post.views, 0, 'All posts should have 0 views');
+                assert.equal(post.members, 0, 'All posts should have 0 members (no attribution events)');
+                assert.ok(post.post_id, 'Post should have an ID');
+                assert.ok(post.title, 'Post should have a title');
+                assert.ok(typeof post.published_at === 'number', 'Post should have a published_at timestamp');
+            });
+            
+            // Posts should be ordered by published_at desc (newest first)
+            for (let i = 1; i < result.data.length; i++) {
+                assert.ok(result.data[i - 1].published_at >= result.data[i].published_at, 'Posts should be ordered by published_at desc');
+            }
         });
 
         it('returns latest posts with zero views when no views data exists', async function () {

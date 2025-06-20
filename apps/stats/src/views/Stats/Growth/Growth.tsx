@@ -6,7 +6,7 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -34,6 +34,7 @@ interface UnifiedGrowthContentData {
     paid_members: number;
     mrr: number;
     percentage?: number;
+    published_at: string;
 }
 
 type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
@@ -84,7 +85,8 @@ const Growth: React.FC = () => {
                 free_members: item.free_members,
                 paid_members: item.paid_members,
                 mrr: item.mrr,
-                percentage
+                percentage,
+                published_at: item.published_at
             };
         });
     }, [topPostsData, sortBy]);
@@ -204,19 +206,20 @@ const Growth: React.FC = () => {
                                         {transformedTopPosts.length > 0 ? (
                                             transformedTopPosts.map(post => (
                                                 <TableRow key={post.post_id} className='last:border-none'>
-                                                    <TableCell className="font-medium">
-                                                        <div className='group/link inline-flex items-center gap-2'>
+                                                    <TableCell>
+                                                        <div className='group/link inline-flex flex-col items-start gap-px'>
                                                             {post.post_id ?
-                                                                <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
+                                                                <Button className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' title="View post analytics" variant='link' onClick={() => {
                                                                     navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
                                                                 }}>
                                                                     {post.title}
                                                                 </Button>
                                                                 :
-                                                                <>
+                                                                <span className='font-medium'>
                                                                     {post.title}
-                                                                </>
+                                                                </span>
                                                             }
+                                                            <span className='text-muted-foreground'>Published on {formatDisplayDate(post.published_at)}</span>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className='text-right font-mono text-sm'>
@@ -236,7 +239,7 @@ const Growth: React.FC = () => {
                                             ))
                                         ) : (
                                             <TableRow>
-                                                <TableCell className='py-12' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                                                <TableCell className='py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
                                                     <div className='flex flex-col items-center justify-center space-y-3 text-center'>
                                                         <div className='flex size-12 items-center justify-center rounded-full bg-muted'>
                                                             <svg className='size-6 text-muted-foreground' fill='none' stroke='currentColor' viewBox='0 0 24 24'>

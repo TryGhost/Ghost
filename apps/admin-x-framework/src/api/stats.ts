@@ -42,6 +42,7 @@ export type TopPostStatItem = {
     free_members: number;
     paid_members: number;
     mrr: number;
+    published_at: string;
 };
 
 export type TopPostsStatsResponseType = {
