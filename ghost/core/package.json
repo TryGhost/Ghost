@@ -62,7 +62,7 @@
     "reset:data:tinybird": "cd core/server/data/tinybird/scripts && node reset-data-tinybird.js"
   },
   "engines": {
-    "node": "^18.12.1 || ^20.11.1 || ^22.13.1",
+    "node": "^20.11.1 || ^22.13.1",
     "cli": "^1.27.0"
   },
   "dependencies": {
