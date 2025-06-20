@@ -757,7 +757,6 @@ describe('Post Model', function () {
                     createdPost.relations.authors.models[0].id.should.equal(testUtils.DataGenerator.Content.users[0].id);
                     createdPost.get('created_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     createdPost.get('updated_at').should.be.above(new Date(0).getTime());
-                    createdPost.get('updated_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     should.equal(createdPost.get('published_at'), null);
                     should.equal(createdPost.get('published_by'), null);
 
@@ -773,7 +772,6 @@ describe('Post Model', function () {
                     publishedPost.get('published_at').should.be.instanceOf(Date);
                     publishedPost.get('published_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     publishedPost.get('updated_at').should.be.instanceOf(Date);
-                    publishedPost.get('updated_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
 
                     Object.keys(eventsTriggered).length.should.eql(4);
@@ -830,7 +828,6 @@ describe('Post Model', function () {
                     createdPost.relations.authors.models[0].id.should.equal(testUtils.DataGenerator.Content.users[0].id);
                     createdPost.get('created_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     createdPost.get('updated_at').should.be.above(new Date(0).getTime());
-                    createdPost.get('updated_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     should.equal(createdPost.get('published_at'), null);
                     should.equal(createdPost.get('published_by'), null);
 
@@ -846,7 +843,6 @@ describe('Post Model', function () {
                     publishedPost.get('published_at').should.be.instanceOf(Date);
                     publishedPost.get('published_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     publishedPost.get('updated_at').should.be.instanceOf(Date);
-                    publishedPost.get('updated_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
 
                     Object.keys(eventsTriggered).length.should.eql(4);
@@ -1840,7 +1836,6 @@ describe('Post Model', function () {
                         slug: postJSON.tags[0].slug,
                         id: postJSON.tags[0].id,
                         created_by: postJSON.tags[0].created_by,
-                        updated_by: postJSON.tags[0].updated_by
                     });
 
                     updatedAtFormat = moment(updatedPost.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss');

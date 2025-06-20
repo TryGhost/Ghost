@@ -12,7 +12,6 @@ function setting(group, key, value) {
         key,
         value,
         updated_at: moment.utc().format(),
-        updated_by: 1,
         created_at: moment.utc().format(),
         created_by: 1
     };

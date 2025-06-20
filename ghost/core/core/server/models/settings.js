@@ -309,8 +309,7 @@ Settings = ghostBookshelf.Model.extend({
                     id: ObjectID().toHexString(),
                     created_at: date,
                     created_by: owner.id,
-                    updated_at: date,
-                    updated_by: owner.id
+                    updated_at: date
                 });
 
                 return _.pick(settingValues, columns);

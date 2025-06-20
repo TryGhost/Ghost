@@ -288,8 +288,7 @@ class Base {
             _.each([
                 'author_id',
                 'published_by',
-                'created_by',
-                'updated_by'
+                'created_by'
             ], (key) => {
                 return handleObject(obj, key);
             });

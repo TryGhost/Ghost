@@ -1017,7 +1017,6 @@ DataGenerator.forKnex = (function () {
             id: ObjectId().toHexString(),
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             updated_at: new Date()
         });
     }
@@ -1036,7 +1035,6 @@ DataGenerator.forKnex = (function () {
             visibility: 'public',
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             updated_at: new Date()
         });
     }
@@ -1066,7 +1064,6 @@ DataGenerator.forKnex = (function () {
             type: 'post',
             slug: 'slug',
             updated_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
             created_by: DataGenerator.Content.users[0].id,
             published_at: new Date(),
@@ -1114,7 +1111,6 @@ DataGenerator.forKnex = (function () {
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
             updated_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             visibility: 'public',
             location: 'location'
         });
@@ -1256,7 +1252,6 @@ DataGenerator.forKnex = (function () {
             slug: 'slug',
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             updated_at: new Date()
         });
     }
@@ -1277,7 +1272,6 @@ DataGenerator.forKnex = (function () {
             benefits: [],
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             updated_at: new Date()
         });
     }
@@ -1310,8 +1304,7 @@ DataGenerator.forKnex = (function () {
             type: 'site',
             created_at: new Date(),
             created_by: DataGenerator.Content.users[0].id,
-            updated_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id
+            updated_at: new Date()
         });
     }
 
@@ -1349,7 +1342,6 @@ DataGenerator.forKnex = (function () {
             target_url: 'https://example.com/hooks/test',
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             updated_at: new Date()
         });
     }
@@ -1363,7 +1355,6 @@ DataGenerator.forKnex = (function () {
             slug: 'test-integration',
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             updated_at: new Date()
         });
     }

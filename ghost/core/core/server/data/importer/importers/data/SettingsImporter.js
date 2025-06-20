@@ -142,7 +142,6 @@ class SettingsImporter extends BaseImporter {
                             flags: to.flags || null,
                             created_by: deprecatedSetting.created_by || 1,
                             created_at: deprecatedSetting.created_at,
-                            updated_by: deprecatedSetting.updated_by || 1,
                             updated_at: deprecatedSetting.updated_at
                         });
                     });

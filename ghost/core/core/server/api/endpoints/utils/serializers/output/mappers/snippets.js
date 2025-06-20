@@ -15,8 +15,7 @@ module.exports = (snippet, frame) => {
         lexical: json.lexical,
         created_at: json.created_at,
         updated_at: json.updated_at,
-        created_by: json.created_by,
-        updated_by: json.updated_by
+        created_by: json.created_by
     };
 };
 
@@ -29,7 +28,6 @@ module.exports = (snippet, frame) => {
  * @prop {string} created_at
  * @prop {string} updated_at
  * @prop {string} created_by
- * @prop {string} updated_by
  */
 
 /**

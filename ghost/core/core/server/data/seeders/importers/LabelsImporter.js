@@ -32,8 +32,7 @@ class LabelsImporter extends TableImporter {
             slug: `${slugify(name)}`,
             created_at: dateToDatabaseString(blogStartDate),
             created_by: '1',
-            updated_at: dateToDatabaseString(blogStartDate),
-            updated_by: '1'
+            updated_at: dateToDatabaseString(blogStartDate)
         };
     }
 }

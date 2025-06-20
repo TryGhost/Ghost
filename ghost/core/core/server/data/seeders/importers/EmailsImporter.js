@@ -90,8 +90,7 @@ class EmailsImporter extends TableImporter {
             newsletter_id: newsletter.id,
             created_at: dateToDatabaseString(timestamp),
             created_by: 'unused',
-            updated_at: dateToDatabaseString(timestamp),
-            updated_by: 'unused'
+            updated_at: dateToDatabaseString(timestamp)
         };
     }
 }

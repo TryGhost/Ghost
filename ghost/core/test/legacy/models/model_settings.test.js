@@ -34,8 +34,7 @@ describe('Settings Model', function () {
                     type: 'string',
                     created_at: now,
                     created_by: 1,
-                    updated_at: now,
-                    updated_by: 1
+                    updated_at: now
                 });
 
             const settings = await models.Settings.findAll();

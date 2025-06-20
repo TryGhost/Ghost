@@ -18,7 +18,6 @@ export default class Application extends RESTSerializer {
 
         // don't send attributes that are updated automatically on the server
         delete json.created_by;
-        delete json.updated_by;
 
         return json;
     }

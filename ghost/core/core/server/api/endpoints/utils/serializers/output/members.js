@@ -344,7 +344,6 @@ function createSerializer(debugString, serialize) {
  * @prop {string} created_at
  * @prop {string} created_by
  * @prop {string} updated_at
- * @prop {string} updated_by
  */
 
 /**

@@ -269,7 +269,6 @@ describe('Posts API', function () {
             created_at: moment('2016-05-30T06:30:00.456Z').toDate(),
             updated_at: moment('2016-05-30T06:30:00.456Z').toDate(),
             created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -303,7 +302,6 @@ describe('Posts API', function () {
         modelJson.published_at.toISOString().should.eql('2016-05-30T07:00:00.000Z');
         modelJson.created_at.toISOString().should.not.eql(post.created_at.toISOString());
         modelJson.updated_at.toISOString().should.not.eql(post.updated_at.toISOString());
-        modelJson.updated_by.should.not.eql(post.updated_by);
         modelJson.created_by.should.not.eql(post.created_by);
 
         modelJson.posts_meta.feature_image_alt.should.eql(post.feature_image_alt);
@@ -611,7 +609,6 @@ describe('Posts API', function () {
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate(),
             created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -655,7 +652,6 @@ describe('Posts API', function () {
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate(),
             created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -713,7 +709,6 @@ describe('Posts API', function () {
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate(),
             created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -784,7 +779,6 @@ describe('Posts API', function () {
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate(),
             created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -854,7 +848,6 @@ describe('Posts API', function () {
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate(),
             created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -927,7 +920,6 @@ describe('Posts API', function () {
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate(),
             created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -999,7 +991,6 @@ describe('Posts API', function () {
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate(),
             created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1070,7 +1061,6 @@ describe('Posts API', function () {
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate(),
             created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1141,7 +1131,6 @@ describe('Posts API', function () {
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate(),
             created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1236,7 +1225,6 @@ describe('Posts API', function () {
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate(),
             created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1326,7 +1314,6 @@ describe('Posts API', function () {
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate(),
             created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1418,7 +1405,6 @@ describe('Posts API', function () {
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate(),
             created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1517,7 +1503,6 @@ describe('Posts API', function () {
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate(),
             created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1700,8 +1685,7 @@ describe('Posts API', function () {
                 created_at: moment().subtract(2, 'days').toDate(),
                 updated_at: moment().subtract(2, 'days').toDate(),
                 created_by: ObjectId().toHexString(),
-                updated_by: ObjectId().toHexString()
-            };
+                };
 
             const res = await request.post(localUtils.API.getApiQuery('posts'))
                 .set('Origin', config.get('url'))
@@ -1764,8 +1748,7 @@ describe('Posts API', function () {
                 created_at: moment().subtract(2, 'days').toDate(),
                 updated_at: moment().subtract(2, 'days').toDate(),
                 created_by: ObjectId().toHexString(),
-                updated_by: ObjectId().toHexString()
-            };
+                };
 
             const res = await request.post(localUtils.API.getApiQuery('posts'))
                 .set('Origin', config.get('url'))

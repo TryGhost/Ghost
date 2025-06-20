@@ -6,8 +6,7 @@ export default [
         description: 'Administrators',
         created_at: '2015-11-13T16:01:29.131Z',
         created_by: 1,
-        updated_at: '2015-11-13T16:01:29.131Z',
-        updated_by: 1
+        updated_at: '2015-11-13T16:01:29.131Z'
     },
     {
         id: 2,
@@ -15,8 +14,7 @@ export default [
         description: 'Editors',
         created_at: '2015-11-13T16:01:29.131Z',
         created_by: 1,
-        updated_at: '2015-11-13T16:01:29.131Z',
-        updated_by: 1
+        updated_at: '2015-11-13T16:01:29.131Z'
     },
     {
         id: 3,
@@ -24,8 +22,7 @@ export default [
         description: 'Authors',
         created_at: '2015-11-13T16:01:29.131Z',
         created_by: 1,
-        updated_at: '2015-11-13T16:01:29.131Z',
-        updated_by: 1
+        updated_at: '2015-11-13T16:01:29.131Z'
     },
     {
         id: 4,
@@ -33,8 +30,7 @@ export default [
         description: 'Blog Owner',
         created_at: '2015-11-13T16:01:29.132Z',
         created_by: 1,
-        updated_at: '2015-11-13T16:01:29.132Z',
-        updated_by: 1
+        updated_at: '2015-11-13T16:01:29.132Z'
     },
     {
         id: 5,
@@ -42,8 +38,7 @@ export default [
         description: 'Contributors',
         created_at: '2015-11-13T16:01:29.132Z',
         created_by: 1,
-        updated_at: '2015-11-13T16:01:29.132Z',
-        updated_by: 1
+        updated_at: '2015-11-13T16:01:29.132Z'
     },
     {
         id: 6,
@@ -51,7 +46,6 @@ export default [
         description: 'Super Editors',
         created_at: '2015-11-13T16:01:29.132Z',
         created_by: 1,
-        updated_at: '2015-11-13T16:01:29.132Z',
-        updated_by: 1
+        updated_at: '2015-11-13T16:01:29.132Z'
     }
 ];

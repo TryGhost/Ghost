@@ -958,10 +958,6 @@ Post = ghostBookshelf.Model.extend({
         return this.belongsTo('User', 'created_by');
     },
 
-    updated_by: function updatedBy() {
-        return this.belongsTo('User', 'updated_by');
-    },
-
     published_by: function publishedBy() {
         return this.belongsTo('User', 'published_by');
     },

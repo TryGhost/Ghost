@@ -35,7 +35,6 @@ describe('Unit: endpoints/utils/serializers/output/all', function () {
             });
 
             should.not.exist(response.post.created_by);
-            should.not.exist(response.post.updated_by);
             should.exist(response.post.title);
 
             response = {
@@ -44,7 +43,6 @@ describe('Unit: endpoints/utils/serializers/output/all', function () {
                         created_by: 'xxx',
                         authors: [
                             {
-                                updated_by: 'yyy',
                                 slug: 'ghost'
                             }
                         ]
@@ -63,7 +61,6 @@ describe('Unit: endpoints/utils/serializers/output/all', function () {
             should.not.exist(response.pages[1].published_by);
             should.exist(response.pages[0].authors);
             should.exist(response.pages[0].authors[0].slug);
-            should.not.exist(response.pages[0].authors[0].updated_by);
         });
     });
 });

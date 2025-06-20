@@ -24,7 +24,6 @@ async function createPublishedPostEmail(agent, settings = {}, email_recipient_fi
         created_at: moment().subtract(2, 'days').toISOString(),
         updated_at: moment().subtract(2, 'days').toISOString(),
         created_by: ObjectId().toHexString(),
-        updated_by: ObjectId().toHexString(),
         ...settings
     };
 
