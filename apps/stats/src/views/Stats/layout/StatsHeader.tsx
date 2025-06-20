@@ -24,23 +24,25 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                     <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
                         Analytics
                     </H1>
-                    <div className='flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400'>
-                        {site?.url && (
-                            <div className='flex items-center gap-2'>
-                                <LucideIcon.Globe className='text-gray-400' size={16} strokeWidth={1.5} />
-                                <span>{new URL(site.url).hostname}</span>
+                    {appSettings?.analytics.webAnalytics && (
+                        <div className='flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400'>
+                            {site?.url && (
+                                <div className='flex items-center gap-2'>
+                                    <LucideIcon.Globe className='text-gray-400' size={16} strokeWidth={1.5} />
+                                    <span>{new URL(site.url).hostname}</span>
+                                </div>
+                            )}
+                            <div 
+                                className='flex items-center gap-2' 
+                                title='Active visitors in the last 5 minutes · Updates every 60 seconds'
+                            >
+                                <span>
+                                    {isActiveVisitorsLoading ? '—' : formatNumber(activeVisitors)} online
+                                </span>
+                                <div className={`size-2 rounded-full ${isActiveVisitorsLoading ? 'animate-pulse bg-muted' : activeVisitors ? 'bg-green-500' : 'border border-muted-foreground'}`}></div>
                             </div>
-                        )}
-                        <div 
-                            className='flex items-center gap-2' 
-                            title='Active visitors in the last 5 minutes · Updates every 60 seconds'
-                        >
-                            <span>
-                                {isActiveVisitorsLoading ? '—' : formatNumber(activeVisitors)} online
-                            </span>
-                            <div className={`size-2 rounded-full ${isActiveVisitorsLoading ? 'animate-pulse bg-muted' : activeVisitors ? 'bg-green-500' : 'border border-muted-foreground'}`}></div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </header>
             <Navbar className='sticky top-0 z-40 items-center border-none bg-white/70 py-8 backdrop-blur-md dark:bg-black'>
