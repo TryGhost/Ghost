@@ -454,7 +454,7 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Set timezone (non-UTC)
-        uses: szenius/set-timezone@v1.2
+        uses: szenius/set-timezone@v2.0
         with:
           timezoneLinux: "America/New_York"
 
@@ -530,7 +530,7 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Set timezone (non-UTC)
-        uses: szenius/set-timezone@v1.2
+        uses: szenius/set-timezone@v2.0
         with:
           timezoneLinux: "America/New_York"
 
