@@ -33,7 +33,7 @@
         "preview": "vite preview"
     },
     "devDependencies": {
-        "@faker-js/faker": "^9.8.0",
+        "@faker-js/faker": "9.8.0",
         "@tanstack/react-query": "4.36.1",
         "@testing-library/jest-dom": "5.17.0",
         "@testing-library/react": "14.3.1",
@@ -41,7 +41,7 @@
         "@types/react": "18.3.23",
         "@types/react-svg-map": "2.1.4",
         "@vitejs/plugin-react": "4.5.2",
-        "dotenv": "^16.5.0",
+        "dotenv": "16.5.0",
         "msw": "2.10.2",
         "vite": "5.4.19",
         "vite-plugin-svgr": "4.3.0",
