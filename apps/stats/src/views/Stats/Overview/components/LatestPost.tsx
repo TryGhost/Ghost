@@ -1,8 +1,8 @@
 import React, {useState} from 'react';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, PostShareModal, Skeleton, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, PostShareModal, Skeleton, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 
+import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useNavigate} from '@tryghost/admin-x-framework';
 
 // Import the interface from the hook
 import {LatestPostWithStats} from '@src/hooks/useLatestPostStats';
@@ -19,9 +19,12 @@ const LatestPost: React.FC<LatestPostProps> = ({
     const navigate = useNavigate();
     const [isShareOpen, setIsShareOpen] = useState(false);
     const {site, settings} = useGlobalData();
+    const {appSettings} = useAppContext();
 
     // Get site title from settings or site data
     const siteTitle = site.title || String(settings.find(setting => setting.key === 'title')?.value || 'Ghost Site');
+
+    const metricClassName = 'group mr-2 flex flex-col gap-1.5 hover:cursor-pointer';
 
     return (
         <Card className='group/card bg-gradient-to-tr from-muted/40 to-muted/0 to-50%'>
@@ -118,19 +121,26 @@ const LatestPost: React.FC<LatestPostProps> = ({
                         </div>
 
                         <div className='-ml-4 flex h-full flex-col items-stretch gap-2 pr-6 text-sm'>
-                            <div className='grid h-full grid-cols-2 gap-x-6 border-l pl-10'>
-                                <div className='group mr-2 flex flex-col gap-1.5 hover:cursor-pointer' onClick={() => {
-                                    navigate(`/posts/analytics/beta/${latestPostStats.id}/web`, {crossApp: true});
-                                }}>
-                                    <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                        <LucideIcon.Eye size={16} strokeWidth={1.25} />
-                                        Visitors
+                            <div className='grid h-full grid-cols-2 gap-6 border-l pl-10'>
+                                {appSettings?.analytics.webAnalytics &&
+                                    <div className={metricClassName} onClick={() => {
+                                        navigate(`/posts/analytics/beta/${latestPostStats.id}/web`, {crossApp: true});
+                                    }}>
+                                        <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
+                                            <LucideIcon.Eye size={16} strokeWidth={1.25} />
+                                            Visitors
+                                        </div>
+                                        <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                            {formatNumber(latestPostStats.visitors)}
+                                        </span>
                                     </div>
-                                    <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
-                                        {formatNumber(latestPostStats.visitors)}
-                                    </span>
-                                </div>
-                                <div className='group mr-2 flex flex-col gap-1.5 hover:cursor-pointer' onClick={() => {
+                                }
+                                <div className={
+                                    cn(
+                                        metricClassName,
+                                        !appSettings?.analytics.webAnalytics && 'row-[2/3] col-[1/2]'
+                                    )
+                                } onClick={() => {
                                     navigate(`/posts/analytics/beta/${latestPostStats.id}/growth`, {crossApp: true});
                                 }}>
                                     <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
@@ -148,7 +158,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                 </div>
                                 {latestPostStats.open_rate ?
                                     <>
-                                        <div className='group mr-2 flex flex-col gap-1.5 pt-6 hover:cursor-pointer' onClick={() => {
+                                        <div className={metricClassName} onClick={() => {
                                             navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
                                         }}>
                                             <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
@@ -159,7 +169,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                                 {formatPercentage(latestPostStats.open_rate / 100)}
                                             </span>
                                         </div>
-                                        <div className='group mr-2 flex flex-col gap-1.5 pt-6 hover:cursor-pointer' onClick={() => {
+                                        <div className={metricClassName} onClick={() => {
                                             navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
                                         }}>
                                             <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
