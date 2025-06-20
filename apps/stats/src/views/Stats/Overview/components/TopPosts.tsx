@@ -3,8 +3,8 @@ import React from 'react';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {TopPostViewsStats} from '@tryghost/admin-x-framework/api/stats';
 import {getPeriodText} from '@src/utils/chart-helpers';
+import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface TopPostsData {
     stats?: TopPostViewsStats[];
@@ -21,6 +21,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
 }) => {
     const navigate = useNavigate();
     const {range} = useGlobalData();
+    const {appSettings} = useAppContext();
 
     return (
         <Card className='group/card lg:col-span-2'>
@@ -36,7 +37,9 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                     <CardDescription className='hidden'>Most viewed posts in this period</CardDescription>
                                 </CardHeader>
                             </TableHead>
-                            <TableHead className='w-[12%] text-right'>Visitors</TableHead>
+                            {appSettings?.analytics.webAnalytics &&
+                                <TableHead className='w-[12%] text-right'>Visitors</TableHead>
+                            }
                             <TableHead className='w-[12%] whitespace-nowrap text-right'>Open rate</TableHead>
                             <TableHead className='w-[12%] text-right'>Members</TableHead>
                         </TableRow>
@@ -53,7 +56,9 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                         </div>
                                     </div>
                                 </TableCell>
-                                <TableCell className='w-[12%] group-hover:bg-transparent'><Skeleton /></TableCell>
+                                {appSettings?.analytics.webAnalytics &&
+                                    <TableCell className='w-[12%] group-hover:bg-transparent'><Skeleton /></TableCell>
+                                }
                                 <TableCell className='w-[12%] group-hover:bg-transparent'><Skeleton /></TableCell>
                                 <TableCell className='w-[12%] group-hover:bg-transparent'><Skeleton /></TableCell>
                             </TableRow>
@@ -82,9 +87,11 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className='text-right font-mono'>
-                                        {formatNumber(post.views)}
-                                    </TableCell>
+                                    {appSettings?.analytics.webAnalytics &&
+                                        <TableCell className='text-right font-mono'>
+                                            {formatNumber(post.views)}
+                                        </TableCell>
+                                    }
                                     <TableCell className='text-right font-mono'>
                                         {post.open_rate ? `${Math.round(post.open_rate)}%` : <>&mdash;</>}
                                     </TableCell>

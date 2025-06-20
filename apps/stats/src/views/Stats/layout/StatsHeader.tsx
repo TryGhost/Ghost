@@ -1,7 +1,7 @@
 import React from 'react';
 import {H1, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
 // import {useFeatureFlag} from '@src/hooks/useFeatureFlag';
-import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
+import {useAppContext, useLocation, useNavigate} from '@tryghost/admin-x-framework';
 
 interface StatsHeaderProps {
     children?: React.ReactNode;
@@ -12,6 +12,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
 }) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const {appSettings} = useAppContext();
     // const alphaFlag = useFeatureFlag('trafficAnalyticsAlpha', '/');
 
     return (
@@ -31,11 +32,15 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                         }}>
                             Overview
                         </TabsTrigger>
-                        <TabsTrigger value="/web/" onClick={() => {
-                            navigate('/web/');
-                        }}>
-                        Web traffic
-                        </TabsTrigger>
+
+                        {appSettings?.analytics.webAnalytics &&
+                            <TabsTrigger value="/web/" onClick={() => {
+                                navigate('/web/');
+                            }}>
+                            Web traffic
+                            </TabsTrigger>
+                        }
+
                         <TabsTrigger value="/newsletters/" onClick={() => {
                             navigate('/newsletters/');
                         }}>
@@ -46,11 +51,13 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                         }}>
                         Growth
                         </TabsTrigger>
-                        <TabsTrigger value="/locations/" onClick={() => {
-                            navigate('/locations/');
-                        }}>
-                        Locations
-                        </TabsTrigger>
+                        {appSettings?.analytics.webAnalytics &&
+                            <TabsTrigger value="/locations/" onClick={() => {
+                                navigate('/locations/');
+                            }}>
+                            Locations
+                            </TabsTrigger>
+                        }
                     </TabsList>
                 </Tabs>
                 <NavbarActions>

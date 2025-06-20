@@ -9,8 +9,8 @@ import TopContent from './components/TopContent';
 import WebKPIs, {KpiDataItem} from './components/WebKPIs';
 import {Card, CardContent, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
+import {Navigate, getStatEndpointUrl, getToken, useAppContext} from '@tryghost/admin-x-framework';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -51,6 +51,7 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
 const Web: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
+    const {appSettings} = useAppContext();
 
     // Get site URL and icon for domain comparison and Direct traffic favicon
     const siteUrl = data?.url as string | undefined;
@@ -94,6 +95,12 @@ const Web: React.FC = () => {
 
     // Calculate combined loading state
     const isPageLoading = isConfigLoading;
+
+    if (!appSettings?.analytics.webAnalytics) {
+        return (
+            <Navigate to='/' />
+        );
+    }
 
     return (
         <StatsLayout>
