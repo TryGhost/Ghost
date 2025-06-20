@@ -74,7 +74,7 @@ const FeedList:React.FC<FeedListProps> = ({
                                         <ul className='mx-auto flex w-full flex-col px-4' data-testid="feed-list">
                                             {activities.map((activity, index) => (
                                                 <li
-                                                // eslint-disable-next-line react/no-array-index-key
+                                                    // eslint-disable-next-line react/no-array-index-key
                                                     key={`${activity.id}-${activity.type}-${index}`} // We are using index here as activity.id is cannot be guaranteed to be unique at the moment
                                                     data-testid="feed-item"
                                                     data-test-view-article
@@ -82,6 +82,7 @@ const FeedList:React.FC<FeedListProps> = ({
                                                     <FeedItem
                                                         actor={activity.actor}
                                                         allowDelete={activity.object.authored}
+                                                        allowUnfollow={activity.type === 'Announce' ? !!activity.actor?.followedByMe : !!activity.object.attributedTo?.followedByMe}
                                                         commentCount={activity.object.replyCount ?? 0}
                                                         isLoading={isLoading}
                                                         isPending={isPendingActivity(activity.id)}

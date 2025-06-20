@@ -21,6 +21,8 @@ interface FeedItemMenuProps {
     onCopyLink: () => void;
     onDelete: () => void;
     allowDelete: boolean;
+    onUnfollow?: () => void;
+    allowUnfollow?: boolean;
     disabled?: boolean;
     layout?: string;
 }
@@ -30,6 +32,8 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
     onCopyLink,
     onDelete,
     allowDelete = false,
+    onUnfollow,
+    allowUnfollow = false,
     disabled = false,
     layout
 }) => {
@@ -41,6 +45,11 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
     const handleDeleteClick = (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
         onDelete();
+    };
+
+    const handleUnfollowClick = (e: React.MouseEvent<HTMLElement>) => {
+        e.stopPropagation();
+        onUnfollow?.();
     };
 
     return (
@@ -55,6 +64,13 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
                             <PopoverClose asChild>
                                 <Button className='justify-start' variant='ghost' onClick={handleCopyLinkClick}>
                                     Copy link
+                                </Button>
+                            </PopoverClose>
+                        }
+                        {allowUnfollow &&
+                            <PopoverClose asChild>
+                                <Button className='justify-start' variant='ghost' onClick={handleUnfollowClick}>
+                                    Unfollow
                                 </Button>
                             </PopoverClose>
                         }

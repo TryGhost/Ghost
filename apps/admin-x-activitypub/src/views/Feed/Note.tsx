@@ -227,6 +227,7 @@ const Note = () => {
                                         <FeedItem
                                             actor={item.actor}
                                             allowDelete={false}
+                                            allowUnfollow={!!item.actor.followedByMe}
                                             commentCount={item.object.replyCount ?? 0}
                                             last={false}
                                             layout='reply'
@@ -246,6 +247,7 @@ const Note = () => {
                                     <FeedItem
                                         actor={currentPost.actor}
                                         allowDelete={false}
+                                        allowUnfollow={!!currentPost.actor.followedByMe}
                                         commentCount={replyCount}
                                         last={true}
                                         layout={'modal'}
@@ -277,6 +279,7 @@ const Note = () => {
                                                         <FeedItem
                                                             actor={replyGroup.mainReply.actor}
                                                             allowDelete={replyGroup.mainReply.object.authored}
+                                                            allowUnfollow={!!replyGroup.mainReply.actor.followedByMe}
                                                             commentCount={replyGroup.mainReply.object.replyCount ?? 0}
                                                             isChainParent={hasChain}
                                                             isPending={isPendingActivity(replyGroup.mainReply.id)}
@@ -298,6 +301,7 @@ const Note = () => {
                                                                 key={replyGroup.chain[0].id}
                                                                 actor={replyGroup.chain[0].actor}
                                                                 allowDelete={replyGroup.chain[0].object.authored}
+                                                                allowUnfollow={!!replyGroup.chain[0].actor.followedByMe}
                                                                 commentCount={replyGroup.chain[0].object.replyCount ?? 0}
                                                                 isChainContinuation={true}
                                                                 isPending={isPendingActivity(replyGroup.chain[0].id)}
@@ -325,6 +329,7 @@ const Note = () => {
                                                                     key={chainItem.id}
                                                                     actor={chainItem.actor}
                                                                     allowDelete={chainItem.object.authored}
+                                                                    allowUnfollow={!!chainItem.actor.followedByMe}
                                                                     commentCount={chainItem.object.replyCount ?? 0}
                                                                     isChainContinuation={true}
                                                                     isPending={isPendingActivity(chainItem.id)}

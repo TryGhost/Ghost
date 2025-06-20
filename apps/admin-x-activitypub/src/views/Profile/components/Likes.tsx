@@ -1,5 +1,6 @@
 import FeedItem from '@src/components/feed/FeedItem';
 import {Activity} from '@src/api/activitypub';
+import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon, Separator} from '@tryghost/shade';
 import {useEffect, useRef} from 'react';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -71,6 +72,7 @@ const Likes: React.FC<LikesProps> = ({
                         <FeedItem
                             actor={activity.actor}
                             allowDelete={activity.object.authored}
+                            allowUnfollow={activity.type === 'Announce' ? !!activity.actor.followedByMe : !!activity.object.attributedTo?.followedByMe}
                             commentCount={activity.object.replyCount}
                             isLoading={isLoading}
                             layout='feed'

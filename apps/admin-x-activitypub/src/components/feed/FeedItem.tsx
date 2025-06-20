@@ -202,6 +202,7 @@ interface FeedItemProps {
     isChainParent?: boolean;
     onClick?: () => void;
     onDelete?: () => void;
+    allowUnfollow?: boolean;
     showStats?: boolean;
 }
 
@@ -228,6 +229,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
     isChainParent = false,
     onClick: onClickHandler = noop,
     onDelete = noop,
+    allowUnfollow = false,
     showStats = true
 }) => {
     const timestamp =
@@ -305,6 +307,11 @@ const FeedItem: React.FC<FeedItemProps> = ({
         }
     };
 
+    const handleUnfollow = async () => {
+        // TODO: Implement unfollow API call
+        toast.success('Unfollowed successfully');
+    };
+
     let author = actor;
     if (type === 'Announce') {
         author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
@@ -361,11 +368,13 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </div>
                                 <FeedItemMenu
                                     allowDelete={allowDelete}
+                                    allowUnfollow={allowUnfollow}
                                     disabled={isPending}
                                     layout='feed'
                                     trigger={UserMenuTrigger}
                                     onCopyLink={handleCopyLink}
                                     onDelete={handleDelete}
+                                    onUnfollow={handleUnfollow}
                                 />
                             </div>
                             <div className='relative col-start-2 col-end-3 w-full gap-4 pl-[52px]'>
@@ -525,11 +534,13 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     </div>
                                     {!isCompact && <FeedItemMenu
                                         allowDelete={allowDelete}
+                                        allowUnfollow={allowUnfollow}
                                         disabled={isPending}
                                         layout='reply'
                                         trigger={UserMenuTrigger}
                                         onCopyLink={handleCopyLink}
                                         onDelete={handleDelete}
+                                        onUnfollow={handleUnfollow}
                                     />}
                                 </div>
                                 <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
@@ -632,10 +643,12 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     />}
                                     <FeedItemMenu
                                         allowDelete={allowDelete}
+                                        allowUnfollow={allowUnfollow}
                                         layout='inbox'
                                         trigger={UserMenuTrigger}
                                         onCopyLink={handleCopyLink}
                                         onDelete={handleDelete}
+                                        onUnfollow={handleUnfollow}
                                     />
                                 </div>
                             </div>

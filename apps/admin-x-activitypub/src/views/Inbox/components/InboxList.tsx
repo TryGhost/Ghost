@@ -85,6 +85,7 @@ const InboxList:React.FC<InboxListProps> = ({
                                                     <FeedItem
                                                         actor={activity.actor}
                                                         allowDelete={activity.object.authored}
+                                                        allowUnfollow={activity.type === 'Announce' ? !!activity.actor?.followedByMe : !!activity.object.attributedTo?.followedByMe}
                                                         commentCount={activity.object.replyCount ?? 0}
                                                         isLoading={isLoading}
                                                         isPending={isPendingActivity(activity.id)}
