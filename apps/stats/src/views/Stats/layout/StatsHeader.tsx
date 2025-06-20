@@ -18,18 +18,18 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
     return (
         <>
             <header className='z-40 -mx-8 bg-white/70 backdrop-blur-md dark:bg-black'>
-                <div className='relative flex w-full items-start justify-between gap-5 px-8 pb-0 pt-8'>
+                <div className='relative flex w-full items-center justify-between gap-5 px-8 pb-0 pt-8'>
                     <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
                         Analytics
                     </H1>
-                    <div 
-                        className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400' 
+                    <div
+                        className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400'
                         title='Active visitors in the last 5 minutes · Updates every 60 seconds'
                     >
-                        <div className={`size-2 rounded-full ${isActiveVisitorsLoading ? 'animate-pulse bg-gray-400' : 'bg-green-500'}`}></div>
                         <span>
                             {isActiveVisitorsLoading ? '—' : formatNumber(activeVisitors)} online
                         </span>
+                        <div className={`size-2 rounded-full ${isActiveVisitorsLoading ? 'animate-pulse bg-muted' : activeVisitors ? 'bg-green-500' : 'border border-muted-foreground'}`}></div>
                     </div>
                 </div>
             </header>
