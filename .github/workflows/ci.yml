@@ -1028,7 +1028,6 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           flags: admin-tests
-          move_coverage_to_trash: true
 
       - name: Restore E2E coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
@@ -1046,7 +1045,6 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           flags: e2e-tests
-          move_coverage_to_trash: true
 
   job_required_tests:
     name: All required tests passed or skipped
