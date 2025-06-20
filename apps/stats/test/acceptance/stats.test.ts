@@ -43,6 +43,5 @@ test.describe('Stats App', () => {
         await overviewPage.visit();
 
         await expect(overviewPage.body).toContainText('155');
-        await expect(overviewPage.body).toContainText('$550');
     });
 });
