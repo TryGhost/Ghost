@@ -1,18 +1,16 @@
 import {useEffect, useState} from 'react';
 import {getStatEndpointUrl, getToken} from '../utils/stats-config';
 import {StatsConfig} from '../providers/FrameworkProvider';
-import {useAppContext} from '../providers/AppProvider';
 import {useQuery} from '@tinybirdco/charts';
 
 interface UseActiveVisitorsOptions {
     postUuid?: string;
     statsConfig?: StatsConfig | null;
+    enabled?: boolean;
 }
 
 export const useActiveVisitors = (options: UseActiveVisitorsOptions = {}) => {
-    const {postUuid, statsConfig} = options;
-    const {appSettings} = useAppContext();
-    const enabled = appSettings?.analytics?.webAnalytics ?? false;
+    const {postUuid, statsConfig, enabled = true} = options;
     const [refreshKey, setRefreshKey] = useState(0);
     const [lastKnownCount, setLastKnownCount] = useState<number | null>(null);
 

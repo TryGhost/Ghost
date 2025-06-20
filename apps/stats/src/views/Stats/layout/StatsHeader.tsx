@@ -15,7 +15,8 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
     const {appSettings} = useAppContext();
     const {site, statsConfig} = useGlobalData();
     const {activeVisitors, isLoading: isActiveVisitorsLoading} = useActiveVisitors({
-        statsConfig
+        statsConfig,
+        enabled: appSettings?.analytics?.webAnalytics ?? false
     });
 
     return (

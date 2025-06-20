@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import moment from 'moment-timezone';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, PostShareModal, Tabs, TabsList, TabsTrigger, formatNumber} from '@tryghost/shade';
 import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
-import {hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
+import {hasBeenEmailed, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '../../../App';
 import {useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -22,10 +22,15 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const handleError = useHandleError();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
-    const {site} = useGlobalData();
+    const {site, statsConfig, post, isPostLoading, postId} = useGlobalData();
 
-    // Use shared post data from context
-    const {post, isPostLoading, postId} = useGlobalData();
+    // Use the active visitors hook with post-specific filtering
+    const {activeVisitors, isLoading: isActiveVisitorsLoading} = useActiveVisitors({
+        postUuid: post?.uuid,
+        statsConfig,
+        enabled: appSettings?.analytics?.webAnalytics ?? false
+    });
+
     // Use the utility function from admin-x-framework
     const showNewsletterTab = hasBeenEmailed(post as Post);
 
@@ -51,9 +56,6 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
             handleError(e);
         }
     };
-
-    const isActiveVisitorsLoading = false;
-    const activeVisitors = 20;
 
     return (
         <>
