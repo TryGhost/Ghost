@@ -19,6 +19,7 @@ const urlUtils = require('../../../shared/url-utils');
  * @property {number} free_members - Count of members who signed up on this post but paid elsewhere/never
  * @property {number} paid_members - Count of members whose paid conversion event was attributed to this post
  * @property {number} mrr - Total MRR from paid conversions attributed to this post
+ * @property {string} published_at - The date the post was published
  */
 
 /**
@@ -94,6 +95,7 @@ class PostsStatsService {
                 .select(
                     'p.id as post_id',
                     'p.title',
+                    'p.published_at',
                     this.knex.raw('COALESCE(free.free_members, 0) as free_members'),
                     this.knex.raw('COALESCE(paid.paid_members, 0) as paid_members'),
                     this.knex.raw('COALESCE(mrr.mrr, 0) as mrr')
