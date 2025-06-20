@@ -47,7 +47,6 @@ jobs:
           echo "GITHUB_EVENT_NAME: ${{ github.event_name }}"
           echo "GITHUB_CONTEXT: ${{ toJson(github.event) }}"
 
-
       - name: Get metadata (push)
         if: github.event_name == 'push'
         run: |
@@ -134,11 +133,6 @@ jobs:
               - '!ghost/core/core/server/data/tinybird/**/*.md'
             any-code:
               - '!**/*.md'
-
-      - name: 'Checkout current commit'
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ env.HEAD_COMMIT }}
 
       - name: Compute lockfile hash
         run: echo "hash=lockfile-${{ hashFiles('yarn.lock') }}" >> "$GITHUB_ENV"
