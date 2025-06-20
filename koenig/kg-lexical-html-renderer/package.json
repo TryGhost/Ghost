@@ -33,7 +33,7 @@
     "mocha": "11.7.0",
     "prettier": "3.5.3",
     "should": "13.2.3",
-    "sinon": "17.0.1"
+    "sinon": "21.0.0"
   },
   "dependencies": {
     "@lexical/clipboard": "0.13.1",
