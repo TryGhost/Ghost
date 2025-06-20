@@ -8,7 +8,6 @@ export default class MigrateService extends Service {
     @service router;
     @service ghostPaths;
     @service settings;
-    @service store;
 
     migrateUrl = 'https://migrate.ghost.org';
     migrateRouteRoot = '#/migrate';
