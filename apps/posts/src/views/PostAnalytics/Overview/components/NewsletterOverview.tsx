@@ -60,7 +60,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
     } satisfies ChartConfig;
 
     return (
-        <Card className='group/card'>
+        <Card className={`group/card ${post.email_only && 'col-span-2'}`}>
             <div className='relative flex items-center justify-between gap-6'>
                 <CardHeader>
                     <CardTitle className='flex items-center gap-1.5 text-lg'>
@@ -79,86 +79,91 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                     </div>
                 </CardContent>
                 :
-                <CardContent>
-                    <div className='grid grid-cols-2 gap-6'>
-                        <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0'>
-                            <div className='flex grow flex-col gap-1.5 border-none pb-0'>
-                                <KpiCardHeaderLabel color='hsl(var(--chart-blue))'>
+                <CardContent className={`${post.email_only && 'grid grid-cols-2'}`}>
+                    <div className={`${post.email_only && 'border-r pr-6'}`}>
+                        <div className='grid grid-cols-2 gap-6'>
+                            <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0'>
+                                <div className='flex grow flex-col gap-1.5 border-none pb-0'>
+                                    <KpiCardHeaderLabel color='hsl(var(--chart-blue))'>
                                     Open rate
-                                </KpiCardHeaderLabel>
-                                <KpiCardHeaderValue
+                                    </KpiCardHeaderLabel>
+                                    <KpiCardHeaderValue
                                     // diffDirection={'up'}
                                     // diffTooltip={'Better than the average'}
                                     // diffValue={1.45}
-                                    value={formatPercentage(stats.openedRate)}
-                                />
-                            </div>
-                        </KpiCardHeader>
-                        <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0'>
-                            <div className='flex grow flex-col gap-1.5 border-none pb-0'>
-                                <KpiCardHeaderLabel color='hsl(var(--chart-teal))'>
+                                        value={formatPercentage(stats.openedRate)}
+                                    />
+                                </div>
+                            </KpiCardHeader>
+                            <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0'>
+                                <div className='flex grow flex-col gap-1.5 border-none pb-0'>
+                                    <KpiCardHeaderLabel color='hsl(var(--chart-teal))'>
                                     Click rate
-                                </KpiCardHeaderLabel>
-                                <KpiCardHeaderValue
+                                    </KpiCardHeaderLabel>
+                                    <KpiCardHeaderValue
                                     // diffDirection={'up'}
                                     // diffTooltip={'Better than the average'}
                                     // diffValue={1.45}
-                                    value={formatPercentage(stats.clickedRate)}
-                                />
-                            </div>
+                                        value={formatPercentage(stats.clickedRate)}
+                                    />
+                                </div>
 
-                        </KpiCardHeader>
-                    </div>
-                    <Separator />
-                    <div className='mx-auto my-6 h-[240px]'>
-                        <NewsletterRadialChart
-                            className='pointer-events-none aspect-square h-[240px]'
-                            config={commonChartConfig}
-                            data={commonChartData}
-                            tooltip={false}
-                        />
-                    </div>
-                    <Separator />
-                    <div className='pt-3'>
-                        <div className='flex items-center justify-between gap-3 py-3'>
-                            <span className='font-medium text-muted-foreground'>Top clicked links in this email</span>
-                            <HTable>Members</HTable>
+                            </KpiCardHeader>
                         </div>
-                        <Table>
-                            {topLinks.length > 0
-                                ?
-                                <TableBody>
-                                    {topLinks.slice(0, 3).map((link) => {
-                                        return (
-                                            <TableRow key={link.link.link_id} className='border-none'>
-                                                <TableCell className='max-w-0 px-0 group-hover:!bg-transparent'>
-                                                    <a
-                                                        className='block truncate hover:underline'
-                                                        href={link.link.to}
-                                                        rel="noreferrer"
-                                                        target='_blank'
-                                                        title={link.link.to}
-                                                    >
-                                                        {cleanTrackedUrl(link.link.to, true)}
-                                                    </a>
-                                                </TableCell>
-                                                <TableCell className='w-[10%] pl-3 pr-0 text-right font-mono text-sm group-hover:!bg-transparent'>{formatNumber(link.count || 0)}</TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
-                                </TableBody>
-                                :
-                                <TableBody>
-                                    <TableRow>
-                                        <TableCell colSpan={2}>
-                                            <div className='py-20 text-center text-sm text-gray-700'>
+                        {!post.email_only && <Separator />}
+                        <div className='mx-auto my-6 h-[240px]'>
+                            <NewsletterRadialChart
+                                className='pointer-events-none aspect-square h-[240px]'
+                                config={commonChartConfig}
+                                data={commonChartData}
+                                tooltip={false}
+                            />
+                        </div>
+                    </div>
+
+                    <div className={`${post.email_only && 'pl-6'}`}>
+                        {!post.email_only && <Separator />}
+                        <div className={post.email_only ? '' : 'pt-3'}>
+                            <div className={`flex items-center justify-between gap-3 ${post.email_only ? 'pb-3' : 'py-3'}`}>
+                                <span className='font-medium text-muted-foreground'>Top clicked links in this email</span>
+                                <HTable>Members</HTable>
+                            </div>
+                            <Table>
+                                {topLinks.length > 0
+                                    ?
+                                    <TableBody>
+                                        {topLinks.slice(0, (post.email_only ? 6 : 3)).map((link) => {
+                                            return (
+                                                <TableRow key={link.link.link_id} className='border-none'>
+                                                    <TableCell className='max-w-0 px-0 group-hover:!bg-transparent'>
+                                                        <a
+                                                            className='block truncate hover:underline'
+                                                            href={link.link.to}
+                                                            rel="noreferrer"
+                                                            target='_blank'
+                                                            title={link.link.to}
+                                                        >
+                                                            {cleanTrackedUrl(link.link.to, true)}
+                                                        </a>
+                                                    </TableCell>
+                                                    <TableCell className='w-[10%] pl-3 pr-0 text-right font-mono text-sm group-hover:!bg-transparent'>{formatNumber(link.count || 0)}</TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                    :
+                                    <TableBody>
+                                        <TableRow>
+                                            <TableCell colSpan={2}>
+                                                <div className='py-20 text-center text-sm text-gray-700'>
                                                 You have no links in your post.
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            }
-                        </Table>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                }
+                            </Table>
+                        </div>
                     </div>
                     {/* <Button variant='outline' onClick={() => {
                         navigate(`/analytics/beta/${postId}/newsletter`);

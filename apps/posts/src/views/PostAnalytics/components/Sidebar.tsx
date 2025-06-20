@@ -1,20 +1,19 @@
 import React from 'react';
 import {LucideIcon, RightSidebarMenu, RightSidebarMenuLink} from '@tryghost/shade';
-import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
+import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
 
 const Sidebar:React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const {post, postId} = useGlobalData();
-    const typedPost = post as Post;
     
     // In the Ember app, a post has been emailed if:
     // 1. It has an email object with non-failed status, or
     // 2. It has email_only flag set
     const hasBeenEmailed = Boolean(
-        (typedPost?.email && typedPost.email.status !== 'failed') || 
-        typedPost?.email_only
+        (post?.email && post.email.status !== 'failed') || 
+        post?.email_only
     );
 
     return (
@@ -26,12 +25,14 @@ const Sidebar:React.FC = () => {
                     <LucideIcon.LayoutTemplate size={16} strokeWidth={1.25} />
                     Overview
                 </RightSidebarMenuLink>
-                <RightSidebarMenuLink active={location.pathname === `/analytics/beta/${postId}/web`} onClick={() => {
-                    navigate(`/analytics/beta/${postId}/web`);
-                }}>
-                    <LucideIcon.MousePointer size={16} strokeWidth={1.25} />
-                    Web
-                </RightSidebarMenuLink>
+                {!post?.email_only && (
+                    <RightSidebarMenuLink active={location.pathname === `/analytics/beta/${postId}/web`} onClick={() => {
+                        navigate(`/analytics/beta/${postId}/web`);
+                    }}>
+                        <LucideIcon.MousePointer size={16} strokeWidth={1.25} />
+                        Web
+                    </RightSidebarMenuLink>
+                )}
 
                 {hasBeenEmailed && (
                     <RightSidebarMenuLink active={location.pathname === `/analytics/beta/${postId}/newsletter`} onClick={() => {
