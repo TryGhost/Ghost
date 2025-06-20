@@ -36,7 +36,7 @@ jobs:
         run: git checkout $(git describe --tags --abbrev=0 --match=v*)
         if: inputs.base-ref == 'latest'
 
-      - uses: asdf-vm/actions/install@v2
+      - uses: asdf-vm/actions/install@v4
         with:
           tool_versions: |
             semver 3.3.0
