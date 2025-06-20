@@ -8,10 +8,10 @@ import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, Icon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, SkeletonTable, cn, formatNumber, formatPercentage, formatQueryDate, getRangeDates, useSimplePagination} from '@tryghost/shade';
+import {Navigate, getStatEndpointUrl, getToken, useAppContext} from '@tryghost/admin-x-framework';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {getPeriodText} from '@src/utils/chart-helpers';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -61,6 +61,7 @@ const Locations:React.FC = () => {
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
     const ITEMS_PER_PAGE = 10;
+    const {appSettings} = useAppContext();
 
     const params = {
         site_uuid: statsConfig?.id || '',
@@ -198,6 +199,12 @@ const Locations:React.FC = () => {
 
     const isLoading = isConfigLoading || loading;
 
+    if (!appSettings?.analytics.webAnalytics) {
+        return (
+            <Navigate to='/' />
+        );
+    }
+
     return (
         <StatsLayout>
             <StatsHeader>
@@ -239,7 +246,7 @@ const Locations:React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                            <div className='group/datalist flex flex-col justify-between border-l px-6'>
+                            <div className='group/datalist flex flex-col justify-between overflow-hidden border-l px-6'>
                                 {isLoading
                                     ?
                                     <DataList>
@@ -261,23 +268,21 @@ const Locations:React.FC = () => {
                                                     const countryName = getCountryName(`${row.location}`) || 'Unknown';
                                                     return (
                                                         <DataListRow key={row.location || 'unknown'}>
-                                                            <DataListBar
-                                                                className='bg-gradient-to-r from-[hsl(var(--chart-blue))]/40 to-[hsl(var(--chart-blue))]/80  opacity-20 transition-all'
-                                                                style={{
-                                                                    width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
-                                                                }}
-                                                            />
+                                                            <DataListBar style={{
+                                                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
+                                                            }}/>
                                                             <DataListItemContent className='group-hover/data:max-w-[calc(100%-140px)]'>
                                                                 <div className='flex items-center space-x-3 overflow-hidden'>
                                                                     <Flag
                                                                         countryCode={`${normalizeCountryCode(row.location as string)}`}
+                                                                        data-testid='country-flag'
                                                                         fallback={
                                                                             <span className='flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-black text-white'>
                                                                                 <Icon.SkullAndBones className='size-3' />
                                                                             </span>
                                                                         }
                                                                     />
-                                                                    <div className='truncate font-medium'>{countryName}</div>
+                                                                    <div className='truncate font-medium' data-testid='country-name'>{countryName}</div>
                                                                 </div>
                                                             </DataListItemContent>
                                                             <DataListItemValue>

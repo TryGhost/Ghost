@@ -8,6 +8,7 @@
   "license": "MIT",
   "workspaces": [
     "ghost/*",
+    "e2e",
     "apps/*"
   ],
   "monorepo": {
@@ -45,6 +46,7 @@
     "docker:test:unit": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} NX_DAEMON=false docker compose run --rm --no-deps ghost yarn test:unit",
     "docker:test:browser": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run --rm ghost yarn test:browser",
     "docker:test:all": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} NX_DAEMON=false docker compose run --rm ghost yarn nx run ghost:test:all",
+    "docker:test:e2e": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} NX_DAEMON=false docker compose run --rm ghost yarn test:e2e",
     "docker:reset": "docker compose down -v && docker compose up -d --wait",
     "docker:restart": "docker compose down && docker compose up -d --wait",
     "docker:down": "docker compose down",
@@ -52,14 +54,12 @@
     "test": "nx run-many -t test",
     "test:unit": "nx run-many -t test:unit",
     "test:browser": "node .github/scripts/dev.js --browser-tests --all",
+    "test:e2e": "yarn workspace @tryghost/e2e test",
     "main": "yarn main:monorepo && yarn main:submodules",
     "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn",
     "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main\"",
     "prepare": "husky install .github/hooks",
     "tb": "tb local start && cd ghost/core/core/server/data/tinybird && tb dev",
-    "tb:update": "docker pull tinybirdco/tinybird-cli-docker",
-    "tb:local": "tb local start",
-    "tb:local:stop": "docker stop tinybird-local && docker rm tinybird-local",
     "tb:install": "curl https://tinybird.co | sh",
     "postinstall": "patch-package"
   },
@@ -82,6 +82,7 @@
     "eslint-plugin-react": "7.37.5",
     "husky": "8.0.3",
     "inquirer": "8.2.6",
+    "jsonc-parser": "3.3.1",
     "lint-staged": "15.5.2",
     "nx": "20.8.2",
     "patch-package": "8.0.0",

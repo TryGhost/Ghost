@@ -125,6 +125,10 @@ export interface GetNotificationsResponse {
     next: string | null;
 }
 
+export interface GetNotificationsCountResponse {
+    count: number;
+}
+
 export interface GetBlockedAccountsResponse {
     accounts: Account[];
     next: string | null;
@@ -461,6 +465,32 @@ export class ActivityPubAPI {
             notifications,
             next: nextPage
         };
+    }
+
+    async getNotificationsCount(): Promise<GetNotificationsCountResponse> {
+        const url = new URL('.ghost/activitypub/notifications/unread/count', this.apiUrl);
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null) {
+            return {
+                count: 0
+            };
+        }
+
+        const count = typeof (json as Record<string, unknown>).count === 'number'
+            ? (json as {count: number}).count
+            : 0;
+
+        return {count};
+    }
+
+    async resetNotificationsCount() {
+        const url = new URL('.ghost/activitypub/notifications/unread/reset', this.apiUrl);
+
+        await this.fetchJSON(url, 'PUT');
+
+        return true;
     }
 
     async getBlockedAccounts(next?: string): Promise<GetBlockedAccountsResponse> {

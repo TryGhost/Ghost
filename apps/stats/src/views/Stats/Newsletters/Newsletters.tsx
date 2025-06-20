@@ -7,11 +7,12 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
+import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useNavigate} from '@tryghost/admin-x-framework';
-import {useNewsletterStatsWithRange, useNewslettersList, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
+import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
+import {useNewsletterStatsWithRangeSplit, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
 import type {TopNewslettersOrder} from '@src/hooks/useNewsletterStatsWithRange';
 
 export type AvgsDataItem = {
@@ -29,21 +30,37 @@ const Newsletters: React.FC = () => {
     const {range, selectedNewsletterId} = useGlobalData();
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
-    // Get newsletters list for dropdown and basic stats
-    const {data: newslettersData, isLoading: isNewslettersLoading} = useNewslettersList();
+    // Get the initial tab from URL search parameters
+    const initialTab = searchParams.get('tab') || 'total-subscribers';
 
-    // Get newsletter stats (emailed posts with their metrics)
-    const {data: newsletterStatsData, isLoading: isStatsLoading} = useNewsletterStatsWithRange(
+    // Get newsletters list for dropdown (without expensive counts)
+    const {data: newslettersData, isLoading: isNewslettersLoading} = useBrowseNewsletters({
+        searchParams: {
+            limit: '50'
+        }
+    });
+
+    // Only enable stats queries once newsletters are loaded AND we have a newsletter selected
+    // This prevents both:
+    // 1. Empty API calls before newsletters load
+    // 2. Unnecessary calls when no newsletter is selected yet
+    const shouldFetchStats = !isNewslettersLoading && newslettersData && newslettersData.newsletters.length > 0 && !!selectedNewsletterId;
+
+    // Get newsletter stats using the split hook for better performance
+    const {data: newsletterStatsData, isLoading: isStatsLoading, isClicksLoading} = useNewsletterStatsWithRangeSplit(
         range,
         sortBy,
-        selectedNewsletterId || undefined
+        selectedNewsletterId || undefined,
+        shouldFetchStats
     );
 
     // Get subscriber count over time for the selected newsletter
     const {data: subscriberStatsData, isLoading: isSubscriberStatsLoading} = useSubscriberCountWithRange(
         range,
-        selectedNewsletterId || undefined
+        selectedNewsletterId || undefined,
+        shouldFetchStats
     );
 
     // Find the selected newsletter to get its active_members count
@@ -57,8 +74,8 @@ const Newsletters: React.FC = () => {
     // Calculate totals for KPIs
     const totals = useMemo(() => {
         // Get total subscribers from the selected newsletter or all newsletters
-        const totalSubscribers = selectedNewsletter?.count?.active_members || 
-            subscriberStatsData?.stats?.[0]?.total || 
+        const totalSubscribers = selectedNewsletter?.count?.active_members ||
+            subscriberStatsData?.stats?.[0]?.total ||
             0;
 
         // Calculate average open and click rates from newsletter stats
@@ -143,18 +160,19 @@ const Newsletters: React.FC = () => {
     return (
         <StatsLayout>
             <StatsHeader>
-                <NewsletterSelect />
+                <NewsletterSelect newsletters={newslettersData?.newsletters} />
                 <DateRangeSelect />
             </StatsHeader>
             <StatsView data={pageData} isLoading={false} loadingComponent={<></>}>
                 <Card>
                     <CardContent>
-                        <NewsletterKPIs 
-                            avgsData={avgsData} 
-                            isAvgsLoading={isStatsLoading} 
-                            isLoading={isKPIsLoading} 
-                            subscribersData={subscribersData} 
-                            totals={totals} 
+                        <NewsletterKPIs
+                            avgsData={avgsData}
+                            initialTab={initialTab}
+                            isAvgsLoading={isStatsLoading}
+                            isLoading={isKPIsLoading}
+                            subscribersData={subscribersData}
+                            totals={totals}
                         />
                     </CardContent>
                 </Card>
@@ -171,19 +189,17 @@ const Newsletters: React.FC = () => {
                     </Card>
                     :
                     <Card>
-                        <CardHeader>
-                            <CardTitle>Top newsletters</CardTitle>
-                            <CardDescription> Your best performing newsletters {getPeriodText(range)}</CardDescription>
-                        </CardHeader>
                         <CardContent>
-                            <Separator/>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>
-                                        Title
+                                        <TableHead variant='cardhead'>
+                                            <CardHeader>
+                                                <CardTitle>Top newsletters</CardTitle>
+                                                <CardDescription> Your best performing newsletters {getPeriodText(range)}</CardDescription>
+                                            </CardHeader>
                                         </TableHead>
-                                        <TableHead className='w-[60px]'>
+                                        <TableHead className='w-[65px]'>
                                             <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='date desc'>
                                             Date
                                             </SortButton>
@@ -207,7 +223,7 @@ const Newsletters: React.FC = () => {
                                 </TableHeader>
                                 <TableBody>
                                     {newsletterStats.map(post => (
-                                        <TableRow key={post.post_id}>
+                                        <TableRow key={post.post_id} className='last:border-none [&>td]:py-2.5'>
                                             <TableCell className="font-medium">
                                                 <div className='group/link inline-flex items-center gap-2'>
                                                     {post.post_id ?
@@ -234,8 +250,14 @@ const Newsletters: React.FC = () => {
                                                 <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_opens)}</span>
                                             </TableCell>
                                             <TableCell className='text-right font-mono text-sm'>
-                                                <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
-                                                <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_clicks)}</span>
+                                                {isClicksLoading ? (
+                                                    <span className="inline-block h-4 w-8 animate-pulse rounded bg-gray-200"></span>
+                                                ) : (
+                                                    <>
+                                                        <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
+                                                        <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_clicks)}</span>
+                                                    </>
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     ))}

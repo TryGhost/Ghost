@@ -1,6 +1,6 @@
 import React from 'react';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
 
 // Default source icon URL - apps can override this
@@ -10,20 +10,23 @@ interface SourcesTableProps {
     data: ProcessedSourceData[] | null;
     range?: number;
     defaultSourceIconUrl?: string;
+    tableHeader: boolean;
 }
 
-const SourcesTable: React.FC<SourcesTableProps> = ({data, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL}) => {
+const SourcesTable: React.FC<SourcesTableProps> = ({tableHeader, data, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL}) => {
     return (
         <DataList>
-            <DataListHeader>
-                <DataListHead>Source</DataListHead>
-                <DataListHead>Visitors</DataListHead>
-            </DataListHeader>
+            {tableHeader &&
+                <DataListHeader>
+                    <DataListHead>Source</DataListHead>
+                    <DataListHead>Visitors</DataListHead>
+                </DataListHeader>
+            }
             <DataListBody>
                 {data?.map((row) => {
                     return (
                         <DataListRow key={row.source} className='group/row'>
-                            <DataListBar className='bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/60 opacity-20 transition-all group-hover/row:opacity-40' style={{
+                            <DataListBar style={{
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
                             }} />
                             <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
@@ -126,14 +129,21 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
 
     return (
         <Card className='group/datalist'>
-            <CardHeader>
-                <CardTitle>{title}</CardTitle>
-                <CardDescription>{description}</CardDescription>
-            </CardHeader>
-            <CardContent>
+            <div className='flex items-center justify-between p-6'>
+                <CardHeader className='p-0'>
+                    <CardTitle>{title}</CardTitle>
+                    <CardDescription>{description}</CardDescription>
+                </CardHeader>
+                <HTable className='mr-2'>Visitors</HTable>
+            </div>
+            <CardContent className='overflow-hidden'>
                 <Separator />
                 {topSources.length > 0 ? (
-                    <SourcesTable data={topSources} defaultSourceIconUrl={defaultSourceIconUrl} range={range} />
+                    <SourcesTable
+                        data={topSources}
+                        defaultSourceIconUrl={defaultSourceIconUrl}
+                        range={range}
+                        tableHeader={false} />
                 ) : (
                     <div className='py-20 text-center text-sm text-gray-700'>
                             No sources data available.
@@ -152,7 +162,11 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                                 <SheetDescription>{description}</SheetDescription>
                             </SheetHeader>
                             <div className='group/datalist'>
-                                <SourcesTable data={extendedData} defaultSourceIconUrl={defaultSourceIconUrl} range={range} />
+                                <SourcesTable
+                                    data={extendedData}
+                                    defaultSourceIconUrl={defaultSourceIconUrl}
+                                    range={range}
+                                    tableHeader={true} />
                             </div>
                         </SheetContent>
                     </Sheet>

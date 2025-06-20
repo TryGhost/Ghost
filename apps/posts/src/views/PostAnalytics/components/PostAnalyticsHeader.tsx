@@ -1,14 +1,11 @@
 import React, {useState} from 'react';
 import moment from 'moment-timezone';
-import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
-import {Post, useBrowsePosts, useDeletePost} from '@tryghost/admin-x-framework/api/posts';
-import {hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, PostShareModal, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
+import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
+import {hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '../../../App';
+import {useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-
-interface PostWithPublishedAt extends Post {
-    published_at?: string;
-}
 
 interface PostAnalyticsHeaderProps {
     currentTab?: string;
@@ -19,24 +16,18 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     currentTab,
     children
 }) => {
-    const {postId} = useParams();
     const navigate = useNavigate();
-    const {fromAnalytics} = useAppContext();
+    const {fromAnalytics, appSettings} = useAppContext();
     const {mutateAsync: deletePost} = useDeletePost();
     const handleError = useHandleError();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [isShareOpen, setIsShareOpen] = useState(false);
+    const {site} = useGlobalData();
 
-    const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
-        searchParams: {
-            filter: `id:${postId}`,
-            fields: 'title,slug,published_at,uuid,feature_image,url,email,status',
-            include: 'email'
-        }
-    });
-
-    const typedPost = post as PostWithPublishedAt;
+    // Use shared post data from context
+    const {post, isPostLoading, postId} = useGlobalData();
     // Use the utility function from admin-x-framework
-    const showNewsletterTab = hasBeenEmailed(typedPost);
+    const showNewsletterTab = hasBeenEmailed(post as Post);
 
     const handleDeletePost = () => {
         if (!post) {
@@ -48,8 +39,11 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     };
 
     const performDelete = async () => {
+        if (!post) {
+            return;
+        }
         try {
-            await deletePost(postId as string);
+            await deletePost(postId);
             setShowDeleteDialog(false);
             // Navigate back to posts list
             navigate('/posts/', {crossApp: true});
@@ -88,45 +82,64 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 {/* <Button variant='outline'><LucideIcon.RefreshCw /></Button> */}
                                 {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                                 {!isPostLoading &&
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant='outline'><LucideIcon.Ellipsis /></Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align='end'>
-                                        <DropdownMenuGroup>
-                                            <DropdownMenuItem asChild>
-                                                <a href={post.url} rel="noopener noreferrer" target="_blank">
-                                                    <LucideIcon.ExternalLink />
+                                <>
+                                    {!post?.email_only && (
+                                        <PostShareModal
+                                            author={post?.authors?.[0]?.name || ''}
+                                            description=''
+                                            faviconURL={site?.icon || ''}
+                                            featureImageURL={post?.feature_image}
+                                            open={isShareOpen}
+                                            postExcerpt={post?.excerpt || ''}
+                                            postTitle={post?.title}
+                                            postURL={post?.url}
+                                            siteTitle={site?.title || ''}
+                                            onClose={() => setIsShareOpen(false)}
+                                            onOpenChange={setIsShareOpen}
+                                        >
+                                            <Button variant='outline' onClick={() => setIsShareOpen(true)}><LucideIcon.Share /> Share</Button>
+                                        </PostShareModal>
+                                    )}
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant='outline'><LucideIcon.Ellipsis /></Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align='end'>
+                                            <DropdownMenuGroup>
+                                                <DropdownMenuItem asChild>
+                                                    <a href={post?.url} rel="noopener noreferrer" target="_blank">
+                                                        <LucideIcon.ExternalLink />
                                                     View in browser
-                                                </a>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => {
-                                                navigate(`/editor/post/${postId}`, {crossApp: true});
-                                            }}>
-                                                <LucideIcon.Pen />
+                                                    </a>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => {
+                                                    navigate(`/editor/post/${postId}`, {crossApp: true});
+                                                }}>
+                                                    <LucideIcon.Pen />
                                                 Edit post
-                                                {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
-                                            </DropdownMenuItem>
-                                        </DropdownMenuGroup>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuGroup>
-                                            <DropdownMenuItem
-                                                className='text-destructive focus:text-destructive'
-                                                onClick={handleDeletePost}
-                                            >
-                                                <LucideIcon.Trash />
+                                                    {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
+                                                </DropdownMenuItem>
+                                            </DropdownMenuGroup>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuGroup>
+                                                <DropdownMenuItem
+                                                    className='text-destructive focus:text-destructive'
+                                                    onClick={handleDeletePost}
+                                                >
+                                                    <LucideIcon.Trash />
                                                 Delete post
-                                            </DropdownMenuItem>
-                                        </DropdownMenuGroup>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                                </DropdownMenuItem>
+                                            </DropdownMenuGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </>
                                 }
                             </div>
                         </div>
                         {!isPostLoading &&
                         <div className='flex items-center gap-6'>
                             {post?.feature_image &&
-                                <div className='h-[82px] w-[132px] rounded-md bg-cover' style={{
+                                <div className='h-[82px] w-[132px] rounded-md bg-cover bg-center' style={{
                                     backgroundImage: `url(${post.feature_image})`
                                 }}></div>
                             }
@@ -134,9 +147,9 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
                                     {post?.title}
                                 </H1>
-                                {typedPost && typedPost.published_at && (
+                                {post?.published_at && (
                                     <div className='mt-0.5 flex items-center justify-start text-sm leading-[1.65em] text-muted-foreground'>
-                            Published on your site on {moment.utc(typedPost.published_at).format('D MMM YYYY')} at {moment.utc(typedPost.published_at).format('HH:mm')}
+                            Published on your site on {moment.utc(post.published_at).format('D MMM YYYY')} at {moment.utc(post.published_at).format('HH:mm')}
                                     </div>
                                 )}
                             </div>
@@ -153,11 +166,13 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                         }}>
                             Overview
                         </TabsTrigger>
-                        <TabsTrigger value="Web" onClick={() => {
-                            navigate(`/analytics/beta/${postId}/web`);
-                        }}>
-                            Web traffic
-                        </TabsTrigger>
+                        {!post?.email_only || !appSettings?.analytics.webAnalytics && (
+                            <TabsTrigger value="Web" onClick={() => {
+                                navigate(`/analytics/beta/${postId}/web`);
+                            }}>
+                                Web traffic
+                            </TabsTrigger>
+                        )}
                         {showNewsletterTab && (
                             <TabsTrigger value="Newsletter" onClick={() => {
                                 navigate(`/analytics/beta/${postId}/newsletter`);

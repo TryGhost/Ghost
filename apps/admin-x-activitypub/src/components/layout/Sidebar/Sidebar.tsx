@@ -6,12 +6,32 @@ import Search from '@src/components/modals/Search';
 import SearchInput from '../Header/SearchInput';
 import SidebarMenuLink from './SidebarMenuLink';
 import {Button, Dialog, DialogContent, DialogTrigger, LucideIcon} from '@tryghost/shade';
+import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useFeatureFlags} from '@src/lib/feature-flags';
+import {useLocation} from '@tryghost/admin-x-framework';
+import {useNotificationsCountForUser, useResetNotificationsCountForUser} from '@src/hooks/use-activity-pub-queries';
 
 const Sidebar: React.FC = () => {
     const {allFlags, flags} = useFeatureFlags();
     const [isSearchOpen, setIsSearchOpen] = React.useState(false);
     const [searchQuery, setSearchQuery] = React.useState('');
+    const {data: currentUser} = useCurrentUser();
+    const location = useLocation();
+    const {data: notificationsCount} = useNotificationsCountForUser(currentUser?.slug || '');
+    const resetNotificationsCount = useResetNotificationsCountForUser(currentUser?.slug || '');
+
+    // Reset count when on notifications page
+    React.useEffect(() => {
+        if (location.pathname === '/notifications' && notificationsCount && notificationsCount > 0) {
+            resetNotificationsCount.mutate();
+        }
+    }, [location.pathname, notificationsCount, resetNotificationsCount]);
+
+    const handleNotificationsClick = React.useCallback(() => {
+        if (notificationsCount && notificationsCount > 0) {
+            resetNotificationsCount.mutate();
+        }
+    }, [notificationsCount, resetNotificationsCount]);
 
     return (
         <div className='sticky top-0 flex min-h-screen w-[320px] flex-col border-l border-gray-200 pr-8 dark:border-gray-950'>
@@ -36,7 +56,11 @@ const Sidebar: React.FC = () => {
                             <LucideIcon.Hash size={18} strokeWidth={1.5} />
                             Feed
                         </SidebarMenuLink>
-                        <SidebarMenuLink to='/notifications'>
+                        <SidebarMenuLink 
+                            count={location.pathname !== '/notifications' ? notificationsCount : undefined} 
+                            to='/notifications'
+                            onClick={handleNotificationsClick}
+                        >
                             <LucideIcon.Bell size={18} strokeWidth={1.5} />
                             Notifications
                         </SidebarMenuLink>

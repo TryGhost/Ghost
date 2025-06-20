@@ -14,7 +14,17 @@ export default class Posts extends AdminXComponent {
         const fromAnalytics = controller?.fromAnalytics ?? this.args.fromAnalytics ?? false;
 
         return {
-            fromAnalytics: fromAnalytics
+            fromAnalytics: fromAnalytics,
+            appSettings: {
+                paidMembersEnabled: this.settings.paidMembersEnabled,
+                analytics: {
+                    emailTrackOpens: this.settings.emailTrackOpens,
+                    emailTrackClicks: this.settings.emailTrackClicks,
+                    membersTrackSources: this.settings.membersTrackSources,
+                    outboundLinkTagging: this.settings.outboundLinkTagging,
+                    webAnalytics: this.feature.trafficAnalytics && (this.settings.webAnalytics ?? false)
+                }
+            }
         };
     };
 

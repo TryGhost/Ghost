@@ -34,18 +34,18 @@
         "@types/jest": "29.5.14",
         "@types/react": "18.3.23",
         "msw": "2.10.2",
-        "vite": "4.5.14",
-        "vitest": "0.34.3"
+        "vite": "5.4.19",
+        "vitest": "1.6.1"
     },
     "dependencies": {
         "@tinybirdco/charts": "0.2.4",
         "@tryghost/admin-x-framework": "0.0.0",
         "@tryghost/shade": "0.0.0",
         "i18n-iso-countries": "7.14.0",
-        "react": "18.3.1",
-        "react-dom": "18.3.1",
+        "moment": "2.24.0",
         "moment-timezone": "0.5.45",
-        "moment": "2.24.0"
+        "react": "18.3.1",
+        "react-dom": "18.3.1"
     },
     "nx": {
         "targets": {

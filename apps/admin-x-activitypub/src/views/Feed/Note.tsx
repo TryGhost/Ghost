@@ -16,7 +16,7 @@ import {useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-fram
 import {useReplyChainData} from '@hooks/use-reply-chain-data';
 
 const FeedItemDivider: React.FC = () => (
-    <div className="h-px bg-gray-200 dark:bg-gray-950"></div>
+    <div className="h-px w-full bg-gray-200 dark:bg-gray-950"></div>
 );
 
 const Note = () => {
@@ -47,6 +47,7 @@ const Note = () => {
     const object = currentPost?.object;
 
     const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
+    const [hasScrolledToPost, setHasScrolledToPost] = useState(false);
 
     useEffect(() => {
         if (object?.replyCount !== undefined) {
@@ -55,13 +56,14 @@ const Note = () => {
     }, [object?.replyCount]);
 
     useEffect(() => {
-        if (postRef.current && threadParents.length > 0) {
+        if (postRef.current && threadParents.length > 0 && !hasScrolledToPost) {
             postRef.current.scrollIntoView({
                 behavior: 'instant',
                 block: 'start'
             });
+            setHasScrolledToPost(true);
         }
-    }, [threadParents]);
+    }, [threadParents, hasScrolledToPost]);
 
     useEffect(() => {
         if (observerRef.current) {
@@ -104,12 +106,28 @@ const Note = () => {
     if (isLoading) {
         return (
             <Layout>
-                <div className='mx-auto mt-8 flex max-w-[620px] items-center gap-3 px-8 pt-7'>
-                    <Skeleton className='size-10 rounded-full' />
-                    <div className='grow pt-1'>
-                        <Skeleton className='w-full' />
-                        <Skeleton className='w-2/3' />
+                <div className='mx-auto flex max-w-[620px] flex-col items-center gap-3 px-8 pt-9'>
+                    <div className='flex w-full items-center gap-3'>
+                        <Skeleton className='size-10 rounded-full' />
+                        <div className='grow pt-1'>
+                            <Skeleton className='w-24' />
+                            <Skeleton className='w-3/5' />
+                        </div>
                     </div>
+                    <div className='mb-7 w-full'>
+                        <Skeleton />
+                        <Skeleton className='w-4/5' />
+                        <Skeleton />
+                    </div>
+                    <FeedItemDivider />
+                    <div className='flex w-full items-center gap-3 py-3'>
+                        <Skeleton className='block size-full' containerClassName='size-10 rounded-full overflow-hidden' />
+                        <div>
+                            <Skeleton className='w-52' />
+                            <Skeleton className='w-28' />
+                        </div>
+                    </div>
+                    <FeedItemDivider />
                 </div>
             </Layout>
         );

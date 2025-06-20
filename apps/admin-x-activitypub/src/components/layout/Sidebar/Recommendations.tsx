@@ -4,13 +4,13 @@ import ActivityItem from '@components/activities/ActivityItem';
 import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
 import {handleProfileClick} from '@utils/handle-profile-click';
 import {useNavigate, useNavigationStack} from '@tryghost/admin-x-framework';
-import {useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
+import {useSuggestedProfilesForUser} from '@src/hooks/use-activity-pub-queries';
 
 const Recommendations: React.FC = () => {
+    const navigate = useNavigate();
     const {suggestedProfilesQuery} = useSuggestedProfilesForUser('index', 3);
     const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
     const suggested = isLoadingSuggested ? Array(3).fill(null) : (suggestedData || []);
-    const navigate = useNavigate();
     const {resetStack} = useNavigationStack();
 
     const hideClassName = '[@media(max-height:740px)]:hidden';

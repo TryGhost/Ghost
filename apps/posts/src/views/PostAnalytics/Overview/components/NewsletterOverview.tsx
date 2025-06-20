@@ -1,16 +1,18 @@
 import React, {useMemo} from 'react';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, LucideIcon, Recharts, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn, formatNumber, formatPercentage} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, ChartConfig, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, Table, TableBody, TableCell, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
+import {NewsletterRadialChart, NewsletterRadialChartData} from '../../Newsletter/components/NewsLetterRadialChart';
 import {Post} from '@tryghost/admin-x-framework/api/posts';
-import {cleanTrackedUrl} from '@src/utils/link-helpers';
+import {cleanTrackedUrl, processAndGroupTopLinks} from '@src/utils/link-helpers';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useTopLinks} from '@tryghost/admin-x-framework/api/links';
 
 interface NewsletterOverviewProps {
     post: Post;
     isNewsletterStatsLoading: boolean;
+    isWebShown?: boolean;
 }
 
-const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewsletterStatsLoading}) => {
+const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewsletterStatsLoading, isWebShown}) => {
     const {postId} = useParams();
     const navigate = useNavigate();
 
@@ -24,7 +26,8 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
             opened,
             clicked,
             openedRate: sent > 0 ? opened / sent : 0,
-            clickedRate: sent > 0 ? clicked / sent : 0
+            clickedRate: sent > 0 ? clicked / sent : 0,
+            sent: sent
         };
     }, [post]);
 
@@ -36,268 +39,144 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
     });
 
     const topLinks = useMemo(() => {
-        return linksResponse?.links || [];
+        return processAndGroupTopLinks(linksResponse);
     }, [linksResponse]);
 
-    const opensChartData = [
-        {opens: stats.opened, openrate: stats.openedRate, fill: 'url(#gradientBlue)'}
+    // "Clicked" Chart
+    const commonChartData: NewsletterRadialChartData[] = [
+        {datatype: 'Clicked', value: stats.clickedRate, fill: 'url(#gradientTeal)', color: 'hsl(var(--chart-teal))'},
+        {datatype: 'Opened', value: stats.openedRate, fill: 'url(#gradientBlue)', color: 'hsl(var(--chart-blue))'}
     ];
-    const opensChartConfig = {
-        openrate: {
-            label: 'Opens',
-            color: 'hsl(var(--chart-blue))'
+
+    const commonChartConfig = {
+        percentage: {
+            label: 'Opened'
+        },
+        Average: {
+            label: 'Clicked'
+        },
+        'This newsletter': {
+            label: 'Opened'
         }
     } satisfies ChartConfig;
 
-    const clicksChartData = [
-        {clicks: stats.clicked, clickrate: stats.clickedRate, fill: 'url(#gradientTeal)'}
-    ];
-    const clickschartConfig = {
-        clickrate: {
-            label: 'Clicks',
-            color: 'hsl(var(--chart-teal))'
-        }
-    } satisfies ChartConfig;
-
-    const radialBarChartClassName = cn('mx-auto aspect-square w-full min-h-[200px] max-w-[200px] grow pointer-events-none');
+    const fullWidth = post.email_only || !isWebShown;
 
     return (
-        <div className='grid grid-cols-1 gap-8 xl:grid-cols-2'>
-            <Card className='group/card'>
-                <div className='flex items-center justify-between gap-6'>
-                    <CardHeader>
-                        <CardTitle>Newsletter performance</CardTitle>
-                        <CardDescription>How members interacted with this email</CardDescription>
-                    </CardHeader>
-
-                    {!isNewsletterStatsLoading &&
-                        <Button className='mr-6 opacity-0 transition-all group-hover/card:opacity-100' variant='outline' onClick={() => {
-                            navigate(`/analytics/beta/${postId}/newsletter`);
-                        }}>
-                        View more
-                            <LucideIcon.ArrowRight />
-                        </Button>
-                    }
-                </div>
-                {isNewsletterStatsLoading ?
-                    <CardContent>
-                        <div className='mx-auto flex min-h-[250px] items-center justify-center xl:size-full'>
-                            <BarChartLoadingIndicator />
-                        </div>
-                    </CardContent>
-                    :
-                    <CardContent>
-                        <Separator />
-                        <div className='mx-auto flex min-h-[250px] flex-wrap items-stretch justify-center xl:size-full'>
-                            <div className='group flex grow flex-col items-center rounded-md p-4 transition-all hover:!cursor-pointer' onClick={() => {
-                                navigate(`/analytics/beta/${postId}/newsletter`);
-                            }}>
-                                <ChartContainer
-                                    className={radialBarChartClassName}
-                                    config={opensChartConfig}
-                                >
-                                    <Recharts.RadialBarChart
-                                        data={opensChartData}
-                                        endAngle={-270}
-                                        innerRadius={72}
-                                        outerRadius={110}
-                                        startAngle={90}
-                                    >
-                                        <defs>
-                                            <radialGradient cx="30%" cy="30%" id="gradientBlue" r="70%">
-                                                <stop offset="0%" stopColor="hsl(var(--chart-blue))" stopOpacity={0.5} />
-                                                <stop offset="100%" stopColor="hsl(var(--chart-blue))" stopOpacity={1} />
-                                            </radialGradient>
-                                        </defs>
-                                        <Recharts.RadialBar
-                                            cornerRadius={10}
-                                            dataKey="openrate"
-                                            minPointSize={-2}
-                                            background />
-                                        <Recharts.PolarAngleAxis
-                                            angleAxisId={0}
-                                            domain={[0, 1]}
-                                            tick={false}
-                                            type="number"
-                                        />
-                                        <Recharts.PolarRadiusAxis axisLine={false} domain={[0, 1]} tick={false} tickLine={false} type="number">
-                                            <Recharts.Label
-                                                content={({viewBox}) => {
-                                                    if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
-                                                        return (
-                                                            <text
-                                                                dominantBaseline="middle"
-                                                                textAnchor="middle"
-                                                                x={viewBox.cx}
-                                                                y={viewBox.cy}
-                                                            >
-                                                                <tspan
-                                                                    className="fill-foreground text-[2.0rem] font-semibold tracking-tight"
-                                                                    x={viewBox.cx}
-                                                                    y={(viewBox.cy || 0) - 4}
-                                                                >
-                                                                    {formatPercentage(opensChartData[0].openrate)}
-                                                                </tspan>
-                                                                <tspan
-                                                                    className="text-base font-medium"
-                                                                    x={viewBox.cx}
-                                                                    y={(viewBox.cy || 0) + 18}
-                                                                >
-                                                                    {formatNumber(opensChartData[0].opens)}
-                                                                </tspan>
-                                                            </text>
-                                                        );
-                                                    }
-                                                }}
-                                            />
-                                        </Recharts.PolarRadiusAxis>
-                                    </Recharts.RadialBarChart>
-                                </ChartContainer>
-                                <div className='-mt-2 flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                    <LucideIcon.MailOpen size={16} strokeWidth={1.5} />
-                            Opened
-                                </div>
-                            </div>
-
-                            <div className='group flex grow flex-col items-center rounded-md p-4 transition-all hover:!cursor-pointer' onClick={() => {
-                                navigate(`/analytics/beta/${postId}/newsletter`);
-                            }}>
-                                <ChartContainer
-                                    className={radialBarChartClassName}
-                                    config={clickschartConfig}
-                                >
-                                    <Recharts.RadialBarChart
-                                        data={clicksChartData}
-                                        endAngle={-270}
-                                        innerRadius={72}
-                                        outerRadius={110}
-                                        startAngle={90}
-                                    >
-                                        <defs>
-                                            <radialGradient cx="30%" cy="30%" id="gradientTeal" r="70%">
-                                                <stop offset="0%" stopColor="hsl(var(--chart-teal))" stopOpacity={0.5} />
-                                                <stop offset="100%" stopColor="hsl(var(--chart-teal))" stopOpacity={1} />
-                                            </radialGradient>
-                                        </defs>
-                                        <Recharts.RadialBar
-                                            cornerRadius={10}
-                                            dataKey="clickrate"
-                                            minPointSize={-2}
-                                            background
-                                        />
-                                        <Recharts.PolarAngleAxis
-                                            angleAxisId={0}
-                                            domain={[0, 1]}
-                                            tick={false}
-                                            type="number"
-                                        />
-                                        <Recharts.PolarRadiusAxis axisLine={false} domain={[0, 1]} tick={false} tickLine={false}>
-                                            <Recharts.Label
-                                                content={({viewBox}) => {
-                                                    if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
-                                                        return (
-                                                            <text
-                                                                dominantBaseline="middle"
-                                                                textAnchor="middle"
-                                                                x={viewBox.cx}
-                                                                y={viewBox.cy}
-                                                            >
-                                                                <tspan
-                                                                    className="fill-foreground text-[2.0rem] font-semibold tracking-tight"
-                                                                    x={viewBox.cx}
-                                                                    y={(viewBox.cy || 0) - 4}
-                                                                >
-                                                                    {formatPercentage(clicksChartData[0].clickrate)}
-                                                                </tspan>
-                                                                <tspan
-                                                                    className="text-base font-medium"
-                                                                    x={viewBox.cx}
-                                                                    y={(viewBox.cy || 0) + 18}
-                                                                >
-                                                                    {formatNumber(clicksChartData[0].clicks)}
-                                                                </tspan>
-                                                            </text>
-                                                        );
-                                                    }
-                                                }}
-                                            />
-                                        </Recharts.PolarRadiusAxis>
-                                    </Recharts.RadialBarChart>
-                                </ChartContainer>
-                                <div className='-mt-2 flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                    <LucideIcon.MousePointerClick size={16} strokeWidth={1.5} />
-                            Clicked
-                                </div>
-                            </div>
-                        </div>
-                    </CardContent>
-                }
-
-            </Card>
-            <Card className='group/card'>
-                <div className='flex items-center justify-between gap-6'>
-                    <CardHeader>
-                        <CardTitle>Top links</CardTitle>
-                        <CardDescription>Links in your newsletter people clicked on the most</CardDescription>
-                    </CardHeader>
-                    <Button className='mr-6 opacity-0 transition-all group-hover/card:opacity-100' variant='outline' onClick={() => {
-                        navigate(`/analytics/beta/${postId}/newsletter`);
-                    }}>
-                    View more
-                        <LucideIcon.ArrowRight />
-                    </Button>
-                </div>
+        <Card className={`group/card ${fullWidth && 'col-span-2'}`}>
+            <div className='relative flex items-center justify-between gap-6'>
+                <CardHeader>
+                    <CardTitle className='flex items-center gap-1.5 text-lg'>
+                        <LucideIcon.Mail size={16} strokeWidth={1.5} />
+                        Newsletter performance
+                    </CardTitle>
+                </CardHeader>
+                <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover/card:translate-x-0 group-hover/card:opacity-100' size='sm' variant='outline' onClick={() => {
+                    navigate(`/analytics/beta/${postId}/newsletter`);
+                }}>View more</Button>
+            </div>
+            {isNewsletterStatsLoading ?
                 <CardContent>
-                    <div>
-                        <Table>
-                            <TableHeader>
-                                <TableRow className='border-b !border-border'>
-                                    <TableHead className='w-full' colSpan={2}>
-                                        <div className='flex items-center justify-between gap-6'>
-                                            <span>Link</span>
-                                            <span>No. of members</span>
-                                        </div>
-                                    </TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            {topLinks.length > 0
-                                ?
-                                <TableBody>
-                                    {topLinks.slice(0, 5).map((link) => {
-                                        return (
-                                            <TableRow key={link.link.link_id} className='border-none'>
-                                                <TableCell className='max-w-0 py-2.5 group-hover:!bg-transparent'>
-                                                    <a
-                                                        className='block truncate font-medium hover:underline'
-                                                        href={link.link.to}
-                                                        rel="noreferrer"
-                                                        target='_blank'
-                                                        title={link.link.to}
-                                                    >
-                                                        {cleanTrackedUrl(link.link.to, true)}
-                                                    </a>
-                                                </TableCell>
-                                                <TableCell className='w-[10%] py-2.5 text-right font-mono text-sm group-hover:!bg-transparent'>{formatNumber(link.count?.clicks || 0)}</TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
-                                </TableBody>
-                                :
-                                <TableBody>
-                                    <TableRow>
-                                        <TableCell colSpan={2}>
-                                            <div className='py-20 text-center text-sm text-gray-700'>
-                                    You have no links in your post.
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            }
-                        </Table>
+                    <div className='mx-auto flex min-h-[250px] items-center justify-center xl:size-full'>
+                        <BarChartLoadingIndicator />
                     </div>
                 </CardContent>
-            </Card>
-        </div>
+                :
+                <CardContent className={`${fullWidth && 'grid grid-cols-2'}`}>
+                    <div className={`${fullWidth && 'border-r pr-6'}`}>
+                        <div className='grid grid-cols-2 gap-6'>
+                            <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0'>
+                                <div className='flex grow flex-col gap-1.5 border-none pb-0'>
+                                    <KpiCardHeaderLabel color='hsl(var(--chart-blue))'>
+                                    Open rate
+                                    </KpiCardHeaderLabel>
+                                    <KpiCardHeaderValue
+                                    // diffDirection={'up'}
+                                    // diffTooltip={'Better than the average'}
+                                    // diffValue={1.45}
+                                        value={formatPercentage(stats.openedRate)}
+                                    />
+                                </div>
+                            </KpiCardHeader>
+                            <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0'>
+                                <div className='flex grow flex-col gap-1.5 border-none pb-0'>
+                                    <KpiCardHeaderLabel color='hsl(var(--chart-teal))'>
+                                    Click rate
+                                    </KpiCardHeaderLabel>
+                                    <KpiCardHeaderValue
+                                    // diffDirection={'up'}
+                                    // diffTooltip={'Better than the average'}
+                                    // diffValue={1.45}
+                                        value={formatPercentage(stats.clickedRate)}
+                                    />
+                                </div>
+
+                            </KpiCardHeader>
+                        </div>
+                        {!fullWidth && <Separator />}
+                        <div className='mx-auto my-6 h-[240px]'>
+                            <NewsletterRadialChart
+                                className='pointer-events-none aspect-square h-[240px]'
+                                config={commonChartConfig}
+                                data={commonChartData}
+                                tooltip={false}
+                            />
+                        </div>
+                    </div>
+
+                    <div className={`${fullWidth && 'pl-6'}`}>
+                        {!fullWidth && <Separator />}
+                        <div className={fullWidth ? '' : 'pt-3'}>
+                            <div className={`flex items-center justify-between gap-3 ${fullWidth ? 'pb-3' : 'py-3'}`}>
+                                <span className='font-medium text-muted-foreground'>Top clicked links in this email</span>
+                                <HTable>Members</HTable>
+                            </div>
+                            <Table>
+                                {topLinks.length > 0
+                                    ?
+                                    <TableBody>
+                                        {topLinks.slice(0, (fullWidth ? 6 : 3)).map((link) => {
+                                            return (
+                                                <TableRow key={link.link.link_id} className='border-none'>
+                                                    <TableCell className='max-w-0 px-0 group-hover:!bg-transparent'>
+                                                        <a
+                                                            className='block truncate hover:underline'
+                                                            href={link.link.to}
+                                                            rel="noreferrer"
+                                                            target='_blank'
+                                                            title={link.link.to}
+                                                        >
+                                                            {cleanTrackedUrl(link.link.to, true)}
+                                                        </a>
+                                                    </TableCell>
+                                                    <TableCell className='w-[10%] pl-3 pr-0 text-right font-mono text-sm group-hover:!bg-transparent'>{formatNumber(link.count || 0)}</TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                    :
+                                    <TableBody>
+                                        <TableRow>
+                                            <TableCell colSpan={2}>
+                                                <div className='py-20 text-center text-sm text-gray-700'>
+                                                You have no links in your post.
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                }
+                            </Table>
+                        </div>
+                    </div>
+                    {/* <Button variant='outline' onClick={() => {
+                        navigate(`/analytics/beta/${postId}/newsletter`);
+                    }}>
+                        View all
+                        <LucideIcon.ArrowRight />
+                    </Button> */}
+                </CardContent>
+            }
+        </Card>
     );
 };
 

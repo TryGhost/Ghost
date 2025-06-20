@@ -3,7 +3,9 @@ import {BarChartLoadingIndicator, GhAreaChart, GhAreaChartDataItem, KpiTabTrigge
 import {DiffDirection} from '@src/hooks/useGrowthStats';
 import {STATS_RANGES} from '@src/utils/constants';
 import {sanitizeChartData} from '@src/utils/chart-helpers';
+import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 
 type ChartDataItem = {
     date: string;
@@ -44,11 +46,22 @@ const GrowthKPIs: React.FC<{
 }> = ({chartData: allChartData, totals, initialTab = 'total-members', currencySymbol, isLoading}) => {
     const [currentTab, setCurrentTab] = useState(initialTab);
     const {range} = useGlobalData();
+    const {appSettings} = useAppContext();
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
     // Update current tab if initialTab changes
     useEffect(() => {
         setCurrentTab(initialTab);
     }, [initialTab]);
+
+    // Function to update tab and URL
+    const handleTabChange = (tabValue: string) => {
+        setCurrentTab(tabValue);
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.set('tab', tabValue);
+        navigate(`?${newSearchParams.toString()}`, {replace: true});
+    };
 
     const {totalMembers, freeMembers, paidMembers, mrr, percentChanges, directions} = totals;
 
@@ -84,36 +97,58 @@ const GrowthKPIs: React.FC<{
 
         switch (currentTab) {
         case 'free-members':
-            processedData = sanitizedData.map(item => ({
-                ...item,
-                value: item.free,
-                formattedValue: formatNumber(item.free),
-                label: 'Free members'
-            }));
+            processedData = sanitizedData.map((item, index) => {
+                const diffValue = index === 0 ? null : item.free - sanitizedData[index - 1].free;
+                return {
+                    ...item,
+                    value: item.free,
+                    formattedValue: formatNumber(item.free),
+                    label: 'Free members',
+                    diffValue,
+                    formattedDiffValue: diffValue === null ? null : (diffValue < 0 ? `-${formatNumber(diffValue)}` : `+${formatNumber(diffValue)}`)
+                };
+            });
             break;
         case 'paid-members':
-            processedData = sanitizedData.map(item => ({
-                ...item,
-                value: item.paid,
-                formattedValue: formatNumber(item.paid),
-                label: 'Paid members'
-            }));
+            processedData = sanitizedData.map((item, index) => {
+                const diffValue = index === 0 ? null : item.paid - sanitizedData[index - 1].paid;
+                return {
+                    ...item,
+                    value: item.paid,
+                    formattedValue: formatNumber(item.paid),
+                    label: 'Paid members',
+                    diffValue,
+                    formattedDiffValue: diffValue === null ? null : (diffValue < 0 ? `-${formatNumber(diffValue)}` : `+${formatNumber(diffValue)}`)
+                };
+            });
             break;
         case 'mrr':
-            processedData = sanitizedData.map(item => ({
-                ...item,
-                value: centsToDollars(item.mrr),
-                formattedValue: `${currencySymbol}${formatNumber(centsToDollars(item.mrr))}`,
-                label: 'MRR'
-            }));
+            processedData = sanitizedData.map((item, index) => {
+                const diffValue = index === 0 ? null : centsToDollars(item.mrr) - centsToDollars(sanitizedData[index - 1].mrr);
+                return {
+                    ...item,
+                    value: centsToDollars(item.mrr),
+                    formattedValue: `${currencySymbol}${formatNumber(centsToDollars(item.mrr))}`,
+                    label: 'MRR',
+                    diffValue,
+                    formattedDiffValue: diffValue === null ? null : (diffValue < 0 ? `-${currencySymbol}${formatNumber(diffValue * -1)}` : `+${currencySymbol}${formatNumber(diffValue)}`)
+                };
+            });
             break;
         default:
-            processedData = sanitizedData.map(item => ({
-                ...item,
-                value: item.free + item.paid + item.comped,
-                formattedValue: formatNumber(item.free + item.paid + item.comped),
-                label: 'Total members'
-            }));
+            processedData = sanitizedData.map((item, index) => {
+                const currentTotal = item.free + item.paid + item.comped;
+                const previousTotal = index === 0 ? null : sanitizedData[index - 1].free + sanitizedData[index - 1].paid + sanitizedData[index - 1].comped;
+                const diffValue = index === 0 ? null : currentTotal - previousTotal!;
+                return {
+                    ...item,
+                    value: currentTotal,
+                    formattedValue: formatNumber(currentTotal),
+                    label: 'Total members',
+                    diffValue,
+                    formattedDiffValue: diffValue === null ? null : (diffValue < 0 ? `-${formatNumber(diffValue)}` : `+${formatNumber(diffValue)}`)
+                };
+            });
         }
 
         return processedData;
@@ -121,16 +156,16 @@ const GrowthKPIs: React.FC<{
 
     const tabConfig = {
         'total-members': {
-            color: 'hsl(var(--chart-teal))'
+            color: 'hsl(var(--chart-darkblue))'
         },
         'free-members': {
             color: 'hsl(var(--chart-blue))'
         },
         'paid-members': {
-            color: 'hsl(var(--chart-yellow))'
+            color: 'hsl(var(--chart-purple))'
         },
         mrr: {
-            color: 'hsl(var(--chart-purple))'
+            color: 'hsl(var(--chart-teal))'
         }
     };
 
@@ -145,50 +180,57 @@ const GrowthKPIs: React.FC<{
     return (
         <Tabs defaultValue={initialTab} variant='kpis'>
             <TabsList className="-mx-6 grid grid-cols-4">
-                <KpiTabTrigger value="total-members" onClick={() => {
-                    setCurrentTab('total-members');
+                <KpiTabTrigger className={!appSettings?.paidMembersEnabled ? 'cursor-auto after:hidden' : ''} value="total-members" onClick={() => {
+                    if (appSettings?.paidMembersEnabled) {
+                        handleTabChange('total-members');
+                    }
                 }}>
                     <KpiTabValue
-                        color='hsl(var(--chart-teal))'
+                        color='hsl(var(--chart-darkblue))'
                         diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
                         diffValue={percentChanges.total}
                         label="Total members"
                         value={formatNumber(totalMembers)}
                     />
                 </KpiTabTrigger>
-                <KpiTabTrigger value="free-members" onClick={() => {
-                    setCurrentTab('free-members');
-                }}>
-                    <KpiTabValue
-                        color='hsl(var(--chart-blue))'
-                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.free}
-                        diffValue={percentChanges.free}
-                        label="Free members"
-                        value={formatNumber(freeMembers)}
-                    />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="paid-members" onClick={() => {
-                    setCurrentTab('paid-members');
-                }}>
-                    <KpiTabValue
-                        color='hsl(var(--chart-yellow))'
-                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.paid}
-                        diffValue={percentChanges.paid}
-                        label="Paid members"
-                        value={formatNumber(paidMembers)}
-                    />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="mrr" onClick={() => {
-                    setCurrentTab('mrr');
-                }}>
-                    <KpiTabValue
-                        color='hsl(var(--chart-purple))'
-                        diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.mrr}
-                        diffValue={percentChanges.mrr}
-                        label="MRR"
-                        value={`${currencySymbol}${formatNumber(centsToDollars(mrr))}`}
-                    />
-                </KpiTabTrigger>
+                {appSettings?.paidMembersEnabled &&
+                <>
+
+                    <KpiTabTrigger value="free-members" onClick={() => {
+                        handleTabChange('free-members');
+                    }}>
+                        <KpiTabValue
+                            color='hsl(var(--chart-blue))'
+                            diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.free}
+                            diffValue={percentChanges.free}
+                            label="Free members"
+                            value={formatNumber(freeMembers)}
+                        />
+                    </KpiTabTrigger>
+                    <KpiTabTrigger value="paid-members" onClick={() => {
+                        handleTabChange('paid-members');
+                    }}>
+                        <KpiTabValue
+                            color='hsl(var(--chart-purple))'
+                            diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.paid}
+                            diffValue={percentChanges.paid}
+                            label="Paid members"
+                            value={formatNumber(paidMembers)}
+                        />
+                    </KpiTabTrigger>
+                    <KpiTabTrigger value="mrr" onClick={() => {
+                        handleTabChange('mrr');
+                    }}>
+                        <KpiTabValue
+                            color='hsl(var(--chart-teal))'
+                            diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.mrr}
+                            diffValue={percentChanges.mrr}
+                            label="MRR"
+                            value={`${currencySymbol}${formatNumber(centsToDollars(mrr))}`}
+                        />
+                    </KpiTabTrigger>
+                </>
+                }
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 <GhAreaChart

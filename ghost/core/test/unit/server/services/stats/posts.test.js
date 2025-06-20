@@ -190,6 +190,18 @@ describe('PostsStatsService', function () {
             table.integer('opened_count');
             table.dateTime('created_at');
         });
+
+        await db.schema.createTable('users', function (table) {
+            table.string('id').primary();
+            table.string('name');
+        });
+
+        await db.schema.createTable('posts_authors', function (table) {
+            table.string('id').primary();
+            table.string('post_id');
+            table.string('author_id');
+            table.integer('sort_order');
+        });
     });
 
     beforeEach(async function () {
@@ -199,10 +211,11 @@ describe('PostsStatsService', function () {
 
         service = new PostsStatsService({knex: db});
 
-        await _createPost('post1', 'Post 1');
-        await _createPost('post2', 'Post 2');
-        await _createPost('post3', 'Post 3');
-        await _createPost('post4', 'Post 4');
+        const now = new Date();
+        await _createPostWithDetails('post1', 'Post 1', 'published', {published_at: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000)}); // 4 days ago
+        await _createPostWithDetails('post2', 'Post 2', 'published', {published_at: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000)}); // 3 days ago
+        await _createPostWithDetails('post3', 'Post 3', 'published', {published_at: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)}); // 2 days ago
+        await _createPostWithDetails('post4', 'Post 4', 'published', {published_at: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000)}); // 1 day ago
         await _createPost('post5', 'Post 5', 'draft');
     });
 
@@ -212,6 +225,8 @@ describe('PostsStatsService', function () {
         await db('members_subscription_created_events').truncate();
         await db('members_paid_subscription_events').truncate();
         await db('emails').truncate();
+        await db('users').truncate();
+        await db('posts_authors').truncate();
     });
 
     after(async function () {
@@ -226,18 +241,7 @@ describe('PostsStatsService', function () {
         it('returns all posts with zero stats when no events exist', async function () {
             const result = await service.getTopPosts({});
             assert.ok(result.data, 'Result should have a data property');
-            assert.equal(result.data.length, 4, 'Should return all 4 posts');
-
-            const expectedResults = [
-                {post_id: 'post1', title: 'Post 1', free_members: 0, paid_members: 0, mrr: 0},
-                {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 0, mrr: 0},
-                {post_id: 'post3', title: 'Post 3', free_members: 0, paid_members: 0, mrr: 0},
-                {post_id: 'post4', title: 'Post 4', free_members: 0, paid_members: 0, mrr: 0}
-            ];
-
-            const sortedResults = result.data.sort((a, b) => a.post_id.localeCompare(b.post_id));
-
-            assert.deepEqual(sortedResults, expectedResults, 'Should return all posts with zero stats');
+            assert.equal(result.data.length, 0, 'Should return no posts when all have zero stats');
         });
 
         it('correctly ranks posts by free_members', async function () {
@@ -250,23 +254,16 @@ describe('PostsStatsService', function () {
             const result = await service.getTopPosts({order: 'free_members desc'});
 
             assert.ok(result.data, 'Result should have a data property');
-            assert.equal(result.data.length, 4, 'Should return all 4 posts');
+            assert.equal(result.data.length, 3, 'Should return 3 posts with attribution data');
 
+            // The test expects timestamps (numbers) as returned by SQLite, not Date objects
             const expectedResults = [
-                {post_id: 'post1', title: 'Post 1', free_members: 2, paid_members: 1, mrr: 500},
-                {post_id: 'post2', title: 'Post 2', free_members: 1, paid_members: 1, mrr: 500},
-                {post_id: 'post3', title: 'Post 3', free_members: 0, paid_members: 1, mrr: 1000},
-                {post_id: 'post4', title: 'Post 4', free_members: 0, paid_members: 0, mrr: 0}
+                {post_id: 'post1', title: 'Post 1', free_members: 2, paid_members: 1, mrr: 500, published_at: result.data[0].published_at},
+                {post_id: 'post2', title: 'Post 2', free_members: 1, paid_members: 1, mrr: 500, published_at: result.data[1].published_at},
+                {post_id: 'post3', title: 'Post 3', free_members: 0, paid_members: 1, mrr: 1000, published_at: result.data[2].published_at}
             ];
 
-            const sortedResults = result.data.sort((a, b) => {
-                if (a.free_members === 0 && b.free_members === 0) {
-                    return a.post_id.localeCompare(b.post_id);
-                }
-                return 0;
-            });
-
-            assert.deepEqual(sortedResults, expectedResults, 'Results should match expected order and counts for free_members desc');
+            assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
         });
 
         it('correctly ranks posts by paid_members', async function () {
@@ -278,13 +275,14 @@ describe('PostsStatsService', function () {
             const result = await service.getTopPosts({order: 'paid_members desc'});
 
             assert.ok(result.data, 'Result should have a data property');
-            assert.equal(result.data.length, 4, 'Should return all 4 posts');
+            assert.equal(result.data.length, 4, 'Should return all 4 posts with attribution data');
 
+            // The test expects timestamps (numbers) as returned by SQLite, not Date objects
             const expectedResults = [
-                {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200},
-                {post_id: 'post1', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600},
-                {post_id: 'post3', title: 'Post 3', free_members: 1, paid_members: 0, mrr: 0},
-                {post_id: 'post4', title: 'Post 4', free_members: 1, paid_members: 0, mrr: 0}
+                {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200, published_at: result.data.find(p => p.post_id === 'post2').published_at},
+                {post_id: 'post1', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600, published_at: result.data.find(p => p.post_id === 'post1').published_at},
+                {post_id: 'post3', title: 'Post 3', free_members: 1, paid_members: 0, mrr: 0, published_at: result.data.find(p => p.post_id === 'post3').published_at},
+                {post_id: 'post4', title: 'Post 4', free_members: 1, paid_members: 0, mrr: 0, published_at: result.data.find(p => p.post_id === 'post4').published_at}
             ];
 
             const sortedResults = result.data.sort((a, b) => {
@@ -306,13 +304,14 @@ describe('PostsStatsService', function () {
             const result = await service.getTopPosts({order: 'mrr desc'});
 
             assert.ok(result.data, 'Result should have a data property');
-            assert.equal(result.data.length, 4, 'Should return all 4 posts');
+            assert.equal(result.data.length, 4, 'Should return all 4 posts with attribution data');
 
+            // The test expects timestamps (numbers) as returned by SQLite, not Date objects
             const expectedResults = [
-                {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200},
-                {post_id: 'post1', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600},
-                {post_id: 'post3', title: 'Post 3', free_members: 1, paid_members: 0, mrr: 0},
-                {post_id: 'post4', title: 'Post 4', free_members: 1, paid_members: 0, mrr: 0}
+                {post_id: 'post2', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200, published_at: result.data.find(p => p.post_id === 'post2').published_at},
+                {post_id: 'post1', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600, published_at: result.data.find(p => p.post_id === 'post1').published_at},
+                {post_id: 'post3', title: 'Post 3', free_members: 1, paid_members: 0, mrr: 0, published_at: result.data.find(p => p.post_id === 'post3').published_at},
+                {post_id: 'post4', title: 'Post 4', free_members: 1, paid_members: 0, mrr: 0, published_at: result.data.find(p => p.post_id === 'post4').published_at}
             ];
 
             const sortedResults = result.data.sort((a, b) => {
@@ -340,8 +339,10 @@ describe('PostsStatsService', function () {
                 date_to: new Date()
             });
 
-            assert.equal(lastFifteenDaysResult.data.find(p => p.post_id === 'post1').free_members, 1);
-            assert.equal(lastFifteenDaysResult.data.find(p => p.post_id === 'post2').free_members, 0);
+            // Only post1 should be returned since post2 has no events in the date range
+            assert.equal(lastFifteenDaysResult.data.length, 1, 'Should return only posts with events in date range');
+            assert.equal(lastFifteenDaysResult.data[0].post_id, 'post1');
+            assert.equal(lastFifteenDaysResult.data[0].free_members, 1);
 
             // Test filtering to include both dates
             const lastThirtyDaysResult = await service.getTopPosts({
@@ -349,8 +350,12 @@ describe('PostsStatsService', function () {
                 date_to: new Date()
             });
 
-            assert.equal(lastThirtyDaysResult.data.find(p => p.post_id === 'post1').free_members, 1);
-            assert.equal(lastThirtyDaysResult.data.find(p => p.post_id === 'post2').free_members, 1);
+            // Both posts should be returned
+            assert.equal(lastThirtyDaysResult.data.length, 2, 'Should return both posts when date range includes both events');
+            const post1Result = lastThirtyDaysResult.data.find(p => p.post_id === 'post1');
+            const post2Result = lastThirtyDaysResult.data.find(p => p.post_id === 'post2');
+            assert.equal(post1Result.free_members, 1);
+            assert.equal(post2Result.free_members, 1);
         });
 
         it('respects the limit parameter', async function () {
@@ -566,153 +571,32 @@ describe('PostsStatsService', function () {
         });
     });
 
-    describe('getLatestPostStats', function () {
-        it('returns null when no published posts exist', async function () {
-            await db('posts').truncate();
-            const result = await service.getLatestPostStats();
-            assert.deepEqual(result, {data: []});
-        });
-
-        it('returns latest published post with zero stats when no events exist', async function () {
-            await db('posts').truncate();
-            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
-            await _createPostWithDetails('latest_post', 'Latest Post', 'published', {
-                published_at: publishedAt,
-                feature_image: 'https://example.com/image.jpg'
-            });
-
-            const result = await service.getLatestPostStats();
-            const stats = result.data[0];
-            
-            assert.equal(stats.id, 'latest_post');
-            assert.equal(stats.title, 'Latest Post');
-            assert.equal(stats.slug, 'latest-post-latest_post');
-            assert.equal(stats.feature_image, 'https://example.com/image.jpg');
-            assert.equal(new Date(stats.published_at).toISOString(), publishedAt.toISOString());
-            assert.equal(stats.recipient_count, null);
-            assert.equal(stats.opened_count, null);
-            assert.equal(stats.open_rate, null);
-            assert.equal(stats.member_delta, 0);
-            assert.equal(stats.visitors, 0);
-        });
-
-        it('returns latest published post with email stats', async function () {
-            await db('posts').truncate();
-            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
-            await _createPostWithDetails('latest_post', 'Latest Post', 'published', {
-                published_at: publishedAt
-            });
-            await _createEmailStats('latest_post', 100, 50);
-
-            const result = await service.getLatestPostStats();
-            const stats = result.data[0];
-            
-            assert.equal(stats.id, 'latest_post');
-            assert.equal(stats.title, 'Latest Post');
-            assert.equal(stats.slug, 'latest-post-latest_post');
-            assert.equal(stats.feature_image, null);
-            assert.equal(new Date(stats.published_at).toISOString(), publishedAt.toISOString());
-            assert.equal(stats.recipient_count, 100);
-            assert.equal(stats.opened_count, 50);
-            assert.equal(stats.open_rate, 50);
-            assert.equal(stats.member_delta, 0);
-            assert.equal(stats.visitors, 0);
-        });
-
-        it('returns latest published post with member stats', async function () {
-            await db('posts').truncate();
-            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
-            await _createPostWithDetails('latest_post', 'Latest Post', 'published', {
-                published_at: publishedAt
-            });
-            await _createFreeSignup('latest_post', 'twitter');
-            await _createFreeSignup('latest_post', 'facebook');
-            await _createPaidSignup('latest_post', 1000, 'google');
-
-            const result = await service.getLatestPostStats();
-            const stats = result.data[0];
-            
-            assert.equal(stats.id, 'latest_post');
-            assert.equal(stats.title, 'Latest Post');
-            assert.equal(stats.slug, 'latest-post-latest_post');
-            assert.equal(stats.feature_image, null);
-            assert.equal(new Date(stats.published_at).toISOString(), publishedAt.toISOString());
-            assert.equal(stats.recipient_count, null);
-            assert.equal(stats.opened_count, null);
-            assert.equal(stats.open_rate, null);
-            assert.equal(stats.member_delta, 3);
-            assert.equal(stats.visitors, 0);
-        });
-
-        it('returns latest published post with all stats', async function () {
-            await db('posts').truncate();
-            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
-            await _createPostWithDetails('latest_post', 'Latest Post', 'published', {
-                published_at: publishedAt,
-                feature_image: 'https://example.com/image.jpg'
-            });
-            await _createEmailStats('latest_post', 100, 50);
-            await _createFreeSignup('latest_post', 'twitter');
-            await _createFreeSignup('latest_post', 'facebook');
-            await _createPaidSignup('latest_post', 1000, 'google');
-
-            const result = await service.getLatestPostStats();
-            const stats = result.data[0];
-            
-            assert.equal(stats.id, 'latest_post');
-            assert.equal(stats.title, 'Latest Post');
-            assert.equal(stats.slug, 'latest-post-latest_post');
-            assert.equal(stats.feature_image, 'https://example.com/image.jpg');
-            assert.equal(new Date(stats.published_at).toISOString(), publishedAt.toISOString());
-            assert.equal(stats.recipient_count, 100);
-            assert.equal(stats.opened_count, 50);
-            assert.equal(stats.open_rate, 50);
-            assert.equal(stats.member_delta, 3);
-            assert.equal(stats.visitors, 0);
-        });
-
-        it('ignores draft posts when finding latest post', async function () {
-            await db('posts').truncate();
-            const publishedAt = new Date('2025-01-01T00:00:00.000Z');
-            const draftAt = new Date('2025-01-02T00:00:00.000Z');
-            
-            await _createPostWithDetails('published_post', 'Published Post', 'published', {
-                published_at: publishedAt
-            });
-            await _createPostWithDetails('draft_post', 'Draft Post', 'draft', {
-                published_at: draftAt
-            });
-
-            const result = await service.getLatestPostStats();
-            assert.equal(result.data[0].id, 'published_post');
-        });
-
-        it('returns latest post by published_at date', async function () {
-            await db('posts').truncate();
-            const olderDate = new Date('2025-01-01T00:00:00.000Z');
-            const newerDate = new Date('2025-01-02T00:00:00.000Z');
-            
-            await _createPostWithDetails('older_post', 'Older Post', 'published', {
-                published_at: olderDate
-            });
-            await _createPostWithDetails('newer_post', 'Newer Post', 'published', {
-                published_at: newerDate
-            });
-
-            const result = await service.getLatestPostStats();
-            assert.equal(result.data[0].id, 'newer_post');
-        });
-    });
-
     describe('getTopPostsViews', function () {
-        it('returns empty array when no Tinybird client exists', async function () {
+        it('returns latest posts with zero views when no Tinybird client exists', async function () {
             service = new PostsStatsService({knex: db}); // No Tinybird client
             const result = await service.getTopPostsViews({
                 date_from: '2025-01-01',
                 date_to: '2025-01-31',
                 timezone: 'UTC'
             });
-            assert.deepEqual(result, {data: []});
+            
+            // Should return the latest posts ordered by published_at desc with 0 views and 0 members (no attribution events)
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 4, 'Should return 4 posts (all published posts)');
+            
+            // All posts should have zero views since there's no Tinybird client
+            result.data.forEach((post) => {
+                assert.equal(post.views, 0, 'All posts should have 0 views');
+                assert.equal(post.members, 0, 'All posts should have 0 members (no attribution events)');
+                assert.ok(post.post_id, 'Post should have an ID');
+                assert.ok(post.title, 'Post should have a title');
+                assert.ok(typeof post.published_at === 'number', 'Post should have a published_at timestamp');
+            });
+            
+            // Posts should be ordered by published_at desc (newest first)
+            for (let i = 1; i < result.data.length; i++) {
+                assert.ok(result.data[i - 1].published_at >= result.data[i].published_at, 'Posts should be ordered by published_at desc');
+            }
         });
 
         it('returns latest posts with zero views when no views data exists', async function () {

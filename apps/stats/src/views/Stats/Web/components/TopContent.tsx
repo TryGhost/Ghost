@@ -1,4 +1,4 @@
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Tabs, TabsList, TabsTrigger, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceQueryParam} from '../../components/AudienceSelect';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -26,19 +26,14 @@ const CONTENT_TYPES = {
 
 type ContentType = typeof CONTENT_TYPES[keyof typeof CONTENT_TYPES];
 
-const CONTENT_TYPE_OPTIONS = [
-    {value: CONTENT_TYPES.POSTS, label: 'Posts'},
-    {value: CONTENT_TYPES.PAGES, label: 'Pages'},
-    {value: CONTENT_TYPES.POSTS_AND_PAGES, label: 'Posts & pages'}
-];
-
 interface TopContentTableProps {
     data: UnifiedContentData[] | null;
     range: number;
     contentType: ContentType;
+    tableHeader: boolean;
 }
 
-const TopContentTable: React.FC<TopContentTableProps> = ({data, contentType}) => {
+const TopContentTable: React.FC<TopContentTableProps> = ({tableHeader = false, data, contentType}) => {
     const navigate = useNavigate();
 
     const getTableHeader = () => {
@@ -54,10 +49,12 @@ const TopContentTable: React.FC<TopContentTableProps> = ({data, contentType}) =>
 
     return (
         <DataList>
-            <DataListHeader>
-                <DataListHead>{getTableHeader()}</DataListHead>
-                <DataListHead>Visitors</DataListHead>
-            </DataListHeader>
+            {tableHeader &&
+                <DataListHeader>
+                    <DataListHead>{getTableHeader()}</DataListHead>
+                    <DataListHead>Visitors</DataListHead>
+                </DataListHeader>
+            }
             <DataListBody>
                 {data?.map((row: UnifiedContentData) => {
                     // Only make posts clickable (not pages), since there's no analytics route for pages
@@ -74,7 +71,7 @@ const TopContentTable: React.FC<TopContentTableProps> = ({data, contentType}) =>
                             className={`group/row ${isClickable && 'hover:cursor-pointer'}`}
                             onClick={handleClick}
                         >
-                            <DataListBar className='bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/60 opacity-20 transition-all group-hover/row:opacity-40' style={{
+                            <DataListBar style={{
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
                             }} />
                             <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
@@ -156,11 +153,6 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
 
     const topContent = transformedData?.slice(0, 10) || [];
 
-    const getContentTypeLabel = () => {
-        const option = CONTENT_TYPE_OPTIONS.find(opt => opt.value === selectedContentType);
-        return option ? option.label : 'Posts & pages';
-    };
-
     const getContentTitle = () => {
         switch (selectedContentType) {
         case CONTENT_TYPES.POSTS:
@@ -183,50 +175,36 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
         }
     };
 
-    if (isLoading) {
-        return (
-            <Card className='group/datalist'>
-                <CardHeader>
-                    <CardTitle>{getContentTitle()}</CardTitle>
-                    <CardDescription>{getContentDescription()}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <SkeletonTable lines={5} />
-                </CardContent>
-            </Card>
-        );
-    }
-
     return (
         <Card className='group/datalist'>
-            <div className='flex items-start justify-between'>
-                <CardHeader className='relative'>
-                    <CardTitle>{getContentTitle()}</CardTitle>
-                    <CardDescription>{getContentDescription()}</CardDescription>
-                </CardHeader>
-                <DropdownMenu>
-                    <DropdownMenuTrigger className='mr-6 mt-6' asChild>
-                        <Button variant="dropdown">{getContentTypeLabel()}</Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align='end'>
-                        {CONTENT_TYPE_OPTIONS.map(option => (
-                            <DropdownMenuItem
-                                key={option.value}
-                                onClick={() => setSelectedContentType(option.value)}
-                            >
-                                {option.label}
-                            </DropdownMenuItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+            <CardHeader>
+                <CardTitle>{getContentTitle()}</CardTitle>
+                <CardDescription>{getContentDescription()}</CardDescription>
+            </CardHeader>
+            <div className='flex items-center justify-between px-6 pb-2 pt-0'>
+                <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
+                    setSelectedContentType(value as ContentType);
+                }}>
+                    <TabsList>
+                        <TabsTrigger value={CONTENT_TYPES.POSTS_AND_PAGES}>Posts & pages</TabsTrigger>
+                        <TabsTrigger value={CONTENT_TYPES.POSTS}>Posts</TabsTrigger>
+                        <TabsTrigger value={CONTENT_TYPES.PAGES}>Pages</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+                <HTable className='mr-2'>Visitors</HTable>
             </div>
-            <CardContent>
+            <CardContent className='overflow-hidden'>
                 <Separator />
-                <TopContentTable
-                    contentType={selectedContentType}
-                    data={topContent}
-                    range={range}
-                />
+                {isLoading ?
+                    <SkeletonTable className='mt-3' / >
+                    :
+                    <TopContentTable
+                        contentType={selectedContentType}
+                        data={topContent}
+                        range={range}
+                        tableHeader={false}
+                    />
+                }
             </CardContent>
             {transformedData && transformedData.length > 10 &&
                 <CardFooter>
@@ -244,6 +222,7 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                                     contentType={selectedContentType}
                                     data={transformedData}
                                     range={range}
+                                    tableHeader={true}
                                 />
                             </div>
                         </SheetContent>

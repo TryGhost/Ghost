@@ -166,9 +166,10 @@ const KpiCardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children
     );
 };
 
-const KpiCardHeaderLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
+const KpiCardHeaderLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, color, ...props}) => {
     return (
         <div className={cn('[&_svg]:size-4 flex items-center gap-1.5 text-base text-muted-foreground h-[22px] font-medium', className)} {...props}>
+            {color && <div className='ml-1 size-2 rounded-full opacity-50' style={{backgroundColor: color}}></div>}
             {children}
         </div>
     );
@@ -178,30 +179,36 @@ interface KpiCardValueProps {
     value: string | number;
     diffDirection?: 'up' | 'down' | 'same' | 'empty' | 'hidden';
     diffValue?: string | number;
+    diffTooltip?: React.ReactNode;
 }
 
-const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, diffValue}) => {
+const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, diffValue, diffTooltip}) => {
     const diffContainerClassName = cn(
-        'hidden xl:!flex xl:!visible items-center gap-1 text-xs -mb-1 h-[18px]',
-        diffDirection === 'up' && 'text-green-600',
-        diffDirection === 'down' && 'text-red-600',
-        diffDirection === 'same' && 'text-gray-700'
+        'hidden xl:!flex xl:!visible items-center gap-1 text-xs h-[22px] px-1.5 rounded-sm group/diff cursor-default',
+        diffDirection === 'up' && `text-green-600 bg-green/10 ${diffTooltip && 'hover:bg-green/20'}`,
+        diffDirection === 'down' && `text-red-600 bg-red/10 ${diffTooltip && 'hover:bg-red/20'}`,
+        diffDirection === 'same' && 'text-gray-700 bg-muted'
     );
     return (
-        <div className='flex flex-col items-start gap-1'>
-            <div className='text-[2.3rem] font-semibold leading-none tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>
+        <div className='relative flex items-center gap-3'>
+            <div className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
                 {value}
             </div>
             {diffDirection && diffDirection !== 'hidden' &&
             <>
                 <div className={diffContainerClassName}>
+                    <span className='font-medium leading-none'>{diffValue}</span>
                     {diffDirection === 'up' &&
                         <TrendingUp className='!size-[12px]' size={14} strokeWidth={2} />
                     }
                     {diffDirection === 'down' &&
                         <TrendingDown className='!size-[12px]' size={14} strokeWidth={2} />
                     }
-                    <span className='font-medium leading-none'>{diffValue}</span>
+                    {diffTooltip &&
+                        <div className='pointer-events-none absolute inset-x-0 top-0 z-50 -translate-y-full rounded-sm bg-background px-3 py-2 text-sm text-foreground opacity-0 shadow-md transition-all group-hover/diff:translate-y-[calc(-100%-8px)] group-hover/diff:opacity-100'>
+                            {diffTooltip}
+                        </div>
+                    }
                 </div>
             </>
             }

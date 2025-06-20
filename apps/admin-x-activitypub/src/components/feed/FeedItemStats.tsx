@@ -1,7 +1,7 @@
 import NewNoteModal from '@components/modals/NewNoteModal';
 import React, {useEffect, useRef, useState} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {AnimatedNumber, Button, LucideIcon} from '@tryghost/shade';
+import {AnimatedNumber, Button, LucideIcon, formatNumber} from '@tryghost/shade';
 import {useDerepostMutationForUser, useLikeMutationForUser, useRepostMutationForUser, useUnlikeMutationForUser} from '@hooks/use-activity-pub-queries';
 import {useKeyboardShortcuts} from '@hooks/use-keyboard-shortcuts';
 
@@ -121,13 +121,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
                     onClick={handleCommentClick}
                 >
                     <LucideIcon.MessageCircle className='-mr-px' />
-                    {layout !== 'inbox' && (
-                        <AnimatedNumber
-                            className={commentCount === 0 ? '-ml-1.5 w-0 overflow-hidden' : ''}
-                            spinTiming={{duration: 300}}
-                            value={commentCount}
-                        />
-                    )}
+                    {(layout !== 'inbox' && commentCount > 0) && formatNumber(commentCount)}
                 </Button>
                 <Button
                     className={`${buttonClass} ${isReposted && 'text-green-500 hover:text-green-500'}`}

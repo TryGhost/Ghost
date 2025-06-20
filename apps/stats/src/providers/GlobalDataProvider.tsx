@@ -7,6 +7,11 @@ import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 
 interface GlobalData {
     data: Config | undefined;
+    site: {
+        url?: string;
+        icon?: string;
+        title?: string;
+    };
     statsConfig: StatsConfig | undefined;
     isLoading: boolean;
     range: number;
@@ -45,15 +50,16 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
         throw error;
     }
 
-    // Add url and icon from site data to config data
-    const dataWithUrl = config.data ? {
-        ...config.data,
+    // Extract site data
+    const siteData = {
         url: site.data?.site.url,
-        icon: site.data?.site.icon
-    } : undefined;
+        icon: site.data?.site.icon,
+        title: site.data?.site.title
+    };
 
     return <GlobalDataContext.Provider value={{
-        data: dataWithUrl as Config | undefined,
+        data: config.data || undefined,
+        site: siteData,
         statsConfig: config.data?.config?.stats,
         isLoading,
         range,

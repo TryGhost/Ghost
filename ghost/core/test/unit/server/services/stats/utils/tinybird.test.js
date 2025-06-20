@@ -6,6 +6,7 @@ describe('Tinybird Client', function () {
     let tinybirdClient;
     let mockConfig;
     let mockRequest;
+    let mockSettingsCache;
     
     beforeEach(function () {
         // Set up mocks
@@ -17,18 +18,23 @@ describe('Tinybird Client', function () {
             get: sinon.stub()
         };
 
+        mockSettingsCache = {
+            get: sinon.stub()
+        };
+
         // Configure mocks
         mockConfig.get.withArgs('timezone').returns('UTC');
         mockConfig.get.withArgs('tinybird:stats').returns({
-            id: 'site-id',
             endpoint: 'https://api.tinybird.co',
             token: 'tb-token'
         });
+        mockSettingsCache.get.withArgs('site_uuid').returns('931ade9e-a4f1-4217-8625-34bd34250c16');
 
         // Create tinybird client with mocked dependencies
         tinybirdClient = tinybird.create({
             config: mockConfig,
-            request: mockRequest
+            request: mockRequest,
+            settingsCache: mockSettingsCache
         });
     });
 
@@ -45,7 +51,7 @@ describe('Tinybird Client', function () {
 
             should.exist(url);
             url.should.startWith('https://api.tinybird.co/v0/pipes/test_pipe.json?');
-            url.should.containEql('site_uuid=site-id');
+            url.should.containEql('site_uuid=931ade9e-a4f1-4217-8625-34bd34250c16');
             url.should.containEql('date_from=2023-01-01');
             url.should.containEql('date_to=2023-01-31');
             // url.should.containEql('timezone=UTC');
@@ -74,7 +80,7 @@ describe('Tinybird Client', function () {
                 memberStatus: 'paid'
             });
 
-            url.should.containEql('site_uuid=site-id');
+            url.should.containEql('site_uuid=931ade9e-a4f1-4217-8625-34bd34250c16');
             url.should.containEql('timezone=America%2FNew_York');
             url.should.containEql('member_status=paid');
         });
@@ -82,7 +88,6 @@ describe('Tinybird Client', function () {
         it('uses local endpoint and token when local is enabled', function () {
             // Update config mock to return local config
             mockConfig.get.withArgs('tinybird:stats').returns({
-                id: 'site-id',
                 endpoint: 'https://api.tinybird.co',
                 token: 'tb-token',
                 local: {
@@ -101,7 +106,6 @@ describe('Tinybird Client', function () {
         it('ignores tbVersion when local is enabled', function () {
             // Update config mock to return local config
             mockConfig.get.withArgs('tinybird:stats').returns({
-                id: 'site-id',
                 endpoint: 'https://api.tinybird.co',
                 token: 'tb-token',
                 local: {
