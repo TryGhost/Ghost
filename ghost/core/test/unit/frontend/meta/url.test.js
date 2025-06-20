@@ -1,4 +1,3 @@
-const should = require('should');
 const sinon = require('sinon');
 const urlUtils = require('../../../../core/shared/url-utils');
 const urlService = require('../../../../core/server/services/url');
@@ -64,14 +63,6 @@ describe('getUrl', function () {
         getUrl(post, true).should.eql('absolute post url');
     });
 
-    it('should return absolute url for a post and remove /amp/ in url', function () {
-        const data = {relativeUrl: '/*/amp/'};
-
-        urlUtilsUrlForStub.withArgs(data, {}, true).returns('absolute/*/amp/');
-        getUrl(data, true).should.eql('absolute/*/');
-        urlServiceGetUrlByResourceIdStub.called.should.be.false();
-    });
-
     it('should return url for a tag', function () {
         const tag = testUtils.DataGenerator.forKnex.createTag();
 
@@ -130,13 +121,5 @@ describe('getUrl', function () {
             .returns('absolute nav url');
 
         getUrl(data, true).should.equal('absolute nav url');
-    });
-
-    it('should return `relativeUrl` and remove /amp/ in url', function () {
-        const data = {relativeUrl: '/*/amp/'};
-
-        urlUtilsUrlForStub.withArgs(data, {}, undefined).returns(data.relativeUrl);
-        getUrl(data).should.eql('/*/');
-        urlServiceGetUrlByResourceIdStub.called.should.be.false();
     });
 });

@@ -108,7 +108,6 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://127.0.0.1:2369/post/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
@@ -306,7 +305,11 @@ Object {
     </script>
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
-    <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">",
+    <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
+    
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script><style>:root {--ghost-accent-color: #123456;}</style>
+    
+    <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
 
@@ -315,7 +318,6 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://127.0.0.1:2369/post/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
@@ -413,7 +415,6 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://127.0.0.1:2369/post/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
@@ -1072,7 +1073,6 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://127.0.0.1:2369/post/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
@@ -1146,7 +1146,6 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://127.0.0.1:2369/post/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
@@ -1220,7 +1219,6 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://127.0.0.1:2369/post/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
@@ -1294,7 +1292,6 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://127.0.0.1:2369/post/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
@@ -1443,7 +1440,6 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://127.0.0.1:2369/post/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
@@ -1593,7 +1589,6 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://127.0.0.1:2369/post/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
@@ -1667,7 +1662,6 @@ exports[`{{ghost_head}} helper includes tinybird tracker script when config is s
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://127.0.0.1:2369/post/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
@@ -1789,7 +1783,6 @@ Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
     <meta name=\\"robots\\" content=\\"noindex,nofollow\\">
     <meta name=\\"referrer\\" content=\\"same-origin\\">
-    <link rel=\\"amphtml\\" href=\\"http://127.0.0.1:2369/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
@@ -2177,7 +2170,6 @@ exports[`{{ghost_head}} helper includes tinybird tracker script when config is s
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://127.0.0.1:2369/post/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
@@ -4426,7 +4418,12 @@ Object {
     </script>
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
-    <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">",
+    <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
+    
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
+    
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">
+    <style>body {background: red;}</style>",
 }
 `;
 
@@ -4450,7 +4447,6 @@ Object {
     <link rel=\\"icon\\" href=\\"/content/images/size/w256h256/favicon.png\\" type=\\"image/png\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://localhost:65530/post/amp/\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
     
@@ -4465,7 +4461,6 @@ Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
     <meta name=\\"robots\\" content=\\"noindex,nofollow\\">
     <meta name=\\"referrer\\" content=\\"same-origin\\">
-    <link rel=\\"amphtml\\" href=\\"http://localhost:65530/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
@@ -4569,7 +4564,11 @@ Object {
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost \\">
-    <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">",
+    <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
+    
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
+    
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
 
@@ -4987,7 +4986,6 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site &quot;test&quot; description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://localhost:65530/post/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
@@ -5066,14 +5064,14 @@ Object {
 exports[`{{ghost_head}} helper without Code Injection returns structured data on AMP post page with author image and post cover image 1 1`] = `
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
-    <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
+    <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/amp/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
     <meta property=\\"og:title\\" content=\\"Custom Facebook title\\">
     <meta property=\\"og:description\\" content=\\"site description\\">
-    <meta property=\\"og:url\\" content=\\"http://localhost:65530/post/\\">
+    <meta property=\\"og:url\\" content=\\"http://localhost:65530/post/amp/\\">
     <meta property=\\"og:image\\" content=\\"http://localhost:65530/content/images/test-facebook-image.png\\">
     <meta property=\\"article:published_time\\" content=\\"1970-01-01T00:00:00.000Z\\">
     <meta property=\\"article:modified_time\\" content=\\"1970-01-01T00:00:00.000Z\\">
@@ -5085,7 +5083,7 @@ Object {
     <meta name=\\"twitter:card\\" content=\\"summary_large_image\\">
     <meta name=\\"twitter:title\\" content=\\"Custom Twitter title\\">
     <meta name=\\"twitter:description\\" content=\\"site description\\">
-    <meta name=\\"twitter:url\\" content=\\"http://localhost:65530/post/\\">
+    <meta name=\\"twitter:url\\" content=\\"http://localhost:65530/post/amp/\\">
     <meta name=\\"twitter:image\\" content=\\"http://localhost:65530/content/images/test-twitter-image.png\\">
     <meta name=\\"twitter:label1\\" content=\\"Written by\\">
     <meta name=\\"twitter:data1\\" content=\\"Author name\\">
@@ -5121,7 +5119,7 @@ Object {
         ]
     },
     \\"headline\\": \\"Welcome to Ghost\\",
-    \\"url\\": \\"http://localhost:65530/post/\\",
+    \\"url\\": \\"http://localhost:65530/post/amp/\\",
     \\"datePublished\\": \\"1970-01-01T00:00:00.000Z\\",
     \\"dateModified\\": \\"1970-01-01T00:00:00.000Z\\",
     \\"image\\": {
@@ -5130,12 +5128,16 @@ Object {
     },
     \\"keywords\\": \\"tag1, tag2, tag3\\",
     \\"description\\": \\"site description\\",
-    \\"mainEntityOfPage\\": \\"http://localhost:65530/post/\\"
+    \\"mainEntityOfPage\\": \\"http://localhost:65530/post/amp/\\"
 }
     </script>
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
-    <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">",
+    <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
+    
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
+    
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
 
@@ -5195,7 +5197,6 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://localhost:65530/post/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
@@ -5276,7 +5277,6 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://localhost:65530/post/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
@@ -5356,7 +5356,6 @@ exports[`{{ghost_head}} helper without Code Injection returns structured data on
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://localhost:65530/post/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
@@ -5426,7 +5425,6 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://localhost:65530/post/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
@@ -5645,7 +5643,6 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://localhost:65530/post/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
@@ -5718,7 +5715,6 @@ exports[`{{ghost_head}} helper without Code Injection returns twitter and facebo
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    <link rel=\\"amphtml\\" href=\\"http://localhost:65530/post/amp/\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
