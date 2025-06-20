@@ -42,12 +42,11 @@ jobs:
           fetch-depth: 2
 
       - name: Output GitHub context
+        if: env.RUNNER_DEBUG == '1'
         run: |
-          echo "GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
-          echo "GITHUB_CONTEXT: $GITHUB_CONTEXT"
-        env:
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-          GITHUB_CONTEXT: ${{ toJson(github.event) }}
+          echo "GITHUB_EVENT_NAME: ${{ github.event_name }}"
+          echo "GITHUB_CONTEXT: ${{ toJson(github.event) }}"
+
 
       - name: Get metadata (push)
         if: github.event_name == 'push'
@@ -175,6 +174,11 @@ jobs:
           key: ${{ env.cachekey }}
           restore-keys: ${{ env.IS_DEVELOPMENT == 'false' && env.DEPENDENCY_CACHE_RESTORE_KEYS || 'dep-never-restore'}}
 
+      - name: Define Node test matrix
+        id: node_matrix
+        run: |
+          echo 'matrix=["20.11.1", "22.13.1"]' >> $GITHUB_OUTPUT
+
       - name: Set up Node
         uses: actions/setup-node@v4
         env:
@@ -184,6 +188,7 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --prefer-offline --frozen-lockfile
+
 
     outputs:
       changed_admin: ${{ steps.changed.outputs.admin }}
@@ -204,6 +209,8 @@ jobs:
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
+      node_version: ${{ env.NODE_VERSION }}
+      node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
 
   job_lint:
     runs-on: ubuntu-latest
@@ -435,7 +442,7 @@ jobs:
     if: needs.job_setup.outputs.changed_any_code == 'true'
     strategy:
       matrix:
-        node: [ '20.11.1', '22.13.1' ]
+        node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     name: Unit tests (Node ${{ matrix.node }})
     steps:
       - uses: actions/checkout@v4
@@ -464,7 +471,7 @@ jobs:
       - run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
 
       - uses: actions/upload-artifact@v4
-        if: startsWith(matrix.node, '20')
+        if: matrix.node == env.NODE_VERSION
         with:
           name: unit-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
@@ -482,12 +489,12 @@ jobs:
     if: needs.job_setup.outputs.changed_core == 'true'
     strategy:
       matrix:
-        node: [ '20.11.1', '22.13.1' ]
+        node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
         env:
           - DB: mysql8
             NODE_ENV: testing-mysql
         include:
-          - node: 20.11.1
+          - node: ${{ needs.job_setup.outputs.node_version }}
             env:
               DB: sqlite3
               NODE_ENV: testing
@@ -560,7 +567,7 @@ jobs:
           echo "test_time=$(($endTime-$startTime))" >> $GITHUB_ENV
 
       - uses: actions/upload-artifact@v4
-        if: startsWith(matrix.node, '20') && contains(matrix.env.DB, 'mysql')
+        if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
         with:
           name: e2e-coverage
           path: |
@@ -616,11 +623,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - node: 20.11.1
+          - node: ${{ needs.job_setup.outputs.node_version }}
             env:
               DB: mysql8
               NODE_ENV: testing-mysql
-          - node: 20.11.1
+          - node: ${{ needs.job_setup.outputs.node_version }}
             env:
               DB: sqlite3
               NODE_ENV: testing
