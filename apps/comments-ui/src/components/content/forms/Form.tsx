@@ -199,7 +199,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingT
                         type="button"
                         onMouseDown={editExpertise}
                     >
-                        <span><span className="mx-[0.3em] hidden sm:inline">·</span>{expertise ? expertise : 'Add your expertise'}</span>
+                        <span><span className="mx-[0.3em] hidden sm:inline">·</span>{expertise ? expertise : t('Add your expertise')}</span>
                         {expertise && <EditIcon className="ml-1 h-[12px] w-[12px] translate-x-[-6px] stroke-black/50 opacity-0 transition-all duration-100 ease-out group-hover:translate-x-0 group-hover:stroke-black/75 group-hover:opacity-100 dark:stroke-white/60 dark:group-hover:stroke-white/75" />}
                     </button>
                 </div>

@@ -69,10 +69,18 @@ describe('Account Plan Page', () => {
 
     test('can cancel subscription for member on hidden tier', async () => {
         const overrides = generateAccountPlanFixture();
-        const {queryByRole} = customSetup(overrides);
+        const {queryByRole, queryByText} = customSetup(overrides);
         const cancelButton = queryByRole('button', {name: 'Cancel subscription'});
         expect(cancelButton).toBeInTheDocument();
         fireEvent.click(cancelButton);
+
+        // Check that the cancellation message is present
+        const cancellationMessage = queryByText(/If you cancel your subscription now, you will continue to have access until/i);
+        expect(cancellationMessage).toBeInTheDocument();
+
+        // Ensure the message doesn't contain the raw interpolation placeholder
+        expect(cancellationMessage.textContent).not.toContain('{periodEnd}');
+
         const confirmCancelButton = queryByRole('button', {name: 'Confirm cancellation'});
         expect(confirmCancelButton).toBeInTheDocument();
     });

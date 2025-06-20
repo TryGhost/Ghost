@@ -29,7 +29,7 @@ const EmbedSignupPreview: React.FC<EmbedSignupPreviewProps> = ({html, style}) =>
     };
     return (
         <IframeBuffering
-            className="absolute h-full w-full overflow-hidden transition-opacity duration-500"
+            className="absolute size-full overflow-hidden transition-opacity duration-500"
             generateContent={generateContentForEmbed}
             height="100%"
             parentClassName="relative h-full w-full"

@@ -1,5 +1,5 @@
 import React, {useCallback, useMemo, useRef, useEffect, createContext, useContext} from 'react';
-import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider, NavigateOptions as ReactRouterNavigateOptions, useNavigate as useReactRouterNavigate, useLocation, useParams} from 'react-router';
+import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider, NavigateOptions as ReactRouterNavigateOptions, useNavigate as useReactRouterNavigate, useLocation, useParams, Navigate as ReactRouterNavigate} from 'react-router';
 import {useFramework} from './FrameworkProvider';
 import {NavigationStackProvider} from './NavigationStackProvider';
 import {ErrorPage} from '@tryghost/shade';
@@ -172,4 +172,22 @@ export function useBaseRoute() {
 export function useRouteHasParams() {
     const params = useParams();
     return params && Object.keys(params).length > 0;
+}
+
+interface CustomNavigateProps {
+    to: string;
+    replace?: boolean;
+    state?: unknown;
+    crossApp?: boolean;
+}
+
+export function Navigate({to, replace, state, crossApp}: CustomNavigateProps) {
+    const {externalNavigate} = useFramework();
+
+    if (crossApp) {
+        externalNavigate({route: to, isExternal: true});
+        return null;
+    }
+
+    return <ReactRouterNavigate replace={replace} state={state} to={to} />;
 }

@@ -1,14 +1,10 @@
 import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
 import FollowButton from '@components/global/FollowButton';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
-import ViewProfileModal from '@components/modals/ViewProfileModal';
-import {H4, LucideIcon} from '@tryghost/shade';
-import {LoadingIndicator, NoValueLabel, TextField} from '@tryghost/admin-x-design-system';
+import {Button, H4, Input, LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade';
 import {SuggestedProfiles} from '../global/SuggestedProfiles';
 import {useDebounce} from 'use-debounce';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useSearchForUser} from '@hooks/use-activity-pub-queries';
 
@@ -19,6 +15,8 @@ interface AccountSearchResult {
     avatarUrl: string;
     followerCount: number;
     followedByMe: boolean;
+    blockedByMe: boolean;
+    domainBlockedByMe: boolean;
 }
 
 interface AccountSearchResultItemProps {
@@ -43,19 +41,14 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
         });
     };
 
-    const {isEnabled} = useFeatureFlags();
     const navigate = useNavigate();
 
     return (
         <ActivityItem
             key={account.id}
             onClick={() => {
-                if (isEnabled('ap-routes')) {
-                    navigate(`/profile-rr/${account.handle}`);
-                } else {
-                    onOpenChange?.(false);
-                    NiceModal.show(ViewProfileModal, {handle: account.handle, onFollow, onUnfollow});
-                }
+                onOpenChange?.(false);
+                navigate(`/profile/${account.handle}`);
             }}
         >
             <APAvatar author={{
@@ -65,18 +58,21 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
                 name: account.name,
                 handle: account.handle
             }}/>
-            <div className='flex flex-col'>
-                <span className='font-semibold text-black dark:text-white'>{account.name}</span>
-                <span className='text-sm text-gray-700 dark:text-gray-600'>{account.handle}</span>
+            <div className='flex flex-col break-anywhere'>
+                <span className='line-clamp-1 font-semibold text-black dark:text-white'>{account.name}</span>
+                <span className='line-clamp-1 text-sm text-gray-700 dark:text-gray-600'>{account.handle}</span>
             </div>
-            <FollowButton
-                className='ml-auto'
-                following={account.followedByMe}
-                handle={account.handle}
-                type='secondary'
-                onFollow={onFollow}
-                onUnfollow={onUnfollow}
-            />
+            {account.blockedByMe || account.domainBlockedByMe ?
+                <Button className='pointer-events-none ml-auto min-w-[90px]' variant='destructive'>Blocked</Button> :
+                <FollowButton
+                    className='ml-auto'
+                    following={account.followedByMe}
+                    handle={account.handle}
+                    type='secondary'
+                    onFollow={onFollow}
+                    onUnfollow={onUnfollow}
+                />
+            }
         </ActivityItem>
     );
 };
@@ -136,19 +132,15 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
         <>
             <div className='-mx-6 -mt-6 flex items-center gap-2 border-b border-b-gray-150 px-6 pb-[10px] pt-3 dark:border-b-gray-950'>
                 <LucideIcon.Search className='text-gray-600' size={18} strokeWidth={1.5} />
-                <TextField
+                <Input
+                    ref={queryInputRef}
                     autoComplete='off'
-                    className='mr-12 flex h-10 w-full items-center rounded-lg border-0 bg-transparent px-0 py-1.5 transition-colors focus:border-0 focus:bg-transparent focus:outline-0 tablet:mr-0 dark:text-white dark:placeholder:text-gray-800'
-                    containerClassName='w-100'
-                    inputRef={queryInputRef}
+                    className='flex h-10 w-full items-center rounded-lg border-0 bg-transparent px-0 py-1.5 focus-visible:border-0 focus-visible:bg-transparent focus-visible:shadow-none focus-visible:outline-0 dark:bg-[#101114] dark:text-white dark:placeholder:text-gray-800'
                     placeholder='Enter a handle or account URL...'
                     title="Search"
                     type='text'
                     value={query}
-                    clearBg
-                    hideTitle
-                    unstyled
-                    onChange={e => setQuery(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
                 />
             </div>
             <div className='min-h-[320px]'>
@@ -159,7 +151,8 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                 )}
                 {showNoResults && (
                     <div className='flex h-full items-center justify-center pb-8'>
-                        <NoValueLabel icon='user'>
+                        <NoValueLabel>
+                            <NoValueLabelIcon><LucideIcon.UserRound /></NoValueLabelIcon>
                             No users matching this handle or account URL
                         </NoValueLabel>
                     </div>

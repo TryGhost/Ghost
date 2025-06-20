@@ -22,7 +22,7 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
 
     return (
         <div>
-            <div className='-mx-5 -mb-5 overflow-hidden rounded-b-xl bg-grey-50 px-5 pt-5 dark:bg-grey-950 md:-mx-7 md:-mb-7 md:px-7 md:pt-7'>
+            <div className='-mx-5 -mb-5 overflow-hidden rounded-b-xl bg-grey-50 px-5 pt-5 md:-mx-7 md:-mb-7 md:px-7 md:pt-7 dark:bg-grey-950'>
                 <div className='rounded-t-sm bg-white px-5 py-3 shadow-lg dark:bg-grey-975'>
                     <div className='mt-3 flex items-center'>
                         <div className='basis-'>
@@ -35,7 +35,7 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
                         </div>
                     </div>
                     <div className='mt-4 flex items-center gap-2 border-t border-grey-200 pt-4 dark:border-grey-900'>
-                        <div className='flex h-7 w-7 items-center justify-center rounded-full bg-grey-200 dark:bg-grey-700' style={{
+                        <div className='flex size-7 items-center justify-center rounded-full bg-grey-200 dark:bg-grey-700' style={{
                             backgroundImage: icon ? `url(${icon})` : 'none',
                             backgroundSize: 'contain'
                         }}>

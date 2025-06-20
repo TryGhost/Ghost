@@ -61,7 +61,7 @@ test.describe('Custom integrations', async () => {
                 ...globalDataRequests,
                 browseIntegrations: {
                     method: 'GET',
-                    path: '/integrations/?include=api_keys%2Cwebhooks',
+                    path: '/integrations/?include=api_keys%2Cwebhooks&limit=50',
                     response: {integrations: []} satisfies IntegrationsResponseType
                 },
                 addIntegration: {

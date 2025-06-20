@@ -1,7 +1,7 @@
-const {MilestoneCreatedEvent} = require('@tryghost/milestones');
+const MilestoneCreatedEvent = require('../milestones/MilestoneCreatedEvent');
 
 /**
- * @typedef {import('@tryghost/milestones/lib/InMemoryMilestoneRepository').Milestone} Milestone
+ * @typedef {import('../milestones/Milestone')} Milestone
  */
 
 /**

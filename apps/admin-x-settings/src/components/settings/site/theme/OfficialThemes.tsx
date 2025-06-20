@@ -73,7 +73,7 @@ const OfficialThemes: React.FC<{
                                             <img
                                                 key={`theme-variant-${variant.category.toLowerCase()}`}
                                                 alt={`${theme.name} Theme - ${variant.category}`}
-                                                className={clsx('h-full w-full object-contain opacity-0 transition-opacity duration-500', {
+                                                className={clsx('size-full object-contain opacity-0 transition-opacity duration-500', {
                                                     'opacity-100': idx === visibleVariantIdx && isVariantLooping || !isVariantLooping && idx === 0,
                                                     relative: idx === visibleVariantIdx,
                                                     absolute: idx !== visibleVariantIdx,
@@ -86,7 +86,7 @@ const OfficialThemes: React.FC<{
                                     </> :
                                     <img
                                         alt={`${theme.name} Theme`}
-                                        className='h-full w-full object-contain'
+                                        className='size-full object-contain'
                                         src={resolveAsset(theme.image, adminRoot)}
                                     />
                                 }

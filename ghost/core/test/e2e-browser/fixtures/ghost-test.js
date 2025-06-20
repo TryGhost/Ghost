@@ -2,7 +2,7 @@
 const base = require('@playwright/test');
 const {promisify} = require('util');
 const {spawn, exec} = require('child_process');
-const {setupGhost, setupMailgun, enableLabs, setupStripe, getStripeAccountId, generateStripeIntegrationToken} = require('../utils/e2e-browser-utils');
+const {setupGhost, setupMailgun, setupStripe, getStripeAccountId, generateStripeIntegrationToken} = require('../utils/e2e-browser-utils');
 const {allowStripe, mockMail, mockGeojs, assert} = require('../../utils/e2e-framework-mock-manager');
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
@@ -111,6 +111,12 @@ module.exports = base.test.extend({
         configUtils.set('database:connection:filename', process.env.database__connection__filename);
         configUtils.set('server:port', port);
         configUtils.set('url', `http://127.0.0.1:${port}`);
+        configUtils.set('portal:url', 'http://127.0.0.1:4175/portal.min.js');
+        configUtils.set('comments:url', 'http://127.0.0.1:7173/comments-ui.min.js');
+        configUtils.set('signupForm:url', 'http://127.0.0.1:6174/signup-form.min.js');
+        configUtils.set('announcementBar:url', 'http://127.0.0.1:4177/announcement-bar.min.js');
+        configUtils.set('sodoSearch:url', 'http://127.0.0.1:4178/sodo-search.min.js');
+        configUtils.set('sodoSearch:styles', 'http://127.0.0.1:4178/main.css');
 
         const stripeAccountId = await getStripeAccountId();
         const stripeIntegrationToken = await generateStripeIntegrationToken(stripeAccountId);
@@ -178,7 +184,6 @@ module.exports = base.test.extend({
         await setupGhost(page);
         await setupStripe(page, stripeIntegrationToken);
         await setupMailgun(page);
-        await enableLabs(page);
         const state = await page.context().storageState();
 
         await page.close();

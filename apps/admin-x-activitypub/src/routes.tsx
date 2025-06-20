@@ -1,15 +1,17 @@
+import BlueskySharing from '@views/Preferences/components/BlueskySharing';
 import Error from '@components/layout/Error';
 import Explore from '@views/Explore';
 import Feed from './views/Feed/Feed';
 import Inbox from '@views/Inbox';
+import Moderation from '@views/Preferences/components/Moderation';
 import Note from './views/Feed/Note';
 import Notifications from '@views/Notifications';
 import Onboarding from '@components/layout/Onboarding';
 import OnboardingStep1 from '@components/layout/Onboarding/Step1';
 import OnboardingStep2 from '@components/layout/Onboarding/Step2';
 import OnboardingStep3 from '@components/layout/Onboarding/Step3';
+import Preferences from '@views/Preferences';
 import Profile from '@views/Profile';
-import ProfileRR from '@views/Profile/Profile-RR';
 import {Navigate, RouteObject} from '@tryghost/admin-x-framework';
 
 export const APP_ROUTE_PREFIX = '/activitypub';
@@ -17,6 +19,7 @@ export const APP_ROUTE_PREFIX = '/activitypub';
 export type CustomRouteObject = RouteObject & {
     pageTitle?: string;
     children?: CustomRouteObject[];
+    showBackButton?: boolean;
 };
 
 export const routes: CustomRouteObject[] = [
@@ -25,18 +28,6 @@ export const routes: CustomRouteObject[] = [
         path: '',
         errorElement: <Error />, // This will catch all errors in child routes
         children: [
-            {
-                path: 'profile',
-                element: <Profile />,
-                pageTitle: 'Profile'
-            },
-            {
-                path: 'profile-rr/:handle',
-                element: <ProfileRR />,
-                pageTitle: 'Profile'
-            },
-
-            // ---
             {
                 index: true,
                 element: <Navigate to="inbox" />
@@ -75,6 +66,27 @@ export const routes: CustomRouteObject[] = [
                 path: 'profile',
                 element: <Profile />,
                 pageTitle: 'Profile'
+            },
+            {
+                path: 'profile/:handle',
+                element: <Profile />,
+                pageTitle: 'Profile'
+            },
+            {
+                path: 'preferences',
+                element: <Preferences />,
+                pageTitle: 'Preferences'
+            },
+            {
+                path: 'preferences/moderation',
+                element: <Moderation />,
+                pageTitle: 'Moderation',
+                showBackButton: true
+            },
+            {
+                path: 'preferences/bluesky-sharing',
+                element: <BlueskySharing />,
+                showBackButton: true
             },
             {
                 path: 'welcome',

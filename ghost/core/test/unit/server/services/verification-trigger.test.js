@@ -5,7 +5,7 @@ const assert = require('assert/strict');
 require('should');
 const VerificationTrigger = require('../../../../core/server/services/VerificationTrigger');
 const DomainEvents = require('@tryghost/domain-events');
-const {MemberCreatedEvent} = require('@tryghost/member-events');
+const {MemberCreatedEvent} = require('../../../../core/shared/events');
 
 describe('Import threshold', function () {
     beforeEach(function () {

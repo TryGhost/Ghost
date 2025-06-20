@@ -10,7 +10,7 @@ export function isPendingActivity(id: string) {
     return id.startsWith(PENDING_ACTIVITY_PREFIX);
 }
 
-export function generatePendingActivity(actorProps: ActorProperties, id: string, content: string): Activity {
+export function generatePendingActivity(actorProps: ActorProperties, id: string, content: string, imageUrl?: string): Activity {
     const actor: ActorProperties = {
         id: actorProps.url,
         icon: actorProps.icon,
@@ -45,9 +45,10 @@ export function generatePendingActivity(actorProps: ActorProperties, id: string,
             type: 'Note',
             name: '',
             content: content,
+            summary: null,
             url: '',
             attributedTo: actor,
-            image: '',
+            image: imageUrl || '',
             published: new Date().toISOString(),
             attachment: [],
             preview: {

@@ -47,7 +47,7 @@ class SlackNotifications {
 
     /**
      * @param {object} eventData
-     * @param {import('@tryghost/milestones/lib/InMemoryMilestoneRepository').Milestone} eventData.milestone
+     * @param {import('../milestones/Milestone')} eventData.milestone
      * @param {object} [eventData.meta]
      * @param {'import'|'email'|'skipped'|'initial'} [eventData.meta.reason]
      * @param {number} [eventData.meta.currentValue]

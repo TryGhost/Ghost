@@ -25,7 +25,7 @@ describe('Advanced URL Configurations', function () {
             urlUtils.stubUrlUtilsFromConfig();
             mockManager.mockMail();
 
-            await testUtils.startGhost({forceStart: true});
+            await testUtils.startGhost();
 
             request = supertest.agent(configUtils.config.get('server:host') + ':' + configUtils.config.get('server:port'));
         });

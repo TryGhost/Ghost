@@ -1,5 +1,61 @@
-import Flexsearch from 'flexsearch';
+import Flexsearch, {Charset} from 'flexsearch';
 import GhostContentAPI from '@tryghost/content-api';
+
+const cjkEncoderPresetCodepoint = {
+    finalize: (terms) => {
+        let results = [];
+     
+        for (const term of terms) {
+            results.push(...tokenizeCjkByCodePoint(term));
+        }
+        return results;
+    }
+};
+
+function isCJK(codePoint) {
+    return (
+        (codePoint >= 0x4E00 && codePoint <= 0x9FFF) || // CJK Unified Ideographs
+        (codePoint >= 0x3040 && codePoint <= 0x30FF) || // Hiragana & Katakana (contiguous blocks)
+        (codePoint >= 0xAC00 && codePoint <= 0xD7A3) || // Korean Hangul Syllables
+        (codePoint >= 0x3400 && codePoint <= 0x4DBF) || // CJK Unified Ideographs Extension A
+        (codePoint >= 0x20000 && codePoint <= 0x2A6DF) || // CJK Unified Ideographs Extension B
+        (codePoint >= 0x2A700 && codePoint <= 0x2EBEF) || // CJK Unified Ideographs Extension C-F (contiguous blocks)
+        (codePoint >= 0x30000 && codePoint <= 0x323AF) || // Additional ideographs
+        (codePoint >= 0x2EBF0 && codePoint <= 0x2EE5F) || // More extensions
+        (codePoint >= 0xF900 && codePoint <= 0xFAFF) || // Compatibility Ideographs
+        (codePoint >= 0x2F800 && codePoint <= 0x2FA1F) // Supplementary ideographs
+    );
+}
+  
+export function tokenizeCjkByCodePoint(text) {
+    const result = [];
+    let buffer = '';
+
+    for (const char of text) { // loops over unicode characters
+        const codePoint = char.codePointAt(0);
+
+        if (isCJK(codePoint)) {
+            if (buffer) {
+                result.push(buffer); // Push any non-CJK word we’ve been building
+                buffer = '';
+            }
+            result.push(char); // Push the CJK char as its own token
+        } else {
+            buffer += char; // Keep building non-CJK text
+        }
+    }
+
+    if (buffer) {
+        result.push(buffer); // Push whatever is left when done
+    }
+
+    return result;
+}
+
+const encoderSet = new Flexsearch.Encoder(
+    Charset.Default,
+    cjkEncoderPresetCodepoint
+);
 
 export default class SearchIndex {
     constructor({adminUrl, apiKey, dir}) {
@@ -18,7 +74,7 @@ export default class SearchIndex {
                 index: ['title', 'excerpt'],
                 store: true
             },
-            ...this.#getEncodeOptions()
+            encoder: encoderSet
         });
         this.authorsIndex = new Flexsearch.Document({
             tokenize: tokenize,
@@ -28,7 +84,7 @@ export default class SearchIndex {
                 index: ['name'],
                 store: true
             },
-            ...this.#getEncodeOptions()
+            encoder: encoderSet
         });
         this.tagsIndex = new Flexsearch.Document({
             tokenize: tokenize,
@@ -38,7 +94,7 @@ export default class SearchIndex {
                 index: ['name'],
                 store: true
             },
-            ...this.#getEncodeOptions()
+            encoder: encoderSet
         });
 
         this.init = this.init.bind(this);
@@ -138,19 +194,6 @@ export default class SearchIndex {
             posts: this.#normalizeSearchResult(posts),
             authors: this.#normalizeSearchResult(authors),
             tags: this.#normalizeSearchResult(tags)
-        };
-    }
-
-    #getEncodeOptions() {
-        const regex = new RegExp(
-            `[\u{4E00}-\u{9FFF}\u{3040}-\u{309F}\u{30A0}-\u{30FF}\u{AC00}-\u{D7A3}\u{3400}-\u{4DBF}\u{20000}-\u{2A6DF}\u{2A700}-\u{2B73F}\u{2B740}-\u{2B81F}\u{2B820}-\u{2CEAF}\u{2CEB0}-\u{2EBEF}\u{30000}-\u{3134F}\u{31350}-\u{323AF}\u{2EBF0}-\u{2EE5F}\u{F900}-\u{FAFF}\u{2F800}-\u{2FA1F}]|[0-9A-Za-zа-я\u00C0-\u017F\u0400-\u04FF\u0600-\u06FF\u0980-\u09FF\u1E00-\u1EFF\u0590-\u05FF]+`,
-            'mug'
-        );
-
-        return {
-            encode: (str) => {
-                return ('' + str).toLowerCase().match(regex) ?? [];
-            }
         };
     }
 }

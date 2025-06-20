@@ -1,4 +1,4 @@
-import InboxList from './component/InboxList';
+import InboxList from './components/InboxList';
 import React from 'react';
 import {useInboxForUser} from '@hooks/use-activity-pub-queries';
 

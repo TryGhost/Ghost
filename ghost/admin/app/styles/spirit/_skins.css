@@ -118,7 +118,7 @@
 .bg-red            { background-color: var(--red); }
 .bg-pink           { background-color: var(--pink); }
 .bg-white          { background-color: var(--white); }
-.bg-transparent     { background-color: transparent !important;}
+.bg-transparent     { background-color: transparent;}
 
 .bg-white-10          { background-color: var(--white-10); }
 .bg-white-20          { background-color: var(--white-20); }

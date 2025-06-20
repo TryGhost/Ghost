@@ -1,17 +1,17 @@
 import App from '../App.js';
-import {vi} from 'vitest';
 import {fireEvent, appRender, within, waitFor} from '../utils/test-utils';
 import {offer as FixtureOffer, site as FixtureSite} from '../utils/test-fixtures';
 import setupGhostApi from '../utils/api.js';
 
-vi.mock('@hcaptcha/react-hcaptcha');
+// Simple deep clone function
+const deepClone = obj => JSON.parse(JSON.stringify(obj));
 
 const offerSetup = async ({site, member = null, offer}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
     ghostApi.init = jest.fn(() => {
         return Promise.resolve({
-            site,
-            member
+            site: deepClone(site),
+            member: member ? deepClone(member) : null
         });
     });
 
@@ -84,8 +84,8 @@ const setup = async ({site, member = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
     ghostApi.init = jest.fn(() => {
         return Promise.resolve({
-            site,
-            member
+            site: deepClone(site),
+            member: member ? deepClone(member) : null
         });
     });
 
@@ -143,8 +143,8 @@ const multiTierSetup = async ({site, member = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
     ghostApi.init = jest.fn(() => {
         return Promise.resolve({
-            site,
-            member
+            site: deepClone(site),
+            member: member ? deepClone(member) : null
         });
     });
 
@@ -359,7 +359,12 @@ describe('Signup', () => {
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
 
             fireEvent.click(monthlyPlanContainer.parentNode);
-            await within(popupIframeDocument).findByText(benefitText);
+            // Wait for the benefit to appear in the UI - it may appear multiple times, so use findAllByText
+            await waitFor(() => {
+                expect(
+                    within(popupIframeDocument).queryAllByText(benefitText).length
+                ).toBeGreaterThan(0);
+            });
             expect(emailInput).toHaveValue('jamie@example.com');
             expect(nameInput).toHaveValue('Jamie Larsen');
             fireEvent.click(submitButton);
@@ -400,7 +405,12 @@ describe('Signup', () => {
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
 
             fireEvent.click(yearlyPlanContainer.parentNode);
-            await within(popupIframeDocument).findByText(benefitText);
+            // Wait for the benefit to appear in the UI - it may appear multiple times, so use findAllByText
+            await waitFor(() => {
+                expect(
+                    within(popupIframeDocument).queryAllByText(benefitText).length
+                ).toBeGreaterThan(0);
+            });
             expect(emailInput).toHaveValue('jamie@example.com');
             expect(nameInput).toHaveValue('Jamie Larsen');
             fireEvent.click(submitButton);
@@ -440,7 +450,12 @@ describe('Signup', () => {
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
 
             fireEvent.click(monthlyPlanContainer);
-            await within(popupIframeDocument).findByText(benefitText);
+            // Wait for the benefit to appear in the UI - it may appear multiple times, so use findAllByText
+            await waitFor(() => {
+                expect(
+                    within(popupIframeDocument).queryAllByText(benefitText).length
+                ).toBeGreaterThan(0);
+            });
 
             expect(emailInput).toHaveValue('jamie@example.com');
             fireEvent.click(submitButton);
@@ -884,62 +899,6 @@ describe('Signup', () => {
 
             // There should be three paid tiers to choose from
             expect(chooseBtns).toHaveLength(3);
-        });
-    });
-
-    describe('with captcha enabled', () => {
-        test('on a simple site', async () => {
-            const {
-                ghostApi, emailInput, nameInput, popupIframeDocument, chooseBtns
-            } = await setup({
-                site: Object.assign({}, FixtureSite.singleTier.basic, {
-                    captcha_enabled: true,
-                    captcha_sitekey: '20000000-ffff-ffff-ffff-000000000002'
-                })
-            });
-
-            fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
-            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
-            fireEvent.click(chooseBtns[0]);
-
-            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
-            expect(magicLink).toBeInTheDocument();
-
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signup',
-                name: 'Jamie Larsen',
-                plan: 'free',
-                integrityToken: 'testtoken',
-                token: 'mocked-token'
-            });
-        });
-
-        test('on a site with multiple tiers', async () => {
-            const {
-                ghostApi, emailInput, nameInput,chooseBtns, popupIframeDocument
-            } = await multiTierSetup({
-                site: Object.assign({}, FixtureSite.multipleTiers.basic, {
-                    captcha_enabled: true,
-                    captcha_sitekey: '20000000-ffff-ffff-ffff-000000000002'
-                })
-            });
-
-            fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
-            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
-            fireEvent.click(chooseBtns[0]);
-
-            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
-            expect(magicLink).toBeInTheDocument();
-
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signup',
-                name: 'Jamie Larsen',
-                plan: 'free',
-                integrityToken: 'testtoken',
-                token: 'mocked-token'
-            });
         });
     });
 });

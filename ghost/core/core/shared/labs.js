@@ -25,49 +25,41 @@ const GA_FEATURES = [
     'i18n',
     'themeErrorsNotification',
     'announcementBar',
-    'customFonts'
+    'customFonts',
+    'contentVisibility',
+    'emailCustomization'
 ];
 
-// NOTE: this allowlist is meant to be used to filter out any unexpected
-//       input for the "labs" setting value
-const BETA_FEATURES = [
-    'additionalPaymentMethods',
+// These features are considered publicly available and can be enabled/disabled by users
+const PUBLIC_BETA_FEATURES = [
+    'ActivityPub',
+    'superEditors',
+    'editorExcerpt',
+    'additionalPaymentMethods'
+];
+
+// These features are considered private they live in the private tab of the labs settings page
+// Which is only visible if the developer experiments flag is enabled
+const PRIVATE_FEATURES = [
     'stripeAutomaticTax',
     'webmentions',
-    'editorExcerpt',
-    'ActivityPub',
+    'trafficAnalytics',
+    'trafficAnalyticsTracking',
     'importMemberTier',
-    'staff2fa',
-    'contentVisibility',
-    'superEditors'
-];
-
-const ALPHA_FEATURES = [
-    'NestPlayground',
     'urlCache',
-    'emailCustomization',
     'mailEvents',
-    'collectionsCard',
     'lexicalIndicators',
-    'adminXDemo',
-    'postsX',
-    'statsX',
-    'captcha',
+    'trafficAnalyticsAlpha',
+    'updatedMainNav',
     'contentVisibilityAlpha',
     'explore'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
-module.exports.WRITABLE_KEYS_ALLOWLIST = [...BETA_FEATURES, ...ALPHA_FEATURES];
+module.exports.WRITABLE_KEYS_ALLOWLIST = [...PUBLIC_BETA_FEATURES, ...PRIVATE_FEATURES];
 
 module.exports.getAll = () => {
     const labs = _.cloneDeep(settingsCache.get('labs')) || {};
-
-    ALPHA_FEATURES.forEach((alphaKey) => {
-        if (labs[alphaKey] && !(config.get('enableDeveloperExperiments') || process.env.NODE_ENV.startsWith('test'))) {
-            delete labs[alphaKey];
-        }
-    });
 
     GA_FEATURES.forEach((gaKey) => {
         labs[gaKey] = true;
@@ -84,7 +76,7 @@ module.exports.getAll = () => {
 };
 
 module.exports.getAllFlags = function () {
-    return [...GA_FEATURES, ...BETA_FEATURES, ...ALPHA_FEATURES];
+    return [...GA_FEATURES, ...PUBLIC_BETA_FEATURES, ...PRIVATE_FEATURES];
 };
 
 /**

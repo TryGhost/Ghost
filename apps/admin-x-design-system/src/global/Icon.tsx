@@ -45,23 +45,23 @@ const Icon: React.FC<IconProps> = ({name, size = 'md', colorClass = '', classNam
         case 'custom':
             break;
         case '2xs':
-            classes = 'w-2 h-2';
+            classes = 'size-2';
             break;
         case 'xs':
-            classes = 'w-3 h-3';
+            classes = 'size-3';
             break;
         case 'sm':
-            classes = 'w-4 h-4';
+            classes = 'size-4';
             break;
         case 'lg':
-            classes = 'w-8 h-8';
+            classes = 'size-8';
             break;
         case 'xl':
-            classes = 'w-10 h-10';
+            classes = 'size-10';
             break;
 
         default:
-            classes = 'w-5 h-5';
+            classes = 'size-5';
             break;
         }
     }
