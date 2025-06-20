@@ -84,7 +84,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 </BreadcrumbList>
                             </Breadcrumb>
                             <div className='flex items-center gap-2'>
-                                {appSettings?.analytics.webAnalytics && (
+                                {appSettings?.analytics.webAnalytics && !post?.email_only && (
                                     <div className='mr-3 flex items-center gap-2 text-sm'>
                                         <div className='flex items-center gap-2 text-sm text-muted-foreground' title='Active readers in the last 5 minutes · Updates every 60 seconds'>
                                             <span className='text-sm'>
