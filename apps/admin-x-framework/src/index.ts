@@ -9,6 +9,7 @@ export {AppProvider, useAppContext} from './providers/AppProvider';
 // Analytics
 export type {AnalyticsFeatures} from './hooks/useAnalyticsFeatures';
 export {useAnalyticsFeatures} from './hooks/useAnalyticsFeatures';
+export {useActiveVisitors} from './hooks/useActiveVisitors';
 
 // Currency utilities
 export {getSymbol} from './utils/currency';
