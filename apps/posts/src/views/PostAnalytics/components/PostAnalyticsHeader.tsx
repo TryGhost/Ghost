@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import moment from 'moment-timezone';
-import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, PostShareModal, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
+import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, PostShareModal, Tabs, TabsList, TabsTrigger, formatNumber} from '@tryghost/shade';
 import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '../../../App';
@@ -52,6 +52,9 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
         }
     };
 
+    const isActiveVisitorsLoading = false;
+    const activeVisitors = 20;
+
     return (
         <>
             <header className='z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-black'>
@@ -79,6 +82,16 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 </BreadcrumbList>
                             </Breadcrumb>
                             <div className='flex items-center gap-2'>
+                                {appSettings?.analytics.webAnalytics && (
+                                    <div className='mr-3 flex items-center gap-2 text-sm'>
+                                        <div className='flex items-center gap-2 text-sm text-muted-foreground' title='Active readers in the last 5 minutes · Updates every 60 seconds'>
+                                            <span className='text-sm'>
+                                                {isActiveVisitorsLoading ? '' : formatNumber(activeVisitors)} reading now
+                                            </span>
+                                            <div className={`size-2 rounded-full ${isActiveVisitorsLoading ? 'animate-pulse bg-muted' : activeVisitors ? 'bg-green-500' : 'border border-muted-foreground'}`}></div>
+                                        </div>
+                                    </div>
+                                )}
                                 {/* <Button variant='outline'><LucideIcon.RefreshCw /></Button> */}
                                 {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                                 {!isPostLoading &&
