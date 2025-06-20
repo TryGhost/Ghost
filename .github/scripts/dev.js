@@ -6,14 +6,6 @@ const debug = require('debug')('ghost:dev');
 const chalk = require('chalk');
 const concurrently = require('concurrently');
 
-// check we're running on Node 18 and above
-debug('checking node version');
-const nodeVersion = parseInt(process.versions.node.split('.')[0]);
-if (nodeVersion < 18) {
-    console.error('`yarn dev` requires Node v18 or above. Please upgrade your version of Node.');
-    process.exit(1);
-}
-debug('node version check passed');
 
 debug('loading config');
 const config = require('../../ghost/core/core/shared/config/loader').loadNconf({
@@ -86,7 +78,6 @@ let commands = [];
 
 const COMMAND_GHOST = {
     name: 'ghost',
-    // Note: if this isn't working for you, please use Node 18 and above
     command: 'nx run ghost:dev',
     prefixColor: 'blue',
     env: {
