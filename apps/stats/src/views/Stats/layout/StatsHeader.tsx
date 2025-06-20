@@ -1,7 +1,8 @@
 import React from 'react';
-import {H1, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger, formatNumber} from '@tryghost/shade';
+import {H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger, formatNumber} from '@tryghost/shade';
 import {useActiveVisitors} from '@src/hooks/useActiveVisitors';
 import {useAppContext, useLocation, useNavigate} from '@tryghost/admin-x-framework';
+import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
 interface StatsHeaderProps {
     children?: React.ReactNode;
@@ -13,6 +14,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
     const navigate = useNavigate();
     const location = useLocation();
     const {appSettings} = useAppContext();
+    const {site} = useGlobalData();
     const {activeVisitors, isLoading: isActiveVisitorsLoading} = useActiveVisitors();
 
     return (
@@ -22,14 +24,22 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                     <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
                         Analytics
                     </H1>
-                    <div
-                        className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400'
-                        title='Active visitors in the last 5 minutes · Updates every 60 seconds'
-                    >
-                        <span>
-                            {isActiveVisitorsLoading ? '—' : formatNumber(activeVisitors)} online
-                        </span>
-                        <div className={`size-2 rounded-full ${isActiveVisitorsLoading ? 'animate-pulse bg-muted' : activeVisitors ? 'bg-green-500' : 'border border-muted-foreground'}`}></div>
+                    <div className='flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400'>
+                        {site?.url && (
+                            <div className='flex items-center gap-2'>
+                                <LucideIcon.Globe className='text-gray-400' size={16} strokeWidth={1.5} />
+                                <span>{new URL(site.url).hostname}</span>
+                            </div>
+                        )}
+                        <div 
+                            className='flex items-center gap-2' 
+                            title='Active visitors in the last 5 minutes · Updates every 60 seconds'
+                        >
+                            <span>
+                                {isActiveVisitorsLoading ? '—' : formatNumber(activeVisitors)} online
+                            </span>
+                            <div className={`size-2 rounded-full ${isActiveVisitorsLoading ? 'animate-pulse bg-muted' : activeVisitors ? 'bg-green-500' : 'border border-muted-foreground'}`}></div>
+                        </div>
                     </div>
                 </div>
             </header>
