@@ -191,6 +191,9 @@ yalc.lock
 # A folder for AI generated files
 # useful for keeping local plans etc
 /ai
+<<<<<<< Updated upstream
 
 # e2e test suite
 /e2e/test-results
+=======
+>>>>>>> Stashed changes
