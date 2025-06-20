@@ -842,8 +842,6 @@ jobs:
     name: E2E tests
     env:
       CI: true
-      DB: mysql8
-      NODE_ENV: testing-mysql
     steps:
       - uses: actions/checkout@v4
         with:
@@ -854,24 +852,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Shutdown MySQL
-        run: sudo service mysql stop
-
-      - name: Login to Docker Hub
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - uses: tryghost/mysql-action@main
-        timeout-minutes: 3
-        with:
-          authentication plugin: 'caching_sha2_password'
-          mysql version: '8.0'
-          mysql database: 'ghost_testing'
-          mysql root password: 'root'
-
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
@@ -879,9 +859,6 @@ jobs:
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
-
-      - name: Set env vars (MySQL)
-        run: echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: Run migrations
         working-directory: ghost/core
@@ -891,17 +868,16 @@ jobs:
         run: yarn nx run ghost-admin:build:dev
 
       - name: Start Ghost
-        working-directory: ghost/core
-        run: node --import=tsx index.js &
+        run: yarn dev --all &
 
       - name: Wait for Ghost to be ready
         run: |
-          timeout 60 bash -c 'until curl -f http://localhost:2369; do sleep 1; done'
+          timeout 60 bash -c 'until curl -f http://localhost:2368; do sleep 1; done'
 
       - name: Run E2E tests
         run: yarn test:e2e
         env:
-          GHOST_BASE_URL: http://localhost:2369
+          GHOST_BASE_URL: http://localhost:2368
 
       - name: Upload test results
         if: always()
