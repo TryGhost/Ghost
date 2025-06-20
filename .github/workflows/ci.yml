@@ -18,7 +18,7 @@ env:
     ${{ github.workspace }}/ghost/*/node_modules
     ~/.cache/ms-playwright/
   NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
-  NODE_VERSION: 20.11.1
+  NODE_VERSION: 22.13.1
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
