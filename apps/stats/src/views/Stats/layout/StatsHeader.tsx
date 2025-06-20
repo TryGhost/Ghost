@@ -15,7 +15,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
     const location = useLocation();
     const {appSettings} = useAppContext();
     const {site} = useGlobalData();
-    const {activeVisitors, isLoading: isActiveVisitorsLoading} = useActiveVisitors();
+    const {activeVisitors, isLoading: isActiveVisitorsLoading} = useActiveVisitors(appSettings?.analytics.webAnalytics);
 
     return (
         <>
@@ -28,8 +28,25 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                         <div className='flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400'>
                             {site?.url && (
                                 <div className='flex items-center gap-2'>
-                                    <LucideIcon.Globe className='text-gray-400' size={16} strokeWidth={1.5} />
-                                    <span>{new URL(site.url).hostname}</span>
+                                    {site.icon ? (
+                                        <img 
+                                            alt="Site favicon" 
+                                            className='size-4 rounded-sm' 
+                                            src={site.icon} 
+                                        />
+                                    ) : (
+                                        <LucideIcon.Globe className='text-gray-400' size={16} strokeWidth={1.5} />
+                                    )}
+                                    <span className='text-sm font-semibold text-gray-900 dark:text-gray-100'>{new URL(site.url).hostname}</span>
+                                    <a
+                                        className='flex items-center justify-center text-gray-600 transition-colors hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100'
+                                        href={site.url}
+                                        rel="noopener noreferrer"
+                                        target="_blank"
+                                        title={`Visit ${new URL(site.url).hostname}`}
+                                    >
+                                        <LucideIcon.ExternalLink size={10} strokeWidth={1.5} />
+                                    </a>
                                 </div>
                             )}
                             <div 
