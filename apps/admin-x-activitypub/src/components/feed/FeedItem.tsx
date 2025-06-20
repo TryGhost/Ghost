@@ -14,7 +14,7 @@ import getUsername from '../../utils/get-username';
 import {handleProfileClick} from '../../utils/handle-profile-click';
 import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
 import {renderTimestamp} from '../../utils/render-timestamp';
-import {useDeleteMutationForUser} from '../../hooks/use-activity-pub-queries';
+import {useDeleteMutationForUser, useUnfollowMutationForUser} from '../../hooks/use-activity-pub-queries';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 export function getAttachment(object: ObjectProperties) {
@@ -243,6 +243,16 @@ const FeedItem: React.FC<FeedItemProps> = ({
     const deleteMutation = useDeleteMutationForUser('index');
     const navigate = useNavigate();
 
+    const unfollowMutation = useUnfollowMutationForUser(
+        'index',
+        () => {
+            toast.success('Unfollowed successfully');
+        },
+        () => {
+            toast.error('Failed to unfollow');
+        }
+    );
+
     useEffect(() => {
         const element = contentRef.current;
         if (element) {
@@ -308,8 +318,8 @@ const FeedItem: React.FC<FeedItemProps> = ({
     };
 
     const handleUnfollow = async () => {
-        // TODO: Implement unfollow API call
-        toast.success('Unfollowed successfully');
+        const username = getUsername(actor);
+        unfollowMutation.mutate(username);
     };
 
     let author = actor;

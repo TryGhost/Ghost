@@ -770,70 +770,8 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                 };
             });
 
-            // Update the profile followers query cache for the profile being unfollowed
-            const profileFollowersQueryKey = QUERY_KEYS.accountFollows(fullHandle, 'followers');
-
-            queryClient.setQueryData(profileFollowersQueryKey, (oldData?: {
-                pages: Array<{
-                    accounts: Array<{
-                        id: string;
-                        type: string;
-                        preferredUsername: string;
-                        name: string;
-                        url: string;
-                        icon: {
-                            type: string;
-                            url: string;
-                            },
-                        isFollowing: boolean;
-                    }>;
-                }>;
-            }) => {
-                if (!oldData?.pages?.[0]) {
-                    return oldData;
-                }
-
-                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('index'));
-                if (!currentAccount) {
-                    return oldData;
-                }
-
-                return {
-                    ...oldData,
-                    pages: oldData.pages.map((page: {
-                        accounts: Array<{
-                                id: string;
-                                type: string;
-                                preferredUsername: string;
-                                name: string;
-                                url: string;
-                                icon: {
-                                    type: string;
-                                    url: string;
-                                },
-                            isFollowing: boolean;
-                        }>;
-                    }) => ({
-                        ...page,
-                        accounts: page.accounts.filter((follower: {
-                            id: string;
-                            type: string;
-                            preferredUsername: string;
-                            name: string;
-                            url: string;
-                            icon: {
-                                type: string;
-                                url: string;
-                                },
-                            isFollowing: boolean;
-                        }) => follower.name !== currentAccount.name)
-                    }))
-                };
-            });
-
-            // Update the "followingCount" property of the account performing the follow
+            // Update the "followingCount" property of the account performing the unfollow
             const accountQueryKey = QUERY_KEYS.account('index');
-
             queryClient.setQueryData(accountQueryKey, (currentAccount?: { followingCount: number }) => {
                 if (!currentAccount) {
                     return currentAccount;
@@ -845,66 +783,12 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                 };
             });
 
-            // Invalidate the follows query cache for the account performing the unfollow
-            const accountFollowsQueryKey = QUERY_KEYS.accountFollows(handle, 'following');
-            queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
-
-            // Update explore profiles cache
-            queryClient.setQueryData(QUERY_KEYS.exploreProfiles(handle), (current: {pages: Array<{results: Record<string, { categoryName: string; sites: Account[] }>}>} | undefined) => {
-                if (!current) {
-                    return current;
-                }
-
-                const updatedPages = current.pages.map((page) => {
-                    const updatedResults = Object.entries(page.results).reduce((acc, [categoryKey, category]) => {
-                        const updatedSites = category.sites.map((profile) => {
-                            if (profile.handle === fullHandle) {
-                                return {
-                                    ...profile,
-                                    followedByMe: false,
-                                    followerCount: Math.max(0, profile.followerCount - 1)
-                                };
-                            }
-                            return profile;
-                        });
-
-                        acc[categoryKey] = {
-                            ...category,
-                            sites: updatedSites
-                        };
-
-                        return acc;
-                    }, {} as Record<string, { categoryName: string; sites: Account[] }>);
-
-                    return {
-                        ...page,
-                        results: updatedResults
-                    };
-                });
-
-                return {
-                    ...current,
-                    pages: updatedPages
-                };
-            });
-
-            // Update suggested profiles cache (for all limit values)
-            queryClient.setQueriesData({queryKey: ['suggested_profiles_json'], exact: false}, (current: Account[] | undefined) => {
-                if (!current) {
-                    return current;
-                }
-
-                return current.map((profile) => {
-                    if (profile.handle === fullHandle) {
-                        return {
-                            ...profile,
-                            followedByMe: false,
-                            followerCount: Math.max(0, profile.followerCount - 1)
-                        };
-                    }
-                    return profile;
-                });
-            });
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.feed});
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.inbox});
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.accountFollows(handle, 'following')});
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.exploreProfiles(handle)});
+            queryClient.invalidateQueries({queryKey: [QUERY_KEYS.suggestedProfiles('', 0)[0]], exact: false});
+            queryClient.invalidateQueries({queryKey: [QUERY_KEYS.replyChain(null)[0]], exact: false});
 
             onSuccess();
         },
