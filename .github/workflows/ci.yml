@@ -534,9 +534,6 @@ jobs:
         with:
           timezoneLinux: "America/New_York"
 
-      - name: Record start time
-        run: date +%s > ${{ runner.temp }}/startTime # Get start time for test suite
-
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
         run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
@@ -553,13 +550,6 @@ jobs:
         working-directory: ghost/core
         run: yarn test:ci:integration
 
-      # Get runtime in seconds for test suite
-      - name: Record test duration
-        run: |
-          startTime="$(cat ${{ runner.temp }}/startTime)"
-          endTime="$(date +%s)"
-          echo "test_time=$(($endTime-$startTime))" >> $GITHUB_ENV
-
       - uses: actions/upload-artifact@v4
         if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
         with:
@@ -567,41 +557,6 @@ jobs:
           path: |
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
-
-      # Continue on error if TailScale service is down
-      - name: Tailscale Action
-        timeout-minutes: 2
-        continue-on-error: true
-        if: (github.event_name == 'push' && github.repository_owner == 'TryGhost') || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'TryGhost/'))
-        uses: tailscale/github-action@v1
-        with:
-          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
-
-      # Report time taken to metrics service
-      # Continue on error if previous TailScale step fails
-      - name: Store test duration
-        uses: tryghost/actions/actions/trigger-metric@main
-        timeout-minutes: 1
-        continue-on-error: true
-        if: (github.event_name == 'push' && github.repository_owner == 'TryGhost') || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'TryGhost/'))
-        with:
-          metricName: 'test-time'
-          metricValue: ${{ env.test_time }}
-          configuration: |
-            {
-              "metrics": {
-                "transports": ["elasticsearch"],
-                "metadata": {
-                  "database": "${{ matrix.env.DB }}",
-                  "node": "${{ matrix.node }}"
-                }
-              },
-              "elasticsearch": {
-                "host": "${{ secrets.ELASTICSEARCH_HOST }}",
-                "username": "${{ secrets.ELASTICSEARCH_USERNAME }}",
-                "password": "${{ secrets.ELASTICSEARCH_PASSWORD }}"
-              }
-            }
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
