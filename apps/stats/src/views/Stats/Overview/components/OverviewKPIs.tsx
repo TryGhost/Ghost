@@ -137,38 +137,45 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
         );
     }
 
-    let containerClass = '';
-    if (appSettings?.paidMembersEnabled) {
-        containerClass = 'grid grid-cols-3 gap-8';
-    } else {
-        containerClass = 'grid grid-cols-2 gap-8';
+    let cols = 'grid-cols-3';
+    if ((appSettings?.analytics.webAnalytics && !appSettings?.paidMembersEnabled) ||
+        (!appSettings?.analytics.webAnalytics && appSettings?.paidMembersEnabled)) {
+        cols = 'grid-cols-2';
     }
+
+    if (!appSettings?.analytics.webAnalytics && !appSettings?.paidMembersEnabled) {
+        cols = 'grid-cols-1';
+    }
+
+    const containerClass = `grid ${cols} gap-8`;
 
     return (
         <div className={containerClass}>
-            <OverviewKPICard
-                description='Number of individual people who visited your website'
-                diffDirection='empty'
-                formattedValue={kpiValues.visits}
-                iconName='Eye'
-                linkto='/web/'
-                title='Unique visitors'
-                onClick={() => {
-                    navigate('/web/');
-                }}
-            >
-                <GhAreaChart
-                    className={areaChartClassName}
-                    color='hsl(var(--chart-blue))'
-                    data={visitorsChartData}
-                    id="visitors"
-                    range={range}
-                    showHorizontalLines={true}
-                    showYAxisValues={false}
-                    syncId="overview-charts"
-                    yAxisRange={visitorsYRange}
-                />
-            </OverviewKPICard>
+            {appSettings?.analytics.webAnalytics === true &&
+                <OverviewKPICard
+                    description='Number of individual people who visited your website'
+                    diffDirection='empty'
+                    formattedValue={kpiValues.visits}
+                    iconName='Eye'
+                    linkto='/web/'
+                    title='Unique visitors'
+                    onClick={() => {
+                        navigate('/web/');
+                    }}
+                >
+                    <GhAreaChart
+                        className={areaChartClassName}
+                        color='hsl(var(--chart-blue))'
+                        data={visitorsChartData}
+                        id="visitors"
+                        range={range}
+                        showHorizontalLines={true}
+                        showYAxisValues={false}
+                        syncId="overview-charts"
+                        yAxisRange={visitorsYRange}
+                    />
+                </OverviewKPICard>
+            }
 
             <OverviewKPICard
                 description='How number of members of your publication changed over time'
