@@ -1,0 +1,7 @@
+
+# This will always return all results from the fixture data because the fixture data *currently* is all in the far future
+- name: default_site_uuid
+  description: Test active visitors with default site UUID
+  parameters: site_uuid=mock_site_uuid
+  expected_result: |
+    {"active_visitors":16}
