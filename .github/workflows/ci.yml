@@ -1068,7 +1068,7 @@ jobs:
         run: echo "branch_name=${{ github.ref }}" >> $GITHUB_ENV
 
       - name: Invoke build
-        uses: aurelien-baudet/workflow-dispatch@v2
+        uses: aurelien-baudet/workflow-dispatch@v4
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           workflow: .github/workflows/deploy.yml
