@@ -10,8 +10,7 @@ export default class MigrateService extends Service {
     @service settings;
     @service store;
 
-    // migrateUrl = 'https://migrate.ghost.org';
-    migrateUrl = 'http://localhost:3010';
+    migrateUrl = 'https://migrate.ghost.org';
     migrateRouteRoot = '#/migrate';
 
     @tracked migrateWindowOpen = false;
