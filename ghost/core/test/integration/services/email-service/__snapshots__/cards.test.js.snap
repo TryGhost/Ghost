@@ -492,7 +492,7 @@ table.body h2 span {
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif post-title-color\\" style=\\"font-size: 18px; vertical-align: top; text-align: center; color: #000000; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                         <tr>
-                                                            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
+                                                            <td style=\\"vertical-align: top; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
                                                                 <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
                                                             </td>
                                                         </tr>
@@ -1254,7 +1254,7 @@ table.body h2 span {
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif post-title-color\\" style=\\"font-size: 18px; vertical-align: top; text-align: center; color: #000000; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                         <tr>
-                                                            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
+                                                            <td style=\\"vertical-align: top; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
                                                                 <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
                                                             </td>
                                                         </tr>
@@ -4796,7 +4796,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif post-title-color\\" style=\\"font-size: 18px; vertical-align: top; text-align: center; color: #000000; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                         <tr>
-                                                            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
+                                                            <td style=\\"vertical-align: top; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
                                                                 <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
                                                             </td>
                                                         </tr>
@@ -6222,7 +6222,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif post-title-color\\" style=\\"font-size: 18px; vertical-align: top; text-align: center; color: #000000; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                         <tr>
-                                                            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
+                                                            <td style=\\"vertical-align: top; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
                                                                 <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1em; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
                                                             </td>
                                                         </tr>
