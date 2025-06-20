@@ -37,24 +37,23 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                                     ) : (
                                         <LucideIcon.Globe className='text-gray-400' size={16} strokeWidth={1.5} />
                                     )}
-                                    <span className='text-sm font-semibold text-gray-900 dark:text-gray-100'>{new URL(site.url).hostname}</span>
                                     <a
-                                        className='flex items-center justify-center text-gray-600 transition-colors hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100'
+                                        className='text-sm font-semibold text-gray-900 transition-all hover:opacity-75 dark:text-gray-100'
                                         href={site.url}
                                         rel="noopener noreferrer"
                                         target="_blank"
                                         title={`Visit ${new URL(site.url).hostname}`}
                                     >
-                                        <LucideIcon.ExternalLink size={10} strokeWidth={1.5} />
+                                        {new URL(site.url).hostname}
                                     </a>
                                     <span className='text-gray-400 dark:text-gray-500'>|</span>
                                 </div>
                             )}
                             <div 
-                                className='flex items-center gap-2' 
+                                className='flex items-center gap-2 text-sm' 
                                 title='Active visitors in the last 5 minutes · Updates every 60 seconds'
                             >
-                                <span>
+                                <span className='text-sm'>
                                     {isActiveVisitorsLoading ? '—' : formatNumber(activeVisitors)} online
                                 </span>
                                 <div className={`size-2 rounded-full ${isActiveVisitorsLoading ? 'animate-pulse bg-muted' : activeVisitors ? 'bg-green-500' : 'border border-muted-foreground'}`}></div>
