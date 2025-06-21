@@ -10,7 +10,6 @@ inputs:
   workspace:
     description: 'Workspace name (for logging purposes)'
     required: true
-    default: 'default'
 runs:
   using: 'composite'
   steps:
