@@ -79,7 +79,7 @@ jobs:
           fi
 
       - name: Determine added packages
-        uses: dorny/paths-filter@v2.12.0
+        uses: dorny/paths-filter@v3.0.2
         id: added
         with:
           filters: |
