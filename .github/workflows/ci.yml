@@ -844,7 +844,7 @@ jobs:
           retention-days: 30
 
   job_tinybird-tests:
-    name: Tinybird Tests - ${{ matrix.workspace }}
+    name: Tinybird Tests
     runs-on: ubuntu-latest
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_tinybird == 'true'
@@ -1040,7 +1040,7 @@ jobs:
   canary:
     needs: [
       job_setup,
-      job_required-tests
+      job_required_tests
     ]
     name: Canary
     runs-on: ubuntu-latest
