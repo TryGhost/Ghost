@@ -128,7 +128,7 @@ jobs:
             sodo-search:
               - *shared
               - 'apps/sodo-search/**'
-            tinybird-forward:
+            tinybird:
               - 'ghost/core/core/server/data/tinybird/**'
               - '!ghost/core/core/server/data/tinybird/**/*.md'
             any-code:
@@ -194,7 +194,7 @@ jobs:
       changed_portal: ${{ steps.changed.outputs.portal }}
       changed_signup_form: ${{ steps.changed.outputs.signup-form }}
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
-      changed_tinybird_forward: ${{ steps.changed.outputs.tinybird-forward }}
+      changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
@@ -843,23 +843,11 @@ jobs:
           path: e2e/test-results
           retention-days: 30
 
-  job_tinybird_forward:
-    name: Tinybird Tests (Forward) - ${{ matrix.workspace }}
+  job_tinybird-tests:
+    name: Tinybird Tests - ${{ matrix.workspace }}
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_tinybird_forward == 'true'
-    strategy:
-      matrix:
-        include:
-          - workspace: staging
-            host_secret: TINYBIRD_HOST_STAGING
-            token_secret: TINYBIRD_TOKEN_STAGING
-          - workspace: production
-            host_secret: TINYBIRD_HOST
-            token_secret: TINYBIRD_TOKEN
-    env:
-      TINYBIRD_HOST: ${{ secrets[matrix.host_secret] }}
-      TINYBIRD_TOKEN: ${{ secrets[matrix.token_secret] }}
+    if: needs.job_setup.outputs.changed_tinybird == 'true'
     defaults:
         run:
           working-directory: ghost/core/core/server/data/tinybird
@@ -868,6 +856,11 @@ jobs:
         image: tinybirdco/tinybird-local:latest
         ports:
           - 7181:7181
+    env:
+      TINYBIRD_HOST: ${{ secrets.TINYBIRD_HOST }}
+      TINYBIRD_TOKEN: ${{ secrets.TINYBIRD_TOKEN }}
+      TINYBIRD_HOST_STAGING: ${{ secrets.TINYBIRD_HOST_STAGING }}
+      TINYBIRD_TOKEN_STAGING: ${{ secrets.TINYBIRD_TOKEN_STAGING }}
     steps:
       - uses: actions/checkout@v4
       - name: Install Tinybird CLI
@@ -876,7 +869,9 @@ jobs:
         run: tb build
       - name: Test project
         run: tb test run
-      - name: Deployment check - ${{ matrix.workspace }}
+      - name: Deployment check - Staging
+        run: tb --cloud --host ${{ env.TINYBIRD_HOST_STAGING }} --token ${{ env.TINYBIRD_TOKEN_STAGING }} deploy --check
+      - name: Deployment check - Production
         run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deploy --check
 
   job_ghost-cli:
@@ -1029,7 +1024,7 @@ jobs:
         job_comments_ui,
         job_signup_form,
         job_e2e-tests,
-        job_tinybird_forward
+        job_tinybird-tests
       ]
     if: always()
     runs-on: ubuntu-latest
@@ -1045,7 +1040,7 @@ jobs:
   canary:
     needs: [
       job_setup,
-      job_required_tests
+      job_required-tests
     ]
     name: Canary
     runs-on: ubuntu-latest
@@ -1189,14 +1184,14 @@ jobs:
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
 
-  deploy_tinybird_forward_staging:
-    name: Deploy Tinybird (Forward) - Staging
+  deploy_tinybird_staging:
+    name: Deploy Tinybird - Staging
     runs-on: ubuntu-latest
     needs: [
       job_setup,
-      job_tinybird_forward
+      job_tinybird-tests
     ]
-    if: always() && needs.job_setup.outputs.changed_tinybird_forward == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird_forward.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Deploy to Staging
         uses: ./.github/actions/deploy-tinybird
@@ -1205,15 +1200,15 @@ jobs:
           token: ${{ secrets.TINYBIRD_TOKEN_STAGING }}
           workspace: 'staging'
 
-  deploy_tinybird_forward_production:
-    name: Deploy Tinybird (Forward) - Production
+  deploy_tinybird_production:
+    name: Deploy Tinybird - Production
     runs-on: ubuntu-latest
     needs: [
       job_setup,
-      job_tinybird_forward,
-      deploy_tinybird_forward_staging
+      job_tinybird-tests,
+      deploy_tinybird_staging
     ]
-    if: always() && needs.job_setup.outputs.changed_tinybird_forward == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird_forward.result == 'success' && needs.deploy_tinybird_forward_staging.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.deploy_tinybird_staging.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Deploy to Production
         uses: ./.github/actions/deploy-tinybird
