@@ -22,20 +22,20 @@ class AnalyticsEventGenerator {
         this.siteConfig = {};
         this.stats = {};
         
-        // Sample pathnames based on your examples
-        this.pathnames = [
-            '/',
-            '/blog/hello-world/',
-            '/about/',
-            '/contact/',
-            '/privacy/',
-            '/terms/',
-            '/blog/getting-started/',
-            '/blog/advanced-features/',
-            '/blog/tips-and-tricks/',
-            '/services/',
-            '/pricing/',
-            '/team/'
+        // Sample pathnames with realistic traffic distribution
+        this.pathnameWeights = [
+            {value: '/', weight: 40}, // Homepage gets most traffic
+            {value: '/blog/hello-world/', weight: 12}, // Popular first post
+            {value: '/blog/getting-started/', weight: 10}, // Popular guide
+            {value: '/about/', weight: 8},
+            {value: '/pricing/', weight: 6},
+            {value: '/blog/advanced-features/', weight: 5},
+            {value: '/contact/', weight: 4},
+            {value: '/blog/tips-and-tricks/', weight: 4},
+            {value: '/services/', weight: 3},
+            {value: '/team/', weight: 3},
+            {value: '/privacy/', weight: 3},
+            {value: '/terms/', weight: 2}
         ];
         
         // Referrer sources
@@ -98,9 +98,18 @@ class AnalyticsEventGenerator {
         ];
         
         // User and session configuration
-        this.userCount = 100;
+        this.userCount = 200; // Increased for more variability
         this.maxSessionDurationHours = 3;
         this.userSessions = new Map(); // Track sessions per user
+        
+        // Post popularity weights (will be applied to real posts)
+        this.postPopularityTiers = [
+            {tier: 'viral', weight: 15, multiplier: 8}, // 15% of posts get 8x traffic
+            {tier: 'popular', weight: 25, multiplier: 3}, // 25% get 3x traffic  
+            {tier: 'average', weight: 40, multiplier: 1}, // 40% get normal traffic
+            {tier: 'low', weight: 20, multiplier: 0.3} // 20% get 30% of normal traffic
+        ];
+        this.postPopularityMap = new Map(); // Will store post UUIDs with their popularity tiers
         
         // Site configuration - will be populated from database
         this.siteUuid = 'mock_site_uuid';
@@ -133,6 +142,9 @@ class AnalyticsEventGenerator {
             console.log(`✅ Successfully loaded ${this.memberUuids.length} member UUIDs from database`);
             console.log(`✅ Site URL: ${this.baseUrl}`);
             console.log(`✅ Database stats: ${JSON.stringify(this.stats)}`);
+            
+            // Assign popularity tiers to posts
+            this.assignPostPopularity();
             
             // Add site-specific referrer
             if (this.baseUrl && !this.referrers.includes(this.baseUrl)) {
@@ -212,9 +224,58 @@ class AnalyticsEventGenerator {
         // Generate random member UUIDs  
         this.memberUuids = Array.from({length: 50}, () => uuidv4());
         
+        // Assign popularity tiers to posts
+        this.assignPostPopularity();
+        
         console.log(`📊 Generated ${this.postUuids.length} mock post UUIDs`);
         console.log(`👥 Generated ${this.memberUuids.length} mock member UUIDs`);
         console.log('⚠️  Note: This data is completely synthetic and not from your Ghost database');
+    }
+    
+    /**
+     * Assign popularity tiers to posts for realistic traffic distribution
+     */
+    assignPostPopularity() {
+        this.postPopularityMap.clear();
+        
+        // Shuffle posts for random assignment
+        const shuffledPosts = [...this.postUuids].sort(() => Math.random() - 0.5);
+        
+        let postIndex = 0;
+        for (const tier of this.postPopularityTiers) {
+            const tierCount = Math.ceil((tier.weight / 100) * shuffledPosts.length);
+            
+            for (let i = 0; i < tierCount && postIndex < shuffledPosts.length; i = i + 1) {
+                this.postPopularityMap.set(shuffledPosts[postIndex], {
+                    tier: tier.tier,
+                    multiplier: tier.multiplier
+                });
+                postIndex = postIndex + 1;
+            }
+        }
+        
+        console.log(`📈 Assigned popularity tiers to ${this.postPopularityMap.size} posts`);
+    }
+    
+    /**
+     * Select a post UUID based on popularity weighting
+     */
+    selectWeightedPost() {
+        // Create a weighted array for selection
+        const weightedPosts = [];
+        
+        for (const postUuid of this.postUuids) {
+            const popularity = this.postPopularityMap.get(postUuid);
+            const multiplier = popularity ? popularity.multiplier : 1;
+            
+            // Add post multiple times based on popularity multiplier
+            const weight = Math.ceil(multiplier * 10); // Scale up for integer weights
+            for (let i = 0; i < weight; i = i + 1) {
+                weightedPosts.push(postUuid);
+            }
+        }
+        
+        return this.randomChoice(weightedPosts);
     }
     
     /**
@@ -362,7 +423,7 @@ class AnalyticsEventGenerator {
         const userId = Math.floor(Math.random() * this.userCount) + 1;
         const timestamp = this.generateTimestamp(eventIndex, totalEvents);
         const sessionId = this.generateSessionId(userId, timestamp);
-        const pathname = this.randomChoice(this.pathnames);
+        const pathname = this.weightedChoice(this.pathnameWeights);
         const memberStatus = this.weightedChoice(this.memberStatusWeights);
         const referrer = this.randomChoice(this.referrers);
         const postType = this.weightedChoice(this.postTypeWeights);
@@ -380,7 +441,7 @@ class AnalyticsEventGenerator {
         }
         
         // Generate post_uuid (sometimes undefined for homepage)
-        const postUuid = (pathname === '/' || Math.random() < 0.3) ? 'undefined' : this.randomChoice(this.postUuids);
+        const postUuid = (pathname === '/' || Math.random() < 0.3) ? 'undefined' : this.selectWeightedPost();
         
         const payload = {
             site_uuid: this.siteUuid,
