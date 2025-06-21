@@ -41,11 +41,9 @@ runs:
             - type: "section"
               text:
                 type: "mrkdwn"
-                text: "${{ steps.deploy.outcome == 'success' && ':rocket: *Tinybird Deployment*' || ':x: *Tinybird Deployment*' }}"
+                text: "${{ steps.deploy.outcome == 'success' && ':white_check_mark: *Tinybird ${{ inputs.workspace }} Deployment*' || ':x: *Tinybird ${{ inputs.workspace }} Deployment*' }}"
             - type: "section"
               fields:
-                - type: "mrkdwn"
-                  text: "*Workspace:*\n:bird: ${{ inputs.workspace }}"
                 - type: "mrkdwn"
                   text: "*Status:*\n${{ steps.deploy.outcome == 'success' && ':large_green_circle: Success' || ':red_circle: Failed' }}"
                 - type: "mrkdwn"

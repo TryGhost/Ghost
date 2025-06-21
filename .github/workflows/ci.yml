@@ -1200,7 +1200,7 @@ jobs:
         with:
           host: ${{ secrets.TINYBIRD_HOST_STAGING }}
           token: ${{ secrets.TINYBIRD_TOKEN_STAGING }}
-          workspace: 'staging'
+          workspace: 'Staging'
           slack-webhook: ${{ secrets.ANALYTICS_SLACK_WEBHOOK_URL }}
 
   deploy_tinybird_production:
@@ -1220,5 +1220,5 @@ jobs:
         with:
           host: ${{ secrets.TINYBIRD_HOST }}
           token: ${{ secrets.TINYBIRD_TOKEN }}
-          workspace: 'production'
+          workspace: 'Production'
           slack-webhook: ${{ secrets.ANALYTICS_SLACK_WEBHOOK_URL }}
