@@ -43,23 +43,21 @@
     background: var(--whitegrey);
 }
 
-@media (max-width: 1024px) {
-    .gh-post-preview-header {
-        z-index: 100;
-        height: 64px;
-        margin: 0;
-        padding: 0;
-        padding-left: 15px;
-        background-color: var(--white);
-        border-radius: 0;
-    }
-}
-
 .gh-post-preview-btn-group {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 8px;
+}
+
+@media (max-width: 960px) {
+    .gh-post-preview-header {
+        justify-content: flex-start;
+    }
+
+    .gh-post-preview-btn-group {
+        margin-left: 9rem;
+    }
 }
 
 .gh-post-preview-btn-group .gh-btn-group {
@@ -120,6 +118,12 @@
     font-weight: 500;
     line-height: 34px;
     border-radius: 5px;
+}
+
+@media (max-width: 640px) {
+    .gh-web-preview-segment .gh-preview-segment-trigger {
+        display: none;
+    }
 }
 
 .gh-web-preview-segment:hover .gh-preview-segment-trigger {

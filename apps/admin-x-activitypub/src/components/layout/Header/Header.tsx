@@ -11,7 +11,7 @@ interface HeaderTitleProps {
 
 const HeaderTitle: React.FC<HeaderTitleProps> = ({title, backIcon}) => {
     if (backIcon) {
-        return <BackButton />;
+        return <BackButton className='-ml-2' />;
     }
     return (
         <H1>{title}</H1>
@@ -22,6 +22,7 @@ const Header: React.FC = () => {
     const {canGoBack} = useNavigationStack();
     const baseRoute = useBaseRoute();
     const routeHasParams = useRouteHasParams();
+    const activeRoute = useActiveRoute();
 
     // Logic for special pages
     let onlyBackButton = false;
@@ -34,14 +35,13 @@ const Header: React.FC = () => {
     }
 
     // Avoid back button on main routes
-    const backActive = canGoBack && routeHasParams;
+    const backActive = (canGoBack && routeHasParams) || activeRoute?.showBackButton === true;
 
-    const activeRoute = useActiveRoute();
     return (
         <>
             {onlyBackButton ?
                 <div className='sticky left-0 top-8 z-50 inline-block'>
-                    {backActive && <BackButton className='ml-8' />}
+                    {backActive && <BackButton className='ml-6' />}
                 </div>
                 :
                 <div className='sticky top-0 z-50 bg-white/85 backdrop-blur-md dark:bg-black'>

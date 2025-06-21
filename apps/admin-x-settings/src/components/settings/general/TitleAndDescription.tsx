@@ -36,12 +36,6 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 };
             }
 
-            if (!title.match(/^[\p{L}\p{N}\u0900-\u097F\u0E00-\u0E7F\s;.,:()!?.'"'’”]+$/u)) {
-                return {
-                    title: 'Please use a site title without special characters.'
-                };
-            }
-
             return {};
         }
     });

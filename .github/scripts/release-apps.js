@@ -9,7 +9,8 @@ const semver = require('semver');
 const CONFIG_KEYS = {
     '@tryghost/portal': 'portal',
     '@tryghost/sodo-search': 'sodoSearch',
-    '@tryghost/comments-ui': 'comments'
+    '@tryghost/comments-ui': 'comments',
+    '@tryghost/announcement-bar': 'announcementBar'
 };
 
 const CURRENT_DIR = process.cwd();
@@ -112,7 +113,8 @@ async function getChangelog(newVersion) {
         changelogItems.push('Updated i18n translations');
     }
 
-    const lastFiftyCommits = await safeExec(`git log -n 50 --oneline .`);
+    // Restrict git log to only the current directory (the specific app)
+    const lastFiftyCommits = await safeExec(`git log -n 50 --oneline -- .`);
 
     if (lastFiftyCommits.stderr) {
         console.error(`There was an error getting the last 50 commits`);
@@ -127,12 +129,37 @@ async function getChangelog(newVersion) {
     });
 
     if (indexOfLastRelease === -1) {
-        console.warn(`Could not find commit for previous release.`);
+        console.warn(`Could not find commit for previous release. Will include recent commits affecting this app.`);
+        
+        // Fallback: get recent commits for this app (last 20)
+        const recentCommits = await safeExec(`git log -n 20 --pretty=format:"%h%n%B__SPLIT__" -- .`);
+        if (recentCommits.stderr) {
+            console.error(`There was an error getting recent commits`);
+            process.exit(1);
+        }
+        
+        const recentCommitsList = recentCommits.stdout.split('__SPLIT__');
+        
+        const recentCommitsWhichMentionLinear = recentCommitsList.filter((commitBlock) => {
+            return commitBlock.includes('https://linear.app/ghost');
+        });
+        
+        const commitChangelogItems = recentCommitsWhichMentionLinear.map((commitBlock) => {
+            const lines = commitBlock.split('\n');
+            if (!lines.length || !lines[0].trim()) {
+                return null; // Skip entries with no hash
+            }
+            const hash = lines[0].trim();
+            return `https://github.com/TryGhost/Ghost/commit/${hash}`;
+        }).filter(Boolean); // Filter out any null entries
+        
+        changelogItems.push(...commitChangelogItems);
     } else {
         const lastReleaseCommit = lastFiftyCommitsList[indexOfLastRelease];
         const lastReleaseCommitHash = lastReleaseCommit.slice(0, 10);
 
-        const commitsSinceLastRelease = await safeExec(`git log ${lastReleaseCommitHash}..HEAD --pretty=format:"%h%n%B__SPLIT__"`);
+        // Also restrict this git log to only the current directory (the specific app)
+        const commitsSinceLastRelease = await safeExec(`git log ${lastReleaseCommitHash}..HEAD --pretty=format:"%h%n%B__SPLIT__" -- .`);
         if (commitsSinceLastRelease.stderr) {
             console.error(`There was an error getting commits since the last release`);
             process.exit(1);
@@ -144,9 +171,14 @@ async function getChangelog(newVersion) {
         });
 
         const commitChangelogItems = commitsSinceLastReleaseWhichMentionLinear.map((commitBlock) => {
-            const [hash] = commitBlock.split('\n');
+            const lines = commitBlock.split('\n');
+            if (!lines.length || !lines[0].trim()) {
+                return null; // Skip entries with no hash
+            }
+            const hash = lines[0].trim();
             return `https://github.com/TryGhost/Ghost/commit/${hash}`;
-        });
+        }).filter(Boolean); // Filter out any null entries
+
         changelogItems.push(...commitChangelogItems);
     }
 

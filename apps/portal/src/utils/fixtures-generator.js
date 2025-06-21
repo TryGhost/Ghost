@@ -43,9 +43,7 @@ export function getSiteData({
     posts = getPostsData(),
     commentsEnabled,
     recommendations = [],
-    recommendationsEnabled,
-    captchaEnabled = false,
-    captchaSitekey
+    recommendationsEnabled
 } = {}) {
     return {
         title,
@@ -73,9 +71,7 @@ export function getSiteData({
         recommendations,
         recommendations_enabled: !!recommendationsEnabled,
         editor_default_email_recipients,
-        posts,
-        captcha_enabled: !!captchaEnabled,
-        captcha_sitekey: captchaSitekey
+        posts
     };
 }
 
@@ -294,16 +290,16 @@ export function getFreeProduct({
 }
 
 export function getBenefits({numOfBenefits}) {
-    const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 100);
+    // Generate a unique suffix for benefit names to avoid clashes across test runs
+    const uniqueId = objectId();
 
-    const beenfits = [
-        getBenefitData({name: `Limited early adopter pricing #${random}-${timestamp}`}),
-        getBenefitData({name: `Latest gear reviews #${random}-${timestamp}`}),
-        getBenefitData({name: `Weekly email newsletter #${random}-${timestamp}`}),
-        getBenefitData({name: `Listen to my podcast #$${random}-${timestamp}`})
+    const benefits = [
+        getBenefitData({name: `Limited early adopter pricing #${uniqueId.substring(0, 6)}`}),
+        getBenefitData({name: `Latest gear reviews #${uniqueId.substring(6, 12)}`}),
+        getBenefitData({name: `Weekly email newsletter #${uniqueId.substring(12, 18)}`}),
+        getBenefitData({name: `Listen to my podcast #${uniqueId.substring(18)}`})
     ];
-    return beenfits.slice(0, numOfBenefits);
+    return benefits.slice(0, numOfBenefits);
 }
 
 export function getBenefitData({

@@ -2,7 +2,6 @@ const _ = require('lodash');
 const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const moment = require('moment');
-const constants = require('@tryghost/constants');
 const DataGenerator = {};
 
 DataGenerator.markdownToMobiledoc = function markdownToMobiledoc(content) {
@@ -1322,7 +1321,7 @@ DataGenerator.forKnex = (function () {
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
             token: crypto.randomUUID(),
-            expires: Date.now() + constants.ONE_DAY_MS
+            expires: moment().add(1, 'days').valueOf()
         });
     }
 
@@ -1501,6 +1500,45 @@ DataGenerator.forKnex = (function () {
             role_name: 'Super Editor',
             user_id: DataGenerator.Content.users[9].id,
             role_id: DataGenerator.Content.roles[6].id
+        }
+    ];
+
+    const user_api_keys = [
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[0].id, // owner
+            type: 'admin',
+            secret: _.repeat('0', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[1].id, // admin
+            type: 'admin',
+            secret: _.repeat('1', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[2].id, // editor
+            type: 'admin',
+            secret: _.repeat('2', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[3].id, // author
+            type: 'admin',
+            secret: _.repeat('3', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[7].id, // contributor
+            type: 'admin',
+            secret: _.repeat('4', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[9].id,
+            type: 'admin',
+            secret: _.repeat('5', 64)
         }
     ];
 
@@ -1988,6 +2026,7 @@ DataGenerator.forKnex = (function () {
         roles,
         users,
         roles_users,
+        user_api_keys,
         webhooks,
         integrations,
         api_keys,

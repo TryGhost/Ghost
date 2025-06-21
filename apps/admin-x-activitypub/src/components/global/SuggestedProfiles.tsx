@@ -5,7 +5,7 @@ import React from 'react';
 import {type Account} from '../../api/activitypub';
 import {Skeleton} from '@tryghost/shade';
 import {useNavigate} from '@tryghost/admin-x-framework';
-import {useSuggestedProfilesForUser} from '@src/hooks/use-activity-pub-queries';
+import {useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
 interface SuggestedProfileProps {
     profile: Account;
@@ -36,6 +36,7 @@ export const SuggestedProfile: React.FC<SuggestedProfileProps & {
         <ActivityItem
             key={profile.id}
             onClick={() => {
+                onOpenChange?.(false);
                 navigate(`/profile/${profile.handle}`);
             }}
         >
@@ -48,9 +49,9 @@ export const SuggestedProfile: React.FC<SuggestedProfileProps & {
                     handle: profile.handle
                 }
             } onClick={() => onOpenChange?.(false)} />
-            <div className='flex grow flex-col'>
-                <span className='font-semibold text-black dark:text-white'>{!isLoading ? profile.name : <Skeleton className='w-full max-w-64' />}</span>
-                <span className='text-sm text-gray-700 dark:text-gray-600'>{!isLoading ? profile.handle : <Skeleton className='w-24' />}</span>
+            <div className='flex grow flex-col break-anywhere'>
+                <span className='line-clamp-1 font-semibold text-black dark:text-white'>{!isLoading ? profile.name : <Skeleton className='w-full max-w-64' />}</span>
+                <span className='line-clamp-1 text-sm text-gray-700 dark:text-gray-600'>{!isLoading ? profile.handle : <Skeleton className='w-24' />}</span>
             </div>
             {!isLoading ?
                 <FollowButton
@@ -73,7 +74,7 @@ export const SuggestedProfiles: React.FC<{
     onOpenChange?: (open: boolean) => void;
 }> = ({onOpenChange}) => {
     const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfilesForUser('index', 5);
-    const {data: suggestedProfilesData, isLoading: isLoadingSuggestedProfiles} = suggestedProfilesQuery;
+    const {data: suggestedProfilesData = [], isLoading: isLoadingSuggestedProfiles} = suggestedProfilesQuery;
 
     return (
         <div className='mb-[-15px] flex flex-col gap-3 pt-2'>

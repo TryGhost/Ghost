@@ -1187,28 +1187,11 @@ kbd {
     background: #1C1E22;
 }
 
-.gh-dashboard .gh-dashboard-anchor .gh-dashboard-stats {
-    background: transparent;
-    border-top-color: #2b2d31;
-}
-
-.gh-dashboard .gh-dashboard-anchor .gh-dashboard-stats-button {
-    border-color: #202429;
-}
-
-.gh-dashboard .gh-dashboard-anchor .gh-dashboard-stats-button.is-selected {
-    border-color: #394047;
-}
-
-.gh-dashboard .gh-dashboard-list-header,
-.gh-dashboard .gh-dashboard-list-item,
-.gh-dashboard .gh-dashboard-list-footer,
+.gh-dashboard .gh-dashboard-anchor .gh-dashboard-list-header,
+.gh-dashboard .gh-dashboard-anchor .gh-dashboard-list-item,
+.gh-dashboard .gh-dashboard-anchor .gh-dashboard-list-footer,
 .gh-dashboard .gh-dashboard-resource-title.has-border {
     border-color: #394047;
-}
-
-.gh-dashboard .gh-dashboard-box.is-secondary .gh-dashboard-resource-box {
-    background: var(--main-bg-color);
 }
 
 .gh-dashboard .gh-dashboard-minichart,

@@ -205,6 +205,24 @@ describe('Integration: Service: ajax', function () {
         });
     });
 
+    it('handles error checking for TwoFactorTokenRequiredError on 2FA New Device Detected 403 errors', function (done) {
+        stubAjaxEndpoint(server, {
+            errors: [{
+                code: '2FA_NEW_DEVICE_DETECTED'
+            }]
+        }, 403);
+
+        let ajax = this.owner.lookup('service:ajax');
+
+        ajax.request('/test/').then(() => {
+            expect(false).to.be.true;
+        }).catch((error) => {
+            expect(isTwoFactorTokenRequiredError(error)).to.be.true;
+            expect(getErrorCode(error)).to.equal('2FA_NEW_DEVICE_DETECTED');
+            done();
+        });
+    });
+
     it('handles error checking for TwoFactorTokenRequiredError on a 403 error with no code', function (done) {
         stubAjaxEndpoint(server, {
             errors: [{

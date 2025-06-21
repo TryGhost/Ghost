@@ -15,11 +15,8 @@ export default class SigninPage extends React.Component {
         super(props);
         this.state = {
             email: '',
-            captchaLoaded: false,
             token: undefined
         };
-
-        this.captchaRef = React.createRef();
     }
 
     componentDidMount() {

@@ -44,16 +44,14 @@ const controller = {
                 }
             }
         },
-        query(frame) {
-            return models.Base.Model.generateSlug(allowedTypes[frame.options.type], frame.data.name, {status: 'all', modelId: frame.options.id})
-                .then((slug) => {
-                    if (!slug) {
-                        return Promise.reject(new errors.InternalServerError({
-                            message: tpl(messages.couldNotGenerateSlug)
-                        }));
-                    }
-                    return slug;
+        async query(frame) {
+            const slug = await models.Base.Model.generateSlug(allowedTypes[frame.options.type], frame.data.name, {status: 'all', modelId: frame.options.id});
+            if (!slug) {
+                throw new errors.InternalServerError({
+                    message: tpl(messages.couldNotGenerateSlug)
                 });
+            }
+            return slug;
         }
     }
 };

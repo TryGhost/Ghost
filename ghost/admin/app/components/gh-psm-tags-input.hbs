@@ -2,12 +2,12 @@
     @extra={{hash
         tokenComponent=(component "gh-token-input/tag-token")
     }}
-    @onChange={{action "updateTags"}}
-    @onCreate={{action "createTag"}}
+    @onChange={{this.updateTags}}
+    @onCreate={{this.createTag}}
     @options={{this.availableTags}}
     @renderInPlace={{true}}
     @selected={{this.post.tags}}
-    @showCreateWhen={{action "hideCreateOptionOnMatchingTag"}}
+    @showCreateWhen={{this.hideCreateOptionOnMatchingTag}}
     @triggerId={{this.triggerId}}
     @triggerClass={{@triggerClass}}
 />

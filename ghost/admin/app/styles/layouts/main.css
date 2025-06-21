@@ -389,6 +389,11 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     color: var(--middarkgrey);
 }
 
+.gh-nav-list .gh-icon-ap-network {
+    width: 18px;
+    height: 18px;
+}
+
 /* Global search
 /* ---------------------------------------------------------- */
 
@@ -546,6 +551,10 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     opacity: 1;
 }
 
+.gh-nav-list a:hover .gh-nav-member-count {
+    background: color-mod(var(--mainmenu-color-active-bg) l(-5%));
+}
+
 /* Icons */
 .gh-nav-list svg {
     margin-right: 11px;
@@ -679,7 +688,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     padding: 2px 7px;
     margin: 0;
     right: 10px;
-    top: 5px;
+    top: 7px;
     background: var(--mainmenu-color-active-bg);
     color: var(--middarkgrey);
     border-radius: 999px;
@@ -687,6 +696,10 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     font-size: 1.3rem;
     min-width: 23px;
     text-align: center;
+}
+
+.gh-nav-list-ap .active .gh-nav-member-count {
+    display: none;
 }
 
 .gh-nav-main {
@@ -1225,7 +1238,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     flex-shrink: 0;
     height: 34px;
     color: var(--midgrey-l2);
-    font-size: 1.35rem;
+    font-size: 1.3rem;
     font-weight: 500;
     line-height: 34px;
     letter-spacing: .2px;
@@ -1246,7 +1259,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     display: block;
     width: 9px;
     height: 9px;
-    margin: 1px 6px 0;
+    margin: 1px 10px 0;
 }
 
 .gh-canvas-header .gh-canvas-breadcrumb svg path {

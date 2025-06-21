@@ -64,11 +64,6 @@ test.describe('Title and description settings', async () => {
         await section.getByRole('button', {name: 'Save'}).click();
         await expect(section.getByText('Please use a site title longer than 3 characters.')).toHaveCount(1);
 
-        // Title has invalid characters
-        await section.getByLabel('Site title').fill('Title with emoji: 🕵️‍♂️');
-        await section.getByRole('button', {name: 'Save'}).click();
-        await expect(section.getByText('Please use a site title without special characters.')).toHaveCount(1);
-
         expect(lastApiRequests.editSettings).toBeUndefined();
     });
 });

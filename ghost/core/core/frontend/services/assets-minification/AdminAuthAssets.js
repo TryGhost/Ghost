@@ -19,7 +19,6 @@ module.exports = class AdminAuthAssets extends AssetsMinificationBase {
         this.minifier = new Minifier({src: this.src, dest: this.dest});
 
         try {
-            // TODO: don't do this synchronously
             fs.mkdirSync(this.dest, {recursive: true});
             fs.copyFileSync(path.join(this.src, 'index.html'), path.join(this.dest, 'index.html'));
         } catch (error) {

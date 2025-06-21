@@ -1,11 +1,12 @@
 const _ = require('lodash');
-const MagicLink = require('@tryghost/magic-link');
 const logging = require('@tryghost/logging');
 const verifyEmailTemplate = require('./emails/verify-email');
 const debug = require('@tryghost/debug')('services:newsletters');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+
 const sentry = require('../../../shared/sentry');
+const MagicLink = require('../lib/magic-link/MagicLink');
 
 const messages = {
     nameAlreadyExists: 'A newsletter with the same name already exists',

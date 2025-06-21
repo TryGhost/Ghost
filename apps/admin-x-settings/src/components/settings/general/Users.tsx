@@ -216,7 +216,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         fetchNextPage
     } = useStaffUsers();
     const {updateRoute} = useRouting();
-    const {currentUser} = useGlobalData();
+    const {settings, config, currentUser} = useGlobalData();
 
     const showInviteModal = () => {
         updateRoute('staff/invite');
@@ -276,9 +276,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         }
     ];
 
-    const {settings} = useGlobalData();
     const require2fa = getSettingValue<boolean>(settings, 'require_email_mfa') || false;
-    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
 
@@ -292,14 +290,14 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
             title='Staff'
         >
             <Owner user={ownerUser} />
-            {/* if there are no users besides the owner user, hide the tabs*/}
             {(users.length > 1 || invites.length > 0) && <TabView selectedTab={selectedTab} tabs={tabs} testId='user-tabview' onTabChange={updateSelectedTab} />}
             {hasNextPage && <Button
                 label={`Load more (showing ${users.length}/${totalUsers} users)`}
                 link
                 onClick={() => fetchNextPage()}
             />}
-            {labs.staff2fa && !isEditorUser(currentUser) && (
+
+            {config?.security?.staffDeviceVerification && hasAdminAccess(currentUser) && (
                 <div className={`flex flex-col gap-6 ${users.length > 1 || invites.length > 0 ? '-mt-6' : ''}`}>
                     <Separator />
                     <div className='flex items-baseline justify-between'>
