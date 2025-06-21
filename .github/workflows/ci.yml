@@ -844,13 +844,22 @@ jobs:
           retention-days: 30
 
   job_tinybird_forward:
-    name: Tinybird Tests (Forward)
+    name: Tinybird Tests (Forward) - ${{ matrix.workspace }}
     runs-on: ubuntu-latest
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_tinybird_forward == 'true'
+    strategy:
+      matrix:
+        include:
+          - workspace: staging
+            host_secret: TINYBIRD_HOST_STAGING
+            token_secret: TINYBIRD_TOKEN_STAGING
+          - workspace: production
+            host_secret: TINYBIRD_HOST
+            token_secret: TINYBIRD_TOKEN
     env:
-      TINYBIRD_HOST: ${{ secrets.TINYBIRD_HOST_STAGING }}
-      TINYBIRD_TOKEN: ${{ secrets.TINYBIRD_TOKEN_STAGING }}
+      TINYBIRD_HOST: ${{ secrets[matrix.host_secret] }}
+      TINYBIRD_TOKEN: ${{ secrets[matrix.token_secret] }}
     defaults:
         run:
           working-directory: ghost/core/core/server/data/tinybird
@@ -867,7 +876,7 @@ jobs:
         run: tb build
       - name: Test project
         run: tb test run
-      - name: Deployment check
+      - name: Deployment check - ${{ matrix.workspace }}
         run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deploy --check
 
   job_ghost-cli:
@@ -1180,31 +1189,35 @@ jobs:
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
 
-  deploy_tinybird_forward:
-    name: Deploy Tinybird (Forward) - ${{ matrix.workspace }}
+  deploy_tinybird_forward_staging:
+    name: Deploy Tinybird (Forward) - Staging
     runs-on: ubuntu-latest
     needs: [
       job_setup,
       job_tinybird_forward
     ]
     if: always() && needs.job_setup.outputs.changed_tinybird_forward == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird_forward.result == 'success' && needs.job_setup.outputs.is_main == 'true'
-    strategy:
-      matrix:
-        include:
-          - workspace: production
-          - workspace: staging
-    env:
-      TINYBIRD_HOST: ${{ matrix.workspace == 'production' && secrets.TINYBIRD_HOST || secrets.TINYBIRD_HOST_STAGING }}
-      TINYBIRD_TOKEN: ${{ matrix.workspace == 'production' && secrets.TINYBIRD_TOKEN || secrets.TINYBIRD_TOKEN_STAGING }}
-    defaults:
-      run:
-        working-directory: ghost/core/core/server/data/tinybird
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install Tinybird CLI
-        run: curl -fsSL https://tinybird.co/install.sh | sh
-      - name: Check the deployment
-        run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deployment create --check
-      - name: Create a ${{ matrix.workspace }} deployment
-        run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deployment create --wait
+      - name: Deploy to Staging
+        uses: ./.github/actions/deploy-tinybird
+        with:
+          host: ${{ secrets.TINYBIRD_HOST_STAGING }}
+          token: ${{ secrets.TINYBIRD_TOKEN_STAGING }}
+          workspace: 'staging'
+
+  deploy_tinybird_forward_production:
+    name: Deploy Tinybird (Forward) - Production
+    runs-on: ubuntu-latest
+    needs: [
+      job_setup,
+      job_tinybird_forward,
+      deploy_tinybird_forward_staging
+    ]
+    if: always() && needs.job_setup.outputs.changed_tinybird_forward == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird_forward.result == 'success' && needs.deploy_tinybird_forward_staging.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    steps:
+      - name: Deploy to Production
+        uses: ./.github/actions/deploy-tinybird
+        with:
+          host: ${{ secrets.TINYBIRD_HOST }}
+          token: ${{ secrets.TINYBIRD_TOKEN }}
+          workspace: 'production'

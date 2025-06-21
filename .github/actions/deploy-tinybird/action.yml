@@ -1,0 +1,29 @@
+name: 'Deploy Tinybird'
+description: 'Deploy Tinybird configuration to a workspace'
+inputs:
+  host:
+    description: 'Tinybird host URL'
+    required: true
+  token:
+    description: 'Tinybird authentication token'
+    required: true
+  workspace:
+    description: 'Workspace name (for logging purposes)'
+    required: true
+    default: 'default'
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install Tinybird CLI
+      shell: bash
+      run: curl -fsSL https://tinybird.co/install.sh | sh
+    - name: Check the deployment
+      shell: bash
+      run: tb --cloud --host ${{ inputs.host }} --token ${{ inputs.token }} deployment create --check
+      working-directory: ghost/core/core/server/data/tinybird
+    - name: Create a ${{ inputs.workspace }} deployment
+      shell: bash
+      run: tb --cloud --host ${{ inputs.host }} --token ${{ inputs.token }} deployment create --wait
+      working-directory: ghost/core/core/server/data/tinybird
