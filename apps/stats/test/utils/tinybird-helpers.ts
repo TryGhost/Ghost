@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import {faker} from '@faker-js/faker';
 
 export const statsConfig = {
@@ -12,11 +13,13 @@ export const statsConfig = {
     }
 };
 
-export interface AnalyticsEventProps {
+interface AnalyticsEventProps {
     siteUuid: string;
     timestamp?: Date;
-    location: string;
-    locale: string;
+    location?: string;
+    locale?: string;
+    referrer?: string;
+    referrerSource?: string;
 }
 
 const formatDate = (date: Date): string => {
@@ -38,7 +41,7 @@ function getFormattedDate(daysAgo: number) {
 }
 
 export async function addAnalyticsEvent(eventProps: AnalyticsEventProps) {
-    const {siteUuid, locale, location} = eventProps;
+    const {siteUuid, locale, location, referrer, referrerSource} = eventProps;
 
     const {local} = statsConfig;
     const eventsUrl = `${local.endpoint}/v0/events?name=${local.datasource}`;
@@ -61,13 +64,13 @@ export async function addAnalyticsEvent(eventProps: AnalyticsEventProps) {
                 post_uuid: faker.string.uuid(),
                 post_type: 'post',
                 'user-agent': faker.internet.userAgent(),
-                locale: locale,
-                location: location,
-                referrer: 'https://example.com',
+                locale: locale || 'en-GB',
+                location: location || 'GB',
+                referrer: referrer || 'https://example.com',
                 pathname: '/hello-world/',
                 href: 'https://my-ghost-site.com/hello-world/',
                 meta: {
-                    referrerSource: 'https://example.com'
+                    referrerSource: referrerSource || 'https://example.com'
                 }
             }
         })
