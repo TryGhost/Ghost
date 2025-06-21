@@ -171,7 +171,7 @@ jobs:
       - name: Define Node test matrix
         id: node_matrix
         run: |
-          echo 'matrix=["20.11.1", "22.13.1"]' >> $GITHUB_OUTPUT
+          echo 'matrix=["22.13.1"]' >> $GITHUB_OUTPUT
 
       - name: Set up Node
         uses: actions/setup-node@v4
