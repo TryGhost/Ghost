@@ -38,16 +38,17 @@ runs:
         payload: |
           text: "Tinybird Deployment: ${{ inputs.workspace }}"
           blocks:
-            - type: "section"
+            - type: "header"
               text:
-                type: "mrkdwn"
-                text: "${{ steps.deploy.outcome == 'success' && ':white_check_mark: *Tinybird ${{ inputs.workspace }} Deployment*' || ':x: *Tinybird ${{ inputs.workspace }} Deployment*' }}"
+                type: "plain_text"
+                text: "${{ steps.deploy.outcome == 'success' && ':white_check_mark: *Tinybird ' + inputs.workspace + ' Deployment*' || ':x: *Tinybird ' + inputs.workspace + ' Deployment*' }}"                
             - type: "section"
               fields:
                 - type: "mrkdwn"
                   text: "*Status:*\n${{ steps.deploy.outcome == 'success' && ':large_green_circle: Success' || ':red_circle: Failed' }}"
                 - type: "mrkdwn"
                   text: "*Workflow:*\n:link: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+            - type: "divider"
           attachments:
             - color: "${{ steps.deploy.outcome == 'success' && 'good' || 'danger' }}"
               fallback: "Tinybird Deployment: ${{ steps.deploy.outcome }}"
