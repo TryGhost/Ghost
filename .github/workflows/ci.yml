@@ -1191,7 +1191,7 @@ jobs:
       job_setup,
       job_tinybird-tests
     ]
-    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -1201,6 +1201,7 @@ jobs:
           host: ${{ secrets.TINYBIRD_HOST_STAGING }}
           token: ${{ secrets.TINYBIRD_TOKEN_STAGING }}
           workspace: 'staging'
+          slack-webhook: ${{ secrets.ANALYTICS_SLACK_WEBHOOK_URL }}
 
   deploy_tinybird_production:
     name: Deploy Tinybird - Production
@@ -1220,3 +1221,4 @@ jobs:
           host: ${{ secrets.TINYBIRD_HOST }}
           token: ${{ secrets.TINYBIRD_TOKEN }}
           workspace: 'production'
+          slack-webhook: ${{ secrets.ANALYTICS_SLACK_WEBHOOK_URL }}

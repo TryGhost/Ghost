@@ -10,11 +10,12 @@ inputs:
   workspace:
     description: 'Workspace name (for logging purposes)'
     required: true
+  slack-webhook:
+    description: 'Slack webhook URL for notifications'
+    required: true
 runs:
   using: 'composite'
   steps:
-    - name: Checkout
-      uses: actions/checkout@v4
     - name: Install Tinybird CLI
       shell: bash
       run: curl -fsSL https://tinybird.co/install.sh | sh
@@ -23,6 +24,7 @@ runs:
       run: tb --cloud --host ${{ inputs.host }} --token ${{ inputs.token }} deployment create --check
       working-directory: ghost/core/core/server/data/tinybird
     - name: Create a ${{ inputs.workspace }} deployment
+      id: deploy
       shell: bash
       run: tb --cloud --host ${{ inputs.host }} --token ${{ inputs.token }} deployment create --wait
       working-directory: ghost/core/core/server/data/tinybird
@@ -31,7 +33,7 @@ runs:
       uses: slackapi/slack-github-action@v2.1.0
       if: always()
       with:
-        webhook: ${{ secrets.ANALYTICS_SLACK_WEBHOOK_URL }}
+        webhook: ${{ inputs.slack-webhook }}
         webhook-type: incoming-webhook
         payload: |
           text: "Tinybird Deployment: ${{ inputs.workspace }}"
@@ -39,15 +41,15 @@ runs:
             - type: "section"
               text:
                 type: "mrkdwn"
-                text: "${{ job.status == 'success' && ':rocket: *Tinybird Deployment*' || ':x: *Tinybird Deployment*' }}"
+                text: "${{ steps.deploy.outcome == 'success' && ':rocket: *Tinybird Deployment*' || ':x: *Tinybird Deployment*' }}"
             - type: "section"
               fields:
                 - type: "mrkdwn"
                   text: "*Workspace:*\n:bird: ${{ inputs.workspace }}"
                 - type: "mrkdwn"
-                  text: "*Status:*\n${{ job.status == 'success' && ':large_green_circle: Success' || ':red_circle: Failed' }}"
+                  text: "*Status:*\n${{ steps.deploy.outcome == 'success' && ':large_green_circle: Success' || ':red_circle: Failed' }}"
                 - type: "mrkdwn"
                   text: "*Workflow:*\n:link: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
           attachments:
-            - color: "${{ job.status == 'success' && 'good' || 'danger' }}"
-              fallback: "Tinybird Deployment: ${{ job.status }}"
+            - color: "${{ steps.deploy.outcome == 'success' && 'good' || 'danger' }}"
+              fallback: "Tinybird Deployment: ${{ steps.deploy.outcome }}"
