@@ -33,19 +33,67 @@ class AnalyticsEventGenerator {
             {value: {pathname: '/terms/', type: 'page'}, weight: 2}
         ];
         
-        // Referrer sources
-        this.referrers = [
-            '',
-            'https://www.google.com/',
-            'https://www.bing.com/',
-            'https://duckduckgo.com/',
-            'https://search.yahoo.com/',
-            'https://www.baidu.com/',
-            'https://facebook.com/',
-            'https://twitter.com/',
-            'https://linkedin.com/',
-            'http://some-external-site.com'
+        // Referrer sources based on production data analysis
+        this.referrerWeights = [
+            // Direct traffic (empty referrer)
+            {value: '', weight: 25},
+            
+            // Major search engines
+            {value: 'https://www.google.com/', weight: 20},
+            {value: 'https://news.google.com/', weight: 3},
+            {value: 'https://duckduckgo.com/', weight: 2},
+            {value: 'https://www.bing.com/', weight: 1},
+            
+            // Social media platforms
+            {value: 'https://out.reddit.com/', weight: 8},
+            {value: 'https://www.reddit.com/', weight: 4},
+            {value: 'https://go.bsky.app/', weight: 6},
+            {value: 'https://t.co/', weight: 4},
+            {value: 'https://lm.facebook.com/', weight: 2},
+            {value: 'http://m.facebook.com/', weight: 1},
+            
+            // Newsletter sources
+            {value: 'duonews', weight: 9},
+            {value: 'tangle-newsletter', weight: 3},
+            {value: 'the-51st-newsletter', weight: 3},
+            {value: 'newsletter-email', weight: 3},
+            {value: 'daily-stories-newsletter', weight: 2},
+            {value: 'weekly-roundup-newsletter', weight: 1},
+            {value: 'newsletter', weight: 1},
+            
+            // Mobile apps
+            {value: 'android-app://com.google.android.googlequicksearchbox/', weight: 4},
+            {value: 'android-app://com.reddit.frontpage/', weight: 1},
+            
+            // Other sources
+            {value: 'https://alohafind.com/', weight: 3},
+            {value: 'flipboard', weight: 2}
         ];
+        
+        // Referrer source mapping (for meta.referrerSource)
+        this.referrerSourceMap = {
+            'https://www.google.com/': 'Google',
+            'https://news.google.com/': 'Google News',
+            'https://duckduckgo.com/': 'DuckDuckGo',
+            'https://www.bing.com/': 'Bing',
+            'https://out.reddit.com/': 'Reddit',
+            'https://www.reddit.com/': 'Reddit',
+            'android-app://com.reddit.frontpage/': 'Reddit',
+            'https://go.bsky.app/': 'Bluesky',
+            'https://t.co/': 'Twitter',
+            'https://lm.facebook.com/': 'Facebook',
+            'http://m.facebook.com/': 'Facebook',
+            'https://alohafind.com/': 'alohafind.com',
+            flipboard: 'Flipboard',
+            duonews: 'duonews',
+            'tangle-newsletter': 'tangle-newsletter',
+            'the-51st-newsletter': 'the-51st-newsletter',
+            'newsletter-email': 'newsletter-email',
+            'daily-stories-newsletter': 'daily-stories-newsletter',
+            'weekly-roundup-newsletter': 'weekly-roundup-newsletter',
+            newsletter: 'newsletter',
+            'android-app://com.google.android.googlequicksearchbox/': 'Google'
+        };
         
         // User agents (realistic ones)
         this.userAgents = [
@@ -142,8 +190,9 @@ class AnalyticsEventGenerator {
             this.assignPostPopularity();
             
             // Add site-specific referrer
-            if (this.baseUrl && !this.referrers.includes(this.baseUrl)) {
-                this.referrers.push(this.baseUrl);
+            if (this.baseUrl && !this.referrerWeights.find(r => r.value === this.baseUrl)) {
+                this.referrerWeights.push({value: this.baseUrl, weight: 5});
+                this.referrerSourceMap[this.baseUrl] = this.baseUrl.replace('https://', '').replace('http://', '');
             }
             
             if (this.posts.length === 0) {
@@ -470,7 +519,7 @@ class AnalyticsEventGenerator {
         
         const sessionId = this.generateSessionId(userId, timestamp);
         const memberStatus = this.weightedChoice(this.memberStatusWeights);
-        const referrer = this.randomChoice(this.referrers);
+        const referrer = this.weightedChoice(this.referrerWeights);
         
         // Generate member_uuid based on status
         let memberUuid;
@@ -481,6 +530,9 @@ class AnalyticsEventGenerator {
         } else {
             memberUuid = this.generateUuid();
         }
+        
+        // Generate referrerSource for meta field
+        const referrerSource = this.referrerSourceMap[referrer] || referrer;
         
         const payload = {
             site_uuid: this.siteUuid,
@@ -495,7 +547,7 @@ class AnalyticsEventGenerator {
             pathname: content.pathname,
             href: `${this.baseUrl}${content.pathname}`,
             meta: {
-                referrerSource: referrer
+                referrerSource: referrerSource
             }
         };
         
@@ -538,6 +590,7 @@ class AnalyticsEventGenerator {
         console.log(`📅 Time range: ${elevenMonthsAgo.toISOString().split('T')[0]} to ${now.toISOString().split('T')[0]}`);
         console.log(`📈 Traffic pattern: Moderate growth over time with realistic seasonal patterns`);
         console.log(`⏰ Includes realistic daily/weekly patterns (weekdays > weekends, business hours > nights)`);
+        console.log(`🔗 Using production-based referrer patterns (Google, Reddit, Bluesky, newsletters, etc.)`);
         
         for (let i = 0; i < numEvents; i++) {
             events.push(this.generateEvent(i, numEvents));
@@ -644,4 +697,4 @@ if (require.main === module) {
     main().catch(console.error);
 }
 
-module.exports = AnalyticsEventGenerator; 
+module.exports = AnalyticsEventGenerator;
