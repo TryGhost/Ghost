@@ -1,0 +1,536 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Tags Content API Can include post count 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": 2,
+      "page": 1,
+      "pages": 4,
+      "prev": null,
+      "total": 56,
+    },
+  },
+  "tags": Array [
+    Object {
+      "accent_color": Nullable<Any<String>>,
+      "canonical_url": Nullable<Any<String>>,
+      "codeinjection_foot": Nullable<Any<String>>,
+      "codeinjection_head": Nullable<Any<String>>,
+      "count": Object {
+        "posts": Any<Number>,
+      },
+      "description": Nullable<Any<String>>,
+      "feature_image": Nullable<Any<String>>,
+      "id": Any<String>,
+      "meta_description": Nullable<Any<String>>,
+      "meta_title": Nullable<Any<String>>,
+      "name": Any<String>,
+      "og_description": Nullable<Any<String>>,
+      "og_image": Nullable<Any<String>>,
+      "og_title": Nullable<Any<String>>,
+      "slug": Any<String>,
+      "twitter_description": Nullable<Any<String>>,
+      "twitter_image": Nullable<Any<String>>,
+      "twitter_title": Nullable<Any<String>>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "accent_color": Nullable<Any<String>>,
+      "canonical_url": Nullable<Any<String>>,
+      "codeinjection_foot": Nullable<Any<String>>,
+      "codeinjection_head": Nullable<Any<String>>,
+      "count": Object {
+        "posts": Any<Number>,
+      },
+      "description": Nullable<Any<String>>,
+      "feature_image": Nullable<Any<String>>,
+      "id": Any<String>,
+      "meta_description": Nullable<Any<String>>,
+      "meta_title": Nullable<Any<String>>,
+      "name": Any<String>,
+      "og_description": Nullable<Any<String>>,
+      "og_image": Nullable<Any<String>>,
+      "og_title": Nullable<Any<String>>,
+      "slug": Any<String>,
+      "twitter_description": Nullable<Any<String>>,
+      "twitter_image": Nullable<Any<String>>,
+      "twitter_title": Nullable<Any<String>>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "accent_color": Nullable<Any<String>>,
+      "canonical_url": Nullable<Any<String>>,
+      "codeinjection_foot": Nullable<Any<String>>,
+      "codeinjection_head": Nullable<Any<String>>,
+      "count": Object {
+        "posts": Any<Number>,
+      },
+      "description": Nullable<Any<String>>,
+      "feature_image": Nullable<Any<String>>,
+      "id": Any<String>,
+      "meta_description": Nullable<Any<String>>,
+      "meta_title": Nullable<Any<String>>,
+      "name": Any<String>,
+      "og_description": Nullable<Any<String>>,
+      "og_image": Nullable<Any<String>>,
+      "og_title": Nullable<Any<String>>,
+      "slug": Any<String>,
+      "twitter_description": Nullable<Any<String>>,
+      "twitter_image": Nullable<Any<String>>,
+      "twitter_title": Nullable<Any<String>>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "accent_color": Nullable<Any<String>>,
+      "canonical_url": Nullable<Any<String>>,
+      "codeinjection_foot": Nullable<Any<String>>,
+      "codeinjection_head": Nullable<Any<String>>,
+      "count": Object {
+        "posts": Any<Number>,
+      },
+      "description": Nullable<Any<String>>,
+      "feature_image": Nullable<Any<String>>,
+      "id": Any<String>,
+      "meta_description": Nullable<Any<String>>,
+      "meta_title": Nullable<Any<String>>,
+      "name": Any<String>,
+      "og_description": Nullable<Any<String>>,
+      "og_image": Nullable<Any<String>>,
+      "og_title": Nullable<Any<String>>,
+      "slug": Any<String>,
+      "twitter_description": Nullable<Any<String>>,
+      "twitter_image": Nullable<Any<String>>,
+      "twitter_title": Nullable<Any<String>>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+  ],
+}
+`;
+
+exports[`Tags Content API Can include post count 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "1993",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Tags Content API Can limit tags to receive 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 3,
+      "next": 2,
+      "page": 1,
+      "pages": 19,
+      "prev": null,
+      "total": 56,
+    },
+  },
+  "tags": Array [
+    Object {
+      "accent_color": Nullable<Any<String>>,
+      "canonical_url": Nullable<Any<String>>,
+      "codeinjection_foot": Nullable<Any<String>>,
+      "codeinjection_head": Nullable<Any<String>>,
+      "description": Nullable<Any<String>>,
+      "feature_image": Nullable<Any<String>>,
+      "id": Any<String>,
+      "meta_description": Nullable<Any<String>>,
+      "meta_title": Nullable<Any<String>>,
+      "name": Any<String>,
+      "og_description": Nullable<Any<String>>,
+      "og_image": Nullable<Any<String>>,
+      "og_title": Nullable<Any<String>>,
+      "slug": Any<String>,
+      "twitter_description": Nullable<Any<String>>,
+      "twitter_image": Nullable<Any<String>>,
+      "twitter_title": Nullable<Any<String>>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "accent_color": Nullable<Any<String>>,
+      "canonical_url": Nullable<Any<String>>,
+      "codeinjection_foot": Nullable<Any<String>>,
+      "codeinjection_head": Nullable<Any<String>>,
+      "description": Nullable<Any<String>>,
+      "feature_image": Nullable<Any<String>>,
+      "id": Any<String>,
+      "meta_description": Nullable<Any<String>>,
+      "meta_title": Nullable<Any<String>>,
+      "name": Any<String>,
+      "og_description": Nullable<Any<String>>,
+      "og_image": Nullable<Any<String>>,
+      "og_title": Nullable<Any<String>>,
+      "slug": Any<String>,
+      "twitter_description": Nullable<Any<String>>,
+      "twitter_image": Nullable<Any<String>>,
+      "twitter_title": Nullable<Any<String>>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "accent_color": Nullable<Any<String>>,
+      "canonical_url": Nullable<Any<String>>,
+      "codeinjection_foot": Nullable<Any<String>>,
+      "codeinjection_head": Nullable<Any<String>>,
+      "description": Nullable<Any<String>>,
+      "feature_image": Nullable<Any<String>>,
+      "id": Any<String>,
+      "meta_description": Nullable<Any<String>>,
+      "meta_title": Nullable<Any<String>>,
+      "name": Any<String>,
+      "og_description": Nullable<Any<String>>,
+      "og_image": Nullable<Any<String>>,
+      "og_title": Nullable<Any<String>>,
+      "slug": Any<String>,
+      "twitter_description": Nullable<Any<String>>,
+      "twitter_image": Nullable<Any<String>>,
+      "twitter_title": Nullable<Any<String>>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+  ],
+}
+`;
+
+exports[`Tags Content API Can limit tags to receive 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "1425",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Tags Content API Can request tags 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": 2,
+      "page": 1,
+      "pages": 4,
+      "prev": null,
+      "total": 56,
+    },
+  },
+  "tags": Array [
+    Object {
+      "accent_color": Nullable<Any<String>>,
+      "canonical_url": Nullable<Any<String>>,
+      "codeinjection_foot": Nullable<Any<String>>,
+      "codeinjection_head": Nullable<Any<String>>,
+      "description": Nullable<Any<String>>,
+      "feature_image": Nullable<Any<String>>,
+      "id": Any<String>,
+      "meta_description": Nullable<Any<String>>,
+      "meta_title": Nullable<Any<String>>,
+      "name": Any<String>,
+      "og_description": Nullable<Any<String>>,
+      "og_image": Nullable<Any<String>>,
+      "og_title": Nullable<Any<String>>,
+      "slug": Any<String>,
+      "twitter_description": Nullable<Any<String>>,
+      "twitter_image": Nullable<Any<String>>,
+      "twitter_title": Nullable<Any<String>>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "accent_color": Nullable<Any<String>>,
+      "canonical_url": Nullable<Any<String>>,
+      "codeinjection_foot": Nullable<Any<String>>,
+      "codeinjection_head": Nullable<Any<String>>,
+      "description": Nullable<Any<String>>,
+      "feature_image": Nullable<Any<String>>,
+      "id": Any<String>,
+      "meta_description": Nullable<Any<String>>,
+      "meta_title": Nullable<Any<String>>,
+      "name": Any<String>,
+      "og_description": Nullable<Any<String>>,
+      "og_image": Nullable<Any<String>>,
+      "og_title": Nullable<Any<String>>,
+      "slug": Any<String>,
+      "twitter_description": Nullable<Any<String>>,
+      "twitter_image": Nullable<Any<String>>,
+      "twitter_title": Nullable<Any<String>>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "accent_color": Nullable<Any<String>>,
+      "canonical_url": Nullable<Any<String>>,
+      "codeinjection_foot": Nullable<Any<String>>,
+      "codeinjection_head": Nullable<Any<String>>,
+      "description": Nullable<Any<String>>,
+      "feature_image": Nullable<Any<String>>,
+      "id": Any<String>,
+      "meta_description": Nullable<Any<String>>,
+      "meta_title": Nullable<Any<String>>,
+      "name": Any<String>,
+      "og_description": Nullable<Any<String>>,
+      "og_image": Nullable<Any<String>>,
+      "og_title": Nullable<Any<String>>,
+      "slug": Any<String>,
+      "twitter_description": Nullable<Any<String>>,
+      "twitter_image": Nullable<Any<String>>,
+      "twitter_title": Nullable<Any<String>>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "accent_color": Nullable<Any<String>>,
+      "canonical_url": Nullable<Any<String>>,
+      "codeinjection_foot": Nullable<Any<String>>,
+      "codeinjection_head": Nullable<Any<String>>,
+      "description": Nullable<Any<String>>,
+      "feature_image": Nullable<Any<String>>,
+      "id": Any<String>,
+      "meta_description": Nullable<Any<String>>,
+      "meta_title": Nullable<Any<String>>,
+      "name": Any<String>,
+      "og_description": Nullable<Any<String>>,
+      "og_image": Nullable<Any<String>>,
+      "og_title": Nullable<Any<String>>,
+      "slug": Any<String>,
+      "twitter_description": Nullable<Any<String>>,
+      "twitter_image": Nullable<Any<String>>,
+      "twitter_title": Nullable<Any<String>>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+  ],
+}
+`;
+
+exports[`Tags Content API Can request tags 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "1913",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Tags Content API Can request tags with limit=all 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": "all",
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 4,
+    },
+  },
+  "tags": Array [
+    Object {
+      "accent_color": Nullable<Any<String>>,
+      "canonical_url": Nullable<Any<String>>,
+      "codeinjection_foot": Nullable<Any<String>>,
+      "codeinjection_head": Nullable<Any<String>>,
+      "description": Nullable<Any<String>>,
+      "feature_image": Nullable<Any<String>>,
+      "id": Any<String>,
+      "meta_description": Nullable<Any<String>>,
+      "meta_title": Nullable<Any<String>>,
+      "name": Any<String>,
+      "og_description": Nullable<Any<String>>,
+      "og_image": Nullable<Any<String>>,
+      "og_title": Nullable<Any<String>>,
+      "slug": Any<String>,
+      "twitter_description": Nullable<Any<String>>,
+      "twitter_image": Nullable<Any<String>>,
+      "twitter_title": Nullable<Any<String>>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "accent_color": Nullable<Any<String>>,
+      "canonical_url": Nullable<Any<String>>,
+      "codeinjection_foot": Nullable<Any<String>>,
+      "codeinjection_head": Nullable<Any<String>>,
+      "description": Nullable<Any<String>>,
+      "feature_image": Nullable<Any<String>>,
+      "id": Any<String>,
+      "meta_description": Nullable<Any<String>>,
+      "meta_title": Nullable<Any<String>>,
+      "name": Any<String>,
+      "og_description": Nullable<Any<String>>,
+      "og_image": Nullable<Any<String>>,
+      "og_title": Nullable<Any<String>>,
+      "slug": Any<String>,
+      "twitter_description": Nullable<Any<String>>,
+      "twitter_image": Nullable<Any<String>>,
+      "twitter_title": Nullable<Any<String>>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "accent_color": Nullable<Any<String>>,
+      "canonical_url": Nullable<Any<String>>,
+      "codeinjection_foot": Nullable<Any<String>>,
+      "codeinjection_head": Nullable<Any<String>>,
+      "description": Nullable<Any<String>>,
+      "feature_image": Nullable<Any<String>>,
+      "id": Any<String>,
+      "meta_description": Nullable<Any<String>>,
+      "meta_title": Nullable<Any<String>>,
+      "name": Any<String>,
+      "og_description": Nullable<Any<String>>,
+      "og_image": Nullable<Any<String>>,
+      "og_title": Nullable<Any<String>>,
+      "slug": Any<String>,
+      "twitter_description": Nullable<Any<String>>,
+      "twitter_image": Nullable<Any<String>>,
+      "twitter_title": Nullable<Any<String>>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "accent_color": Nullable<Any<String>>,
+      "canonical_url": Nullable<Any<String>>,
+      "codeinjection_foot": Nullable<Any<String>>,
+      "codeinjection_head": Nullable<Any<String>>,
+      "description": Nullable<Any<String>>,
+      "feature_image": Nullable<Any<String>>,
+      "id": Any<String>,
+      "meta_description": Nullable<Any<String>>,
+      "meta_title": Nullable<Any<String>>,
+      "name": Any<String>,
+      "og_description": Nullable<Any<String>>,
+      "og_image": Nullable<Any<String>>,
+      "og_title": Nullable<Any<String>>,
+      "slug": Any<String>,
+      "twitter_description": Nullable<Any<String>>,
+      "twitter_image": Nullable<Any<String>>,
+      "twitter_title": Nullable<Any<String>>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+  ],
+}
+`;
+
+exports[`Tags Content API Can request tags with limit=all 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "1918",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Tags Content API Can use multiple fields and have valid url fields 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": 2,
+      "page": 1,
+      "pages": 4,
+      "prev": null,
+      "total": 56,
+    },
+  },
+  "tags": Array [
+    Object {
+      "name": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "name": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "name": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "name": Any<String>,
+      "url": Any<String>,
+    },
+  ],
+}
+`;
+
+exports[`Tags Content API Can use multiple fields and have valid url fields 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "366",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Tags Content API Can use single url field and have valid url fields 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": 2,
+      "page": 1,
+      "pages": 4,
+      "prev": null,
+      "total": 56,
+    },
+  },
+  "tags": Array [
+    Object {
+      "url": Any<String>,
+    },
+    Object {
+      "url": Any<String>,
+    },
+    Object {
+      "url": Any<String>,
+    },
+    Object {
+      "url": Any<String>,
+    },
+  ],
+}
+`;
+
+exports[`Tags Content API Can use single url field and have valid url fields 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "287",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
