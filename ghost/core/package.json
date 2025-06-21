@@ -55,7 +55,11 @@
     "lint:code": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
     "lint:types": "eslint --ignore-path .eslintignore '**/*.ts' --cache && tsc --noEmit",
     "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test && yarn lint:types",
-    "prepack": "node monobundle.js"
+    "prepack": "node monobundle.js",
+    "query:posts": "cd core/server/data/tinybird/scripts && ./query-posts.sh",
+    "query:members": "cd core/server/data/tinybird/scripts && ./query-members.sh",
+    "generate:analytics": "node core/server/data/tinybird/scripts/analytics-generator.js",
+    "reset:data:tinybird": "cd core/server/data/tinybird/scripts && node reset-data-tinybird.js"
   },
   "engines": {
     "node": "^18.12.1 || ^20.11.1 || ^22.13.1",
@@ -207,6 +211,7 @@
     "sanitize-html": "2.17.0",
     "semver": "7.7.2",
     "simple-dom": "1.4.0",
+    "sqlite3": "^5.1.7",
     "stoppable": "1.1.0",
     "stripe": "8.222.0",
     "superagent": "5.3.1",
