@@ -27,3 +27,28 @@ runs:
       shell: bash
       run: tb --cloud --host ${{ inputs.host }} --token ${{ inputs.token }} deployment create --wait
       working-directory: ghost/core/core/server/data/tinybird
+
+    - name: Send slack notification
+      uses: slackapi/slack-github-action@v2.1.0
+      if: always() && steps.conclusion != 'skipped'
+      with:
+        webhook: ${{ secrets.ANALYTICS_SLACK_WEBHOOK_URL }}
+        webhook-type: incoming-webhook
+        payload: |
+          text: "Tinybird Deployment: ${{ inputs.workspace }}"
+          blocks:
+            - type: "section"
+              text:
+                type: "mrkdwn"
+                text: "${{ job.status == 'success' && ':rocket: *Tinybird Deployment*' || ':x: *Tinybird Deployment*' }}"
+            - type: "section"
+              fields:
+                - type: "mrkdwn"
+                  text: "*Workspace:*\n:bird: ${{ inputs.workspace }}"
+                - type: "mrkdwn"
+                  text: "*Status:*\n${{ job.status == 'success' && ':large_green_circle: Success' || ':red_circle: Failed' }}"
+                - type: "mrkdwn"
+                  text: "*Workflow:*\n:link: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+          attachments:
+            - color: "${{ job.status == 'success' && 'good' || 'danger' }}"
+              fallback: "Tinybird Deployment: ${{ job.status }}"
