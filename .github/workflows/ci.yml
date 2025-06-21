@@ -1193,12 +1193,15 @@ jobs:
     ]
     if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Deploy to Staging
         uses: ./.github/actions/deploy-tinybird
         with:
           host: ${{ secrets.TINYBIRD_HOST_STAGING }}
           token: ${{ secrets.TINYBIRD_TOKEN_STAGING }}
-          workspace: 'staging'
+          workspace: 'Staging'
+          slack-webhook: ${{ secrets.ANALYTICS_SLACK_WEBHOOK_URL }}
 
   deploy_tinybird_production:
     name: Deploy Tinybird - Production
@@ -1210,9 +1213,12 @@ jobs:
     ]
     if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.deploy_tinybird_staging.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Deploy to Production
         uses: ./.github/actions/deploy-tinybird
         with:
           host: ${{ secrets.TINYBIRD_HOST }}
           token: ${{ secrets.TINYBIRD_TOKEN }}
-          workspace: 'production'
+          workspace: 'Production'
+          slack-webhook: ${{ secrets.ANALYTICS_SLACK_WEBHOOK_URL }}
