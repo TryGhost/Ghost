@@ -99,10 +99,12 @@ class AnalyticsEventGenerator {
         
         // Post popularity weights (will be applied to real posts)
         this.postPopularityTiers = [
-            {tier: 'viral', weight: 15, multiplier: 8}, // 15% of posts get 8x traffic
-            {tier: 'popular', weight: 25, multiplier: 3}, // 25% get 3x traffic  
-            {tier: 'average', weight: 40, multiplier: 1}, // 40% get normal traffic
-            {tier: 'low', weight: 20, multiplier: 0.3} // 20% get 30% of normal traffic
+            {tier: 'viral', weight: 8, multiplier: 50}, // 8% of posts get 50x traffic (viral hits)
+            {tier: 'popular', weight: 12, multiplier: 12}, // 12% get 12x traffic 
+            {tier: 'good', weight: 20, multiplier: 4}, // 20% get 4x traffic
+            {tier: 'average', weight: 30, multiplier: 1}, // 30% get normal traffic
+            {tier: 'low', weight: 20, multiplier: 0.2}, // 20% get 20% of normal traffic
+            {tier: 'very_low', weight: 10, multiplier: 0.05} // 10% get almost no traffic
         ];
         this.postPopularityMap = new Map(); // Will store post UUIDs with their popularity tiers
         
