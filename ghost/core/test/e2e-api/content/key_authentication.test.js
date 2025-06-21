@@ -1,70 +1,101 @@
-const should = require('should');
-const supertest = require('supertest');
-const testUtils = require('../../utils');
-const localUtils = require('./utils');
-const config = require('../../../core/shared/config');
-const configUtils = require('../../utils/configUtils');
+const {agentProvider, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
+const {anyContentVersion, anyEtag, anyErrorId} = matchers;
 
 describe('Content API key authentication', function () {
-    let request;
+    describe('Unauthenticated', function () {
+        let unauthenticatedAgent;
 
-    before(async function () {
-        await localUtils.startGhost();
-        request = supertest.agent(config.get('url'));
-        await testUtils.initFixtures('api_keys');
+        before(async function () {
+            unauthenticatedAgent = await agentProvider.getContentAPIAgent();
+            await fixtureManager.init('api_keys');
+        });
+
+        it('Can not access without key', async function () {
+            await unauthenticatedAgent
+                .get('posts/')
+                .expectStatus(403)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                });
+        });
     });
 
-    it('Can not access without key', async function () {
-        await request.get(localUtils.API.getApiQuery('posts/'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(403);
-    });
+    describe('Authenticated', function () {
+        let authenticatedAgent;
 
-    it('Can access with with valid key', async function () {
-        const key = localUtils.getValidKey();
+        before(async function () {
+            authenticatedAgent = await agentProvider.getContentAPIAgent();
+            await fixtureManager.init('api_keys');
+            authenticatedAgent.authenticate();
+        });
 
-        await request.get(localUtils.API.getApiQuery(`posts/?key=${key}`))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
-            .expect(200);
+        it('Can access with with valid key', async function () {
+            await authenticatedAgent
+                .get('posts/')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
     });
 
     describe('Host Settings: custom integration limits', function () {
-        afterEach(function () {
-            configUtils.set('hostSettings:limits', undefined);
-        });
+        let limitedAgent;
 
-        it('Blocks the request when host limit is in place for custom integrations', async function () {
-            configUtils.set('hostSettings:limits', {
+        before(async function () {
+            await configUtils.set('hostSettings:limits', {
                 customIntegrations: {
                     disabled: true,
                     error: 'Custom limit error message'
                 }
             });
 
-            // NOTE: need to do a full reboot to reinitialize hostSettings
-            await localUtils.startGhost();
-            await testUtils.initFixtures('integrations');
-            await testUtils.initFixtures('api_keys');
+            limitedAgent = await agentProvider.getContentAPIAgent();
+            await fixtureManager.init('integrations', 'api_keys');
+            limitedAgent.authenticate();
+        });
 
-            const key = localUtils.getValidKey();
+        afterEach(async function () {
+            await configUtils.restore();
+        });
 
-            const firstResponse = await request.get(localUtils.API.getApiQuery(`posts/?key=${key}`))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(403);
-
-            firstResponse.body.errors[0].type.should.equal('HostLimitError');
-            firstResponse.body.errors[0].message.should.equal('Custom limit error message');
+        it('Blocks the request when host limit is in place for custom integrations', async function () {
+            await limitedAgent
+                .get('posts/')
+                .expectStatus(403)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId,
+                        type: 'HostLimitError',
+                        message: 'Custom limit error message'
+                    }]
+                });
 
             // CASE: explore endpoint can only be reached by Admin API
-            const secondResponse = await request.get(localUtils.API.getApiQuery('explore/'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.noCache)
-                .expect(404);
-
-            secondResponse.body.errors[0].type.should.equal('NotFoundError');
+            await limitedAgent
+                .get('explore/')
+                .expectStatus(404)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId,
+                        type: 'NotFoundError'
+                    }]
+                });
         });
     });
 });

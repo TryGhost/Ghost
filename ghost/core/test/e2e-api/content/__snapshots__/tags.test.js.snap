@@ -1,0 +1,536 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Tags Content API Can include post count 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": 2,
+      "page": 1,
+      "pages": 4,
+      "prev": null,
+      "total": 56,
+    },
+  },
+  "tags": Array [
+    Object {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "count": Object {
+        "posts": 7,
+      },
+      "description": null,
+      "feature_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Getting Started",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "getting-started",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "http://127.0.0.1:2369/tag/getting-started/",
+      "visibility": "public",
+    },
+    Object {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "count": Object {
+        "posts": 2,
+      },
+      "description": "description",
+      "feature_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "bacon",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "bacon",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "http://127.0.0.1:2369/tag/bacon/",
+      "visibility": "public",
+    },
+    Object {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "count": Object {
+        "posts": 1,
+      },
+      "description": "description",
+      "feature_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "chorizo",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "chorizo",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "http://127.0.0.1:2369/tag/chorizo/",
+      "visibility": "public",
+    },
+    Object {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "count": Object {
+        "posts": 2,
+      },
+      "description": "description",
+      "feature_image": "https://example.com/super_photo.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "kitchen sink",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "kitchen-sink",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "http://127.0.0.1:2369/tag/kitchen-sink/",
+      "visibility": "public",
+    },
+  ],
+}
+`;
+
+exports[`Tags Content API Can include post count 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "1993",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Tags Content API Can limit tags to receive 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 3,
+      "next": 2,
+      "page": 1,
+      "pages": 19,
+      "prev": null,
+      "total": 56,
+    },
+  },
+  "tags": Array [
+    Object {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "description": null,
+      "feature_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Getting Started",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "getting-started",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "http://127.0.0.1:2369/tag/getting-started/",
+      "visibility": "public",
+    },
+    Object {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "description": "description",
+      "feature_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "bacon",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "bacon",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "http://127.0.0.1:2369/tag/bacon/",
+      "visibility": "public",
+    },
+    Object {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "description": "description",
+      "feature_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "chorizo",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "chorizo",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "http://127.0.0.1:2369/tag/chorizo/",
+      "visibility": "public",
+    },
+  ],
+}
+`;
+
+exports[`Tags Content API Can limit tags to receive 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "1425",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Tags Content API Can request tags 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": 2,
+      "page": 1,
+      "pages": 4,
+      "prev": null,
+      "total": 56,
+    },
+  },
+  "tags": Array [
+    Object {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "description": null,
+      "feature_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Getting Started",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "getting-started",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "http://127.0.0.1:2369/tag/getting-started/",
+      "visibility": "public",
+    },
+    Object {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "description": "description",
+      "feature_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "bacon",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "bacon",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "http://127.0.0.1:2369/tag/bacon/",
+      "visibility": "public",
+    },
+    Object {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "description": "description",
+      "feature_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "chorizo",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "chorizo",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "http://127.0.0.1:2369/tag/chorizo/",
+      "visibility": "public",
+    },
+    Object {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "description": "description",
+      "feature_image": "https://example.com/super_photo.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "kitchen sink",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "kitchen-sink",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "http://127.0.0.1:2369/tag/kitchen-sink/",
+      "visibility": "public",
+    },
+  ],
+}
+`;
+
+exports[`Tags Content API Can request tags 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "1913",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Tags Content API Can request tags with limit=all 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": "all",
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 4,
+    },
+  },
+  "tags": Array [
+    Object {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "description": null,
+      "feature_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Getting Started",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "getting-started",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "http://127.0.0.1:2369/tag/getting-started/",
+      "visibility": "public",
+    },
+    Object {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "description": "description",
+      "feature_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "bacon",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "bacon",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "http://127.0.0.1:2369/tag/bacon/",
+      "visibility": "public",
+    },
+    Object {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "description": "description",
+      "feature_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "chorizo",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "chorizo",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "http://127.0.0.1:2369/tag/chorizo/",
+      "visibility": "public",
+    },
+    Object {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "description": "description",
+      "feature_image": "https://example.com/super_photo.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "kitchen sink",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "kitchen-sink",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "http://127.0.0.1:2369/tag/kitchen-sink/",
+      "visibility": "public",
+    },
+  ],
+}
+`;
+
+exports[`Tags Content API Can request tags with limit=all 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "1918",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Tags Content API Can use multiple fields and have valid url fields 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": 2,
+      "page": 1,
+      "pages": 4,
+      "prev": null,
+      "total": 56,
+    },
+  },
+  "tags": Array [
+    Object {
+      "name": "Getting Started",
+      "url": "http://127.0.0.1:2369/tag/getting-started/",
+    },
+    Object {
+      "name": "bacon",
+      "url": "http://127.0.0.1:2369/tag/bacon/",
+    },
+    Object {
+      "name": "chorizo",
+      "url": "http://127.0.0.1:2369/tag/chorizo/",
+    },
+    Object {
+      "name": "kitchen sink",
+      "url": "http://127.0.0.1:2369/tag/kitchen-sink/",
+    },
+  ],
+}
+`;
+
+exports[`Tags Content API Can use multiple fields and have valid url fields 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "366",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Tags Content API Can use single url field and have valid url fields 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": 2,
+      "page": 1,
+      "pages": 4,
+      "prev": null,
+      "total": 56,
+    },
+  },
+  "tags": Array [
+    Object {
+      "url": "http://127.0.0.1:2369/tag/getting-started/",
+    },
+    Object {
+      "url": "http://127.0.0.1:2369/tag/bacon/",
+    },
+    Object {
+      "url": "http://127.0.0.1:2369/tag/chorizo/",
+    },
+    Object {
+      "url": "http://127.0.0.1:2369/tag/kitchen-sink/",
+    },
+  ],
+}
+`;
+
+exports[`Tags Content API Can use single url field and have valid url fields 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "287",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
