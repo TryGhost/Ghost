@@ -108,6 +108,61 @@ class DatabaseUtils {
     }
 
     /**
+     * Get posts with detailed information including published dates and slugs
+     */
+    async getPostsWithDetails(options = {}) {
+        await this.init();
+        
+        const {publishedOnly = true, limit = null} = options;
+        
+        let query = this.knex('posts').select([
+            'uuid',
+            'slug', 
+            'type',
+            'published_at',
+            'status'
+        ]);
+        
+        if (publishedOnly) {
+            query = query.where('status', 'published');
+        }
+        
+        query = query.orderBy('published_at', 'desc');
+        
+        if (limit) {
+            query = query.limit(limit);
+        }
+        
+        try {
+            const rows = await query;
+            
+            // Transform the data to include pathname
+            return rows.map(row => ({
+                uuid: row.uuid,
+                slug: row.slug,
+                type: row.type,
+                published_at: row.published_at,
+                pathname: this.generatePathname(row.type, row.slug)
+            }));
+        } catch (error) {
+            console.error('Error fetching posts with details:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Generate pathname based on post type and slug
+     */
+    generatePathname(type, slug) {
+        if (type === 'post') {
+            return `/blog/${slug}/`;
+        } else if (type === 'page') {
+            return `/${slug}/`;
+        }
+        return `/${slug}/`;
+    }
+
+    /**
      * Get member UUIDs (if members exist)
      */
     async getMemberUuids(options = {}) {

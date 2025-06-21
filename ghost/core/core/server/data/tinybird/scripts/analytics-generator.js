@@ -8,7 +8,6 @@
  */
 
 const fs = require('fs');
-const {v4: uuidv4} = require('uuid');
 const readline = require('readline');
 const DatabaseUtils = require('./database-utils');
 
@@ -16,26 +15,22 @@ class AnalyticsEventGenerator {
     constructor() {
         this.db = new DatabaseUtils();
         
-        // Will be populated from database
-        this.postUuids = [];
+        // Will be populated from database with published dates
+        this.posts = []; // Array of {uuid, slug, type, published_at, popularity}
         this.memberUuids = [];
         this.siteConfig = {};
         this.stats = {};
         
-        // Sample pathnames with realistic traffic distribution
-        this.pathnameWeights = [
-            {value: '/', weight: 40}, // Homepage gets most traffic
-            {value: '/blog/hello-world/', weight: 12}, // Popular first post
-            {value: '/blog/getting-started/', weight: 10}, // Popular guide
-            {value: '/about/', weight: 8},
-            {value: '/pricing/', weight: 6},
-            {value: '/blog/advanced-features/', weight: 5},
-            {value: '/contact/', weight: 4},
-            {value: '/blog/tips-and-tricks/', weight: 4},
-            {value: '/services/', weight: 3},
-            {value: '/team/', weight: 3},
-            {value: '/privacy/', weight: 3},
-            {value: '/terms/', weight: 2}
+        // Static pages (not tied to posts)
+        this.staticPages = [
+            {value: {pathname: '/', type: 'homepage'}, weight: 40},
+            {value: {pathname: '/about/', type: 'page'}, weight: 8},
+            {value: {pathname: '/pricing/', type: 'page'}, weight: 6},
+            {value: {pathname: '/contact/', type: 'page'}, weight: 4},
+            {value: {pathname: '/services/', type: 'page'}, weight: 3},
+            {value: {pathname: '/team/', type: 'page'}, weight: 3},
+            {value: {pathname: '/privacy/', type: 'page'}, weight: 3},
+            {value: {pathname: '/terms/', type: 'page'}, weight: 2}
         ];
         
         // Referrer sources
@@ -123,25 +118,23 @@ class AnalyticsEventGenerator {
         try {
             console.log('Initializing analytics generator with database data...');
             
-            // Load real post UUIDs from database
-            this.postUuids = await this.db.getPostUuids({published_only: true});
+            // Load posts with published dates and slugs
+            this.posts = await this.db.getPostsWithDetails({publishedOnly: true});
             
-            // Load real member UUIDs from database
+            // Load members
             this.memberUuids = await this.db.getMemberUuids({limit: 500});
             
-            // Load site configuration
+            // Load site config
             this.siteConfig = await this.db.getSiteConfig();
             if (this.siteConfig.url) {
                 this.baseUrl = this.siteConfig.url;
             }
             
-            // Load database stats
             this.stats = await this.db.getStats();
             
-            console.log(`✅ Successfully loaded ${this.postUuids.length} post UUIDs from database`);
+            console.log(`✅ Successfully loaded ${this.posts.length} posts with details from database`);
             console.log(`✅ Successfully loaded ${this.memberUuids.length} member UUIDs from database`);
             console.log(`✅ Site URL: ${this.baseUrl}`);
-            console.log(`✅ Database stats: ${JSON.stringify(this.stats)}`);
             
             // Assign popularity tiers to posts
             this.assignPostPopularity();
@@ -151,8 +144,7 @@ class AnalyticsEventGenerator {
                 this.referrers.push(this.baseUrl);
             }
             
-            // Validate we have sufficient data
-            if (this.postUuids.length === 0) {
+            if (this.posts.length === 0) {
                 throw new Error('No posts found in database. Please run "yarn reset:data" first to generate Ghost data.');
             }
             
@@ -215,21 +207,64 @@ class AnalyticsEventGenerator {
     }
     
     /**
-     * Generate mock data with random UUIDs
+     * Generate mock posts with realistic slugs and published dates
      */
     generateMockData() {
-        // Generate random post UUIDs
-        this.postUuids = Array.from({length: 10}, () => uuidv4());
+        const now = new Date();
+        const elevenMonthsAgo = new Date(now.getTime() - (335 * 24 * 60 * 60 * 1000));
+        
+        // Generate mock posts with realistic slugs
+        const mockPostSlugs = [
+            'hello-world',
+            'getting-started-with-ghost',
+            'advanced-features-guide',
+            'tips-and-tricks',
+            'best-practices',
+            'troubleshooting-guide',
+            'performance-optimization',
+            'security-tips',
+            'design-principles',
+            'user-experience-matters'
+        ];
+        
+        this.posts = mockPostSlugs.map((slug) => {
+            // Spread published dates over 11 months, with more recent posts
+            const daysAgo = Math.floor(Math.random() * 335);
+            const publishedAt = new Date(now.getTime() - (daysAgo * 24 * 60 * 60 * 1000));
+            
+            return {
+                uuid: this.generateUuid(),
+                slug: slug,
+                type: 'post',
+                published_at: publishedAt,
+                pathname: `/blog/${slug}/`
+            };
+        });
+        
+        // Generate some mock pages
+        const mockPages = [
+            {slug: 'about', pathname: '/about/'},
+            {slug: 'pricing', pathname: '/pricing/'},
+            {slug: 'contact', pathname: '/contact/'}
+        ];
+        
+        mockPages.forEach((page) => {
+            this.posts.push({
+                uuid: this.generateUuid(),
+                slug: page.slug,
+                type: 'page',
+                published_at: elevenMonthsAgo, // Pages published early
+                pathname: page.pathname
+            });
+        });
         
         // Generate random member UUIDs  
-        this.memberUuids = Array.from({length: 50}, () => uuidv4());
+        this.memberUuids = Array.from({length: 50}, () => this.generateUuid());
         
-        // Assign popularity tiers to posts
         this.assignPostPopularity();
         
-        console.log(`📊 Generated ${this.postUuids.length} mock post UUIDs`);
+        console.log(`📊 Generated ${this.posts.length} mock posts/pages with realistic slugs`);
         console.log(`👥 Generated ${this.memberUuids.length} mock member UUIDs`);
-        console.log('⚠️  Note: This data is completely synthetic and not from your Ghost database');
     }
     
     /**
@@ -239,14 +274,14 @@ class AnalyticsEventGenerator {
         this.postPopularityMap.clear();
         
         // Shuffle posts for random assignment
-        const shuffledPosts = [...this.postUuids].sort(() => Math.random() - 0.5);
+        const shuffledPosts = [...this.posts].sort(() => Math.random() - 0.5);
         
         let postIndex = 0;
         for (const tier of this.postPopularityTiers) {
             const tierCount = Math.ceil((tier.weight / 100) * shuffledPosts.length);
             
             for (let i = 0; i < tierCount && postIndex < shuffledPosts.length; i = i + 1) {
-                this.postPopularityMap.set(shuffledPosts[postIndex], {
+                this.postPopularityMap.set(shuffledPosts[postIndex].uuid, {
                     tier: tier.tier,
                     multiplier: tier.multiplier
                 });
@@ -258,24 +293,40 @@ class AnalyticsEventGenerator {
     }
     
     /**
-     * Select a post UUID based on popularity weighting
+     * Select content (post, page, or homepage) with proper pathname/UUID matching
      */
-    selectWeightedPost() {
-        // Create a weighted array for selection
+    selectContent() {
+        // 40% chance for static pages (including homepage)
+        if (Math.random() < 0.4) {
+            const staticPage = this.weightedChoice(this.staticPages);
+            return {
+                post_uuid: 'undefined',
+                post_type: staticPage.type === 'homepage' ? '' : 'page',
+                pathname: staticPage.pathname,
+                published_at: null // Static pages don't have publication restrictions
+            };
+        }
+        
+        // 60% chance for posts/pages from database
         const weightedPosts = [];
         
-        for (const postUuid of this.postUuids) {
-            const popularity = this.postPopularityMap.get(postUuid);
-            const multiplier = popularity ? popularity.multiplier : 1;
+        for (const post of this.posts) {
+            const popularity = this.postPopularityMap.get(post.uuid) || {multiplier: 1};
+            const weight = Math.ceil(popularity.multiplier * 10);
             
-            // Add post multiple times based on popularity multiplier
-            const weight = Math.ceil(multiplier * 10); // Scale up for integer weights
             for (let i = 0; i < weight; i = i + 1) {
-                weightedPosts.push(postUuid);
+                weightedPosts.push(post);
             }
         }
         
-        return this.randomChoice(weightedPosts);
+        const selectedPost = this.randomChoice(weightedPosts);
+        
+        return {
+            post_uuid: selectedPost.uuid,
+            post_type: selectedPost.type,
+            pathname: selectedPost.pathname,
+            published_at: selectedPost.published_at
+        };
     }
     
     /**
@@ -338,65 +389,52 @@ class AnalyticsEventGenerator {
     }
     
     /**
-     * Generate timestamp with growth over a year
-     * Traffic starts low and gradually increases, with realistic daily/weekly patterns
+     * Generate timestamp that respects post publication date
      */
-    generateTimestamp(eventIndex = 0, totalEvents = 50000) {
+    generateTimestamp(eventIndex = 0, totalEvents = 50000, publishedAt = null) {
         const now = new Date();
-        const elevenMonthsAgo = new Date(now.getTime() - (335 * 24 * 60 * 60 * 1000)); // ~11 months
+        let startDate = new Date(now.getTime() - (335 * 24 * 60 * 60 * 1000)); // 11 months ago
         
-        // For realistic growth, we want to simulate a blog that started small and grew
-        // Use a cumulative distribution that heavily weights recent months
+        // If content has a publication date, ensure views only happen after publication
+        if (publishedAt) {
+            const pubDate = new Date(publishedAt);
+            if (pubDate > startDate) {
+                startDate = pubDate;
+            }
+        }
         
-        // For growth over time, we need to weight the random selection toward recent dates
-        // The key insight: we want eventIndex 0 to have a small chance of recent dates
-        // and eventIndex (totalEvents-1) to have a high chance of recent dates
+        // Ensure we don't try to generate dates in an invalid range
+        if (startDate >= now) {
+            startDate = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000)); // Fall back to last week
+        }
         
-        const normalizedIndex = eventIndex / totalEvents; // 0 to 1
-        
-        // Use a weighted random approach:
-        // Early events (low normalizedIndex) bias toward early dates
-        // Later events (high normalizedIndex) bias toward recent dates
-        const growthBias = Math.pow(normalizedIndex, 0.5); // Square root for moderate growth
-        
-        // Generate weighted random position - higher bias = more likely to be recent
+        const normalizedIndex = eventIndex / totalEvents;
+        const growthBias = Math.pow(normalizedIndex, 0.5);
         const randomWeight = Math.pow(Math.random(), 1 - growthBias);
         const timePosition = randomWeight;
         
-        // Calculate base timestamp
-        const baseTimestamp = elevenMonthsAgo.getTime() + (timePosition * (now.getTime() - elevenMonthsAgo.getTime()));
-        
-        // Add randomness (±6 hours to keep events reasonably distributed)
+        const baseTimestamp = startDate.getTime() + (timePosition * (now.getTime() - startDate.getTime()));
         const randomOffset = (Math.random() - 0.5) * 12 * 60 * 60 * 1000;
         
-        // Create the date
         const date = new Date(baseTimestamp + randomOffset);
         
-        // Apply realistic traffic patterns
-        const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
+        // Apply realistic traffic patterns (same as before)
+        const dayOfWeek = date.getDay();
         const hour = date.getHours();
         
-        // Weekend reduction
-        let weekdayMultiplier = 1;
-        if (dayOfWeek === 0 || dayOfWeek === 6) {
-            weekdayMultiplier = 0.7; // 30% less traffic on weekends
-        }
-        
-        // Time of day patterns
+        let weekdayMultiplier = (dayOfWeek === 0 || dayOfWeek === 6) ? 0.7 : 1;
         let hourMultiplier = 1;
         if (hour >= 9 && hour <= 17) {
-            hourMultiplier = 1.3; // Peak business hours
+            hourMultiplier = 1.3;
         } else if (hour >= 19 && hour <= 22) {
-            hourMultiplier = 1.1; // Evening reading
+            hourMultiplier = 1.1;
         } else if (hour >= 0 && hour <= 6) {
-            hourMultiplier = 0.3; // Very low overnight traffic
+            hourMultiplier = 0.3;
         }
         
-        // Apply traffic pattern filtering
         const trafficProbability = weekdayMultiplier * hourMultiplier * 0.8;
         if (Math.random() > trafficProbability) {
-            // Skip this timestamp and try again with a slight adjustment
-            return this.generateTimestamp(eventIndex + Math.random() * 0.1, totalEvents);
+            return this.generateTimestamp(eventIndex + Math.random() * 0.1, totalEvents, publishedAt);
         }
         
         return date;
@@ -417,44 +455,43 @@ class AnalyticsEventGenerator {
     }
     
     /**
-     * Generate a single analytics event matching the exact schema
+     * Generate a single analytics event with proper content/pathname matching
      */
     generateEvent(eventIndex = 0, totalEvents = 1000) {
         const userId = Math.floor(Math.random() * this.userCount) + 1;
-        const timestamp = this.generateTimestamp(eventIndex, totalEvents);
+        
+        // Select content first (this determines both pathname and post_uuid)
+        const content = this.selectContent();
+        
+        // Generate timestamp that respects publication date
+        const timestamp = this.generateTimestamp(eventIndex, totalEvents, content.published_at);
+        
         const sessionId = this.generateSessionId(userId, timestamp);
-        const pathname = this.weightedChoice(this.pathnameWeights);
         const memberStatus = this.weightedChoice(this.memberStatusWeights);
         const referrer = this.randomChoice(this.referrers);
-        const postType = this.weightedChoice(this.postTypeWeights);
         
         // Generate member_uuid based on status
         let memberUuid;
         if (memberStatus === 'undefined') {
             memberUuid = 'undefined';
         } else if (this.memberUuids.length > 0 && Math.random() < 0.7) {
-            // 70% chance to use a real member UUID when available
             memberUuid = this.randomChoice(this.memberUuids);
         } else {
-            // 30% chance to generate a new UUID (new members)
             memberUuid = this.generateUuid();
         }
-        
-        // Generate post_uuid (sometimes undefined for homepage)
-        const postUuid = (pathname === '/' || Math.random() < 0.3) ? 'undefined' : this.selectWeightedPost();
         
         const payload = {
             site_uuid: this.siteUuid,
             member_uuid: memberUuid,
             member_status: memberStatus,
-            post_uuid: postUuid,
-            post_type: postType,
+            post_uuid: content.post_uuid,
+            post_type: content.post_type,
             'user-agent': this.randomChoice(this.userAgents),
             locale: this.randomChoice(this.locales),
             location: this.weightedChoice(this.locationWeights),
             referrer: referrer,
-            pathname: pathname,
-            href: `${this.baseUrl}${pathname}`,
+            pathname: content.pathname,
+            href: `${this.baseUrl}${content.pathname}`,
             meta: {
                 referrerSource: referrer
             }
@@ -482,7 +519,7 @@ class AnalyticsEventGenerator {
             }
         }
         // Ensure we're initialized
-        if (this.postUuids.length === 0) {
+        if (this.posts.length === 0) {
             await this.init();
         }
         
@@ -509,7 +546,7 @@ class AnalyticsEventGenerator {
         }
         
         // Sort events by timestamp for realistic chronological order
-        events.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        events.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
         
         // Re-generate session IDs in chronological order for proper sequencing
         this.userSessions.clear();
