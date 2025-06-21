@@ -38,9 +38,9 @@ runs:
         payload: |
           text: "Tinybird Deployment: ${{ inputs.workspace }}"
           blocks:
-            - type: "header"
+            - type: "section"
               text:
-                type: "plain_text"
+                type: "mrkdwn"
                 text: "${{ steps.deploy.outcome == 'success' && format(':white_check_mark: *Tinybird {0} Deployment*', inputs.workspace) || format(':x: *Tinybird {0} Deployment*', inputs.workspace) }}"                
             - type: "section"
               fields:
