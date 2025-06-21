@@ -342,7 +342,6 @@ function createSerializer(debugString, serialize) {
  * @prop {string} plaintext
  * @prop {boolean} track_opens
  * @prop {string} created_at
- * @prop {string} created_by
  * @prop {string} updated_at
  */
 

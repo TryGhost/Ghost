@@ -140,7 +140,6 @@ class SettingsImporter extends BaseImporter {
                             group: to.group,
                             type: to.type,
                             flags: to.flags || null,
-                            created_by: deprecatedSetting.created_by || 1,
                             created_at: deprecatedSetting.created_at,
                             updated_at: deprecatedSetting.updated_at
                         });

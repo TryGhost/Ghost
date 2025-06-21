@@ -295,9 +295,6 @@ User = ghostBookshelf.Model.extend({
         return attrs;
     },
 
-    posts: function posts() {
-        return this.hasMany('Posts', 'created_by');
-    },
 
     sessions: function sessions() {
         return this.hasMany('Session');

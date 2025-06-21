@@ -308,7 +308,6 @@ Settings = ghostBookshelf.Model.extend({
                 const settingValues = Object.assign({}, setting, {
                     id: ObjectID().toHexString(),
                     created_at: date,
-                    created_by: owner.id,
                     updated_at: date
                 });
 

@@ -13,15 +13,6 @@ export default class Application extends RESTSerializer {
         return meta;
     }
 
-    serialize() {
-        let json = super.serialize(...arguments);
-
-        // don't send attributes that are updated automatically on the server
-        delete json.created_by;
-
-        return json;
-    }
-
     serializeIntoHash(hash, type, record, options) {
         // Our API expects an id on the posted object
         options = options || {};

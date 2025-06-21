@@ -138,18 +138,12 @@ module.exports = function (Bookshelf) {
 
         /**
          * Adding resources implies setting these properties on the server side
-         * - set `created_by` based on the context
          * - the bookshelf `timestamps` plugin sets `created_at` and `updated_at`
          *   - if plugin is disabled (e.g. import) we have a fallback condition
          *
          * Exceptions: internal context or importing
          */
         onCreating: function onCreating(model, attr, options) {
-            if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_by')) {
-                if (!options.importing || (options.importing && !this.get('created_by'))) {
-                    this.set('created_by', String(this.contextUser(options)));
-                }
-            }
 
 
             if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_at')) {
@@ -194,7 +188,6 @@ module.exports = function (Bookshelf) {
         /**
          * Changing resources implies setting these properties on the server side
          * - ensure `created_at` never changes
-         * - ensure `created_by` never changes
          * - the bookshelf `timestamps` plugin sets `updated_at` automatically
          *
          * Exceptions:
@@ -217,11 +210,6 @@ module.exports = function (Bookshelf) {
                     }
                 }
 
-                if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_by')) {
-                    if (model.hasChanged('created_by')) {
-                        model.set('created_by', String(this.previous('created_by')));
-                    }
-                }
             }
 
             // CASE: do not allow setting only the `updated_at` field, exception: importing

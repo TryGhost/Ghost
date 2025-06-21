@@ -532,8 +532,7 @@ describe.skip('Batch sending tests', function () {
             feature_image_alt: 'Testing sending',
             feature_image_caption: 'Testing <b>feature image caption</b>',
             created_at: moment().subtract(2, 'days').toISOString(),
-            updated_at: moment().subtract(2, 'days').toISOString(),
-            created_by: ObjectId().toHexString()
+            updated_at: moment().subtract(2, 'days').toISOString()
         };
 
         const res = await agent.post('posts/')
