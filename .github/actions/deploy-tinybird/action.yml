@@ -29,7 +29,7 @@ runs:
 
     - name: Send slack notification
       uses: slackapi/slack-github-action@v2.1.0
-      if: always() && steps.conclusion != 'skipped'
+      if: always()
       with:
         webhook: ${{ secrets.ANALYTICS_SLACK_WEBHOOK_URL }}
         webhook-type: incoming-webhook
