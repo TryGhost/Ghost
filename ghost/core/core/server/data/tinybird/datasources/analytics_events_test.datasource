@@ -1,5 +1,6 @@
 # This is a test datasource with the same schema as analytics_events.datasource
 # A place to send data for testing and monitoring purposes
+# Not for production use
 
 TOKEN "tracker" APPEND
 
