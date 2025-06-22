@@ -22,7 +22,6 @@ const chalk = require('chalk');
 // Configuration
 const DEFAULT_EVENTS_COUNT = 50000;
 const GHOST_CORE_PATH = path.join(__dirname, '..', '..', '..', '..', '..');
-const TINYBIRD_SCRIPTS_PATH = __dirname;
 
 function log(message, type = 'info') {
     const timestamp = new Date().toLocaleTimeString();
@@ -140,7 +139,9 @@ async function main() {
         
         // Small delay to ensure database is ready
         log('Waiting for database to be ready...', 'info');
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+        });
         
         // Step 2: Generate Tinybird analytics
         await generateTinybirdAnalytics(eventsCount);
