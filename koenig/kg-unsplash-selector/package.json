@@ -41,7 +41,7 @@
     "@vitejs/plugin-react": "4.5.2",
     "@vitest/coverage-v8": "1.6.1",
     "autoprefixer": "10.4.21",
-    "concurrently": "9.1.2",
+    "concurrently": "9.2.0",
     "eslint": "8.57.1",
     "eslint-plugin-react-hooks": "4.6.2",
     "eslint-plugin-react-refresh": "0.4.20",
