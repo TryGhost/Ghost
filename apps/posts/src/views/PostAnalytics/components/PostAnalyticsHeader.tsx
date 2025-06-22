@@ -181,7 +181,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                         }}>
                             Overview
                         </TabsTrigger>
-                        {!post?.email_only || !appSettings?.analytics.webAnalytics && (
+                        {!post?.email_only && appSettings?.analytics.webAnalytics && (
                             <TabsTrigger value="Web" onClick={() => {
                                 navigate(`/analytics/beta/${postId}/web`);
                             }}>
