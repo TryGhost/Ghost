@@ -23,8 +23,8 @@ export {hasBeenEmailed} from './utils/post-utils';
 export {isEmailOnly, isPublishedOnly, isPublishedAndEmailed, getPostMetricsToDisplay} from './utils/post-helpers';
 
 // Source utilities
+export {SOURCE_DOMAIN_MAP, getFaviconDomain, extractDomain, isDomainOrSubdomain, processSources, extendSourcesWithPercentages, normalizeSource} from './utils/source-utils';
 export type {BaseSourceData, ProcessedSourceData, ExtendSourcesOptions} from './utils/source-utils';
-export {SOURCE_DOMAIN_MAP, extractDomain, isDomainOrSubdomain, getFaviconDomain, processSources, extendSourcesWithPercentages} from './utils/source-utils';
 
 // Routing
 export type {RouteObject} from 'react-router';

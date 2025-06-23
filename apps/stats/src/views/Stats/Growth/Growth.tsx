@@ -38,10 +38,12 @@ interface UnifiedGrowthContentData {
 }
 
 type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
+type SourcesOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc' | 'source desc';
+type UnifiedSortOrder = TopPostsOrder | SourcesOrder;
 
 const Growth: React.FC = () => {
     const {range} = useGlobalData();
-    const [sortBy, setSortBy] = useState<TopPostsOrder>('free_members desc');
+    const [sortBy, setSortBy] = useState<UnifiedSortOrder>('free_members desc');
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -53,8 +55,12 @@ const Growth: React.FC = () => {
     // Get stats from custom hook once
     const {isLoading, chartData, totals, currencySymbol} = useGrowthStats(range);
 
-    // Get growth data with post_type filtering
-    const {data: topPostsData} = useTopPostsStatsWithRange(range, sortBy, selectedContentType as 'posts' | 'pages' | 'posts_and_pages');
+    // Get growth data with post_type filtering - only call when not on Sources tab
+    const {data: topPostsData} = useTopPostsStatsWithRange(
+        range, 
+        sortBy as TopPostsOrder, 
+        selectedContentType as 'posts' | 'pages' | 'posts_and_pages'
+    );
 
     // Sources data is now handled by the GrowthSources component
 
@@ -199,7 +205,9 @@ const Growth: React.FC = () => {
                                     <GrowthSources
                                         limit={20}
                                         range={range}
+                                        setSortBy={(newSortBy: SourcesOrder) => setSortBy(newSortBy)}
                                         showViewAll={true}
+                                        sortBy={sortBy as SourcesOrder}
                                     />
                                     :
                                     <TableBody>
