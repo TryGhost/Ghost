@@ -1,7 +1,7 @@
 import AnalyticsPage from './AnalyticsPage.ts';
 import {Page} from '@playwright/test';
 
-class LocationsPage extends AnalyticsPage {
+class LocationsTab extends AnalyticsPage {
     constructor(page: Page) {
         super(page);
 
@@ -9,4 +9,4 @@ class LocationsPage extends AnalyticsPage {
     }
 }
 
-export default LocationsPage;
+export default LocationsTab;

@@ -1,5 +1,4 @@
-import 'dotenv/config';
-import LocationsPage from './pages/LocationsPage.ts';
+import LocationsTab from './pages/LocationsTab.ts';
 import {addAnalyticsEvent, statsConfig} from '../utils/tinybird-helpers.ts';
 import {expect, test} from '@playwright/test';
 import {faker} from '@faker-js/faker';
@@ -32,7 +31,7 @@ test.describe('Stats App - Locations', () => {
 
         await addAnalyticsEvent({siteUuid: siteUuid, locale: 'en-GB', location: 'GB'});
 
-        const locationsPage = new LocationsPage(page);
+        const locationsPage = new LocationsTab(page);
         await locationsPage.visit();
 
         await expect(locationsPage.body).toContainText('United Kingdom');
@@ -58,7 +57,7 @@ test.describe('Stats App - Locations', () => {
             }
         });
 
-        const locationsPage = new LocationsPage(page);
+        const locationsPage = new LocationsTab(page);
         await locationsPage.visit();
 
         await expect(locationsPage.body).toContainText('No stats available');
