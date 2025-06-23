@@ -66,7 +66,11 @@ const Growth: React.FC = () => {
         
         // First deduplicate by post_id/title to handle backend duplicates
         const uniqueData = growthData.reduce((acc: Map<string, TopPostStatItem>, item: TopPostStatItem) => {
-            const key = item.post_id || item.title;
+            const key = item.post_id || (item.title && item.title.trim() !== '' ? item.title : item.attribution_url);
+            if (!key) {
+                // Skip items that have no valid key - this should not happen with proper backend data
+                return acc;
+            }
             if (!acc.has(key)) {
                 acc.set(key, item);
             } else {

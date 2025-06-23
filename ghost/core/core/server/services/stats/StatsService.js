@@ -80,8 +80,8 @@ class StatsService {
 
     /**
      * Get top posts by attribution metrics (includes all content that drove conversions)
-     * @param {Object} options
-     * @returns {Promise<{data: Object[]}>}
+     * @param {import('./PostsStatsService').TopPostsOptions} options
+     * @returns {Promise<{data: import('./PostsStatsService').AttributionResult[]}>}
      */
     async getTopPosts(options = {}) {
         // Return the original { data: results } structure
@@ -125,7 +125,7 @@ class StatsService {
      * @param {number} [options.limit=20] - Max number of results to return
      * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
      * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
-     * @returns {Promise<{data: Object[]}>}
+     * @returns {Promise<{data: import('./PostsStatsService').NewsletterStatResult[]}>}
      */
     async getNewsletterStats(options = {}) {
         // Extract newsletter_id from options
@@ -148,7 +148,7 @@ class StatsService {
      * @param {string} [options.newsletter_id] - ID of the specific newsletter to get stats for
      * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
      * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
-     * @returns {Promise<{data: Object}>}
+     * @returns {Promise<{data: import('./PostsStatsService').NewsletterSubscriberStats[]}>}
      */
     async getNewsletterSubscriberStats(options = {}) {
         // Extract newsletter_id from options
@@ -194,7 +194,7 @@ class StatsService {
      * @param {number} [options.limit=20] - Max number of results to return
      * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
      * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
-     * @returns {Promise<{data: Object[]}>}
+     * @returns {Promise<{data: import('./PostsStatsService').NewsletterStatResult[]}>}
      */
     async getNewsletterBasicStats(options = {}) {
         // Extract newsletter_id from options

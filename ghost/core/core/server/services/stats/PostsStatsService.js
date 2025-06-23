@@ -16,6 +16,29 @@ const {normalizeSource} = require('./ReferrersStatsService');
  */
 
 /**
+ * @typedef {Object} TopPostsOptions
+ * @property {string} [order='free_members desc'] - Sort order (e.g., 'free_members desc', 'paid_members desc', 'mrr desc')
+ * @property {number} [limit=20] - Maximum number of results to return
+ * @property {string} [date_from] - Start date filter in YYYY-MM-DD format
+ * @property {string} [date_to] - End date filter in YYYY-MM-DD format
+ * @property {string} [post_type] - Filter by post type ('post', 'page')
+ */
+
+/**
+ * @typedef {Object} AttributionResult
+ * @property {string} [post_id] - Post ID if this is a post/page
+ * @property {string} attribution_url - The URL that drove the conversion
+ * @property {string} attribution_type - Type of attribution ('post', 'page', 'url', 'tag', 'author')
+ * @property {string} attribution_id - ID of the attributed resource
+ * @property {string} title - Display title for the content
+ * @property {string} [published_at] - Publication date
+ * @property {number} free_members - Number of free member conversions
+ * @property {number} paid_members - Number of paid member conversions
+ * @property {number} mrr - Monthly recurring revenue impact
+ * @property {string} [post_type] - Post type if applicable
+ */
+
+/**
  * @typedef {Object} TopPostResult
  * @property {string} post_id - The ID of the post
  * @property {string} title - The title of the post
@@ -65,8 +88,8 @@ class PostsStatsService {
     /**
      * Get top posts by attribution metrics (free_members, paid_members, or mrr)
      *
-     * @param {StatsServiceOptions} options
-     * @returns {Promise<{data: TopPostResult[]}>} The top posts based on the requested attribution metric
+     * @param {TopPostsOptions} options
+     * @returns {Promise<{data: AttributionResult[]}>} The top posts based on the requested attribution metric
      */
     async getTopPosts(options) {
         try {
@@ -117,7 +140,6 @@ class PostsStatsService {
                             const subquery1 = this.select('attribution_url', 'attribution_type', 'attribution_id')
                                 .from('members_created_events')
                                 .whereNotNull('attribution_url');
-                            // Apply date filter using the helper method
                             if (options.date_from || options.date_to) {
                                 if (options.date_from) {
                                     subquery1.where('created_at', '>=', options.date_from);
@@ -131,7 +153,6 @@ class PostsStatsService {
                                 const subquery2 = this.select('attribution_url', 'attribution_type', 'attribution_id')
                                     .from('members_subscription_created_events')
                                     .whereNotNull('attribution_url');
-                                // Apply date filter using the helper method
                                 if (options.date_from || options.date_to) {
                                     if (options.date_from) {
                                         subquery2.where('created_at', '>=', options.date_from);
@@ -228,16 +249,20 @@ class PostsStatsService {
             return 'Homepage';
         }
         if (path.startsWith('/tag/')) {
-            return `tag/${path.split('/')[2]}`;
+            const segments = path.split('/');
+            return segments.length > 2 && segments[2] ? `tag/${segments[2]}` : 'tag/unknown';
         }
         if (path.startsWith('/tags/')) {
-            return `tag/${path.split('/')[2]}`;
+            const segments = path.split('/');
+            return segments.length > 2 && segments[2] ? `tag/${segments[2]}` : 'tag/unknown';
         }
         if (path.startsWith('/author/')) {
-            return `author/${path.split('/')[2]}`;
+            const segments = path.split('/');
+            return segments.length > 2 && segments[2] ? `author/${segments[2]}` : 'author/unknown';
         }  
         if (path.startsWith('/authors/')) {
-            return `author/${path.split('/')[2]}`;
+            const segments = path.split('/');
+            return segments.length > 2 && segments[2] ? `author/${segments[2]}` : 'author/unknown';
         }
         
         // For other paths, just return the path itself
