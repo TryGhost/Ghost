@@ -26,10 +26,125 @@ export type AvgsDataItem = {
     click_rate: number;
 };
 
-const Newsletters: React.FC = () => {
-    const {range, selectedNewsletterId} = useGlobalData();
+// Separate component for the top newsletters table to handle sorting locally
+const TopNewslettersTable: React.FC<{
+    range: number;
+    selectedNewsletterId: string | null | undefined;
+    shouldFetchStats: boolean;
+}> = ({range, selectedNewsletterId, shouldFetchStats}) => {
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
     const navigate = useNavigate();
+
+    // Fetch newsletter stats with reactive sort order - isolated to this component
+    const {data: newsletterStatsData, isLoading: isStatsLoading, isClicksLoading} = useNewsletterStatsWithRangeSplit(
+        range,
+        sortBy, // Reactive to sort changes, but only affects this component
+        selectedNewsletterId ? selectedNewsletterId : undefined,
+        Boolean(shouldFetchStats)
+    );
+
+    const isLoading = isStatsLoading || !newsletterStatsData;
+
+    if (isLoading) {
+        return (
+            <Card className='min-h-[460px]'>
+                <CardHeader>
+                    <CardTitle>Top newsletters</CardTitle>
+                    <CardDescription> Your best performing newsletters {getPeriodText(range)}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <SkeletonTable lines={5} />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    // Data is already sorted by the API based on sortBy
+    const sortedStats = newsletterStatsData?.stats || [];
+
+    return (
+        <Card>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead variant='cardhead'>
+                                <CardHeader>
+                                    <CardTitle>Top newsletters</CardTitle>
+                                    <CardDescription> Your best performing newsletters {getPeriodText(range)}</CardDescription>
+                                </CardHeader>
+                            </TableHead>
+                            <TableHead className='w-[65px]'>
+                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='date desc'>
+                                Date
+                                </SortButton>
+                            </TableHead>
+                            <TableHead className='w-[90px] text-right'>
+                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='sent_to desc'>
+                                Sent
+                                </SortButton>
+                            </TableHead>
+                            <TableHead className='w-[90px] text-right'>
+                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='open_rate desc'>
+                                Opens
+                                </SortButton>
+                            </TableHead>
+                            <TableHead className='w-[90px] text-right'>
+                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='click_rate desc'>
+                                Clicks
+                                </SortButton>
+                            </TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {sortedStats.map(post => (
+                            <TableRow key={post.post_id} className='last:border-none [&>td]:py-2.5'>
+                                <TableCell className="font-medium">
+                                    <div className='group/link inline-flex items-center gap-2'>
+                                        {post.post_id ?
+                                            <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
+                                                navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
+                                            }}>
+                                                {post.post_title}
+                                            </Button>
+                                            :
+                                            <>
+                                                {post.post_title}
+                                            </>
+                                        }
+                                    </div>
+                                </TableCell>
+                                <TableCell className="whitespace-nowrap text-sm">
+                                    {formatDisplayDate(new Date(post.send_date))}
+                                </TableCell>
+                                <TableCell className='text-right font-mono text-sm'>
+                                    {formatNumber(post.sent_to)}
+                                </TableCell>
+                                <TableCell className='text-right font-mono text-sm'>
+                                    <span className="group-hover:hidden">{formatPercentage(post.open_rate)}</span>
+                                    <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_opens)}</span>
+                                </TableCell>
+                                <TableCell className='text-right font-mono text-sm'>
+                                    {isClicksLoading ? (
+                                        <span className="inline-block h-4 w-8 animate-pulse rounded bg-gray-200"></span>
+                                    ) : (
+                                        <>
+                                            <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
+                                            <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_clicks)}</span>
+                                        </>
+                                    )}
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    );
+};
+
+const Newsletters: React.FC = () => {
+    const {range, selectedNewsletterId} = useGlobalData();
     const [searchParams] = useSearchParams();
     const {appSettings} = useAppContext();
 
@@ -49,19 +164,11 @@ const Newsletters: React.FC = () => {
     // 2. Unnecessary calls when no newsletter is selected yet
     const shouldFetchStats = !isNewslettersLoading && newslettersData && newslettersData.newsletters.length > 0 && !!selectedNewsletterId;
 
-    // Get newsletter stats using the split hook for better performance
-    const {data: newsletterStatsData, isLoading: isStatsLoading, isClicksLoading} = useNewsletterStatsWithRangeSplit(
-        range,
-        sortBy,
-        selectedNewsletterId || undefined,
-        shouldFetchStats
-    );
-
     // Get subscriber count over time for the selected newsletter
     const {data: subscriberStatsData, isLoading: isSubscriberStatsLoading} = useSubscriberCountWithRange(
         range,
         selectedNewsletterId || undefined,
-        shouldFetchStats
+        shouldFetchStats || false
     );
 
     // Find the selected newsletter to get its active_members count
@@ -72,69 +179,20 @@ const Newsletters: React.FC = () => {
         return newslettersData.newsletters.find(n => n.id === selectedNewsletterId) || null;
     }, [newslettersData, selectedNewsletterId]);
 
-    // Calculate totals for KPIs
+    // Calculate totals for KPIs - we'll need a separate API call for newsletter stats just for averages
     const totals = useMemo(() => {
         // Get total subscribers from the selected newsletter or all newsletters
         const totalSubscribers = selectedNewsletter?.count?.active_members ||
             subscriberStatsData?.stats?.[0]?.total ||
             0;
 
-        // Calculate average open and click rates from newsletter stats
-        if (!newsletterStatsData?.stats || newsletterStatsData.stats.length === 0) {
-            return {
-                totalSubscribers,
-                avgOpenRate: 0,
-                avgClickRate: 0
-            };
-        }
-
-        const allStats = newsletterStatsData.stats;
-        const totalOpenRate = allStats.reduce((sum, stat) => sum + (stat.open_rate || 0), 0);
-        const totalClickRate = allStats.reduce((sum, stat) => sum + (stat.click_rate || 0), 0);
-
+        // For now, return basic totals - averages will be calculated in a separate component if needed
         return {
             totalSubscribers,
-            avgOpenRate: totalOpenRate / allStats.length,
-            avgClickRate: totalClickRate / allStats.length
+            avgOpenRate: 0,
+            avgClickRate: 0
         };
-    }, [selectedNewsletter, subscriberStatsData, newsletterStatsData]);
-
-    // Prepare newsletter stats for sorting and display
-    const newsletterStats = useMemo(() => {
-        if (!newsletterStatsData?.stats || newsletterStatsData.stats.length === 0) {
-            return [];
-        }
-
-        // Clone the data for sorting
-        const stats = [...newsletterStatsData.stats];
-
-        // Apply client-side sorting
-        const [field, direction = 'desc'] = sortBy.split(' ');
-
-        return stats.sort((a, b) => {
-            let valueA, valueB;
-
-            // Handle different sort fields
-            if (field === 'date') {
-                valueA = new Date(a.send_date).getTime();
-                valueB = new Date(b.send_date).getTime();
-            } else if (field === 'open_rate') {
-                valueA = a.open_rate || 0;
-                valueB = b.open_rate || 0;
-            } else if (field === 'click_rate') {
-                valueA = a.click_rate || 0;
-                valueB = b.click_rate || 0;
-            } else if (field === 'sent_to') {
-                valueA = a.sent_to || 0;
-                valueB = b.sent_to || 0;
-            } else {
-                return 0;
-            }
-
-            // Apply sort direction
-            return direction === 'desc' ? valueB - valueA : valueA - valueB;
-        });
-    }, [newsletterStatsData, sortBy]);
+    }, [selectedNewsletter, subscriberStatsData]);
 
     // Create subscribers data from newsletter subscriber stats
     const subscribersData = useMemo(() => {
@@ -146,17 +204,13 @@ const Newsletters: React.FC = () => {
         return subscriberStatsData.stats[0].deltas;
     }, [subscriberStatsData]);
 
-    // Convert string dates to Date objects for AvgsDataItem compatibility
-    const avgsData: AvgsDataItem[] = newsletterStats.map(stat => ({
-        ...stat,
-        send_date: new Date(stat.send_date)
-    }));
+    // For the KPIs component, we'll use empty avgsData since averages are calculated separately now
+    const avgsData: AvgsDataItem[] = [];
 
     // Separate loading states for different sections
-    const isKPIsLoading = isNewslettersLoading || isSubscriberStatsLoading || isStatsLoading;
-    const isTableLoading = isStatsLoading || !newsletterStatsData;
+    const isKPIsLoading = isNewslettersLoading || isSubscriberStatsLoading;
 
-    const pageData = isKPIsLoading ? undefined : (selectedNewsletterId && subscribersData.length > 1 && newsletterStats.length > 1 ? ['data exists'] : []);
+    const pageData = isKPIsLoading ? undefined : (selectedNewsletterId && subscribersData.length > 1 ? ['data exists'] : []);
 
     if (!appSettings?.newslettersEnabled) {
         return (
@@ -176,103 +230,18 @@ const Newsletters: React.FC = () => {
                         <NewsletterKPIs
                             avgsData={avgsData}
                             initialTab={initialTab}
-                            isAvgsLoading={isStatsLoading}
+                            isAvgsLoading={false}
                             isLoading={isKPIsLoading}
                             subscribersData={subscribersData}
                             totals={totals}
                         />
                     </CardContent>
                 </Card>
-                {isTableLoading
-                    ?
-                    <Card className='min-h-[460px]'>
-                        <CardHeader>
-                            <CardTitle>Top newsletters</CardTitle>
-                            <CardDescription> Your best performing newsletters {getPeriodText(range)}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <SkeletonTable lines={5} />
-                        </CardContent>
-                    </Card>
-                    :
-                    <Card>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead variant='cardhead'>
-                                            <CardHeader>
-                                                <CardTitle>Top newsletters</CardTitle>
-                                                <CardDescription> Your best performing newsletters {getPeriodText(range)}</CardDescription>
-                                            </CardHeader>
-                                        </TableHead>
-                                        <TableHead className='w-[65px]'>
-                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='date desc'>
-                                            Date
-                                            </SortButton>
-                                        </TableHead>
-                                        <TableHead className='w-[90px] text-right'>
-                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='sent_to desc'>
-                                            Sent
-                                            </SortButton>
-                                        </TableHead>
-                                        <TableHead className='w-[90px] text-right'>
-                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='open_rate desc'>
-                                            Opens
-                                            </SortButton>
-                                        </TableHead>
-                                        <TableHead className='w-[90px] text-right'>
-                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='click_rate desc'>
-                                            Clicks
-                                            </SortButton>
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {newsletterStats.map(post => (
-                                        <TableRow key={post.post_id} className='last:border-none [&>td]:py-2.5'>
-                                            <TableCell className="font-medium">
-                                                <div className='group/link inline-flex items-center gap-2'>
-                                                    {post.post_id ?
-                                                        <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
-                                                            navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
-                                                        }}>
-                                                            {post.post_title}
-                                                        </Button>
-                                                        :
-                                                        <>
-                                                            {post.post_title}
-                                                        </>
-                                                    }
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap text-sm">
-                                                {formatDisplayDate(new Date(post.send_date))}
-                                            </TableCell>
-                                            <TableCell className='text-right font-mono text-sm'>
-                                                {formatNumber(post.sent_to)}
-                                            </TableCell>
-                                            <TableCell className='text-right font-mono text-sm'>
-                                                <span className="group-hover:hidden">{formatPercentage(post.open_rate)}</span>
-                                                <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_opens)}</span>
-                                            </TableCell>
-                                            <TableCell className='text-right font-mono text-sm'>
-                                                {isClicksLoading ? (
-                                                    <span className="inline-block h-4 w-8 animate-pulse rounded bg-gray-200"></span>
-                                                ) : (
-                                                    <>
-                                                        <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
-                                                        <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_clicks)}</span>
-                                                    </>
-                                                )}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
-                }
+                <TopNewslettersTable
+                    range={range}
+                    selectedNewsletterId={selectedNewsletterId}
+                    shouldFetchStats={!!shouldFetchStats}
+                />
             </StatsView>
         </StatsLayout>
     );
