@@ -11,28 +11,11 @@ import FeedItemStats from './FeedItemStats';
 import clsx from 'clsx';
 import getReadingTime from '../../utils/get-reading-time';
 import getUsername from '../../utils/get-username';
-import {ActivityPubAPI} from '../../api/activitypub';
 import {handleProfileClick} from '../../utils/handle-profile-click';
 import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
-import {postsActions, usePostsStore} from '../../stores/posts-store';
 import {renderTimestamp} from '../../utils/render-timestamp';
-import {useDeleteMutationForUser} from '../../hooks/use-activity-pub-queries';
+import {useDeleteMutationForUser, useUnfollowMutationForUser} from '../../hooks/use-activity-pub-queries';
 import {useNavigate} from '@tryghost/admin-x-framework';
-
-// API utilities for Valtio experiment
-async function getSiteUrl() {
-    const response = await fetch('/ghost/api/admin/site');
-    const json = await response.json();
-    return json.site.url;
-}
-
-function createActivityPubAPI(handle: string, siteUrl: string) {
-    return new ActivityPubAPI(
-        new URL(siteUrl),
-        new URL('/ghost/api/admin/identities/', window.location.origin),
-        handle
-    );
-}
 
 export function getAttachment(object: ObjectProperties) {
     let attachment;
@@ -260,15 +243,15 @@ const FeedItem: React.FC<FeedItemProps> = ({
     const deleteMutation = useDeleteMutationForUser('index');
     const navigate = useNavigate();
 
-    // Valtio experiment: Get reactive state from store
-    const postsState = usePostsStore();
-
-    // Find this post in the store to get current follow state
-    const postInStore = postsState.feedPosts.find(p => p.id === object.id) ||
-                      postsState.inboxPosts.find(p => p.id === object.id);
-
-    // Use store state for allowUnfollow instead of prop
-    const dynamicAllowUnfollow = postInStore?.actor.followedByMe ?? allowUnfollow;
+    const unfollowMutation = useUnfollowMutationForUser(
+        'index',
+        () => {
+            toast.success('Unfollowed successfully');
+        },
+        () => {
+            toast.error('Failed to unfollow');
+        }
+    );
 
     useEffect(() => {
         const element = contentRef.current;
@@ -334,25 +317,9 @@ const FeedItem: React.FC<FeedItemProps> = ({
         }
     };
 
-    // Valtio experiment: Simple unfollow with direct API call
     const handleUnfollow = async () => {
         const username = getUsername(actor);
-
-        // Optimistically update the store immediately
-        postsActions.toggleFollow(username, false);
-
-        try {
-            // Make the API call directly
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI('index', siteUrl);
-            await api.unfollow(username);
-
-            toast.success('Unfollowed successfully');
-        } catch (error) {
-            // Revert on error
-            postsActions.toggleFollow(username, true);
-            toast.error('Failed to unfollow');
-        }
+        unfollowMutation.mutate(username);
     };
 
     let author = actor;
@@ -411,7 +378,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </div>
                                 <FeedItemMenu
                                     allowDelete={allowDelete}
-                                    allowUnfollow={dynamicAllowUnfollow}
+                                    allowUnfollow={allowUnfollow}
                                     disabled={isPending}
                                     layout='feed'
                                     trigger={UserMenuTrigger}
@@ -577,7 +544,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     </div>
                                     {!isCompact && <FeedItemMenu
                                         allowDelete={allowDelete}
-                                        allowUnfollow={dynamicAllowUnfollow}
+                                        allowUnfollow={allowUnfollow}
                                         disabled={isPending}
                                         layout='reply'
                                         trigger={UserMenuTrigger}
@@ -686,7 +653,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     />}
                                     <FeedItemMenu
                                         allowDelete={allowDelete}
-                                        allowUnfollow={dynamicAllowUnfollow}
+                                        allowUnfollow={allowUnfollow}
                                         layout='inbox'
                                         trigger={UserMenuTrigger}
                                         onCopyLink={handleCopyLink}
