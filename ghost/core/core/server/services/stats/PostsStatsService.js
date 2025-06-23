@@ -114,16 +114,33 @@ class PostsStatsService {
                         .select(knex.raw('MIN(attribution_type) as attribution_type'))
                         .select(knex.raw('MIN(attribution_id) as attribution_id'))
                         .from(function () {
-                            this.select('attribution_url', 'attribution_type', 'attribution_id')
+                            const subquery1 = this.select('attribution_url', 'attribution_type', 'attribution_id')
                                 .from('members_created_events')
-                                .whereNotNull('attribution_url')
-                                .whereBetween('created_at', [options.date_from, options.date_to])
-                                .union(function () {
-                                    this.select('attribution_url', 'attribution_type', 'attribution_id')
-                                        .from('members_subscription_created_events')
-                                        .whereNotNull('attribution_url')
-                                        .whereBetween('created_at', [options.date_from, options.date_to]);
-                                })
+                                .whereNotNull('attribution_url');
+                            // Apply date filter using the helper method
+                            if (options.date_from || options.date_to) {
+                                if (options.date_from) {
+                                    subquery1.where('created_at', '>=', options.date_from);
+                                }
+                                if (options.date_to) {
+                                    subquery1.where('created_at', '<=', options.date_to + ' 23:59:59');
+                                }
+                            }
+                            
+                            subquery1.union(function () {
+                                const subquery2 = this.select('attribution_url', 'attribution_type', 'attribution_id')
+                                    .from('members_subscription_created_events')
+                                    .whereNotNull('attribution_url');
+                                // Apply date filter using the helper method
+                                if (options.date_from || options.date_to) {
+                                    if (options.date_from) {
+                                        subquery2.where('created_at', '>=', options.date_from);
+                                    }
+                                    if (options.date_to) {
+                                        subquery2.where('created_at', '<=', options.date_to + ' 23:59:59');
+                                    }
+                                }
+                            })
                                 .as('combined');
                         })
                         .groupBy('attribution_url');
@@ -195,7 +212,8 @@ class PostsStatsService {
                 published_at: row.published_at,
                 free_members: row.free_members,
                 paid_members: row.paid_members,
-                mrr: row.mrr
+                mrr: row.mrr,
+                post_type: row.attribution_type === 'post' ? 'post' : (row.attribution_type === 'page' ? 'page' : null)
             };
         });
     }
