@@ -8,11 +8,11 @@ interface ExtendedPost extends Post {
         name: string;
     }[];
     excerpt?: string;
-    email_only?: boolean;
 }
 
 export interface LatestPostWithStats {
     id: string;
+    uuid: string;
     title: string;
     slug: string;
     feature_image?: string | null;
@@ -20,6 +20,12 @@ export interface LatestPostWithStats {
     url?: string;
     excerpt?: string;
     email_only?: boolean;
+    status?: string;
+    email?: {
+        opened_count: number;
+        email_count: number;
+        status?: string;
+    } | null;
     authors?: {
         name: string;
     }[];
@@ -41,7 +47,7 @@ export const useLatestPostStats = () => {
             filter: 'status:[published,sent]',
             order: 'published_at DESC',
             limit: '1',
-            include: 'authors'
+            include: 'authors,email'
         }
     });
 
@@ -76,6 +82,7 @@ export const useLatestPostStats = () => {
         return {
             // Post content from Posts API
             id: extendedPost.id,
+            uuid: extendedPost.uuid,
             title: extendedPost.title || '',
             slug: extendedPost.slug || '',
             feature_image: extendedPost.feature_image || null,
@@ -83,6 +90,8 @@ export const useLatestPostStats = () => {
             url: extendedPost.url || '',
             excerpt: extendedPost.excerpt || '',
             email_only: extendedPost.email_only || false,
+            status: extendedPost.status,
+            email: extendedPost.email,
             authors: extendedPost.authors || [],
             // Analytics data from Stats API
             recipient_count: statsData.recipient_count,
