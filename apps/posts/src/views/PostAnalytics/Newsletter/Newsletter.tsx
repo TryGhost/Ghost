@@ -111,6 +111,17 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         return typedPost?.newsletter?.feedback_enabled === true;
     }, [typedPost]);
 
+    // Determine if feedback component should be shown
+    const shouldShowFeedback = useMemo(() => {
+        // Show feedback if there's any feedback data, regardless of feedback_enabled setting
+        if (feedbackStats.totalFeedback > 0) {
+            return true;
+        }
+        
+        // Show feedback if feedback is enabled (even if no feedback yet)
+        return isFeedbackEnabled;
+    }, [feedbackStats.totalFeedback, isFeedbackEnabled]);
+
     const handleEdit = (linkId: string) => {
         const link = getLinkById(topLinks, linkId);
         if (link) {
@@ -240,8 +251,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
             <PostAnalyticsHeader currentTab='Newsletter' />
             <PostAnalyticsContent>
 
-                <div className={`grid gap-8 ${isFeedbackEnabled ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                    <Card className={isFeedbackEnabled ? 'col-span-2' : 'col-span-1'}>
+                <div className={`grid gap-8 ${shouldShowFeedback ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                    <Card className={shouldShowFeedback ? 'col-span-2' : 'col-span-1'}>
                         <CardHeader className='hidden'>
                             <CardTitle>Newsletters</CardTitle>
                             <CardDescription>How did this post perform</CardDescription>
@@ -333,8 +344,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             </CardContent>
                         }
                     </Card>
-                    {isFeedbackEnabled && <Feedback feedbackStats={feedbackStats} />}
-                    <Card className={isFeedbackEnabled ? '' : 'col-span-1'}>
+                    {shouldShowFeedback && <Feedback feedbackStats={feedbackStats} />}
+                    <Card className={shouldShowFeedback ? '' : 'col-span-1'}>
                         <div className='flex items-center justify-between p-6'>
                             <CardHeader className='p-0'>
                                 <CardTitle>Newsletter clicks</CardTitle>
