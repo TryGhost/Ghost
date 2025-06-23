@@ -77,6 +77,41 @@ export default function () {
         db.tags.all().remove();
     }, 204);
 
+    /* limit=all blocker ---------------------------------------------------- */
+    this.pretender.handledRequest = function (verb, path, request) {
+        const url = new URL(request.url, window.location.origin);
+        const limit = url.searchParams.get('limit');
+
+        const ALLOWED_LIMIT_ALL = [
+            '/api/admin/members/upload/'
+        ];
+
+        // limit=all is completely blocked, we shouldn't have any requests reach the server with this
+        if (limit === 'all' && !ALLOWED_LIMIT_ALL.some(allowed => path.includes(allowed))) {
+            throw new Error(`Blocked mirage request with limit=all: ${verb} ${path}.`);
+        }
+
+        // limit > 100 is also blocked, apart from some specific endpoints
+        if (limit && parseInt(limit, 10) > 100) {
+            const parsedLimit = parseInt(limit, 10);
+
+            const SEARCH_ENDPOINTS_REGEX = /\/api\/admin\/(posts|pages|tags|users)\//;
+            if (parsedLimit === 10000 && SEARCH_ENDPOINTS_REGEX.test(path)) {
+                return;
+            }
+
+            if (path.match(/\/emails\/.*\/batches\//)) {
+                return;
+            }
+
+            if (path.includes('/api/admin/posts/export/')) {
+                return;
+            }
+
+            throw new Error(`Blocked mirage request with limit > 100: ${verb} ${path}.`);
+        }
+    };
+
     /* External sites ------------------------------------------------------- */
 
     this.head('http://www.gravatar.com/avatar/:md5', function () {
