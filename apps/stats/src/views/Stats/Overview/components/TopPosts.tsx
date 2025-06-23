@@ -40,7 +40,9 @@ const TopPosts: React.FC<TopPostsProps> = ({
                             {appSettings?.analytics.webAnalytics &&
                                 <TableHead className='w-[12%] text-right'>Visitors</TableHead>
                             }
-                            <TableHead className='w-[12%] whitespace-nowrap text-right'>Open rate</TableHead>
+                            {appSettings?.newslettersEnabled &&
+                                <TableHead className='w-[12%] whitespace-nowrap text-right'>Open rate</TableHead>
+                            }
                             <TableHead className='w-[12%] text-right'>Members</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -59,7 +61,9 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                 {appSettings?.analytics.webAnalytics &&
                                     <TableCell className='w-[12%] group-hover:bg-transparent'><Skeleton /></TableCell>
                                 }
-                                <TableCell className='w-[12%] group-hover:bg-transparent'><Skeleton /></TableCell>
+                                {appSettings?.newslettersEnabled &&
+                                    <TableCell className='w-[12%] group-hover:bg-transparent'><Skeleton /></TableCell>
+                                }
                                 <TableCell className='w-[12%] group-hover:bg-transparent'><Skeleton /></TableCell>
                             </TableRow>
                         ))
@@ -92,9 +96,11 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                             {formatNumber(post.views)}
                                         </TableCell>
                                     }
-                                    <TableCell className='text-right font-mono'>
-                                        {post.open_rate ? `${Math.round(post.open_rate)}%` : <>&mdash;</>}
-                                    </TableCell>
+                                    {appSettings?.newslettersEnabled &&
+                                        <TableCell className='text-right font-mono'>
+                                            {post.open_rate ? `${Math.round(post.open_rate)}%` : <>&mdash;</>}
+                                        </TableCell>
+                                    }
                                     <TableCell className='text-right font-mono'>
                                         {post.members > 0 ? `+${formatNumber(post.members)}` : '0'}
                                     </TableCell>
