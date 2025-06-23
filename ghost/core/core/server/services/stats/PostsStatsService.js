@@ -578,11 +578,11 @@ class PostsStatsService {
      *
      * @param {string} newsletterId - ID of the newsletter to get stats for
      * @param {Object} options - Query options
-     * @param {string} [options.order] - Sort order (e.g., 'date desc', 'open_rate desc')
+     * @param {string} [options.order] - Sort order (e.g., 'date desc', 'open_rate desc', 'click_rate desc')
      * @param {number} [options.limit] - Number of results to return (default: 20)
      * @param {string} [options.date_from] - Optional start date filter (YYYY-MM-DD)
      * @param {string} [options.date_to] - Optional end date filter (YYYY-MM-DD)
-     * @returns {Promise<{data: Array}>} The newsletter basic stats (without click data)
+     * @returns {Promise<{data: Array}>} The newsletter basic stats (with click data when ordering by click_rate)
      */
     async getNewsletterBasicStats(newsletterId, options = {}) {
         try {
@@ -597,13 +597,14 @@ class PostsStatsService {
             const orderFieldMap = {
                 date: 'send_date',
                 open_rate: 'open_rate',
-                sent_to: 'sent_to'
+                sent_to: 'sent_to',
+                click_rate: 'click_rate'
             };
 
-            // Validate order field (excluding click_rate since we don't fetch click data)
+            // Validate order field (now including click_rate)
             if (!Object.keys(orderFieldMap).includes(orderField)) {
                 throw new errors.BadRequestError({
-                    message: `Invalid order field: ${orderField}. Must be one of: date, open_rate, sent_to`
+                    message: `Invalid order field: ${orderField}. Must be one of: date, open_rate, sent_to, click_rate`
                 });
             }
 
@@ -625,24 +626,61 @@ class PostsStatsService {
                     : this.knex.raw(`p.published_at <= ?`, [options.date_to]);
             }
 
-            // Build the query to get newsletter basic stats (without click data)
-            const query = this.knex
-                .select(
-                    'p.id as post_id',
-                    'p.title as post_title',
-                    'p.published_at as send_date',
-                    this.knex.raw('COALESCE(e.email_count, 0) as sent_to'),
-                    this.knex.raw('COALESCE(e.opened_count, 0) as total_opens'),
-                    this.knex.raw('CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate')
-                )
-                .from('posts as p')
-                .leftJoin('emails as e', 'p.id', 'e.post_id')
-                .where('p.newsletter_id', newsletterId)
-                .whereIn('p.status', ['sent', 'published'])
-                .whereNotNull('e.id') // Ensure there is an associated email record
-                .whereRaw(dateFilter)
-                .orderBy(orderFieldMap[orderField], orderDirection)
-                .limit(limit);
+            let query;
+
+            // If ordering by click_rate, we need to include click data
+            if (orderField === 'click_rate') {
+                // Subquery to count clicks from members_click_events
+                const clicksSubquery = this.knex
+                    .select('r.post_id')
+                    .countDistinct('mce.member_id as click_count')
+                    .from('redirects as r')
+                    .leftJoin('members_click_events as mce', 'r.id', 'mce.redirect_id')
+                    .whereNotNull('r.post_id')
+                    .groupBy('r.post_id')
+                    .as('clicks');
+
+                // Build the query with click data
+                query = this.knex
+                    .select(
+                        'p.id as post_id',
+                        'p.title as post_title',
+                        'p.published_at as send_date',
+                        this.knex.raw('COALESCE(e.email_count, 0) as sent_to'),
+                        this.knex.raw('COALESCE(e.opened_count, 0) as total_opens'),
+                        this.knex.raw('CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate'),
+                        this.knex.raw('COALESCE(clicks.click_count, 0) as total_clicks'),
+                        this.knex.raw('CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(clicks.click_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as click_rate')
+                    )
+                    .from('posts as p')
+                    .leftJoin('emails as e', 'p.id', 'e.post_id')
+                    .leftJoin(clicksSubquery, 'p.id', 'clicks.post_id')
+                    .where('p.newsletter_id', newsletterId)
+                    .whereIn('p.status', ['sent', 'published'])
+                    .whereNotNull('e.id') // Ensure there is an associated email record
+                    .whereRaw(dateFilter)
+                    .orderBy(orderFieldMap[orderField], orderDirection)
+                    .limit(limit);
+            } else {
+                // Build the query without click data for better performance
+                query = this.knex
+                    .select(
+                        'p.id as post_id',
+                        'p.title as post_title',
+                        'p.published_at as send_date',
+                        this.knex.raw('COALESCE(e.email_count, 0) as sent_to'),
+                        this.knex.raw('COALESCE(e.opened_count, 0) as total_opens'),
+                        this.knex.raw('CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate')
+                    )
+                    .from('posts as p')
+                    .leftJoin('emails as e', 'p.id', 'e.post_id')
+                    .where('p.newsletter_id', newsletterId)
+                    .whereIn('p.status', ['sent', 'published'])
+                    .whereNotNull('e.id') // Ensure there is an associated email record
+                    .whereRaw(dateFilter)
+                    .orderBy(orderFieldMap[orderField], orderDirection)
+                    .limit(limit);
+            }
 
             const results = await query;
 
