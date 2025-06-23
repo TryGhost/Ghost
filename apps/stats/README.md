@@ -1,25 +1,28 @@
-# Ghost Stats
+# Ghost Stats App
 
-A React application for displaying Stats in Ghost Admin.
+The Ghost Stats App provides analytics and insights for Ghost sites.
 
 ## Features
 
-The Ghost Stats app provides sitewide insights through several key views:
+### Top Content Analytics
+- **Growth Tab**: Shows which posts and pages drove the most member conversions
+- **Web Tab**: Shows which posts and pages received the most visitors
 
-- **Web Analytics**: Track page views, traffic patterns, and user engagement
-- **Growth Analytics**: Monitor member growth and conversion metrics
-- **Newsletter Analytics**: Analyze newsletter performance and engagement
-- **Location Data**: View geographical distribution of visitors and members
-- **Traffic Sources**: Track where your visitors are coming from
+### URL Linking
+All content in the analytics tables is now clickable:
+- **Posts**: Click to view detailed post analytics
+- **Pages**: Click to view the page on the frontend site
+- **System Pages**: Click to view homepage, tag pages, author pages, etc. on the frontend site
 
-## Tech Stack
+The app automatically determines the appropriate action:
+- Posts with analytics data → Navigate to post analytics page
+- Pages and system pages → Open frontend URL in new tab
 
-- **Framework**: React 18
-- **Build Tool**: Vite
-- **Language**: TypeScript
-- **Styling**: Tailwind
-- **Testing**: Vitest with React Testing Library
-- **Visualization**: Recharts, SVG Maps for geographical data, Tinybird charts
+### Supported System Pages
+- Homepage (`/`)
+- Tag pages (`/tag/slug/`, `/tags/slug/`)
+- Author pages (`/author/slug/`, `/authors/slug/`)
+- Custom pages and other frontend URLs
 
 ## Development
 
@@ -82,3 +85,11 @@ yarn lint:test
 ## License
 
 MIT - See LICENSE file for details.
+
+## URL Utilities
+
+The app includes URL helper utilities in `src/utils/url-helpers.ts`:
+
+- `getFrontendUrl()`: Generate full frontend URLs from attribution paths
+- `shouldMakeClickable()`: Determine if content should be clickable
+- `getClickHandler()`: Get appropriate click handler for content type
