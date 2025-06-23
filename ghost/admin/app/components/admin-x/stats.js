@@ -8,6 +8,7 @@ export default class Stats extends AdminXComponent {
         return {
             appSettings: {
                 paidMembersEnabled: this.settings.paidMembersEnabled,
+                newslettersEnabled: this.settings.editorDefaultEmailRecipients !== 'disabled',
                 analytics: {
                     emailTrackOpens: this.settings.emailTrackOpens,
                     emailTrackClicks: this.settings.emailTrackClicks,

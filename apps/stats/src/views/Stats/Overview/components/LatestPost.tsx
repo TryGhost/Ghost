@@ -156,7 +156,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             0}
                                     </span>
                                 </div>
-                                {latestPostStats.open_rate ?
+                                {appSettings?.newslettersEnabled && latestPostStats.open_rate ?
                                     <>
                                         <div className={metricClassName} onClick={() => {
                                             navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});

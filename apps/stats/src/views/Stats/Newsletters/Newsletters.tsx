@@ -8,10 +8,10 @@ import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Navigate, useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {useNewsletterStatsWithRangeSplit, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
 import type {TopNewslettersOrder} from '@src/hooks/useNewsletterStatsWithRange';
 
@@ -31,6 +31,7 @@ const Newsletters: React.FC = () => {
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const {appSettings} = useAppContext();
 
     // Get the initial tab from URL search parameters
     const initialTab = searchParams.get('tab') || 'total-subscribers';
@@ -156,6 +157,12 @@ const Newsletters: React.FC = () => {
     const isTableLoading = isStatsLoading || !newsletterStatsData;
 
     const pageData = isKPIsLoading ? undefined : (selectedNewsletterId && subscribersData.length > 1 && newsletterStats.length > 1 ? ['data exists'] : []);
+
+    if (!appSettings?.newslettersEnabled) {
+        return (
+            <Navigate to='/' />
+        );
+    }
 
     return (
         <StatsLayout>
