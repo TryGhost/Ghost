@@ -138,7 +138,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                 <div className={
                                     cn(
                                         metricClassName,
-                                        !appSettings?.analytics.webAnalytics && 'row-[2/3] col-[1/2]'
+                                        !appSettings?.analytics.webAnalytics && appSettings?.newslettersEnabled && 'row-[2/3] col-[1/2]'
                                     )
                                 } onClick={() => {
                                     navigate(`/posts/analytics/beta/${latestPostStats.id}/growth`, {crossApp: true});

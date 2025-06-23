@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {BarChartLoadingIndicator, GhAreaChart, GhAreaChartDataItem, KpiTabTrigger, KpiTabValue, Tabs, TabsList, centsToDollars, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, GhAreaChart, GhAreaChartDataItem, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsContent, TabsList, TabsTrigger, centsToDollars, formatNumber} from '@tryghost/shade';
 import {DiffDirection} from '@src/hooks/useGrowthStats';
 import {STATS_RANGES} from '@src/utils/constants';
 import {sanitizeChartData} from '@src/utils/chart-helpers';
@@ -169,6 +169,32 @@ const GrowthKPIs: React.FC<{
         }
     };
 
+    const paidChangeChartData = useMemo(() => {
+        if (currentTab !== 'paid-members') {
+            return [];
+        }
+
+        return [
+            {month: 'January', new: 186, cancelled: -80},
+            {month: 'February', new: 305, cancelled: -200},
+            {month: 'March', new: 237, cancelled: -120},
+            {month: 'April', new: 73, cancelled: -190},
+            {month: 'May', new: 209, cancelled: -130},
+            {month: 'June', new: 214, cancelled: -140}
+        ];
+    }, [currentTab]);
+
+    const paidChangeChartConfig = {
+        new: {
+            label: 'New',
+            color: 'hsl(var(--chart-teal))'
+        },
+        cancelled: {
+            label: 'Cancelled',
+            color: 'hsl(var(--chart-rose))'
+        }
+    } satisfies ChartConfig;
+
     if (isLoading) {
         return (
             <div className='-mb-6 flex h-[calc(16vw+132px)] w-full items-start justify-center'>
@@ -176,6 +202,8 @@ const GrowthKPIs: React.FC<{
             </div>
         );
     }
+
+    const areaChartClassname = '-mb-3 h-[16vw] max-h-[320px] w-full';
 
     return (
         <Tabs defaultValue={initialTab} variant='kpis'>
@@ -233,19 +261,148 @@ const GrowthKPIs: React.FC<{
                 }
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
-                <GhAreaChart
-                    className='-mb-3 h-[16vw] max-h-[320px] w-full'
-                    color={tabConfig[currentTab as keyof typeof tabConfig].color}
-                    data={chartData}
-                    dataFormatter={currentTab === 'mrr'
-                        ?
-                        (value: number) => {
-                            return `${currencySymbol}${formatNumber(value)}`;
-                        } :
-                        formatNumber}
-                    id="mrr"
-                    range={range}
-                />
+                {currentTab === 'paid-members' ?
+                    <Tabs
+                        defaultValue="total"
+                        variant="button-sm"
+                    >
+                        <div className='my-2 flex w-full items-center justify-start'>
+                            <TabsList className="flex items-center">
+                                <TabsTrigger value="total">
+                                Total
+                                </TabsTrigger>
+                                <TabsTrigger value="change">
+                                Change
+                                </TabsTrigger>
+                            </TabsList>
+                        </div>
+                        <TabsContent value="total">
+                            <GhAreaChart
+                                className={areaChartClassname}
+                                color={tabConfig[currentTab as keyof typeof tabConfig].color}
+                                data={chartData}
+                                dataFormatter={formatNumber}
+                                id="paid-members"
+                                range={range}
+                            />
+                        </TabsContent>
+                        <TabsContent value="change">
+                            <ChartContainer className='mt-6 max-h-[320px] w-full' config={paidChangeChartConfig}>
+                                <Recharts.BarChart
+                                    data={paidChangeChartData}
+                                    stackOffset='sign'
+                                >
+                                    <defs>
+                                        <linearGradient id="tealGradient" x1="0" x2="0" y1="0" y2="1">
+                                            <stop offset="0%" stopColor={'var(--color-new)'} stopOpacity={0.8} />
+                                            <stop offset="100%" stopColor={'var(--color-new)'} stopOpacity={0.6} />
+                                        </linearGradient>
+                                    </defs>
+                                    <defs>
+                                        <linearGradient id="roseGradient" x1="0" x2="0" y1="0" y2="1">
+                                            <stop offset="0%" stopColor={'var(--color-cancelled)'} stopOpacity={0.6} />
+                                            <stop offset="100%" stopColor={'var(--color-cancelled)'} stopOpacity={0.8} />
+                                        </linearGradient>
+                                    </defs>
+                                    <Recharts.CartesianGrid vertical={false} />
+                                    <Recharts.XAxis
+                                        axisLine={false}
+                                        dataKey="month"
+                                        tickFormatter={value => value.slice(0, 3)}
+                                        tickLine={false}
+                                        tickMargin={10}
+                                    />
+                                    <Recharts.YAxis
+                                        axisLine={false}
+                                        tickFormatter={(value) => {
+                                            return value < 0 ? formatNumber(value * -1) : formatNumber(value);
+                                        }}
+                                        tickLine={false}
+                                    />
+                                    <ChartTooltip
+                                        content={<ChartTooltipContent
+                                            className='min-w-[4rem] py-1'
+                                            formatter={(value, name) => {
+                                                return (
+                                                    <>
+                                                        <div
+                                                            className="size-2 shrink-0 rounded-full bg-[var(--color-bg)] opacity-50"
+                                                            style={{
+                                                                '--color-bg': `var(--color-${name})`
+                                                            } as React.CSSProperties}
+                                                        />
+                                                        <span className='text-sm text-muted-foreground'>
+                                                            {paidChangeChartConfig[name as keyof typeof paidChangeChartConfig]?.label || name}
+                                                        </span>
+                                                        <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                                                            {Number(value) < 0 ? formatNumber(Number(value) * -1) : formatNumber(value)}
+                                                        </div>
+                                                    </>
+                                                );
+                                            }}
+                                            hideLabel
+                                        />}
+                                        cursor={false}
+                                        isAnimationActive={false}
+                                        position={{y: 10}}
+                                    />
+                                    <Recharts.Bar
+                                        activeBar={{fillOpacity: 1}}
+                                        dataKey="new"
+                                        fill='url(#tealGradient)'
+                                        fillOpacity={0.75}
+                                        maxBarSize={32}
+                                        minPointSize={3}
+                                        radius={[4, 4, 0, 0]}
+                                        stackId="a"
+                                    />
+                                    <Recharts.Bar
+                                        activeBar={{fillOpacity: 1}}
+                                        dataKey="cancelled"
+                                        fill='url(#roseGradient)'
+                                        fillOpacity={0.75}
+                                        maxBarSize={32}
+                                        minPointSize={3}
+                                        radius={[4, 4, 0, 0]}
+                                        stackId="a"
+                                    />
+                                </Recharts.BarChart>
+                            </ChartContainer>
+                            <div className='mt-6 flex items-center justify-center gap-6 text-sm text-muted-foreground'>
+                                <div className='flex items-center gap-1'>
+                                    <span className='size-2 rounded-full opacity-50'
+                                        style={{
+                                            backgroundColor: paidChangeChartConfig.new.color
+                                        }}
+                                    ></span>
+                                    New
+                                </div>
+                                <div className='flex items-center gap-1'>
+                                    <span className='size-2 rounded-full opacity-50'
+                                        style={{
+                                            backgroundColor: paidChangeChartConfig.cancelled.color
+                                        }}
+                                    ></span>
+                                    Cancelled
+                                </div>
+                            </div>
+                        </TabsContent>
+                    </Tabs>
+                    :
+                    <GhAreaChart
+                        className={areaChartClassname}
+                        color={tabConfig[currentTab as keyof typeof tabConfig].color}
+                        data={chartData}
+                        dataFormatter={currentTab === 'mrr'
+                            ?
+                            (value: number) => {
+                                return `${currencySymbol}${formatNumber(value)}`;
+                            } :
+                            formatNumber}
+                        id="mrr"
+                        range={range}
+                    />
+                }
             </div>
         </Tabs>
     );
