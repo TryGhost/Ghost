@@ -123,68 +123,87 @@ const LatestPost: React.FC<LatestPostProps> = ({
 
                         <div className='-ml-4 flex h-full flex-col items-stretch gap-2 pr-6 text-sm'>
                             <div className='grid h-full grid-cols-2 gap-6 border-l pl-10'>
-                                {appSettings?.analytics.webAnalytics &&
-                                    <div className={metricClassName} onClick={() => {
-                                        navigate(`/posts/analytics/beta/${latestPostStats.id}/web`, {crossApp: true});
-                                    }}>
-                                        <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                            <LucideIcon.Eye size={16} strokeWidth={1.25} />
-                                            Visitors
-                                        </div>
-                                        <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
-                                            {formatNumber(latestPostStats.visitors)}
-                                        </span>
-                                    </div>
-                                }
-                                <div className={
-                                    cn(
-                                        metricClassName,
-                                        !appSettings?.analytics.webAnalytics && appSettings?.newslettersEnabled && 'row-[2/3] col-[1/2]'
-                                    )
-                                } onClick={() => {
-                                    navigate(`/posts/analytics/beta/${latestPostStats.id}/growth`, {crossApp: true});
-                                }}>
-                                    <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                        <LucideIcon.UserPlus size={16} strokeWidth={1.25} />
-                                        Members
-                                    </div>
-                                    <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
-                                        {latestPostStats.member_delta ?
-                                            <>
-                                                +{formatNumber(latestPostStats.member_delta)}
-                                            </>
-                                            :
-                                            0}
-                                    </span>
-                                </div>
-                                {appSettings?.newslettersEnabled && latestPostStats.open_rate ?
-                                    <>
-                                        <div className={metricClassName} onClick={() => {
-                                            navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
-                                        }}>
-                                            <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                                <LucideIcon.MailOpen size={16} strokeWidth={1.25} />
-                                                Open rate
-                                            </div>
-                                            <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
-                                                {formatPercentage(latestPostStats.open_rate / 100)}
-                                            </span>
-                                        </div>
-                                        <div className={metricClassName} onClick={() => {
-                                            navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
-                                        }}>
-                                            <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                                <LucideIcon.MousePointerClick size={16} strokeWidth={1.25} />
-                                                Click rate
-                                            </div>
-                                            <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
-                                                {formatPercentage((latestPostStats.click_rate || 0) / 100)}
-                                            </span>
-                                        </div>
-                                    </>
-                                    :
-                                    <></>
-                                }
+                                {(() => {
+                                    const metricsToShow = getPostMetricsToDisplay(latestPostStats as Post);
+                                    
+                                    return (
+                                        <>
+                                            {/* Web metrics - only for published posts */}
+                                            {metricsToShow.showWebMetrics && appSettings?.analytics.webAnalytics &&
+                                                <div className={metricClassName} onClick={() => {
+                                                    navigate(`/posts/analytics/beta/${latestPostStats.id}/web`, {crossApp: true});
+                                                }}>
+                                                    <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
+                                                        <LucideIcon.Eye size={16} strokeWidth={1.25} />
+                                                        Visitors
+                                                    </div>
+                                                    <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                                        {formatNumber(latestPostStats.visitors)}
+                                                    </span>
+                                                </div>
+                                            }
+                                            
+                                            {/* Member growth - always show if available */}
+                                            {metricsToShow.showMemberGrowth &&
+                                                <div className={
+                                                    cn(
+                                                        metricClassName,
+                                                        (!metricsToShow.showWebMetrics || !appSettings?.analytics.webAnalytics) && 'row-[2/3] col-[1/2]'
+                                                    )
+                                                } onClick={() => {
+                                                    navigate(`/posts/analytics/beta/${latestPostStats.id}/growth`, {crossApp: true});
+                                                }}>
+                                                    <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
+                                                        <LucideIcon.UserPlus size={16} strokeWidth={1.25} />
+                                                        Members
+                                                    </div>
+                                                    <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                                        {latestPostStats.member_delta ?
+                                                            <>
+                                                                +{formatNumber(latestPostStats.member_delta)}
+                                                            </>
+                                                            :
+                                                            0}
+                                                    </span>
+                                                </div>
+                                            }
+                                            
+                                            {/* Email metrics - show for email posts */}
+                                            {metricsToShow.showEmailMetrics && appSettings?.newslettersEnabled && latestPostStats.email && (
+                                                <>
+                                                    {/* Show sent count from email data */}
+                                                    <div className={metricClassName} onClick={() => {
+                                                        navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
+                                                    }}>
+                                                        <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
+                                                            <LucideIcon.Mail size={16} strokeWidth={1.25} />
+                                            Sent
+                                                        </div>
+                                                        <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                                            {formatNumber(latestPostStats.email.email_count || 0)}
+                                                        </span>
+                                                    </div>
+                                    
+                                                    {/* Show open rate - always display if email exists */}
+                                                    <div className={metricClassName} onClick={() => {
+                                                        navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
+                                                    }}>
+                                                        <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
+                                                            <LucideIcon.MailOpen size={16} strokeWidth={1.25} />
+                                            Open rate
+                                                        </div>
+                                                        <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                                            {latestPostStats.email.email_count ? 
+                                                                formatPercentage((latestPostStats.email.opened_count || 0) / latestPostStats.email.email_count) 
+                                                                : '0%'
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </>
+                                    );
+                                })()}
                             </div>
                         </div>
                     </>)
