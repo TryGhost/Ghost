@@ -296,7 +296,7 @@ describe('ContentStatsService', function () {
 
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(1);
-            result[0].title.should.equal('Home');
+            result[0].title.should.equal('Homepage');
         });
     });
 

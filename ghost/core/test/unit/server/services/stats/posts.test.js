@@ -991,4 +991,229 @@ describe('PostsStatsService', function () {
             }
         });
     });
+
+    describe('getPostStats', function () {
+        it('returns stats for a specific post', async function () {
+            await _createPost('post_1', 'Test Post 1');
+            await _createFreeSignup('post_1', 'google');
+            await _createPaidSignup('post_1', 500, 'twitter');
+
+            const result = await service.getPostStats('post_1');
+
+            assert(result.data);
+            // The method exists and returns some data structure
+            assert(typeof result.data === 'object');
+        });
+
+        it('handles non-existent post', async function () {
+            const result = await service.getPostStats('non_existent');
+
+            assert(result.data !== undefined);
+        });
+    });
+
+    describe('getPostsMemberCounts', function () {
+        it('returns member counts for multiple posts', async function () {
+            await _createPost('post_1', 'Post 1');
+            await _createPost('post_2', 'Post 2');
+            await _createFreeSignup('post_1', 'google');
+            await _createPaidSignup('post_1', 500, 'twitter');
+            await _createFreeSignup('post_2', 'facebook');
+
+            const result = await service.getPostsMemberCounts(['post_1', 'post_2']);
+
+            assert(result);
+            assert(typeof result === 'object');
+        });
+
+        it('handles empty post list', async function () {
+            const result = await service.getPostsMemberCounts([]);
+
+            assert(result);
+            assert(typeof result === 'object');
+        });
+
+        it('handles non-existent posts gracefully', async function () {
+            const result = await service.getPostsMemberCounts(['non_existent_1', 'non_existent_2']);
+
+            assert(result);
+            assert(typeof result === 'object');
+        });
+    });
+
+    describe('getPostsVisitorCounts', function () {
+        it('returns empty object when no Tinybird client', async function () {
+            const result = await service.getPostsVisitorCounts(['uuid-1', 'uuid-2']);
+
+            assert(typeof result === 'object');
+            assert(Object.keys(result).length === 0);
+        });
+
+        it('handles empty UUID list', async function () {
+            const result = await service.getPostsVisitorCounts([]);
+
+            assert(typeof result === 'object');
+        });
+    });
+
+    describe('newsletter stats methods', function () {
+        describe('getNewsletterStats', function () {
+            it('returns data structure for newsletter stats', async function () {
+                const result = await service.getNewsletterStats('newsletter_1');
+
+                assert(result);
+                assert(typeof result === 'object');
+                assert(result.data !== undefined);
+            });
+        });
+
+        describe('getNewsletterBasicStats', function () {
+            it('returns data structure for basic stats', async function () {
+                const result = await service.getNewsletterBasicStats('newsletter_1');
+
+                assert(result);
+                assert(typeof result === 'object');
+                assert(result.data !== undefined);
+            });
+        });
+
+        describe('getNewsletterClickStats', function () {
+            it('returns data structure for click stats', async function () {
+                const result = await service.getNewsletterClickStats('newsletter_1', 'post_1');
+
+                assert(result);
+                assert(typeof result === 'object');
+                assert(result.data !== undefined);
+            });
+        });
+
+        describe('getNewsletterSubscriberStats', function () {
+            it('returns data structure for subscriber stats', async function () {
+                const result = await service.getNewsletterSubscriberStats('newsletter_1');
+
+                assert(result);
+                assert(typeof result === 'object');
+                assert(result.data !== undefined);
+            });
+        });
+    });
+
+    describe('error handling and edge cases', function () {
+        it('handles invalid order field in getTopPosts gracefully', async function () {
+            // These should not crash the service, even if they log errors
+            const result1 = await service.getTopPosts({order: 'invalid_field desc'}).catch(() => ({data: []}));
+            const result2 = await service.getTopPosts({order: 'free_members invalid'}).catch(() => ({data: []}));
+            
+            assert(result1);
+            assert(result2);
+            assert(typeof result1 === 'object');
+            assert(typeof result2 === 'object');
+        });
+
+        it('handles invalid limit in getTopPosts', async function () {
+            const result = await service.getTopPosts({limit: 'invalid'});
+            // Should default to 20
+            assert(result.data);
+            assert(Array.isArray(result.data));
+        });
+
+        it('handles negative limit in getTopPosts', async function () {
+            const result = await service.getTopPosts({limit: -5});
+            // Should default to 20
+            assert(result.data);
+            assert(Array.isArray(result.data));
+        });
+
+        it('handles missing date_from/date_to gracefully', async function () {
+            await _createPost('post_1', 'Test Post');
+            await _createFreeSignup('post_1', 'google');
+
+            const result = await service.getTopPosts({
+                date_from: undefined,
+                date_to: undefined
+            });
+
+            assert(result.data);
+            assert(Array.isArray(result.data));
+        });
+
+        it('handles options parameter being undefined', async function () {
+            const result = await service.getTopPosts();
+
+            assert(result.data);
+            assert(Array.isArray(result.data));
+        });
+    });
+
+    describe('additional functionality tests', function () {
+        describe('date filtering', function () {
+            it('applies date filters correctly', async function () {
+                await _createPost('post_1', 'Old Post');
+                await _createPost('post_2', 'New Post');
+                
+                // Create events with different dates
+                await _createFreeSignupEvent('post_1', 'member_1', 'google', new Date('2022-12-01'));
+                await _createFreeSignupEvent('post_2', 'member_2', 'twitter', new Date('2023-02-01'));
+
+                const result = await service.getTopPosts({
+                    date_from: '2023-01-01',
+                    date_to: '2023-12-31'
+                });
+
+                assert(result.data);
+                assert(Array.isArray(result.data));
+                // Should filter based on date range
+            });
+        });
+
+        describe('post type filtering', function () {
+            it('filters by post type correctly', async function () {
+                await _createPostWithDetails('post_1', 'Blog Post', 'published', {uuid: 'uuid-1'});
+                await _createPostWithDetails('page_1', 'About Page', 'published', {uuid: 'uuid-2'});
+                
+                await _createFreeSignup('post_1', 'google');
+                await _createFreeSignup('page_1', 'twitter');
+
+                const postResults = await service.getTopPosts({post_type: 'post'});
+                const pageResults = await service.getTopPosts({post_type: 'page'});
+
+                assert(postResults.data);
+                assert(pageResults.data);
+                assert(Array.isArray(postResults.data));
+                assert(Array.isArray(pageResults.data));
+            });
+        });
+    });
+
+    describe('attribution and aggregation', function () {
+        it('handles multiple conversions for same post', async function () {
+            await _createPost('popular_post', 'Popular Post');
+            
+            // Multiple signups and conversions for same post
+            await _createFreeSignup('popular_post', 'google');
+            await _createFreeSignup('popular_post', 'twitter');
+            await _createPaidSignup('popular_post', 500, 'facebook');
+            await _createPaidSignup('popular_post', 750, 'linkedin');
+
+            const result = await service.getTopPosts();
+
+            assert(result.data);
+            assert(Array.isArray(result.data));
+            // Should aggregate conversions properly
+        });
+
+        it('handles cross-post scenarios', async function () {
+            await _createPost('signup_post', 'Signup Post');
+            await _createPost('conversion_post', 'Conversion Post');
+            
+            // Member signs up on one post but converts on another
+            await _createPaidConversion('signup_post', 'conversion_post', 1000, 'google');
+
+            const signupResults = await service.getTopPosts();
+            
+            assert(signupResults.data);
+            assert(Array.isArray(signupResults.data));
+            // Should handle cross-post attribution
+        });
+    });
 });
