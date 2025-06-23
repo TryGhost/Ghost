@@ -14,6 +14,8 @@ type ChartDataItem = {
     paid: number;
     comped: number;
     mrr: number;
+    paid_subscribed?: number;
+    paid_canceled?: number;
     formattedValue: string;
     label?: string;
 };
@@ -174,39 +176,29 @@ const GrowthKPIs: React.FC<{
             return [];
         }
 
-        return [
-            {date: '25 May', new: 142, cancelled: -67},
-            {date: '26 May', new: 189, cancelled: -89},
-            {date: '27 May', new: 156, cancelled: -45},
-            {date: '28 May', new: 178, cancelled: -92},
-            {date: '29 May', new: 134, cancelled: -78},
-            {date: '30 May', new: 201, cancelled: -112},
-            {date: '31 May', new: 167, cancelled: -54},
-            {date: '01 Jun', new: 145, cancelled: -73},
-            {date: '02 Jun', new: 198, cancelled: -96},
-            {date: '03 Jun', new: 223, cancelled: -118},
-            {date: '04 Jun', new: 156, cancelled: -67},
-            {date: '05 Jun', new: 189, cancelled: -84},
-            {date: '06 Jun', new: 234, cancelled: -125},
-            {date: '07 Jun', new: 178, cancelled: -91},
-            {date: '08 Jun', new: 203, cancelled: -106},
-            {date: '09 Jun', new: 167, cancelled: -78},
-            {date: '10 Jun', new: 145, cancelled: -63},
-            {date: '11 Jun', new: 212, cancelled: -94},
-            {date: '12 Jun', new: 189, cancelled: -102},
-            {date: '13 Jun', new: 156, cancelled: -71},
-            {date: '14 Jun', new: 234, cancelled: -138},
-            {date: '15 Jun', new: 198, cancelled: -89},
-            {date: '16 Jun', new: 167, cancelled: -76},
-            {date: '17 Jun', new: 245, cancelled: -142},
-            {date: '18 Jun', new: 178, cancelled: -95},
-            {date: '19 Jun', new: 203, cancelled: -108},
-            {date: '20 Jun', new: 189, cancelled: -83},
-            {date: '21 Jun', new: 156, cancelled: -69},
-            {date: '22 Jun', new: 134, cancelled: -52},
-            {date: '23 Jun', new: 198, cancelled: -87}
-        ];
-    }, [currentTab]);
+        if (!allChartData || allChartData.length === 0) {
+            return [];
+        }
+
+        // First sanitize the data for the current range
+        const sanitizedData = sanitizeChartData(allChartData, range, 'paid', 'exact');
+
+        // Transform the sanitized data into the format expected by the chart
+        return sanitizedData.map((item) => {
+            // Format date in a more readable format (e.g., "25 May")
+            const date = new Date(item.date);
+            const formattedDate = date.toLocaleDateString('en-US', { 
+                day: 'numeric', 
+                month: 'short' 
+            });
+
+            return {
+                date: formattedDate,
+                new: item.paid_subscribed || 0,
+                cancelled: -(item.paid_canceled || 0) // Negative for the stacked bar chart
+            };
+        });
+    }, [currentTab, allChartData, range]);
 
     const paidChangeChartConfig = {
         new: {
