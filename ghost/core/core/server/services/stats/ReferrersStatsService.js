@@ -150,21 +150,25 @@ class ReferrersStatsService {
 
         const map = new Map();
         for (const row of signupRows) {
-            map.set(row.referrer_source, {
-                source: row.referrer_source,
-                signups: row.total,
-                paid_conversions: 0
-            });
-        }
-
-        for (const row of conversionRows) {
-            const existing = map.get(row.referrer_source) ?? {
-                source: row.referrer_source,
+            const normalizedSource = normalizeSource(row.referrer_source);
+            const existing = map.get(normalizedSource) || {
+                source: normalizedSource,
                 signups: 0,
                 paid_conversions: 0
             };
-            existing.paid_conversions = row.total;
-            map.set(row.referrer_source, existing);
+            existing.signups += row.total;
+            map.set(normalizedSource, existing);
+        }
+
+        for (const row of conversionRows) {
+            const normalizedSource = normalizeSource(row.referrer_source);
+            const existing = map.get(normalizedSource) || {
+                source: normalizedSource,
+                signups: 0,
+                paid_conversions: 0
+            };
+            existing.paid_conversions += row.total;
+            map.set(normalizedSource, existing);
         }
 
         return [...map.values()].sort((a, b) => b.paid_conversions - a.paid_conversions);
@@ -410,6 +414,7 @@ class ReferrersStatsService {
 }
 
 module.exports = ReferrersStatsService;
+module.exports.normalizeSource = normalizeSource;
 
 /**
  * @typedef AttributionCountStat

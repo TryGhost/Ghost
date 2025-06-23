@@ -1,5 +1,5 @@
 import moment from 'moment';
-import {getSymbol, normalizeSource} from '@tryghost/admin-x-framework';
+import {getSymbol} from '@tryghost/admin-x-framework';
 import {useMemo} from 'react';
 import {useMrrHistory, usePostGrowthStats as usePostGrowthStatsAPI, usePostReferrers as usePostReferrersAPI} from '@tryghost/admin-x-framework/api/stats';
 
@@ -33,11 +33,8 @@ export const usePostReferrers = (postId: string) => {
 
     const stats = useMemo(() => {
         const rawStats = postReferrerResponse?.stats || [];
-        // Apply source normalization to match Tinybird data
-        return rawStats.map(stat => ({
-            ...stat,
-            source: normalizeSource(stat.source || '')
-        }));
+        // Backend now handles source normalization, so we can use the data directly
+        return rawStats;
     }, [postReferrerResponse]);
     
     const totals = useMemo(() => {
