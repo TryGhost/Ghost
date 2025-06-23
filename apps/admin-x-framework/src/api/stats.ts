@@ -38,6 +38,7 @@ export type MemberCountHistoryResponseType = {
 
 export type TopPostStatItem = {
     post_id: string;
+    attribution_url: string;
     title: string;
     free_members: number;
     paid_members: number;

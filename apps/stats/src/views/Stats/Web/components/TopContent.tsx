@@ -1,5 +1,6 @@
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Tabs, TabsList, TabsTrigger, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceQueryParam} from '../../components/AudienceSelect';
+import {getClickHandler, shouldMakeClickable} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useMemo, useState} from 'react';
@@ -35,6 +36,7 @@ interface TopContentTableProps {
 
 const TopContentTable: React.FC<TopContentTableProps> = ({tableHeader = false, data, contentType}) => {
     const navigate = useNavigate();
+    const {site} = useGlobalData();
 
     const getTableHeader = () => {
         switch (contentType) {
@@ -57,19 +59,15 @@ const TopContentTable: React.FC<TopContentTableProps> = ({tableHeader = false, d
             }
             <DataListBody>
                 {data?.map((row: UnifiedContentData) => {
-                    // Only make posts clickable (not pages), since there's no analytics route for pages
-                    const isClickable = row.post_id && row.post_type === 'post';
-                    const handleClick = () => {
-                        if (isClickable) {
-                            navigate(`/posts/analytics/beta/${row.post_id}`, {crossApp: true});
-                        }
-                    };
+                    // Make all content with a pathname clickable
+                    const isClickable = shouldMakeClickable(row.pathname);
+                    const handleClick = getClickHandler(row.pathname, row.post_id, site.url || '', navigate);
 
                     return (
                         <DataListRow
                             key={row.pathname}
                             className={`group/row ${isClickable && 'hover:cursor-pointer'}`}
-                            onClick={handleClick}
+                            onClick={isClickable ? handleClick : undefined}
                         >
                             <DataListBar style={{
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`

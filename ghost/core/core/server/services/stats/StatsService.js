@@ -79,9 +79,9 @@ class StatsService {
     }
 
     /**
-     * Get top posts by attribution metrics
-     * @param {import('./PostsStatsService').TopPostsOptions} options
-     * @returns {Promise<{data: import('./PostsStatsService').TopPostResult[]}>}
+     * Get top posts by attribution metrics (includes all content that drove conversions)
+     * @param {Object} options
+     * @returns {Promise<{data: Object[]}>}
      */
     async getTopPosts(options = {}) {
         // Return the original { data: results } structure

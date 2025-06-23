@@ -7,12 +7,14 @@ import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {getClickHandler, shouldMakeClickable} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
 import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
+import type {TopPostStatItem} from '@tryghost/admin-x-framework/api/stats';
 
 // Define content types
 export const CONTENT_TYPES = {
@@ -27,6 +29,7 @@ type ContentType = typeof CONTENT_TYPES[keyof typeof CONTENT_TYPES];
 // Type for unified content data that combines top content with growth metrics
 interface UnifiedGrowthContentData {
     pathname?: string;
+    attribution_url: string;
     title: string;
     post_id?: string;
     post_uuid?: string;
@@ -42,7 +45,7 @@ type SourcesOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc' | 'so
 type UnifiedSortOrder = TopPostsOrder | SourcesOrder;
 
 const Growth: React.FC = () => {
-    const {range} = useGlobalData();
+    const {range, site} = useGlobalData();
     const [sortBy, setSortBy] = useState<UnifiedSortOrder>('free_members desc');
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
     const navigate = useNavigate();
@@ -64,18 +67,35 @@ const Growth: React.FC = () => {
 
     // Sources data is now handled by the GrowthSources component
 
-    // Transform data for display
-    const transformedTopPosts = useMemo((): UnifiedGrowthContentData[] => {
+    // Transform and deduplicate data for display
+    const transformedTopPosts = useMemo<UnifiedGrowthContentData[]>(() => {
         const growthData = topPostsData?.stats || [];
-        const filteredData = growthData;
+        
+        // First deduplicate by post_id/title to handle backend duplicates
+        const uniqueData = growthData.reduce((acc: Map<string, TopPostStatItem>, item: TopPostStatItem) => {
+            const key = item.post_id || item.title;
+            if (!acc.has(key)) {
+                acc.set(key, item);
+            } else {
+                // If duplicate, sum the metrics
+                const existing = acc.get(key)!;
+                existing.free_members += item.free_members;
+                existing.paid_members += item.paid_members;
+                existing.mrr += item.mrr;
+                acc.set(key, existing);
+            }
+            return acc;
+        }, new Map<string, TopPostStatItem>());
+        
+        const filteredData = Array.from(uniqueData.values());
 
         // Calculate total metrics for the filtered dataset for percentage calculation
-        const totalFreeMembers = filteredData.reduce((sum, item) => sum + item.free_members, 0);
-        const totalPaidMembers = filteredData.reduce((sum, item) => sum + item.paid_members, 0);
-        const totalMrr = filteredData.reduce((sum, item) => sum + item.mrr, 0);
+        const totalFreeMembers = filteredData.reduce((sum: number, item: TopPostStatItem) => sum + item.free_members, 0);
+        const totalPaidMembers = filteredData.reduce((sum: number, item: TopPostStatItem) => sum + item.paid_members, 0);
+        const totalMrr = filteredData.reduce((sum: number, item: TopPostStatItem) => sum + item.mrr, 0);
 
         // Add percentage based on current sort
-        return filteredData.map((item) => {
+        return filteredData.map((item: TopPostStatItem) => {
             let percentage = 0;
             if (sortBy.includes('free_members') && totalFreeMembers > 0) {
                 percentage = item.free_members / totalFreeMembers;
@@ -88,6 +108,7 @@ const Growth: React.FC = () => {
             return {
                 title: item.title,
                 post_id: item.post_id,
+                attribution_url: item.attribution_url,
                 free_members: item.free_members,
                 paid_members: item.paid_members,
                 mrr: item.mrr,
@@ -212,14 +233,17 @@ const Growth: React.FC = () => {
                                     :
                                     <TableBody>
                                         {transformedTopPosts.length > 0 ? (
-                                            transformedTopPosts.map(post => (
-                                                <TableRow key={post.post_id} className='last:border-none'>
+                                            transformedTopPosts.map((post, index) => (
+                                                <TableRow key={`${selectedContentType}-${post.post_id || `${post.title}-${index}`}`} className='last:border-none'>
                                                     <TableCell>
                                                         <div className='group/link inline-flex flex-col items-start gap-px'>
-                                                            {post.post_id ?
-                                                                <Button className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' title="View post analytics" variant='link' onClick={() => {
-                                                                    navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
-                                                                }}>
+                                                            {shouldMakeClickable(post.attribution_url) ?
+                                                                <Button 
+                                                                    className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
+                                                                    title={post.post_id ? 'View post analytics' : 'View page'} 
+                                                                    variant='link' 
+                                                                    onClick={getClickHandler(post.attribution_url, post.post_id, site.url || '', navigate)}
+                                                                >
                                                                     {post.title}
                                                                 </Button>
                                                                 :
@@ -227,7 +251,9 @@ const Growth: React.FC = () => {
                                                                     {post.title}
                                                                 </span>
                                                             }
-                                                            <span className='text-muted-foreground'>Published on {formatDisplayDate(post.published_at)}</span>
+                                                            {post.published_at && new Date(post.published_at).getTime() > 0 && (
+                                                                <span className='text-muted-foreground'>Published on {formatDisplayDate(post.published_at)}</span>
+                                                            )}
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className='text-right font-mono text-sm'>
