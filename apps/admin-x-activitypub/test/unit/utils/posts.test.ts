@@ -180,7 +180,6 @@ describe('mapPostToActivity', function () {
         expect(repostActivity.object.attributedTo.followedByMe).toBe(false); // Original author from post.author
     });
 
-
     test('it maps reposted property correctly', function () {
         // Test for regular posts
         const activity = mapPostToActivity({
