@@ -116,8 +116,7 @@ const emberDataTypeMapping = {
     SettingsResponseType: {type: 'setting', singleton: true},
     ThemesResponseType: {type: 'theme'},
     TiersResponseType: {type: 'tier'},
-    UsersResponseType: {type: 'user'},
-    CustomThemeSettingsResponseType: {type: 'custom-theme-setting'}
+    UsersResponseType: {type: 'user'}
 };
 
 // Abstract class which AdminX components should inherit from
