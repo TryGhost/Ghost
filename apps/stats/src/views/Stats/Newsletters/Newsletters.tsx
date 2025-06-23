@@ -7,7 +7,7 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 import {Navigate, useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
@@ -26,13 +26,13 @@ export type AvgsDataItem = {
     click_rate: number;
 };
 
-// Separate component for the top newsletters table to handle sorting locally
-const TopNewslettersTable: React.FC<{
+// Separate component for just the table rows that handles data fetching
+const NewsletterTableRows: React.FC<{
     range: number;
     selectedNewsletterId: string | null | undefined;
     shouldFetchStats: boolean;
-}> = ({range, selectedNewsletterId, shouldFetchStats}) => {
-    const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
+    sortBy: TopNewslettersOrder;
+}> = React.memo(({range, selectedNewsletterId, shouldFetchStats, sortBy}) => {
     const navigate = useNavigate();
 
     // Fetch newsletter stats with reactive sort order - isolated to this component
@@ -43,19 +43,30 @@ const TopNewslettersTable: React.FC<{
         Boolean(shouldFetchStats)
     );
 
-    const isLoading = isStatsLoading || !newsletterStatsData;
-
-    if (isLoading) {
+    // Show loading rows while data is loading
+    if (isStatsLoading || !newsletterStatsData) {
         return (
-            <Card className='min-h-[460px]'>
-                <CardHeader>
-                    <CardTitle>Top newsletters</CardTitle>
-                    <CardDescription> Your best performing newsletters {getPeriodText(range)}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <SkeletonTable lines={5} />
-                </CardContent>
-            </Card>
+            <>
+                {Array.from({length: 5}, (_, index) => (
+                    <TableRow key={`newsletter-loading-row-${index}`} className='last:border-none [&>td]:py-2.5'>
+                        <TableCell className="font-medium">
+                            <div className="h-4 w-48 animate-pulse rounded bg-gray-200"></div>
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap text-sm">
+                            <div className="h-4 w-16 animate-pulse rounded bg-gray-200"></div>
+                        </TableCell>
+                        <TableCell className='text-right font-mono text-sm'>
+                            <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
+                        </TableCell>
+                        <TableCell className='text-right font-mono text-sm'>
+                            <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
+                        </TableCell>
+                        <TableCell className='text-right font-mono text-sm'>
+                            <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </>
         );
     }
 
@@ -63,79 +74,114 @@ const TopNewslettersTable: React.FC<{
     const sortedStats = newsletterStatsData?.stats || [];
 
     return (
+        <>
+            {sortedStats.map(post => (
+                <TableRow key={post.post_id} className='last:border-none [&>td]:py-2.5'>
+                    <TableCell className="font-medium">
+                        <div className='group/link inline-flex items-center gap-2'>
+                            {post.post_id ?
+                                <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
+                                    navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
+                                }}>
+                                    {post.post_title}
+                                </Button>
+                                :
+                                <>
+                                    {post.post_title}
+                                </>
+                            }
+                        </div>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-sm">
+                        {formatDisplayDate(new Date(post.send_date))}
+                    </TableCell>
+                    <TableCell className='text-right font-mono text-sm'>
+                        {formatNumber(post.sent_to)}
+                    </TableCell>
+                    <TableCell className='text-right font-mono text-sm'>
+                        <span className="group-hover:hidden">{formatPercentage(post.open_rate)}</span>
+                        <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_opens)}</span>
+                    </TableCell>
+                    <TableCell className='text-right font-mono text-sm'>
+                        {isClicksLoading ? (
+                            <span className="inline-block h-4 w-8 animate-pulse rounded bg-gray-200"></span>
+                        ) : (
+                            <>
+                                <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
+                                <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_clicks)}</span>
+                            </>
+                        )}
+                    </TableCell>
+                </TableRow>
+            ))}
+        </>
+    );
+});
+
+NewsletterTableRows.displayName = 'NewsletterTableRows';
+
+// Memoized table header component to prevent re-renders
+const NewsletterTableHeader: React.FC<{
+    sortBy: TopNewslettersOrder;
+    setSortBy: (sort: TopNewslettersOrder) => void;
+    range: number;
+}> = React.memo(({sortBy, setSortBy, range}) => {
+    return (
+        <TableHeader>
+            <TableRow>
+                <TableHead variant='cardhead'>
+                    <CardHeader>
+                        <CardTitle>Top newsletters</CardTitle>
+                        <CardDescription> Your best performing newsletters {getPeriodText(range)}</CardDescription>
+                    </CardHeader>
+                </TableHead>
+                <TableHead className='w-[65px]'>
+                    <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='date desc'>
+                    Date
+                    </SortButton>
+                </TableHead>
+                <TableHead className='w-[90px] text-right'>
+                    <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='sent_to desc'>
+                    Sent
+                    </SortButton>
+                </TableHead>
+                <TableHead className='w-[90px] text-right'>
+                    <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='open_rate desc'>
+                    Opens
+                    </SortButton>
+                </TableHead>
+                <TableHead className='w-[90px] text-right'>
+                    <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='click_rate desc'>
+                    Clicks
+                    </SortButton>
+                </TableHead>
+            </TableRow>
+        </TableHeader>
+    );
+});
+
+NewsletterTableHeader.displayName = 'NewsletterTableHeader';
+
+// Optimized table component that only re-renders rows when data changes
+const TopNewslettersTable: React.FC<{
+    range: number;
+    selectedNewsletterId: string | null | undefined;
+    shouldFetchStats: boolean;
+}> = ({range, selectedNewsletterId, shouldFetchStats}) => {
+    const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
+
+    return (
         <Card>
             <CardContent>
                 <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead variant='cardhead'>
-                                <CardHeader>
-                                    <CardTitle>Top newsletters</CardTitle>
-                                    <CardDescription> Your best performing newsletters {getPeriodText(range)}</CardDescription>
-                                </CardHeader>
-                            </TableHead>
-                            <TableHead className='w-[65px]'>
-                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='date desc'>
-                                Date
-                                </SortButton>
-                            </TableHead>
-                            <TableHead className='w-[90px] text-right'>
-                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='sent_to desc'>
-                                Sent
-                                </SortButton>
-                            </TableHead>
-                            <TableHead className='w-[90px] text-right'>
-                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='open_rate desc'>
-                                Opens
-                                </SortButton>
-                            </TableHead>
-                            <TableHead className='w-[90px] text-right'>
-                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='click_rate desc'>
-                                Clicks
-                                </SortButton>
-                            </TableHead>
-                        </TableRow>
-                    </TableHeader>
+                    <NewsletterTableHeader range={range} setSortBy={setSortBy} sortBy={sortBy} />
                     <TableBody>
-                        {sortedStats.map(post => (
-                            <TableRow key={post.post_id} className='last:border-none [&>td]:py-2.5'>
-                                <TableCell className="font-medium">
-                                    <div className='group/link inline-flex items-center gap-2'>
-                                        {post.post_id ?
-                                            <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
-                                                navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
-                                            }}>
-                                                {post.post_title}
-                                            </Button>
-                                            :
-                                            <>
-                                                {post.post_title}
-                                            </>
-                                        }
-                                    </div>
-                                </TableCell>
-                                <TableCell className="whitespace-nowrap text-sm">
-                                    {formatDisplayDate(new Date(post.send_date))}
-                                </TableCell>
-                                <TableCell className='text-right font-mono text-sm'>
-                                    {formatNumber(post.sent_to)}
-                                </TableCell>
-                                <TableCell className='text-right font-mono text-sm'>
-                                    <span className="group-hover:hidden">{formatPercentage(post.open_rate)}</span>
-                                    <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_opens)}</span>
-                                </TableCell>
-                                <TableCell className='text-right font-mono text-sm'>
-                                    {isClicksLoading ? (
-                                        <span className="inline-block h-4 w-8 animate-pulse rounded bg-gray-200"></span>
-                                    ) : (
-                                        <>
-                                            <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
-                                            <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_clicks)}</span>
-                                        </>
-                                    )}
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                        <NewsletterTableRows
+                            range={range}
+                            selectedNewsletterId={selectedNewsletterId}
+                            shouldFetchStats={shouldFetchStats}
+                            sortBy={sortBy}
+                        />
                     </TableBody>
                 </Table>
             </CardContent>
