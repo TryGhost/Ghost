@@ -25,6 +25,38 @@ export function getFrontendUrl(attributionUrl: string, siteUrl: string): string 
 }
 
 /**
+ * Generate a human-readable title from a URL path
+ * This matches the backend _generateTitleFromPath logic for consistency
+ * @param path - The URL path (e.g., '/', '/tag/slug/', '/author/slug/')
+ * @returns A formatted title
+ */
+export function generateTitleFromPath(path: string): string {
+    if (!path) {
+        return 'Unknown';
+    }
+    
+    // Handle common Ghost paths
+    if (path === '/') {
+        return 'Homepage';
+    }
+    if (path.startsWith('/tag/')) {
+        return `Tag: ${path.split('/')[2]}`;
+    }
+    if (path.startsWith('/tags/')) {
+        return `Tag: ${path.split('/')[2]}`;
+    }
+    if (path.startsWith('/author/')) {
+        return `Author: ${path.split('/')[2]}`;
+    }  
+    if (path.startsWith('/authors/')) {
+        return `Author: ${path.split('/')[2]}`;
+    }
+    
+    // For other paths, just return the path itself
+    return path;
+}
+
+/**
  * Check if a URL should be clickable (i.e., it's a valid frontend URL)
  * @param attributionUrl - The attribution URL path
  * @returns Whether the URL should be clickable
@@ -41,28 +73,21 @@ export function shouldMakeClickable(attributionUrl: string): boolean {
  * @param postId - The post ID (if available)
  * @param siteUrl - The site's base URL
  * @param navigate - The navigation function for analytics routes
+ * @param attributionType - The attribution type ('post', 'page', 'url', 'tag', 'author')
  * @returns The appropriate click handler
  */
 export function getClickHandler(
     attributionUrl: string,
     postId: string | null | undefined,
     siteUrl: string,
-    navigate: (path: string, options?: {crossApp?: boolean}) => void
+    navigate: (path: string, options?: {crossApp?: boolean}) => void,
+    attributionType?: string
 ) {
     return () => {
         // For posts with analytics, go to analytics page
-        if (postId && attributionUrl) {
-            // Check if this is a post by seeing if it's not a system page
-            const isSystemPage = attributionUrl === '/' || 
-                                 attributionUrl.startsWith('/tag/') || 
-                                 attributionUrl.startsWith('/tags/') ||
-                                 attributionUrl.startsWith('/author/') ||
-                                 attributionUrl.startsWith('/authors/');
-            
-            if (!isSystemPage) {
-                navigate(`/posts/analytics/beta/${postId}`, {crossApp: true});
-                return;
-            }
+        if (postId && attributionUrl && attributionType === 'post') {
+            navigate(`/posts/analytics/beta/${postId}`, {crossApp: true});
+            return;
         }
         
         // For all other cases (pages, system pages), open frontend URL in new tab

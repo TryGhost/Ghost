@@ -7,7 +7,7 @@ import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
-import {getClickHandler, shouldMakeClickable} from '@src/utils/url-helpers';
+import {generateTitleFromPath, getClickHandler, shouldMakeClickable} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -30,6 +30,8 @@ type ContentType = typeof CONTENT_TYPES[keyof typeof CONTENT_TYPES];
 interface UnifiedGrowthContentData {
     pathname?: string;
     attribution_url: string;
+    attribution_type: string;
+    attribution_id: string;
     title: string;
     post_id?: string;
     post_uuid?: string;
@@ -106,9 +108,11 @@ const Growth: React.FC = () => {
             }
 
             return {
-                title: item.title,
+                title: item.title || generateTitleFromPath(item.attribution_url),
                 post_id: item.post_id,
                 attribution_url: item.attribution_url,
+                attribution_type: item.attribution_type,
+                attribution_id: item.attribution_id,
                 free_members: item.free_members,
                 paid_members: item.paid_members,
                 mrr: item.mrr,
@@ -242,7 +246,7 @@ const Growth: React.FC = () => {
                                                                     className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
                                                                     title={post.post_id ? 'View post analytics' : 'View page'} 
                                                                     variant='link' 
-                                                                    onClick={getClickHandler(post.attribution_url, post.post_id, site.url || '', navigate)}
+                                                                    onClick={getClickHandler(post.attribution_url, post.post_id, site.url || '', navigate, post.attribution_type)}
                                                                 >
                                                                     {post.title}
                                                                 </Button>
