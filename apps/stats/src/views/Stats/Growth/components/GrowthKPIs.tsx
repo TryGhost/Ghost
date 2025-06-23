@@ -175,12 +175,36 @@ const GrowthKPIs: React.FC<{
         }
 
         return [
-            {month: 'January', new: 186, cancelled: -80},
-            {month: 'February', new: 305, cancelled: -200},
-            {month: 'March', new: 237, cancelled: -120},
-            {month: 'April', new: 73, cancelled: -190},
-            {month: 'May', new: 209, cancelled: -130},
-            {month: 'June', new: 214, cancelled: -140}
+            {date: '25 May', new: 142, cancelled: -67},
+            {date: '26 May', new: 189, cancelled: -89},
+            {date: '27 May', new: 156, cancelled: -45},
+            {date: '28 May', new: 178, cancelled: -92},
+            {date: '29 May', new: 134, cancelled: -78},
+            {date: '30 May', new: 201, cancelled: -112},
+            {date: '31 May', new: 167, cancelled: -54},
+            {date: '01 Jun', new: 145, cancelled: -73},
+            {date: '02 Jun', new: 198, cancelled: -96},
+            {date: '03 Jun', new: 223, cancelled: -118},
+            {date: '04 Jun', new: 156, cancelled: -67},
+            {date: '05 Jun', new: 189, cancelled: -84},
+            {date: '06 Jun', new: 234, cancelled: -125},
+            {date: '07 Jun', new: 178, cancelled: -91},
+            {date: '08 Jun', new: 203, cancelled: -106},
+            {date: '09 Jun', new: 167, cancelled: -78},
+            {date: '10 Jun', new: 145, cancelled: -63},
+            {date: '11 Jun', new: 212, cancelled: -94},
+            {date: '12 Jun', new: 189, cancelled: -102},
+            {date: '13 Jun', new: 156, cancelled: -71},
+            {date: '14 Jun', new: 234, cancelled: -138},
+            {date: '15 Jun', new: 198, cancelled: -89},
+            {date: '16 Jun', new: 167, cancelled: -76},
+            {date: '17 Jun', new: 245, cancelled: -142},
+            {date: '18 Jun', new: 178, cancelled: -95},
+            {date: '19 Jun', new: 203, cancelled: -108},
+            {date: '20 Jun', new: 189, cancelled: -83},
+            {date: '21 Jun', new: 156, cancelled: -69},
+            {date: '22 Jun', new: 134, cancelled: -52},
+            {date: '23 Jun', new: 198, cancelled: -87}
         ];
     }, [currentTab]);
 
@@ -266,7 +290,7 @@ const GrowthKPIs: React.FC<{
                         defaultValue="total"
                         variant="button-sm"
                     >
-                        <div className='my-2 flex w-full items-center justify-start'>
+                        <div className='mb-4 mt-2 flex w-full items-center justify-start'>
                             <TabsList className="flex items-center">
                                 <TabsTrigger value="total">
                                 Total
@@ -287,7 +311,7 @@ const GrowthKPIs: React.FC<{
                             />
                         </TabsContent>
                         <TabsContent value="change">
-                            <ChartContainer className='mt-6 max-h-[320px] w-full' config={paidChangeChartConfig}>
+                            <ChartContainer className='mt-6 max-h-[280px] w-full' config={paidChangeChartConfig}>
                                 <Recharts.BarChart
                                     data={paidChangeChartData}
                                     stackOffset='sign'
@@ -307,8 +331,8 @@ const GrowthKPIs: React.FC<{
                                     <Recharts.CartesianGrid vertical={false} />
                                     <Recharts.XAxis
                                         axisLine={false}
-                                        dataKey="month"
-                                        tickFormatter={value => value.slice(0, 3)}
+                                        dataKey="date"
+                                        tickFormatter={() => ('')}
                                         tickLine={false}
                                         tickMargin={10}
                                     />
@@ -321,23 +345,32 @@ const GrowthKPIs: React.FC<{
                                     />
                                     <ChartTooltip
                                         content={<ChartTooltipContent
-                                            className='min-w-[4rem] py-1'
-                                            formatter={(value, name) => {
+                                            className='!min-w-[120px] px-3 py-2'
+                                            formatter={(value, name, payload, index) => {
                                                 return (
-                                                    <>
-                                                        <div
-                                                            className="size-2 shrink-0 rounded-full bg-[var(--color-bg)] opacity-50"
-                                                            style={{
-                                                                '--color-bg': `var(--color-${name})`
-                                                            } as React.CSSProperties}
-                                                        />
-                                                        <span className='text-sm text-muted-foreground'>
-                                                            {paidChangeChartConfig[name as keyof typeof paidChangeChartConfig]?.label || name}
-                                                        </span>
-                                                        <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
-                                                            {Number(value) < 0 ? formatNumber(Number(value) * -1) : formatNumber(value)}
+                                                    <div className='flex w-full flex-col'>
+                                                        {index === 0 &&
+                                                            <div className="mb-1 text-sm font-medium text-foreground">
+                                                                {payload?.payload?.date}
+                                                            </div>
+                                                        }
+                                                        <div className='flex w-full items-center justify-between gap-4'>
+                                                            <div className='flex items-center gap-1'>
+                                                                <div
+                                                                    className="size-2 shrink-0 rounded-full bg-[var(--color-bg)] opacity-50"
+                                                                    style={{
+                                                                        '--color-bg': `var(--color-${name})`
+                                                                    } as React.CSSProperties}
+                                                                />
+                                                                <span className='text-sm text-muted-foreground'>
+                                                                    {paidChangeChartConfig[name as keyof typeof paidChangeChartConfig]?.label || name}
+                                                                </span>
+                                                            </div>
+                                                            <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                                                                {Number(value) < 0 ? formatNumber(Number(value) * -1) : formatNumber(value)}
+                                                            </div>
                                                         </div>
-                                                    </>
+                                                    </div>
                                                 );
                                             }}
                                             hideLabel
@@ -368,7 +401,7 @@ const GrowthKPIs: React.FC<{
                                     />
                                 </Recharts.BarChart>
                             </ChartContainer>
-                            <div className='mt-6 flex items-center justify-center gap-6 text-sm text-muted-foreground'>
+                            <div className='flex items-center justify-center gap-6 text-sm text-muted-foreground'>
                                 <div className='flex items-center gap-1'>
                                     <span className='size-2 rounded-full opacity-50'
                                         style={{
