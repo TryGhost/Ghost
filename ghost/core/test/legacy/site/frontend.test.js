@@ -108,22 +108,6 @@ describe('Frontend Routing', function () {
                     .expect(301)
                     .end(doEnd(done));
             });
-
-            it('AMP post should redirect without slash', function (done) {
-                request.get('/welcome/amp')
-                    .expect('Location', '/welcome/amp/')
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEnd(done));
-            });
-
-            it('AMP post should redirect uppercase', function (done) {
-                request.get('/Welcome/AMP/')
-                    .expect('Location', '/welcome/amp/')
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEnd(done));
-            });
         });
     });
 
@@ -227,20 +211,7 @@ describe('Frontend Routing', function () {
             });
 
             describe('amp', function () {
-                describe('amp enabled', function (){
-                    beforeEach(function () {
-                        sinon.stub(settingsCache, 'get').withArgs('amp').returns(true);
-                    });
-                    it('should 404 for amp parameter', function (done) {
-                        // NOTE: only post pages are supported so the router doesn't have a way to distinguish if
-                        //       the request was done after AMP 'Page' or 'Post'
-                        request.get('/static-page-test/amp/')
-                            .expect('Cache-Control', testUtils.cacheRules.noCache)
-                            .expect(404)
-                            .expect(/Post not found/)
-                            .end(doEnd(done));
-                    });
-                });
+                // AMP is no longer supported as of v6.0, so we only check the case in which it's disabled
                 describe('amp disabled', function (){
                     beforeEach(function () {
                         sinon.stub(settingsCache, 'get').withArgs('amp').returns(false);
