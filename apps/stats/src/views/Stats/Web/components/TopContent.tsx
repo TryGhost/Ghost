@@ -1,5 +1,7 @@
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Tabs, TabsList, TabsTrigger, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, formatNumber, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {CONTENT_TYPES, ContentType, getContentDescription, getContentTitle} from '@src/utils/content-helpers';
 import {getAudienceQueryParam} from '../../components/AudienceSelect';
+import {getClickHandler, shouldMakeClickable} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useMemo, useState} from 'react';
@@ -17,88 +19,13 @@ interface UnifiedContentData {
     post_type?: string;
 }
 
-// Content type definitions
-const CONTENT_TYPES = {
-    POSTS: 'posts',
-    PAGES: 'pages',
-    POSTS_AND_PAGES: 'posts-and-pages'
-} as const;
-
-type ContentType = typeof CONTENT_TYPES[keyof typeof CONTENT_TYPES];
-
-interface TopContentTableProps {
-    data: UnifiedContentData[] | null;
-    range: number;
-    contentType: ContentType;
-    tableHeader: boolean;
-}
-
-const TopContentTable: React.FC<TopContentTableProps> = ({tableHeader = false, data, contentType}) => {
-    const navigate = useNavigate();
-
-    const getTableHeader = () => {
-        switch (contentType) {
-        case CONTENT_TYPES.POSTS:
-            return 'Post';
-        case CONTENT_TYPES.PAGES:
-            return 'Page';
-        default:
-            return 'Post';
-        }
-    };
-
-    return (
-        <DataList>
-            {tableHeader &&
-                <DataListHeader>
-                    <DataListHead>{getTableHeader()}</DataListHead>
-                    <DataListHead>Visitors</DataListHead>
-                </DataListHeader>
-            }
-            <DataListBody>
-                {data?.map((row: UnifiedContentData) => {
-                    // Only make posts clickable (not pages), since there's no analytics route for pages
-                    const isClickable = row.post_id && row.post_type === 'post';
-                    const handleClick = () => {
-                        if (isClickable) {
-                            navigate(`/posts/analytics/beta/${row.post_id}`, {crossApp: true});
-                        }
-                    };
-
-                    return (
-                        <DataListRow
-                            key={row.pathname}
-                            className={`group/row ${isClickable && 'hover:cursor-pointer'}`}
-                            onClick={handleClick}
-                        >
-                            <DataListBar style={{
-                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
-                            }} />
-                            <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
-                                <div className='flex items-center space-x-4 overflow-hidden'>
-                                    <div className={`truncate font-medium ${isClickable && 'group-hover/row:underline'}`}>
-                                        {row.title}
-                                    </div>
-                                </div>
-                            </DataListItemContent>
-                            <DataListItemValue>
-                                <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
-                                <DataListItemValuePerc>{formatPercentage(row.percentage || 0)}</DataListItemValuePerc>
-                            </DataListItemValue>
-                        </DataListRow>
-                    );
-                })}
-            </DataListBody>
-        </DataList>
-    );
-};
-
 interface TopContentProps {
     range: number;
 }
 
 const TopContent: React.FC<TopContentProps> = ({range}) => {
-    const {audience} = useGlobalData();
+    const {audience, site} = useGlobalData();
+    const navigate = useNavigate();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
 
@@ -153,58 +80,83 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
 
     const topContent = transformedData?.slice(0, 10) || [];
 
-    const getContentTitle = () => {
-        switch (selectedContentType) {
-        case CONTENT_TYPES.POSTS:
-            return 'Top posts';
-        case CONTENT_TYPES.PAGES:
-            return 'Top pages';
-        default:
-            return 'Top content';
-        }
-    };
-
-    const getContentDescription = () => {
-        switch (selectedContentType) {
-        case CONTENT_TYPES.POSTS:
-            return `Your highest viewed posts ${getPeriodText(range)}`;
-        case CONTENT_TYPES.PAGES:
-            return `Your highest viewed pages ${getPeriodText(range)}`;
-        default:
-            return `Your highest viewed posts or pages ${getPeriodText(range)}`;
-        }
-    };
-
     return (
         <Card className='group/datalist'>
             <CardHeader>
-                <CardTitle>{getContentTitle()}</CardTitle>
-                <CardDescription>{getContentDescription()}</CardDescription>
+                <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
+                <CardDescription>{getContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
             </CardHeader>
-            <div className='flex items-center justify-between px-6 pb-2 pt-0'>
-                <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
-                    setSelectedContentType(value as ContentType);
-                }}>
-                    <TabsList>
-                        <TabsTrigger value={CONTENT_TYPES.POSTS_AND_PAGES}>Posts & pages</TabsTrigger>
-                        <TabsTrigger value={CONTENT_TYPES.POSTS}>Posts</TabsTrigger>
-                        <TabsTrigger value={CONTENT_TYPES.PAGES}>Pages</TabsTrigger>
-                    </TabsList>
-                </Tabs>
-                <HTable className='mr-2'>Visitors</HTable>
-            </div>
-            <CardContent className='overflow-hidden'>
-                <Separator />
-                {isLoading ?
-                    <SkeletonTable className='mt-3' / >
-                    :
-                    <TopContentTable
-                        contentType={selectedContentType}
-                        data={topContent}
-                        range={range}
-                        tableHeader={false}
-                    />
-                }
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow className='[&>th]:h-auto [&>th]:pb-2 [&>th]:pt-0'>
+                            <TableHead className='pl-0'>
+                                <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
+                                    setSelectedContentType(value as ContentType);
+                                }}>
+                                    <TabsList>
+                                        <TabsTrigger value={CONTENT_TYPES.POSTS_AND_PAGES}>Posts & pages</TabsTrigger>
+                                        <TabsTrigger value={CONTENT_TYPES.POSTS}>Posts</TabsTrigger>
+                                        <TabsTrigger value={CONTENT_TYPES.PAGES}>Pages</TabsTrigger>
+                                    </TabsList>
+                                </Tabs>
+                            </TableHead>
+                            <TableHead className='w-[140px] text-right'>Visitors</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    {isLoading ?
+                        <TableBody>
+                            <TableRow>
+                                <TableCell colSpan={2}>
+                                    <SkeletonTable lines={5} />
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                        :
+                        <TableBody>
+                            {topContent.length > 0 ? (
+                                topContent.map((row: UnifiedContentData) => (
+                                    <TableRow key={row.pathname} className='last:border-none'>
+                                        <TableCell>
+                                            <div className='group/link inline-flex flex-col items-start gap-px'>
+                                                {shouldMakeClickable(row.pathname) ?
+                                                    <Button 
+                                                        className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
+                                                        title={row.post_id ? 'View post analytics' : 'View page'} 
+                                                        variant='link' 
+                                                        onClick={getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type)}
+                                                    >
+                                                        {row.title}
+                                                    </Button>
+                                                    :
+                                                    <span className='font-medium'>
+                                                        {row.title}
+                                                    </span>
+                                                }
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>
+                                            {formatNumber(Number(row.visits))}
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell className='py-12 group-hover:!bg-transparent' colSpan={2}>
+                                        <div className='flex flex-col items-center justify-center space-y-3 text-center'>
+                                            <div className='flex size-12 items-center justify-center rounded-full bg-muted'>
+                                                <svg className='size-6 text-muted-foreground' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                                    <path d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' strokeLinecap='round' strokeLinejoin='round' strokeWidth={1.5} />
+                                                </svg>
+                                            </div>
+                                            <div className='text-sm text-muted-foreground'>No content found</div>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    }
+                </Table>
             </CardContent>
             {transformedData && transformedData.length > 10 &&
                 <CardFooter>
@@ -215,16 +167,45 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                         <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
                             <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
                                 <SheetTitle>Top content</SheetTitle>
-                                <SheetDescription>{getContentDescription()}</SheetDescription>
+                                <SheetDescription>{getContentDescription(selectedContentType, range, getPeriodText)}</SheetDescription>
                             </SheetHeader>
-                            <div className='group/datalist'>
-                                <TopContentTable
-                                    contentType={selectedContentType}
-                                    data={transformedData}
-                                    range={range}
-                                    tableHeader={true}
-                                />
-                            </div>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className='[&>th]:h-auto [&>th]:pb-2 [&>th]:pt-0'>
+                                        <TableHead className='pl-0'>
+                                            {selectedContentType === CONTENT_TYPES.POSTS ? 'Post' : selectedContentType === CONTENT_TYPES.PAGES ? 'Page' : 'Content'}
+                                        </TableHead>
+                                        <TableHead className='w-[140px] text-right'>Visitors</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {transformedData.map((row: UnifiedContentData) => (
+                                        <TableRow key={row.pathname} className='last:border-none'>
+                                            <TableCell>
+                                                <div className='group/link inline-flex flex-col items-start gap-px'>
+                                                    {shouldMakeClickable(row.pathname) ?
+                                                        <Button 
+                                                            className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
+                                                            title={row.post_id ? 'View post analytics' : 'View page'} 
+                                                            variant='link' 
+                                                            onClick={getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type)}
+                                                        >
+                                                            {row.title}
+                                                        </Button>
+                                                        :
+                                                        <span className='font-medium'>
+                                                            {row.title}
+                                                        </span>
+                                                    }
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className='text-right font-mono text-sm'>
+                                                {formatNumber(Number(row.visits))}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
                         </SheetContent>
                     </Sheet>
                 </CardFooter>
