@@ -165,13 +165,13 @@ export interface Post {
         name: string;
         url: string;
     }[];
-    author: Pick<Account, 'id' | 'handle' | 'avatarUrl' | 'name' | 'url'>;
+    author: Pick<Account, 'id' | 'handle' | 'avatarUrl' | 'name' | 'url' | 'followedByMe'>;
     authoredByMe: boolean;
     repostCount: number;
     repostedByMe: boolean;
     repostedBy: Pick<
         Account,
-        'id' | 'handle' | 'avatarUrl' | 'name' | 'url'
+        'id' | 'handle' | 'avatarUrl' | 'name' | 'url' | 'followedByMe'
     > | null;
     metadata?: {
         ghostAuthors?: Array<{

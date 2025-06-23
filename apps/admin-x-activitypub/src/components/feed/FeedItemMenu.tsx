@@ -23,6 +23,10 @@ interface FeedItemMenuProps {
     allowDelete: boolean;
     disabled?: boolean;
     layout?: string;
+    followedByMe?: boolean;
+    authoredByMe?: boolean;
+    onFollow?: () => void;
+    onUnfollow?: () => void;
 }
 
 const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
@@ -31,7 +35,11 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
     onDelete,
     allowDelete = false,
     disabled = false,
-    layout
+    layout,
+    followedByMe = false,
+    authoredByMe = false,
+    onFollow = () => {},
+    onUnfollow = () => {}
 }) => {
     const handleCopyLinkClick = (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
@@ -41,6 +49,15 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
     const handleDeleteClick = (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
         onDelete();
+    };
+
+    const handleFollowClick = (e: React.MouseEvent<HTMLElement>) => {
+        e.stopPropagation();
+        if (followedByMe) {
+            onUnfollow();
+        } else {
+            onFollow();
+        }
     };
 
     return (
@@ -55,6 +72,13 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
                             <PopoverClose asChild>
                                 <Button className='justify-start' variant='ghost' onClick={handleCopyLinkClick}>
                                     Copy link
+                                </Button>
+                            </PopoverClose>
+                        }
+                        {!authoredByMe &&
+                            <PopoverClose asChild>
+                                <Button className='justify-start' variant='ghost' onClick={handleFollowClick}>
+                                    {followedByMe ? 'Unfollow' : 'Follow'}
                                 </Button>
                             </PopoverClose>
                         }
