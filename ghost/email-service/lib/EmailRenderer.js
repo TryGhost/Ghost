@@ -314,13 +314,26 @@ class EmailRenderer {
         return allowedSegments;
     }
 
-    async renderPostBaseHtml(post) {
+    async renderPostBaseHtml(post, newsletter) {
         const postUrl = this.#getPostUrl(post);
+
+        const renderOptions = {
+            target: 'email',
+            postUrl
+        };
+
+        if (this.getLabs()?.isSet('emailCustomizationAlpha')) {
+            renderOptions.design = {
+                buttonCorners: newsletter?.get('button_corners')
+            };
+        }
+
         let html;
         if (post.get('lexical')) {
             // only lexical's renderer is async
             html = await this.#renderers.lexical.render(
-                post.get('lexical'), {target: 'email', postUrl}
+                post.get('lexical'),
+                renderOptions
             );
         } else {
             html = this.#renderers.mobiledoc.render(
@@ -339,7 +352,7 @@ class EmailRenderer {
      * @returns {Promise<EmailBody>}
      */
     async renderBody(post, newsletter, segment, options) {
-        let html = await this.renderPostBaseHtml(post);
+        let html = await this.renderPostBaseHtml(post, newsletter);
 
         // We don't allow the usage of the %%{uuid}%% replacement in the email body (only in links and special cases)
         // So we need to filter them before we introduce the real %%{uuid}%%
@@ -951,6 +964,8 @@ class EmailRenderer {
      * @private
      */
     async getTemplateData({post, newsletter, html, addPaywall, segment}) {
+        const labs = this.getLabs();
+
         let accentColor = this.#settingsCache.get('accent_color') || '#15212A';
         let adjustedAccentColor;
         let adjustedAccentContrastColor;
@@ -970,6 +985,16 @@ class EmailRenderer {
         const textColor = textColorForBackgroundColor(backgroundColor).hex();
         const secondaryTextColor = textColorForBackgroundColor(backgroundColor).alpha(0.5).toString();
         const linkColor = backgroundIsDark ? '#ffffff' : accentColor;
+
+        let buttonBorderRadius = '6px';
+
+        if (labs.isSet('emailCustomizationAlpha')) {
+            if (newsletter.get('button_corners') === 'square') {
+                buttonBorderRadius = '0';
+            } else if (newsletter.get('button_corners') === 'pill') {
+                buttonBorderRadius = '9999px';
+            }
+        }
 
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
         const {href: postFeatureImage, width: postFeatureImageWidth, height: postFeatureImageHeight} = await this.limitImageWidth(post.get('feature_image'));
@@ -1113,6 +1138,7 @@ class EmailRenderer {
             textColor: textColor,
             secondaryTextColor: secondaryTextColor,
             linkColor: linkColor,
+            buttonBorderRadius,
 
             headerImage,
             headerImageWidth,

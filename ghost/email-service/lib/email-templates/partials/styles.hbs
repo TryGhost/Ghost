@@ -1151,7 +1151,7 @@ img.kg-cta-image {
 
 .kg-cta-minimal table.kg-cta-button-wrapper td {
     padding: 6px 18px 8px;
-    border-radius: 6px;
+    border-radius: {{buttonBorderRadius}};
 }
 
 .kg-cta-minimal table.kg-cta-button-wrapper td.kg-style-accent {
@@ -1160,7 +1160,7 @@ img.kg-cta-image {
 
 .kg-cta-immersive .kg-cta-button-wrapper {
     padding: 8px 20px 9px;
-    border-radius: 6px;
+    border-radius: {{buttonBorderRadius}};
     text-align: center;
 }
 
@@ -1191,7 +1191,7 @@ img.kg-cta-image {
     font-weight: 500;
     text-align: center;
     text-decoration: none;
-    border-radius: 6px;
+    border-radius: {{buttonBorderRadius}};
 }
 
 .kg-cta-immersive a.kg-cta-button.kg-style-accent {
@@ -1282,6 +1282,9 @@ img.kg-cta-image {
     margin-top: 1.75em;
     background: #ffffff;
     border-radius: 5px;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    border-radius: {{buttonBorderRadius}};
+    {{/hasFeature}}
     box-sizing: border-box;
     cursor: pointer;
     display: inline-block;
@@ -1523,6 +1526,9 @@ img.kg-cta-image {
 .btn table td {
     background-color: #ffffff;
     border-radius: 5px;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    border-radius: {{buttonBorderRadius}};
+    {{/hasFeature}}
     text-align: center;
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
 }
@@ -1531,6 +1537,9 @@ img.kg-cta-image {
     background-color: #ffffff;
     border: solid 1px #3498db;
     border-radius: 5px;
+    {{#hasFeature "emailCustomizationAlpha"}}
+    border-radius: {{buttonBorderRadius}};
+    {{/hasFeature}}
     box-sizing: border-box;
     color: #3498db;
     cursor: pointer;
