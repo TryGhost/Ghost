@@ -182,7 +182,7 @@ React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
                 )}
             >
                 {!nestLabel ? tooltipLabel : null}
-                <div className="grid gap-1.5">
+                <div className="grid gap-1">
                     {payload.map((item, index) => {
                         const key = `${nameKey || item.name || item.dataKey || 'value'}`;
                         const itemConfig = getPayloadConfigFromPayload(config, item, key);
@@ -298,7 +298,7 @@ React.ComponentProps<'div'> &
                                 <itemConfig.icon />
                             ) : (
                                 <div
-                                    className="size-2 shrink-0 rounded-[2px]"
+                                    className="size-2 shrink-0 rounded-full"
                                     style={{
                                         backgroundColor: item.color
                                     }}

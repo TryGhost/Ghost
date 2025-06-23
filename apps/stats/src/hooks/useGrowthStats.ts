@@ -191,6 +191,8 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
         const comped = lastMemberItem?.comped ?? 0;
         const value = free + paid + comped;
         const mrr = lastMrrItem?.mrr ?? 0;
+        const paidSubscribed = lastMemberItem?.paid_subscribed ?? 0;
+        const paidCanceled = lastMemberItem?.paid_canceled ?? 0;
 
         return {
             date,
@@ -199,6 +201,8 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
             paid,
             comped,
             mrr,
+            paid_subscribed: paidSubscribed,
+            paid_canceled: paidCanceled,
             formattedValue: formatNumber(value),
             label: 'Total members' // Consider if label needs update based on data type?
         };
