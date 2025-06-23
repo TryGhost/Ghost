@@ -54,14 +54,6 @@ class StatsService {
     }
 
     /**
-     * @param {string} startDate - Start date in YYYY-MM-DD format
-     * @param {string} endDate - End date in YYYY-MM-DD format
-     */
-    async getReferrersHistoryWithRange(startDate, endDate) {
-        return this.referrers.getReferrersHistoryWithRange(startDate, endDate);
-    }
-
-    /**
      * @param {string} postId
      */
     async getPostReferrers(postId) {
@@ -237,6 +229,10 @@ class StatsService {
         // Return newsletter click stats for the specific newsletter and posts
         const result = await this.posts.getNewsletterClickStats(newsletterId, postIds);
         return result;
+    }
+
+    async getTopSourcesWithRange(startDate, endDate, orderBy, limit) {
+        return this.referrers.getTopSourcesWithRange(startDate, endDate, orderBy, limit);
     }
 
     /**
