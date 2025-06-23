@@ -2,6 +2,9 @@ const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
 
+// Import source normalization from ReferrersStatsService
+const {normalizeSource} = require('./ReferrersStatsService');
+
 /**
  * @typedef {Object} StatsServiceOptions
  * @property {string} [order='free_members desc'] - field to order by (free_members, paid_members, or mrr) and direction
@@ -207,7 +210,37 @@ class PostsStatsService {
                 .orderBy(orderField, orderDirection)
                 .limit(limit);
 
-            return {data: results};
+            // Apply source normalization and group by normalized source
+            const normalizedResults = new Map();
+            
+            results.forEach((row) => {
+                const normalizedSource = normalizeSource(row.source);
+                const existing = normalizedResults.get(normalizedSource) || {
+                    source: normalizedSource,
+                    referrer_url: row.referrer_url,
+                    free_members: 0,
+                    paid_members: 0,
+                    mrr: 0
+                };
+                
+                existing.free_members += row.free_members;
+                existing.paid_members += row.paid_members;
+                existing.mrr += row.mrr;
+                
+                normalizedResults.set(normalizedSource, existing);
+            });
+
+            // Convert back to array and sort again since normalization might have changed the order
+            const finalResults = Array.from(normalizedResults.values());
+            finalResults.sort((a, b) => {
+                if (orderDirection === 'desc') {
+                    return b[orderField] - a[orderField];
+                } else {
+                    return a[orderField] - b[orderField];
+                }
+            });
+
+            return {data: finalResults.slice(0, limit)};
         } catch (error) {
             logging.error(`Error fetching referrers for post ${postId}:`, error);
             return {data: []};
