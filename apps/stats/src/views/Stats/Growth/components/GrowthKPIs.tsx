@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, GhAreaChart, GhAreaChartDataItem, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsContent, TabsList, TabsTrigger, centsToDollars, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, GhAreaChart, GhAreaChartDataItem, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsContent, TabsList, TabsTrigger, centsToDollars, formatDisplayDateWithRange, formatNumber} from '@tryghost/shade';
 import {DiffDirection} from '@src/hooks/useGrowthStats';
 import {STATS_RANGES} from '@src/utils/constants';
 import {sanitizeChartData} from '@src/utils/chart-helpers';
@@ -47,6 +47,7 @@ const GrowthKPIs: React.FC<{
     isLoading: boolean;
 }> = ({chartData: allChartData, totals, initialTab = 'total-members', currencySymbol, isLoading}) => {
     const [currentTab, setCurrentTab] = useState(initialTab);
+    const [paidChartTab, setPaidChartTab] = useState('total');
     const {range} = useGlobalData();
     const {appSettings} = useAppContext();
     const navigate = useNavigate();
@@ -187,13 +188,9 @@ const GrowthKPIs: React.FC<{
         return sanitizedData.map((item) => {
             // Format date in a more readable format (e.g., "25 May")
             const date = new Date(item.date);
-            const formattedDate = date.toLocaleDateString('en-US', { 
-                day: 'numeric', 
-                month: 'short' 
-            });
 
             return {
-                date: formattedDate,
+                date: formatDisplayDateWithRange(date, range),
                 new: item.paid_subscribed || 0,
                 cancelled: -(item.paid_canceled || 0) // Negative for the stacked bar chart
             };
@@ -279,8 +276,11 @@ const GrowthKPIs: React.FC<{
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 {currentTab === 'paid-members' ?
                     <Tabs
-                        defaultValue="total"
+                        defaultValue={paidChartTab}
                         variant="button-sm"
+                        onValueChange={(value) => {
+                            setPaidChartTab(value);
+                        }}
                     >
                         <div className='mb-4 mt-2 flex w-full items-center justify-start'>
                             <TabsList className="flex items-center">
@@ -339,6 +339,14 @@ const GrowthKPIs: React.FC<{
                                         content={<ChartTooltipContent
                                             className='!min-w-[120px] px-3 py-2'
                                             formatter={(value, name, payload, index) => {
+                                                const rawValue = Number(value);
+                                                let displayValue = '0';
+                                                if (rawValue === 0) {
+                                                    displayValue = '0';
+                                                } else {
+                                                    displayValue = rawValue < 0 ? formatNumber(rawValue * -1) : formatNumber(rawValue);
+                                                }
+
                                                 return (
                                                     <div className='flex w-full flex-col'>
                                                         {index === 0 &&
@@ -359,7 +367,7 @@ const GrowthKPIs: React.FC<{
                                                                 </span>
                                                             </div>
                                                             <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
-                                                                {Number(value) < 0 ? formatNumber(Number(value) * -1) : formatNumber(value)}
+                                                                {displayValue}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -387,7 +395,6 @@ const GrowthKPIs: React.FC<{
                                         fill='url(#roseGradient)'
                                         fillOpacity={0.75}
                                         maxBarSize={32}
-                                        minPointSize={3}
                                         radius={[4, 4, 0, 0]}
                                         stackId="a"
                                     />
