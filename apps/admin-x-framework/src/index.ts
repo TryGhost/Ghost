@@ -18,7 +18,9 @@ export {getSymbol} from './utils/currency';
 export {getStatEndpointUrl, getToken} from './utils/stats-config';
 
 // Post utilities
+export type {Post} from './api/posts';
 export {hasBeenEmailed} from './utils/post-utils';
+export {isEmailOnly, isPublishedOnly, isPublishedAndEmailed, getPostMetricsToDisplay} from './utils/post-helpers';
 
 // Source utilities
 export type {BaseSourceData, ProcessedSourceData, ExtendSourcesOptions} from './utils/source-utils';
