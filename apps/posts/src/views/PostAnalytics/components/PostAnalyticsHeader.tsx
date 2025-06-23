@@ -174,34 +174,36 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                 </div>
             </header>
             <Navbar className='sticky top-0 z-50 -mb-8 items-center border-none bg-white/70 py-8 backdrop-blur-md dark:bg-black'>
-                <Tabs className="flex h-9 w-full items-center" defaultValue={currentTab} variant='pill'>
-                    <TabsList>
-                        <TabsTrigger value="Overview" onClick={() => {
-                            navigate(`/analytics/beta/${postId}`);
-                        }}>
-                            Overview
-                        </TabsTrigger>
-                        {!post?.email_only && appSettings?.analytics.webAnalytics && (
-                            <TabsTrigger value="Web" onClick={() => {
-                                navigate(`/analytics/beta/${postId}/web`);
+                {!isPostLoading && (
+                    <Tabs className="flex h-9 w-full items-center" defaultValue={currentTab} variant='pill'>
+                        <TabsList>
+                            <TabsTrigger value="Overview" onClick={() => {
+                                navigate(`/analytics/beta/${postId}`);
                             }}>
-                                Web traffic
+                                Overview
                             </TabsTrigger>
-                        )}
-                        {showNewsletterTab && (
-                            <TabsTrigger value="Newsletter" onClick={() => {
-                                navigate(`/analytics/beta/${postId}/newsletter`);
+                            {!post?.email_only && appSettings?.analytics.webAnalytics && (
+                                <TabsTrigger value="Web" onClick={() => {
+                                    navigate(`/analytics/beta/${postId}/web`);
+                                }}>
+                                    Web traffic
+                                </TabsTrigger>
+                            )}
+                            {showNewsletterTab && (
+                                <TabsTrigger value="Newsletter" onClick={() => {
+                                    navigate(`/analytics/beta/${postId}/newsletter`);
+                                }}>
+                                    Newsletter
+                                </TabsTrigger>
+                            )}
+                            <TabsTrigger value="Growth" onClick={() => {
+                                navigate(`/analytics/beta/${postId}/growth`);
                             }}>
-                                Newsletter
+                                Growth
                             </TabsTrigger>
-                        )}
-                        <TabsTrigger value="Growth" onClick={() => {
-                            navigate(`/analytics/beta/${postId}/growth`);
-                        }}>
-                            Growth
-                        </TabsTrigger>
-                    </TabsList>
-                </Tabs>
+                        </TabsList>
+                    </Tabs>
+                )}
                 <NavbarActions>
                     {children}
                 </NavbarActions>
