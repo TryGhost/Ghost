@@ -7,7 +7,8 @@ import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
-import {generateTitleFromPath, getClickHandler, shouldMakeClickable} from '@src/utils/url-helpers';
+import {CONTENT_TYPES, ContentType, getContentTitle, getGrowthContentDescription} from '@src/utils/content-helpers';
+import {getClickHandler, shouldMakeClickable} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -15,16 +16,6 @@ import {useGrowthStats} from '@src/hooks/useGrowthStats';
 import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 import type {TopPostStatItem} from '@tryghost/admin-x-framework/api/stats';
-
-// Define content types
-export const CONTENT_TYPES = {
-    POSTS: 'posts',
-    PAGES: 'pages',
-    POSTS_AND_PAGES: 'posts_and_pages',
-    SOURCES: 'sources'
-} as const;
-
-type ContentType = typeof CONTENT_TYPES[keyof typeof CONTENT_TYPES];
 
 // Type for unified content data that combines top content with growth metrics
 interface UnifiedGrowthContentData {
@@ -48,9 +39,9 @@ type UnifiedSortOrder = TopPostsOrder | SourcesOrder;
 
 const Growth: React.FC = () => {
     const {range, site} = useGlobalData();
+    const navigate = useNavigate();
     const [sortBy, setSortBy] = useState<UnifiedSortOrder>('free_members desc');
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
-    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const {appSettings} = useAppContext();
 
@@ -108,7 +99,7 @@ const Growth: React.FC = () => {
             }
 
             return {
-                title: item.title || generateTitleFromPath(item.attribution_url),
+                title: item.title || item.attribution_url,
                 post_id: item.post_id,
                 attribution_url: item.attribution_url,
                 attribution_type: item.attribution_type,
@@ -121,34 +112,6 @@ const Growth: React.FC = () => {
             };
         });
     }, [topPostsData, sortBy]);
-
-    const getContentTitle = () => {
-        switch (selectedContentType) {
-        case CONTENT_TYPES.POSTS:
-            return 'Top posts';
-        case CONTENT_TYPES.PAGES:
-            return 'Top pages';
-        case CONTENT_TYPES.SOURCES:
-            return 'Top sources';
-        default:
-            return 'Top content';
-        }
-    };
-
-    const getContentDescription = () => {
-        switch (selectedContentType) {
-        case CONTENT_TYPES.POSTS:
-            return `Which posts drove the most growth ${getPeriodText(range)}`;
-        case CONTENT_TYPES.PAGES:
-            return `Which pages drove the most growth ${getPeriodText(range)}`;
-        case CONTENT_TYPES.POSTS_AND_PAGES:
-            return `Which posts or pages drove the most growth ${getPeriodText(range)}`;
-        case CONTENT_TYPES.SOURCES:
-            return `How readers found your site ${getPeriodText(range)}`;
-        default:
-            return `Which posts drove the most growth ${getPeriodText(range)}`;
-        }
-    };
 
     const isPageLoading = isLoading;
 
@@ -172,8 +135,8 @@ const Growth: React.FC = () => {
                 {isPageLoading ?
                     <Card className='min-h-[460px]'>
                         <CardHeader>
-                            <CardTitle>{getContentTitle()}</CardTitle>
-                            <CardDescription>{getContentDescription()}</CardDescription>
+                            <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
+                            <CardDescription>{getGrowthContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <SkeletonTable lines={5} />
@@ -182,8 +145,8 @@ const Growth: React.FC = () => {
                     :
                     <Card>
                         <CardHeader>
-                            <CardTitle>{getContentTitle()}</CardTitle>
-                            <CardDescription>{getContentDescription()}</CardDescription>
+                            <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
+                            <CardDescription>{getGrowthContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Table>
@@ -255,7 +218,7 @@ const Growth: React.FC = () => {
                                                                     {post.title}
                                                                 </span>
                                                             }
-                                                            {post.published_at && new Date(post.published_at).getTime() > 0 && (
+                                                            {post.published_at && formatDisplayDate && new Date(post.published_at).getTime() > 0 && (
                                                                 <span className='text-muted-foreground'>Published on {formatDisplayDate(post.published_at)}</span>
                                                             )}
                                                         </div>

@@ -40,16 +40,16 @@ export function generateTitleFromPath(path: string): string {
         return 'Homepage';
     }
     if (path.startsWith('/tag/')) {
-        return `Tag: ${path.split('/')[2]}`;
+        return `tag/${path.split('/')[2]}`;
     }
     if (path.startsWith('/tags/')) {
-        return `Tag: ${path.split('/')[2]}`;
+        return `tag/${path.split('/')[2]}`;
     }
     if (path.startsWith('/author/')) {
-        return `Author: ${path.split('/')[2]}`;
+        return `author/${path.split('/')[2]}`;
     }  
     if (path.startsWith('/authors/')) {
-        return `Author: ${path.split('/')[2]}`;
+        return `author/${path.split('/')[2]}`;
     }
     
     // For other paths, just return the path itself

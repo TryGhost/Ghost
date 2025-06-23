@@ -1,6 +1,7 @@
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, formatNumber, formatQueryDate, getRangeDates} from '@tryghost/shade';
-import {generateTitleFromPath, getClickHandler, shouldMakeClickable} from '@src/utils/url-helpers';
+import {CONTENT_TYPES, ContentType, getContentDescription, getContentTitle} from '@src/utils/content-helpers';
 import {getAudienceQueryParam} from '../../components/AudienceSelect';
+import {getClickHandler, shouldMakeClickable} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useMemo, useState} from 'react';
@@ -18,24 +19,15 @@ interface UnifiedContentData {
     post_type?: string;
 }
 
-// Content type definitions
-const CONTENT_TYPES = {
-    POSTS: 'posts',
-    PAGES: 'pages',
-    POSTS_AND_PAGES: 'posts-and-pages'
-} as const;
-
-type ContentType = typeof CONTENT_TYPES[keyof typeof CONTENT_TYPES];
-
 interface TopContentProps {
     range: number;
 }
 
 const TopContent: React.FC<TopContentProps> = ({range}) => {
     const {audience, site} = useGlobalData();
+    const navigate = useNavigate();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
-    const navigate = useNavigate();
 
     // Prepare query parameters based on selected content type
     const queryParams = useMemo(() => {
@@ -77,7 +69,7 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
 
         return data.map(item => ({
             pathname: item.pathname,
-            title: item.title || generateTitleFromPath(item.pathname),
+            title: item.title || item.pathname,
             visits: item.visits,
             percentage: filteredTotalVisits > 0 ? (Number(item.visits) / filteredTotalVisits) : 0,
             post_uuid: item.post_uuid,
@@ -88,33 +80,11 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
 
     const topContent = transformedData?.slice(0, 10) || [];
 
-    const getContentTitle = () => {
-        switch (selectedContentType) {
-        case CONTENT_TYPES.POSTS:
-            return 'Top posts';
-        case CONTENT_TYPES.PAGES:
-            return 'Top pages';
-        default:
-            return 'Top content';
-        }
-    };
-
-    const getContentDescription = () => {
-        switch (selectedContentType) {
-        case CONTENT_TYPES.POSTS:
-            return `Your highest viewed posts ${getPeriodText(range)}`;
-        case CONTENT_TYPES.PAGES:
-            return `Your highest viewed pages ${getPeriodText(range)}`;
-        default:
-            return `Your highest viewed posts or pages ${getPeriodText(range)}`;
-        }
-    };
-
     return (
         <Card className='group/datalist'>
             <CardHeader>
-                <CardTitle>{getContentTitle()}</CardTitle>
-                <CardDescription>{getContentDescription()}</CardDescription>
+                <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
+                <CardDescription>{getContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
             </CardHeader>
             <CardContent>
                 <Table>
@@ -145,35 +115,31 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                         :
                         <TableBody>
                             {topContent.length > 0 ? (
-                                topContent.map((row: UnifiedContentData) => {
-                                    const isClickable = shouldMakeClickable(row.pathname);
-
-                                    return (
-                                        <TableRow key={row.pathname} className='last:border-none'>
-                                            <TableCell>
-                                                <div className='group/link inline-flex flex-col items-start gap-px'>
-                                                    {isClickable ?
-                                                        <Button 
-                                                            className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
-                                                            title={row.post_id ? 'View post analytics' : 'View page'} 
-                                                            variant='link' 
-                                                            onClick={getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type)}
-                                                        >
-                                                            {row.title}
-                                                        </Button>
-                                                        :
-                                                        <span className='font-medium'>
-                                                            {row.title}
-                                                        </span>
-                                                    }
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className='text-right font-mono text-sm'>
-                                                {formatNumber(Number(row.visits))}
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })
+                                topContent.map((row: UnifiedContentData) => (
+                                    <TableRow key={row.pathname} className='last:border-none'>
+                                        <TableCell>
+                                            <div className='group/link inline-flex flex-col items-start gap-px'>
+                                                {shouldMakeClickable(row.pathname) ?
+                                                    <Button 
+                                                        className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
+                                                        title={row.post_id ? 'View post analytics' : 'View page'} 
+                                                        variant='link' 
+                                                        onClick={getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type)}
+                                                    >
+                                                        {row.title}
+                                                    </Button>
+                                                    :
+                                                    <span className='font-medium'>
+                                                        {row.title}
+                                                    </span>
+                                                }
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className='text-right font-mono text-sm'>
+                                            {formatNumber(Number(row.visits))}
+                                        </TableCell>
+                                    </TableRow>
+                                ))
                             ) : (
                                 <TableRow>
                                     <TableCell className='py-12 group-hover:!bg-transparent' colSpan={2}>
@@ -201,7 +167,7 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                         <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
                             <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
                                 <SheetTitle>Top content</SheetTitle>
-                                <SheetDescription>{getContentDescription()}</SheetDescription>
+                                <SheetDescription>{getContentDescription(selectedContentType, range, getPeriodText)}</SheetDescription>
                             </SheetHeader>
                             <Table>
                                 <TableHeader>
@@ -213,35 +179,31 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {transformedData.map((row: UnifiedContentData) => {
-                                        const isClickable = shouldMakeClickable(row.pathname);
-
-                                        return (
-                                            <TableRow key={row.pathname} className='last:border-none'>
-                                                <TableCell>
-                                                    <div className='group/link inline-flex flex-col items-start gap-px'>
-                                                        {isClickable ?
-                                                            <Button 
-                                                                className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
-                                                                title={row.post_id ? 'View post analytics' : 'View page'} 
-                                                                variant='link' 
-                                                                onClick={getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type)}
-                                                            >
-                                                                {row.title}
-                                                            </Button>
-                                                            :
-                                                            <span className='font-medium'>
-                                                                {row.title}
-                                                            </span>
-                                                        }
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className='text-right font-mono text-sm'>
-                                                    {formatNumber(Number(row.visits))}
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
+                                    {transformedData.map((row: UnifiedContentData) => (
+                                        <TableRow key={row.pathname} className='last:border-none'>
+                                            <TableCell>
+                                                <div className='group/link inline-flex flex-col items-start gap-px'>
+                                                    {shouldMakeClickable(row.pathname) ?
+                                                        <Button 
+                                                            className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
+                                                            title={row.post_id ? 'View post analytics' : 'View page'} 
+                                                            variant='link' 
+                                                            onClick={getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type)}
+                                                        >
+                                                            {row.title}
+                                                        </Button>
+                                                        :
+                                                        <span className='font-medium'>
+                                                            {row.title}
+                                                        </span>
+                                                    }
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className='text-right font-mono text-sm'>
+                                                {formatNumber(Number(row.visits))}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
                                 </TableBody>
                             </Table>
                         </SheetContent>
