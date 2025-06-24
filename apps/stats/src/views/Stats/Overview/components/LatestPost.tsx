@@ -173,19 +173,6 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                 {/* Email metrics - show for email posts */}
                                 {metricsToShow.showEmailMetrics && appSettings?.newslettersEnabled && latestPostStats.email && (
                                     <>
-                                        {/* Show sent count from email data */}
-                                        <div className={metricClassName} onClick={() => {
-                                            navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
-                                        }}>
-                                            <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                                <LucideIcon.Mail size={16} strokeWidth={1.25} />
-                                                <span className='hidden md:!visible md:!block'>Sent</span>
-                                            </div>
-                                            <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
-                                                {formatNumber(latestPostStats.email.email_count || 0)}
-                                            </span>
-                                        </div>
-
                                         {/* Show open rate - always display if email exists */}
                                         <div className={metricClassName} onClick={() => {
                                             navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
@@ -197,6 +184,22 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
                                                 {latestPostStats.email.email_count ?
                                                     formatPercentage((latestPostStats.email.opened_count || 0) / latestPostStats.email.email_count)
+                                                    : '0%'
+                                                }
+                                            </span>
+                                        </div>
+
+                                        {/* Show click rate - display if email exists and has clicks data */}
+                                        <div className={metricClassName} onClick={() => {
+                                            navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
+                                        }}>
+                                            <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
+                                                <LucideIcon.MousePointerClick size={16} strokeWidth={1.25} />
+                                                <span className='hidden whitespace-nowrap md:!visible md:!block'>Click rate</span>
+                                            </div>
+                                            <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                                {latestPostStats.email.email_count && latestPostStats.count?.clicks ?
+                                                    formatPercentage((latestPostStats.count.clicks || 0) / latestPostStats.email.email_count)
                                                     : '0%'
                                                 }
                                             </span>
