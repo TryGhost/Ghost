@@ -466,11 +466,11 @@ describe('Posts Content API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    posts: new Array(11)
+                    posts: new Array(17)
                         .fill(postCompactMatcher)
                 });
 
-            assert.equal(res.body.posts.length, 11, 'Should return all 11 posts');
+            assert.equal(res.body.posts.length, 17, 'Should return all 17 posts');
 
             // Expensive fields like lexical and mobiledoc are not returned
             assert.equal(res.body.posts[0].lexical, undefined);
@@ -485,11 +485,11 @@ describe('Posts Content API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    posts: new Array(1)
+                    posts: new Array(2)
                         .fill(postCompactMatcher)
                 });
 
-            assert.equal(res.body.posts.length, 1, 'Should return only 1 post');
+            assert.equal(res.body.posts.length, 2, 'Should return only 1 post');
         });
 
         it('Can order results', async function () {
