@@ -244,7 +244,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
     const followMutation = useFollowMutationForUser(
         'index',
         () => {
-            toast.success('Followed');
+            toast.success(`Followed ${author?.name}`);
         },
         () => {
             toast.error('Failed to follow');
@@ -254,7 +254,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
     const unfollowMutation = useUnfollowMutationForUser(
         'index',
         () => {
-            toast.success('Unfollowed');
+            toast.info(`Unfollowed ${author?.name}`);
         },
         () => {
             toast.error('Failed to unfollow');
