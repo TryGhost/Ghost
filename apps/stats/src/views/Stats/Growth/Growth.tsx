@@ -31,6 +31,7 @@ interface UnifiedGrowthContentData {
     mrr: number;
     percentage?: number;
     published_at: string;
+    url_exists?: boolean;
 }
 
 type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
@@ -112,7 +113,8 @@ const Growth: React.FC = () => {
                 paid_members: item.paid_members,
                 mrr: item.mrr,
                 percentage,
-                published_at: item.published_at
+                published_at: item.published_at,
+                url_exists: (item as any).url_exists ?? true
             };
         });
     }, [topPostsData, sortBy]);
@@ -208,7 +210,7 @@ const Growth: React.FC = () => {
                                                 <TableRow key={`${selectedContentType}-${post.post_id || `${post.title}-${index}`}`} className='last:border-none'>
                                                     <TableCell>
                                                         <div className='group/link inline-flex flex-col items-start gap-px'>
-                                                            {shouldMakeClickable(post.attribution_url) ?
+                                                            {shouldMakeClickable(post.attribution_url, post.url_exists) ?
                                                                 <Button 
                                                                     className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
                                                                     title={post.post_id ? 'View post analytics' : 'View page'} 

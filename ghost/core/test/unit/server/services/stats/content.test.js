@@ -21,7 +21,8 @@ describe('ContentStatsService', function () {
         };
 
         mockUrlService = {
-            getResource: sinon.stub()
+            getResource: sinon.stub(),
+            hasFinished: sinon.stub().returns(true)
         };
 
         // Create mock Tinybird client
@@ -236,14 +237,20 @@ describe('ContentStatsService', function () {
                 {pathname: '/post-2/', post_uuid: 'post-2', visits: 50}
             ];
 
+            // Mock urlService to return resources for these paths
+            mockUrlService.getResource.withArgs('/post-1/').returns({data: {title: 'Post 1'}});
+            mockUrlService.getResource.withArgs('/post-2/').returns({data: {title: 'Post 2'}});
+
             const result = await service.enrichTopContentData(data);
 
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(2);
             result[0].title.should.equal('Test Post 1');
             result[0].post_id.should.equal('post-id-1');
+            result[0].url_exists.should.equal(true);
             result[1].title.should.equal('Test Post 2');
             result[1].post_id.should.equal('post-id-2');
+            result[1].url_exists.should.equal(true);
 
             service.extractPostUuids.calledOnce.should.be.true();
             service.lookupPostTitles.calledOnce.should.be.true();
@@ -267,6 +274,7 @@ describe('ContentStatsService', function () {
             result.should.be.an.Array().with.lengthOf(1);
             result[0].title.should.equal('About Us');
             result[0].resourceType.should.equal('page');
+            result[0].url_exists.should.equal(true);
 
             service.getResourceTitle.calledWith('/about/').should.be.true();
         });
@@ -283,6 +291,9 @@ describe('ContentStatsService', function () {
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(1);
             result[0].title.should.equal('unknown-page');
+            result[0].url_exists.should.equal(false);
+
+            service.getResourceTitle.calledWith('/unknown-page/').should.be.true();
         });
 
         it('handles home page', async function () {
@@ -296,7 +307,8 @@ describe('ContentStatsService', function () {
 
             should.exist(result);
             result.should.be.an.Array().with.lengthOf(1);
-            result[0].title.should.equal('Home');
+            result[0].title.should.equal('Homepage');
+            result[0].url_exists.should.equal(false);
         });
     });
 
