@@ -12,7 +12,7 @@ import {Navigate, useAppContext, useNavigate, useSearchParams} from '@tryghost/a
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useNewsletterBasicStatsWithRange, useNewsletterStatsWithRangeSplit, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
+import {useNewsletterStatsWithRangeSplit, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
 import type {TopNewslettersOrder} from '@src/hooks/useNewsletterStatsWithRange';
 
 export type AvgsDataItem = {
@@ -230,8 +230,9 @@ const Newsletters: React.FC = () => {
         shouldFetchStats || false
     );
 
-    // Get newsletter stats to check if any newsletters were sent in the time period
-    const {data: newsletterStatsData, isLoading: isNewsletterStatsLoading} = useNewsletterBasicStatsWithRange(
+    // Get newsletter stats with click data to check if any newsletters were sent in the time period
+    // and to calculate averages - using the same data source as the table for consistency
+    const {data: newsletterStatsData, isLoading: isNewsletterStatsLoading, isClicksLoading} = useNewsletterStatsWithRangeSplit(
         range,
         'date desc',
         selectedNewsletterId || undefined,
@@ -246,20 +247,32 @@ const Newsletters: React.FC = () => {
         return newslettersData.newsletters.find(n => n.id === selectedNewsletterId) || null;
     }, [newslettersData, selectedNewsletterId]);
 
-    // Calculate totals for KPIs - we'll need a separate API call for newsletter stats just for averages
+    // Calculate totals for KPIs - now including proper averages from newsletter stats
     const totals = useMemo(() => {
         // Get total subscribers from the selected newsletter or all newsletters
         const totalSubscribers = selectedNewsletter?.count?.active_members ||
             subscriberStatsData?.stats?.[0]?.total ||
             0;
 
-        // For now, return basic totals - averages will be calculated in a separate component if needed
+        // Calculate averages from newsletter stats data
+        let avgOpenRate = 0;
+        let avgClickRate = 0;
+
+        if (newsletterStatsData?.stats && newsletterStatsData.stats.length > 0) {
+            const stats = newsletterStatsData.stats;
+            const totalOpenRate = stats.reduce((sum, stat) => sum + (stat.open_rate || 0), 0);
+            const totalClickRate = stats.reduce((sum, stat) => sum + (stat.click_rate || 0), 0);
+            
+            avgOpenRate = totalOpenRate / stats.length;
+            avgClickRate = totalClickRate / stats.length;
+        }
+
         return {
             totalSubscribers,
-            avgOpenRate: 0,
-            avgClickRate: 0
+            avgOpenRate,
+            avgClickRate
         };
-    }, [selectedNewsletter, subscriberStatsData]);
+    }, [selectedNewsletter, subscriberStatsData, newsletterStatsData]);
 
     // Create subscribers data from newsletter subscriber stats
     const subscribersData = useMemo(() => {
@@ -271,11 +284,26 @@ const Newsletters: React.FC = () => {
         return subscriberStatsData.stats[0].deltas;
     }, [subscriberStatsData]);
 
-    // For the KPIs component, we'll use empty avgsData since averages are calculated separately now
-    const avgsData: AvgsDataItem[] = [];
+    // Create avgsData from newsletter stats for the bar charts
+    const avgsData: AvgsDataItem[] = useMemo(() => {
+        if (!newsletterStatsData?.stats) {
+            return [];
+        }
+
+        return newsletterStatsData.stats.map(stat => ({
+            post_id: stat.post_id,
+            post_title: stat.post_title,
+            send_date: stat.send_date,
+            sent_to: stat.sent_to,
+            total_opens: stat.total_opens,
+            open_rate: stat.open_rate,
+            total_clicks: stat.total_clicks || 0,
+            click_rate: stat.click_rate || 0
+        }));
+    }, [newsletterStatsData]);
 
     // Separate loading states for different sections
-    const isKPIsLoading = isNewslettersLoading || isSubscriberStatsLoading;
+    const isKPIsLoading = isNewslettersLoading || isSubscriberStatsLoading || isClicksLoading;
 
     // Show data only if there are actual newsletters sent in the time period
     const hasNewslettersInPeriod = newsletterStatsData?.stats && newsletterStatsData.stats.length > 0;
