@@ -15,6 +15,7 @@ module.exports = function apiRoutes() {
 
     // ## Posts
     router.get('/posts', mw.authenticatePublic, http(api.postsPublic.browse));
+    router.get('/posts/compact', mw.authenticatePublic, http(api.postsPublic.browseCompact));
     router.get('/posts/:id', mw.authenticatePublic, http(api.postsPublic.read));
     router.get('/posts/slug/:slug', mw.authenticatePublic, http(api.postsPublic.read));
 

@@ -12,6 +12,11 @@ const messages = {
     postNotFound: 'Post not found.'
 };
 
+const BROWSE_COMPACT_DEFAULTS = {
+    limit: 10000,
+    fields: 'id,slug,title,excerpt,url,updated_at,visibility'
+};
+
 const rejectPrivateFieldsTransformer = input => mapQuery(input, function (value, key) {
     const lowerCaseKey = key.toLowerCase();
     if (lowerCaseKey.startsWith('authors.password') || lowerCaseKey.startsWith('authors.email')) {
@@ -175,6 +180,41 @@ const controller = {
             }
 
             return model;
+        }
+    },
+
+    browseCompact: {
+        headers: {
+            cacheInvalidate: false
+        },
+        cache: postsPublicService.api?.cache,
+        generateCacheKeyData(frame) {
+            return {
+                options: {
+                    ...generateOptionsData(frame, [
+                        'filter',
+                        'order'
+                    ]),
+                    limit: BROWSE_COMPACT_DEFAULTS.limit,
+                    fields: BROWSE_COMPACT_DEFAULTS.fields
+                },
+                auth: generateAuthData(frame),
+                method: 'browseCompact'
+            };
+        },
+        options: [
+            'filter',
+            'order'
+        ],
+        permissions: true,
+        query(frame) {
+            const options = {
+                ...frame.options,
+                limit: BROWSE_COMPACT_DEFAULTS.limit,
+                fields: BROWSE_COMPACT_DEFAULTS.fields,
+                mongoTransformer: rejectPrivateFieldsTransformer
+            };
+            return postsService.browsePosts(options);
         }
     }
 };

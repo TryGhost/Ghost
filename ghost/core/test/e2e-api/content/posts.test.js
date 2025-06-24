@@ -5,7 +5,7 @@ const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
-const {anyArray, anyContentVersion, anyErrorId, anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
+const {anyArray, anyContentVersion, anyErrorId, anyEtag, anyUuid, anyISODateTimeWithTZ, anyString} = matchers;
 
 const postMatcher = {
     published_at: anyISODateTimeWithTZ,
@@ -21,6 +21,16 @@ const postMatcherShallowIncludes = Object.assign(
         authors: anyArray
     }
 );
+
+const postCompactMatcher = {
+    ...postMatcher,
+    slug: anyString,
+    title: anyString,
+    excerpt: anyString,
+    url: anyString,
+    visibility: anyString,
+    html: anyString
+};
 
 async function trackDb(fn, skip) {
     const db = require('../../../core/server/data/db');
@@ -445,5 +455,75 @@ describe('Posts Content API', function () {
 
         assert.doesNotMatch(response.body.posts[0].html, /Visible to free\/paid members/);
         assert.match(response.body.posts[0].html, /Visible to anonymous viewers/);
+    });
+
+    describe('browseCompact', function () {
+        it('Returns a compact list of posts', async function () {
+            const res = await agent.get('posts/compact/')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    posts: new Array(11)
+                        .fill(postCompactMatcher)
+                });
+
+            assert.equal(res.body.posts.length, 11, 'Should return all 11 posts');
+
+            // Expensive fields like lexical and mobiledoc are not returned
+            assert.equal(res.body.posts[0].lexical, undefined);
+            assert.equal(res.body.posts[0].mobiledoc, undefined);
+        });
+
+        it('Can filter results', async function () {
+            const res = await agent.get('posts/compact/?filter=visibility:paid')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    posts: new Array(1)
+                        .fill(postCompactMatcher)
+                });
+
+            assert.equal(res.body.posts.length, 1, 'Should return only 1 post');
+        });
+
+        it('Can order results', async function () {
+            const res = await agent.get('posts/compact/?order=title%20asc')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            const titles = res.body.posts.map(p => p.title);
+            const sortedTitles = [...titles].sort((a, b) => a.localeCompare(b));
+            assert.deepEqual(titles, sortedTitles, 'Posts should be ordered by title ascending');
+        });
+
+        it('Cannot include relations', async function () {
+            const res = await agent.get('posts/compact/?include=tags,authors')
+                .expectStatus(200);
+
+            const post = res.body.posts[0];
+            assert.equal(post.tags, undefined, 'Should not include tags');
+            assert.equal(post.authors, undefined, 'Should not include authors');
+        });
+
+        it('Cannot request more fields', async function () {
+            const res = await agent.get('posts/compact/?fields=lexical,mobiledoc')
+                .expectStatus(200);
+
+            const post = res.body.posts[0];
+            assert.ok(post.id, 'Should have id');
+            assert.ok(post.slug, 'Should have slug');
+            assert.ok(post.title, 'Should have title');
+            assert.equal(post.lexical, undefined, 'Should not have lexical');
+            assert.equal(post.mobiledoc, undefined, 'Should not have mobiledoc');
+        });
     });
 });
