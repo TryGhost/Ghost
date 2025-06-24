@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, GhAreaChart, GhAreaChartDataItem, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsContent, TabsList, TabsTrigger, centsToDollars, formatDisplayDateWithRange, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsContent, TabsList, TabsTrigger, centsToDollars, formatDisplayDateWithRange, formatNumber} from '@tryghost/shade';
 import {DiffDirection} from '@src/hooks/useGrowthStats';
 import {STATS_RANGES} from '@src/utils/constants';
 import {sanitizeChartData} from '@src/utils/chart-helpers';
@@ -216,11 +216,11 @@ const GrowthKPIs: React.FC<{
         );
     }
 
-    const areaChartClassname = '-mb-3 h-[16vw] max-h-[320px] w-full';
+    const areaChartClassname = '-mb-3 h-[16vw] max-h-[320px] w-full min-h-[180px]';
 
     return (
         <Tabs defaultValue={initialTab} variant='kpis'>
-            <TabsList className="-mx-6 grid grid-cols-4">
+            <TabsList className={`-mx-6 ${appSettings?.paidMembersEnabled ? 'hidden grid-cols-4 lg:!visible lg:!grid' : 'grid grid-cols-4'}`}>
                 <KpiTabTrigger className={!appSettings?.paidMembersEnabled ? 'cursor-auto after:hidden' : ''} value="total-members" onClick={() => {
                     if (appSettings?.paidMembersEnabled) {
                         handleTabChange('total-members');
@@ -273,6 +273,56 @@ const GrowthKPIs: React.FC<{
                 </>
                 }
             </TabsList>
+            {appSettings?.paidMembersEnabled &&
+                <DropdownMenu>
+                    <DropdownMenuTrigger className='lg:hidden' asChild>
+                        <KpiDropdownButton>
+                            {currentTab === 'total-members' &&
+                                <KpiTabValue
+                                    color='hsl(var(--chart-darkblue))'
+                                    diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
+                                    diffValue={percentChanges.total}
+                                    label="Total members"
+                                    value={formatNumber(totalMembers)}
+                                />
+                            }
+                            {currentTab === 'free-members' &&
+                                <KpiTabValue
+                                    color='hsl(var(--chart-blue))'
+                                    diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.free}
+                                    diffValue={percentChanges.free}
+                                    label="Free members"
+                                    value={formatNumber(freeMembers)}
+                                />
+                            }
+                            {currentTab === 'paid-members' &&
+                                <KpiTabValue
+                                    color='hsl(var(--chart-purple))'
+                                    diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.paid}
+                                    diffValue={percentChanges.paid}
+                                    label="Paid members"
+                                    value={formatNumber(paidMembers)}
+                                />
+                            }
+                            {currentTab === 'mrr' &&
+                                <KpiTabValue
+                                    color='hsl(var(--chart-teal))'
+                                    diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.mrr}
+                                    diffValue={percentChanges.mrr}
+                                    label="MRR"
+                                    value={`${currencySymbol}${formatNumber(centsToDollars(mrr))}`}
+                                />
+                            }
+                        </KpiDropdownButton>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align='end' className="w-56">
+                        <DropdownMenuItem onClick={() => handleTabChange('total-members')}>Total members</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleTabChange('free-members')}>Free members</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleTabChange('paid-members')}>Paid members</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleTabChange('mrr')}>MRR</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            }
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 {currentTab === 'paid-members' ?
                     <Tabs
@@ -303,7 +353,7 @@ const GrowthKPIs: React.FC<{
                             />
                         </TabsContent>
                         <TabsContent value="change">
-                            <ChartContainer className='mt-6 max-h-[280px] w-full' config={paidChangeChartConfig}>
+                            <ChartContainer className='mt-6 max-h-[280px] min-h-[180px] w-full' config={paidChangeChartConfig}>
                                 <Recharts.BarChart
                                     data={paidChangeChartData}
                                     stackOffset='sign'

@@ -1,4 +1,4 @@
-import {BarChartLoadingIndicator, GhAreaChart, KpiTabTrigger, KpiTabValue, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, getYRange} from '@tryghost/shade';
+import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, getYRange} from '@tryghost/shade';
 import {KPI_METRICS} from '../Web';
 import {sanitizeChartData} from '@src/utils/chart-helpers';
 import {useMemo, useState} from 'react';
@@ -75,7 +75,7 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range, isLoading}) => {
 
     return (
         <Tabs defaultValue="visits" variant='kpis'>
-            <TabsList className="-mx-6 grid grid-cols-2">
+            <TabsList className="-mx-6 hidden grid-cols-2 md:!visible md:!grid">
                 <KpiTabTrigger value="visits" onClick={() => setCurrentTab('visits')}>
                     <KpiTabValue color='hsl(var(--chart-blue))' label="Unique visitors" value={kpiValues.visits} />
                 </KpiTabTrigger>
@@ -83,9 +83,25 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range, isLoading}) => {
                     <KpiTabValue color='hsl(var(--chart-teal))' label="Total views" value={kpiValues.views} />
                 </KpiTabTrigger>
             </TabsList>
+            <DropdownMenu>
+                <DropdownMenuTrigger className='md:hidden' asChild>
+                    <KpiDropdownButton>
+                        {currentTab === 'visits' &&
+                            <KpiTabValue color='hsl(var(--chart-blue))' label="Unique visitors" value={kpiValues.visits} />
+                        }
+                        {currentTab === 'views' &&
+                            <KpiTabValue color='hsl(var(--chart-teal))' label="Total views" value={kpiValues.views} />
+                        }
+                    </KpiDropdownButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align='end' className="w-56">
+                    <DropdownMenuItem onClick={() => setCurrentTab('visits')}>Unique visitors</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrentTab('views')}>Total views</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 <GhAreaChart
-                    className='-mb-3 h-[16vw] max-h-[320px] w-full'
+                    className='-mb-3 h-[16vw] max-h-[320px] min-h-[180px] w-full'
                     color={currentMetric.chartColor}
                     data={chartData}
                     id="mrr"

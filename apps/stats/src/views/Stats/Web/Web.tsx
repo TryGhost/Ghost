@@ -118,7 +118,7 @@ const Web: React.FC = () => {
                         />
                     </CardContent>
                 </Card>
-                <div className='grid min-h-[460px] grid-cols-2 gap-8'>
+                <div className='flex min-h-[460px] grid-cols-2 flex-col gap-8 lg:grid'>
                     <TopContent
                         range={range}
                     />

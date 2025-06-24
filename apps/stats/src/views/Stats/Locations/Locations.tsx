@@ -218,7 +218,7 @@ const Locations:React.FC = () => {
                         <CardDescription>A geographic breakdown of your readers {getPeriodText(range)}</CardDescription>
                     </CardHeader>
                     <CardContent className='p-0'>
-                        <div className='grid grid-cols-3 items-stretch'>
+                        <div className='flex flex-col lg:grid lg:grid-cols-3 lg:items-stretch'>
                             <div className='svg-map-container relative col-span-2 mx-auto w-full max-w-[740px] px-8 py-12 [&_.svg-map]:stroke-background'>
                                 <SVGMap
                                     locationClassName={getLocationClassName}

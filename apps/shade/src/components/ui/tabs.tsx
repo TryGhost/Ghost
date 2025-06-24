@@ -5,6 +5,7 @@ import {cn} from '@/lib/utils';
 import {cva} from 'class-variance-authority';
 import {TrendingDown, TrendingUp, type LucideIcon} from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
+import {Button, ButtonProps} from './button';
 
 type TabsVariant = 'segmented' | 'segmented-sm' | 'button' | 'button-sm' | 'underline' | 'navbar' | 'pill' | 'kpis';
 
@@ -199,7 +200,7 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
     const IconComponent = iconName ? LucideIcons[iconName] as LucideIcon : null;
 
     const diffContainerClassName = cn(
-        'hidden xl:!flex xl:!visible items-center gap-1 text-xs h-[22px] px-1.5 rounded-sm group/diff cursor-default mt-0.5',
+        'flex items-center gap-1 text-xs h-[22px] px-1.5 rounded-sm group/diff cursor-default mt-0.5',
         diffDirection === 'up' && 'text-green-600 bg-green/10',
         diffDirection === 'down' && 'text-red-600 bg-red/10',
         diffDirection === 'same' && 'text-gray-700 bg-muted'
@@ -211,8 +212,8 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
                 {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
                 {label}
             </div>
-            <div className='flex items-start gap-3'>
-                <div className='text-[2.3rem] font-semibold leading-none tracking-tight xl:text-[2.6rem] xl:tracking-[-0.04em]'>
+            <div className='flex flex-col items-start gap-2 xl:flex-row xl:gap-3'>
+                <div className='text-[2.3rem] font-semibold leading-none tracking-tighter xl:text-[2.6rem]'>
                     {value}
                 </div>
                 {diffDirection && diffDirection !== 'hidden' &&
@@ -233,4 +234,28 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
     );
 };
 
-export {Tabs, TabsList, TabsTrigger, TabsTriggerCount, TabsContent, KpiTabTrigger, KpiTabValue, tabsVariants};
+interface KpiDropdownButtonProps extends ButtonProps {
+    className?: string;
+    children: React.ReactNode;
+}
+
+const KpiDropdownButton = React.forwardRef<HTMLButtonElement, KpiDropdownButtonProps>(
+    ({variant = 'dropdown', className, ...props}, ref) => {
+        return (
+            <Button
+                ref={ref}
+                className={
+                    cn(
+                        'h-auto w-full rounded-none border-x-0 border-t-0 focus-visible:ring-0 bg-transparent py-5',
+                        className
+                    )
+                }
+                variant={variant}
+                {...props}
+            />
+        );
+    }
+);
+KpiDropdownButton.displayName = 'KpiDropdownButton';
+
+export {Tabs, TabsList, TabsTrigger, TabsTriggerCount, TabsContent, KpiTabTrigger, KpiTabValue, KpiDropdownButton, tabsVariants};
