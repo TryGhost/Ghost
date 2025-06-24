@@ -1969,7 +1969,7 @@ table.body h2 span {
 }
 </style>
     </head>
-    <body style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 1.4; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
+    <body style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is just a simple paragraph, no frills.
 
 This is block quote
@@ -2001,7 +2001,7 @@ And another one, with some bold text.
 Ghost: Independent technology for modern publishingBeautiful, modern publishing with newsletters and premium subscriptions built-in. Used by Sky, 404Media, Lever News, Tangle, The Browser, and thousands more.Ghost - The Profes</span>
 
         <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
-            <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header\\" width=\\"100%\\" style=\\"mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #ffffff; width: 100%; border-spacing: 0; border-collapse: collapse;\\" bgcolor=\\"#ffffff\\">
+            <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header\\" width=\\"100%\\" style=\\"mso-table-lspace: 0pt; mso-table-rspace: 0pt; line-height: 1.4; background-color: #ffffff; width: 100%; border-spacing: 0; border-collapse: collapse;\\" bgcolor=\\"#ffffff\\">
                 <!-- Outlook doesn't respect max-width so we need an extra centered table -->
                 <!--[if mso]>
                 <tr>
@@ -2088,7 +2088,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
             </table>
 
         <!-- MAIN CONTENT AREA -->
-        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
+        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; line-height: 1.4; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
             <!-- Outlook doesn't respect max-width so we need an extra centered table -->
             <!--[if mso]>
             <tr>
@@ -3381,7 +3381,7 @@ table.body h2 span {
 }
 </style>
     </head>
-    <body style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 1.4; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
+    <body style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is just a simple paragraph, no frills.
 
 &gt; This is block quote
@@ -3427,7 +3427,7 @@ Ghost: Independent technology for modern publishing
 Beautiful, modern publishing with newsletters and premium subscriptions built-in. Used by Sky,</span>
 
         <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
-            <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header\\" width=\\"100%\\" style=\\"mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #ffffff; width: 100%; border-spacing: 0; border-collapse: collapse;\\" bgcolor=\\"#ffffff\\">
+            <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header\\" width=\\"100%\\" style=\\"mso-table-lspace: 0pt; mso-table-rspace: 0pt; line-height: 1.4; background-color: #ffffff; width: 100%; border-spacing: 0; border-collapse: collapse;\\" bgcolor=\\"#ffffff\\">
                 <!-- Outlook doesn't respect max-width so we need an extra centered table -->
                 <!--[if mso]>
                 <tr>
@@ -3514,7 +3514,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
             </table>
 
         <!-- MAIN CONTENT AREA -->
-        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
+        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; line-height: 1.4; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
             <!-- Outlook doesn't respect max-width so we need an extra centered table -->
             <!--[if mso]>
             <tr>
@@ -4813,7 +4813,7 @@ table.body h2 span {
 }
 </style>
     </head>
-    <body style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 1.4; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
+    <body style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is just a simple paragraph, no frills.
 
 This is block quote
@@ -4845,7 +4845,7 @@ And another one, with some bold text.
 Ghost: Independent technology for modern publishingBeautiful, modern publishing with newsletters and premium subscriptions built-in. Used by Sky, 404Media, Lever News, Tangle, The Browser, and thousands more.Ghost - The Profes</span>
 
         <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
-            <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header\\" width=\\"100%\\" style=\\"mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #ffffff; width: 100%; border-spacing: 0; border-collapse: collapse;\\" bgcolor=\\"#ffffff\\">
+            <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header\\" width=\\"100%\\" style=\\"mso-table-lspace: 0pt; mso-table-rspace: 0pt; line-height: 1.4; background-color: #ffffff; width: 100%; border-spacing: 0; border-collapse: collapse;\\" bgcolor=\\"#ffffff\\">
                 <!-- Outlook doesn't respect max-width so we need an extra centered table -->
                 <!--[if mso]>
                 <tr>
@@ -4932,7 +4932,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
             </table>
 
         <!-- MAIN CONTENT AREA -->
-        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
+        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; line-height: 1.4; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
             <!-- Outlook doesn't respect max-width so we need an extra centered table -->
             <!--[if mso]>
             <tr>
@@ -6225,7 +6225,7 @@ table.body h2 span {
 }
 </style>
     </head>
-    <body style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 1.4; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
+    <body style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is just a simple paragraph, no frills.
 
 &gt; This is block quote
@@ -6271,7 +6271,7 @@ Ghost: Independent technology for modern publishing
 Beautiful, modern publishing with newsletters and premium subscriptions built-in. Used by Sky,</span>
 
         <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
-            <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header\\" width=\\"100%\\" style=\\"mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #ffffff; width: 100%; border-spacing: 0; border-collapse: collapse;\\" bgcolor=\\"#ffffff\\">
+            <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header\\" width=\\"100%\\" style=\\"mso-table-lspace: 0pt; mso-table-rspace: 0pt; line-height: 1.4; background-color: #ffffff; width: 100%; border-spacing: 0; border-collapse: collapse;\\" bgcolor=\\"#ffffff\\">
                 <!-- Outlook doesn't respect max-width so we need an extra centered table -->
                 <!--[if mso]>
                 <tr>
@@ -6358,7 +6358,7 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
             </table>
 
         <!-- MAIN CONTENT AREA -->
-        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
+        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; line-height: 1.4; background-color: #ffffff;\\" bgcolor=\\"#ffffff\\">
             <!-- Outlook doesn't respect max-width so we need an extra centered table -->
             <!--[if mso]>
             <tr>
