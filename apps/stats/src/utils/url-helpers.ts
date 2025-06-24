@@ -61,14 +61,24 @@ export function generateTitleFromPath(path: string): string {
 }
 
 /**
- * Check if a URL should be clickable (i.e., it's a valid frontend URL)
+ * Check if a URL should be clickable based on attribution data
  * @param attributionUrl - The attribution URL path
+ * @param urlExists - Whether the URL exists (from backend validation)
  * @returns Whether the URL should be clickable
  */
-export function shouldMakeClickable(attributionUrl: string): boolean {
-    // Always make clickable if we have an attribution URL
-    // This includes posts, pages, system pages like homepage, tag pages, author pages
-    return Boolean(attributionUrl);
+export function shouldMakeClickable(attributionUrl: string, urlExists?: boolean): boolean {
+    // Must have an attribution URL
+    if (!attributionUrl) {
+        return false;
+    }
+
+    // If backend provided url_exists info, use it
+    if (typeof urlExists === 'boolean') {
+        return urlExists;
+    }
+
+    // Fallback: always make clickable if we have an attribution URL (backward compatibility)
+    return true;
 }
 
 /**
