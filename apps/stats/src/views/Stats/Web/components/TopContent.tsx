@@ -76,7 +76,7 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
             post_uuid: item.post_uuid,
             post_id: item.post_id,
             post_type: item.post_type,
-            url_exists: (item as any).url_exists
+            url_exists: item.url_exists
         }));
     }, [topContentData]);
 

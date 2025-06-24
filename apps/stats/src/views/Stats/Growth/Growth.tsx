@@ -114,7 +114,7 @@ const Growth: React.FC = () => {
                 mrr: item.mrr,
                 percentage,
                 published_at: item.published_at,
-                url_exists: (item as any).url_exists ?? true
+                url_exists: item.url_exists ?? true
             };
         });
     }, [topPostsData, sortBy]);
