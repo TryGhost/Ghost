@@ -3,7 +3,6 @@ const api = require('../../../../api').endpoints;
 const {http} = require('@tryghost/api-framework');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
-const labs = require('../../../../../shared/labs');
 
 const shared = require('../../../shared');
 
