@@ -202,9 +202,11 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                         </PageMenuItem>
                     </PageMenu>
                 )}
-                <NavbarActions>
-                    {children}
-                </NavbarActions>
+                {children &&
+                    <NavbarActions>
+                        {children}
+                    </NavbarActions>
+                }
             </Navbar>
 
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

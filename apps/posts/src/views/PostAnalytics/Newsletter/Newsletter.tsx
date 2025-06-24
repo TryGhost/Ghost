@@ -11,12 +11,13 @@ import {hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';
+import {useResponsiveChartSize} from '@src/hooks/useResponsiveChartSize';
 
 interface postAnalyticsProps {}
 
 const FunnelArrow: React.FC = () => {
     return (
-        <div className='absolute -right-4 top-1/2 z-10 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground'>
+        <div className=':!visible absolute -right-4 top-1/2 z-10 hidden size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background   text-muted-foreground md:!flex'>
             <LucideIcon.ChevronRight className='ml-0.5' size={16} strokeWidth={1.5}/>
         </div>
     );
@@ -67,7 +68,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const [editedUrl, setEditedUrl] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const ITEMS_PER_PAGE = 5;
+    const ITEMS_PER_PAGE = 10;
+    const {chartSize} = useResponsiveChartSize();
 
     // Use shared post data from context
     const {post, isPostLoading, postId} = useGlobalData();
@@ -117,7 +119,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
         if (feedbackStats.totalFeedback > 0) {
             return true;
         }
-        
+
         // Show feedback if feedback is enabled (even if no feedback yet)
         return isFeedbackEnabled;
     }, [feedbackStats.totalFeedback, isFeedbackEnabled]);
@@ -251,8 +253,8 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
             <PostAnalyticsHeader currentTab='Newsletter' />
             <PostAnalyticsContent>
 
-                <div className={`grid gap-8 ${shouldShowFeedback ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                    <Card className={shouldShowFeedback ? 'col-span-2' : 'col-span-1'}>
+                <div className={`grid grid-cols-1 gap-8 ${shouldShowFeedback ? 'lg:grid-cols-2' : ''}`}>
+                    <Card className={shouldShowFeedback ? 'lg:col-span-2' : ''}>
                         <CardHeader className='hidden'>
                             <CardTitle>Newsletters</CardTitle>
                             <CardDescription>How did this post perform</CardDescription>
@@ -264,63 +266,65 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             :
                             <CardContent className='p-0'>
                                 <div className='grid grid-cols-3 items-stretch border-b'>
-                                    <KpiCard className='relative grow'>
+                                    <KpiCard className='relative grow p-3 md:p-6'>
                                         {/* <FunnelArrow /> */}
                                         <KpiCardLabel>
-                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-purple opacity-50'></div>
+                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-purple !text-sm opacity-50 lg:text-base'></div>
                                             {/* <LucideIcon.Send strokeWidth={1.5} /> */}
                                     Sent
                                         </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardValue>{formatNumber(stats.sent)}</KpiCardValue>
+                                            <KpiCardValue className='text-xl sm:text-2xl md:text-[2.6rem]'>{formatNumber(stats.sent)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
-                                    <KpiCard className='relative grow'>
+                                    <KpiCard className='relative grow p-3 md:p-6'>
                                         {/* <FunnelArrow /> */}
                                         <KpiCardLabel>
-                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-blue opacity-50'></div>
+                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-blue !text-sm opacity-50 lg:text-base'></div>
                                             {/* <LucideIcon.Eye strokeWidth={1.5} /> */}
                                     Opened
                                         </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardValue>{formatNumber(stats.opened)}</KpiCardValue>
+                                            <KpiCardValue className='text-xl sm:text-2xl md:text-[2.6rem]'>{formatNumber(stats.opened)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
-                                    <KpiCard className='grow'>
+                                    <KpiCard className='relative grow p-3 md:p-6'>
                                         <KpiCardLabel>
-                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-teal opacity-50'></div>
+                                            <div className='ml-0.5 size-[9px] rounded-full bg-chart-teal !text-sm opacity-50 lg:text-base'></div>
                                             {/* <LucideIcon.MousePointer strokeWidth={1.5} /> */}
                                     Clicked
                                         </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardValue>{formatNumber(stats.clicked)}</KpiCardValue>
+                                            <KpiCardValue className='text-xl sm:text-2xl md:text-[2.6rem]'>{formatNumber(stats.clicked)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
                                 </div>
-                                <div className='mx-auto grid grid-cols-3 items-center justify-center transition-all'>
-                                    <div className='relative border-r px-6'>
+                                <div className='mx-auto grid grid-cols-1 items-center justify-center gap-4 transition-all md:grid-cols-3 md:gap-0'>
+                                    <div className='relative border-r-0 px-6 md:border-r'>
                                         <NewsletterRadialChart
-                                            className='aspect-square'
+                                            className='aspect-[16/10] w-full max-w-[320px] sm:aspect-[2/1] md:aspect-[10/14] md:max-w-none lg:aspect-square'
                                             config={sentChartConfig}
                                             data={sentChartData}
                                             percentageLabel='Sent'
                                             percentageValue={formatPercentage(1)}
+                                            size={chartSize}
                                             tooltip={false}
                                         />
                                         <FunnelArrow />
                                     </div>
-                                    <div className='group/block relative border-r px-6 transition-all hover:bg-muted/25'>
+                                    <div className='group/block relative border-r-0 px-6 transition-all hover:bg-muted/25 md:border-r'>
                                         <BlockTooltip
                                             avgValue={formatPercentage(averageStats.openedRate)}
                                             dataColor='hsl(var(--chart-blue))'
                                             value={formatPercentage(stats.openedRate)}
                                         />
                                         <NewsletterRadialChart
-                                            className='aspect-square'
+                                            className='aspect-[16/10] w-full max-w-[320px] sm:aspect-[2/1] md:aspect-[10/14] md:max-w-none lg:aspect-square'
                                             config={openedChartConfig}
                                             data={openedChartData}
                                             percentageLabel='Open rate'
                                             percentageValue={formatPercentage(stats.openedRate)}
+                                            size={chartSize}
                                             tooltip={false}
                                         />
                                         <FunnelArrow />
@@ -332,11 +336,12 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                             value={formatPercentage(stats.clickedRate)}
                                         />
                                         <NewsletterRadialChart
-                                            className='aspect-square'
+                                            className='aspect-[16/10] w-full max-w-[320px] sm:aspect-[2/1] md:aspect-[10/14] md:max-w-none lg:aspect-square'
                                             config={clickedChartConfig}
                                             data={clickedChartData}
                                             percentageLabel='Click rate'
                                             percentageValue={formatPercentage(stats.clickedRate)}
+                                            size={chartSize}
                                             tooltip={false}
                                         />
                                     </div>
@@ -345,13 +350,13 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                         }
                     </Card>
                     {shouldShowFeedback && <Feedback feedbackStats={feedbackStats} />}
-                    <Card className={shouldShowFeedback ? '' : 'col-span-1'}>
+                    <Card>
                         <div className='flex items-center justify-between p-6'>
                             <CardHeader className='p-0'>
                                 <CardTitle>Newsletter clicks</CardTitle>
                                 <CardDescription>Which links resonated with your readers</CardDescription>
                             </CardHeader>
-                            <HTable className='mr-2'>No. of members</HTable>
+                            <HTable className='mr-2'>Members</HTable>
                         </div>
                         {isLoading ?
                             <CardContent className='p-6'>
