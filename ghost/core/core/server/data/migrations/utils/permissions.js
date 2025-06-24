@@ -36,7 +36,6 @@ async function addPermissionHelper(connection, config) {
         action_type: config.action,
         object_type: config.object,
         created_at: date,
-        created_by: MIGRATION_USER,
         updated_at: date
     });
 }
