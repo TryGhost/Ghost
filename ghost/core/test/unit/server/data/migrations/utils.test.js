@@ -273,9 +273,7 @@ async function setupSettingsDb() {
             \`type\` varchar(50) not null,
             \`flags\` varchar(50) null,
             \`created_at\` datetime not null,
-            \`created_by\` varchar(24) not null,
             \`updated_at\` datetime null,
-            \`updated_by\` varchar(24) null,
             primary key (\`id\`)
         );
     `);
@@ -670,8 +668,7 @@ describe('migrations/utils/settings', function () {
                 type: 'string',
                 group: 'test_group',
                 flags: 'PUBLIC',
-                created_at: knex.raw('CURRENT_TIMESTAMP'),
-                created_by: 1
+                created_at: knex.raw('CURRENT_TIMESTAMP')
             });
 
             const allSettingsAtStart = await knex('settings').select();

@@ -98,14 +98,25 @@ function removeSetting(key) {
             logging.info(`Restoring setting: ${key}`);
             const now = connection.raw('CURRENT_TIMESTAMP');
 
+            const data = {
+                id: ObjectId().toHexString(),
+                key,
+                value: originalSetting.value,
+                group: originalSetting.group,
+                type: originalSetting.type,
+                flags: originalSetting.flags,
+                created_at: now
+            };
+
+            if (await connection.schema.hasColumn('settings', 'created_by')) {
+                data.created_by = MIGRATION_USER;
+            }
+            if (await connection.schema.hasColumn('settings', 'updated_by')) {
+                data.updated_by = MIGRATION_USER;
+            }
+
             return connection('settings')
-                .insert({id: ObjectId().toHexString(),
-                    key,
-                    value: originalSetting.value,
-                    group: originalSetting.group,
-                    type: originalSetting.type,
-                    flags: originalSetting.flags,
-                    created_at: now});
+                .insert(data);
         }
     );
 }
