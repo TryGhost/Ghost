@@ -418,15 +418,11 @@ describe('Importer', function () {
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (importedData) {
-                    importedData.problems.length.should.eql(2);
+                    importedData.problems.length.should.eql(1);
 
-                    importedData.problems[0].message.should.eql('Entry was imported, but we were not able to resolve the ' +
-                        'following user references: . The user does not exist, fallback to owner user.');
-                    importedData.problems[0].help.should.eql('User');
-
-                    importedData.problems[1].message.should.eql('Entry was imported, but we were not able to ' +
+                    importedData.problems[0].message.should.eql('Entry was imported, but we were not able to ' +
                         'resolve the following user references: author_id, published_by. The user does not exist, fallback to owner user.');
-                    importedData.problems[1].help.should.eql('Post');
+                    importedData.problems[0].help.should.eql('Post');
 
                     // Grab the data from tables
                     return Promise.all([
@@ -455,7 +451,6 @@ describe('Importer', function () {
                     posts[0].slug.should.eql(exportData.data.posts[0].slug);
                     posts[0].primary_author.id.should.eql(testUtils.DataGenerator.Content.users[0].id);
                     posts[0].published_by.should.eql(testUtils.DataGenerator.Content.users[0].id);
-                    posts[0].created_by.should.eql(users[1].id);
                 });
         });
 
@@ -628,19 +623,11 @@ describe('Importer', function () {
                     posts[1].primary_author.id.should.equal(users[4].id);
                     posts[2].primary_author.id.should.equal(users[1].id);
 
-                    posts[0].created_by.should.equal(users[4].id);
-                    posts[1].created_by.should.equal(users[3].id);
-                    posts[2].created_by.should.equal(users[1].id);
-
                     posts[0].published_by.should.equal(users[4].id);
                     posts[1].published_by.should.equal(users[2].id);
                     posts[2].published_by.should.equal(users[2].id);
 
                     tags.length.should.equal(exportData.data.tags.length, 'Wrong number of tags');
-
-                    tags[0].created_by.should.equal(users[4].id);
-                    tags[1].created_by.should.equal(users[2].id);
-                    tags[2].created_by.should.equal(users[3].id);
 
                     // 4 imported users + 1 owner user
                     users.length.should.equal(exportData.data.users.length + 1, 'Wrong number of users');
@@ -666,11 +653,6 @@ describe('Importer', function () {
                     users[2].updated_at.toISOString().should.equal(moment(exportData.data.users[1].updated_at).startOf('seconds').toISOString());
                     users[3].updated_at.toISOString().should.equal(moment(exportData.data.users[2].updated_at).startOf('seconds').toISOString());
                     users[4].updated_at.toISOString().should.equal(moment(exportData.data.users[3].updated_at).startOf('seconds').toISOString());
-
-                    users[1].created_by.should.eql(testUtils.DataGenerator.Content.users[0].id);
-                    users[2].created_by.should.eql(users[1].id);
-                    users[3].created_by.should.eql(testUtils.DataGenerator.Content.users[0].id);
-                    users[4].created_by.should.eql(testUtils.DataGenerator.Content.users[0].id);
 
                     users[0].roles[0].id.should.eql(testUtils.DataGenerator.Content.roles[3].id);
                     users[1].roles[0].id.should.eql(testUtils.DataGenerator.Content.roles[0].id);

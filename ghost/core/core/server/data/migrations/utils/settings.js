@@ -111,6 +111,7 @@ function removeSetting(key) {
             if (await connection.schema.hasColumn('settings', 'created_by')) {
                 data.created_by = MIGRATION_USER;
             }
+
             if (await connection.schema.hasColumn('settings', 'updated_by')) {
                 data.updated_by = MIGRATION_USER;
             }

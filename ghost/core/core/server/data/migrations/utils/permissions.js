@@ -42,6 +42,7 @@ async function addPermissionHelper(connection, config) {
     if (await connection.schema.hasColumn('permissions', 'created_by')) {
         data.created_by = MIGRATION_USER;
     }
+
     if (await connection.schema.hasColumn('permissions', 'updated_by')) {
         data.updated_by = MIGRATION_USER;
     }
