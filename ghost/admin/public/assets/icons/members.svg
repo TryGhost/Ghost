@@ -2,7 +2,7 @@
   <title>members</title>
   <defs>
     <style>
-      .cls-1{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px}
+      .cls-1{fill:none!important;stroke:currentColor!important;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px}
     </style>
   </defs>
   <circle class="cls-1" cx="7.5" cy="7.875" r="4.125"/>
