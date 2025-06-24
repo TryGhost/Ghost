@@ -154,7 +154,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
                     kpiData && kpiData.length !== 0 && kpiValues.visits !== '0' ?
                         <>
                             <Kpis data={kpiData as KpiDataItem[] | null} />
-                            <div className='grid grid-cols-2 gap-8'>
+                            <div className='flex flex-col gap-8 lg:grid lg:grid-cols-2'>
                                 <Locations
                                     data={processedLocationsData}
                                     isLoading={isLocationsLoading}

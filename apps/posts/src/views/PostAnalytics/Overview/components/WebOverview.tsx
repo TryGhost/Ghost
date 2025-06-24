@@ -64,7 +64,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                                 </div>
                                 :
                                 <GhAreaChart
-                                    className={'h-[240px] w-full'}
+                                    className={'aspect-auto h-[240px] w-full'}
                                     color='hsl(var(--chart-blue))'
                                     data={chartData || []}
                                     id="visitors"
@@ -89,7 +89,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                                     siteIcon={siteIcon}
                                     siteUrl={siteUrl}
                                     tableOnly={true}
-                                    topSourcesLimit={3}
+                                    topSourcesLimit={5}
                                     totalVisitors={totalSourcesVisits}
                                 />
                                 :

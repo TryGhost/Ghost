@@ -21,7 +21,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({headerStyle = 'table', child
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead variant={headerStyle === 'table' ? 'default' : 'cardhead'}>{children}</TableHead>
+                        <TableHead className='min-w-[320px]' variant={headerStyle === 'table' ? 'default' : 'cardhead'}>{children}</TableHead>
                         <TableHead className='w-[110px] text-right'>Free members</TableHead>
                         <TableHead className='w-[110px] text-right'>Paid members</TableHead>
                         <TableHead className='w-[100px] text-right'>MRR impact</TableHead>
@@ -128,7 +128,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
         : `How readers found your ${range ? 'site' : 'post'}${range && getPeriodText ? ` ${getPeriodText(range)}` : ''}`;
 
     return (
-        <Card className='group/datalist'>
+        <Card className='group/datalist w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]'>
             {topSources.length <= 0 &&
                 <CardHeader>
                     <CardTitle>{title}</CardTitle>
