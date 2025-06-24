@@ -1,4 +1,4 @@
-import AudienceSelect, {getAudienceQueryParam} from '../components/AudienceSelect';
+import AudienceSelect from '../components/AudienceSelect';
 import DateRangeSelect from '../components/DateRangeSelect';
 import React, {useMemo, useState} from 'react';
 import StatsHeader from '../layout/StatsHeader';
@@ -7,13 +7,13 @@ import StatsView from '../layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, Icon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, SkeletonTable, cn, formatNumber, formatPercentage, formatQueryDate, getRangeDates, useSimplePagination} from '@tryghost/shade';
-import {Navigate, getStatEndpointUrl, getToken, useAppContext} from '@tryghost/admin-x-framework';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, Icon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, SkeletonTable, cn, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
+import {Navigate, useAppContext} from '@tryghost/admin-x-framework';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useQuery} from '@tinybirdco/charts';
+import {useTopLocationsData} from '@src/hooks/api';
 
 countries.registerLocale(enLocale);
 const getCountryName = (label: string) => {
@@ -56,26 +56,12 @@ interface ProcessedLocationData {
 }
 
 const Locations:React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    const {range, audience} = useGlobalData();
-    const {startDate, endDate, timezone} = getRangeDates(range);
+    const {isLoading: isConfigLoading, range} = useGlobalData();
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
     const ITEMS_PER_PAGE = 10;
     const {appSettings} = useAppContext();
 
-    const params = {
-        site_uuid: statsConfig?.id || '',
-        date_from: formatQueryDate(startDate),
-        date_to: formatQueryDate(endDate),
-        timezone: timezone,
-        member_status: getAudienceQueryParam(audience)
-    };
-
-    const {data, loading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_top_locations'),
-        token: getToken(statsConfig),
-        params
-    });
+    const {data, loading} = useTopLocationsData();
 
     const totalVisits = useMemo(() => data?.reduce((sum, row) => sum + Number(row.visits), 0) || 0,
         [data]

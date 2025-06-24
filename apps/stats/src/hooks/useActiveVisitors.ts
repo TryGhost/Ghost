@@ -1,10 +1,7 @@
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
+import {useActiveVisitorsData} from '@src/hooks/api';
 import {useEffect, useState} from 'react';
-import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useQuery} from '@tinybirdco/charts';
 
 export const useActiveVisitors = (enabled: boolean = true) => {
-    const {statsConfig} = useGlobalData();
     const [refreshKey, setRefreshKey] = useState(0);
     const [lastKnownCount, setLastKnownCount] = useState<number | null>(null);
 
@@ -21,17 +18,7 @@ export const useActiveVisitors = (enabled: boolean = true) => {
         return () => clearInterval(interval);
     }, [enabled]);
 
-    const params = {
-        site_uuid: statsConfig?.id || '',
-        // Add refreshKey to force refetch
-        _refresh: refreshKey
-    };
-
-    const {data, loading, error} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_active_visitors'),
-        token: getToken(statsConfig),
-        params
-    });
+    const {data, loading, error} = useActiveVisitorsData(enabled, refreshKey);
 
     const currentCount = data?.[0]?.active_visitors;
     

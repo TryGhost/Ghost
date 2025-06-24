@@ -7,14 +7,12 @@ import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
 import TopPosts from './components/TopPosts';
 import {cn, formatQueryDate, getRangeDates} from '@tryghost/shade';
-import {getAudienceQueryParam} from '../components/AudienceSelect';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
+import {useKpiData} from '@src/hooks/api';
 import {useLatestPostStats} from '@src/hooks/useLatestPostStats';
 import {useOverviewChartData} from './hooks/useOverviewChartData';
-import {useQuery} from '@tinybirdco/charts';
 import {useTopPostsViews} from '@tryghost/admin-x-framework/api/stats';
 
 interface HelpCardProps {
@@ -50,8 +48,7 @@ export const HelpCard: React.FC<HelpCardProps> = ({
 
 const Overview: React.FC = () => {
     const {appSettings} = useAppContext();
-    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    const {range, audience} = useGlobalData();
+    const {isLoading: isConfigLoading, range} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals, currencySymbol} = useGrowthStats(range);
     const {data: latestPostStats, isLoading: isLatestPostLoading} = useLatestPostStats();
@@ -64,21 +61,9 @@ const Overview: React.FC = () => {
         }
     });
 
-    /* Get visitors
+    /* Get visitors using unified API hook
     /* ---------------------------------------------------------------------- */
-    const visitorsParams = {
-        site_uuid: statsConfig?.id || '',
-        date_from: formatQueryDate(startDate),
-        date_to: formatQueryDate(endDate),
-        timezone: timezone,
-        member_status: getAudienceQueryParam(audience)
-    };
-
-    const {data: visitorsData, loading: isVisitorsLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
-        params: visitorsParams
-    });
+    const {data: visitorsData, loading: isVisitorsLoading} = useKpiData();
 
     const {
         visitorsChartData,

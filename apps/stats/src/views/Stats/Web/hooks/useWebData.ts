@@ -1,9 +1,6 @@
-import {formatQueryDate, getRangeDates} from '@tryghost/shade';
-import {getAudienceQueryParam} from '../../components/AudienceSelect';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useKpiData, useTopSourcesData} from '@src/hooks/api';
 import {useMemo} from 'react';
-import {useQuery} from '@tinybirdco/charts';
 
 export interface SourcesData {
     source?: string | number;
@@ -13,8 +10,7 @@ export interface SourcesData {
 }
 
 export const useWebData = () => {
-    const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
-    const {startDate, endDate, timezone} = getRangeDates(range);
+    const {isLoading: isConfigLoading, range, data} = useGlobalData();
 
     // Extract site information
     const siteInfo = useMemo(() => ({
@@ -22,35 +18,11 @@ export const useWebData = () => {
         icon: data?.icon as string | undefined
     }), [data]);
 
-    // Build query parameters
-    const queryParams = useMemo(() => {
-        const baseParams = {
-            site_uuid: statsConfig?.id || '',
-            date_from: formatQueryDate(startDate),
-            date_to: formatQueryDate(endDate),
-            member_status: getAudienceQueryParam(audience)
-        };
+    // Get KPI data using unified hook
+    const {data: kpiData, loading: kpiLoading} = useKpiData();
 
-        if (timezone) {
-            return {...baseParams, timezone};
-        }
-
-        return baseParams;
-    }, [statsConfig?.id, startDate, endDate, audience, timezone]);
-
-    // Get KPI data
-    const {data: kpiData, loading: kpiLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
-        params: queryParams
-    });
-
-    // Get top sources data
-    const {data: sourcesData, loading: isSourcesLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
-        token: getToken(statsConfig),
-        params: queryParams
-    });
+    // Get top sources data using unified hook
+    const {data: sourcesData, loading: isSourcesLoading} = useTopSourcesData();
 
     // Calculate total visitors
     const totalVisitors = useMemo(() => {
