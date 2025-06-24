@@ -21,6 +21,9 @@ let Invites;
 Invite = ghostBookshelf.Model.extend({
     tableName: 'invites',
 
+    actionsCollectCRUD: true,
+    actionsResourceType: 'invite',
+
     toJSON: function (unfilteredOptions) {
         const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, unfilteredOptions);
 
