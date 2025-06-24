@@ -52,47 +52,10 @@ module.exports = createTransactionalMigration(
         await knex('posts_authors').where('author_id', LEGACY_OWNER_USER_ID).update({author_id: newId});
         await knex('post_revisions').where('author_id', LEGACY_OWNER_USER_ID).update({author_id: newId});
 
-        // 3. Tables with created_by column
-        await knex('posts').where('created_by', LEGACY_OWNER_USER_ID).update({created_by: newId});
-        await knex('users').where('created_by', LEGACY_OWNER_USER_ID).update({created_by: newId});
-        await knex('roles').where('created_by', LEGACY_OWNER_USER_ID).update({created_by: newId});
-        await knex('permissions').where('created_by', LEGACY_OWNER_USER_ID).update({created_by: newId});
-        await knex('settings').where('created_by', LEGACY_OWNER_USER_ID).update({created_by: newId});
-        await knex('tags').where('created_by', LEGACY_OWNER_USER_ID).update({created_by: newId});
-        await knex('invites').where('created_by', LEGACY_OWNER_USER_ID).update({created_by: newId});
-        await knex('integrations').where('created_by', LEGACY_OWNER_USER_ID).update({created_by: newId});
-        await knex('webhooks').where('created_by', LEGACY_OWNER_USER_ID).update({created_by: newId});
-        await knex('api_keys').where('created_by', LEGACY_OWNER_USER_ID).update({created_by: newId});
-        await knex('members').where('created_by', LEGACY_OWNER_USER_ID).update({created_by: newId});
-        await knex('labels').where('created_by', LEGACY_OWNER_USER_ID).update({created_by: newId});
-        await knex('members_stripe_customers').where('created_by', LEGACY_OWNER_USER_ID).update({created_by: newId});
-        await knex('members_stripe_customers_subscriptions').where('created_by', LEGACY_OWNER_USER_ID).update({created_by: newId});
-        await knex('snippets').where('created_by', LEGACY_OWNER_USER_ID).update({created_by: newId});
-        await knex('emails').where('created_by', LEGACY_OWNER_USER_ID).update({created_by: newId});
-        await knex('tokens').where('created_by', LEGACY_OWNER_USER_ID).update({created_by: newId});
-
-        // 4. Tables with updated_by column (nullable)
-        await knex('posts').where('updated_by', LEGACY_OWNER_USER_ID).update({updated_by: newId});
-        await knex('users').where('updated_by', LEGACY_OWNER_USER_ID).update({updated_by: newId});
-        await knex('roles').where('updated_by', LEGACY_OWNER_USER_ID).update({updated_by: newId});
-        await knex('permissions').where('updated_by', LEGACY_OWNER_USER_ID).update({updated_by: newId});
-        await knex('settings').where('updated_by', LEGACY_OWNER_USER_ID).update({updated_by: newId});
-        await knex('tags').where('updated_by', LEGACY_OWNER_USER_ID).update({updated_by: newId});
-        await knex('invites').where('updated_by', LEGACY_OWNER_USER_ID).update({updated_by: newId});
-        await knex('integrations').where('updated_by', LEGACY_OWNER_USER_ID).update({updated_by: newId});
-        await knex('webhooks').where('updated_by', LEGACY_OWNER_USER_ID).update({updated_by: newId});
-        await knex('api_keys').where('updated_by', LEGACY_OWNER_USER_ID).update({updated_by: newId});
-        await knex('members').where('updated_by', LEGACY_OWNER_USER_ID).update({updated_by: newId});
-        await knex('labels').where('updated_by', LEGACY_OWNER_USER_ID).update({updated_by: newId});
-        await knex('members_stripe_customers').where('updated_by', LEGACY_OWNER_USER_ID).update({updated_by: newId});
-        await knex('members_stripe_customers_subscriptions').where('updated_by', LEGACY_OWNER_USER_ID).update({updated_by: newId});
-        await knex('snippets').where('updated_by', LEGACY_OWNER_USER_ID).update({updated_by: newId});
-        await knex('emails').where('updated_by', LEGACY_OWNER_USER_ID).update({updated_by: newId});
-
-        // 5. Tables with published_by column (nullable)
+        // 3. Tables with published_by column (nullable)
         await knex('posts').where('published_by', LEGACY_OWNER_USER_ID).update({published_by: newId});
 
-        // 6. Actions table with actor_id
+        // 4. Actions table with actor_id
         await knex('actions')
             .where('actor_id', LEGACY_OWNER_USER_ID)
             .where('actor_type', 'user')
@@ -177,47 +140,10 @@ module.exports = createTransactionalMigration(
         await knex('posts_authors').where('author_id', currentOwnerUserId).update({author_id: LEGACY_OWNER_USER_ID});
         await knex('post_revisions').where('author_id', currentOwnerUserId).update({author_id: LEGACY_OWNER_USER_ID});
 
-        // 3. Tables with created_by column
-        await knex('posts').where('created_by', currentOwnerUserId).update({created_by: LEGACY_OWNER_USER_ID});
-        await knex('users').where('created_by', currentOwnerUserId).update({created_by: LEGACY_OWNER_USER_ID});
-        await knex('roles').where('created_by', currentOwnerUserId).update({created_by: LEGACY_OWNER_USER_ID});
-        await knex('permissions').where('created_by', currentOwnerUserId).update({created_by: LEGACY_OWNER_USER_ID});
-        await knex('settings').where('created_by', currentOwnerUserId).update({created_by: LEGACY_OWNER_USER_ID});
-        await knex('tags').where('created_by', currentOwnerUserId).update({created_by: LEGACY_OWNER_USER_ID});
-        await knex('invites').where('created_by', currentOwnerUserId).update({created_by: LEGACY_OWNER_USER_ID});
-        await knex('integrations').where('created_by', currentOwnerUserId).update({created_by: LEGACY_OWNER_USER_ID});
-        await knex('webhooks').where('created_by', currentOwnerUserId).update({created_by: LEGACY_OWNER_USER_ID});
-        await knex('api_keys').where('created_by', currentOwnerUserId).update({created_by: LEGACY_OWNER_USER_ID});
-        await knex('members').where('created_by', currentOwnerUserId).update({created_by: LEGACY_OWNER_USER_ID});
-        await knex('labels').where('created_by', currentOwnerUserId).update({created_by: LEGACY_OWNER_USER_ID});
-        await knex('members_stripe_customers').where('created_by', currentOwnerUserId).update({created_by: LEGACY_OWNER_USER_ID});
-        await knex('members_stripe_customers_subscriptions').where('created_by', currentOwnerUserId).update({created_by: LEGACY_OWNER_USER_ID});
-        await knex('snippets').where('created_by', currentOwnerUserId).update({created_by: LEGACY_OWNER_USER_ID});
-        await knex('emails').where('created_by', currentOwnerUserId).update({created_by: LEGACY_OWNER_USER_ID});
-        await knex('tokens').where('created_by', currentOwnerUserId).update({created_by: LEGACY_OWNER_USER_ID});
-
-        // 4. Tables with updated_by column (nullable)
-        await knex('posts').where('updated_by', currentOwnerUserId).update({updated_by: LEGACY_OWNER_USER_ID});
-        await knex('users').where('updated_by', currentOwnerUserId).update({updated_by: LEGACY_OWNER_USER_ID});
-        await knex('roles').where('updated_by', currentOwnerUserId).update({updated_by: LEGACY_OWNER_USER_ID});
-        await knex('permissions').where('updated_by', currentOwnerUserId).update({updated_by: LEGACY_OWNER_USER_ID});
-        await knex('settings').where('updated_by', currentOwnerUserId).update({updated_by: LEGACY_OWNER_USER_ID});
-        await knex('tags').where('updated_by', currentOwnerUserId).update({updated_by: LEGACY_OWNER_USER_ID});
-        await knex('invites').where('updated_by', currentOwnerUserId).update({updated_by: LEGACY_OWNER_USER_ID});
-        await knex('integrations').where('updated_by', currentOwnerUserId).update({updated_by: LEGACY_OWNER_USER_ID});
-        await knex('webhooks').where('updated_by', currentOwnerUserId).update({updated_by: LEGACY_OWNER_USER_ID});
-        await knex('api_keys').where('updated_by', currentOwnerUserId).update({updated_by: LEGACY_OWNER_USER_ID});
-        await knex('members').where('updated_by', currentOwnerUserId).update({updated_by: LEGACY_OWNER_USER_ID});
-        await knex('labels').where('updated_by', currentOwnerUserId).update({updated_by: LEGACY_OWNER_USER_ID});
-        await knex('members_stripe_customers').where('updated_by', currentOwnerUserId).update({updated_by: LEGACY_OWNER_USER_ID});
-        await knex('members_stripe_customers_subscriptions').where('updated_by', currentOwnerUserId).update({updated_by: LEGACY_OWNER_USER_ID});
-        await knex('snippets').where('updated_by', currentOwnerUserId).update({updated_by: LEGACY_OWNER_USER_ID});
-        await knex('emails').where('updated_by', currentOwnerUserId).update({updated_by: LEGACY_OWNER_USER_ID});
-
-        // 5. Tables with published_by column (nullable)
+        // 3. Tables with published_by column (nullable)
         await knex('posts').where('published_by', currentOwnerUserId).update({published_by: LEGACY_OWNER_USER_ID});
 
-        // 6. Actions table with actor_id
+        // 4. Actions table with actor_id
         await knex('actions')
             .where('actor_id', currentOwnerUserId)
             .where('actor_type', 'user')
