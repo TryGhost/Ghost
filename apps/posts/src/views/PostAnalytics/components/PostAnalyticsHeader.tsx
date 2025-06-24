@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import moment from 'moment-timezone';
-import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, PostShareModal, Tabs, TabsList, TabsTrigger, formatNumber} from '@tryghost/shade';
+import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, PageMenu, PageMenuItem, PostShareModal, formatNumber} from '@tryghost/shade';
 import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {hasBeenEmailed, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '../../../App';
@@ -175,34 +175,32 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
             </header>
             <Navbar className='sticky top-0 z-50 -mb-8 items-center border-none bg-white/70 py-8 backdrop-blur-md dark:bg-black'>
                 {!isPostLoading && (
-                    <Tabs className="flex h-9 w-full items-center" defaultValue={currentTab} variant='pill'>
-                        <TabsList>
-                            <TabsTrigger value="Overview" onClick={() => {
-                                navigate(`/analytics/beta/${postId}`);
-                            }}>
+                    <PageMenu className='min-h-[34px]' defaultValue={currentTab} responsive>
+                        <PageMenuItem value="Overview" onClick={() => {
+                            navigate(`/analytics/beta/${postId}`);
+                        }}>
                                 Overview
-                            </TabsTrigger>
-                            {!post?.email_only && appSettings?.analytics.webAnalytics && (
-                                <TabsTrigger value="Web" onClick={() => {
-                                    navigate(`/analytics/beta/${postId}/web`);
-                                }}>
-                                    Web traffic
-                                </TabsTrigger>
-                            )}
-                            {showNewsletterTab && (
-                                <TabsTrigger value="Newsletter" onClick={() => {
-                                    navigate(`/analytics/beta/${postId}/newsletter`);
-                                }}>
-                                    Newsletter
-                                </TabsTrigger>
-                            )}
-                            <TabsTrigger value="Growth" onClick={() => {
-                                navigate(`/analytics/beta/${postId}/growth`);
+                        </PageMenuItem>
+                        {!post?.email_only && appSettings?.analytics.webAnalytics && (
+                            <PageMenuItem value="Web" onClick={() => {
+                                navigate(`/analytics/beta/${postId}/web`);
                             }}>
+                                    Web traffic
+                            </PageMenuItem>
+                        )}
+                        {showNewsletterTab && (
+                            <PageMenuItem value="Newsletter" onClick={() => {
+                                navigate(`/analytics/beta/${postId}/newsletter`);
+                            }}>
+                                    Newsletter
+                            </PageMenuItem>
+                        )}
+                        <PageMenuItem value="Growth" onClick={() => {
+                            navigate(`/analytics/beta/${postId}/growth`);
+                        }}>
                                 Growth
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
+                        </PageMenuItem>
+                    </PageMenu>
                 )}
                 <NavbarActions>
                     {children}
