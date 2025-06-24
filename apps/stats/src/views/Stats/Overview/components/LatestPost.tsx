@@ -72,7 +72,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                         </div>
                     </>
                 }
-                {latestPostStats && !isLoading && metricsToShow ? (
+                {!isLoading && latestPostStats && metricsToShow ? (
                     <>
                         <div className='col-span-2 flex items-stretch gap-6 px-6 transition-all'>
                             {latestPostStats.feature_image &&
@@ -201,13 +201,13 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                 )}
                             </div>
                         </div>
-                    </>)
-                    : !isLoading &&
-                    <div className='flex flex-col items-center justify-center gap-4 py-8 text-center text-muted-foreground'>
+                    </>
+                ) : !isLoading && (
+                    <div className='col-span-3 flex flex-col items-center justify-center gap-4 py-8 text-center text-muted-foreground'>
                         <LucideIcon.FileText size={32} strokeWidth={1.5} />
                         <div>No published posts yet</div>
                     </div>
-                }
+                )}
             </CardContent>
         </Card>
     );

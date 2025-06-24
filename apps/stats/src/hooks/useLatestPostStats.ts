@@ -107,6 +107,6 @@ export const useLatestPostStats = () => {
 
     return {
         data: latestPostWithStats,
-        isLoading: isPostLoading || isStatsLoading
+        isLoading: isPostLoading || (Boolean(extendedPost?.id) && isStatsLoading)
     };
 }; 
