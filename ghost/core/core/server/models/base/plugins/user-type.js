@@ -57,9 +57,9 @@ module.exports = function (Bookshelf) {
              * use ID '1'. This logic exists for a LONG while now. The owner ID only changes from '1' to something else,
              * if you transfer ownership.
              */
-                return Bookshelf.Model.internalUser;
+                return 1;
             } else if (options.context.internal) {
-                return Bookshelf.Model.internalUser;
+                return 1;
             } else if (this.get('id')) {
                 return this.get('id');
             } else {
@@ -68,17 +68,6 @@ module.exports = function (Bookshelf) {
                     level: 'critical'
                 });
             }
-        }
-    }, {
-        /**
-         * please use these static definitions when comparing id's
-         * we keep type Number, because we have too many check's where we rely on Number
-         * context.user ? true : false (if context.user is 0 as number, this condition is false)
-         */
-        internalUser: 1,
-
-        isInternalUser: function isInternalUser(id) {
-            return id === Bookshelf.Model.internalUser || id === Bookshelf.Model.internalUser.toString();
         }
     });
 };
