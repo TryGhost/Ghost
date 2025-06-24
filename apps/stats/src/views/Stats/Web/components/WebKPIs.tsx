@@ -1,5 +1,5 @@
 import {BarChartLoadingIndicator, GhAreaChart, KpiTabTrigger, KpiTabValue, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, getYRange} from '@tryghost/shade';
-import {KPI_METRICS} from '../Web';
+import {WEB_KPI_METRICS} from '../constants';
 import {sanitizeChartData} from '@src/utils/chart-helpers';
 import {useMemo, useState} from 'react';
 
@@ -16,7 +16,7 @@ interface WebKPIsProps {
 
 const WebKPIs: React.FC<WebKPIsProps> = ({data, range, isLoading}) => {
     const [currentTab, setCurrentTab] = useState('visits');
-    const currentMetric = KPI_METRICS[currentTab];
+    const currentMetric = WEB_KPI_METRICS[currentTab];
 
     const chartData = useMemo(() => {
         if (!data) {
