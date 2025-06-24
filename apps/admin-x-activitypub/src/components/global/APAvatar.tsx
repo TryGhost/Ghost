@@ -15,18 +15,11 @@ interface FollowButtonProps {
     onUnfollow: (e: React.MouseEvent) => void;
     authorHandle: string;
     followedByMe: boolean;
+    isLoading?: boolean;
 }
 
 // Global state to track which user was clicked via avatar button
 let avatarClickedUser: string | null = null;
-
-interface FollowButtonProps {
-    onFollow: (e: React.MouseEvent) => void;
-    onUnfollow: (e: React.MouseEvent) => void;
-    authorHandle: string;
-    followedByMe: boolean;
-    isLoading?: boolean;
-}
 
 const FollowButton: React.FC<FollowButtonProps> = ({onFollow, onUnfollow, authorHandle, followedByMe, isLoading = false}) => {
     const [, forceUpdate] = React.useReducer(x => x + 1, 0);
