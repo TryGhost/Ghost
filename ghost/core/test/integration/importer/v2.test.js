@@ -414,8 +414,6 @@ describe('Importer', function () {
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({author_id: 2, published_by: 2});
             exportData.data.users[0] = testUtils.DataGenerator.forKnex.createUser();
 
-            exportData.data.posts[0].created_by = exportData.data.users[0].id;
-
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (importedData) {
                     importedData.problems.length.should.eql(1);
@@ -533,7 +531,7 @@ describe('Importer', function () {
             const exportData = exportedBodyV2().db[0];
 
             exportData.data.users[0] = testUtils.DataGenerator.forKnex.createUser({email: 'user1@ghost.org', slug: 'user1'});
-            exportData.data.users[1] = testUtils.DataGenerator.forKnex.createUser({email: 'user2@ghost.org', slug: 'user2', created_by: exportData.data.users[0].id});
+            exportData.data.users[1] = testUtils.DataGenerator.forKnex.createUser({email: 'user2@ghost.org', slug: 'user2'});
             exportData.data.users[2] = testUtils.DataGenerator.forKnex.createUser({email: 'user3@ghost.org', slug: 'user3'});
             exportData.data.users[3] = testUtils.DataGenerator.forKnex.createUser({email: 'user4@ghost.org', slug: 'user4'});
 
@@ -557,7 +555,6 @@ describe('Importer', function () {
                 authors: [{
                     id: exportData.data.users[0].id
                 }],
-                created_by: exportData.data.users[0].id,
                 published_by: exportData.data.users[1].id
             });
             exportData.data.posts[1] = testUtils.DataGenerator.forKnex.createPost({
@@ -566,7 +563,6 @@ describe('Importer', function () {
                 authors: [{
                     id: exportData.data.users[3].id
                 }],
-                created_by: exportData.data.users[2].id,
                 published_by: exportData.data.users[1].id
             });
             exportData.data.posts[2] = testUtils.DataGenerator.forKnex.createPost({
@@ -575,21 +571,17 @@ describe('Importer', function () {
                 authors: [{
                     id: exportData.data.users[0].id
                 }],
-                created_by: exportData.data.users[3].id,
                 published_by: exportData.data.users[3].id
             });
 
             exportData.data.tags[0] = testUtils.DataGenerator.forKnex.createTag({
-                slug: 'tag1',
-                created_by: exportData.data.users[3].id
+                slug: 'tag1'
             });
             exportData.data.tags[1] = testUtils.DataGenerator.forKnex.createTag({
-                slug: 'tag2',
-                created_by: exportData.data.users[1].id
+                slug: 'tag2'
             });
             exportData.data.tags[2] = testUtils.DataGenerator.forKnex.createTag({
-                slug: 'tag3',
-                created_by: exportData.data.users[2].id
+                slug: 'tag3'
             });
 
             const postOptions = Object.assign({withRelated: ['tags', 'authors']}, testUtils.context.internal);
@@ -1208,8 +1200,7 @@ describe('Importer', function () {
             });
             exportData.data.users[1] = testUtils.DataGenerator.forKnex.createUser({
                 email: 'user2@ghost.org',
-                slug: 'user2',
-                created_by: exportData.data.users[0].id
+                slug: 'user2'
             });
             exportData.data.users[2] = testUtils.DataGenerator.forKnex.createUser({
                 email: 'user3@ghost.org',
@@ -1238,35 +1229,29 @@ describe('Importer', function () {
                 slug: 'post1',
                 title: 'title1',
                 author_id: exportData.data.users[0].id,
-                created_by: exportData.data.users[0].id,
                 published_by: exportData.data.users[1].id
             });
             exportData.data.posts[1] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post2',
                 title: 'title2',
                 author_id: exportData.data.users[3].id,
-                created_by: exportData.data.users[2].id,
                 published_by: exportData.data.users[1].id
             });
             exportData.data.posts[2] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post3',
                 title: 'title3',
                 author_id: exportData.data.users[0].id,
-                created_by: exportData.data.users[3].id,
                 published_by: exportData.data.users[3].id
             });
 
             exportData.data.tags[0] = testUtils.DataGenerator.forKnex.createTag({
-                slug: 'tag1',
-                created_by: exportData.data.users[3].id
+                slug: 'tag1'
             });
             exportData.data.tags[1] = testUtils.DataGenerator.forKnex.createTag({
-                slug: 'tag2',
-                created_by: exportData.data.users[1].id
+                slug: 'tag2'
             });
             exportData.data.tags[2] = testUtils.DataGenerator.forKnex.createTag({
-                slug: 'tag3',
-                created_by: exportData.data.users[2].id
+                slug: 'tag3'
             });
 
             const clonedImportOptions = _.cloneDeep(importOptions);
