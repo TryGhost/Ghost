@@ -908,33 +908,17 @@ describe('Importer', function () {
             const exportData = exportedBodyV2().db[0];
 
             exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({
-                key: 'amp',
-                value: 'true'
-            });
-
-            exportData.data.settings[1] = testUtils.DataGenerator.forKnex.createSetting({
                 key: 'is_private',
-                value: '0'
+                value: 'false'
             });
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
                     imported.problems.length.should.eql(0);
-                    return models.Settings.findOne(_.merge({key: 'amp'}, testUtils.context.internal));
-                })
-                .then(function (result) {
-                    result.attributes.value.should.eql(true);
                     return models.Settings.findOne(_.merge({key: 'is_private'}, testUtils.context.internal));
                 })
                 .then((result) => {
                     result.attributes.value.should.eql(false);
-
-                    return db
-                        .knex('settings')
-                        .where('key', 'amp');
-                })
-                .then((result) => {
-                    result[0].value.should.eql('true');
 
                     return db
                         .knex('settings')
