@@ -78,12 +78,16 @@ function _isColoredOutline({color, style}) {
     return color && color !== 'accent' && style === 'outline';
 }
 
+function _isValidHexColor(color) {
+    return /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/.test(color);
+}
+
 /**
  * @param {EmailButtonOptions} options
  * @returns {string}
  */
 function _getTextColor({color, style}) {
-    if (_isColoredFill({color, style})) {
+    if (_isColoredFill({color, style}) && _isValidHexColor(color)) {
         return textColorForBackgroundColor(color).hex();
     }
 
