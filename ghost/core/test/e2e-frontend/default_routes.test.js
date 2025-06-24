@@ -187,14 +187,6 @@ describe('Default Frontend routing', function () {
     describe('AMP post', function () {
         // AMP is no longer supported as of v6.0, so we only check the case in which it's disabled
         describe('AMP Disabled', function () {
-            beforeEach(function () {
-                sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
-                    if (key === 'amp' && !options) {
-                        return false;
-                    }
-                    return origCache.get(key, options);
-                });
-            });
             it('/amp/ should redirect to regular post, including any query params', async function () {
                 await request.get('/welcome/amp/?q=a')
                     .expect('Location', '/welcome/?q=a')
