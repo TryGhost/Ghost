@@ -1,5 +1,5 @@
 import React from 'react';
-import {H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger, formatNumber} from '@tryghost/shade';
+import {H1, LucideIcon, Navbar, NavbarActions, PageMenu, PageMenuItem, formatNumber} from '@tryghost/shade';
 import {useActiveVisitors, useAppContext, useLocation, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
@@ -58,7 +58,34 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                 </div>
             </header>
             <Navbar className='sticky top-0 z-40 items-center border-none bg-white/70 py-8 backdrop-blur-md dark:bg-black'>
-                <Tabs className="w-full" defaultValue={location.pathname} variant='pill'>
+                <PageMenu responsive>
+                    <PageMenuItem value="overview" onClick={() => {
+                        navigate('/');
+                    }}>Overview</PageMenuItem>
+
+                    {appSettings?.analytics.webAnalytics &&
+                        <PageMenuItem value="web" onClick={() => {
+                            navigate('/web/');
+                        }}>Web</PageMenuItem>
+                    }
+
+                    {appSettings?.newslettersEnabled &&
+                        <PageMenuItem value="newsletters" onClick={() => {
+                            navigate('/newsletters/');
+                        }}>Newsletters</PageMenuItem>
+                    }
+
+                    <PageMenuItem value="growth" onClick={() => {
+                        navigate('/growth/');
+                    }}>Analytics Service</PageMenuItem>
+
+                    {appSettings?.analytics.webAnalytics &&
+                        <PageMenuItem value="locations" onClick={() => {
+                            navigate('/locations/');
+                        }}>Locations</PageMenuItem>
+                    }
+                </PageMenu>
+                {/* <Tabs className="w-full" defaultValue={location.pathname} variant='pill'>
                     <TabsList>
                         <TabsTrigger value="/" onClick={() => {
                             navigate('/');
@@ -95,7 +122,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                             </TabsTrigger>
                         }
                     </TabsList>
-                </Tabs>
+                </Tabs> */}
                 <NavbarActions>
                     {children}
                 </NavbarActions>
