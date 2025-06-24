@@ -64,13 +64,6 @@ export default class PostsRoute extends AuthenticatedRoute {
         });
     }
 
-    beforeModel() {
-        // Reset analytics cache on every route entry to ensure fresh data
-        if (this.feature.trafficAnalyticsAlpha) {
-            this.postAnalytics.reset();
-        }
-    }
-
     model(params) {
         // Reset analytics cache every time we load the posts index to ensure fresh data
         if (this.feature.trafficAnalyticsAlpha) {
