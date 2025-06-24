@@ -12,7 +12,7 @@ import {Navigate, useAppContext, useNavigate, useSearchParams} from '@tryghost/a
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useNewsletterStatsWithRangeSplit, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
+import {useNewsletterBasicStatsWithRange, useNewsletterStatsWithRangeSplit, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
 import type {TopNewslettersOrder} from '@src/hooks/useNewsletterStatsWithRange';
 
 export type AvgsDataItem = {
@@ -217,6 +217,14 @@ const Newsletters: React.FC = () => {
         shouldFetchStats || false
     );
 
+    // Get newsletter stats to check if any newsletters were sent in the time period
+    const {data: newsletterStatsData, isLoading: isNewsletterStatsLoading} = useNewsletterBasicStatsWithRange(
+        range,
+        'date desc',
+        selectedNewsletterId || undefined,
+        shouldFetchStats || false
+    );
+
     // Find the selected newsletter to get its active_members count
     const selectedNewsletter = useMemo(() => {
         if (!newslettersData?.newsletters || !selectedNewsletterId) {
@@ -256,7 +264,9 @@ const Newsletters: React.FC = () => {
     // Separate loading states for different sections
     const isKPIsLoading = isNewslettersLoading || isSubscriberStatsLoading;
 
-    const pageData = isKPIsLoading ? undefined : (selectedNewsletterId && subscribersData.length > 1 ? ['data exists'] : []);
+    // Show data only if there are actual newsletters sent in the time period
+    const hasNewslettersInPeriod = newsletterStatsData?.stats && newsletterStatsData.stats.length > 0;
+    const pageData = isKPIsLoading || isNewsletterStatsLoading ? undefined : (hasNewslettersInPeriod ? ['data exists'] : []);
 
     if (!appSettings?.newslettersEnabled) {
         return (

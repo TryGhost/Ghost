@@ -770,9 +770,11 @@ class PostsStatsService {
                 dateFilter = this.knex.raw(`p.published_at >= ?`, [options.date_from]);
             }
             if (options.date_to) {
+                // Make date_to inclusive of the entire day by adding 23:59:59
+                const endOfDay = options.date_to + ' 23:59:59';
                 dateFilter = options.date_from
-                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, options.date_to])
-                    : this.knex.raw(`p.published_at <= ?`, [options.date_to]);
+                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, endOfDay])
+                    : this.knex.raw(`p.published_at <= ?`, [endOfDay]);
             }
 
             // Subquery to count clicks from members_click_events
@@ -802,7 +804,7 @@ class PostsStatsService {
                 .leftJoin(clicksSubquery, 'p.id', 'clicks.post_id')
                 .where('p.newsletter_id', newsletterId)
                 .whereIn('p.status', ['sent', 'published'])
-                .whereNotNull('e.id') // Ensure there is an associated email record
+                // Show all newsletters that were sent, even if no email record exists or has 0 engagement
                 .whereRaw(dateFilter)
                 .orderBy(orderFieldMap[orderField], orderDirection)
                 .limit(limit);
@@ -864,9 +866,11 @@ class PostsStatsService {
                 dateFilter = this.knex.raw(`p.published_at >= ?`, [options.date_from]);
             }
             if (options.date_to) {
+                // Make date_to inclusive of the entire day by adding 23:59:59
+                const endOfDay = options.date_to + ' 23:59:59';
                 dateFilter = options.date_from
-                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, options.date_to])
-                    : this.knex.raw(`p.published_at <= ?`, [options.date_to]);
+                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, endOfDay])
+                    : this.knex.raw(`p.published_at <= ?`, [endOfDay]);
             }
 
             let query;
@@ -900,7 +904,7 @@ class PostsStatsService {
                     .leftJoin(clicksSubquery, 'p.id', 'clicks.post_id')
                     .where('p.newsletter_id', newsletterId)
                     .whereIn('p.status', ['sent', 'published'])
-                    .whereNotNull('e.id') // Ensure there is an associated email record
+                    // Show all newsletters that were sent, even if no email record exists or has 0 engagement
                     .whereRaw(dateFilter)
                     .orderBy(orderFieldMap[orderField], orderDirection)
                     .limit(limit);
@@ -919,7 +923,7 @@ class PostsStatsService {
                     .leftJoin('emails as e', 'p.id', 'e.post_id')
                     .where('p.newsletter_id', newsletterId)
                     .whereIn('p.status', ['sent', 'published'])
-                    .whereNotNull('e.id') // Ensure there is an associated email record
+                    // Show all newsletters that were sent, even if no email record exists or has 0 engagement
                     .whereRaw(dateFilter)
                     .orderBy(orderFieldMap[orderField], orderDirection)
                     .limit(limit);
