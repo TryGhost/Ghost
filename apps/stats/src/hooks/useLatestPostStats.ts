@@ -8,6 +8,9 @@ interface ExtendedPost extends Post {
         name: string;
     }[];
     excerpt?: string;
+    count?: {
+        clicks?: number;
+    };
 }
 
 export interface LatestPostWithStats {
@@ -25,6 +28,9 @@ export interface LatestPostWithStats {
         opened_count: number;
         email_count: number;
         status?: string;
+    } | null;
+    count?: {
+        clicks?: number;
     } | null;
     authors?: {
         name: string;
@@ -47,7 +53,7 @@ export const useLatestPostStats = () => {
             filter: 'status:[published,sent]',
             order: 'published_at DESC',
             limit: '1',
-            include: 'authors,email'
+            include: 'authors,email,count.clicks'
         }
     });
 
@@ -92,6 +98,7 @@ export const useLatestPostStats = () => {
             email_only: extendedPost.email_only || false,
             status: extendedPost.status,
             email: extendedPost.email,
+            count: extendedPost.count,
             authors: extendedPost.authors || [],
             // Analytics data from Stats API
             recipient_count: statsData.recipient_count,
