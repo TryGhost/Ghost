@@ -918,7 +918,7 @@ describe('Importer', function () {
             });
 
             return dataImporter.doImport(exportData, importOptions)
-                .then(function (imported) {
+                .then((imported) => {
                     imported.problems.length.should.eql(0);
                     return models.Settings.findOne(_.merge({key: 'portal_button'}, testUtils.context.internal));
                 })
@@ -935,7 +935,7 @@ describe('Importer', function () {
                 })
                 .then((result) => {
                     result[0].value.should.eql('true');
-                    
+
                     return db
                         .knex('settings')
                         .where('key', 'is_private');
