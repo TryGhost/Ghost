@@ -24,13 +24,10 @@ export const Default: Story = {
             <>
                 <PageMenu responsive>
                     <PageMenuItem value="overview">Overview</PageMenuItem>
-                    <PageMenuItem value="customers">Customers</PageMenuItem>
-                    <PageMenuItem value="issues">Issues</PageMenuItem>
-                    <PageMenuItem value="analytics">Analytics Service</PageMenuItem>
-                    <PageMenuItem value="reports">Reports</PageMenuItem>
-                    <PageMenuItem value="settings">Settings</PageMenuItem>
-                    <PageMenuItem value="integrations">Integrations</PageMenuItem>
-                    <PageMenuItem value="billing">Billing & Usage</PageMenuItem>
+                    <PageMenuItem value="web">Web traffic</PageMenuItem>
+                    <PageMenuItem value="newsletters">Newsletters</PageMenuItem>
+                    <PageMenuItem value="growth">Growth</PageMenuItem>
+                    <PageMenuItem value="locations">Locations</PageMenuItem>
                 </PageMenu>
                 <NavbarActions>
                     <Button variant='outline'>

@@ -45,11 +45,10 @@ export const Responsive: Story = {
             <h3 className="mb-3 text-sm font-medium">Resize this container</h3>
             <PageMenu {...args}>
                 <PageMenuItem value="overview">Overview</PageMenuItem>
-                <PageMenuItem value="customers">Customers</PageMenuItem>
-                <PageMenuItem value="issues">Issues</PageMenuItem>
-                <PageMenuItem value="analytics">Analytics Service</PageMenuItem>
-                <PageMenuItem value="reports">Reports</PageMenuItem>
-                <PageMenuItem value="settings">Settings</PageMenuItem>
+                <PageMenuItem value="web">Web traffic</PageMenuItem>
+                <PageMenuItem value="newsletters">Newsletters</PageMenuItem>
+                <PageMenuItem value="growth">Growth</PageMenuItem>
+                <PageMenuItem value="locations">Locations</PageMenuItem>
             </PageMenu>
         </div>
     ),

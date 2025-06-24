@@ -58,71 +58,29 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                 </div>
             </header>
             <Navbar className='sticky top-0 z-40 items-center border-none bg-white/70 py-8 backdrop-blur-md dark:bg-black'>
-                <PageMenu responsive>
-                    <PageMenuItem value="overview" onClick={() => {
+                <PageMenu defaultValue={location.pathname} responsive>
+                    <PageMenuItem value="/" onClick={() => {
                         navigate('/');
                     }}>Overview</PageMenuItem>
 
                     {appSettings?.analytics.webAnalytics &&
-                        <PageMenuItem value="web" onClick={() => {
+                        <PageMenuItem value="/web/" onClick={() => {
                             navigate('/web/');
-                        }}>Web</PageMenuItem>
+                        }}>Web traffic</PageMenuItem>
                     }
 
-                    {appSettings?.newslettersEnabled &&
-                        <PageMenuItem value="newsletters" onClick={() => {
-                            navigate('/newsletters/');
-                        }}>Newsletters</PageMenuItem>
-                    }
+                    <PageMenuItem value="/newsletters/" onClick={() => {
+                        navigate('/newsletters/');
+                    }}>Newsletters</PageMenuItem>
 
-                    <PageMenuItem value="growth" onClick={() => {
+                    <PageMenuItem value="/growth/" onClick={() => {
                         navigate('/growth/');
-                    }}>Analytics Service</PageMenuItem>
+                    }}>Growth</PageMenuItem>
 
-                    {appSettings?.analytics.webAnalytics &&
-                        <PageMenuItem value="locations" onClick={() => {
-                            navigate('/locations/');
-                        }}>Locations</PageMenuItem>
-                    }
+                    <PageMenuItem value="/locations/" onClick={() => {
+                        navigate('/locations/');
+                    }}>Locations</PageMenuItem>
                 </PageMenu>
-                {/* <Tabs className="w-full" defaultValue={location.pathname} variant='pill'>
-                    <TabsList>
-                        <TabsTrigger value="/" onClick={() => {
-                            navigate('/');
-                        }}>
-                            Overview
-                        </TabsTrigger>
-
-                        {appSettings?.analytics.webAnalytics &&
-                            <TabsTrigger value="/web/" onClick={() => {
-                                navigate('/web/');
-                            }}>
-                            Web traffic
-                            </TabsTrigger>
-                        }
-
-                        {appSettings?.newslettersEnabled &&
-                            <TabsTrigger value="/newsletters/" onClick={() => {
-                                navigate('/newsletters/');
-                            }}>
-                                Newsletters
-                            </TabsTrigger>
-                        }
-
-                        <TabsTrigger value="/growth/" onClick={() => {
-                            navigate('/growth/');
-                        }}>
-                            Growth
-                        </TabsTrigger>
-                        {appSettings?.analytics.webAnalytics &&
-                            <TabsTrigger value="/locations/" onClick={() => {
-                                navigate('/locations/');
-                            }}>
-                            Locations
-                            </TabsTrigger>
-                        }
-                    </TabsList>
-                </Tabs> */}
                 <NavbarActions>
                     {children}
                 </NavbarActions>

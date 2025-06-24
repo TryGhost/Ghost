@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {cn} from '@/lib/utils';
 import {MoreHorizontal} from 'lucide-react';
+import {Button, type ButtonProps} from './button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -8,23 +9,24 @@ import {
     DropdownMenuTrigger
 } from './dropdown-menu';
 
+const PageMenuContext = React.createContext<{defaultValue?: string} | null>(null);
+
 export interface PageMenuProps {
     children: React.ReactNode;
     responsive?: boolean;
     value?: string;
+    defaultValue?: string;
     onValueChange?: (value: string) => void;
     className?: string;
 }
 
-export interface PageMenuItemProps {
+export interface PageMenuItemProps extends Omit<ButtonProps, 'children'> {
     value: string;
     children: React.ReactNode;
-    onClick?: () => void;
-    className?: string;
 }
 
 const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
-    ({children, responsive = false, value, onValueChange, className, ...props}, ref) => {
+    ({children, responsive = false, value, defaultValue, onValueChange, className, ...props}, ref) => {
         const [visibleCount, setVisibleCount] = React.useState(React.Children.count(children));
         const [resizeKey, setResizeKey] = React.useState(0);
         const containerRef = React.useRef<HTMLDivElement>(null);
@@ -36,40 +38,60 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
                 return;
             }
 
-            const container = containerRef.current;
-            const measureContainer = measureRef.current;
-            const containerWidth = container.clientWidth;
-            const dropdownWidth = 60; // Space needed for dropdown button
-            const gap = 8; // Gap between items (gap-2)
-
-            // Get all child elements from the measure container
-            const items = Array.from(measureContainer.children) as HTMLElement[];
-            let currentWidth = 0;
-            let count = 0;
-
-            for (let i = 0; i < items.length; i++) {
-                const itemWidth = items[i].getBoundingClientRect().width;
-                const gapWidth = i > 0 ? gap : 0; // Add gap for items after the first
-                const newWidth = currentWidth + gapWidth + itemWidth;
-
-                // Check if this item fits
-                if (newWidth <= containerWidth) {
-                    currentWidth = newWidth;
-                    count += 1;
-                } else {
-                    // This item doesn't fit, check if we need dropdown space
-                    const remainingItems = items.length - count;
-                    if (remainingItems > 0) {
-                        // We have remaining items, check if we need to remove the last visible item for dropdown space
-                        if (currentWidth + dropdownWidth > containerWidth && count > 0) {
-                            count -= 1;
-                        }
-                    }
-                    break;
+            // Use requestAnimationFrame to ensure DOM is fully rendered
+            const calculateSizes = () => {
+                if (!containerRef.current || !measureRef.current) {
+                    return;
                 }
-            }
 
-            setVisibleCount(count);
+                const container = containerRef.current;
+                const measureContainer = measureRef.current;
+                const containerWidth = container.clientWidth;
+                const dropdownWidth = 60; // Space needed for dropdown button
+                const gap = 8; // Gap between items (gap-2)
+
+                // Get all child elements from the measure container
+                const items = Array.from(measureContainer.children) as HTMLElement[];
+
+                // First, check if ALL items fit without any dropdown
+                let totalWidth = 0;
+                for (let i = 0; i < items.length; i++) {
+                    const itemWidth = items[i].getBoundingClientRect().width;
+                    const gapWidth = i > 0 ? gap : 0;
+                    totalWidth += gapWidth + itemWidth;
+                }
+
+                // If all items fit with some buffer space, show them all
+                const safetyBuffer = 8; // Add 8px buffer for safe rendering
+                if (totalWidth <= containerWidth - safetyBuffer) {
+                    setVisibleCount(items.length);
+                    return;
+                }
+
+                // Otherwise, calculate how many fit with dropdown space reserved
+                let currentWidth = 0;
+                let count = 0;
+
+                for (let i = 0; i < items.length; i++) {
+                    const itemWidth = items[i].getBoundingClientRect().width;
+                    const gapWidth = i > 0 ? gap : 0;
+                    const newWidth = currentWidth + gapWidth + itemWidth;
+
+                    // Reserve space for dropdown (since we know not all items fit)
+                    const totalNeededWidth = newWidth + dropdownWidth;
+
+                    if (totalNeededWidth <= containerWidth) {
+                        currentWidth = newWidth;
+                        count += 1;
+                    } else {
+                        break;
+                    }
+                }
+
+                setVisibleCount(count);
+            };
+
+            requestAnimationFrame(calculateSizes);
         }, [responsive, children, resizeKey]);
 
         React.useLayoutEffect(() => {
@@ -97,14 +119,16 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
 
         if (!responsive) {
             return (
-                <div ref={ref} className={cn('flex items-center gap-2', className)} {...props}>
-                    {children}
-                </div>
+                <PageMenuContext.Provider value={{defaultValue}}>
+                    <div ref={ref} className={cn('flex items-center gap-2', className)} {...props}>
+                        {children}
+                    </div>
+                </PageMenuContext.Provider>
             );
         }
 
         return (
-            <>
+            <PageMenuContext.Provider value={{defaultValue}}>
                 {/* Hidden container to measure all items */}
                 <div
                     ref={measureRef}
@@ -118,7 +142,7 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
                 {/* Visible container */}
                 <div
                     ref={containerRef}
-                    className="flex w-full min-w-0 items-center gap-2"
+                    className="flex w-full min-w-0 flex-1 items-center gap-2"
                 >
                     <div ref={ref} className={cn('flex items-center gap-2 min-w-0', className)} {...props}>
                         {visibleItems}
@@ -127,14 +151,13 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
                     {hasOverflow && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <button
+                                <Button
                                     className={cn(
-                                        'inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-sm font-medium rounded-md flex-shrink-0',
-                                        'ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                                        'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+                                        'flex-shrink-0 h-auto px-3 py-1.5',
                                         selectedHiddenItem && 'bg-accent text-accent-foreground'
                                     )}
-                                    type="button"
+                                    size="sm"
+                                    variant="outline"
                                 >
                                     {selectedHiddenItem ? (
                                         <span className="max-w-[100px] truncate">
@@ -143,7 +166,7 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
                                     ) : (
                                         <MoreHorizontal className="size-4" />
                                     )}
-                                </button>
+                                </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 {hiddenItems.map((item, index) => {
@@ -170,7 +193,7 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
                         </DropdownMenu>
                     )}
                 </div>
-            </>
+            </PageMenuContext.Provider>
         );
     }
 );
@@ -178,22 +201,25 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
 PageMenu.displayName = 'PageMenu';
 
 const PageMenuItem = React.forwardRef<HTMLButtonElement, PageMenuItemProps>(
-    ({children, onClick, className, ...props}, ref) => {
+    ({children, value, className, ...props}, ref) => {
+        const pageMenuProps = React.useContext(PageMenuContext);
+        const isActive = pageMenuProps?.defaultValue === value;
+
         return (
-            <button
+            <Button
                 ref={ref}
                 className={cn(
-                    'inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-sm font-medium rounded-md',
-                    'ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                    'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+                    'h-auto px-3 py-1.5',
+                    'data-[state=active]:bg-accent data-[state=active]:text-accent-foreground',
                     className
                 )}
-                type="button"
-                onClick={onClick}
+                data-state={isActive ? 'active' : undefined}
+                size="sm"
+                variant="outline"
                 {...props}
             >
                 {children}
-            </button>
+            </Button>
         );
     }
 );
