@@ -22,7 +22,7 @@ export const Default: Story = {
         className: 'py-8 px-6 border-none',
         children: (
             <>
-                <PageMenu responsive>
+                <PageMenu defaultValue='overview' responsive>
                     <PageMenuItem value="overview">Overview</PageMenuItem>
                     <PageMenuItem value="web">Web traffic</PageMenuItem>
                     <PageMenuItem value="newsletters">Newsletters</PageMenuItem>

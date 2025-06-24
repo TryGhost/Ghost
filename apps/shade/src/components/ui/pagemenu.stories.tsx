@@ -43,7 +43,7 @@ export const Responsive: Story = {
     render: args => (
         <div className="w-full rounded-lg border border-border p-4">
             <h3 className="mb-3 text-sm font-medium">Resize this container</h3>
-            <PageMenu {...args}>
+            <PageMenu {...args} defaultValue='overview'>
                 <PageMenuItem value="overview">Overview</PageMenuItem>
                 <PageMenuItem value="web">Web traffic</PageMenuItem>
                 <PageMenuItem value="newsletters">Newsletters</PageMenuItem>
