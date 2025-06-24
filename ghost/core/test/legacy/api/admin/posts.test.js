@@ -793,9 +793,8 @@ describe('Posts API', function () {
                 });
         });
 
-        it('update dates & x_by', function () {
+        it('update dates', function () {
             const post = {
-                created_by: ObjectId().toHexString(),
                 created_at: moment().add(2, 'days').format(),
                 updated_at: moment().add(2, 'days').format()
             };

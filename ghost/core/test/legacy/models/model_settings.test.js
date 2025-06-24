@@ -33,7 +33,6 @@ describe('Settings Model', function () {
                     flags: 'PUBLIC',
                     type: 'string',
                     created_at: now,
-                    created_by: 1,
                     updated_at: now
                 });
 
