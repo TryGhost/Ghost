@@ -24,7 +24,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
     const {appSettings} = useAppContext();
 
     return (
-        <Card className='group/card sidebar:max-w-[calc(100vw-64px-280px)] w-full max-w-[calc(100vw-64px)] overflow-x-auto lg:col-span-2'>
+        <Card className='group/card w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)] lg:col-span-2'>
             <CardContent>
                 <Table>
                     <TableHeader>

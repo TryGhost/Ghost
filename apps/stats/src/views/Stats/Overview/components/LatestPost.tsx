@@ -126,8 +126,8 @@ const LatestPost: React.FC<LatestPostProps> = ({
                             </div>
                         </div>
 
-                        <div className='sidebar:max-w-[320px] -ml-4 flex w-full flex-col items-stretch gap-2 pr-6 text-sm xl:h-full xl:max-w-none'>
-                            <div className='grid grid-cols-2 gap-6 border-l pl-10 xl:h-full'>
+                        <div className='-ml-4 flex w-full flex-col items-stretch gap-2 pr-6 text-sm sidebar:max-w-[320px] xl:h-full xl:max-w-none'>
+                            <div className='grid grid-cols-2 gap-6 pl-10 lg:border-l xl:h-full'>
                                 {/* Web metrics - only for published posts */}
                                 {metricsToShow.showWebMetrics && appSettings?.analytics.webAnalytics &&
                                     <div className={metricClassName} onClick={() => {

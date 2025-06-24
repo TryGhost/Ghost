@@ -143,7 +143,7 @@ const NewsletterTableHeader: React.FC<{
     return (
         <TableHeader>
             <TableRow>
-                <TableHead variant='cardhead'>
+                <TableHead className='min-w-[320px]' variant='cardhead'>
                     {cardHeaderContent}
                 </TableHead>
                 <TableHead className='w-[65px]'>
@@ -182,7 +182,7 @@ const TopNewslettersTable: React.FC<{
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
 
     return (
-        <Card>
+        <Card className='w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]'>
             <CardContent>
                 <Table>
                     <NewsletterTableHeader range={range} setSortBy={setSortBy} sortBy={sortBy} />

@@ -54,8 +54,8 @@ const Growth: React.FC = () => {
 
     // Get growth data with post_type filtering - only call when not on Sources tab
     const {data: topPostsData} = useTopPostsStatsWithRange(
-        range, 
-        sortBy as TopPostsOrder, 
+        range,
+        sortBy as TopPostsOrder,
         selectedContentType as 'posts' | 'pages' | 'posts_and_pages'
     );
 
@@ -64,7 +64,7 @@ const Growth: React.FC = () => {
     // Transform and deduplicate data for display
     const transformedTopPosts = useMemo<UnifiedGrowthContentData[]>(() => {
         const growthData = topPostsData?.stats || [];
-        
+
         // First deduplicate by post_id/title to handle backend duplicates
         const uniqueData = growthData.reduce((acc: Map<string, TopPostStatItem>, item: TopPostStatItem) => {
             const key = item.post_id || (item.title && item.title.trim() !== '' ? item.title : item.attribution_url);
@@ -84,7 +84,7 @@ const Growth: React.FC = () => {
             }
             return acc;
         }, new Map<string, TopPostStatItem>());
-        
+
         const filteredData = Array.from(uniqueData.values());
 
         // Calculate total metrics for the filtered dataset for percentage calculation
@@ -149,7 +149,7 @@ const Growth: React.FC = () => {
                         </CardContent>
                     </Card>
                     :
-                    <Card>
+                    <Card className='w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]'>
                         <CardHeader>
                             <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
                             <CardDescription>{getGrowthContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
@@ -158,7 +158,7 @@ const Growth: React.FC = () => {
                             <Table>
                                 <TableHeader>
                                     <TableRow className='[&>th]:h-auto [&>th]:pb-2 [&>th]:pt-0'>
-                                        <TableHead className='pl-0'>
+                                        <TableHead className='min-w-[320px] pl-0'>
                                             <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
                                                 setSelectedContentType(value as ContentType);
                                             }}>
@@ -210,11 +210,19 @@ const Growth: React.FC = () => {
                                                 <TableRow key={`${selectedContentType}-${post.post_id || `${post.title}-${index}`}`} className='last:border-none'>
                                                     <TableCell>
                                                         <div className='group/link inline-flex flex-col items-start gap-px'>
+<<<<<<< HEAD
                                                             {post.post_id && post.attribution_type === 'post' ?
                                                                 <Button 
                                                                     className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
                                                                     title='View post analytics' 
                                                                     variant='link' 
+=======
+                                                            {shouldMakeClickable(post.attribution_url, post.url_exists) ?
+                                                                <Button
+                                                                    className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline'
+                                                                    title={post.post_id ? 'View post analytics' : 'View page'}
+                                                                    variant='link'
+>>>>>>> 7a8e201bd7 (Updated growth and locations)
                                                                     onClick={getClickHandler(post.attribution_url, post.post_id, site.url || '', navigate, post.attribution_type)}
                                                                 >
                                                                     {post.title}
