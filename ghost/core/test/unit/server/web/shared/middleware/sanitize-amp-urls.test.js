@@ -1,7 +1,7 @@
 const sinon = require('sinon');
-const sanitizeAmpUrls = require('../../../../../../core/server/web/shared/middleware/sanitize-amp-urls');
+const redirectAmpUrls = require('../../../../../../core/server/web/shared/middleware/redirect-amp-urls');
 
-describe('Middleware: sanitizeAmpUrls', function () {
+describe('Middleware: redirectAmpUrls', function () {
     let res;
     let req;
     let next;
@@ -23,7 +23,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should call next() when URL does not end with /amp or /amp/', function () {
             req.url = '/welcome/';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.calledOnce.should.be.true();
             res.redirect.called.should.be.false();
@@ -32,7 +32,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should call next() when URL contains amp but not at the end', function () {
             req.url = '/welcome/amp-post/';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.calledOnce.should.be.true();
             res.redirect.called.should.be.false();
@@ -41,7 +41,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should call next() when URL has amp in the middle', function () {
             req.url = '/amp-category/post/';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.calledOnce.should.be.true();
             res.redirect.called.should.be.false();
@@ -50,7 +50,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should call next() when URL is root path', function () {
             req.url = '/';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.calledOnce.should.be.true();
             res.redirect.called.should.be.false();
@@ -59,7 +59,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should call next() when URL is empty', function () {
             req.url = '';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.calledOnce.should.be.true();
             res.redirect.called.should.be.false();
@@ -70,7 +70,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should redirect /welcome/amp/ to /welcome/', function () {
             req.url = '/welcome/amp/';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
@@ -80,7 +80,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should redirect nested path /blog/post/amp/ to /blog/post/', function () {
             req.url = '/blog/post/amp/';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
@@ -90,7 +90,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should redirect root /amp/ to /', function () {
             req.url = '/amp/';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
@@ -102,7 +102,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should redirect /welcome/amp to /welcome/', function () {
             req.url = '/welcome/amp';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
@@ -112,7 +112,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should redirect nested path /blog/post/amp to /blog/post/', function () {
             req.url = '/blog/post/amp';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
@@ -122,7 +122,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should redirect root /amp to /', function () {
             req.url = '/amp';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
@@ -134,7 +134,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should redirect /welcome/AMP/ to /welcome/ (uppercase)', function () {
             req.url = '/welcome/AMP/';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
@@ -144,7 +144,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should redirect /welcome/Amp to /welcome/ (mixed case)', function () {
             req.url = '/welcome/Amp';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
@@ -154,7 +154,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should redirect /welcome/AmP/ to /welcome/ (mixed case with trailing slash)', function () {
             req.url = '/welcome/AmP/';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
@@ -166,7 +166,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should preserve query string when redirecting /welcome/amp/?q=1', function () {
             req.url = '/qs-check/amp/?q=1';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
@@ -176,7 +176,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should preserve query string when redirecting /welcome/amp?q=1&r=2', function () {
             req.url = '/welcome/amp?q=1&r=2';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
@@ -186,7 +186,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should preserve complex query string when redirecting root /amp/?search=test&page=2', function () {
             req.url = '/amp/?search=test&page=2';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
@@ -196,7 +196,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should handle encoded query parameters', function () {
             req.url = '/welcome/amp/?q=hello%20world';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
@@ -208,7 +208,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should handle URLs with encoded characters', function () {
             req.url = '/welcome%20post/amp/';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
@@ -220,7 +220,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should handle subdirectory paths with /amp/ suffix', function () {
             req.url = '/blog/subdir/welcome/amp/';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
@@ -230,7 +230,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should handle complex subdirectory paths with query strings', function () {
             req.url = '/ghost/blog/2023/post-title/amp/?utm_source=test';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
@@ -243,7 +243,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
             // This test ensures the middleware uses the security utility
             req.url = '/welcome/amp/?redirect=evil.com';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();
@@ -257,7 +257,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should exit early when regex does not match', function () {
             req.url = '/welcome/not-amp/';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.calledOnce.should.be.true();
             res.redirect.called.should.be.false();
@@ -266,7 +266,7 @@ describe('Middleware: sanitizeAmpUrls', function () {
         it('should handle multiple consecutive slashes', function () {
             req.url = '/welcome//amp/';
 
-            sanitizeAmpUrls(req, res, next);
+            redirectAmpUrls(req, res, next);
 
             next.called.should.be.false();
             res.redirect.calledOnce.should.be.true();

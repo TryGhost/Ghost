@@ -2,7 +2,7 @@ const urlUtils = require('../../../../shared/url-utils');
 const localUtils = require('../utils');
 
 /**
- * sanitizeAmpUrls middleware
+ * redirectAmpUrls middleware
  *
  * 1. Detect requests whose path ends with `/amp/` (case-insensitive) or `/amp` before a query-string
  * 2. Issue a 301 redirect to the same URL without that suffix, preserving the query string.
@@ -19,9 +19,9 @@ const localUtils = require('../utils');
  * @param {import('express').NextFunction} next - Express next function
  * @returns {void}
  */
-function sanitizeAmpUrls(req, res, next) {
+function redirectAmpUrls(req, res, next) {
     const ampPattern = /\/amp\/?$/i;
-    const url = new URL(req.url, 'http://localhost');
+    const url = new URL(req.url, 'http://example.com');
     
     if (!ampPattern.test(url.pathname)) {
         return next();
@@ -33,4 +33,4 @@ function sanitizeAmpUrls(req, res, next) {
     return urlUtils.redirect301(res, redirectPath);
 }
 
-module.exports = sanitizeAmpUrls; 
+module.exports = redirectAmpUrls; 
