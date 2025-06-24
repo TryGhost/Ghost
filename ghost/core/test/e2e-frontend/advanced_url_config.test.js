@@ -1,10 +1,8 @@
-const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
 const urlUtils = require('../utils/urlUtils');
-const settings = require('../../core/shared/settings-cache');
 const {mockManager} = require('../utils/e2e-framework');
 
 let request;
@@ -74,17 +72,6 @@ describe('Advanced URL Configurations', function () {
         it('/tag/getting-started/ should 404', async function () {
             await request.get('/tag/getting-started/')
                 .expect(404);
-        });
-
-        it('/blog/welcome/amp/ should 200 if amp is enabled', async function () {
-            sinon.stub(settings, 'get').callsFake(function (key, ...rest) {
-                if (key === 'amp') {
-                    return true;
-                }
-                return settings.get.wrappedMethod.call(settings, key, ...rest);
-            });
-            await request.get('/blog/welcome/amp/')
-                .expect(200);
         });
 
         it('/blog/welcome/amp/ should 301', async function () {
