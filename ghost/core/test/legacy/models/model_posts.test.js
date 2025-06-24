@@ -753,9 +753,7 @@ describe('Post Model', function () {
                     (createdPost.get('feature_image') === null).should.equal(true);
 
                     createdPost.get('created_at').should.be.above(new Date(0).getTime());
-                    createdPost.get('created_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     createdPost.relations.authors.models[0].id.should.equal(testUtils.DataGenerator.Content.users[0].id);
-                    createdPost.get('created_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     createdPost.get('updated_at').should.be.above(new Date(0).getTime());
                     should.equal(createdPost.get('published_at'), null);
                     should.equal(createdPost.get('published_by'), null);
@@ -824,9 +822,7 @@ describe('Post Model', function () {
                     (createdPost.get('feature_image') === null).should.equal(true);
 
                     createdPost.get('created_at').should.be.above(new Date(0).getTime());
-                    createdPost.get('created_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     createdPost.relations.authors.models[0].id.should.equal(testUtils.DataGenerator.Content.users[0].id);
-                    createdPost.get('created_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     createdPost.get('updated_at').should.be.above(new Date(0).getTime());
                     should.equal(createdPost.get('published_at'), null);
                     should.equal(createdPost.get('published_by'), null);
@@ -1834,8 +1830,7 @@ describe('Post Model', function () {
                     updatedPost.tags[0].should.have.properties({
                         name: postJSON.tags[0].name,
                         slug: postJSON.tags[0].slug,
-                        id: postJSON.tags[0].id,
-                        created_by: postJSON.tags[0].created_by,
+                        id: postJSON.tags[0].id
                     });
 
                     updatedAtFormat = moment(updatedPost.tags[0].updated_at).format('YYYY-MM-DD HH:mm:ss');

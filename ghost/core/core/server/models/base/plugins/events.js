@@ -144,8 +144,6 @@ module.exports = function (Bookshelf) {
          * Exceptions: internal context or importing
          */
         onCreating: function onCreating(model, attr, options) {
-
-
             if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_at')) {
                 if (!model.get('created_at')) {
                     model.set('created_at', new Date());
@@ -202,14 +200,12 @@ module.exports = function (Bookshelf) {
                 model.changed = _.omit(model.changed, this.relationships);
             }
 
-
             if (options && options.context && !options.context.internal && !options.importing) {
                 if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_at')) {
                     if (model.hasDateChanged('created_at', {beforeWrite: true})) {
                         model.set('created_at', this.previous('created_at'));
                     }
                 }
-
             }
 
             // CASE: do not allow setting only the `updated_at` field, exception: importing

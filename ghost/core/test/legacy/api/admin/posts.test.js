@@ -818,7 +818,6 @@ describe('Posts API', function () {
                 .then((model) => {
                     // We expect that the changed properties aren't changed, they are still the same than before.
                     model.get('created_at').toISOString().should.not.eql(post.created_at);
-                    model.get('created_by').should.not.eql(post.created_by);
 
                     // `updated_at` is automatically set, but it's not the date we send to override.
                     model.get('updated_at').toISOString().should.not.eql(post.updated_at);

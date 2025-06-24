@@ -581,15 +581,15 @@ describe('Importer', function () {
 
             exportData.data.tags[0] = testUtils.DataGenerator.forKnex.createTag({
                 slug: 'tag1',
-                created_by: exportData.data.users[3].id,
+                created_by: exportData.data.users[3].id
             });
             exportData.data.tags[1] = testUtils.DataGenerator.forKnex.createTag({
                 slug: 'tag2',
-                created_by: exportData.data.users[1].id,
+                created_by: exportData.data.users[1].id
             });
             exportData.data.tags[2] = testUtils.DataGenerator.forKnex.createTag({
                 slug: 'tag3',
-                created_by: exportData.data.users[2].id,
+                created_by: exportData.data.users[2].id
             });
 
             const postOptions = Object.assign({withRelated: ['tags', 'authors']}, testUtils.context.internal);
@@ -1258,15 +1258,15 @@ describe('Importer', function () {
 
             exportData.data.tags[0] = testUtils.DataGenerator.forKnex.createTag({
                 slug: 'tag1',
-                created_by: exportData.data.users[3].id,
+                created_by: exportData.data.users[3].id
             });
             exportData.data.tags[1] = testUtils.DataGenerator.forKnex.createTag({
                 slug: 'tag2',
-                created_by: exportData.data.users[1].id,
+                created_by: exportData.data.users[1].id
             });
             exportData.data.tags[2] = testUtils.DataGenerator.forKnex.createTag({
                 slug: 'tag3',
-                created_by: exportData.data.users[2].id,
+                created_by: exportData.data.users[2].id
             });
 
             const clonedImportOptions = _.cloneDeep(importOptions);

@@ -3,7 +3,6 @@ const nock = require('nock');
 const path = require('path');
 const supertest = require('supertest');
 const _ = require('lodash');
-const ObjectId = require('bson-objectid').default;
 const moment = require('moment-timezone');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
@@ -267,7 +266,7 @@ describe('Posts API', function () {
             published_at: '2016-05-30T07:00:00.000Z',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment('2016-05-30T06:30:00.456Z').toDate(),
-            updated_at: moment('2016-05-30T06:30:00.456Z').toDate(),
+            updated_at: moment('2016-05-30T06:30:00.456Z').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -563,7 +562,6 @@ describe('Posts API', function () {
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate(),
-            updated_by: ObjectId().toHexString(),
             newsletter: {
                 // This should be ignored, the default one should be used instead
                 id: testUtils.DataGenerator.Content.newsletters[0].id
@@ -604,7 +602,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -646,7 +644,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -702,7 +700,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -771,7 +769,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -839,7 +837,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -910,7 +908,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -980,7 +978,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1049,7 +1047,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1118,7 +1116,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1211,7 +1209,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1299,7 +1297,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1389,7 +1387,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1486,7 +1484,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1667,8 +1665,8 @@ describe('Posts API', function () {
                 feature_image_caption: 'Testing <b>feature image caption</b>',
                 mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
                 created_at: moment().subtract(2, 'days').toDate(),
-                updated_at: moment().subtract(2, 'days').toDate(),
-                    };
+                updated_at: moment().subtract(2, 'days').toDate()
+            };
 
             const res = await request.post(localUtils.API.getApiQuery('posts'))
                 .set('Origin', config.get('url'))
@@ -1729,8 +1727,8 @@ describe('Posts API', function () {
                 feature_image_caption: 'Testing <b>feature image caption</b>',
                 mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
                 created_at: moment().subtract(2, 'days').toDate(),
-                updated_at: moment().subtract(2, 'days').toDate(),
-                    };
+                updated_at: moment().subtract(2, 'days').toDate()
+            };
 
             const res = await request.post(localUtils.API.getApiQuery('posts'))
                 .set('Origin', config.get('url'))

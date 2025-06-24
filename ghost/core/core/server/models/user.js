@@ -76,7 +76,7 @@ User = ghostBookshelf.Model.extend({
     },
 
     format(options) {
-        if (options.website && 
+        if (options.website &&
             !validator.isURL(options.website, {
                 require_protocol: true,
                 protocols: ['http', 'https']
@@ -294,7 +294,6 @@ User = ghostBookshelf.Model.extend({
 
         return attrs;
     },
-
 
     sessions: function sessions() {
         return this.hasMany('Session');
@@ -777,7 +776,7 @@ User = ghostBookshelf.Model.extend({
 
     /**
      * Checks if a user has permission to perform an action on another user
-     * 
+     *
      * @param {Object|string|number} userModelOrId - The user model or ID being acted upon
      * @param {'edit'|'destroy'} action - The action being performed:
      *                                     - 'edit': Edit user details, status, or role
