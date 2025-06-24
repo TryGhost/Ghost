@@ -1,5 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
+const {registerHelper, shouldCompileToExpected} = require('./utils/handlebars');
 
 // Stuff we are testing
 const has = require('../../../../core/frontend/helpers/has');
@@ -840,6 +841,24 @@ describe('{{#has}} helper', function () {
 
             fn.called.should.be.false();
             inverse.called.should.be.true();
+        });
+    });
+    
+    describe('inline mode', function () {  
+        before(function () {
+            registerHelper('has');
+        });
+
+        it('should return "true" if a match was found', function () {
+            let hash = {tags: [{name: 'foo'}, {name: 'bar'}, {name: 'baz'}]};
+    
+            shouldCompileToExpected('{{has tag="invalid, bar, wat"}}', hash, 'true');
+        });
+    
+        it('should return "false" if no match was found', function () {
+            let hash = {tags: [{name: 'foo'}, {name: 'bar'}, {name: 'baz'}]};
+    
+            shouldCompileToExpected('{{has tag="much, such, wow"}}', hash, 'false');
         });
     });
 });

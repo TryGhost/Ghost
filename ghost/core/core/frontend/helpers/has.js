@@ -4,6 +4,8 @@
 //
 // Checks if a post has a particular property
 
+const {SafeString} = require('../services/handlebars');
+
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
@@ -122,6 +124,7 @@ module.exports = function has(options) {
     options = options || {};
     options.hash = options.hash || {};
     options.data = options.data || {};
+    const isBlock = _.has(options, 'fn');
 
     const self = this;
     const attrs = _.pick(options.hash, validAttrs);
@@ -168,9 +171,15 @@ module.exports = function has(options) {
         return checks[attr]();
     });
 
-    if (result) {
-        return options.fn(this);
+    // If we're in block mode, return the outcome from the fn/inverse functions
+    if (isBlock) {
+        if (result) {
+            return options.fn(this);
+        }
+
+        return options.inverse(this);
     }
 
-    return options.inverse(this);
+    // Else return the result as a SafeString Eg.{string: false} || {string: true}
+    return new SafeString(result);    
 };
