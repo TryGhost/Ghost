@@ -135,7 +135,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                                 {topLinks.length > 0
                                     ?
                                     <TableBody>
-                                        {topLinks.slice(0, (fullWidth ? 6 : 3)).map((link) => {
+                                        {topLinks.slice(0, (fullWidth ? 10 : 5)).map((link) => {
                                             return (
                                                 <TableRow key={link.link.link_id} className='border-none'>
                                                     <TableCell className='max-w-0 px-0 group-hover:!bg-transparent'>
