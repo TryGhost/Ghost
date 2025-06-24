@@ -5,6 +5,7 @@ import {cn} from '@/lib/utils';
 import {cva} from 'class-variance-authority';
 import {TrendingDown, TrendingUp, type LucideIcon} from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
+import {Button, ButtonProps} from './button';
 
 type TabsVariant = 'segmented' | 'segmented-sm' | 'button' | 'button-sm' | 'underline' | 'navbar' | 'pill' | 'kpis';
 
@@ -233,4 +234,28 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
     );
 };
 
-export {Tabs, TabsList, TabsTrigger, TabsTriggerCount, TabsContent, KpiTabTrigger, KpiTabValue, tabsVariants};
+interface KpiDropdownButtonProps extends ButtonProps {
+    className?: string;
+    children: React.ReactNode;
+}
+
+const KpiDropdownButton = React.forwardRef<HTMLButtonElement, KpiDropdownButtonProps>(
+    ({variant = 'dropdown', className, ...props}, ref) => {
+        return (
+            <Button
+                ref={ref}
+                className={
+                    cn(
+                        'h-auto w-full rounded-none border-x-0 border-t-0 focus-visible:ring-0 bg-transparent py-5',
+                        className
+                    )
+                }
+                variant={variant}
+                {...props}
+            />
+        );
+    }
+);
+KpiDropdownButton.displayName = 'KpiDropdownButton';
+
+export {Tabs, TabsList, TabsTrigger, TabsTriggerCount, TabsContent, KpiTabTrigger, KpiTabValue, KpiDropdownButton, tabsVariants};
