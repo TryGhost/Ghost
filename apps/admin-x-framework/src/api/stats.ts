@@ -9,6 +9,7 @@ export type TopContentItem = {
     post_uuid?: string;
     post_id?: string;
     post_type?: string;
+    url_exists?: boolean;
 }
 
 export type TopContentResponseType = {
@@ -46,6 +47,7 @@ export type TopPostStatItem = {
     paid_members: number;
     mrr: number;
     published_at: string;
+    url_exists?: boolean;
 };
 
 export type TopPostsStatsResponseType = {

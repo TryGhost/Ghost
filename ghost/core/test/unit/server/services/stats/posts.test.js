@@ -213,7 +213,16 @@ describe('PostsStatsService', function () {
         memberIdCounter = 0;
         subscriptionIdCounter = 0;
 
-        service = new PostsStatsService({knex: db});
+        // Mock urlService for URL existence checking
+        const mockUrlService = {
+            hasFinished: () => true,
+            getResource: () => {
+                // Mock that all URLs exist for testing
+                return {data: {title: 'Mock Title'}};
+            }
+        };
+
+        service = new PostsStatsService({knex: db, urlService: mockUrlService});
 
         const now = new Date();
         await _createPostWithDetails('post1', 'Post 1', 'published', {published_at: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000)}); // 4 days ago
@@ -262,9 +271,9 @@ describe('PostsStatsService', function () {
 
             // The test expects timestamps (numbers) as returned by SQLite, not Date objects
             const expectedResults = [
-                {attribution_url: '/post-1/', title: 'Post 1', free_members: 2, paid_members: 1, mrr: 500, post_id: 'post1', attribution_type: 'post', attribution_id: 'post1', published_at: result.data[0].published_at, post_type: 'post'},
-                {attribution_url: '/post-2/', title: 'Post 2', free_members: 1, paid_members: 1, mrr: 500, post_id: 'post2', attribution_type: 'post', attribution_id: 'post2', published_at: result.data[1].published_at, post_type: 'post'},
-                {attribution_url: '/post-3/', title: 'Post 3', free_members: 0, paid_members: 1, mrr: 1000, post_id: 'post3', attribution_type: 'post', attribution_id: 'post3', published_at: result.data[2].published_at, post_type: 'post'}
+                {attribution_url: '/post-1/', title: 'Post 1', free_members: 2, paid_members: 1, mrr: 500, post_id: 'post1', attribution_type: 'post', attribution_id: 'post1', published_at: result.data[0].published_at, post_type: 'post', url_exists: true},
+                {attribution_url: '/post-2/', title: 'Post 2', free_members: 1, paid_members: 1, mrr: 500, post_id: 'post2', attribution_type: 'post', attribution_id: 'post2', published_at: result.data[1].published_at, post_type: 'post', url_exists: true},
+                {attribution_url: '/post-3/', title: 'Post 3', free_members: 0, paid_members: 1, mrr: 1000, post_id: 'post3', attribution_type: 'post', attribution_id: 'post3', published_at: result.data[2].published_at, post_type: 'post', url_exists: true}
             ];
 
             assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
@@ -283,10 +292,10 @@ describe('PostsStatsService', function () {
 
             // The test expects timestamps (numbers) as returned by SQLite, not Date objects
             const expectedResults = [
-                {attribution_url: '/post-2/', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200, post_id: 'post2', attribution_type: 'post', attribution_id: 'post2', published_at: result.data.find(p => p.post_id === 'post2').published_at, post_type: 'post'},
-                {attribution_url: '/post-1/', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600, post_id: 'post1', attribution_type: 'post', attribution_id: 'post1', published_at: result.data.find(p => p.post_id === 'post1').published_at, post_type: 'post'},
-                {attribution_url: '/post-3/', title: 'Post 3', free_members: 1, paid_members: 0, mrr: 0, post_id: 'post3', attribution_type: 'post', attribution_id: 'post3', published_at: result.data.find(p => p.post_id === 'post3').published_at, post_type: 'post'},
-                {attribution_url: '/post-4/', title: 'Post 4', free_members: 1, paid_members: 0, mrr: 0, post_id: 'post4', attribution_type: 'post', attribution_id: 'post4', published_at: result.data.find(p => p.post_id === 'post4').published_at, post_type: 'post'}
+                {attribution_url: '/post-2/', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200, post_id: 'post2', attribution_type: 'post', attribution_id: 'post2', published_at: result.data.find(p => p.post_id === 'post2').published_at, post_type: 'post', url_exists: true},
+                {attribution_url: '/post-1/', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600, post_id: 'post1', attribution_type: 'post', attribution_id: 'post1', published_at: result.data.find(p => p.post_id === 'post1').published_at, post_type: 'post', url_exists: true},
+                {attribution_url: '/post-3/', title: 'Post 3', free_members: 1, paid_members: 0, mrr: 0, post_id: 'post3', attribution_type: 'post', attribution_id: 'post3', published_at: result.data.find(p => p.post_id === 'post3').published_at, post_type: 'post', url_exists: true},
+                {attribution_url: '/post-4/', title: 'Post 4', free_members: 1, paid_members: 0, mrr: 0, post_id: 'post4', attribution_type: 'post', attribution_id: 'post4', published_at: result.data.find(p => p.post_id === 'post4').published_at, post_type: 'post', url_exists: true}
             ];
 
             const sortedResults = result.data.sort((a, b) => {
@@ -312,10 +321,10 @@ describe('PostsStatsService', function () {
 
             // The test expects timestamps (numbers) as returned by SQLite, not Date objects
             const expectedResults = [
-                {attribution_url: '/post-2/', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200, post_id: 'post2', attribution_type: 'post', attribution_id: 'post2', published_at: result.data.find(p => p.post_id === 'post2').published_at, post_type: 'post'},
-                {attribution_url: '/post-1/', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600, post_id: 'post1', attribution_type: 'post', attribution_id: 'post1', published_at: result.data.find(p => p.post_id === 'post1').published_at, post_type: 'post'},
-                {attribution_url: '/post-3/', title: 'Post 3', free_members: 1, paid_members: 0, mrr: 0, post_id: 'post3', attribution_type: 'post', attribution_id: 'post3', published_at: result.data.find(p => p.post_id === 'post3').published_at, post_type: 'post'},
-                {attribution_url: '/post-4/', title: 'Post 4', free_members: 1, paid_members: 0, mrr: 0, post_id: 'post4', attribution_type: 'post', attribution_id: 'post4', published_at: result.data.find(p => p.post_id === 'post4').published_at, post_type: 'post'}
+                {attribution_url: '/post-2/', title: 'Post 2', free_members: 0, paid_members: 2, mrr: 1200, post_id: 'post2', attribution_type: 'post', attribution_id: 'post2', published_at: result.data.find(p => p.post_id === 'post2').published_at, post_type: 'post', url_exists: true},
+                {attribution_url: '/post-1/', title: 'Post 1', free_members: 1, paid_members: 1, mrr: 600, post_id: 'post1', attribution_type: 'post', attribution_id: 'post1', published_at: result.data.find(p => p.post_id === 'post1').published_at, post_type: 'post', url_exists: true},
+                {attribution_url: '/post-3/', title: 'Post 3', free_members: 1, paid_members: 0, mrr: 0, post_id: 'post3', attribution_type: 'post', attribution_id: 'post3', published_at: result.data.find(p => p.post_id === 'post3').published_at, post_type: 'post', url_exists: true},
+                {attribution_url: '/post-4/', title: 'Post 4', free_members: 1, paid_members: 0, mrr: 0, post_id: 'post4', attribution_type: 'post', attribution_id: 'post4', published_at: result.data.find(p => p.post_id === 'post4').published_at, post_type: 'post', url_exists: true}
             ];
 
             const sortedResults = result.data.sort((a, b) => {

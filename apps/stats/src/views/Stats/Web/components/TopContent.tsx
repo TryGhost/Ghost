@@ -17,6 +17,7 @@ interface UnifiedContentData {
     post_uuid?: string;
     post_id?: string;
     post_type?: string;
+    url_exists?: boolean;
 }
 
 interface TopContentProps {
@@ -74,7 +75,8 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
             percentage: filteredTotalVisits > 0 ? (Number(item.visits) / filteredTotalVisits) : 0,
             post_uuid: item.post_uuid,
             post_id: item.post_id,
-            post_type: item.post_type
+            post_type: item.post_type,
+            url_exists: item.url_exists
         }));
     }, [topContentData]);
 
@@ -119,7 +121,7 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                                     <TableRow key={row.pathname} className='last:border-none'>
                                         <TableCell>
                                             <div className='group/link inline-flex flex-col items-start gap-px'>
-                                                {shouldMakeClickable(row.pathname) ?
+                                                {shouldMakeClickable(row.pathname, row.url_exists) ?
                                                     <Button 
                                                         className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
                                                         title={row.post_id ? 'View post analytics' : 'View page'} 
@@ -183,7 +185,7 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                                         <TableRow key={row.pathname} className='last:border-none'>
                                             <TableCell>
                                                 <div className='group/link inline-flex flex-col items-start gap-px'>
-                                                    {shouldMakeClickable(row.pathname) ?
+                                                    {shouldMakeClickable(row.pathname, row.url_exists) ?
                                                         <Button 
                                                             className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
                                                             title={row.post_id ? 'View post analytics' : 'View page'} 

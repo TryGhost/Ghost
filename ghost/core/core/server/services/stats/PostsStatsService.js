@@ -79,10 +79,12 @@ class PostsStatsService {
      * @param {object} deps
      * @param {import('knex').Knex} deps.knex - Database client
      * @param {object} [deps.tinybirdClient] - Tinybird client for analytics
+     * @param {object} [deps.urlService] - URL service for checking URL existence
      */
     constructor(deps) {
         this.knex = deps.knex;
         this.tinybirdClient = deps.tinybirdClient;
+        this.urlService = deps.urlService;
     }
 
     /**
@@ -220,9 +222,26 @@ class PostsStatsService {
             return [];
         }
 
-        // Transform results and enrich with titles
+        // Transform results and enrich with titles and URL existence validation
         return results.map((row) => {
             const title = row.title || this._generateTitleFromPath(row.attribution_url);
+            
+            // Check if URL exists using the URL service
+            let urlExists = true; // Default to true for backward compatibility
+            
+            if (this.urlService && row.attribution_url) {
+                try {
+                    // Check if URL service is ready
+                    if (this.urlService.hasFinished && this.urlService.hasFinished()) {
+                        const resource = this.urlService.getResource(row.attribution_url);
+                        urlExists = !!resource; // Convert to boolean
+                    }
+                    // If URL service isn't ready, we default to true (clickable)
+                } catch (error) {
+                    // If there's an error checking the URL service, default to true
+                    urlExists = true;
+                }
+            }
 
             return {
                 post_id: row.post_id,
@@ -234,7 +253,8 @@ class PostsStatsService {
                 free_members: row.free_members,
                 paid_members: row.paid_members,
                 mrr: row.mrr,
-                post_type: row.attribution_type === 'post' ? 'post' : (row.attribution_type === 'page' ? 'page' : null)
+                post_type: row.attribution_type === 'post' ? 'post' : (row.attribution_type === 'page' ? 'page' : null),
+                url_exists: urlExists
             };
         });
     }
