@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import {STATS_RANGE_OPTIONS} from '@src/utils/constants';
+import {CHART_THRESHOLDS, STATS_RANGE_OPTIONS, TIME_PERIODS} from '@src/utils/constants';
 
 /**
  * Returns additional text for subheads
@@ -77,7 +77,7 @@ function calculateOutlierThreshold(values: number[]): {threshold: number; averag
     const mad = deviations.sort((a, b) => a - b)[Math.floor(deviations.length / 2)];
     
     return {
-        threshold: median + (5 * mad), // Using 5 times MAD as threshold
+        threshold: median + (CHART_THRESHOLDS.OUTLIER_MAD_MULTIPLIER * mad), // Using 5 times MAD as threshold
         average: median
     };
 }
@@ -87,26 +87,26 @@ function calculateOutlierThreshold(values: number[]): {threshold: number; averag
  */
 function determineAggregationStrategy(range: number, dateSpan: number, aggregationType: AggregationType): AggregationStrategy {
     // Normalize YTD range
-    if (range === -1) {
-        if (dateSpan > 150) {
-            range = 400; // Force monthly aggregation
-        } else if (dateSpan > 60) {
-            range = 100; // Force weekly aggregation
+    if (range === TIME_PERIODS.YEAR_TO_DATE_FLAG) {
+        if (dateSpan > CHART_THRESHOLDS.MONTHLY_AGGREGATION_MIN_DAYS) {
+            range = CHART_THRESHOLDS.FORCE_MONTHLY_RANGE; // Force monthly aggregation
+        } else if (dateSpan > CHART_THRESHOLDS.WEEKLY_AGGREGATION_MIN_DAYS) {
+            range = CHART_THRESHOLDS.FORCE_WEEKLY_RANGE; // Force weekly aggregation
         }
     }
 
     // For 'exact' aggregation type with long ranges
-    if (aggregationType === 'exact' && (range > 356 || (range === -1 && dateSpan > 150))) {
+    if (aggregationType === 'exact' && (range > TIME_PERIODS.DAYS_IN_YEAR_APPROX || (range === TIME_PERIODS.YEAR_TO_DATE_FLAG && dateSpan > CHART_THRESHOLDS.MONTHLY_AGGREGATION_MIN_DAYS))) {
         return 'monthly';
     }
 
     // For weekly aggregation
-    if ((range >= 91 && range <= 356) || (range === -1 && dateSpan > 60 && dateSpan <= 150)) {
+    if ((range >= TIME_PERIODS.DAYS_IN_QUARTER && range <= TIME_PERIODS.DAYS_IN_YEAR_APPROX) || (range === TIME_PERIODS.YEAR_TO_DATE_FLAG && dateSpan > CHART_THRESHOLDS.WEEKLY_AGGREGATION_MIN_DAYS && dateSpan <= CHART_THRESHOLDS.MONTHLY_AGGREGATION_MIN_DAYS)) {
         return 'weekly';
     }
 
     // For monthly aggregation
-    if (range > 356 || (range === -1 && dateSpan > 150)) {
+    if (range > TIME_PERIODS.DAYS_IN_YEAR_APPROX || (range === TIME_PERIODS.YEAR_TO_DATE_FLAG && dateSpan > CHART_THRESHOLDS.MONTHLY_AGGREGATION_MIN_DAYS)) {
         return 'monthly';
     }
 
@@ -128,7 +128,7 @@ function detectBulkImports<T extends {date: string}>(items: T[], fieldName: keyo
         const value = Number(item[fieldName]);
         return {
             ...item,
-            _isOutlier: value > threshold || value > average * 10
+            _isOutlier: value > threshold || value > average * CHART_THRESHOLDS.OUTLIER_MULTIPLIER
         };
     });
 }
@@ -188,7 +188,7 @@ function aggregateByMonth<T extends {date: string}>(data: T[], fieldName: keyof 
     data.forEach((item, index) => {
         const itemDate = moment(item.date);
         const value = Number(item[fieldName]);
-        const isLikelyOutlier = aggregationType === 'sum' && value > 10000;
+        const isLikelyOutlier = aggregationType === 'sum' && value > CHART_THRESHOLDS.BULK_IMPORT_THRESHOLD;
 
         if (isInSameMonth(itemDate.format('YYYY-MM-DD'), currentMonth.format('YYYY-MM-DD'))) {
             if (!isLikelyOutlier) {
@@ -273,8 +273,8 @@ function aggregateByMonthExact<T extends {date: string}>(data: T[], fieldName: k
 
 /**
  * Sanitizes chart data based on the date range
- * - For ranges between 91-356 days: shows weekly changes
- * - For ranges above 356 days or YTD: shows monthly changes
+ * - For ranges between DAYS_IN_QUARTER-DAYS_IN_YEAR_APPROX (91-356 days): shows weekly changes
+ * - For ranges above DAYS_IN_YEAR_APPROX (356 days) or YTD: shows monthly changes
  * - For other ranges: keeps data as is
  */
 export const sanitizeChartData = <T extends {date: string}>(

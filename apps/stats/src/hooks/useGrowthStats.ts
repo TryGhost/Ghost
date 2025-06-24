@@ -1,5 +1,6 @@
 import moment from 'moment';
 import {MemberStatusItem, MrrHistoryItem, useMemberCountHistory, useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
+import {TIME_PERIODS} from '@src/utils/constants';
 import {formatNumber, formatPercentage} from '@tryghost/shade';
 import {getSymbol} from '@tryghost/admin-x-framework';
 import {useMemo} from 'react';
@@ -16,10 +17,10 @@ export const getRangeDates = (rangeInDays: number) => {
     if (rangeInDays === 1) {
         // Today
         dateFrom = endDate;
-    } else if (rangeInDays === 1000) {
+    } else if (rangeInDays === TIME_PERIODS.ALL_TIME_DAYS) {
         // All time - use a far past date
         dateFrom = '2010-01-01';
-    } else if (rangeInDays === -1) {
+    } else if (rangeInDays === TIME_PERIODS.YEAR_TO_DATE_FLAG) {
         // Year to date - use January 1st of current year
         dateFrom = moment.utc().startOf('year').format('YYYY-MM-DD');
     } else {

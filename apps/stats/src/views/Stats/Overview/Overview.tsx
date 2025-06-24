@@ -1,18 +1,19 @@
 import DateRangeSelect from '../components/DateRangeSelect';
 import LatestPost from './components/LatestPost';
 import OverviewKPIs from './components/OverviewKPIs';
-import React, {useMemo} from 'react';
+import React from 'react';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
 import TopPosts from './components/TopPosts';
-import {GhAreaChartDataItem, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
+import {cn, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceQueryParam} from '../components/AudienceSelect';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
 import {useLatestPostStats} from '@src/hooks/useLatestPostStats';
+import {useOverviewChartData} from './hooks/useOverviewChartData';
 import {useQuery} from '@tinybirdco/charts';
 import {useTopPostsViews} from '@tryghost/admin-x-framework/api/stats';
 
@@ -47,22 +48,6 @@ export const HelpCard: React.FC<HelpCardProps> = ({
     );
 };
 
-interface WebKpiDataItem {
-    date: string;
-    [key: string]: string | number;
-}
-
-type GrowthChartDataItem = {
-    date: string;
-    value: number;
-    free: number;
-    paid: number;
-    comped: number;
-    mrr: number;
-    formattedValue: string;
-    label?: string;
-};
-
 const Overview: React.FC = () => {
     const {appSettings} = useAppContext();
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
@@ -95,85 +80,13 @@ const Overview: React.FC = () => {
         params: visitorsParams
     });
 
-    const visitorsChartData = useMemo(() => {
-        return sanitizeChartData<WebKpiDataItem>(visitorsData as WebKpiDataItem[] || [], range, 'visits' as keyof WebKpiDataItem, 'sum')?.map((item: WebKpiDataItem) => {
-            const value = Number(item.visits);
-            const safeValue = isNaN(value) ? 0 : value;
-            return {
-                date: String(item.date),
-                value: safeValue,
-                formattedValue: formatNumber(safeValue),
-                label: 'Visitors'
-            };
-        });
-    }, [visitorsData, range]);
-    const visitorsYRange: [number, number] = [0, Math.max(...(visitorsChartData?.map((item: GhAreaChartDataItem) => item.value) || [0]))];
-
-    /* Get members
-    /* ---------------------------------------------------------------------- */
-    // Create chart data based on selected tab
-    const membersChartData = useMemo(() => {
-        if (!growthChartData || growthChartData.length === 0) {
-            return [];
-        }
-
-        let sanitizedData: GrowthChartDataItem[] = [];
-        const fieldName: keyof GrowthChartDataItem = 'value';
-
-        sanitizedData = sanitizeChartData<GrowthChartDataItem>(growthChartData, range, fieldName, 'exact');
-
-        // Then map the sanitized data to the final format
-        const processedData: GhAreaChartDataItem[] = sanitizedData.map(item => ({
-            date: item.date,
-            value: item.free + item.paid + item.comped,
-            formattedValue: formatNumber(item.free + item.paid + item.comped),
-            label: 'Members'
-        }));
-
-        return processedData;
-    }, [growthChartData, range]);
-
-    /* Get MRR
-    /* ---------------------------------------------------------------------- */
-    // Create chart data based on selected tab
-    const mrrChartData = useMemo(() => {
-        if (!appSettings?.paidMembersEnabled || !growthChartData || growthChartData.length === 0) {
-            return [];
-        }
-
-        let sanitizedData: GrowthChartDataItem[] = [];
-        const fieldName: keyof GrowthChartDataItem = 'mrr';
-
-        sanitizedData = sanitizeChartData<GrowthChartDataItem>(growthChartData, range, fieldName, 'exact');
-
-        // Then map the sanitized data to the final format
-        const processedData: GhAreaChartDataItem[] = sanitizedData.map(item => ({
-            date: item.date,
-            value: centsToDollars(item.mrr),
-            formattedValue: `${currencySymbol}${formatNumber(centsToDollars(item.mrr))}`,
-            label: 'MRR'
-        }));
-
-        return processedData;
-    }, [growthChartData, range, currencySymbol, appSettings]);
-
-    /* Calculate KPI values
-    /* ---------------------------------------------------------------------- */
-    const kpiValues = useMemo(() => {
-        // Visitors data
-        if (!visitorsData?.length) {
-            return {visits: '0'};
-        }
-
-        const totalVisits = visitorsData.reduce((sum, item) => {
-            const visits = Number(item.visits);
-            return sum + (isNaN(visits) ? 0 : visits);
-        }, 0);
-
-        return {
-            visits: formatNumber(totalVisits)
-        };
-    }, [visitorsData]);
+    const {
+        visitorsChartData,
+        visitorsYRange,
+        membersChartData,
+        mrrChartData,
+        kpiValues
+    } = useOverviewChartData(visitorsData, growthChartData, range, currencySymbol, appSettings?.paidMembersEnabled);
 
     const isPageLoading = isConfigLoading;
 
