@@ -9,6 +9,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
     Button,
+    LucideIcon,
     Popover,
     PopoverClose,
     PopoverContent,
@@ -71,6 +72,7 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
                         {(!allowDelete || layout === 'inbox') &&
                             <PopoverClose asChild>
                                 <Button className='justify-start' variant='ghost' onClick={handleCopyLinkClick}>
+                                    <LucideIcon.Link />
                                     Copy link
                                 </Button>
                             </PopoverClose>
@@ -78,6 +80,7 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
                         {!authoredByMe &&
                             <PopoverClose asChild>
                                 <Button className='justify-start' variant='ghost' onClick={handleFollowClick}>
+                                    {followedByMe ? <LucideIcon.UserRoundMinus /> : <LucideIcon.UserRoundPlus />}
                                     {followedByMe ? 'Unfollow' : 'Follow'}
                                 </Button>
                             </PopoverClose>
@@ -90,6 +93,7 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
                                         variant='ghost'
                                         onClick={e => e.stopPropagation()}
                                     >
+                                        <LucideIcon.Trash2 />
                                         Delete
                                     </Button>
                                 </PopoverClose>
