@@ -65,7 +65,7 @@ export default class PostsRoute extends AuthenticatedRoute {
     }
 
     model(params) {
-        // Reset analytics cache when model changes (filters change)
+        // Reset analytics cache every time we load the posts index to ensure fresh data
         if (this.feature.trafficAnalyticsAlpha) {
             this.postAnalytics.reset();
         }
