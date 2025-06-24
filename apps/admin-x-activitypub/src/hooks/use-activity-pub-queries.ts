@@ -215,6 +215,41 @@ function updateFollowCache(queryClient: QueryClient, handle: string, authorHandl
             };
         });
     }
+
+    // Handle reply chain cache (used by Note.tsx and Reader.tsx)
+    const replyChainQueryKey = QUERY_KEYS.replyChain(null);
+    queryClient.setQueriesData(replyChainQueryKey, (current?: ReplyChainResponse) => {
+        if (!current) {
+            return current;
+        }
+
+        const updatePost = (post: Post) => {
+            if (post.author.handle === authorHandle) {
+                return {
+                    ...post,
+                    author: {
+                        ...post.author,
+                        followedByMe: followedByMe
+                    }
+                };
+            }
+            return post;
+        };
+
+        return {
+            ...current,
+            post: updatePost(current.post),
+            ancestors: {
+                ...current.ancestors,
+                chain: current.ancestors.chain.map(updatePost)
+            },
+            children: current.children.map(child => ({
+                ...child,
+                post: updatePost(child.post),
+                chain: child.chain.map(updatePost)
+            }))
+        };
+    });
 }
 
 // Update non-paginated caches (should only be called once per mutation)
