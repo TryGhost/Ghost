@@ -125,7 +125,7 @@ const Overview: React.FC = () => {
     return (
         <>
             <PostAnalyticsHeader currentTab='Overview'>
-                <div className='flex items-center gap-1 text-nowrap rounded-md bg-purple/10 px-2 py-px pr-3 text-xs text-purple-600'>
+                <div className='order-1 flex w-full items-center justify-center gap-1 text-nowrap rounded-md bg-purple/10 px-2 py-px pr-3 text-xs text-purple-600 lg:order-none lg:w-auto'>
                     <LucideIcon.FlaskConical size={16} strokeWidth={1.5} />
                     Viewing Analytics (beta)
                     <Button className='pl-1 pr-0 text-purple-600 !underline' size='sm' variant='link' onClick={() => {
@@ -134,7 +134,7 @@ const Overview: React.FC = () => {
                 </div>
             </PostAnalyticsHeader>
             <PostAnalyticsContent>
-                <div className='grid grid-cols-2 gap-8'>
+                <div className='flex flex-col gap-8 lg:grid lg:grid-cols-2'>
                     {showWebSection && (
                         <WebOverview
                             chartData={processedChartData}
@@ -164,7 +164,7 @@ const Overview: React.FC = () => {
                                 navigate(`/analytics/beta/${postId}/growth`);
                             }}>View more</Button>
                         </div>
-                        <CardContent className='grid grid-cols-3 items-stretch px-0'>
+                        <CardContent className='flex flex-col gap-8 px-0 md:grid md:grid-cols-3 md:items-stretch md:gap-0'>
                             {kpiIsLoading ?
                                 Array.from({length: 3}, (_, i) => (
                                     <div key={i} className='h-[98px] gap-1 border-r px-6 py-5 last:border-r-0'>
