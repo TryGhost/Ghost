@@ -15,13 +15,12 @@ interface FollowButtonProps {
     onUnfollow: (e: React.MouseEvent) => void;
     authorHandle: string;
     followedByMe: boolean;
-    isLoading?: boolean;
 }
 
 // Global state to track which user was clicked via avatar button
 let avatarClickedUser: string | null = null;
 
-const FollowButton: React.FC<FollowButtonProps> = ({onFollow, onUnfollow, authorHandle, followedByMe, isLoading = false}) => {
+const FollowButton: React.FC<FollowButtonProps> = ({onFollow, onUnfollow, authorHandle, followedByMe}) => {
     const [, forceUpdate] = React.useReducer(x => x + 1, 0);
     const isClickedUser = avatarClickedUser === authorHandle;
     const showCheckmark = isClickedUser && !followedByMe;
@@ -42,15 +41,12 @@ const FollowButton: React.FC<FollowButtonProps> = ({onFollow, onUnfollow, author
 
     return (
         <Button
-            className='absolute -right-1.5 bottom-px z-10 flex size-4 items-center justify-center rounded-full p-0 outline outline-2 outline-white transition-colors disabled:opacity-100 dark:outline-black'
-            disabled={isLoading}
-            title={isLoading ? 'Loading...' : (showCheckmark ? 'Unfollow' : 'Follow')}
+            className='absolute -right-1.5 bottom-px z-10 flex size-4 items-center justify-center rounded-full p-0 outline outline-2 outline-white transition-transform hover:scale-105 active:scale-100 dark:outline-black'
+            title={showCheckmark ? 'Unfollow' : 'Follow'}
             onClick={handleClick}
         >
-            {isLoading ? (
-                <LucideIcon.Loader2 className='!size-3 animate-spin !stroke-2' />
-            ) : showCheckmark ? (
-                <LucideIcon.Check className='!size-3 !stroke-[2.4]' />
+            {showCheckmark ? (
+                <LucideIcon.Check className='-mb-px !size-3 !stroke-[2.4]' />
             ) : (
                 <LucideIcon.Plus className='!size-[14px] !stroke-2' />
             )}
@@ -85,7 +81,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
     const followMutation = useFollowMutationForUser(
         'index',
         () => {
-            toast.success('Followed');
+            toast.success(`Followed ${author?.name}`);
         },
         () => {
             toast.error('Failed to follow');
@@ -95,7 +91,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
     const unfollowMutation = useUnfollowMutationForUser(
         'index',
         () => {
-            toast.success('Unfollowed');
+            toast.info(`Unfollowed ${author?.name}`);
         },
         () => {
             toast.error('Failed to unfollow');
@@ -164,7 +160,6 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
     const title = `${author?.name} ${handle}`;
     const isClickedUser = avatarClickedUser === handle;
     const displayFollowButton = isEnabled('unfollow') && (showFollowButton || isClickedUser);
-    const isFollowLoading = followMutation.isLoading || unfollowMutation.isLoading;
 
     if (iconUrl) {
         return (
@@ -179,7 +174,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
                     src={iconUrl}
                     onError={() => setIconUrl(undefined)}
                 />
-                {displayFollowButton && <FollowButton authorHandle={handle} followedByMe={false} isLoading={isFollowLoading} onFollow={handleFollowClick} onUnfollow={handleUnfollowClick} />}
+                {displayFollowButton && <FollowButton authorHandle={handle} followedByMe={false} onFollow={handleFollowClick} onUnfollow={handleUnfollowClick} />}
             </div>
         );
     }
@@ -191,7 +186,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
             onClick={disabled ? undefined : handleClick}
         >
             <LucideIcon.UserRound className='text-gray-600' size={iconSize} strokeWidth={1.5} />
-            {displayFollowButton && <FollowButton authorHandle={handle} followedByMe={false} isLoading={isFollowLoading} onFollow={handleFollowClick} onUnfollow={handleUnfollowClick} />}
+            {displayFollowButton && <FollowButton authorHandle={handle} followedByMe={false} onFollow={handleFollowClick} onUnfollow={handleUnfollowClick} />}
         </div>
     );
 };
