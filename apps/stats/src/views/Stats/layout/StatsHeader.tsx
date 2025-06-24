@@ -29,7 +29,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                     {appSettings?.analytics.webAnalytics && (
                         <div className='flex items-center gap-2 text-sm'>
                             {site?.url && (
-                                <div className='flex items-center gap-1.5'>
+                                <div className='hidden items-center gap-1.5 sm:!visible sm:!flex'>
                                     {/* No need for favicon as it's already shown in the left sidebar + globe icon represents "web" better */}
                                     <LucideIcon.Globe className='text-muted-foreground' size={16} strokeWidth={1.5} />
                                     <a
@@ -57,7 +57,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                     )}
                 </div>
             </header>
-            <Navbar className='sticky top-0 z-40 items-center border-none bg-white/70 py-8 backdrop-blur-md dark:bg-black'>
+            <Navbar className='sticky top-0 z-40 flex-col items-start border-none bg-white/70 py-8 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
                 <PageMenu defaultValue={location.pathname} responsive>
                     <PageMenuItem value="/" onClick={() => {
                         navigate('/');
