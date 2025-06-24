@@ -1,5 +1,6 @@
 /* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
+import {renderCalloutNode} from './callout-renderer';
 import {parseCalloutNode} from './callout-parser';
 
 export class CalloutNode extends generateDecoratorNode({
@@ -8,7 +9,8 @@ export class CalloutNode extends generateDecoratorNode({
         {name: 'calloutText', default: '', wordCount: true},
         {name: 'calloutEmoji', default: '💡'},
         {name: 'backgroundColor', default: 'blue'}
-    ]
+    ],
+    defaultRenderFn: renderCalloutNode
 }) {
     /* override */
     constructor({calloutText, calloutEmoji, backgroundColor} = {}, key) {

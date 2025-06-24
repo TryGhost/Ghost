@@ -1,11 +1,13 @@
 /* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
+import {renderEmailNode} from './email-renderer';
 
 export class EmailNode extends generateDecoratorNode({
     nodeType: 'email',
     properties: [
         {name: 'html', default: '', urlType: 'html'}
-    ]
+    ],
+    defaultRenderFn: renderEmailNode
 }) {
 }
 

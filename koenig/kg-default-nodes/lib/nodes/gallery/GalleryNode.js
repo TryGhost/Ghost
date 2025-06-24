@@ -1,13 +1,14 @@
 /* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
 import {parseGalleryNode} from './gallery-parser';
-
+import {renderGalleryNode} from './gallery-renderer';
 export class GalleryNode extends generateDecoratorNode({
     nodeType: 'gallery',
     properties: [
         {name: 'images', default: []},
         {name: 'caption', default: '', wordCount: true}
-    ]
+    ],
+    defaultRenderFn: renderGalleryNode
 }) {
     /* override */
     static get urlTransformMap() {

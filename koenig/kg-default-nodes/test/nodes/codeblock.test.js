@@ -1,4 +1,4 @@
-const {createDocument, html} = require('../test-utils');
+const {createDocument, dom, html} = require('../test-utils');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
 const {CodeBlockNode, $createCodeBlockNode, $isCodeBlockNode} = require('../../');
@@ -12,6 +12,7 @@ describe('CodeBlockNode', function () {
     let code;
     let language;
     let caption;
+    let exportOptions;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
@@ -38,6 +39,10 @@ describe('CodeBlockNode', function () {
             code,
             language,
             caption
+        };
+
+        exportOptions = {
+            dom
         };
     });
 
@@ -186,6 +191,45 @@ describe('CodeBlockNode', function () {
         it('returns true', editorTest(function () {
             const codeBlockNode = $createCodeBlockNode(dataset);
             codeBlockNode.hasEditMode().should.be.true();
+        }));
+    });
+
+    describe('exportDOM', function () {
+        it('renders and escapes', editorTest(function () {
+            const codeBlockNode = $createCodeBlockNode({code});
+            const {element} = codeBlockNode.exportDOM(exportOptions);
+
+            element.outerHTML.should.prettifyTo(html`
+                <pre><code>&lt;script&gt;&lt;/script&gt;</code></pre>
+            `);
+        }));
+
+        it('renders language class if provided', editorTest(function () {
+            const codeBlockNode = $createCodeBlockNode({language, code});
+            const {element} = codeBlockNode.exportDOM(exportOptions);
+
+            element.outerHTML.should.prettifyTo(html`
+                <pre><code class="language-javascript">&lt;script&gt;&lt;/script&gt;</code></pre>
+            `);
+        }));
+
+        it('renders empty span when code is undefined or empty', editorTest(function () {
+            const codeBlockNode = $createCodeBlockNode({code: ''});
+            const {element} = codeBlockNode.exportDOM(exportOptions);
+
+            element.outerHTML.should.equal('<span></span>');
+        }));
+
+        it('renders a figure if a caption is provided', editorTest(function () {
+            const codeBlockNode = $createCodeBlockNode({language, code, caption});
+            const {element} = codeBlockNode.exportDOM(exportOptions);
+
+            element.outerHTML.should.prettifyTo(html`
+                <figure class="kg-card kg-code-card">
+                    <pre><code class="language-javascript">&lt;script&gt;&lt;/script&gt;</code></pre>
+                    <figcaption>A code block</figcaption>
+                </figure>
+            `);
         }));
     });
 

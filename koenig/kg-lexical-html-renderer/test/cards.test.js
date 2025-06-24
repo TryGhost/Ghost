@@ -1,15 +1,9 @@
 const {JSDOM} = require('jsdom');
+const Prettier = require('prettier');
 const Renderer = require('../');
 const {ImageNode, PaywallNode, HtmlNode} = require('@tryghost/kg-default-nodes');
 
 const nodes = [ImageNode, PaywallNode, HtmlNode];
-
-const htmlRenderer = (node, options) => {
-    const document = options.createDocument();
-    const textarea = document.createElement('textarea');
-    textarea.value = node.html;
-    return {element: textarea, type: 'value'};
-};
 
 describe('Cards', function () {
     let lexicalState;
@@ -42,48 +36,47 @@ describe('Cards', function () {
         };
     });
 
-    it('renders a card', async function () {
-        lexicalState.root.children.push({type: 'image'});
-
-        const cardRenderer = () => {
-            const document = options.createDocument();
-            const img = document.createElement('img');
-            img.src = 'https://example.com/image.jpg';
-            return {element: img};
+    it('renders an image card', async function () {
+        const imageCard = {
+            type: 'image',
+            src: '/content/images/2022/11/koenig-lexical.jpg',
+            caption: 'This is a caption',
+            cardWidth: 'regular'
         };
+        lexicalState.root.children.push(imageCard);
 
         const renderer = new Renderer({nodes});
-        const output = await renderer.render(JSON.stringify(lexicalState), {
-            ...options,
-            nodeRenderers: {
-                image: cardRenderer
-            }
-        });
+        const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
 
-        const expected = `<img src="https://example.com/image.jpg">`;
+        const output = await Prettier.format(renderedInput, {parser: 'html'});
 
+        const expected =
+`<figure class="kg-card kg-image-card kg-card-hascaption">
+  <img
+    src="/content/images/2022/11/koenig-lexical.jpg"
+    class="kg-image"
+    alt=""
+    loading="lazy"
+  />
+  <figcaption>This is a caption</figcaption>
+</figure>
+`;
         output.should.equal(expected);
     });
 
-    it('renders a card with comments', async function () {
-        lexicalState.root.children.push({type: 'paywall'});
-
-        const cardRenderer = () => {
-            const document = options.createDocument();
-            const div = document.createElement('div');
-            div.innerHTML = '<!--members-only-->';
-            return {element: div, type: 'inner'};
+    it('renders a paywall card', async function () {
+        const paywallCard = {
+            type: 'paywall'
         };
 
-        const renderer = new Renderer({nodes});
-        const output = await renderer.render(JSON.stringify(lexicalState), {
-            ...options,
-            nodeRenderers: {
-                paywall: cardRenderer
-            }
-        });
+        lexicalState.root.children.push(paywallCard);
 
-        const expected = `<!--members-only-->`;
+        const renderer = new Renderer({nodes});
+        const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
+
+        const output = await Prettier.format(renderedInput, {parser: 'html'});
+
+        const expected = `<!--members-only-->\n`;
         output.should.equal(expected);
     });
 
@@ -114,15 +107,18 @@ describe('Cards', function () {
         });
 
         const renderer = new Renderer({nodes});
-        const output = await renderer.render(JSON.stringify(lexicalState), {
-            ...options,
-            nodeRenderers: {
-                html: htmlRenderer
-            }
-        });
+        const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
 
-        const expected = `<div style="color: red"><p>Testing this</p></div>`;
-        output.should.equal(expected);
+        const expected = `
+<!--kg-card-begin: html-->
+<div style="color: red">
+<!--kg-card-end: html-->
+<p>Testing this</p>
+<!--kg-card-begin: html-->
+</div>
+<!--kg-card-end: html-->
+`;
+        renderedInput.should.equal(expected);
     });
 
     it('renders HTML card with html entities and single-quote attributes', async function () {
@@ -132,14 +128,39 @@ describe('Cards', function () {
         });
 
         const renderer = new Renderer({nodes});
-        const output = await renderer.render(JSON.stringify(lexicalState), {
-            ...options,
-            nodeRenderers: {
-                html: htmlRenderer
-            }
-        });
+        const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
 
-        const expected = `<p>&lt;pre&gt;Test&lt;/pre&gt;</p>\n<div data-graph-name='The "all-in" cost of a grant'>Test</div>`;
-        output.should.equal(expected);
+        const expected = `
+<!--kg-card-begin: html-->
+<p>&lt;pre&gt;Test&lt;/pre&gt;</p>
+<div data-graph-name='The "all-in" cost of a grant'>Test</div>
+<!--kg-card-end: html-->
+`;
+        renderedInput.should.equal(expected);
+    });
+
+    // https://linear.app/ghost/issue/ONC-801/
+    // we had an issue with HTML cards in content created during early alpha period
+    // where they would not be rendered in email due to incorrect migration of old
+    // visibility format
+    it('renders HTML card in email with old visibility format', async function () {
+        const htmlCard = {
+            type: 'html',
+            html: '<p>Should be visible in email</p>',
+            visibility: {emailOnly: false, segment: ''}
+        };
+        lexicalState.root.children.push(htmlCard);
+
+        options.target = 'email';
+        const renderer = new Renderer({nodes});
+        const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
+
+        const expected = `
+<!--kg-card-begin: html-->
+<p>Should be visible in email</p>
+<!--kg-card-end: html-->
+`;
+
+        renderedInput.should.equal(expected);
     });
 });

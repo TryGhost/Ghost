@@ -1,5 +1,6 @@
 // eslint-disable-next-line ghost/filenames/match-exported-class
 import {generateDecoratorNode} from '../../generate-decorator-node';
+import {renderCallToActionNode} from './calltoaction-renderer';
 import {parseCallToActionNode} from './calltoaction-parser';
 
 export class CallToActionNode extends generateDecoratorNode({
@@ -22,7 +23,8 @@ export class CallToActionNode extends generateDecoratorNode({
         {name: 'imageUrl', default: ''},
         {name: 'imageWidth', default: null},
         {name: 'imageHeight', default: null}
-    ]
+    ],
+    defaultRenderFn: renderCallToActionNode
 }) {
     static importDOM() {
         return parseCallToActionNode(this);

@@ -1,6 +1,9 @@
 /* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
+import {renderHeaderNodeV1} from './renderers/v1/header-renderer';
 import {parseHeaderNode} from './parsers/header-parser';
+// V2 imports below
+import {renderHeaderNodeV2} from './renderers/v2/header-renderer';
 
 // This is our first node that has a custom version property
 export class HeaderNode extends generateDecoratorNode({
@@ -30,7 +33,11 @@ export class HeaderNode extends generateDecoratorNode({
         {name: 'buttonTextColor', default: '#000000'},
         {name: 'layout', default: 'full'}, // replaces size
         {name: 'swapped', default: false}
-    ]
+    ],
+    defaultRenderFn: {
+        1: renderHeaderNodeV1,
+        2: renderHeaderNodeV2
+    }
 }) {
     static importDOM() {
         return parseHeaderNode(this);

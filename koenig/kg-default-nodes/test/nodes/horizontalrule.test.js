@@ -1,4 +1,4 @@
-const {createDocument, html} = require('../test-utils');
+const {createDocument, dom, html} = require('../test-utils');
 const {$getRoot} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
@@ -9,6 +9,7 @@ const editorNodes = [HorizontalRuleNode];
 describe('HorizontalNode', function () {
     let editor;
     let dataset;
+    let exportOptions;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
@@ -28,12 +29,27 @@ describe('HorizontalNode', function () {
         editor = createHeadlessEditor({nodes: editorNodes});
 
         dataset = {};
+
+        exportOptions = {
+            dom
+        };
     });
 
     it('matches node with $isHorizontalRuleNode', editorTest(function () {
         const hrNode = $createHorizontalRuleNode();
         $isHorizontalRuleNode(hrNode).should.be.true();
     }));
+
+    describe('exportDOM', function () {
+        it('creates hr element', editorTest(function () {
+            const hrNode = $createHorizontalRuleNode();
+            const {element} = hrNode.exportDOM(exportOptions);
+
+            element.outerHTML.should.prettifyTo(html`
+                <hr />
+            `);
+        }));
+    });
 
     describe('importDOM', function () {
         it('parses an hr element', editorTest(function () {

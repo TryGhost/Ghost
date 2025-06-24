@@ -1,6 +1,7 @@
 /* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
 import {parseProductNode} from './product-parser';
+import {renderProductNode} from './product-renderer';
 
 export class ProductNode extends generateDecoratorNode({
     nodeType: 'product',
@@ -15,7 +16,8 @@ export class ProductNode extends generateDecoratorNode({
         {name: 'productButtonEnabled', default: false},
         {name: 'productButton', default: ''},
         {name: 'productUrl', default: ''}
-    ]
+    ],
+    defaultRenderFn: renderProductNode
 }) {
     /* override */
     exportJSON() {

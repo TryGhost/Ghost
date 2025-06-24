@@ -1,7 +1,8 @@
-const {createDocument, html} = require('../test-utils');
+const {createDocument, dom, html} = require('../test-utils');
 const {$getRoot} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
+const Prettier = require('@prettier/sync');
 
 const {BookmarkNode, $createBookmarkNode, $isBookmarkNode} = require('../../');
 
@@ -10,6 +11,7 @@ const editorNodes = [BookmarkNode];
 describe('BookmarkNode', function () {
     let editor;
     let dataset;
+    let exportOptions;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
@@ -39,6 +41,10 @@ describe('BookmarkNode', function () {
                 thumbnail: 'https://ghost.org/images/meta/ghost.png'
             },
             caption: 'caption here'
+        };
+
+        exportOptions = {
+            dom
         };
     });
 
@@ -148,6 +154,115 @@ describe('BookmarkNode', function () {
             bookmarkNode.isEmpty().should.be.false();
             bookmarkNode.url = '';
             bookmarkNode.isEmpty().should.be.true();
+        }));
+    });
+
+    describe('exportDOM', function () {
+        it('creates an bookmark card', editorTest(function () {
+            const bookmarkNode = $createBookmarkNode(dataset);
+            const {element} = bookmarkNode.exportDOM(exportOptions);
+
+            const expectedHtml = `
+                <figure class="kg-card kg-bookmark-card kg-card-hascaption">
+                    <a class="kg-bookmark-container" href="${dataset.url}">
+                        <div class="kg-bookmark-content">
+                            <div class="kg-bookmark-title">${dataset.metadata.title}</div>
+                            <div class="kg-bookmark-description">${dataset.metadata.description}</div>
+                            <div class="kg-bookmark-metadata">
+                                <img class="kg-bookmark-icon" src="${dataset.metadata.icon}" alt="">
+                                <span class="kg-bookmark-author">${dataset.metadata.publisher}</span>
+                                <span class="kg-bookmark-publisher">${dataset.metadata.author}</span>
+                            </div>
+                        </div>
+                        <div class="kg-bookmark-thumbnail">
+                            <img src="${dataset.metadata.thumbnail}" alt="" onerror="this.style.display = 'none'">
+                        </div>
+                    </a>
+                    <figcaption>${dataset.caption}</figcaption>
+                </figure>
+            `;
+
+            const prettyExpectedHtml = Prettier.format(expectedHtml, {parser: 'html'});
+
+            element.outerHTML.should.prettifyTo(prettyExpectedHtml);
+        }));
+
+        it('renders email target', editorTest(function () {
+            const options = {
+                target: 'email'
+            };
+            const bookmarkNode = $createBookmarkNode(dataset);
+            const {element} = bookmarkNode.exportDOM({...exportOptions, ...options});
+
+            element.innerHTML.should.containEql('<!--[if !mso !vml]-->');
+            element.innerHTML.should.containEql('<figure class="kg-card kg-bookmark-card');
+            element.innerHTML.should.containEql('<!--[if vml]>');
+            element.innerHTML.should.containEql('<table class="kg-card kg-bookmark-card--outlook"');
+        }));
+
+        it('renders an empty span with a missing src', editorTest(function () {
+            const bookmarkNode = $createBookmarkNode();
+            const {element} = bookmarkNode.exportDOM(exportOptions);
+
+            element.outerHTML.should.equal('<span></span>');
+        }));
+
+        it('escapes HTML for text fields in web', editorTest(function () {
+            dataset = {
+                url: 'https://www.fake.org/',
+                metadata: {
+                    icon: 'https://www.fake.org/favicon.ico',
+                    title: 'Ghost: Independent technology <script>alert("XSS")</script> for modern publishing.',
+                    description: 'doing "kewl" stuff',
+                    author: 'fa\'ker',
+                    publisher: 'Fake <script>alert("XSS")</script>',
+                    thumbnail: 'https://fake.org/image.png'
+                },
+                caption: '<p dir="ltr"><span style="white-space: pre-wrap;">This is a </span><b><strong style="white-space: pre-wrap;">caption</strong></b></p>'
+            };
+            const bookmarkNode = $createBookmarkNode(dataset);
+            const {element} = bookmarkNode.exportDOM(exportOptions);
+
+            // Check that text fields are escaped
+            element.innerHTML.should.containEql('Ghost: Independent technology &lt;script&gt;alert("XSS")&lt;/script&gt; for modern publishing.');
+            element.innerHTML.should.containEql('doing "kewl" stuff');
+            element.innerHTML.should.containEql('fa\'ker');
+            element.innerHTML.should.containEql('Fake &lt;script&gt;alert("XSS")&lt;/script&gt;');
+
+            // Check that caption is not escaped
+            element.innerHTML.should.containEql('<p dir="ltr"><span style="white-space: pre-wrap;">This is a </span><b><strong style="white-space: pre-wrap;">caption</strong></b></p>');
+        }));
+
+        it('escapes HTML for text fields in email', editorTest(function () {
+            const options = {
+                target: 'email'
+            };
+            dataset = {
+                url: 'https://www.fake.org/',
+                metadata: {
+                    icon: 'https://www.fake.org/favicon.ico',
+                    title: 'Ghost: Independent technology <script>alert("XSS")</script> for modern publishing.',
+                    description: 'doing "kewl" stuff',
+                    author: 'fa\'ker',
+                    publisher: 'Fake <script>alert("XSS")</script>',
+                    thumbnail: 'https://fake.org/image.png'
+                },
+                caption: '<p dir="ltr"><span style="white-space: pre-wrap;">This is a </span><b><strong style="white-space: pre-wrap;">caption</strong></b></p>'
+            };
+            const bookmarkNode = $createBookmarkNode(dataset);
+            const {element} = bookmarkNode.exportDOM({...exportOptions, ...options});
+
+            // Check that email template is used
+            element.innerHTML.should.containEql('<!--[if !mso !vml]-->');
+
+            // Check that text fields are escaped
+            element.innerHTML.should.containEql('Ghost: Independent technology &lt;script&gt;alert("XSS")&lt;/script&gt; for modern publishing.');
+            element.innerHTML.should.containEql('doing &amp;quot;kewl&amp;quot; stuff');
+            element.innerHTML.should.containEql('fa\'ker');
+            element.innerHTML.should.containEql('Fake &lt;script&gt;alert("XSS")&lt;/script&gt;');
+
+            // Check that caption is not escaped
+            element.innerHTML.should.containEql('<p dir="ltr"><span style="white-space: pre-wrap;">This is a </span><b><strong style="white-space: pre-wrap;">caption</strong></b></p>');
         }));
     });
 

@@ -1,3 +1,5 @@
+import {renderEmptyContainer} from './render-empty-container';
+
 export const ALL_MEMBERS_SEGMENT = 'status:free,status:-free';
 export const PAID_MEMBERS_SEGMENT = 'status:-free'; // paid + comped
 export const FREE_MEMBERS_SEGMENT = 'status:free';
@@ -110,4 +112,73 @@ export function migrateOldVisibilityFormat(visibility) {
     }
 
     return newVisibility;
+}
+
+export function renderWithVisibility(originalRenderOutput, visibility, options) {
+    const document = originalRenderOutput.element.ownerDocument;
+    const content = _getRenderContent(originalRenderOutput);
+
+    visibility = migrateOldVisibilityFormat(visibility);
+
+    if (options.target === 'email') {
+        if (visibility.email.memberSegment === NO_MEMBERS_SEGMENT) {
+            return renderEmptyContainer(document);
+        }
+
+        if (visibility.email.memberSegment === ALL_MEMBERS_SEGMENT) {
+            return originalRenderOutput;
+        }
+
+        return _renderWithEmailVisibility(document, content, visibility.email);
+    }
+
+    const isNotVisibleOnWeb =
+        visibility.web.nonMember === false &&
+        visibility.web.memberSegment === NO_MEMBERS_SEGMENT;
+
+    if (isNotVisibleOnWeb) {
+        return renderEmptyContainer(document);
+    }
+
+    const hasWebVisibilityRestrictions =
+        visibility.web.nonMember !== true ||
+        visibility.web.memberSegment !== ALL_MEMBERS_SEGMENT;
+
+    if (hasWebVisibilityRestrictions) {
+        return _renderWithWebVisibility(document, content, visibility.web);
+    }
+
+    return originalRenderOutput;
+}
+
+/* Private functions -------------------------------------------------------- */
+
+function _getRenderContent({element, type}) {
+    if (type === 'inner') {
+        return element.innerHTML;
+    } else if (type === 'value') {
+        if ('value' in element) {
+            return element.value;
+        }
+        return '';
+    } else {
+        return element.outerHTML;
+    }
+}
+
+function _renderWithEmailVisibility(document, content, emailVisibility) {
+    const {memberSegment} = emailVisibility;
+    const container = document.createElement('div');
+    container.innerHTML = content;
+    container.setAttribute('data-gh-segment', memberSegment);
+    container.classList.add('kg-visibility-wrapper');
+    return {element: container, type: 'html'};
+}
+
+function _renderWithWebVisibility(document, content, webVisibility) {
+    const {nonMember, memberSegment} = webVisibility;
+    const wrappedContent = `\n<!--kg-gated-block:begin nonMember:${nonMember} memberSegment:"${memberSegment}" -->${content}<!--kg-gated-block:end-->\n`;
+    const textarea = document.createElement('textarea');
+    textarea.value = wrappedContent;
+    return {element: textarea, type: 'value'};
 }

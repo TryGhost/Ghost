@@ -46,7 +46,7 @@ export function parseCallToActionNode(CallToActionNode) {
                         const payload = {
                             layout: layout,
                             alignment: alignment,
-                            textValue: textValueElement?.textContent.trim() || '',
+                            textValue: textValueElement.textContent.trim() || '',
                             showButton: buttonElement ? true : false,
                             showDividers: showDividers,
                             buttonText: buttonElement?.textContent.trim() || '',

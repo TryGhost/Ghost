@@ -1,3 +1,4 @@
+const {dom, html} = require('../test-utils');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$getRoot} = require('lexical');
 const {MarkdownNode, $createMarkdownNode, $isMarkdownNode} = require('../../');
@@ -7,6 +8,7 @@ const editorNodes = [MarkdownNode];
 describe('MarkdownNode', function () {
     let editor;
     let dataset;
+    let exportOptions;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
@@ -27,6 +29,10 @@ describe('MarkdownNode', function () {
 
         dataset = {
             markdown: '#HEADING\r\n- list\r\n- items'
+        };
+
+        exportOptions = {
+            dom
         };
     });
 
@@ -99,6 +105,28 @@ describe('MarkdownNode', function () {
         it('returns true', editorTest(function () {
             const markdownNode = $createMarkdownNode(dataset);
             markdownNode.hasEditMode().should.be.true();
+        }));
+    });
+
+    describe('exportDOM', function () {
+        it('creates a markdown card', editorTest(function () {
+            const markdownNode = $createMarkdownNode(dataset);
+            const {element, type} = markdownNode.exportDOM(exportOptions);
+            type.should.equal('inner');
+            element.innerHTML.should.prettifyTo(html`
+                <h1 id="heading">HEADING</h1>
+                <ul>
+                <li>list</li>
+                <li>items</li>
+                </ul>
+            `);
+        }));
+
+        it('renders an empty div with a missing src', editorTest(function () {
+            const markdownNode = $createMarkdownNode();
+            const {element} = markdownNode.exportDOM(exportOptions);
+
+            element.outerHTML.should.equal('<div></div>');
         }));
     });
 

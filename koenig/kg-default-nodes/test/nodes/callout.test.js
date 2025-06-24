@@ -1,4 +1,4 @@
-const {createDocument, html} = require('../test-utils');
+const {createDocument, dom, html} = require('../test-utils');
 const {$getRoot} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
@@ -9,6 +9,7 @@ const editorNodes = [CalloutNode];
 describe('CalloutNode', function () {
     let editor;
     let dataset;
+    let exportOptions;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
@@ -32,6 +33,11 @@ describe('CalloutNode', function () {
             calloutText: '<p dir="ltr"><b><strong>Hello!</strong></b><span> Check </span><i><em class="italic">this</em></i> <a href="https://ghost.org" rel="noopener"><span>out</span></a><span>.</span></p>',
             calloutEmoji: '💡',
             backgroundColor: 'blue'
+        };
+
+        exportOptions = {
+            exportFormat: 'html',
+            dom
         };
     });
 
@@ -105,6 +111,76 @@ describe('CalloutNode', function () {
                 version: 1,
                 ...dataset
             });
+        }));
+    });
+
+    describe('exportDOM', function () {
+        it('can render to HTML', editorTest(function () {
+            const node = $createCalloutNode(dataset);
+            const {element} = node.exportDOM(exportOptions);
+            element.outerHTML.should.prettifyTo(html`
+                <div class="kg-card kg-callout-card kg-callout-card-blue">
+                    <div class="kg-callout-emoji">💡</div>
+                    <div class="kg-callout-text">
+                        <b><strong>Hello!</strong></b
+                        >Check<i><em class="italic">this</em></i
+                        ><a href="https://ghost.org" rel="noopener">out</a>.
+                    </div>
+                </div>
+                `);
+        }));
+
+        it('can render to HTML with no emoji', editorTest(function () {
+            const dataset2 = {
+                calloutText: '<p dir="ltr"><b><strong>Hello!</strong></b><span> Check </span><i><em class="italic">this</em></i> <a href="https://ghost.org" rel="noopener"><span>out</span></a><span>.</span></p>',
+                calloutEmoji: '',
+                backgroundColor: 'blue'
+            };
+            const node = $createCalloutNode(dataset2);
+            const {element} = node.exportDOM(exportOptions);
+            element.outerHTML.should.prettifyTo(html`
+                <div class="kg-card kg-callout-card kg-callout-card-blue">
+                    <div class="kg-callout-text">
+                        <b><strong>Hello!</strong></b
+                        >Check<i><em class="italic">this</em></i
+                        ><a href="https://ghost.org" rel="noopener">out</a>.
+                    </div>
+                </div>
+                `);
+        }));
+
+        it('can render to HTML with invalid backgroundColor', editorTest(function () {
+            dataset.backgroundColor = 'rgba(124, 139, 154, 0.13)';
+
+            const node = $createCalloutNode(dataset);
+            const {element} = node.exportDOM(exportOptions);
+
+            element.outerHTML.should.prettifyTo(html`
+                <div class="kg-card kg-callout-card kg-callout-card-white">
+                    <div class="kg-callout-emoji">💡</div>
+                    <div class="kg-callout-text">
+                        <b><strong>Hello!</strong></b
+                        >Check<i><em class="italic">this</em></i
+                        ><a href="https://ghost.org" rel="noopener">out</a>.
+                    </div>
+                </div>
+            `);
+        }));
+
+        it('can render with inline code', editorTest(function () {
+            dataset.calloutText = '<p><span style="white-space: pre-wrap;">Does </span><code spellcheck="false" style="white-space: pre-wrap;"><span>inline code</span></code><span style="white-space: pre-wrap;"> render properly?</span></p>';
+
+            const node = $createCalloutNode(dataset);
+            const {element} = node.exportDOM(exportOptions);
+
+            element.outerHTML.should.prettifyTo(html`
+                <div class="kg-card kg-callout-card kg-callout-card-blue">
+                    <div class="kg-callout-emoji">💡</div>
+                    <div class="kg-callout-text">
+                        Does <code spellcheck="false" style="white-space: pre-wrap">inline code</code> render properly?
+                    </div>
+                </div>
+            `);
         }));
     });
 

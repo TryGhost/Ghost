@@ -1,5 +1,6 @@
 /* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
+import {renderHtmlNode} from './html-renderer';
 import {parseHtmlNode} from './html-parser';
 
 export class HtmlNode extends generateDecoratorNode({
@@ -7,7 +8,8 @@ export class HtmlNode extends generateDecoratorNode({
     hasVisibility: true,
     properties: [
         {name: 'html', default: '', urlType: 'html', wordCount: true}
-    ]
+    ],
+    defaultRenderFn: renderHtmlNode
 }) {
     static importDOM() {
         return parseHtmlNode(this);

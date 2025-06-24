@@ -1,13 +1,16 @@
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
 const {$getRoot} = require('lexical');
-const {createDocument, html} = require('../test-utils');
+const {dom, createDocument, html: htmlTemplate} = require('../test-utils');
 const {CallToActionNode, $isCallToActionNode, utils} = require('../../');
 const editorNodes = [CallToActionNode];
+
+const {taggedTemplateFns: {oneline}} = utils;
 
 describe('CallToActionNode', function () {
     let editor;
     let dataset;
+    let exportOptions;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
@@ -41,6 +44,12 @@ describe('CallToActionNode', function () {
             imageWidth: 200,
             imageHeight: 100,
             linkColor: 'text'
+        };
+        exportOptions = {
+            exportFormat: 'html',
+            dom,
+            feature: {},
+            design: {}
         };
     });
 
@@ -194,6 +203,407 @@ describe('CallToActionNode', function () {
         }));
     });
 
+    describe('exportDOM', function () {
+        const testRender = (assertFn) => {
+            const callToActionNode = new CallToActionNode(dataset);
+            const {element, type} = callToActionNode.exportDOM(exportOptions);
+
+            const html = element.outerHTML.toString();
+            assertFn({element, type, html});
+        };
+
+        it('has all data attributes in Web', editorTest(function () {
+            dataset = {
+                backgroundColor: 'green',
+                buttonColor: '#F0F0F0',
+                buttonText: 'Get access now',
+                buttonTextColor: '#000000',
+                buttonUrl: 'http://someblog.com/somepost',
+                hasSponsorLabel: true,
+                sponsorLabel: '<p>Sponsored by</p>',
+                imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
+                layout: 'minimal',
+                showButton: true,
+                showDividers: true,
+                textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
+            };
+
+            testRender(({html}) => {
+                html.should.containEql('data-layout="minimal"');
+                html.should.containEql('kg-cta-bg-green');
+                html.should.containEql('background-color: #F0F0F0');
+                html.should.containEql('Get access now');
+                html.should.containEql('http://someblog.com/somepost');
+                html.should.containEql('/content/images/2022/11/koenig-lexical.jpg');
+                html.should.containEql('This is a new CTA Card.');
+                html.should.containEql('Sponsored by'); // because hasSponsorLabel is true
+                html.should.containEql('cta-card');
+            });
+        }));
+
+        it('has all data attributes in Email', editorTest(function () {
+            exportOptions.target = 'email';
+            exportOptions.canTransformImage = () => true;
+            dataset = {
+                backgroundColor: 'green',
+                buttonColor: '#F0F0F0',
+                buttonText: 'Get access now',
+                buttonTextColor: '#000000',
+                buttonUrl: 'http://someblog.com/somepost',
+                hasSponsorLabel: true,
+                sponsorLabel: '<p><span style="white-space: pre-wrap;">SPONSORED</span></p>',
+                imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
+                layout: 'immersive',
+                showButton: true,
+                showDividers: true,
+                textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card via email.</span></p>'
+            };
+
+            testRender(({html}) => {
+                html.should.containEql('kg-cta-bg-green');
+                html.should.containEql('background-color: #F0F0F0');
+                html.should.containEql('Get access now');
+                html.should.containEql('http://someblog.com/somepost');
+                html.should.containEql('<p><span style="white-space: pre-wrap;">SPONSORED</span></p>'); // because hasSponsorLabel is true
+                html.should.containEql('/content/images/2022/11/koenig-lexical.jpg');
+                html.should.containEql('This is a new CTA Card via email.');
+            });
+        }));
+
+        it('uses cropped image when layout is minimal', editorTest(function () {
+            exportOptions.target = 'email';
+            exportOptions.canTransformImage = () => true;
+            exportOptions.imageOptimization = {
+                internalImageSizes: {
+                    'email-cta-minimal-image': {width: 64, height: 64}
+                }
+            };
+            dataset = {
+                backgroundColor: 'green',
+                buttonColor: '#F0F0F0',
+                buttonText: 'Get access now',
+                buttonTextColor: '#000000',
+                buttonUrl: 'http://someblog.com/somepost',
+                hasSponsorLabel: true,
+                sponsorLabel: '<p><span style="white-space: pre-wrap;">SPONSORED</span></p>',
+                imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
+                layout: 'minimal',
+                showButton: true,
+                showDividers: true,
+                textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card via email.</span></p>'
+            };
+
+            testRender(({html}) => {
+                html.should.containEql('kg-cta-bg-green');
+                html.should.containEql('background-color: #F0F0F0');
+                html.should.containEql('Get access now');
+                html.should.containEql('http://someblog.com/somepost');
+                html.should.containEql('<p><span style="white-space: pre-wrap;">SPONSORED</span></p>'); // because hasSponsorLabel is true
+                html.should.containEql('/content/images/size/w64h64/2022/11/koenig-lexical.jpg');
+                html.should.containEql('This is a new CTA Card via email.');
+            });
+        }));
+
+        it('cropped image defaults to 256 if no exportOptions.imageOptimizations are provided', editorTest(function () {
+            exportOptions.target = 'email';
+            exportOptions.canTransformImage = () => true;
+            dataset = {
+                backgroundColor: 'green',
+                buttonColor: '#F0F0F0',
+                buttonText: 'Get access now',
+                buttonTextColor: '#000000',
+                buttonUrl: 'http://someblog.com/somepost',
+                hasSponsorLabel: true,
+                sponsorLabel: '<p><span style="white-space: pre-wrap;">SPONSORED</span></p>',
+                imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
+                layout: 'minimal',
+                showButton: true,
+                showDividers: true,
+                textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card via email.</span></p>'
+            };
+
+            testRender(({html}) => {
+                html.should.containEql('/content/images/size/w256h256/2022/11/koenig-lexical.jpg');
+            });
+        }));
+
+        it('renders email with img width and height when immersive', editorTest(function () {
+            exportOptions.target = 'email';
+            dataset = {
+                backgroundColor: 'green',
+                buttonColor: '#F0F0F0',
+                buttonText: 'Get access now',
+                buttonTextColor: '#000000',
+                buttonUrl: 'http://someblog.com/somepost',
+                hasSponsorLabel: true,
+                sponsorLabel: '<p><span style="white-space: pre-wrap;">SPONSORED</span></p>',
+                imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
+                layout: 'immersive',
+                showButton: true,
+                showDividers: true,
+                textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card via email.</span></p>',
+                imageWidth: 200,
+                imageHeight: 100
+            };
+
+            testRender(({html}) => {
+                html.should.containEql('<img src="/content/images/2022/11/koenig-lexical.jpg" alt="CTA Image" class="kg-cta-image" width="200" height="100">');
+            });
+        }));
+
+        it('parses textValue correctly', editorTest(function () {
+            testRender(({html}) => {
+                html.should.containEql('This is a cool advertisement');
+            });
+        }));
+
+        it('renders img tag when imageUrl is not null', editorTest(function () {
+            testRender(({html}) => {
+                html.should.containEql('<img src="http://blog.com/image1.jpg" alt="CTA Image" data-image-dimensions="200x100">');
+            });
+        }));
+
+        it('does not render img tag when imageUrl is null', editorTest(function () {
+            dataset.imageUrl = null;
+
+            testRender(({html}) => {
+                html.should.not.containEql('<img src="http://blog.com/image1.jpg" alt="CTA Image">');
+            });
+        }));
+
+        // NOTE: Due to the way the package gets built sinon is unable to redefine
+        // utils.visibility, so we directly test the render output rather than spying
+        it('should render with web visibility', editorTest(function () {
+            exportOptions.target = 'web';
+            dataset.visibility = {...utils.visibility.buildDefaultVisibility(), web: {nonMember: false, memberSegment: 'status:free,status:-free'}};
+
+            testRender(({element}) => {
+                element.tagName.should.equal('TEXTAREA');
+                element.value.should.match(/<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free" -->/);
+            });
+        }));
+
+        it('should render with email visibility', editorTest(function () {
+            exportOptions.target = 'email';
+            dataset.visibility = {...utils.visibility.buildDefaultVisibility(), email: {memberSegment: 'status:free'}};
+
+            testRender(({element, type}) => {
+                type.should.equal('html');
+                element.tagName.should.equal('DIV');
+                element.dataset.ghSegment.should.equal('status:free');
+            });
+        }));
+
+        it('uses default buttonText when created with empty buttonText (web)', editorTest(function () {
+            dataset.showButton = true;
+            dataset.showDividers = true;
+            dataset.buttonText = '';
+
+            testRender(({html}) => {
+                html.should.containEql('<a href="http://blog.com/post1"');
+                html.should.containEql('Learn more');
+            });
+        }));
+
+        it('removes <p> first child tag from sponsorLabel', editorTest(function () {
+            testRender(({element}) => {
+                const sponsorLabel = element.querySelector('.kg-cta-sponsor-label');
+                sponsorLabel.should.exist;
+                sponsorLabel.firstElementChild.tagName.should.equal('SPAN');
+                sponsorLabel.firstElementChild.outerHTML.should.equal('<span style="white-space: pre-wrap;">SPONSORED</span>');
+            });
+        }));
+
+        function testButtonSkipOnMissingData(target, layout, {missing = []} = {}) {
+            return editorTest(function () {
+                dataset.layout = layout;
+                dataset.showButton = true;
+                dataset.showDividers = true;
+                dataset.buttonUrl = 'http://blog.com/post1';
+                dataset.buttonText = 'Click me';
+                exportOptions.target = target;
+
+                // NOTE: does not use testRender() because we need to set button text later to avoid node defaults
+                const callToActionNode = new CallToActionNode(dataset);
+
+                // clear out the missing data
+                missing.forEach((prop) => {
+                    callToActionNode[prop] = '';
+                });
+
+                const {element} = callToActionNode.exportDOM(exportOptions);
+                const html = element.outerHTML.toString();
+
+                html.should.not.containEql('<a href="http://blog.com/post1"');
+                html.should.not.containEql('Click me');
+            });
+        }
+
+        it('skips button when buttonUrl is empty (web, minimal)', testButtonSkipOnMissingData('web', 'minimal', {missing: ['buttonUrl']}));
+        it('skips button when buttonText is empty (web, minimal)', testButtonSkipOnMissingData('web', 'minimal', {missing: ['buttonText']}));
+        it('skips button when buttonUrl is empty (email, minimal)', testButtonSkipOnMissingData('email', 'minimal', {missing: ['buttonUrl']}));
+        it('skips button when buttonUrl is empty (email, immersive)', testButtonSkipOnMissingData('email', 'immersive', {missing: ['buttonUrl']}));
+        it('skips button when buttonText is empty (email, minimal)', testButtonSkipOnMissingData('email', 'minimal', {missing: ['buttonText']}));
+        it('skips button when buttonText is empty (email, immersive)', testButtonSkipOnMissingData('email', 'immersive', {missing: ['buttonText']}));
+
+        function testImageLink(target, layout) {
+            return editorTest(function () {
+                exportOptions.target = target;
+                dataset.layout = layout;
+                dataset.showButton = true;
+                dataset.showDividers = true;
+                dataset.buttonUrl = 'http://blog.com/post1';
+
+                testRender(({html}) => {
+                    html.should.containEql('<a href="http://blog.com/post1"><img');
+                });
+            });
+        }
+
+        it('adds link to image when button is present with url (web)', testImageLink('web', 'minimal'));
+        it('adds link to image when button is present with url (email, minimal)', testImageLink('email', 'minimal'));
+        it('adds link to image when button is present with url (email, immersive)', testImageLink('email', 'immersive'));
+
+        function testSkippedImageLink(target, layout) {
+            return editorTest(function () {
+                exportOptions.target = target;
+                dataset.layout = layout;
+                dataset.showButton = false;
+                dataset.showDividers = true;
+                dataset.buttonUrl = 'http://blog.com/post1';
+
+                testRender(({html}) => {
+                    html.should.not.containEql('<a href="http://blog.com/post1"><img');
+                });
+            });
+        }
+
+        it('skips link to image when button is not shown (web)', testSkippedImageLink('web', 'minimal'));
+        it('skips link to image when button is not shown (email, minimal)', testSkippedImageLink('email', 'minimal'));
+        it('skips link to image when button is not shown (email, immersive)', testSkippedImageLink('email', 'immersive'));
+
+        it('can render email with emailCustomization', editorTest(function () {
+            exportOptions.target = 'email';
+            exportOptions.feature.emailCustomization = true;
+
+            testRender(({element}) => {
+                // very basic test to ensure we don't error
+                element.tagName.should.equal('TABLE');
+
+                // check for an emailCustomization specific change to make
+                // sure we're hitting the right code path
+                should.exist(element.querySelector('table.btn'), 'table.btn element should exist');
+            });
+        }));
+
+        it('can render email with emailCustomizationAlpha', editorTest(function () {
+            exportOptions.target = 'email';
+            exportOptions.feature.emailCustomizationAlpha = true;
+
+            testRender(({element}) => {
+                // very basic test to ensure we don't error
+                element.tagName.should.equal('TABLE');
+
+                // check for an emailCustomization specific change to make
+                // sure we're hitting the right code path
+                should.exist(element.querySelector('table.btn'), 'table.btn element should exist');
+            });
+        }));
+
+        // eslint-disable-next-line ghost/mocha/no-setup-in-describe
+        ['emailCustomization', 'emailCustomizationAlpha'].forEach((flag) => {
+            it(`can render outline accent buttons (${flag})`, editorTest(function () {
+                exportOptions.target = 'email';
+                exportOptions.feature[flag] = true;
+                exportOptions.design.buttonStyle = 'outline';
+
+                dataset.buttonColor = 'accent';
+
+                testRender(({element}) => {
+                    const expectedStyle = 'color: none;';
+                    element.querySelector('table.btn td').getAttribute('style').should.equal(expectedStyle);
+                    element.querySelector('table.btn a').getAttribute('style').should.equal(expectedStyle);
+                });
+            }));
+
+            it(`can render outline custom buttons (${flag})`, editorTest(function () {
+                exportOptions.target = 'email';
+                exportOptions.feature[flag] = true;
+                exportOptions.design.buttonStyle = 'outline';
+
+                dataset.buttonColor = '#F0F0F0';
+
+                testRender(({element}) => {
+                    oneline(element.querySelector('table.btn td').getAttribute('style')).should.equal(oneline`
+                        border: 1px solid #F0F0F0;
+                        background-color: transparent;
+                        color: #F0F0F0;
+                    `);
+                    oneline(element.querySelector('table.btn a').getAttribute('style')).should.equal(oneline`
+                        background-color: transparent;
+                        color: #F0F0F0;
+                    `);
+                });
+            }));
+        });
+
+        it('accepts valid hex color for buttonColor', editorTest(function () {
+            dataset.buttonColor = '#F0F0F0';
+            testRender(({html}) => {
+                html.should.containEql('background-color: #F0F0F0');
+            });
+        }));
+
+        it('accepts valid named color for buttonColor', editorTest(function () {
+            dataset.buttonColor = 'blue';
+            testRender(({html}) => {
+                html.should.containEql('background-color: blue');
+            });
+        }));
+
+        it('renders with left alignment by default', editorTest(function () {
+            testRender(({html}) => {
+                html.should.not.containEql('kg-cta-centered');
+            });
+        }));
+
+        it('renders with center alignment when specified', editorTest(function () {
+            dataset.alignment = 'center';
+            testRender(({html}) => {
+                html.should.containEql('kg-cta-centered');
+            });
+        }));
+
+        it('renders email with minimal layout and proper image dimensions', editorTest(function () {
+            exportOptions.target = 'email';
+            dataset.layout = 'minimal';
+            dataset.imageUrl = '/content/images/2022/11/test.jpg';
+            dataset.imageWidth = 1200;
+            dataset.imageHeight = 800;
+
+            testRender(({element}) => {
+                const img = element.querySelector('.kg-cta-image');
+                img.should.exist;
+                img.getAttribute('width').should.equal('64');
+                img.getAttribute('height').should.equal('64');
+            });
+        }));
+
+        it('renders with accent link color', editorTest(function () {
+            dataset.linkColor = 'accent';
+            testRender(({html}) => {
+                html.should.containEql('kg-cta-link-accent');
+            });
+        }));
+
+        it('renders with text link color by default', editorTest(function () {
+            dataset.linkColor = 'text';
+            testRender(({html}) => {
+                html.should.not.containEql('kg-cta-link-accent');
+            });
+        }));
+    });
+
     describe('exportJSON', function () {
         it('contains all data', editorTest(function () {
             dataset = {
@@ -301,118 +711,100 @@ describe('CallToActionNode', function () {
     });
 
     describe('importDom', function () {
-        const generateCallToActionNodes = (contents) => {
-            const document = createDocument(contents);
-            return $generateNodesFromDOM(editor, document);
+        const generateCallToActionNodes = (nodeDataset) => {
+            const callToActionNode = new CallToActionNode(nodeDataset);
+            const {element} = callToActionNode.exportDOM(exportOptions);
+            const docuement = createDocument(htmlTemplate`${element.outerHTML.toString()}`);
+            const nodes = $generateNodesFromDOM(editor, docuement);
+
+            return nodes;
         };
         it('parses the cta card layout', editorTest(function () {
-            const nodes = generateCallToActionNodes(html`
-                <div class="kg-cta-card" data-layout="immersive">
-                </div>
-            `);
+            dataset.layout = 'immersive';
+            const nodes = generateCallToActionNodes(dataset);
             nodes.length.should.equal(1);
             nodes[0].layout.should.equal('immersive');
         }));
 
         it('parses text value', editorTest(function () {
-            const nodes = generateCallToActionNodes(html`
-                <div class="kg-cta-card" data-layout="immersive">
-                    <div class="kg-cta-text">This is a cool advertisement</div>
-                </div>
-            `);
+            const nodes = generateCallToActionNodes(dataset);
             nodes.length.should.equal(1);
             nodes[0].textValue.should.equal('This is a cool advertisement');
         }));
 
         it('checks if button is visible', editorTest(function (){
-            const nodes = generateCallToActionNodes(html`
-                <div class="kg-cta-card" data-layout="immersive">
-                    <div class="kg-cta-button" href="http://blog.com/post1">click me</div>
-                </div>
-            `);
+            const nodes = generateCallToActionNodes(dataset);
             nodes.length.should.equal(1);
             nodes[0].showButton.should.equal(true);
-            nodes[0].buttonText.should.equal('click me');
-            nodes[0].buttonUrl.should.equal('http://blog.com/post1');
         }));
 
         it('checks if button is not visible', editorTest(function (){
-            const nodes = generateCallToActionNodes(html`
-                <div class="kg-cta-card" data-layout="immersive">
-                </div>
-            `);
+            dataset.showButton = false;
+            const nodes = generateCallToActionNodes(dataset);
             nodes.length.should.equal(1);
             nodes[0].showButton.should.equal(false);
-            nodes[0].buttonText.should.equal('Learn more'); // default button text
-            nodes[0].buttonUrl.should.equal('');
+        }));
+
+        it('can get button text', editorTest(function () {
+            const nodes = generateCallToActionNodes(dataset);
+            nodes.length.should.equal(1);
+            nodes[0].buttonText.should.equal('click me');
+        }));
+
+        it('can get button URL', editorTest(function (){
+            const nodes = generateCallToActionNodes(dataset);
+            nodes.length.should.equal(1);
+            nodes[0].buttonUrl.should.equal('http://blog.com/post1');
         }));
 
         it('can get button colours', editorTest(function () {
-            const nodes = generateCallToActionNodes(html`
-                <div class="kg-cta-card" data-layout="immersive">
-                    <div class="kg-cta-button" style="background-color: #123456; color: #654321;">click me</div>
-                </div>
-            `);
+            dataset.buttonColor = '#123456';
+            dataset.buttonTextColor = '#654321';
+            const nodes = generateCallToActionNodes(dataset);
             nodes.length.should.equal(1);
             nodes[0].buttonColor.should.equal('#123456');
             nodes[0].buttonTextColor.should.equal('#654321');
         }));
 
-        it('can get sponsor label', editorTest(function () {
-            const nodes = generateCallToActionNodes(html`
-                <div class="kg-cta-card" data-layout="immersive">
-                    <div class="kg-cta-sponsor-label-wrapper">
-                        <div class="kg-cta-sponsor-label">
-                            <span style="white-space: pre-wrap">SPONSORED BY GHOST</span>
-                        </div>
-                    </div>
-                </div>
-            `);
+        it('can check if it has a sponsorLabel', editorTest(function () {
+            const nodes = generateCallToActionNodes(dataset);
             nodes.length.should.equal(1);
             nodes[0].hasSponsorLabel.should.equal(true);
-            nodes[0].sponsorLabel.should.equal('<p><span style="white-space: pre-wrap">SPONSORED BY GHOST</span></p>');
         }));
 
-        it('hasSponsorLabel is false if it does not have a sponsor label', editorTest(function () {
-            const nodes = generateCallToActionNodes(html`
-                <div class="kg-cta-card" data-layout="immersive">
-                </div>
-            `);
+        it('returns false if it does not have a sponsorLabel', editorTest(function () {
+            dataset.hasSponsorLabel = false;
+            const nodes = generateCallToActionNodes(dataset);
             nodes.length.should.equal(1);
             nodes[0].hasSponsorLabel.should.equal(false);
         }));
 
+        it('can get sponsorLabel', editorTest(function () {
+            dataset.sponsorLabel = '<p><span style="white-space: pre-wrap">SPONSORED BY GHOST</span></p>';
+            const nodes = generateCallToActionNodes(dataset);
+            nodes.length.should.equal(1);
+            nodes[0].sponsorLabel.should.equal('<p><span style="white-space: pre-wrap">SPONSORED BY GHOST</span></p>');
+        }));
+
         it('can get background color', editorTest(function () {
-            const nodes = generateCallToActionNodes(html`
-                <div class="kg-cta-card kg-cta-bg-red" data-layout="immersive">
-                </div>
-            `);
+            dataset.backgroundColor = 'red';
+            const nodes = generateCallToActionNodes(dataset);
             nodes.length.should.equal(1);
             nodes[0].backgroundColor.should.equal('red');
         }));
 
         it('can get image data', editorTest(function () {
-            const nodes = generateCallToActionNodes(html`
-                <div class="kg-cta-card" data-layout="immersive">
-                    <div class="kg-cta-image-container">
-                        <img src="http://blog.com/image1.jpg" width="200" height="100" />
-                    </div>
-                </div>
-            `);
+            const nodes = generateCallToActionNodes(dataset);
             nodes.length.should.equal(1);
             nodes[0].imageUrl.should.equal('http://blog.com/image1.jpg');
             nodes[0].imageWidth.should.equal(200);
             nodes[0].imageHeight.should.equal(100);
         }));
 
-        it('image width and height falls back to null if not provided', editorTest(function () {
-            const nodes = generateCallToActionNodes(html`
-                <div class="kg-cta-card" data-layout="immersive">
-                    <div class="kg-cta-image-container">
-                        <img src="http://blog.com/image1.jpg" />
-                    </div>
-                </div>
-            `);
+        it('image width and height falls back to nulll if not provided', editorTest(function () {
+            dataset.imageWidth = null;
+            dataset.imageHeight = null;
+            const nodes = generateCallToActionNodes(dataset);
             nodes.length.should.equal(1);
             should(nodes[0].imageWidth).be.null();
             should(nodes[0].imageHeight).be.null();
