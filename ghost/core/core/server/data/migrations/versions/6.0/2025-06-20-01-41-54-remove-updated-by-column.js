@@ -26,6 +26,8 @@ module.exports = createNonTransactionalMigration(
     async function up(knex) {
         logging.info('Dropping updated_by column from all tables');
 
+        console.log('knex LALALAL', knex);
+
         for (const table of TABLES_WITH_UPDATED_BY) {
             const hasTable = await knex.schema.hasTable(table);
             if (!hasTable) {
@@ -42,7 +44,7 @@ module.exports = createNonTransactionalMigration(
             logging.info(`Dropping updated_by column from ${table}`);
 
             // Handle foreign key constraints for MySQL
-            if (DatabaseInfo.isMysql(knex)) {
+            if (DatabaseInfo.isMySQL(knex)) {
                 // Find and drop any foreign key constraints on updated_by
                 const [dbName] = await knex.raw('SELECT DATABASE() as db');
                 const database = dbName[0].db;

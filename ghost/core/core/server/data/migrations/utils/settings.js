@@ -36,8 +36,7 @@ function addSetting({key, value, type, group, flags = null}) {
                     group,
                     type,
                     flags,
-                    created_at: now,
-                    created_by: MIGRATION_USER
+                    created_at: now
                 });
         },
         async function down(connection) {
@@ -100,16 +99,13 @@ function removeSetting(key) {
             const now = connection.raw('CURRENT_TIMESTAMP');
 
             return connection('settings')
-                .insert({
-                    id: ObjectId().toHexString(),
+                .insert({id: ObjectId().toHexString(),
                     key,
                     value: originalSetting.value,
                     group: originalSetting.group,
                     type: originalSetting.type,
                     flags: originalSetting.flags,
-                    created_at: now,
-                    created_by: MIGRATION_USER
-                });
+                    created_at: now});
         }
     );
 }

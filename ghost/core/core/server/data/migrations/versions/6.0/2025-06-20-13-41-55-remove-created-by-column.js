@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const {createNonTransactionalMigration} = require('../../utils');
 
 const TABLES_WITH_CREATED_BY = [
     'posts',
@@ -20,15 +21,17 @@ const TABLES_WITH_CREATED_BY = [
     'tokens'
 ];
 
-module.exports = {
-    async up(knex) {
+module.exports = createNonTransactionalMigration(
+    async function up(knex) {
         logging.info('Dropping created_by column from all tables');
+
+        console.log('knex LALALAL', knex);
 
         for (const tableName of TABLES_WITH_CREATED_BY) {
             try {
                 // First check if the column exists
                 const hasColumn = await knex.schema.hasColumn(tableName, 'created_by');
-                
+
                 if (!hasColumn) {
                     logging.info(`Table ${tableName} does not have created_by column, skipping`);
                     continue;
@@ -36,11 +39,11 @@ module.exports = {
 
                 // If the database is MySQL, we need to handle foreign key constraints
                 const isMysql = knex.client.config.client === 'mysql' || knex.client.config.client === 'mysql2';
-                
+
                 if (isMysql && tableName === 'posts') {
                     // Posts has a foreign key constraint on created_by that references users
                     logging.info(`Dropping foreign key constraint on ${tableName}.created_by`);
-                    
+
                     try {
                         await knex.raw(`ALTER TABLE ${tableName} DROP FOREIGN KEY posts_created_by_foreign`);
                     } catch (err) {
@@ -54,7 +57,7 @@ module.exports = {
                 await knex.schema.table(tableName, function (table) {
                     table.dropColumn('created_by');
                 });
-                
+
                 logging.info(`Successfully dropped created_by column from ${tableName}`);
             } catch (err) {
                 logging.error(`Failed to drop created_by column from ${tableName}: ${err.message}`);
@@ -63,7 +66,8 @@ module.exports = {
         }
     },
 
-    async down() {
-        logging.warn('Reverting removal of created_by column is not supported');
+    async function down() {
+    // Major version migrations are not reversible
+        logging.warn('Reverting removal of updated_by column is not supported');
     }
-};
+);
