@@ -20,7 +20,7 @@ describe('Frontend behavior tests', function () {
 
     describe('default routes.yaml', function () {
         before(async function () {
-            localUtils.defaultMocks(sinon, {amp: true});
+            localUtils.defaultMocks(sinon);
             localUtils.overrideGhostConfig(configUtils);
 
             app = await localUtils.initGhost();
@@ -61,40 +61,6 @@ describe('Frontend behavior tests', function () {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('post');
                     });
-            });
-
-            describe('AMP enabled', function () {
-                it('serve amp', function () {
-                    localUtils.defaultMocks(sinon, {amp: true});
-                    const req = {
-                        method: 'GET',
-                        url: '/html-ipsum/amp/',
-                        host: 'example.com'
-                    };
-
-                    return localUtils.mockExpress.invoke(app, req)
-                        .then(function (response) {
-                            response.statusCode.should.eql(200);
-                            response.template.should.match(/amp\.hbs/);
-                            response.body.should.match(/<h1>HTML Ipsum Presents<\/h1>/);
-                        });
-                });
-            });
-
-            describe('AMP disabled', function () {
-                it('serve amp', function () {
-                    localUtils.defaultMocks(sinon, {amp: false});
-                    const req = {
-                        method: 'GET',
-                        url: '/html-ipsum/amp/',
-                        host: 'example.com'
-                    };
-
-                    return localUtils.mockExpress.invoke(app, req)
-                        .then(function (response) {
-                            response.statusCode.should.eql(301);
-                        });
-                });
             });
 
             it('post not found', function () {

@@ -2,16 +2,6 @@ const urlUtils = require('../../shared/url-utils');
 const urlService = require('../../server/services/url');
 const {checks} = require('../services/data');
 
-// This cleans the url from any `/amp` postfixes, so we'll never
-// output a url with `/amp` in the end, except for the needed `amphtml`
-// canonical link, which is rendered by `getAmpUrl`.
-function sanitizeAmpUrl(url) {
-    if (url.indexOf('/amp/') !== -1) {
-        url = url.replace(/\/amp\/$/i, '/');
-    }
-    return url;
-}
-
 function getUrl(data, absolute) {
     if (checks.isPost(data)) {
         /**
@@ -41,8 +31,7 @@ function getUrl(data, absolute) {
         return urlUtils.urlFor('nav', {nav: data}, absolute);
     }
 
-    // sanitize any trailing `/amp` in the url
-    return sanitizeAmpUrl(urlUtils.urlFor(data, {}, absolute));
+    return urlUtils.urlFor(data, {}, absolute);
 }
 
 module.exports = getUrl;

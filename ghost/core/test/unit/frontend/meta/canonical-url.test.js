@@ -1,4 +1,3 @@
-const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const urlUtils = require('../../../../core/shared/url-utils');
@@ -47,19 +46,6 @@ describe('getCanonicalUrl', function () {
         }).should.eql('https://example.com/canonical');
 
         getUrlStub.called.should.equal(false);
-    });
-
-    it('should return canonical url for amp post without /amp/ in url', function () {
-        const post = testUtils.DataGenerator.forKnex.createPost();
-
-        getUrlStub.withArgs(post, false).returns('/post-url/amp/');
-        urlJoinStub.withArgs('http://localhost:9999', '/post-url/amp/').returns('*/amp/');
-
-        getCanonicalUrl(post).should.eql('*/');
-
-        urlJoinStub.calledOnce.should.be.true();
-        urlForStub.calledOnce.should.be.true();
-        getUrlStub.calledOnce.should.be.true();
     });
 
     it('should return home if empty secure data', function () {

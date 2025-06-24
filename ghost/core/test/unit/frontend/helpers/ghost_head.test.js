@@ -381,7 +381,6 @@ describe('{{ghost_head}} helper', function () {
         getStub.withArgs('title').returns('Ghost');
         getStub.withArgs('description').returns('site description');
         getStub.withArgs('cover_image').returns('/content/images/site-cover.png');
-        getStub.withArgs('amp').returns(true);
         getStub.withArgs('comments_enabled').returns('off');
         getStub.withArgs('members_track_sources').returns(true);
         getStub.withArgs('site_uuid').returns('77f09c60-5a34-4b4c-a3f6-e1b1d78f7412');
@@ -561,24 +560,6 @@ describe('{{ghost_head}} helper', function () {
                 locals: {
                     relativeUrl: '/post/',
                     context: ['post'],
-                    safeVersion: '0.3'
-                }
-            }));
-            renderObject.post.should.eql(postBk);
-        });
-
-        it('returns structured data on AMP post page with author image and post cover image', async function () {
-            const renderObject = {
-                post: posts[5]
-            };
-
-            const postBk = _.cloneDeep(renderObject.post);
-
-            await testGhostHead(testUtils.createHbsResponse({
-                renderObject: renderObject,
-                locals: {
-                    relativeUrl: '/post/amp/',
-                    context: ['amp', 'post'],
                     safeVersion: '0.3'
                 }
             }));
@@ -793,7 +774,7 @@ describe('{{ghost_head}} helper', function () {
         it('implicit indexing settings for non-preview pages', async function () {
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
-                    context: ['featured', 'paged', 'index', 'post', 'amp', 'home', 'unicorn']
+                    context: ['featured', 'paged', 'index', 'post', 'home', 'unicorn']
                 }
             }));
             // Unknown Request error for favico
@@ -944,45 +925,6 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
         });
-
-        it('returns meta tag without injected code for amp context', async function () {
-            const renderObject = {
-                post: posts[1]
-            };
-
-            await testGhostHead(testUtils.createHbsResponse({
-                renderObject: renderObject,
-                locals: {
-                    context: ['amp', 'post'],
-                    safeVersion: '0.3'
-                }
-            }));
-        });
-    });
-
-    describe('amp is disabled', function () {
-        beforeEach(function () {
-            getStub.withArgs('amp').returns(false);
-        });
-
-        it('does not contain amphtml link', async function () {
-            let loggingErrorStub = sinon.stub(logging, 'error');
-
-            const renderObject = {
-                post: posts[1]
-            };
-
-            await testGhostHead(testUtils.createHbsResponse({
-                renderObject: renderObject,
-                locals: {
-                    relativeUrl: '/post/',
-                    context: ['post'],
-                    safeVersion: '0.3'
-                }
-            }));
-
-            sinon.assert.calledOnce(loggingErrorStub);
-        });
     });
 
     describe('accent_color', function () {
@@ -1071,28 +1013,6 @@ describe('{{ghost_head}} helper', function () {
                 locals: {
                     relativeUrl: '/post/amp/',
                     context: null,
-                    safeVersion: '0.3'
-                }
-            }));
-        });
-
-        it('does not include style tag in AMP context', async function () {
-            const renderObject = {
-                post: posts[1]
-            };
-
-            const templateOptions = {
-                site: {
-                    accent_color: '#123456'
-                }
-            };
-
-            await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
-                renderObject: renderObject,
-                locals: {
-                    relativeUrl: '/post/',
-                    context: ['post', 'amp'],
                     safeVersion: '0.3'
                 }
             }));
