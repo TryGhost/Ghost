@@ -26,18 +26,20 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     const [isFollowing, setIsFollowing] = useState(following);
 
     const unfollowMutation = useUnfollowMutationForUser('index',
-        noop,
         () => {
-            setIsFollowing(false);
             onUnfollow();
+        },
+        () => {
+            setIsFollowing(true);
         }
     );
 
     const followMutation = useFollowMutationForUser('index',
-        noop,
+        () => {
+            onFollow();
+        },
         () => {
             setIsFollowing(false);
-            onUnfollow();
         }
     );
 

@@ -339,7 +339,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         : (actor?.followedByMe || false);
 
     const isAuthorCurrentUser = type === 'Announce'
-        ? object.reposted
+        ? (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) && 'authored' in object.attributedTo ? object.attributedTo.authored : false)
         : object.authored;
 
     const handleFollow = () => {
