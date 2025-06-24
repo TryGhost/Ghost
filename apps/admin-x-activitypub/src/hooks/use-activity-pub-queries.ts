@@ -152,6 +152,106 @@ function updateLikeCache(queryClient: QueryClient, handle: string, id: string, l
     }
 }
 
+function updateFollowCache(queryClient: QueryClient, handle: string, authorHandle: string, followedByMe: boolean) {
+    const queryKeys = [
+        QUERY_KEYS.feed,
+        QUERY_KEYS.inbox,
+        QUERY_KEYS.profilePosts('index')
+    ];
+
+    // Add handle-specific profile posts if different from index
+    if (handle !== 'index') {
+        queryKeys.push(QUERY_KEYS.profilePosts(handle));
+    }
+
+    const preferredUsername = authorHandle.split('@')[1];
+
+    for (const queryKey of queryKeys) {
+        queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+            if (current === undefined) {
+                return current;
+            }
+
+            return {
+                ...current,
+                pages: current.pages.map((page: {posts: Activity[]}) => {
+                    return {
+                        ...page,
+                        posts: page.posts.map((item: Activity) => {
+                            // Update regular posts by this author
+                            if (item.type !== 'Announce' && item.actor?.preferredUsername === preferredUsername) {
+                                return {
+                                    ...item,
+                                    actor: {
+                                        ...item.actor,
+                                        followedByMe: followedByMe
+                                    }
+                                };
+                            }
+
+                            // Update reposts where the original author is being followed/unfollowed
+                            if (item.type === 'Announce' &&
+                                typeof item.object.attributedTo === 'object' &&
+                                item.object.attributedTo &&
+                                !Array.isArray(item.object.attributedTo) &&
+                                'preferredUsername' in item.object.attributedTo &&
+                                item.object.attributedTo.preferredUsername === preferredUsername) {
+                                return {
+                                    ...item,
+                                    object: {
+                                        ...item.object,
+                                        attributedTo: {
+                                            ...item.object.attributedTo,
+                                            followedByMe: followedByMe
+                                        }
+                                    }
+                                };
+                            }
+
+                            return item;
+                        })
+                    };
+                })
+            };
+        });
+    }
+
+    // Handle reply chain cache (used by Note.tsx and Reader.tsx)
+    const replyChainQueryKey = QUERY_KEYS.replyChain(null);
+    queryClient.setQueriesData(replyChainQueryKey, (current?: ReplyChainResponse) => {
+        if (!current) {
+            return current;
+        }
+
+        const updatePost = (post: Post) => {
+            if (post.author.handle === authorHandle) {
+                return {
+                    ...post,
+                    author: {
+                        ...post.author,
+                        followedByMe: followedByMe
+                    }
+                };
+            }
+            return post;
+        };
+
+        return {
+            ...current,
+            post: updatePost(current.post),
+            ancestors: {
+                ...current.ancestors,
+                chain: current.ancestors.chain.map(updatePost)
+            },
+            children: current.children.map(child => ({
+                ...child,
+                post: updatePost(child.post),
+                chain: child.chain.map(updatePost)
+            }))
+        };
+    });
+}
+
 // Update non-paginated caches (should only be called once per mutation)
 function updateLikeCacheOnce(queryClient: QueryClient, id: string, liked: boolean) {
     // Handle reply chain cache (used by Note.tsx and Reader.tsx)
@@ -906,6 +1006,8 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                 });
             });
 
+            updateFollowCache(queryClient, handle, fullHandle, false);
+
             onSuccess();
         },
         onError
@@ -1066,6 +1168,8 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                     }, ...oldData.pages.slice(1)]
                 };
             });
+
+            updateFollowCache(queryClient, handle, fullHandle, true);
 
             onSuccess();
         },

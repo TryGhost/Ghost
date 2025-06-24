@@ -14,7 +14,7 @@ import getUsername from '../../utils/get-username';
 import {handleProfileClick} from '../../utils/handle-profile-click';
 import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
 import {renderTimestamp} from '../../utils/render-timestamp';
-import {useDeleteMutationForUser} from '../../hooks/use-activity-pub-queries';
+import {useDeleteMutationForUser, useFollowMutationForUser, useUnfollowMutationForUser} from '../../hooks/use-activity-pub-queries';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 export function getAttachment(object: ObjectProperties) {
@@ -241,6 +241,26 @@ const FeedItem: React.FC<FeedItemProps> = ({
     const deleteMutation = useDeleteMutationForUser('index');
     const navigate = useNavigate();
 
+    const followMutation = useFollowMutationForUser(
+        'index',
+        () => {
+            toast.success('User followed');
+        },
+        () => {
+            toast.error('Failed to follow user');
+        }
+    );
+
+    const unfollowMutation = useUnfollowMutationForUser(
+        'index',
+        () => {
+            toast.success('User unfollowed');
+        },
+        () => {
+            toast.error('Failed to unfollow user');
+        }
+    );
+
     useEffect(() => {
         const element = contentRef.current;
         if (element) {
@@ -310,6 +330,30 @@ const FeedItem: React.FC<FeedItemProps> = ({
         author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
     }
 
+    const authorHandle = type === 'Announce'
+        ? (author ? getUsername(author) : null)
+        : (actor ? getUsername(actor) : null);
+
+    const followedByMe = type === 'Announce'
+        ? (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) && 'followedByMe' in object.attributedTo ? object.attributedTo.followedByMe : false)
+        : (actor?.followedByMe || false);
+
+    const isAuthorCurrentUser = type === 'Announce'
+        ? (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) && 'authored' in object.attributedTo ? object.attributedTo.authored : false)
+        : object.authored;
+
+    const handleFollow = () => {
+        if (authorHandle) {
+            followMutation.mutate(authorHandle);
+        }
+    };
+
+    const handleUnfollow = () => {
+        if (authorHandle) {
+            unfollowMutation.mutate(authorHandle);
+        }
+    };
+
     const UserMenuTrigger = (
         <Button className={`relative z-10 size-[34px] rounded-md ${layout === 'inbox' || layout === 'modal' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500'} dark:bg-black dark:hover:bg-gray-950 [&_svg]:size-5`} data-testid="menu-button" variant='ghost'>
             <LucideIcon.Ellipsis />
@@ -361,11 +405,15 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </div>
                                 <FeedItemMenu
                                     allowDelete={allowDelete}
+                                    authoredByMe={isAuthorCurrentUser}
                                     disabled={isPending}
+                                    followedByMe={followedByMe}
                                     layout='feed'
                                     trigger={UserMenuTrigger}
                                     onCopyLink={handleCopyLink}
                                     onDelete={handleDelete}
+                                    onFollow={handleFollow}
+                                    onUnfollow={handleUnfollow}
                                 />
                             </div>
                             <div className='relative col-start-2 col-end-3 w-full gap-4 pl-[52px]'>
@@ -525,11 +573,15 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     </div>
                                     {!isCompact && <FeedItemMenu
                                         allowDelete={allowDelete}
+                                        authoredByMe={isAuthorCurrentUser}
                                         disabled={isPending}
+                                        followedByMe={followedByMe}
                                         layout='reply'
                                         trigger={UserMenuTrigger}
                                         onCopyLink={handleCopyLink}
                                         onDelete={handleDelete}
+                                        onFollow={handleFollow}
+                                        onUnfollow={handleUnfollow}
                                     />}
                                 </div>
                                 <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
@@ -632,10 +684,14 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     />}
                                     <FeedItemMenu
                                         allowDelete={allowDelete}
+                                        authoredByMe={isAuthorCurrentUser}
+                                        followedByMe={followedByMe}
                                         layout='inbox'
                                         trigger={UserMenuTrigger}
                                         onCopyLink={handleCopyLink}
                                         onDelete={handleDelete}
+                                        onFollow={handleFollow}
+                                        onUnfollow={handleUnfollow}
                                     />
                                 </div>
                             </div>
