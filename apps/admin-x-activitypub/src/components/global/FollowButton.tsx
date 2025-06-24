@@ -27,7 +27,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
 
     const unfollowMutation = useUnfollowMutationForUser('index',
         () => {
-            onUnfollow();
+            // Success handled by cache updates
         },
         () => {
             setIsFollowing(true);
@@ -36,7 +36,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
 
     const followMutation = useFollowMutationForUser('index',
         () => {
-            onFollow();
+            // Success handled by cache updates
         },
         () => {
             setIsFollowing(false);
