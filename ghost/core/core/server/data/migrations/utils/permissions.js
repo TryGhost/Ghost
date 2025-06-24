@@ -4,7 +4,7 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const {createTransactionalMigration, combineTransactionalMigrations} = require('./migrations');
-const {MIGRATION_USER} = require('./constants');
+const MIGRATION_USER = 1;
 
 const messages = {
     permissionRoleActionError: 'Cannot {action} permission({permission}) with role({role}) - {resource} does not exist'
