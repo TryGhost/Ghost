@@ -210,19 +210,11 @@ const Growth: React.FC = () => {
                                                 <TableRow key={`${selectedContentType}-${post.post_id || `${post.title}-${index}`}`} className='last:border-none'>
                                                     <TableCell>
                                                         <div className='group/link inline-flex flex-col items-start gap-px'>
-<<<<<<< HEAD
                                                             {post.post_id && post.attribution_type === 'post' ?
-                                                                <Button 
-                                                                    className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
-                                                                    title='View post analytics' 
-                                                                    variant='link' 
-=======
-                                                            {shouldMakeClickable(post.attribution_url, post.url_exists) ?
                                                                 <Button
                                                                     className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline'
-                                                                    title={post.post_id ? 'View post analytics' : 'View page'}
+                                                                    title='View post analytics'
                                                                     variant='link'
->>>>>>> 7a8e201bd7 (Updated growth and locations)
                                                                     onClick={getClickHandler(post.attribution_url, post.post_id, site.url || '', navigate, post.attribution_type)}
                                                                 >
                                                                     {post.title}
