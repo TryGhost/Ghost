@@ -1,4 +1,7 @@
 /* eslint-env node */
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const path = require('path');
+
 module.exports = {
     root: true,
     extends: [
@@ -45,12 +48,12 @@ module.exports = {
         'react/no-array-index-key': 'error',
         'react/jsx-key': 'off',
 
-        'tailwindcss/classnames-order': ['error', {config: 'tailwind.config.cjs'}],
-        'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: 'tailwind.config.cjs'}],
-        'tailwindcss/enforces-shorthand': ['warn', {config: 'tailwind.config.cjs'}],
-        'tailwindcss/migration-from-tailwind-2': ['warn', {config: 'tailwind.config.cjs'}],
+        'tailwindcss/classnames-order': ['error', {config: path.join(__dirname, 'tailwind.config.cjs')}],
+        'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: path.join(__dirname, 'tailwind.config.cjs')}],
+        'tailwindcss/enforces-shorthand': ['warn', {config: path.join(__dirname, 'tailwind.config.cjs')}],
+        'tailwindcss/migration-from-tailwind-2': ['warn', {config: path.join(__dirname, 'tailwind.config.cjs')}],
         'tailwindcss/no-arbitrary-value': 'off',
         'tailwindcss/no-custom-classname': 'off',
-        'tailwindcss/no-contradicting-classname': ['error', {config: 'tailwind.config.cjs'}]
+        'tailwindcss/no-contradicting-classname': ['error', {config: path.join(__dirname, 'tailwind.config.cjs')}]
     }
 };
