@@ -43,37 +43,36 @@ const NewsletterTableRows: React.FC<{
         Boolean(shouldFetchStats)
     );
 
-    // Show loading rows while data is loading
-    if (isStatsLoading || !newsletterStatsData) {
-        return (
-            <>
-                {Array.from({length: 5}, (_, index) => (
-                    <TableRow key={`newsletter-loading-row-${index}`} className='last:border-none [&>td]:py-2.5'>
-                        <TableCell className="font-medium">
-                            <div className="h-4 w-48 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap text-sm">
-                            <div className="h-4 w-16 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                        <TableCell className='text-right font-mono text-sm'>
-                            <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                        <TableCell className='text-right font-mono text-sm'>
-                            <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                        <TableCell className='text-right font-mono text-sm'>
-                            <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                    </TableRow>
-                ))}
-            </>
-        );
-    }
-
     // Data is already sorted by the API based on sortBy
     const sortedStats = newsletterStatsData?.stats || [];
 
-    return (
+    // Memoize loading rows to prevent recreation on every render
+    const loadingRows = useMemo(() => (
+        <>
+            {Array.from({length: 5}, (_, index) => (
+                <TableRow key={`newsletter-loading-row-${index}`} className='last:border-none [&>td]:py-2.5'>
+                    <TableCell className="font-medium">
+                        <div className="h-4 w-48 animate-pulse rounded bg-gray-200"></div>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-sm">
+                        <div className="h-4 w-16 animate-pulse rounded bg-gray-200"></div>
+                    </TableCell>
+                    <TableCell className='text-right font-mono text-sm'>
+                        <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
+                    </TableCell>
+                    <TableCell className='text-right font-mono text-sm'>
+                        <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
+                    </TableCell>
+                    <TableCell className='text-right font-mono text-sm'>
+                        <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
+                    </TableCell>
+                </TableRow>
+            ))}
+        </>
+    ), []);
+
+    // Memoize the data rows based on the actual data and loading states
+    const dataRows = useMemo(() => (
         <>
             {sortedStats.map(post => (
                 <TableRow key={post.post_id} className='last:border-none [&>td]:py-2.5'>
@@ -115,7 +114,14 @@ const NewsletterTableRows: React.FC<{
                 </TableRow>
             ))}
         </>
-    );
+    ), [sortedStats, isClicksLoading, navigate]);
+
+    // Show loading rows while data is loading
+    if (isStatsLoading || !newsletterStatsData) {
+        return loadingRows;
+    }
+
+    return dataRows;
 });
 
 NewsletterTableRows.displayName = 'NewsletterTableRows';
@@ -126,14 +132,19 @@ const NewsletterTableHeader: React.FC<{
     setSortBy: (sort: TopNewslettersOrder) => void;
     range: number;
 }> = React.memo(({sortBy, setSortBy, range}) => {
+    // Memoize the card header content since it only depends on range
+    const cardHeaderContent = useMemo(() => (
+        <CardHeader>
+            <CardTitle>Top newsletters</CardTitle>
+            <CardDescription> Your best performing newsletters {getPeriodText(range)}</CardDescription>
+        </CardHeader>
+    ), [range]);
+
     return (
         <TableHeader>
             <TableRow>
                 <TableHead variant='cardhead'>
-                    <CardHeader>
-                        <CardTitle>Top newsletters</CardTitle>
-                        <CardDescription> Your best performing newsletters {getPeriodText(range)}</CardDescription>
-                    </CardHeader>
+                    {cardHeaderContent}
                 </TableHead>
                 <TableHead className='w-[65px]'>
                     <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='date desc'>
@@ -167,7 +178,7 @@ const TopNewslettersTable: React.FC<{
     range: number;
     selectedNewsletterId: string | null | undefined;
     shouldFetchStats: boolean;
-}> = ({range, selectedNewsletterId, shouldFetchStats}) => {
+}> = React.memo(({range, selectedNewsletterId, shouldFetchStats}) => {
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
 
     return (
@@ -187,7 +198,9 @@ const TopNewslettersTable: React.FC<{
             </CardContent>
         </Card>
     );
-};
+});
+
+TopNewslettersTable.displayName = 'TopNewslettersTable';
 
 const Newsletters: React.FC = () => {
     const {range, selectedNewsletterId} = useGlobalData();
