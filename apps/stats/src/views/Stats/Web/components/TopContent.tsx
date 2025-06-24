@@ -1,7 +1,7 @@
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, formatNumber, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Tabs, TabsList, TabsTrigger, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {CONTENT_TYPES, ContentType, getContentDescription, getContentTitle} from '@src/utils/content-helpers';
 import {getAudienceQueryParam} from '../../components/AudienceSelect';
-import {getClickHandler, shouldMakeClickable} from '@src/utils/url-helpers';
+import {getClickHandler} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useMemo, useState} from 'react';
@@ -84,81 +84,78 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
 
     return (
         <Card className='group/datalist'>
-            <CardHeader>
-                <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
-                <CardDescription>{getContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow className='[&>th]:h-auto [&>th]:pb-2 [&>th]:pt-0'>
-                            <TableHead className='pl-0'>
-                                <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
-                                    setSelectedContentType(value as ContentType);
-                                }}>
-                                    <TabsList>
-                                        <TabsTrigger value={CONTENT_TYPES.POSTS_AND_PAGES}>Posts & pages</TabsTrigger>
-                                        <TabsTrigger value={CONTENT_TYPES.POSTS}>Posts</TabsTrigger>
-                                        <TabsTrigger value={CONTENT_TYPES.PAGES}>Pages</TabsTrigger>
-                                    </TabsList>
-                                </Tabs>
-                            </TableHead>
-                            <TableHead className='w-[140px] text-right'>Visitors</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    {isLoading ?
-                        <TableBody>
-                            <TableRow>
-                                <TableCell colSpan={2}>
-                                    <SkeletonTable lines={5} />
-                                </TableCell>
-                            </TableRow>
-                        </TableBody>
-                        :
-                        <TableBody>
-                            {topContent.length > 0 ? (
-                                topContent.map((row: UnifiedContentData) => (
-                                    <TableRow key={row.pathname} className='last:border-none'>
-                                        <TableCell>
-                                            <div className='group/link inline-flex flex-col items-start gap-px'>
-                                                {shouldMakeClickable(row.pathname, row.url_exists) ?
-                                                    <Button 
-                                                        className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
-                                                        title={row.post_id ? 'View post analytics' : 'View page'} 
-                                                        variant='link' 
-                                                        onClick={getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type)}
-                                                    >
-                                                        {row.title}
-                                                    </Button>
-                                                    :
-                                                    <span className='font-medium'>
-                                                        {row.title}
-                                                    </span>
-                                                }
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className='text-right font-mono text-sm'>
-                                            {formatNumber(Number(row.visits))}
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell className='py-12 group-hover:!bg-transparent' colSpan={2}>
-                                        <div className='flex flex-col items-center justify-center space-y-3 text-center'>
-                                            <div className='flex size-12 items-center justify-center rounded-full bg-muted'>
-                                                <svg className='size-6 text-muted-foreground' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                                    <path d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' strokeLinecap='round' strokeLinejoin='round' strokeWidth={1.5} />
-                                                </svg>
-                                            </div>
-                                            <div className='text-sm text-muted-foreground'>No content found</div>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    }
-                </Table>
+            <div className='flex items-center justify-between p-6'>
+                <CardHeader className='p-0'>
+                    <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
+                    <CardDescription>{getContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
+                </CardHeader>
+                <HTable className='mr-2'>Visitors</HTable>
+            </div>
+            <CardContent className='overflow-hidden'>
+                <div className='mb-4'>
+                    <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
+                        setSelectedContentType(value as ContentType);
+                    }}>
+                        <TabsList>
+                            <TabsTrigger value={CONTENT_TYPES.POSTS_AND_PAGES}>Posts & pages</TabsTrigger>
+                            <TabsTrigger value={CONTENT_TYPES.POSTS}>Posts</TabsTrigger>
+                            <TabsTrigger value={CONTENT_TYPES.PAGES}>Pages</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                </div>
+                <Separator />
+                {isLoading ? (
+                    <SkeletonTable lines={5} />
+                ) : (
+                    <>
+                        {topContent.length > 0 ? (
+                            <DataList>
+                                <DataListBody>
+                                    {topContent.map((row: UnifiedContentData) => (
+                                        <DataListRow key={row.pathname} className='group/row'>
+                                            <DataListBar style={{
+                                                width: `${Math.round((row.percentage || 0) * 100)}%`
+                                            }} />
+                                            <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
+                                                <div className='flex items-center space-x-4 overflow-hidden'>
+                                                    <div className='truncate font-medium'>
+                                                        {row.post_id && row.post_type === 'post' ?
+                                                            <Button 
+                                                                className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
+                                                                title='View post analytics' 
+                                                                variant='link' 
+                                                                onClick={getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type)}
+                                                            >
+                                                                {row.title}
+                                                            </Button>
+                                                            :
+                                                            <span className='font-medium'>
+                                                                {row.title}
+                                                            </span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </DataListItemContent>
+                                            <DataListItemValue>
+                                                <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
+                                                <DataListItemValuePerc>{formatPercentage(row.percentage || 0)}</DataListItemValuePerc>
+                                            </DataListItemValue>
+                                        </DataListRow>
+                                    ))}
+                                </DataListBody>
+                            </DataList>
+                        ) : (
+                            <div className='flex flex-col items-center justify-center space-y-3 py-12 text-center'>
+                                <div className='flex size-12 items-center justify-center rounded-full bg-muted'>
+                                    <svg className='size-6 text-muted-foreground' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                        <path d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' strokeLinecap='round' strokeLinejoin='round' strokeWidth={1.5} />
+                                    </svg>
+                                </div>
+                                <div className='text-sm text-muted-foreground'>No content found</div>
+                            </div>
+                        )}
+                    </>
+                )}
             </CardContent>
             {transformedData && transformedData.length > 10 &&
                 <CardFooter>
@@ -171,43 +168,49 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                                 <SheetTitle>Top content</SheetTitle>
                                 <SheetDescription>{getContentDescription(selectedContentType, range, getPeriodText)}</SheetDescription>
                             </SheetHeader>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className='[&>th]:h-auto [&>th]:pb-2 [&>th]:pt-0'>
-                                        <TableHead className='pl-0'>
+                            <div className='group/datalist'>
+                                <DataList>
+                                    <DataListHeader>
+                                        <DataListHead>
                                             {selectedContentType === CONTENT_TYPES.POSTS ? 'Post' : selectedContentType === CONTENT_TYPES.PAGES ? 'Page' : 'Content'}
-                                        </TableHead>
-                                        <TableHead className='w-[140px] text-right'>Visitors</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {transformedData.map((row: UnifiedContentData) => (
-                                        <TableRow key={row.pathname} className='last:border-none'>
-                                            <TableCell>
-                                                <div className='group/link inline-flex flex-col items-start gap-px'>
-                                                    {shouldMakeClickable(row.pathname, row.url_exists) ?
-                                                        <Button 
-                                                            className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
-                                                            title={row.post_id ? 'View post analytics' : 'View page'} 
-                                                            variant='link' 
-                                                            onClick={getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type)}
-                                                        >
-                                                            {row.title}
-                                                        </Button>
-                                                        :
-                                                        <span className='font-medium'>
-                                                            {row.title}
-                                                        </span>
-                                                    }
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className='text-right font-mono text-sm'>
-                                                {formatNumber(Number(row.visits))}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                        </DataListHead>
+                                        <DataListHead>Visitors</DataListHead>
+                                    </DataListHeader>
+                                    <DataListBody>
+                                        {transformedData.map((row: UnifiedContentData) => (
+                                            <DataListRow key={row.pathname} className='group/row'>
+                                                <DataListBar style={{
+                                                    width: `${Math.round((row.percentage || 0) * 100)}%`
+                                                }} />
+                                                <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
+                                                    <div className='flex items-center space-x-4 overflow-hidden'>
+                                                        <div className='truncate font-medium'>
+                                                            {row.post_id && row.post_type === 'post' ?
+                                                                <Button 
+                                                                    className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
+                                                                    title='View post analytics' 
+                                                                    variant='link' 
+                                                                    onClick={getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type)}
+                                                                >
+                                                                    {row.title}
+                                                                </Button>
+                                                                :
+                                                                <span className='font-medium'>
+                                                                    {row.title}
+                                                                </span>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </DataListItemContent>
+                                                <DataListItemValue>
+                                                    <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
+                                                    <DataListItemValuePerc>{formatPercentage(row.percentage || 0)}</DataListItemValuePerc>
+                                                </DataListItemValue>
+                                            </DataListRow>
+                                        ))}
+                                    </DataListBody>
+                                </DataList>
+                            </div>
                         </SheetContent>
                     </Sheet>
                 </CardFooter>

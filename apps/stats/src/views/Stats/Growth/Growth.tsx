@@ -8,7 +8,7 @@ import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {CONTENT_TYPES, ContentType, getContentTitle, getGrowthContentDescription} from '@src/utils/content-helpers';
-import {getClickHandler, shouldMakeClickable} from '@src/utils/url-helpers';
+import {getClickHandler} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -210,10 +210,10 @@ const Growth: React.FC = () => {
                                                 <TableRow key={`${selectedContentType}-${post.post_id || `${post.title}-${index}`}`} className='last:border-none'>
                                                     <TableCell>
                                                         <div className='group/link inline-flex flex-col items-start gap-px'>
-                                                            {shouldMakeClickable(post.attribution_url, post.url_exists) ?
+                                                            {post.post_id && post.attribution_type === 'post' ?
                                                                 <Button 
                                                                     className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
-                                                                    title={post.post_id ? 'View post analytics' : 'View page'} 
+                                                                    title='View post analytics' 
                                                                     variant='link' 
                                                                     onClick={getClickHandler(post.attribution_url, post.post_id, site.url || '', navigate, post.attribution_type)}
                                                                 >
