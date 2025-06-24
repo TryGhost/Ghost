@@ -54,15 +54,16 @@ const Recommendations: React.FC = () => {
                                         handleProfileClick(profile, navigate);
                                     }
                                 }}>
-                                    {!isLoadingSuggested ? <APAvatar author={
-                                        {
+                                    {!isLoadingSuggested ? <APAvatar 
+                                        author={{
                                             icon: {
                                                 url: actorAvatarUrl
                                             },
                                             name: actorName,
                                             handle: actorHandle
-                                        }
-                                    } /> : <Skeleton className='z-10 size-10' />}
+                                        }}
+                                        showFollowButton={true}
+                                    /> : <Skeleton className='z-10 size-10' />}
                                     <div className='flex min-w-0  flex-col'>
                                         <span className='block max-w-[190px] truncate font-semibold text-black dark:text-white'>{!isLoadingSuggested ? actorName : <Skeleton className='w-24' />}</span>
                                         <span className='block max-w-[190px] truncate text-sm text-gray-600'>{!isLoadingSuggested ? actorHandle : <Skeleton className='w-40' />}</span>

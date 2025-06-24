@@ -2,10 +2,61 @@ import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
 import getUsername from '@utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {LucideIcon, Skeleton} from '@tryghost/shade';
+import {Button, LucideIcon, Skeleton} from '@tryghost/shade';
+import {toast} from 'sonner';
+import {useFeatureFlags} from '../../lib/feature-flags';
+import {useFollowMutationForUser, useUnfollowMutationForUser} from '../../hooks/use-activity-pub-queries';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 type AvatarSize = '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'notification';
+
+interface FollowButtonProps {
+    onFollow: (e: React.MouseEvent) => void;
+    onUnfollow: (e: React.MouseEvent) => void;
+    authorHandle: string;
+    followedByMe: boolean;
+    isLoading?: boolean;
+}
+
+// Global state to track which user was clicked via avatar button
+let avatarClickedUser: string | null = null;
+
+const FollowButton: React.FC<FollowButtonProps> = ({onFollow, onUnfollow, authorHandle, followedByMe, isLoading = false}) => {
+    const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+    const isClickedUser = avatarClickedUser === authorHandle;
+    const showCheckmark = isClickedUser && !followedByMe;
+
+    const handleClick = (e: React.MouseEvent) => {
+        if (showCheckmark) {
+            onUnfollow(e);
+            setTimeout(() => {
+                avatarClickedUser = null;
+                forceUpdate();
+            }, 0);
+        } else {
+            avatarClickedUser = authorHandle;
+            forceUpdate();
+            onFollow(e);
+        }
+    };
+
+    return (
+        <Button
+            className='absolute -right-1.5 bottom-px z-10 flex size-4 items-center justify-center rounded-full p-0 outline outline-2 outline-white transition-colors disabled:opacity-100 dark:outline-black'
+            disabled={isLoading}
+            title={isLoading ? 'Loading...' : (showCheckmark ? 'Unfollow' : 'Follow')}
+            onClick={handleClick}
+        >
+            {isLoading ? (
+                <LucideIcon.Loader2 className='!size-3 animate-spin !stroke-2' />
+            ) : showCheckmark ? (
+                <LucideIcon.Check className='!size-3 !stroke-[2.4]' />
+            ) : (
+                <LucideIcon.Plus className='!size-[14px] !stroke-2' />
+            )}
+        </Button>
+    );
+};
 
 interface APAvatarProps {
     author: {
@@ -20,14 +71,36 @@ interface APAvatarProps {
     onClick?: () => void;
     disabled?: boolean;
     className?: string;
+    showFollowButton?: boolean;
 }
 
-const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, disabled = false, className = ''}) => {
+const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, disabled = false, className = '', showFollowButton = false}) => {
     let iconSize = 20;
-    let containerClass = `shrink-0 items-center justify-center rounded-full overflow-hidden relative z-10 flex bg-black/5 dark:bg-gray-900 ${size === 'lg' || disabled ? '' : 'cursor-pointer'} ${className}`;
-    let imageClass = 'z-10 object-cover';
+    let containerClass = `shrink-0 items-center justify-center rounded-full relative z-10 flex bg-black/5 dark:bg-gray-900 ${size === 'lg' || disabled ? '' : 'cursor-pointer'} ${className}`;
+    let imageClass = 'z-10 object-cover rounded-full';
     const [iconUrl, setIconUrl] = useState(author?.icon?.url);
     const navigate = useNavigate();
+    const {isEnabled} = useFeatureFlags();
+
+    const followMutation = useFollowMutationForUser(
+        'index',
+        () => {
+            toast.success('Followed');
+        },
+        () => {
+            toast.error('Failed to follow');
+        }
+    );
+
+    const unfollowMutation = useUnfollowMutationForUser(
+        'index',
+        () => {
+            toast.success('Unfollowed');
+        },
+        () => {
+            toast.error('Failed to unfollow');
+        }
+    );
 
     useEffect(() => {
         setIconUrl(author?.icon?.url);
@@ -78,7 +151,20 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
         navigate(`/profile/${handle}`);
     };
 
+    const handleFollowClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        followMutation.mutate(handle);
+    };
+
+    const handleUnfollowClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        unfollowMutation.mutate(handle);
+    };
+
     const title = `${author?.name} ${handle}`;
+    const isClickedUser = avatarClickedUser === handle;
+    const displayFollowButton = isEnabled('unfollow') && (showFollowButton || isClickedUser);
+    const isFollowLoading = followMutation.isLoading || unfollowMutation.isLoading;
 
     if (iconUrl) {
         return (
@@ -93,6 +179,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
                     src={iconUrl}
                     onError={() => setIconUrl(undefined)}
                 />
+                {displayFollowButton && <FollowButton authorHandle={handle} followedByMe={false} isLoading={isFollowLoading} onFollow={handleFollowClick} onUnfollow={handleUnfollowClick} />}
             </div>
         );
     }
@@ -104,6 +191,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
             onClick={disabled ? undefined : handleClick}
         >
             <LucideIcon.UserRound className='text-gray-600' size={iconSize} strokeWidth={1.5} />
+            {displayFollowButton && <FollowButton authorHandle={handle} followedByMe={false} isLoading={isFollowLoading} onFollow={handleFollowClick} onUnfollow={handleUnfollowClick} />}
         </div>
     );
 };
