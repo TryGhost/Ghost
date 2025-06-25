@@ -96,10 +96,6 @@ export default [
     setting('email', 'outbound_link_tagging', true),
     setting('email', 'web_analytics', true),
 
-    // AMP
-    setting('amp', 'amp', false),
-    setting('amp', 'amp_gtag_id', null),
-
     // FIRSTPROMOTER
     setting('firstpromoter', 'firstpromoter', false),
     setting('firstpromoter', 'firstpromoter_id', null),
