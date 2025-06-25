@@ -120,10 +120,10 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                                                 <div className='flex items-center space-x-4 overflow-hidden'>
                                                     <div className='truncate font-medium'>
                                                         {row.post_id && row.post_type === 'post' ?
-                                                            <Button 
-                                                                className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
-                                                                title='View post analytics' 
-                                                                variant='link' 
+                                                            <Button
+                                                                className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline'
+                                                                title='View post analytics'
+                                                                variant='link'
                                                                 onClick={getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type)}
                                                             >
                                                                 {row.title}
@@ -186,10 +186,10 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                                                     <div className='flex items-center space-x-4 overflow-hidden'>
                                                         <div className='truncate font-medium'>
                                                             {row.post_id && row.post_type === 'post' ?
-                                                                <Button 
-                                                                    className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline' 
-                                                                    title='View post analytics' 
-                                                                    variant='link' 
+                                                                <Button
+                                                                    className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline'
+                                                                    title='View post analytics'
+                                                                    variant='link'
                                                                     onClick={getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type)}
                                                                 >
                                                                     {row.title}
