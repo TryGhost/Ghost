@@ -2,12 +2,14 @@ import FeedInput from './FeedInput';
 import FeedItem from '@src/components/feed/FeedItem';
 import Layout from '@src/components/layout';
 import NewNoteModal from '@src/components/modals/NewNoteModal';
+import SuggestedProfiles from './SuggestedProfiles';
 import {Activity} from '@src/api/activitypub';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LoadingIndicator, LucideIcon, Separator} from '@tryghost/shade';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {useEffect, useRef} from 'react';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 export type FeedListProps = {
@@ -28,6 +30,7 @@ const FeedList:React.FC<FeedListProps> = ({
     isFetchingNextPage
 }) => {
     const navigate = useNavigate();
+    const {isEnabled} = useFeatureFlags();
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -96,6 +99,12 @@ const FeedList:React.FC<FeedListProps> = ({
                                                     />
                                                     {index < activities.length - 1 && (
                                                         <Separator />
+                                                    )}
+                                                    {index === 3 && isEnabled('follow') && (
+                                                        <>
+                                                            <SuggestedProfiles />
+                                                            <Separator />
+                                                        </>
                                                     )}
                                                     {index === loadMoreIndex && (
                                                         <div ref={loadMoreRef} className='h-1'></div>
