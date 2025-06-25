@@ -166,7 +166,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                 )}
                 {showSuggested && (
                     <>
-                        <H4>Suggested accounts</H4>
+                        <H4>More people to follow</H4>
                         <SuggestedProfiles
                             onOpenChange={onOpenChange}
                         />
