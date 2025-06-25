@@ -9,9 +9,9 @@ import {KpiDataItem} from '@src/utils/kpi-helpers';
 import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars} from '../Growth/Growth';
-import {getStatEndpointUrl, getToken, hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
+import {getStatEndpointUrl, getToken, hasBeenEmailed, isPublishedOnly, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/App';
-import {useMemo} from 'react';
+import {useEffect, useMemo} from 'react';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -121,6 +121,13 @@ const Overview: React.FC = () => {
     // Use the utility function from admin-x-framework
     const showNewsletterSection = hasBeenEmailed(post as Post);
     const showWebSection = !post?.email_only && appSettings?.analytics.webAnalytics;
+
+    // Redirect to Growth tab if this is a published-only post with web analytics disabled
+    useEffect(() => {
+        if (!isPostLoading && post && isPublishedOnly(post as Post) && !appSettings?.analytics.webAnalytics) {
+            navigate(`/analytics/beta/${postId}/growth`);
+        }
+    }, [isPostLoading, post, appSettings?.analytics.webAnalytics, navigate, postId]);
 
     return (
         <>
