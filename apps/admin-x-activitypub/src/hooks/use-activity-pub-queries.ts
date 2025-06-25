@@ -2155,7 +2155,12 @@ export function useResetNotificationsCountForUser(handle: string) {
     });
 }
 
-function useFilteredAccountsFromJSON() {
+function useFilteredAccountsFromJSON(options: {
+    excludeFollowing?: boolean;
+} = {}) {
+    const {
+        excludeFollowing = true
+    } = options;
     const {data: followingData, hasNextPage, fetchNextPage, isLoading: isLoadingFollowing} = useAccountFollowsForUser('me', 'following');
     const {data: blockedAccountsData, hasNextPage: hasNextBlockedAccounts, fetchNextPage: fetchNextBlockedAccounts, isLoading: isLoadingBlockedAccounts} = useBlockedAccountsForUser('me');
     const {data: blockedDomainsData, hasNextPage: hasNextBlockedDomains, fetchNextPage: fetchNextBlockedDomains, isLoading: isLoadingBlockedDomains} = useBlockedDomainsForUser('me');
@@ -2164,19 +2169,19 @@ function useFilteredAccountsFromJSON() {
         if (hasNextPage && !isLoadingFollowing) {
             fetchNextPage();
         }
-    }, [hasNextPage, fetchNextPage, isLoadingFollowing]);
+    }, [hasNextPage, fetchNextPage, isLoadingFollowing, followingData?.pages]);
 
     useEffect(() => {
         if (hasNextBlockedAccounts && !isLoadingBlockedAccounts) {
             fetchNextBlockedAccounts();
         }
-    }, [hasNextBlockedAccounts, fetchNextBlockedAccounts, isLoadingBlockedAccounts]);
+    }, [hasNextBlockedAccounts, fetchNextBlockedAccounts, isLoadingBlockedAccounts, blockedAccountsData?.pages]);
 
     useEffect(() => {
         if (hasNextBlockedDomains && !isLoadingBlockedDomains) {
             fetchNextBlockedDomains();
         }
-    }, [hasNextBlockedDomains, fetchNextBlockedDomains, isLoadingBlockedDomains]);
+    }, [hasNextBlockedDomains, fetchNextBlockedDomains, isLoadingBlockedDomains, blockedDomainsData?.pages]);
 
     const followingIds = useMemo(() => {
         const ids = new Set<string>();
@@ -2234,6 +2239,10 @@ function useFilteredAccountsFromJSON() {
             const accounts = data.accounts as Account[];
 
             const filteredAccounts = accounts.filter((account) => {
+                if (excludeFollowing && followingIds.has(account.id)) {
+                    return false;
+                }
+
                 if (blockedAccountIds.has(account.id)) {
                     return false;
                 }
@@ -2258,7 +2267,7 @@ function useFilteredAccountsFromJSON() {
         } catch (error) {
             return [];
         }
-    }, [followingIds, blockedAccountIds, blockedDomains]);
+    }, [followingIds, blockedAccountIds, blockedDomains, excludeFollowing]);
 
     const isLoading = isLoadingFollowing || isLoadingBlockedAccounts || isLoadingBlockedDomains;
 
@@ -2271,7 +2280,9 @@ function useFilteredAccountsFromJSON() {
 export function useExploreProfilesForUser(handle: string) {
     const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.exploreProfiles(handle);
-    const {fetchAndFilterAccounts, isLoading} = useFilteredAccountsFromJSON();
+    const {fetchAndFilterAccounts, isLoading} = useFilteredAccountsFromJSON({
+        excludeFollowing: false
+    });
 
     const fetchExploreProfilesFromJSON = useCallback(async () => {
         const accounts = await fetchAndFilterAccounts();
@@ -2342,7 +2353,9 @@ export function useExploreProfilesForUser(handle: string) {
 export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.suggestedProfiles(handle, limit);
-    const {fetchAndFilterAccounts, isLoading} = useFilteredAccountsFromJSON();
+    const {fetchAndFilterAccounts, isLoading} = useFilteredAccountsFromJSON({
+        excludeFollowing: true
+    });
 
     const suggestedProfilesQuery = useQuery({
         queryKey,
@@ -2353,7 +2366,7 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
                 .sort(() => Math.random() - 0.5)
                 .slice(0, limit);
 
-            return randomAccounts;
+            return randomAccounts.length > 0 ? randomAccounts : null;
         },
         retry: false,
         staleTime: 60 * 60 * 1000,

@@ -79,7 +79,7 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
                                 </Button>
                             </PopoverClose>
                         }
-                        {!authoredByMe && isEnabled('unfollow') &&
+                        {!authoredByMe && isEnabled('follow') &&
                             <PopoverClose asChild>
                                 <Button className='justify-start' variant='ghost' onClick={handleFollowClick}>
                                     {followedByMe ? <LucideIcon.UserRoundMinus /> : <LucideIcon.UserRoundPlus />}
