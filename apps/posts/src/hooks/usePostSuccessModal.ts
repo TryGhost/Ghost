@@ -144,7 +144,7 @@ export const usePostSuccessModal = () => {
             featureImageURL: post.feature_image || '',
             postTitle: post.title || '',
             postExcerpt: truncateText(post.excerpt || '', 100),
-            faviconURL: '', // Could add favicon URL if available
+            faviconURL: site?.icon || '',
             siteTitle: site?.title || '',
             author: getAuthorsText(post.authors),
             onClose: handleClose
