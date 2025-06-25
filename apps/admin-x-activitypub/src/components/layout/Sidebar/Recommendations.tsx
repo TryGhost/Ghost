@@ -54,7 +54,7 @@ const Recommendations: React.FC = () => {
                                         handleProfileClick(profile, navigate);
                                     }
                                 }}>
-                                    {!isLoadingSuggested ? <APAvatar 
+                                    {!isLoadingSuggested ? <APAvatar
                                         author={{
                                             icon: {
                                                 url: actorAvatarUrl
@@ -74,7 +74,7 @@ const Recommendations: React.FC = () => {
                     );
                 })}
             </ul>
-            <Button className='p-0 font-medium text-purple' variant='link' onClick={() => {
+            <Button className='p-0 font-medium text-purple hover:text-black dark:hover:text-white' variant='link' onClick={() => {
                 resetStack();
                 navigate('/explore');
             }}>Find more &rarr;</Button>
