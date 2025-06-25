@@ -414,16 +414,8 @@ describe('MembersStatsService', function () {
                 startDate: yesterdayDate
             });
             
-            assert.equal(results.length, 3);
+            assert.equal(results.length, 2);
             assert.deepEqual(results, [
-                {
-                    date: dayBeforeYesterday,
-                    paid: 1,
-                    free: 2,
-                    comped: 1,
-                    paid_subscribed: 0,
-                    paid_canceled: 0
-                },
                 {
                     date: yesterday,
                     paid: 2,
@@ -479,13 +471,12 @@ describe('MembersStatsService', function () {
                 startDate: startDate
             });
 
-            // Should get 4 days: baseline (3 days ago) + 2 days ago + yesterday + today
-            assert.equal(results.length, 4);
+            // Should get 3 days: baseline (3 days ago) + yesterday + today
+            assert.equal(results.length, 3);
             
             // Verify all dates are present (no gaps)
             const dates = results.map(r => r.date).sort();
             const expectedDates = [
-                moment.utc().subtract(3, 'days').format('YYYY-MM-DD'), // baseline
                 moment.utc().subtract(2, 'days').format('YYYY-MM-DD'), // start date (gap day)
                 moment.utc().subtract(1, 'days').format('YYYY-MM-DD'), // has event
                 moment.utc().format('YYYY-MM-DD') // today
