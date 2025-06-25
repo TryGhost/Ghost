@@ -44,5 +44,8 @@ module.exports = function apiRoutes() {
     // ## Recommendations
     router.get('/recommendations', mw.authenticatePublic, http(api.recommendationsPublic.browse));
 
+    // ## Search index
+    router.get('/search-index/posts', mw.authenticatePublic, http(api.searchIndex.fetchPosts));
+
     return router;
 };
