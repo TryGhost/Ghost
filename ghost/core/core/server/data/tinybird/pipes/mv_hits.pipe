@@ -7,11 +7,10 @@ SQL >
         coalesce(session_id, '0') as session_id,
         toString(payload.locale) as locale,
         toString(payload.location) as location,
-        # case -- this avoids really crappy null handling by the JSON type and downstream fns
-        #     when isNull(payload.referrer) then ''
-        #     else toString(payload.referrer)
-        # end as referrer,
-        toString(payload.meta.referrerSource) as referrer,
+        case
+            when isNull(payload.referrerSource) then toString(payload.meta.referrerSource)
+            else toString(payload.referrerSource)
+        end as referrer,
         toString(payload.pathname) as pathname,
         toString(payload.href) as href,
         site_uuid,
