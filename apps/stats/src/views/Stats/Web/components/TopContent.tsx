@@ -20,13 +20,75 @@ interface UnifiedContentData {
     url_exists?: boolean;
 }
 
+interface TopContentTableProps {
+    data: UnifiedContentData[] | null;
+    range: number;
+    contentType: ContentType;
+    tableHeader: boolean;
+}
+
+const TopContentTable: React.FC<TopContentTableProps> = ({tableHeader = false, data, contentType}) => {
+    const navigate = useNavigate();
+    const {site} = useGlobalData();
+
+    const getTableHeader = () => {
+        switch (contentType) {
+        case CONTENT_TYPES.POSTS:
+            return 'Post';
+        case CONTENT_TYPES.PAGES:
+            return 'Page';
+        default:
+            return 'Post';
+        }
+    };
+
+    return (
+        <DataList>
+            {tableHeader &&
+                <DataListHeader>
+                    <DataListHead>{getTableHeader()}</DataListHead>
+                    <DataListHead>Visitors</DataListHead>
+                </DataListHeader>
+            }
+            <DataListBody>
+                {data?.map((row: UnifiedContentData) => {
+                    // Only make posts clickable (not pages), since there's no analytics route for pages
+                    const isClickable = row.post_id && row.post_type === 'post';
+
+                    return (
+                        <DataListRow
+                            key={row.pathname}
+                            className={`group/row ${isClickable && 'hover:cursor-pointer'}`}
+                            onClick={getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type)}
+                        >
+                            <DataListBar style={{
+                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
+                            }} />
+                            <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
+                                <div className='flex items-center space-x-4 overflow-hidden'>
+                                    <div className={`truncate font-medium ${isClickable && 'group-hover/row:underline'}`}>
+                                        {row.title}
+                                    </div>
+                                </div>
+                            </DataListItemContent>
+                            <DataListItemValue>
+                                <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
+                                <DataListItemValuePerc>{formatPercentage(row.percentage || 0)}</DataListItemValuePerc>
+                            </DataListItemValue>
+                        </DataListRow>
+                    );
+                })}
+            </DataListBody>
+        </DataList>
+    );
+};
+
 interface TopContentProps {
     range: number;
 }
 
 const TopContent: React.FC<TopContentProps> = ({range}) => {
-    const {audience, site} = useGlobalData();
-    const navigate = useNavigate();
+    const {audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
 
@@ -104,116 +166,40 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                     </Tabs>
                 </div>
                 <Separator />
-                {isLoading ? (
-                    <SkeletonTable lines={5} />
-                ) : (
-                    <>
-                        {topContent.length > 0 ? (
-                            <DataList>
-                                <DataListBody>
-                                    {topContent.map((row: UnifiedContentData) => (
-                                        <DataListRow key={row.pathname} className='group/row'>
-                                            <DataListBar style={{
-                                                width: `${Math.round((row.percentage || 0) * 100)}%`
-                                            }} />
-                                            <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
-                                                <div className='flex items-center space-x-4 overflow-hidden'>
-                                                    <div className='truncate font-medium'>
-                                                        {row.post_id && row.post_type === 'post' ?
-                                                            <Button
-                                                                className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline'
-                                                                title='View post analytics'
-                                                                variant='link'
-                                                                onClick={getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type)}
-                                                            >
-                                                                {row.title}
-                                                            </Button>
-                                                            :
-                                                            <span className='font-medium'>
-                                                                {row.title}
-                                                            </span>
-                                                        }
-                                                    </div>
-                                                </div>
-                                            </DataListItemContent>
-                                            <DataListItemValue>
-                                                <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
-                                                <DataListItemValuePerc>{formatPercentage(row.percentage || 0)}</DataListItemValuePerc>
-                                            </DataListItemValue>
-                                        </DataListRow>
-                                    ))}
-                                </DataListBody>
-                            </DataList>
-                        ) : (
-                            <div className='flex flex-col items-center justify-center space-y-3 py-12 text-center'>
-                                <div className='flex size-12 items-center justify-center rounded-full bg-muted'>
-                                    <svg className='size-6 text-muted-foreground' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                        <path d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' strokeLinecap='round' strokeLinejoin='round' strokeWidth={1.5} />
-                                    </svg>
-                                </div>
-                                <div className='text-sm text-muted-foreground'>No content found</div>
-                            </div>
-                        )}
-                    </>
-                )}
+                {isLoading ?
+                    <SkeletonTable className='mt-3' />
+                    :
+                    <TopContentTable
+                        contentType={selectedContentType}
+                        data={topContent}
+                        range={range}
+                        tableHeader={false}
+                    />
+                }
             </CardContent>
+
             {transformedData && transformedData.length > 10 &&
-                <CardFooter>
-                    <Sheet>
-                        <SheetTrigger asChild>
-                            <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
-                        </SheetTrigger>
-                        <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
-                                <SheetTitle>Top content</SheetTitle>
-                                <SheetDescription>{getContentDescription(selectedContentType, range, getPeriodText)}</SheetDescription>
-                            </SheetHeader>
-                            <div className='group/datalist'>
-                                <DataList>
-                                    <DataListHeader>
-                                        <DataListHead>
-                                            {selectedContentType === CONTENT_TYPES.POSTS ? 'Post' : selectedContentType === CONTENT_TYPES.PAGES ? 'Page' : 'Content'}
-                                        </DataListHead>
-                                        <DataListHead>Visitors</DataListHead>
-                                    </DataListHeader>
-                                    <DataListBody>
-                                        {transformedData.map((row: UnifiedContentData) => (
-                                            <DataListRow key={row.pathname} className='group/row'>
-                                                <DataListBar style={{
-                                                    width: `${Math.round((row.percentage || 0) * 100)}%`
-                                                }} />
-                                                <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
-                                                    <div className='flex items-center space-x-4 overflow-hidden'>
-                                                        <div className='truncate font-medium'>
-                                                            {row.post_id && row.post_type === 'post' ?
-                                                                <Button
-                                                                    className='h-auto whitespace-normal p-0 text-left font-medium leading-tight hover:!underline'
-                                                                    title='View post analytics'
-                                                                    variant='link'
-                                                                    onClick={getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type)}
-                                                                >
-                                                                    {row.title}
-                                                                </Button>
-                                                                :
-                                                                <span className='font-medium'>
-                                                                    {row.title}
-                                                                </span>
-                                                            }
-                                                        </div>
-                                                    </div>
-                                                </DataListItemContent>
-                                                <DataListItemValue>
-                                                    <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
-                                                    <DataListItemValuePerc>{formatPercentage(row.percentage || 0)}</DataListItemValuePerc>
-                                                </DataListItemValue>
-                                            </DataListRow>
-                                        ))}
-                                    </DataListBody>
-                                </DataList>
-                            </div>
-                        </SheetContent>
-                    </Sheet>
-                </CardFooter>
+            <CardFooter>
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
+                    </SheetTrigger>
+                    <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
+                        <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
+                            <SheetTitle>Top content</SheetTitle>
+                            <SheetDescription>{getContentDescription(selectedContentType, range, getPeriodText)}</SheetDescription>
+                        </SheetHeader>
+                        <div className='group/datalist'>
+                            <TopContentTable
+                                contentType={selectedContentType}
+                                data={transformedData}
+                                range={range}
+                                tableHeader={true}
+                            />
+                        </div>
+                    </SheetContent>
+                </Sheet>
+            </CardFooter>
             }
         </Card>
     );
