@@ -908,7 +908,7 @@ describe('Importer', function () {
             const exportData = exportedBodyV2().db[0];
 
             exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({
-                key: 'amp',
+                key: 'portal_button',
                 value: 'true'
             });
 
@@ -920,27 +920,27 @@ describe('Importer', function () {
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
                     imported.problems.length.should.eql(0);
-                    return models.Settings.findOne(_.merge({key: 'amp'}, testUtils.context.internal));
+                    return models.Settings.findOne(_.merge({key: 'portal_button'}, testUtils.context.internal));
                 })
                 .then(function (result) {
                     result.attributes.value.should.eql(true);
                     return models.Settings.findOne(_.merge({key: 'is_private'}, testUtils.context.internal));
                 })
-                .then((result) => {
+                .then(function (result) {
                     result.attributes.value.should.eql(false);
 
                     return db
                         .knex('settings')
-                        .where('key', 'amp');
+                        .where('key', 'portal_button');
                 })
-                .then((result) => {
+                .then(function (result) {
                     result[0].value.should.eql('true');
 
                     return db
                         .knex('settings')
                         .where('key', 'is_private');
                 })
-                .then((result) => {
+                .then(function (result) {
                     result[0].value.should.eql('false');
                 });
         });

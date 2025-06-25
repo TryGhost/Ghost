@@ -46,7 +46,6 @@ const keyTypeMapping = {
     portal_plans: 'array',
     stripe_plans: 'array',
     next_update_check: 'number',
-    amp: 'boolean',
     is_private: 'boolean',
     members_allow_free_signup: 'boolean',
     portal_name: 'boolean',
