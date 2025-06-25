@@ -13,7 +13,7 @@
     "meta": {
         "pagination": {
             "page": 1,
-            "limit": 15,
+            "limit": 100,
             "pages": 1,
             "total": 1,
             "next": null,
