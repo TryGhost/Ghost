@@ -142,31 +142,31 @@ const Locations:React.FC = () => {
             // We have to do this manually because dynamic classnames are not interpreted by TailwindCSS
             switch (currentData.relativeValue) {
             case 10:
-                opacity = 'opacity-10';
-                break;
-            case 20:
-                opacity = 'opacity-20';
-                break;
-            case 30:
-                opacity = 'opacity-30';
-                break;
-            case 40:
                 opacity = 'opacity-40';
                 break;
-            case 50:
+            case 20:
+                opacity = 'opacity-40';
+                break;
+            case 30:
+                opacity = 'opacity-45';
+                break;
+            case 40:
                 opacity = 'opacity-50';
                 break;
-            case 60:
+            case 50:
                 opacity = 'opacity-60';
+                break;
+            case 60:
+                opacity = 'opacity-65';
                 break;
             case 70:
                 opacity = 'opacity-70';
                 break;
             case 80:
-                opacity = 'opacity-80';
+                opacity = 'opacity-75';
                 break;
             case 90:
-                opacity = 'opacity-90';
+                opacity = 'opacity-95';
                 break;
             }
             return cn('fill-[hsl(var(--chart-blue))]', opacity);
