@@ -177,6 +177,7 @@ test.describe('Admin moderation', async () => {
         const comments = await frame.getByTestId('comment-component');
         const comment = comments.nth(0);
         await comment.getByTestId('reply-pagination-button').click();
+        await expect(frame.getByTestId('comment-component')).toHaveCount(7);
         const lastCall = adminBrowseSpy.lastCall.args[0];
         const url = new URL(lastCall.request().url());
         expect(url.searchParams.get('impersonate_member_uuid')).toBe('12345');
