@@ -1,6 +1,8 @@
 # Ghost Traffic Analytics Data Model Explainer
 
-This document explains the comprehensive data architecture behind Ghost's traffic analytics features, covering both the MySQL database schema and Tinybird event streams, their relationships, and how they work together to provide real-time analytics.
+This document explains the comprehensive data architecture behind Ghost's traffic analytics features, 
+covering both the MySQL database schema and Tinybird event streams, their relationships, and how they work together 
+to provide real-time analytics.
 
 ## Table of Contents
 
@@ -12,7 +14,7 @@ This document explains the comprehensive data architecture behind Ghost's traffi
 6. [Mock Data Considerations](#mock-data-considerations)
 
 ## Overview
- Ghost's traffic analytics system has two datasources: MySQL and Tinybird
+ Ghost's traffic analytics system has two data sources: MySQL and Tinybird
 
 # Ghost Analytics Architecture
 
@@ -198,15 +200,12 @@ Newsletter subscription/unsubscription events. Members can choose to subscribe/u
 ### Analytics Events Datasource
 
 #### `analytics_events`
-Raw page view events streamed from the frontend.
 
-**Schema:**
+Raw page view events streamed from the frontend. You can find the schema in `datasources` folder.
+Fields with specific data in the schema:
+
 ```sql
-`timestamp` DateTime
-`session_id` String
 `action` LowCardinality(String)  -- Usually 'page_hit'
-`version` LowCardinality(String) -- Event schema version
-`payload` JSON(max_dynamic_types=4, max_dynamic_paths=32)
 `site_uuid` LowCardinality(String) -- Extracted from payload
 ```
 
@@ -230,19 +229,11 @@ Raw page view events streamed from the frontend.
 ### Materialized View: _mv_hits
 
 #### `_mv_hits`
-Processed and structured page view data.
 
-**Schema:**
+Schema for hits can be also found in `datasources` folder.
+Explanation of some of the important fields.
+
 ```sql
-`site_uuid` LowCardinality(String)
-`timestamp` DateTime
-`action` LowCardinality(String)
-`version` LowCardinality(String)
-`session_id` String
-`member_uuid` String
-`member_status` String
-`post_uuid` String
-`post_type` String
 `location` String      -- Country code
 `source` String        -- Referrer domain
 `pathname` String      -- URL path
@@ -253,6 +244,8 @@ Processed and structured page view data.
 ```
 
 ### Tinybird Endpoints (Pipes)
+
+Endpoints which can be found in `endpoints` folder.
 
 - `api_active_visitors` - Real-time visitor counts
 - `api_kpis` - Site-wide KPI metrics
