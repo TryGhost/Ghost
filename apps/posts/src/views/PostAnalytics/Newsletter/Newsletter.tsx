@@ -350,7 +350,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                         }
                     </Card>
                     {shouldShowFeedback && <Feedback feedbackStats={feedbackStats} />}
-                    <Card className='group/datalist'>
+                    <Card className='group/datalist overflow-hidden'>
                         <div className='flex items-center justify-between p-6'>
                             <CardHeader className='p-0'>
                                 <CardTitle>Newsletter clicks</CardTitle>
@@ -445,7 +445,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                         {!isLoading && topLinks.length > 1 &&
                                 <CardFooter>
                                     <div className='flex w-full items-start justify-between gap-3'>
-                                        <div className='mt-1 flex items-start gap-2 pl-4 text-sm text-green'>
+                                        <div className='mt-2 flex items-start gap-2 pl-4 text-sm text-green'>
                                             <LucideIcon.ArrowUp size={20} strokeWidth={1.5} />
                                             Sent a broken link? You can update it!
                                         </div>
