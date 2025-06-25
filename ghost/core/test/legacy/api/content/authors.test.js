@@ -4,6 +4,7 @@ const localUtils = require('./utils');
 const testUtils = require('../../../utils');
 const configUtils = require('../../../utils/configUtils');
 const config = require('../../../../core/shared/config');
+const constants = require('../../../utils/fixtures/constants');
 
 describe('Authors Content API', function () {
     const validKey = localUtils.getValidKey();
@@ -97,7 +98,7 @@ describe('Authors Content API', function () {
     });
 
     it('can read authors with fields', function () {
-        return request.get(localUtils.API.getApiQuery(`authors/1/?key=${validKey}&fields=name`))
+        return request.get(localUtils.API.getApiQuery(`authors/${constants.OWNER_USER_ID}/?key=${validKey}&fields=name`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.public)

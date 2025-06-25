@@ -2,6 +2,7 @@ const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
+const constants = require('../../utils/fixtures/constants');
 const _ = require('lodash');
 
 // Stuff we are testing
@@ -448,7 +449,7 @@ describe('User Model', function run() {
                 password: 'thisissupersafe'
             };
 
-            UserModel.setup(userData, {id: 1})
+            UserModel.setup(userData, {id: constants.OWNER_USER_ID})
                 .then(function (user) {
                     user.get('name').should.eql(userData.name);
                     user.get('email').should.eql(userData.email);

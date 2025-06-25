@@ -68,9 +68,17 @@ class FixtureManager {
      * @returns
      */
     async addAllFixtures(options) {
+        const ownerUserId = this.findOwnerUserId();
+
         const localOptions = _.merge({
             autoRefresh: false,
-            context: {internal: true},
+            context: {
+                internal: true,
+                // Ensure the owner user is set in the context when creating
+                // the fixtures so that attribution gets correctly set (i.e
+                // the owner user is set as the `published_by` user on posts)
+                user: ownerUserId
+            },
             migrating: true
         }, options);
 
@@ -173,6 +181,18 @@ class FixtureManager {
         });
 
         return foundRelation;
+    }
+
+    /**
+     * Find the owner user ID from the relation fixture
+     * @returns {string}
+     */
+    findOwnerUserId() {
+        const relation = this.findRelationFixture('User', 'Role');
+
+        return Object.keys(relation.entries).find(
+            key => relation.entries[key].includes('Owner')
+        );
     }
 
     /******************************************************
