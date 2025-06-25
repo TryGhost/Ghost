@@ -774,6 +774,10 @@ User = ghostBookshelf.Model.extend({
         });
     },
 
+    generateId: function generateId() {
+        return ObjectId().toHexString();
+    },
+
     /**
      * Checks if a user has permission to perform an action on another user
      *
