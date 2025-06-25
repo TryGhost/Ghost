@@ -62,6 +62,13 @@ export const usePostSuccessModal = () => {
         return authors?.map(author => author.name).join(', ') || '';
     };
 
+    const truncateText = (text: string, maxLength: number) => {
+        if (text.length <= maxLength) {
+            return text;
+        }
+        return text.substring(0, maxLength).trim() + '…';
+    };
+
     // Memoized modal props
     const modalProps = useMemo(() => {
         if (!post) {
@@ -136,7 +143,7 @@ export const usePostSuccessModal = () => {
             description: getDescription(),
             featureImageURL: post.feature_image || '',
             postTitle: post.title || '',
-            postExcerpt: post.excerpt || '',
+            postExcerpt: truncateText(post.excerpt || '', 100),
             faviconURL: '', // Could add favicon URL if available
             siteTitle: site?.title || '',
             author: getAuthorsText(post.authors),
