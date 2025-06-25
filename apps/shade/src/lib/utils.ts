@@ -555,11 +555,15 @@ export const formatMemberName = (member: {name?: string; email?: string}) => {
 // Helper function to get member initials
 export const getMemberInitials = (member: {name?: string; email?: string}) => {
     const name = formatMemberName(member);
-    const words = name.split(' ');
-    if (words.length >= 2) {
+    const words = name.trim().split(' ').filter(word => word.length > 0);
+    if (words.length >= 2 && words[0][0] && words[1][0]) {
         return (words[0][0] + words[1][0]).toUpperCase();
     }
-    return name.substring(0, 2).toUpperCase();
+    const trimmedName = name.trim();
+    if (trimmedName.length >= 2) {
+        return trimmedName.substring(0, 2).toUpperCase();
+    }
+    return trimmedName.toUpperCase();
 };
 
 export const stringToHslColor = (str: string, saturation:string, lightness:string) => {
