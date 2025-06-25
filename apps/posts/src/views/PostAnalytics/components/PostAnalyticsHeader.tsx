@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import moment from 'moment-timezone';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, PageMenu, PageMenuItem, PostShareModal, formatNumber} from '@tryghost/shade';
 import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
-import {hasBeenEmailed, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
+import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '../../../App';
 import {useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -164,7 +164,9 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 </H1>
                                 {post?.published_at && (
                                     <div className='mt-0.5 flex items-center justify-start text-sm leading-[1.65em] text-muted-foreground'>
-                            Published on your site on {moment.utc(post.published_at).format('D MMM YYYY')} at {moment.utc(post.published_at).format('HH:mm')}
+                                        {isEmailOnly(post as Post) && `Sent on ${moment.utc(post.published_at).format('D MMM YYYY')} at ${moment.utc(post.published_at).format('HH:mm')}`}
+                                        {isPublishedOnly(post as Post) && `Published on your site on ${moment.utc(post.published_at).format('D MMM YYYY')} at ${moment.utc(post.published_at).format('HH:mm')}`}
+                                        {isPublishedAndEmailed(post as Post) && `Published and sent on ${moment.utc(post.published_at).format('D MMM YYYY')} at ${moment.utc(post.published_at).format('HH:mm')}`}
                                     </div>
                                 )}
                             </div>
