@@ -479,8 +479,8 @@ describe('sendMagicLink', function () {
             });
 
             // Verify Spanish content in email (sitewide locale)
-            should(mail.text).match(/Da click en el vínculo dado a continuación para completar el registro en/);
-            should(mail.html).match(/Da click en el vínculo dado a continuación para completar el registro en/);
+            should(mail.text).match(/Haz clic en el siguiente enlace para completar el registro en /);
+            should(mail.html).match(/Haz clic en el siguiente enlace para completar el registro en /);
         });
 
         it('Passed in locale overrides sitewide locale', async function () {
@@ -530,8 +530,8 @@ describe('sendMagicLink', function () {
             });
 
             // Verify Spanish content in email (sitewide locale)
-            should(mail.text).match(/Da click en el vínculo dado a continuación para completar el registro en/);
-            should(mail.html).match(/Da click en el vínculo dado a continuación para completar el registro en/);
+            should(mail.text).match(/Haz clic en el siguiente enlace para completar el registro en /);
+            should(mail.html).match(/Haz clic en el siguiente enlace para completar el registro en /);
         });
     });
 });
