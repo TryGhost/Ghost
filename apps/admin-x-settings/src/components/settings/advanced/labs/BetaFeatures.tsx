@@ -1,16 +1,13 @@
 import FeatureToggle from './FeatureToggle';
 import LabItem from './LabItem';
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {Button, FileUpload, List, showToast} from '@tryghost/admin-x-design-system';
-import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {downloadRedirects, useUploadRedirects} from '@tryghost/admin-x-framework/api/redirects';
 import {downloadRoutes, useUploadRoutes} from '@tryghost/admin-x-framework/api/routes';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const BetaFeatures: React.FC = () => {
-    const limiter = useLimiter();
-    const [limitActivityPub, setLimitActivityPub] = useState<boolean>(false);
     const {mutateAsync: uploadRedirects} = useUploadRedirects();
     const {mutateAsync: uploadRoutes} = useUploadRoutes();
     const handleError = useHandleError();
@@ -19,21 +16,9 @@ const BetaFeatures: React.FC = () => {
     const {config} = useGlobalData();
     const isPro = !!config.hostSettings?.siteId;
 
-    useEffect(() => {
-        if (limiter?.isLimited('limitActivityPub')) {
-            limiter.errorIfWouldGoOverLimit('limitActivityPub').catch ((error) => {
-                if (error instanceof HostLimitError) {
-                    setLimitActivityPub(true);
-                } else {
-                    handleError(error);
-                }
-            });
-        }
-    }, [limiter, setLimitActivityPub, handleError]);
-
     return (
         <List titleSeparator={false}>
-            { isPro && !limitActivityPub && (
+            { isPro && (
                 <LabItem
                     action={<FeatureToggle flag="ActivityPub" />}
                     detail={<>Federate your site with ActivityPub to join the world&apos;s largest open network. <a className='text-green' href="https://ghost.org/help/social-web/" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a></>}
