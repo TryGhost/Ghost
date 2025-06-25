@@ -101,10 +101,7 @@ const FeedList:React.FC<FeedListProps> = ({
                                                         <Separator />
                                                     )}
                                                     {index === 3 && isEnabled('follow') && (
-                                                        <>
-                                                            <SuggestedProfiles />
-                                                            <Separator />
-                                                        </>
+                                                        <SuggestedProfiles />
                                                     )}
                                                     {index === loadMoreIndex && (
                                                         <div ref={loadMoreRef} className='h-1'></div>

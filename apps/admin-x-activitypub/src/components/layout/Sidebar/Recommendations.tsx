@@ -15,6 +15,10 @@ const Recommendations: React.FC = () => {
 
     const hideClassName = '[@media(max-height:740px)]:hidden';
 
+    if (!isLoadingSuggested && (!suggestedData || suggestedData.length === 0)) {
+        return null;
+    }
+
     return (
         <div className={`border-t border-gray-200 px-3 pt-6 dark:border-gray-950 ${hideClassName}`}>
             <div className='mb-3 flex flex-col gap-0.5'>
