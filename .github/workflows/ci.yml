@@ -826,8 +826,8 @@ jobs:
       - name: Debug nx daemon (before reset)
         run: yarn nx daemon
 
-      - name: Reset nx daemon
-        run: yarn nx reset
+      - name: Start nx daemon
+        run: yarn nx daemon --start
 
       - name: Debug nx daemon (after reset)
         run: yarn nx daemon
