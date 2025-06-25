@@ -833,7 +833,10 @@ jobs:
         run: yarn nx daemon
 
       - name: Start Ghost
-        run: yarn dev --portal --comments --search --signup --announcement-bar &
+        run: |
+          yarn nx daemon --start
+          yarn nx daemon
+          yarn dev --portal --comments --search --signup --announcement-bar &
 
       - name: Wait for Ghost to be ready
         run: |
