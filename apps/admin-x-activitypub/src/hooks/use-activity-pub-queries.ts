@@ -2164,19 +2164,19 @@ function useFilteredAccountsFromJSON() {
         if (hasNextPage && !isLoadingFollowing) {
             fetchNextPage();
         }
-    }, [hasNextPage, fetchNextPage, isLoadingFollowing]);
+    }, [hasNextPage, fetchNextPage, isLoadingFollowing, followingData?.pages]);
 
     useEffect(() => {
         if (hasNextBlockedAccounts && !isLoadingBlockedAccounts) {
             fetchNextBlockedAccounts();
         }
-    }, [hasNextBlockedAccounts, fetchNextBlockedAccounts, isLoadingBlockedAccounts]);
+    }, [hasNextBlockedAccounts, fetchNextBlockedAccounts, isLoadingBlockedAccounts, blockedAccountsData?.pages]);
 
     useEffect(() => {
         if (hasNextBlockedDomains && !isLoadingBlockedDomains) {
             fetchNextBlockedDomains();
         }
-    }, [hasNextBlockedDomains, fetchNextBlockedDomains, isLoadingBlockedDomains]);
+    }, [hasNextBlockedDomains, fetchNextBlockedDomains, isLoadingBlockedDomains, blockedDomainsData?.pages]);
 
     const followingIds = useMemo(() => {
         const ids = new Set<string>();
