@@ -12,7 +12,7 @@ function getOgImage(data) {
         return (imgUrl && urlUtils.relativeToAbsolute(imgUrl)) || null;
     }
 
-    if (_.includes(context, 'post') || _.includes(context, 'page') || _.includes(context, 'amp')) {
+    if (_.includes(context, 'post') || _.includes(context, 'page')) {
         if (contextObject.og_image) {
             return urlUtils.relativeToAbsolute(contextObject.og_image);
         } else if (contextObject.feature_image) {

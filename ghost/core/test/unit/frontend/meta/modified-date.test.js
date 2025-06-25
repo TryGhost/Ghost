@@ -12,16 +12,6 @@ describe('getModifiedDate', function () {
         should.equal(modDate, '2016-01-01T12:56:45.232Z');
     });
 
-    it('should return updated at date for an AMP post', function () {
-        const modDate = getModifiedDate({
-            context: ['amp', 'post'],
-            post: {
-                updated_at: new Date('2016-01-01 12:56:45.232Z')
-            }
-        });
-        should.equal(modDate, '2016-01-01T12:56:45.232Z');
-    });
-
     it('should return null if no update_at date on context', function () {
         const modDate = getModifiedDate({
             context: ['author'],

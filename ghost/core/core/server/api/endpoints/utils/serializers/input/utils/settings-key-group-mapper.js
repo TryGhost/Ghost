@@ -36,7 +36,6 @@ const keyGroupMapping = {
     is_private: 'private',
     password: 'private',
     public_hash: 'private',
-    amp: 'amp',
     labs: 'labs',
     slack: 'slack',
     unsplash: 'unsplash',

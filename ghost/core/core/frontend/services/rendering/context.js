@@ -14,9 +14,6 @@
 // routeKeywords.private: 'private'
 const privatePattern = new RegExp('^\\/private\\/');
 
-// routeKeywords.amp: 'amp'
-const ampPattern = new RegExp('\\/amp\\/$');
-
 const homePattern = new RegExp('^\\/$');
 
 function setResponseContext(req, res, data) {
@@ -39,11 +36,6 @@ function setResponseContext(req, res, data) {
     // Home context - special rule
     if (homePattern.test(res.locals.relativeUrl)) {
         res.locals.context.push('home');
-    }
-
-    // Add context 'amp' to either post or page, if we have an `*/amp` route
-    if (ampPattern.test(res.locals.relativeUrl) && (data.post || data.page)) {
-        res.locals.context.push('amp');
     }
 
     // Each page can only have at most one of these

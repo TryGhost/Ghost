@@ -50,23 +50,6 @@ describe('getAuthorUrl', function () {
         }, true));
     });
 
-    it('should return author url for AMP if context contains primary author', function () {
-        const post = {
-            primary_author: {
-                id: ObjectId().toHexString(),
-                slug: 'test-author'
-            }
-        };
-
-        urlServiceGetUrlByResourceIdStub.withArgs(post.primary_author.id, {absolute: undefined, withSubdirectory: true})
-            .returns('author url');
-
-        should.exist(getAuthorUrl({
-            context: ['amp', 'post'],
-            post: post
-        }));
-    });
-
     it('should return author url if data contains author', function () {
         const author = {
             id: ObjectId().toHexString(),
