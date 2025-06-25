@@ -549,21 +549,17 @@ export const formatDisplayDateWithRange = (date: string, range: number): string 
 
 // Helper function to format member names with fallback to email
 export const formatMemberName = (member: {name?: string; email?: string}) => {
-    return member.name || member.email || 'Unknown Member';
+    return (member.name && member.name.trim()) || member.email || 'Unknown Member';
 };
 
 // Helper function to get member initials
-export const getMemberInitials = (member: {name?: string; email?: string}) => {
+export const getMemberInitials = (member: {name?: string}) => {
     const name = formatMemberName(member);
-    const words = name.trim().split(' ').filter(word => word.length > 0);
-    if (words.length >= 2 && words[0][0] && words[1][0]) {
+    const words = name.split(' ');
+    if (words.length >= 2) {
         return (words[0][0] + words[1][0]).toUpperCase();
     }
-    const trimmedName = name.trim();
-    if (trimmedName.length >= 2) {
-        return trimmedName.substring(0, 2).toUpperCase();
-    }
-    return trimmedName.toUpperCase();
+    return name.substring(0, 2).toUpperCase();
 };
 
 export const stringToHslColor = (str: string, saturation:string, lightness:string) => {
