@@ -793,10 +793,8 @@ describe('Posts API', function () {
                 });
         });
 
-        it('update dates & x_by', function () {
+        it('update dates', function () {
             const post = {
-                created_by: ObjectId().toHexString(),
-                updated_by: ObjectId().toHexString(),
                 created_at: moment().add(2, 'days').format(),
                 updated_at: moment().add(2, 'days').format()
             };
@@ -819,8 +817,6 @@ describe('Posts API', function () {
                 .then((model) => {
                     // We expect that the changed properties aren't changed, they are still the same than before.
                     model.get('created_at').toISOString().should.not.eql(post.created_at);
-                    model.get('updated_by').should.not.eql(post.updated_by);
-                    model.get('created_by').should.not.eql(post.created_by);
 
                     // `updated_at` is automatically set, but it's not the date we send to override.
                     model.get('updated_at').toISOString().should.not.eql(post.updated_at);

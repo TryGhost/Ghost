@@ -31,7 +31,6 @@ describe('Schedules API', function () {
         request = supertest.agent(config.get('url'));
 
         resources.push(testUtils.DataGenerator.forKnex.createPost({
-            created_by: testUtils.getExistingData().users[0].id,
             published_by: testUtils.getExistingData().users[0].id,
             published_at: moment().add(30, 'seconds').toDate(),
             status: 'scheduled',
@@ -42,7 +41,6 @@ describe('Schedules API', function () {
         }));
 
         resources.push(testUtils.DataGenerator.forKnex.createPost({
-            created_by: testUtils.getExistingData().users[0].id,
             published_by: testUtils.getExistingData().users[0].id,
             published_at: moment().subtract(30, 'seconds').toDate(),
             status: 'scheduled',
@@ -53,7 +51,6 @@ describe('Schedules API', function () {
         }));
 
         resources.push(testUtils.DataGenerator.forKnex.createPost({
-            created_by: testUtils.getExistingData().users[0].id,
             published_by: testUtils.getExistingData().users[0].id,
             published_at: moment().add(10, 'minute').toDate(),
             status: 'scheduled',
@@ -64,7 +61,6 @@ describe('Schedules API', function () {
         }));
 
         resources.push(testUtils.DataGenerator.forKnex.createPost({
-            created_by: testUtils.getExistingData().users[0].id,
             published_by: testUtils.getExistingData().users[0].id,
             published_at: moment().subtract(10, 'minute').toDate(),
             status: 'scheduled',
@@ -75,7 +71,6 @@ describe('Schedules API', function () {
         }));
 
         resources.push(testUtils.DataGenerator.forKnex.createPost({
-            created_by: testUtils.getExistingData().users[0].id,
             published_by: testUtils.getExistingData().users[0].id,
             published_at: moment().add(30, 'seconds').toDate(),
             status: 'scheduled',
