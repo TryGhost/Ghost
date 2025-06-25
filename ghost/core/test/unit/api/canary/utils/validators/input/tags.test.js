@@ -112,9 +112,7 @@ describe('Unit: endpoints/utils/validators/input/tags', function () {
                             name: 'pass',
                             parent: 'strip me',
                             created_at: 'strip me',
-                            created_by: 'strip me',
-                            updated_at: 'strip me',
-                            updated_by: 'strip me'
+                            updated_at: 'strip me'
                         }]
                     }
                 };
@@ -124,9 +122,7 @@ describe('Unit: endpoints/utils/validators/input/tags', function () {
                 should.exist(frame.data.tags[0].name);
                 should.not.exist(frame.data.tags[0].parent);
                 should.not.exist(frame.data.tags[0].created_at);
-                should.not.exist(frame.data.tags[0].created_by);
                 should.not.exist(frame.data.tags[0].updated_at);
-                should.not.exist(frame.data.tags[0].updated_by);
 
                 return result;
             });
