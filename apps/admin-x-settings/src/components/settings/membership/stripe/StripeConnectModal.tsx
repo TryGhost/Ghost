@@ -2,10 +2,11 @@ import BookmarkThumb from '../../../../assets/images/stripe-thumb.jpg';
 import GhostLogo from '../../../../assets/images/orb-squircle.png';
 import GhostLogoPink from '../../../../assets/images/orb-pink.png';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {Button, ConfirmationModal, Form, Heading, Modal, StripeButton, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Form, Heading, LimitModal, Modal, StripeButton, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {ReactComponent as StripeVerified} from '../../../../assets/images/stripe-verified.svg';
 import {checkStripeEnabled, getSettingValue, getSettingValues, useDeleteStripeSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
@@ -253,6 +254,22 @@ const StripeConnectModal: React.FC = () => {
     const {updateRoute} = useRouting();
     const [step, setStep] = useState<'start' | 'connect'>('start');
     const mainModal = useModal();
+    const limiter = useLimiter();
+
+    useEffect(() => {
+        if (limiter?.isLimited('limitStripeConnect')) {
+            limiter.errorIfWouldGoOverLimit('limitStripeConnect').catch((error) => {
+                if (error instanceof HostLimitError) {
+                    NiceModal.show(LimitModal, {
+                        prompt: error.message || `Your current plan doesn't support Stripe Connect.`,
+                        onOk: () => updateRoute({route: '/pro', isExternal: true})
+                    });
+                    mainModal.remove();
+                    updateRoute('tiers');
+                }
+            });
+        }
+    }, [limiter, mainModal, updateRoute]);
 
     const startFlow = () => {
         setStep('connect');
