@@ -44,11 +44,16 @@ interface LimiterLimits {
         max?: number
         error?: string
         currentCountQuery?: () => Promise<number>
+    },
+    limitAnalytics?: {
+        disabled?: boolean
+        error?: string
+        currentCountQuery?: () => Promise<boolean>
     }
 }
 
 export const useLimiter = () => {
-    const {config} = useGlobalData();
+    const {config, settings} = useGlobalData();
     const [LimitService, setLimitService] = useState<typeof import('@tryghost/limit-service') | null>(null);
 
     useEffect(() => {
@@ -106,6 +111,21 @@ export const useLimiter = () => {
             };
         }
 
+        if (limits.limitAnalytics) {
+            limits.limitAnalytics.currentCountQuery = async () => {
+                // TODO: It's not clear yet how and where traffic analytics will be stored,
+                // for now we check the settings key and the labs settings for it.
+                // See https://linear.app/ghost/issue/BAE-447/validate-how-to-get-information-about-analytics-and-social-web-usage
+                const key = 'trafficAnalytics';
+                const analyticsSetting = settings.find(s => s.key === key);
+                const labSettings = settings.find(s => s.key === 'labs');
+                const parsedLabsSetting = labSettings?.value ? JSON.parse(labSettings.value as string) : {};
+                const labsSettingEnabled = parsedLabsSetting[key] || false;
+
+                return (analyticsSetting && analyticsSetting.value === true) || labsSettingEnabled;
+            };
+        }
+
         limiter.loadLimits({
             limits,
             helpLink,
@@ -121,5 +141,5 @@ export const useLimiter = () => {
             errorIfWouldGoOverLimit: (limitName: string, metadata: Record<string, unknown> = {}): Promise<void> => limiter.errorIfWouldGoOverLimit(limitName, metadata),
             errorIfIsOverLimit: (limitName: string): Promise<void> => limiter.errorIfIsOverLimit(limitName)
         };
-    }, [LimitService, config.hostSettings?.limits, contributorUsers, fetchMembers, fetchNewsletters, helpLink, invites, isLoading, users]);
+    }, [LimitService, config.hostSettings?.limits, contributorUsers, fetchMembers, fetchNewsletters, helpLink, invites, isLoading, users, settings]);
 };
