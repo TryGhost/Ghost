@@ -10,7 +10,7 @@ export const APP_ROUTE_PREFIX = '/analytics';
 
 // Wrap all components with feature flag protection
 //  e.g.
-// const ProtectedOverview = withFeatureFlag(Overview, 'trafficAnalyticsAlpha', '/', 'Overview');
+// const ProtectedOverview = withFeatureFlag(Overview, 'trafficAnalytics', '/', 'Overview');
 
 export const routes: RouteObject[] = [
     {
