@@ -9,6 +9,7 @@ export type TopContentItem = {
     post_uuid?: string;
     post_id?: string;
     post_type?: string;
+    url_exists?: boolean;
 }
 
 export type TopContentResponseType = {
@@ -38,10 +39,15 @@ export type MemberCountHistoryResponseType = {
 
 export type TopPostStatItem = {
     post_id: string;
+    attribution_url: string;
+    attribution_type: string;
+    attribution_id: string;
     title: string;
     free_members: number;
     paid_members: number;
     mrr: number;
+    published_at: string;
+    url_exists?: boolean;
 };
 
 export type TopPostsStatsResponseType = {
@@ -122,24 +128,19 @@ export type NewsletterSubscriberStatsResponseType = {
     stats: NewsletterSubscriberStats[];
 };
 
-export type LatestPostStats = {
+export interface PostStats {
     id: string;
-    title: string;
-    slug: string;
-    feature_image: string | null;
-    published_at: string;
-    email_count: number | null;
+    recipient_count: number | null;
     opened_count: number | null;
     open_rate: number | null;
-    click_rate: number | null;
     member_delta: number;
     free_members: number;
     paid_members: number;
     visitors: number;
-};
+}
 
-export type LatestPostStatsResponseType = {
-    stats: LatestPostStats[];
+export type PostStatsResponseType = {
+    stats: PostStats[];
 };
 
 export type TopPostViewsStats = {
@@ -167,7 +168,6 @@ const newsletterSubscriberStatsDataType = 'NewsletterSubscriberStatsResponseType
 
 const postGrowthStatsDataType = 'PostGrowthStatsResponseType';
 const mrrHistoryDataType = 'MrrHistoryResponseType';
-const latestPostStatsDataType = 'LatestPostStatsResponseType';
 const topPostViewsDataType = 'TopPostViewsResponseType';
 
 export const useTopContent = createQuery<TopContentResponseType>({
@@ -199,9 +199,9 @@ export const useMrrHistory = createQuery<MrrHistoryResponseType>({
     path: '/stats/mrr/'
 });
 
-export const useLatestPostStats = createQuery<LatestPostStatsResponseType>({
-    dataType: latestPostStatsDataType,
-    path: '/stats/latest-post/'
+export const usePostStats = createQueryWithId<PostStatsResponseType>({
+    dataType: 'PostStatsResponseType',
+    path: id => `/stats/posts/${id}/stats/`
 });
 
 export const useTopPostsViews = createQuery<TopPostViewsResponseType>({

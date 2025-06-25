@@ -47,6 +47,7 @@ const Note = () => {
     const object = currentPost?.object;
 
     const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
+    const [hasScrolledToPost, setHasScrolledToPost] = useState(false);
 
     useEffect(() => {
         if (object?.replyCount !== undefined) {
@@ -55,13 +56,14 @@ const Note = () => {
     }, [object?.replyCount]);
 
     useEffect(() => {
-        if (postRef.current && threadParents.length > 0) {
+        if (postRef.current && threadParents.length > 0 && !hasScrolledToPost) {
             postRef.current.scrollIntoView({
                 behavior: 'instant',
                 block: 'start'
             });
+            setHasScrolledToPost(true);
         }
-    }, [threadParents]);
+    }, [threadParents, hasScrolledToPost]);
 
     useEffect(() => {
         if (observerRef.current) {
@@ -201,7 +203,7 @@ const Note = () => {
                             {!threadParents.length &&
                             <div className={`col-[2/3] mx-auto flex w-full items-center gap-3 ${canGoBack ? 'pt-10' : 'pt-5'}`}>
                                 <div className='relative z-10 pt-[3px]'>
-                                    <APAvatar author={currentPost.actor}/>
+                                    <APAvatar author={currentPost.actor} showFollowButton={!currentPost.actor.authored && !currentPost.actor.followedByMe}/>
                                 </div>
                                 <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
                                     handleProfileClick(currentPost.actor, navigate, e);

@@ -88,11 +88,49 @@ export const defaultMockData = {
         isLoading: false,
         settings: [],
         data: undefined,
+        site: undefined,
         statsConfig: undefined,
         range: 30,
         audience: 7,
         setAudience: vi.fn(),
-        setRange: vi.fn()
+        setRange: vi.fn(),
+        postId: 'test-post-id',
+        post: {
+            id: '64d623b64676110001e897d9',
+            url: 'https://example.com/post',
+            slug: 'test-post',
+            title: 'Test Post',
+            uuid: 'test-uuid',
+            newsletter: {feedback_enabled: true},
+            email: {
+                email_count: 1000,
+                opened_count: 300,
+                status: 'submitted'
+            },
+            count: {
+                clicks: 50,
+                positive_feedback: 10,
+                negative_feedback: 2,
+                signups: 15,
+                paid_conversions: 3
+            },
+            authors: [{name: 'Test Author'}],
+            published_at: '2024-01-01T00:00:00.000Z',
+            excerpt: 'Test excerpt',
+            tags: [],
+            tiers: []
+        },
+        isPostLoading: false,
+        postType: {
+            isEmailOnly: false,
+            isPublishedOnly: false,
+            isPublishedAndEmailed: true,
+            metricsToDisplay: {
+                showEmailMetrics: true,
+                showWebMetrics: true,
+                showMemberGrowth: true
+            }
+        }
     }
 };
 

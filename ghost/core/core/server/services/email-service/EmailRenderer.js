@@ -4,6 +4,7 @@
 const logging = require('@tryghost/logging');
 const fs = require('fs').promises;
 const path = require('path');
+const clsx = require('clsx');
 const {isUnsplashImage} = require('@tryghost/kg-default-cards/lib/utils');
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const {DateTime} = require('luxon');
@@ -324,32 +325,31 @@ class EmailRenderer {
             postUrl
         };
 
-        const labs = this.getLabs();
         const accentColor = this.#getAccentColor();
+        const accentContrastColor = this.#getAccentContrastColor();
 
-        if (labs?.isSet('emailCustomization')) {
-            renderOptions.design = {
-                accentColor,
-                backgroundColor: newsletter?.get('background_color'),
-                backgroundIsDark: this.#checkIfBackgroundIsDark(newsletter),
-                headerBackgroundColor: this.#getHeaderBackgroundColor(newsletter, accentColor),
-                buttonCorners: newsletter?.get('button_corners'),
-                buttonStyle: newsletter?.get('button_style'),
-                titleFontWeight: newsletter?.get('title_font_weight'),
-                linkStyle: newsletter?.get('link_style'),
-                imageCorners: newsletter?.get('image_corners'),
-                postTitleColor: newsletter?.get('post_title_color'),
-                sectionTitleColor: newsletter?.get('section_title_color'),
-                linkColor: newsletter?.get('link_color'),
-                // TODO:
-                // if the other options above have default or calculated values we
-                // should follow the same pattern as the options below to avoid
-                //duplicating magic values or logic in renderers
-                dividerColor: this.#getDividerColor(newsletter),
-                buttonColor: this.#getButtonColor(newsletter, accentColor),
-                buttonTextColor: this.#getButtonTextColor(newsletter, accentColor)
-            };
-        }
+        renderOptions.design = {
+            accentColor,
+            accentContrastColor,
+            backgroundColor: newsletter?.get('background_color'),
+            backgroundIsDark: this.#checkIfBackgroundIsDark(newsletter),
+            headerBackgroundColor: this.#getHeaderBackgroundColor(newsletter, accentColor),
+            buttonCorners: newsletter?.get('button_corners'),
+            buttonStyle: newsletter?.get('button_style'),
+            titleFontWeight: newsletter?.get('title_font_weight'),
+            linkStyle: newsletter?.get('link_style'),
+            imageCorners: newsletter?.get('image_corners'),
+            postTitleColor: this.#getPostTitleColor(newsletter, accentColor),
+            sectionTitleColor: newsletter?.get('section_title_color'),
+            linkColor: newsletter?.get('link_color'),
+            // TODO:
+            // if the other options above have default or calculated values we
+            // should follow the same pattern as the options below to avoid
+            //duplicating magic values or logic in renderers
+            dividerColor: this.#getDividerColor(newsletter),
+            buttonColor: this.#getButtonColor(newsletter, accentColor),
+            buttonTextColor: this.#getButtonTextColor(newsletter, accentColor)
+        };
 
         let html;
         if (post.get('lexical')) {
@@ -859,9 +859,6 @@ class EmailRenderer {
 
         // Actual template
         let templateName = 'template.hbs';
-        if (labs?.isSet('emailCustomization')) {
-            templateName = 'template-emailCustomization.hbs';
-        }
         const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', templateName), 'utf8');
         this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
 
@@ -937,6 +934,11 @@ class EmailRenderer {
         return accentColor;
     }
 
+    #getAccentContrastColor() {
+        const accentColor = this.#getAccentColor();
+        return textColorForBackgroundColor(accentColor).hex();
+    }
+
     #getBackgroundColor(newsletter) {
         /** @type {'light' | string | null} */
         const value = newsletter?.get('background_color');
@@ -950,8 +952,8 @@ class EmailRenderer {
     }
 
     #getPostTitleColor(newsletter, accentColor) {
-        /** @type {'accent' | 'auto' | string | null} */
-        const value = newsletter.get('post_title_color');
+        /** @type {'accent' | string | null} */
+        const value = newsletter?.get('post_title_color');
 
         if (VALID_HEX_REGEX.test(value)) {
             return value;
@@ -961,18 +963,13 @@ class EmailRenderer {
             return accentColor;
         }
 
-        // value === 'auto', value === null, value is not valid hex
+        // value === null, value is not valid hex
         const backgroundColor = this.#getHeaderBackgroundColor(newsletter, accentColor) || this.#getBackgroundColor(newsletter);
         return textColorForBackgroundColor(backgroundColor).hex();
     }
 
     #getSectionTitleColor(newsletter, accentColor) {
-        const labs = this.getLabs();
-        if (!labs?.isSet('emailCustomization')) {
-            return null;
-        }
-
-        /** @type {'accent' | 'auto' | string | null} */
+        /** @type {'accent' | string | null} */
         const value = newsletter.get('section_title_color');
 
         if (VALID_HEX_REGEX.test(value)) {
@@ -994,11 +991,6 @@ class EmailRenderer {
             bold: '700'
         };
 
-        const labs = this.getLabs();
-        if (!labs?.isSet('emailCustomization')) {
-            return weights.bold;
-        }
-
         /** @type {'normal' | 'medium' | 'semibold' | 'bold' | string | null} */
         const settingValue = newsletter.get('title_font_weight');
 
@@ -1008,7 +1000,7 @@ class EmailRenderer {
     #getTitleStrongWeight(titleWeight) {
         const numericWeight = parseInt(titleWeight, 10);
 
-        if (isNaN(numericWeight) || !this.#labs?.isSet('emailCustomization')) {
+        if (isNaN(numericWeight)) {
             return '800';
         }
 
@@ -1030,21 +1022,16 @@ class EmailRenderer {
     }
 
     #getDividerColor(newsletter) {
-        const labs = this.getLabs();
+        const value = newsletter?.get('divider_color');
 
-        if (labs?.isSet('emailCustomization')) {
-            const value = newsletter?.get('divider_color');
-
-            if (value === 'accent') {
-                const accentColor = this.#settingsCache?.get('accent_color') || DEFAULT_ACCENT_COLOR;
-                return VALID_HEX_REGEX.test(accentColor) ? accentColor : DEFAULT_ACCENT_COLOR;
-            } else if (VALID_HEX_REGEX.test(value)) {
-                return value;
-            }
+        if (value === 'accent') {
+            return this.#getAccentColor();
+        } else if (VALID_HEX_REGEX.test(value)) {
+            return value;
+        } else {
+            // value === 'light'/missing/invalid
+            return '#e0e7eb';
         }
-
-        // value === 'light'/missing/invalid
-        return '#e0e7eb';
     }
 
     #getLinkColor(newsletter, accentColor) {
@@ -1052,6 +1039,10 @@ class EmailRenderer {
 
         if (value === 'accent') {
             return accentColor;
+        }
+
+        if (value === null) {
+            return textColorForBackgroundColor(this.#getBackgroundColor(newsletter)).hex();
         }
 
         if (VALID_HEX_REGEX.test(value)) {
@@ -1062,14 +1053,14 @@ class EmailRenderer {
     }
 
     #getButtonColor(newsletter, accentColor) {
-        /** @type {'accent' | 'auto' | string | null} */
-        const buttonColor = newsletter?.get('button_color') || 'accent';
+        /** @type {'accent' | string | null} */
+        const buttonColor = newsletter?.get('button_color');
 
         if (buttonColor === 'accent') {
             return accentColor;
         }
 
-        if (buttonColor === 'auto') {
+        if (buttonColor === null) {
             const backgroundColor = this.#getBackgroundColor(newsletter);
             return textColorForBackgroundColor(backgroundColor).hex();
         }
@@ -1115,47 +1106,33 @@ class EmailRenderer {
      * @private
      */
     async getTemplateData({post, newsletter, html, addPaywall, segment}) {
-        const labs = this.getLabs();
+        const accentColor = this.#getAccentColor();
+        const accentContrastColor = this.#getAccentContrastColor();
 
-        let accentColor = this.#getAccentColor();
-
-        let adjustedAccentColor;
-        let adjustedAccentContrastColor;
-        try {
-            adjustedAccentColor = accentColor && darkenToContrastThreshold(accentColor, '#ffffff', 2).hex();
-            adjustedAccentContrastColor = accentColor && textColorForBackgroundColor(adjustedAccentColor).hex();
-        } catch (e) {
-            logging.error(e);
-            adjustedAccentColor = accentColor;
-        }
-
-        const hasEmailCustomization = labs.isSet('emailCustomization');
-
+        // TODO: remove passthrough of accent color to getters
         const backgroundColor = this.#getBackgroundColor(newsletter);
         const backgroundIsDark = this.#checkIfBackgroundIsDark(newsletter);
         const postTitleColor = this.#getPostTitleColor(newsletter, accentColor);
         const titleWeight = this.#getTitleWeight(newsletter);
         const titleStrongWeight = this.#getTitleStrongWeight(titleWeight);
         const textColor = textColorForBackgroundColor(backgroundColor).hex(); // this is used by the header background color so keeping it separate from the content text color
-        const linkColor = hasEmailCustomization ? this.#getLinkColor(newsletter, accentColor) : backgroundIsDark ? '#ffffff' : accentColor;
-        const hasRoundedImageCorners = hasEmailCustomization ? this.#getImageCorners(newsletter) : false;
-        const sectionTitleColor = hasEmailCustomization ? this.#getSectionTitleColor(newsletter, accentColor) : null;
+        const linkColor = this.#getLinkColor(newsletter, accentColor);
+        const hasRoundedImageCorners = this.#getImageCorners(newsletter);
+        const sectionTitleColor = this.#getSectionTitleColor(newsletter, accentColor);
         const dividerColor = this.#getDividerColor(newsletter);
-        const buttonColor = this.#getButtonColor(newsletter, adjustedAccentColor);
-        const buttonTextColor = this.#getButtonTextColor(newsletter, adjustedAccentColor);
+        const buttonColor = this.#getButtonColor(newsletter, accentColor);
+        const buttonTextColor = this.#getButtonTextColor(newsletter, accentColor);
         const headerBackgroundColor = this.#getHeaderBackgroundColor(newsletter, accentColor);
         const headerBackgroundIsDark = textColorForBackgroundColor(headerBackgroundColor || backgroundColor).hex().toLowerCase() === '#ffffff';
 
         let buttonBorderRadius = '6px';
-        if (hasEmailCustomization) {
-            if (newsletter.get('button_corners') === 'square') {
-                buttonBorderRadius = '0';
-            } else if (newsletter.get('button_corners') === 'pill') {
-                buttonBorderRadius = '9999px';
-            }
+        if (newsletter.get('button_corners') === 'square') {
+            buttonBorderRadius = '0';
+        } else if (newsletter.get('button_corners') === 'pill') {
+            buttonBorderRadius = '9999px';
         }
 
-        const hasOutlineButtons = hasEmailCustomization && newsletter.get('button_style') === 'outline';
+        const hasOutlineButtons = newsletter.get('button_style') === 'outline';
 
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
         const {href: postFeatureImage, width: postFeatureImageWidth, height: postFeatureImageHeight} = await this.limitImageWidth(post.get('feature_image'));
@@ -1240,17 +1217,12 @@ class EmailRenderer {
             }
         }
 
-        let excerptFontClass = '';
         const bodyFont = newsletter.get('body_font_category');
         const titleFont = newsletter.get('title_font_category');
+        const titleAlignment = newsletter.get('title_alignment');
+        const showFeatureImage = newsletter.get('show_feature_image') && !!postFeatureImage;
 
-        if (titleFont === 'serif' && bodyFont === 'serif') {
-            excerptFontClass = 'post-excerpt-serif-serif';
-        } else if (titleFont === 'serif' && bodyFont !== 'serif') {
-            excerptFontClass = 'post-excerpt-serif-sans';
-        }
-
-        const linkStyle = (hasEmailCustomization && newsletter.get('link_style')) || 'underline';
+        const linkStyle = newsletter.get('link_style') || 'underline';
 
         const data = {
             site: {
@@ -1292,16 +1264,15 @@ class EmailRenderer {
                 newsletter.get('show_header_title') ||
                 newsletter.get('show_header_name') ||
                 newsletter.get('show_post_title_section') ||
-                (newsletter.get('show_feature_image') && !!postFeatureImage)
+                showFeatureImage
             ),
 
             latestPosts,
             latestPostsHasImages,
 
             //CSS
-            accentColor: accentColor, // default to #15212A
-            adjustedAccentColor: adjustedAccentColor || '#3498db', // default to #3498db
-            adjustedAccentContrastColor: adjustedAccentContrastColor || '#ffffff', // default to #ffffff
+            accentColor, // default to #15212A
+            accentContrastColor,
             showBadge: newsletter.get('show_badge'),
             backgroundColor,
             backgroundIsDark,
@@ -1325,18 +1296,39 @@ class EmailRenderer {
             // TODO: consider moving these to newsletter property
             showHeaderTitle: newsletter.get('show_header_title'),
             showHeaderName: newsletter.get('show_header_name'),
-            showFeatureImage: newsletter.get('show_feature_image') && !!postFeatureImage,
+            showFeatureImage: showFeatureImage,
             footerContent: newsletter.get('footer_content'),
             linkStyle,
             hasOutlineButtons,
 
             classes: {
-                container: 'container' + (newsletter.get('title_font_category') === 'serif' ? ` title-serif` : ``),
-                title: 'post-title' + ` ` + (post.get('custom_excerpt') ? 'post-title-with-excerpt' : 'post-title-no-excerpt') + (newsletter.get('title_font_category') === 'serif' ? ` post-title-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-title-left` : ``) + (hasEmailCustomization ? ` post-title-color` : ``),
-                titleLink: 'post-title-link' + (newsletter.get('title_alignment') === 'left' ? ` post-title-link-left` : ``),
-                excerpt: 'post-excerpt' + ` ` + (newsletter.get('show_feature_image') && !!postFeatureImage ? 'post-excerpt-with-feature-image' : 'post-excerpt-no-feature-image') + ` ` + excerptFontClass + (newsletter.get('title_alignment') === 'left' ? ` post-excerpt-left` : ``),
-                meta: 'post-meta' + (newsletter.get('title_alignment') === 'left' ? ` post-meta-left` : ` post-meta-center`),
-                body: newsletter.get('body_font_category') === 'sans_serif' ? `post-content-sans-serif` : `post-content`
+                container: clsx('container', {
+                    'title-serif': titleFont === 'serif'
+                }),
+                title: clsx('post-title', {
+                    'post-title-with-excerpt': post.get('custom_excerpt'),
+                    'post-title-no-excerpt': !post.get('custom_excerpt'),
+                    'post-title-serif': titleFont === 'serif',
+                    'post-title-left': titleAlignment === 'left'
+                }),
+                titleLink: clsx('post-title-link', {
+                    'post-title-link-left': titleAlignment === 'left'
+                }),
+                excerpt: clsx('post-excerpt', {
+                    'post-excerpt-with-feature-image': showFeatureImage,
+                    'post-excerpt-no-feature-image': !showFeatureImage,
+                    'post-excerpt-serif-serif': titleFont === 'serif' && bodyFont === 'serif',
+                    'post-excerpt-serif-sans': titleFont === 'serif' && bodyFont !== 'serif',
+                    'post-excerpt-left': titleAlignment === 'left'
+                }),
+                meta: clsx('post-meta', {
+                    'post-meta-left': titleAlignment === 'left',
+                    'post-meta-center': titleAlignment !== 'left'
+                }),
+                body: clsx({
+                    'post-content-sans-serif': bodyFont === 'sans_serif',
+                    'post-content': bodyFont !== 'sans_serif'
+                })
             },
 
             // Audience feedback

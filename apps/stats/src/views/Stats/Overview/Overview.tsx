@@ -9,10 +9,12 @@ import TopPosts from './components/TopPosts';
 import {GhAreaChartDataItem, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {getAudienceQueryParam} from '../components/AudienceSelect';
 import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
+import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
-import {useLatestPostStats, useTopPostsViews} from '@tryghost/admin-x-framework/api/stats';
+import {useLatestPostStats} from '@src/hooks/useLatestPostStats';
 import {useQuery} from '@tinybirdco/charts';
+import {useTopPostsViews} from '@tryghost/admin-x-framework/api/stats';
 
 interface HelpCardProps {
     className?: string;
@@ -62,12 +64,12 @@ type GrowthChartDataItem = {
 };
 
 const Overview: React.FC = () => {
+    const {appSettings} = useAppContext();
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals, currencySymbol} = useGrowthStats(range);
-    const {isLoading: isLatestPostLoading, data: latestPostStatsData} = useLatestPostStats();
-    const latestPostStats = latestPostStatsData?.stats?.[0] || null;
+    const {data: latestPostStats, isLoading: isLatestPostLoading} = useLatestPostStats();
     const {data: topPostsData, isLoading: isTopPostsLoading} = useTopPostsViews({
         searchParams: {
             date_from: formatQueryDate(startDate),
@@ -96,10 +98,11 @@ const Overview: React.FC = () => {
     const visitorsChartData = useMemo(() => {
         return sanitizeChartData<WebKpiDataItem>(visitorsData as WebKpiDataItem[] || [], range, 'visits' as keyof WebKpiDataItem, 'sum')?.map((item: WebKpiDataItem) => {
             const value = Number(item.visits);
+            const safeValue = isNaN(value) ? 0 : value;
             return {
                 date: String(item.date),
-                value,
-                formattedValue: formatNumber(value),
+                value: safeValue,
+                formattedValue: formatNumber(safeValue),
                 label: 'Visitors'
             };
         });
@@ -134,7 +137,7 @@ const Overview: React.FC = () => {
     /* ---------------------------------------------------------------------- */
     // Create chart data based on selected tab
     const mrrChartData = useMemo(() => {
-        if (!growthChartData || growthChartData.length === 0) {
+        if (!appSettings?.paidMembersEnabled || !growthChartData || growthChartData.length === 0) {
             return [];
         }
 
@@ -152,7 +155,7 @@ const Overview: React.FC = () => {
         }));
 
         return processedData;
-    }, [growthChartData, range, currencySymbol]);
+    }, [growthChartData, range, currencySymbol, appSettings]);
 
     /* Calculate KPI values
     /* ---------------------------------------------------------------------- */
@@ -162,7 +165,10 @@ const Overview: React.FC = () => {
             return {visits: '0'};
         }
 
-        const totalVisits = visitorsData.reduce((sum, item) => sum + Number(item.visits), 0);
+        const totalVisits = visitorsData.reduce((sum, item) => {
+            const visits = Number(item.visits);
+            return sum + (isNaN(visits) ? 0 : visits);
+        }, 0);
 
         return {
             visits: formatNumber(totalVisits)
@@ -187,16 +193,14 @@ const Overview: React.FC = () => {
                     visitorsChartData={visitorsChartData}
                     visitorsYRange={visitorsYRange}
                 />
-                <div className='grid grid-cols-3 gap-8'>
-                    <LatestPost
-                        isLoading={isLatestPostLoading}
-                        latestPostStats={latestPostStats}
-                    />
-                    <TopPosts
-                        isLoading={isTopPostsLoading}
-                        topPostsData={topPostsData}
-                    />
-                </div>
+                <LatestPost
+                    isLoading={isLatestPostLoading}
+                    latestPostStats={latestPostStats}
+                />
+                <TopPosts
+                    isLoading={isTopPostsLoading}
+                    topPostsData={topPostsData}
+                />
                 {/* <div className='grid grid-cols-1 gap-8 lg:grid-cols-2'>
                     <H3 className='-mb-4 mt-4 lg:col-span-2'>Grow your audience</H3>
                     <HelpCard

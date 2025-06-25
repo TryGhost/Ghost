@@ -1,10 +1,15 @@
-import React from 'react';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, Separator, Skeleton, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
-import {LatestPostStats} from '@tryghost/admin-x-framework/api/stats';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import React, {useState} from 'react';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, PostShareModal, Skeleton, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+
+import {Post, getPostMetricsToDisplay} from '@tryghost/admin-x-framework';
+import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
+import {useGlobalData} from '@src/providers/GlobalDataProvider';
+
+// Import the interface from the hook
+import {LatestPostWithStats} from '@src/hooks/useLatestPostStats';
 
 interface LatestPostProps {
-    latestPostStats: LatestPostStats | null;
+    latestPostStats: LatestPostWithStats | null;
     isLoading: boolean;
 }
 
@@ -13,158 +18,204 @@ const LatestPost: React.FC<LatestPostProps> = ({
     isLoading
 }) => {
     const navigate = useNavigate();
+    const [isShareOpen, setIsShareOpen] = useState(false);
+    const {site, settings} = useGlobalData();
+    const {appSettings} = useAppContext();
+
+    // Get site title from settings or site data
+    const siteTitle = site.title || String(settings.find(setting => setting.key === 'title')?.value || 'Ghost Site');
+
+    // Calculate metrics to show outside of JSX
+    const metricsToShow = latestPostStats ? getPostMetricsToDisplay(latestPostStats as Post) : null;
+
+    const metricClassName = 'group mr-2 flex flex-col gap-1.5 hover:cursor-pointer';
 
     return (
-        <Card className='group/card'>
+        <Card className='group/card bg-gradient-to-tr from-muted/40 to-muted/0 to-50%'>
             <CardHeader>
-                <CardTitle className='flex items-baseline justify-between leading-snug'>
+                <CardTitle className='flex items-baseline justify-between leading-snug text-muted-foreground'>
                     Latest post performance
-                    {/* {latestPostStats && (
-                        <Button
-                            className='-translate-x-2 opacity-0 transition-all group-hover/card:translate-x-0 group-hover/card:opacity-100'
-                            variant='outline'
-                        >
-                            Details
-                            <LucideIcon.ArrowRight size={16} strokeWidth={1.5} />
-                        </Button>
-                    )} */}
                 </CardTitle>
                 <CardDescription className='hidden'>How your last post did</CardDescription>
             </CardHeader>
-            <CardContent className='flex flex-col items-stretch gap-6'>
-                {latestPostStats ? (
+            <CardContent className='flex flex-col gap-8 px-0 lg:flex-row xl:grid xl:grid-cols-3'>
+                {isLoading &&
                     <>
-                        {isLoading ?
-                            <div className='flex flex-col items-stretch'>
-                                <Skeleton className='aspect-video w-full rounded-md' />
-                                <Skeleton className='mt-4' />
+                        <div className='flex w-full items-center gap-6 px-6 xl:col-span-2'>
+                            <div className='w-full max-w-[232px] grow'>
+                                <Skeleton className='aspect-[16/10] rounded-md' />
                             </div>
-                            :
-                            <>
-                                <Separator />
-                                <div className='-mt-2 flex items-stretch gap-4 transition-all hover:cursor-pointer hover:opacity-75' onClick={() => {
+                            <div className='w-full grow'>
+                                <Skeleton className='w-full max-w-[420px]' />
+                                <Skeleton className='w-1/2' />
+                            </div>
+                        </div>
+                        <div className='flex flex-col items-stretch gap-2 px-6 text-sm'>
+                            <div className='grid grid-cols-2 gap-5'>
+                                <div>
+                                    <Skeleton className='w-3/4' />
+                                    <Skeleton className='h-10 w-1/3' />
+                                </div>
+                                <div>
+                                    <Skeleton className='w-3/4' />
+                                    <Skeleton className='h-10 w-1/3' />
+                                </div>
+                                <div>
+                                    <Skeleton className='w-3/4' />
+                                    <Skeleton className='h-10 w-1/3' />
+                                </div>
+                                <div>
+                                    <Skeleton className='w-3/4' />
+                                    <Skeleton className='h-10 w-1/3' />
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                }
+                {!isLoading && latestPostStats && metricsToShow ? (
+                    <>
+                        <div className='flex flex-col gap-6 px-6 transition-all md:flex-row md:items-start xl:col-span-2'>
+                            {latestPostStats.feature_image &&
+                                    <div className='aspect-[16/10] w-full min-w-[100px] rounded-sm bg-cover bg-center sm:max-w-[50%] lg:max-w-[260px] xl:max-w-[232px]' style={{
+                                        backgroundImage: `url(${latestPostStats.feature_image})`
+                                    }}></div>
+                            }
+                            <div className='flex grow flex-col items-start justify-center self-stretch'>
+                                <div className='text-lg font-semibold leading-tighter tracking-tight hover:cursor-pointer hover:opacity-75' onClick={() => {
                                     if (!isLoading && latestPostStats) {
                                         navigate(`/posts/analytics/beta/${latestPostStats.id}`, {crossApp: true});
                                     }
-                                }}>
-                                    {latestPostStats.feature_image &&
-                                    <div className='aspect-[16/10] max-h-[76px] w-full max-w-[100px] rounded-sm bg-cover bg-center' style={{
-                                        backgroundImage: `url(${latestPostStats.feature_image})`
-                                    }}></div>
-                                    }
-                                    <div className='flex flex-col justify-center'>
-                                        <div className='text-lg font-semibold leading-tighter tracking-tight'>{latestPostStats.title}</div>
-                                        <div className='mt-1 text-sm text-muted-foreground'>Published {formatDisplayDate(latestPostStats.published_at)}</div>
-                                    </div>
+                                }}>{latestPostStats.title}</div>
+                                <div className='mt-1 text-sm text-muted-foreground'>
+                                    {latestPostStats.authors && latestPostStats.authors.length > 0 && (
+                                        <span>By {latestPostStats.authors.map(author => author.name).join(', ')} • </span>
+                                    )}
+                                    Published {formatDisplayDate(latestPostStats.published_at)}
                                 </div>
-                            </>
-                        }
-                        <div className='flex flex-col items-stretch gap-2 text-sm'>
-                            {isLoading ?
-                                <div className='grid grid-cols-2 gap-5'>
-                                    <div>
-                                        <Skeleton className='w-3/4' />
-                                        <Skeleton className='h-10 w-1/3' />
-                                    </div>
-                                    <div>
-                                        <Skeleton className='w-3/4' />
-                                        <Skeleton className='h-10 w-1/3' />
-                                    </div>
-                                    <div>
-                                        <Skeleton className='w-3/4' />
-                                        <Skeleton className='h-10 w-1/3' />
-                                    </div>
-                                    <div>
-                                        <Skeleton className='w-3/4' />
-                                        <Skeleton className='h-10 w-1/3' />
-                                    </div>
+                                <div className='mt-6 flex items-center gap-2'>
+                                    {!latestPostStats.email_only && (
+                                        <PostShareModal
+                                            author={latestPostStats.authors?.map(author => author.name).join(', ') || ''}
+                                            description=''
+                                            faviconURL={site.icon || ''}
+                                            featureImageURL={latestPostStats.feature_image || ''}
+                                            open={isShareOpen}
+                                            postExcerpt={latestPostStats.excerpt || ''}
+                                            postTitle={latestPostStats.title}
+                                            postURL={latestPostStats.url || ''}
+                                            siteTitle={siteTitle}
+                                            onClose={() => setIsShareOpen(false)}
+                                            onOpenChange={setIsShareOpen}
+                                        >
+                                            <Button onClick={() => setIsShareOpen(true)}><LucideIcon.Share /> Share post</Button>
+                                        </PostShareModal>
+                                    )}
+                                    <Button
+                                        className={latestPostStats.email_only ? 'w-full' : ''}
+                                        variant='outline'
+                                        onClick={() => {
+                                            navigate(`/posts/analytics/beta/${latestPostStats.id}`, {crossApp: true});
+                                        }}
+                                    >
+                                        <LucideIcon.ChartNoAxesColumn />
+                                        <span className='hidden md:!visible md:!block'>
+                                            {!latestPostStats.email_only ? 'Analytics' : 'Post analytics' }
+                                        </span>
+                                    </Button>
                                 </div>
-                                :
-                                <>
-                                    <div className='grid grid-cols-[1fr_1px_1fr] gap-x-3'>
-                                        <div className='group mr-2 flex flex-col gap-1.5 hover:cursor-pointer' onClick={() => {
-                                            navigate(`/posts/analytics/beta/${latestPostStats.id}/web`, {crossApp: true});
-                                        }}>
-                                            <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                                <LucideIcon.MousePointer size={16} strokeWidth={1.25} />
+                            </div>
+                        </div>
+
+                        <div className='-ml-4 flex w-full flex-col items-stretch gap-2 pr-6 text-sm sidebar:max-w-[320px] xl:h-full xl:max-w-none'>
+                            <div className='grid grid-cols-2 gap-6 pl-10 lg:border-l xl:h-full'>
+                                {/* Web metrics - only for published posts */}
+                                {metricsToShow.showWebMetrics && appSettings?.analytics.webAnalytics &&
+                                    <div className={metricClassName} onClick={() => {
+                                        navigate(`/posts/analytics/beta/${latestPostStats.id}/web`, {crossApp: true});
+                                    }}>
+                                        <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
+                                            <LucideIcon.Eye size={16} strokeWidth={1.25} />
+                                            <span className='hidden md:!visible md:!block'>
                                                 Visitors
-                                            </div>
-                                            <span className='text-[2.3rem] font-semibold leading-none tracking-tighter'>
-                                                {formatNumber(latestPostStats.visitors)}
                                             </span>
                                         </div>
-                                        <div className='h-full w-px bg-border'></div>
-                                        <div className='group mr-2 flex flex-col gap-1.5 hover:cursor-pointer' onClick={() => {
-                                            navigate(`/posts/analytics/beta/${latestPostStats.id}/growth`, {crossApp: true});
+                                        <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                            {formatNumber(latestPostStats.visitors)}
+                                        </span>
+                                    </div>
+                                }
+
+                                {/* Member growth - always show if available */}
+                                {metricsToShow.showMemberGrowth &&
+                                    <div className={
+                                        cn(
+                                            metricClassName,
+                                            (!metricsToShow.showWebMetrics || !appSettings?.analytics.webAnalytics) && 'row-[2/3] col-[1/2]'
+                                        )
+                                    } onClick={() => {
+                                        navigate(`/posts/analytics/beta/${latestPostStats.id}/growth`, {crossApp: true});
+                                    }}>
+                                        <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
+                                            <LucideIcon.UserPlus size={16} strokeWidth={1.25} />
+                                            <span className='hidden md:!visible md:!block'>Members</span>
+                                        </div>
+                                        <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                            {latestPostStats.member_delta ?
+                                                <>
+                                                    +{formatNumber(latestPostStats.member_delta)}
+                                                </>
+                                                :
+                                                0}
+                                        </span>
+                                    </div>
+                                }
+
+                                {/* Email metrics - show for email posts */}
+                                {metricsToShow.showEmailMetrics && appSettings?.newslettersEnabled && latestPostStats.email && (
+                                    <>
+                                        {/* Show open rate - always display if email exists */}
+                                        <div className={metricClassName} onClick={() => {
+                                            navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
                                         }}>
                                             <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                                <LucideIcon.UserPlus size={16} strokeWidth={1.25} />
-                                                Members
+                                                <LucideIcon.MailOpen size={16} strokeWidth={1.25} />
+                                                <span className='hidden whitespace-nowrap md:!visible md:!block'>Open rate</span>
                                             </div>
-                                            <span className='text-[2.3rem] font-semibold leading-none tracking-tighter'>
-                                                {latestPostStats.member_delta ?
-                                                    <>
-                                                        +{formatNumber(latestPostStats.member_delta)}
-                                                    </>
-                                                    :
-                                                    0}
+                                            <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                                {latestPostStats.email.email_count ?
+                                                    formatPercentage((latestPostStats.email.opened_count || 0) / latestPostStats.email.email_count)
+                                                    : '0%'
+                                                }
                                             </span>
                                         </div>
-                                        {latestPostStats.open_rate ?
-                                            <>
-                                                <div className='group mr-2 flex flex-col gap-1.5 pt-6 hover:cursor-pointer' onClick={() => {
-                                                    navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
-                                                }}>
-                                                    <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                                        <LucideIcon.MailOpen size={16} strokeWidth={1.25} />
-                                                Open rate
-                                                    </div>
-                                                    <span className='text-[2.3rem] font-semibold leading-none tracking-tighter'>
-                                                        {formatPercentage(latestPostStats.open_rate / 100)}
-                                                    </span>
-                                                </div>
-                                                <div className='h-full w-px bg-border'></div>
-                                                <div className='group mr-2 flex flex-col gap-1.5 pt-6 hover:cursor-pointer' onClick={() => {
-                                                    navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
-                                                }}>
-                                                    <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                                        <LucideIcon.MousePointerClick size={16} strokeWidth={1.25} />
-                                                Click rate
-                                                    </div>
-                                                    <span className='text-[2.3rem] font-semibold leading-none tracking-tighter'>
-                                                        {formatPercentage(latestPostStats.click_rate || 0 / 100)}
-                                                    </span>
-                                                </div>
-                                            </>
-                                            :
-                                            <></>
-                                        }
-                                    </div>
-                                </>
-                            }
+
+                                        {/* Show click rate - display if email exists and has clicks data */}
+                                        <div className={metricClassName} onClick={() => {
+                                            navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
+                                        }}>
+                                            <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
+                                                <LucideIcon.MousePointerClick size={16} strokeWidth={1.25} />
+                                                <span className='hidden whitespace-nowrap md:!visible md:!block'>Click rate</span>
+                                            </div>
+                                            <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                                {latestPostStats.email.email_count && latestPostStats.count?.clicks ?
+                                                    formatPercentage((latestPostStats.count.clicks || 0) / latestPostStats.email.email_count)
+                                                    : '0%'
+                                                }
+                                            </span>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </>
-                ) :
-                    !isLoading &&
-                    <div className='flex flex-col items-center justify-center gap-4 py-8 text-center text-muted-foreground'>
+                ) : !isLoading && (
+                    <div className='col-span-3 flex flex-col items-center justify-center gap-4 py-8 text-center text-muted-foreground'>
                         <LucideIcon.FileText size={32} strokeWidth={1.5} />
                         <div>No published posts yet</div>
                     </div>
-                }
+                )}
             </CardContent>
-            {!isLoading && latestPostStats &&
-                <CardFooter>
-                    <Button
-                        className='w-full'
-                        variant='outline'
-                        onClick={() => {
-                            navigate(`/posts/analytics/beta/${latestPostStats.id}`, {crossApp: true});
-                        }}
-                    >
-                        <LucideIcon.ChartNoAxesColumn /> Post analytics
-                    </Button>
-                </CardFooter>
-            }
         </Card>
     );
 };

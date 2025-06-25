@@ -13,7 +13,7 @@ interface SourcesTableProps {
     dataTableHeader: boolean;
 }
 
-const SourcesTable: React.FC<SourcesTableProps> = ({dataTableHeader, data, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL}) => {
+export const SourcesTable: React.FC<SourcesTableProps> = ({dataTableHeader, data, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL}) => {
     return (
         <DataList>
             {dataTableHeader &&
@@ -78,6 +78,8 @@ interface SourcesCardProps {
     siteIcon?: string;
     defaultSourceIconUrl?: string;
     getPeriodText?: (range: number) => string;
+    tableOnly?: boolean;
+    topSourcesLimit?:number;
 }
 
 export const Sources: React.FC<SourcesCardProps> = ({
@@ -86,7 +88,9 @@ export const Sources: React.FC<SourcesCardProps> = ({
     totalVisitors = 0,
     siteUrl,
     siteIcon,
-    defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL
+    defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL,
+    tableOnly = false,
+    topSourcesLimit = 10
 }) => {
     // Process and group sources data with pre-computed icons and display values
     const processedData = React.useMemo(() => {
@@ -108,10 +112,51 @@ export const Sources: React.FC<SourcesCardProps> = ({
         });
     }, [processedData, totalVisitors]);
 
-    const topSources = extendedData.slice(0, 10);
+    const topSources = extendedData.slice(0, topSourcesLimit);
 
     // Generate description based on mode and range
-    const cardDescription = `How readers found your ${range ? 'site' : 'post'}${range && ` ${getPeriodText(range)}`}`;
+    const cardDescription = `How readers found this post ${range && ` ${getPeriodText(range)}`}`;
+
+    if (tableOnly) {
+        const limitedData = extendedData.slice(0, topSourcesLimit);
+        const hasMore = extendedData.length > topSourcesLimit;
+        
+        return (
+            <div>
+                <SourcesTable
+                    data={limitedData}
+                    dataTableHeader={false}
+                    defaultSourceIconUrl={defaultSourceIconUrl}
+                    range={range}
+                />
+                {hasMore && (
+                    <div className='mt-4'>
+                        <Sheet>
+                            <SheetTrigger asChild>
+                                <Button className='w-full' size='sm' variant='outline'>
+                                    View all ({extendedData.length}) <LucideIcon.ArrowRight size={14} />
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
+                                <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
+                                    <SheetTitle>Sources</SheetTitle>
+                                    <SheetDescription>{cardDescription}</SheetDescription>
+                                </SheetHeader>
+                                <div className='group/datalist'>
+                                    <SourcesTable
+                                        data={extendedData}
+                                        dataTableHeader={true}
+                                        defaultSourceIconUrl={defaultSourceIconUrl}
+                                        range={range}
+                                    />
+                                </div>
+                            </SheetContent>
+                        </Sheet>
+                    </div>
+                )}
+            </div>
+        );
+    }
 
     return (
         <Card className='group/datalist'>

@@ -167,7 +167,7 @@ function getTinybirdTrackerScript(dataRoot) {
     const datasource = localEnabled ? localConfig.datasource : statsConfig.datasource;
 
     const tbParams = _.map({
-        site_uuid: config.get('tinybird:tracker:id'),
+        site_uuid: settingsCache.get('site_uuid'),
         post_uuid: dataRoot.post?.uuid,
         post_type: dataRoot.context.includes('post') ? 'post' : dataRoot.context.includes('page') ? 'page' : null,
         member_uuid: dataRoot.member?.uuid,
@@ -360,8 +360,9 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             if (!_.isEmpty(tagCodeInjection)) {
                 head.push(tagCodeInjection);
             }
-
-            if (labs.isSet('trafficAnalytics') && config.get('tinybird') && config.get('tinybird:tracker')) {
+            const isTbTrackingEnabled = labs.isSet('trafficAnalytics') || labs.isSet('trafficAnalyticsTracking');
+            const hasTbConfig = config.get('tinybird') && config.get('tinybird:tracker');
+            if (isTbTrackingEnabled && hasTbConfig) {
                 head.push(getTinybirdTrackerScript(dataRoot));
                 // Set a flag in response locals to indicate tracking script is being served
                 if (dataRoot._locals) {

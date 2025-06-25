@@ -70,8 +70,6 @@ function cardTemplate(nodeData, options = {}) {
 
 function emailTemplate(nodeData, options) {
     const backgroundAccent = nodeData.backgroundColor === 'accent' ? `background-color: ${nodeData.accentColor};` : '';
-    let buttonAccent = nodeData.buttonColor === 'accent' ? `background-color: ${nodeData.accentColor};` : nodeData.buttonColor;
-    let buttonStyle = nodeData.buttonColor !== 'accent' ? `background-color: ${nodeData.buttonColor};` : '';
     const alignment = nodeData.alignment === 'center' ? 'text-align: center;' : '';
     const backgroundImageStyle = nodeData.backgroundImageSrc ? (nodeData.layout !== 'split' ? `background-image: url(${nodeData.backgroundImageSrc}); background-size: cover; background-position: center center;` : `background-color: ${nodeData.backgroundColor};`) : `background-color: ${nodeData.backgroundColor};`;
     const splitImageStyle = `background-image: url(${nodeData.backgroundImageSrc}); background-size: ${nodeData.backgroundSize !== 'contain' ? 'cover' : '50%'}; background-position: center`;
@@ -86,60 +84,43 @@ function emailTemplate(nodeData, options) {
         style: options?.design?.buttonStyle
     });
 
-    if (options?.feature?.emailCustomization) {
-        return (
-            `
-            <div class="kg-header-card kg-v2" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
-                ${nodeData.layout === 'split' && nodeData.backgroundImageSrc ? `
-                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                        <tr>
-                            <td background="${nodeData.backgroundImageSrc}" style="${splitImageStyle}" class="kg-header-card-image"></td>
-                        </tr>
-                    </table>
-                ` : ''}
-                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
-                    <tr>
-                        <td class="kg-header-card-content" style="${nodeData.layout === 'split' && nodeData.backgroundSize === 'contain' ? 'padding-top: 0;' : ''}">
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                <tr>
-                                    <td align="${nodeData.alignment}">
-                                        <h2 class="kg-header-card-heading" style="color:${nodeData.textColor};">${nodeData.header}</h2>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="kg-header-card-subheading-wrapper" align="${nodeData.alignment}">
-                                        <p class="kg-header-card-subheading" style="color:${nodeData.textColor};">${nodeData.subheader}</p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    ${showButton ? `
-                                        <td class="kg-header-button-wrapper">
-                                            ${buttonHtml}
-                                        </td>
-                                    ` : ''}
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            `
-        );
-    }
+    const hasDarkBg = nodeData.textColor?.toLowerCase() === '#ffffff';
 
     return (
         `
-        <div class="kg-header-card kg-v2" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
+        <div class="kg-header-card kg-v2${hasDarkBg ? ' kg-header-card-dark-bg' : 'kg-header-card-light-bg'}" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
             ${nodeData.layout === 'split' && nodeData.backgroundImageSrc ? `
-                <div class="kg-header-card-image" background="${nodeData.backgroundImageSrc}" style="${splitImageStyle}"></div>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                        <td background="${nodeData.backgroundImageSrc}" style="${splitImageStyle}" class="kg-header-card-image"></td>
+                    </tr>
+                </table>
             ` : ''}
-            <div class="kg-header-card-content" style="${nodeData.layout === 'split' && nodeData.backgroundSize === 'contain' ? 'padding-top: 0;' : ''}">
-                <h2 class="kg-header-card-heading" style="color:${nodeData.textColor};">${nodeData.header}</h2>
-                <p class="kg-header-card-subheading" style="color:${nodeData.textColor};">${nodeData.subheader}</p>
-                ${showButton ? `
-                    <a class="kg-header-card-button" href="${nodeData.buttonUrl}" style="color: ${nodeData.buttonTextColor}; ${buttonStyle} ${buttonAccent}">${nodeData.buttonText}</a>
-                ` : ''}
-            </div>
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
+                <tr>
+                    <td class="kg-header-card-content" style="${nodeData.layout === 'split' && nodeData.backgroundSize === 'contain' ? 'padding-top: 0;' : ''}">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                                <td align="${nodeData.alignment}">
+                                    <h2 class="kg-header-card-heading" style="color:${nodeData.textColor};">${nodeData.header}</h2>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="kg-header-card-subheading-wrapper" align="${nodeData.alignment}">
+                                    <p class="kg-header-card-subheading" style="color:${nodeData.textColor};">${nodeData.subheader}</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                ${showButton ? `
+                                    <td class="kg-header-button-wrapper">
+                                        ${buttonHtml}
+                                    </td>
+                                ` : ''}
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
         </div>
         `
     );

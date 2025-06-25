@@ -13,7 +13,8 @@ export interface NewsletterRadialChartProps {
     percentageValue?: number,
     percentageLabel?: string,
     className?: string,
-    tooltip?: boolean
+    tooltip?: boolean,
+    size?: 'sm' | 'md' | 'lg' | 'responsive'
 }
 
 export const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
@@ -22,14 +23,57 @@ export const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
     percentageValue,
     percentageLabel,
     className,
-    tooltip = true
+    tooltip = true,
+    size = 'responsive'
 }) => {
-    const barWidth = 46;
-    const innerRadiusStart = data.length > 1 ? 72 : 94;
+    // Responsive sizing configuration
+    const getSizeConfig = () => {
+        switch (size) {
+        case 'sm':
+            return {
+                barWidth: 28,
+                innerRadiusStart: data.length > 1 ? 42 : 56,
+                fontSize: {
+                    percentage: '1.2rem',
+                    label: '0.8rem'
+                }
+            };
+        case 'md':
+            return {
+                barWidth: 36,
+                innerRadiusStart: data.length > 1 ? 60 : 72,
+                fontSize: {
+                    percentage: '1.4rem',
+                    label: '0.9rem'
+                }
+            };
+        case 'lg':
+            return {
+                barWidth: 46,
+                innerRadiusStart: data.length > 1 ? 72 : 94,
+                fontSize: {
+                    percentage: '1.6rem',
+                    label: '1rem'
+                }
+            };
+        case 'responsive':
+        default:
+            return {
+                barWidth: 46,
+                innerRadiusStart: data.length > 1 ? 72 : 94,
+                fontSize: {
+                    percentage: '1.6rem',
+                    label: '1rem'
+                }
+            };
+        }
+    };
+
+    const sizeConfig = getSizeConfig();
 
     const chartComponentConfig = {
-        innerRadius: innerRadiusStart,
-        outerRadius: innerRadiusStart + barWidth,
+        innerRadius: sizeConfig.innerRadiusStart,
+        outerRadius: sizeConfig.innerRadiusStart + sizeConfig.barWidth,
         startAngle: 90,
         endAngle: -270
     };
