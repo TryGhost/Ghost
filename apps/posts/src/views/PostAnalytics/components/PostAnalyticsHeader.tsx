@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import moment from 'moment-timezone';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, PageMenu, PageMenuItem, PostShareModal, formatNumber} from '@tryghost/shade';
 import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
@@ -30,9 +30,29 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
         statsConfig,
         enabled: appSettings?.analytics?.webAnalytics ?? false
     });
-
-    // Use the utility function from admin-x-framework
-    const showNewsletterTab = hasBeenEmailed(post as Post);
+    
+    // Determine which tabs to show based on post type and settings
+    const availableTabs = useMemo(() => {
+        if (!post) {
+            return [];
+        }
+        const tabs = [];
+        
+        // Only show Overview and Web tabs if it's NOT a published-only post with web analytics disabled
+        const isPublishedOnlyWithoutWebAnalytics = isPublishedOnly(post as Post) && !appSettings?.analytics.webAnalytics;
+        if (!isPublishedOnlyWithoutWebAnalytics) {
+            tabs.push('Overview');   
+            if (!post.email_only && appSettings?.analytics.webAnalytics) {
+                tabs.push('Web');
+            }
+        }
+        if (hasBeenEmailed(post as Post)) {
+            tabs.push('Newsletter');
+        }
+        tabs.push('Growth');
+        
+        return tabs;
+    }, [post, appSettings?.analytics.webAnalytics]);
 
     const handleDeletePost = () => {
         if (!post) {
@@ -178,30 +198,34 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
             <Navbar className='sticky top-0 z-50 -mb-8 flex-col items-start gap-y-5 border-none bg-white/70 py-8 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
                 {!isPostLoading && (
                     <PageMenu className='min-h-[34px]' defaultValue={currentTab} responsive>
-                        <PageMenuItem value="Overview" onClick={() => {
-                            navigate(`/analytics/beta/${postId}`);
-                        }}>
-                                Overview
-                        </PageMenuItem>
-                        {!post?.email_only && appSettings?.analytics.webAnalytics && (
+                        {availableTabs.includes('Overview') && (
+                            <PageMenuItem value="Overview" onClick={() => {
+                                navigate(`/analytics/beta/${postId}`);
+                            }}>
+                                    Overview
+                            </PageMenuItem>
+                        )}
+                        {availableTabs.includes('Web') && (
                             <PageMenuItem value="Web" onClick={() => {
                                 navigate(`/analytics/beta/${postId}/web`);
                             }}>
                                     Web traffic
                             </PageMenuItem>
                         )}
-                        {showNewsletterTab && (
+                        {availableTabs.includes('Newsletter') && (
                             <PageMenuItem value="Newsletter" onClick={() => {
                                 navigate(`/analytics/beta/${postId}/newsletter`);
                             }}>
                                     Newsletter
                             </PageMenuItem>
                         )}
-                        <PageMenuItem value="Growth" onClick={() => {
-                            navigate(`/analytics/beta/${postId}/growth`);
-                        }}>
-                                Growth
-                        </PageMenuItem>
+                        {availableTabs.includes('Growth') && (
+                            <PageMenuItem value="Growth" onClick={() => {
+                                navigate(`/analytics/beta/${postId}/growth`);
+                            }}>
+                                    Growth
+                            </PageMenuItem>
+                        )}
                     </PageMenu>
                 )}
                 {children &&
