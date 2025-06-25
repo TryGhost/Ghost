@@ -43,37 +43,36 @@ const NewsletterTableRows: React.FC<{
         Boolean(shouldFetchStats)
     );
 
-    // Show loading rows while data is loading
-    if (isStatsLoading || !newsletterStatsData) {
-        return (
-            <>
-                {Array.from({length: 5}, (_, index) => (
-                    <TableRow key={`newsletter-loading-row-${index}`} className='last:border-none [&>td]:py-2.5'>
-                        <TableCell className="font-medium">
-                            <div className="h-4 w-48 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap text-sm">
-                            <div className="h-4 w-16 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                        <TableCell className='text-right font-mono text-sm'>
-                            <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                        <TableCell className='text-right font-mono text-sm'>
-                            <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                        <TableCell className='text-right font-mono text-sm'>
-                            <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                    </TableRow>
-                ))}
-            </>
-        );
-    }
-
     // Data is already sorted by the API based on sortBy
-    const sortedStats = newsletterStatsData?.stats || [];
+    const sortedStats = useMemo(() => newsletterStatsData?.stats || [], [newsletterStatsData]);
 
-    return (
+    // Memoize loading rows to prevent recreation on every render
+    const loadingRows = useMemo(() => (
+        <>
+            {Array.from({length: 5}, (_, index) => (
+                <TableRow key={`newsletter-loading-row-${index}`} className='last:border-none [&>td]:py-2.5'>
+                    <TableCell className="font-medium">
+                        <div className="h-4 w-48 animate-pulse rounded bg-gray-200"></div>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-sm">
+                        <div className="h-4 w-16 animate-pulse rounded bg-gray-200"></div>
+                    </TableCell>
+                    <TableCell className='text-right font-mono text-sm'>
+                        <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
+                    </TableCell>
+                    <TableCell className='text-right font-mono text-sm'>
+                        <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
+                    </TableCell>
+                    <TableCell className='text-right font-mono text-sm'>
+                        <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
+                    </TableCell>
+                </TableRow>
+            ))}
+        </>
+    ), []);
+
+    // Memoize the data rows based on the actual data and loading states
+    const dataRows = useMemo(() => (
         <>
             {sortedStats.map(post => (
                 <TableRow key={post.post_id} className='last:border-none [&>td]:py-2.5'>
@@ -81,7 +80,7 @@ const NewsletterTableRows: React.FC<{
                         <div className='group/link inline-flex items-center gap-2'>
                             {post.post_id ?
                                 <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
-                                    navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
+                                    navigate(`/posts/analytics/beta/${post.post_id}/`, {crossApp: true});
                                 }}>
                                     {post.post_title}
                                 </Button>
@@ -115,7 +114,14 @@ const NewsletterTableRows: React.FC<{
                 </TableRow>
             ))}
         </>
-    );
+    ), [sortedStats, isClicksLoading, navigate]);
+
+    // Show loading rows while data is loading
+    if (isStatsLoading || !newsletterStatsData) {
+        return loadingRows;
+    }
+
+    return dataRows;
 });
 
 NewsletterTableRows.displayName = 'NewsletterTableRows';
@@ -126,14 +132,19 @@ const NewsletterTableHeader: React.FC<{
     setSortBy: (sort: TopNewslettersOrder) => void;
     range: number;
 }> = React.memo(({sortBy, setSortBy, range}) => {
+    // Memoize the card header content since it only depends on range
+    const cardHeaderContent = useMemo(() => (
+        <CardHeader>
+            <CardTitle>Top newsletters</CardTitle>
+            <CardDescription> Your best performing newsletters {getPeriodText(range)}</CardDescription>
+        </CardHeader>
+    ), [range]);
+
     return (
         <TableHeader>
             <TableRow>
-                <TableHead variant='cardhead'>
-                    <CardHeader>
-                        <CardTitle>Top newsletters</CardTitle>
-                        <CardDescription> Your best performing newsletters {getPeriodText(range)}</CardDescription>
-                    </CardHeader>
+                <TableHead className='min-w-[320px]' variant='cardhead'>
+                    {cardHeaderContent}
                 </TableHead>
                 <TableHead className='w-[65px]'>
                     <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='date desc'>
@@ -167,11 +178,11 @@ const TopNewslettersTable: React.FC<{
     range: number;
     selectedNewsletterId: string | null | undefined;
     shouldFetchStats: boolean;
-}> = ({range, selectedNewsletterId, shouldFetchStats}) => {
+}> = React.memo(({range, selectedNewsletterId, shouldFetchStats}) => {
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
 
     return (
-        <Card>
+        <Card className='w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]'>
             <CardContent>
                 <Table>
                     <NewsletterTableHeader range={range} setSortBy={setSortBy} sortBy={sortBy} />
@@ -187,7 +198,9 @@ const TopNewslettersTable: React.FC<{
             </CardContent>
         </Card>
     );
-};
+});
+
+TopNewslettersTable.displayName = 'TopNewslettersTable';
 
 const Newsletters: React.FC = () => {
     const {range, selectedNewsletterId} = useGlobalData();
@@ -217,6 +230,15 @@ const Newsletters: React.FC = () => {
         shouldFetchStats || false
     );
 
+    // Get newsletter stats with click data to check if any newsletters were sent in the time period
+    // and to calculate averages - using the same data source as the table for consistency
+    const {data: newsletterStatsData, isLoading: isNewsletterStatsLoading, isClicksLoading} = useNewsletterStatsWithRangeSplit(
+        range,
+        'date desc',
+        selectedNewsletterId || undefined,
+        shouldFetchStats || false
+    );
+
     // Find the selected newsletter to get its active_members count
     const selectedNewsletter = useMemo(() => {
         if (!newslettersData?.newsletters || !selectedNewsletterId) {
@@ -225,20 +247,32 @@ const Newsletters: React.FC = () => {
         return newslettersData.newsletters.find(n => n.id === selectedNewsletterId) || null;
     }, [newslettersData, selectedNewsletterId]);
 
-    // Calculate totals for KPIs - we'll need a separate API call for newsletter stats just for averages
+    // Calculate totals for KPIs - now including proper averages from newsletter stats
     const totals = useMemo(() => {
         // Get total subscribers from the selected newsletter or all newsletters
         const totalSubscribers = selectedNewsletter?.count?.active_members ||
             subscriberStatsData?.stats?.[0]?.total ||
             0;
 
-        // For now, return basic totals - averages will be calculated in a separate component if needed
+        // Calculate averages from newsletter stats data
+        let avgOpenRate = 0;
+        let avgClickRate = 0;
+
+        if (newsletterStatsData?.stats && newsletterStatsData.stats.length > 0) {
+            const stats = newsletterStatsData.stats;
+            const totalOpenRate = stats.reduce((sum, stat) => sum + (stat.open_rate || 0), 0);
+            const totalClickRate = stats.reduce((sum, stat) => sum + (stat.click_rate || 0), 0);
+
+            avgOpenRate = totalOpenRate / stats.length;
+            avgClickRate = totalClickRate / stats.length;
+        }
+
         return {
             totalSubscribers,
-            avgOpenRate: 0,
-            avgClickRate: 0
+            avgOpenRate,
+            avgClickRate
         };
-    }, [selectedNewsletter, subscriberStatsData]);
+    }, [selectedNewsletter, subscriberStatsData, newsletterStatsData]);
 
     // Create subscribers data from newsletter subscriber stats
     const subscribersData = useMemo(() => {
@@ -250,13 +284,30 @@ const Newsletters: React.FC = () => {
         return subscriberStatsData.stats[0].deltas;
     }, [subscriberStatsData]);
 
-    // For the KPIs component, we'll use empty avgsData since averages are calculated separately now
-    const avgsData: AvgsDataItem[] = [];
+    // Create avgsData from newsletter stats for the bar charts
+    const avgsData: AvgsDataItem[] = useMemo(() => {
+        if (!newsletterStatsData?.stats) {
+            return [];
+        }
+
+        return newsletterStatsData.stats.map(stat => ({
+            post_id: stat.post_id,
+            post_title: stat.post_title,
+            send_date: stat.send_date,
+            sent_to: stat.sent_to,
+            total_opens: stat.total_opens,
+            open_rate: stat.open_rate,
+            total_clicks: stat.total_clicks || 0,
+            click_rate: stat.click_rate || 0
+        }));
+    }, [newsletterStatsData]);
 
     // Separate loading states for different sections
-    const isKPIsLoading = isNewslettersLoading || isSubscriberStatsLoading;
+    const isKPIsLoading = isNewslettersLoading || isSubscriberStatsLoading || isClicksLoading;
 
-    const pageData = isKPIsLoading ? undefined : (selectedNewsletterId && subscribersData.length > 1 ? ['data exists'] : []);
+    // Show data only if there are actual newsletters sent in the time period
+    const hasNewslettersInPeriod = newsletterStatsData?.stats && newsletterStatsData.stats.length > 0;
+    const pageData = isKPIsLoading || isNewsletterStatsLoading ? undefined : (hasNewslettersInPeriod ? ['data exists'] : []);
 
     if (!appSettings?.newslettersEnabled) {
         return (

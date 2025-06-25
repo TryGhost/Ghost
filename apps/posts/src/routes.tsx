@@ -12,7 +12,7 @@ export const APP_ROUTE_PREFIX = '/posts';
 
 // Wrap components with feature flag protection where needed
 //  e.g.
-// const ProtectedNewsletter = withFeatureFlag(Newsletter, 'trafficAnalyticsAlpha', '/analytics/', 'Newsletter');
+// const ProtectedNewsletter = withFeatureFlag(Newsletter, 'trafficAnalytics', '/analytics/', 'Newsletter');
 
 export const routes: RouteObject[] = [
     {

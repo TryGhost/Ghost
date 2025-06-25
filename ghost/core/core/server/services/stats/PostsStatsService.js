@@ -79,10 +79,12 @@ class PostsStatsService {
      * @param {object} deps
      * @param {import('knex').Knex} deps.knex - Database client
      * @param {object} [deps.tinybirdClient] - Tinybird client for analytics
+     * @param {object} [deps.urlService] - URL service for checking URL existence
      */
     constructor(deps) {
         this.knex = deps.knex;
         this.tinybirdClient = deps.tinybirdClient;
+        this.urlService = deps.urlService;
     }
 
     /**
@@ -220,9 +222,26 @@ class PostsStatsService {
             return [];
         }
 
-        // Transform results and enrich with titles
+        // Transform results and enrich with titles and URL existence validation
         return results.map((row) => {
             const title = row.title || this._generateTitleFromPath(row.attribution_url);
+            
+            // Check if URL exists using the URL service
+            let urlExists = true; // Default to true for backward compatibility
+            
+            if (this.urlService && row.attribution_url) {
+                try {
+                    // Check if URL service is ready
+                    if (this.urlService.hasFinished && this.urlService.hasFinished()) {
+                        const resource = this.urlService.getResource(row.attribution_url);
+                        urlExists = !!resource; // Convert to boolean
+                    }
+                    // If URL service isn't ready, we default to true (clickable)
+                } catch (error) {
+                    // If there's an error checking the URL service, default to true
+                    urlExists = true;
+                }
+            }
 
             return {
                 post_id: row.post_id,
@@ -234,7 +253,8 @@ class PostsStatsService {
                 free_members: row.free_members,
                 paid_members: row.paid_members,
                 mrr: row.mrr,
-                post_type: row.attribution_type === 'post' ? 'post' : (row.attribution_type === 'page' ? 'page' : null)
+                post_type: row.attribution_type === 'post' ? 'post' : (row.attribution_type === 'page' ? 'page' : null),
+                url_exists: urlExists
             };
         });
     }
@@ -750,9 +770,11 @@ class PostsStatsService {
                 dateFilter = this.knex.raw(`p.published_at >= ?`, [options.date_from]);
             }
             if (options.date_to) {
+                // Make date_to inclusive of the entire day by adding 23:59:59
+                const endOfDay = options.date_to + ' 23:59:59';
                 dateFilter = options.date_from
-                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, options.date_to])
-                    : this.knex.raw(`p.published_at <= ?`, [options.date_to]);
+                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, endOfDay])
+                    : this.knex.raw(`p.published_at <= ?`, [endOfDay]);
             }
 
             // Subquery to count clicks from members_click_events
@@ -782,7 +804,7 @@ class PostsStatsService {
                 .leftJoin(clicksSubquery, 'p.id', 'clicks.post_id')
                 .where('p.newsletter_id', newsletterId)
                 .whereIn('p.status', ['sent', 'published'])
-                .whereNotNull('e.id') // Ensure there is an associated email record
+                // Show all newsletters that were sent, even if no email record exists or has 0 engagement
                 .whereRaw(dateFilter)
                 .orderBy(orderFieldMap[orderField], orderDirection)
                 .limit(limit);
@@ -844,9 +866,11 @@ class PostsStatsService {
                 dateFilter = this.knex.raw(`p.published_at >= ?`, [options.date_from]);
             }
             if (options.date_to) {
+                // Make date_to inclusive of the entire day by adding 23:59:59
+                const endOfDay = options.date_to + ' 23:59:59';
                 dateFilter = options.date_from
-                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, options.date_to])
-                    : this.knex.raw(`p.published_at <= ?`, [options.date_to]);
+                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, endOfDay])
+                    : this.knex.raw(`p.published_at <= ?`, [endOfDay]);
             }
 
             let query;
@@ -880,7 +904,7 @@ class PostsStatsService {
                     .leftJoin(clicksSubquery, 'p.id', 'clicks.post_id')
                     .where('p.newsletter_id', newsletterId)
                     .whereIn('p.status', ['sent', 'published'])
-                    .whereNotNull('e.id') // Ensure there is an associated email record
+                    // Show all newsletters that were sent, even if no email record exists or has 0 engagement
                     .whereRaw(dateFilter)
                     .orderBy(orderFieldMap[orderField], orderDirection)
                     .limit(limit);
@@ -899,7 +923,7 @@ class PostsStatsService {
                     .leftJoin('emails as e', 'p.id', 'e.post_id')
                     .where('p.newsletter_id', newsletterId)
                     .whereIn('p.status', ['sent', 'published'])
-                    .whereNotNull('e.id') // Ensure there is an associated email record
+                    // Show all newsletters that were sent, even if no email record exists or has 0 engagement
                     .whereRaw(dateFilter)
                     .orderBy(orderFieldMap[orderField], orderDirection)
                     .limit(limit);

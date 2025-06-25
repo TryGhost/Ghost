@@ -86,7 +86,7 @@ function emailCTATemplate(dataset, options = {}) {
     const isBlackButton = dataset.buttonColor === 'black' || dataset.buttonColor === '#000000' || dataset.buttonColor === '#000';
 
     if (isTransparentCTA && isDarkBackground && isBlackButton) {
-        dataset.buttonColor = 'white';
+        dataset.buttonColor = '#ffffff';
     }
 
     const buttonHtml = renderEmailButton({

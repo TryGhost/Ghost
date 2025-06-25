@@ -62,6 +62,13 @@ export const usePostSuccessModal = () => {
         return authors?.map(author => author.name).join(', ') || '';
     };
 
+    const truncateText = (text: string, maxLength: number) => {
+        if (text.length <= maxLength) {
+            return text;
+        }
+        return text.substring(0, maxLength).trim() + '…';
+    };
+
     // Memoized modal props
     const modalProps = useMemo(() => {
         if (!post) {
@@ -131,13 +138,13 @@ export const usePostSuccessModal = () => {
             postURL: post.url || '',
             primaryTitle: 'Boom! It\'s out there.',
             secondaryTitle: showPostCount && postCount ? 
-                `That's ${postCount} post${postCount !== 1 ? 's' : ''} published.` : 
+                `That's ${postCount.toLocaleString()} post${postCount !== 1 ? 's' : ''} published.` : 
                 'Spread the word!',
             description: getDescription(),
             featureImageURL: post.feature_image || '',
             postTitle: post.title || '',
-            postExcerpt: post.excerpt || '',
-            faviconURL: '', // Could add favicon URL if available
+            postExcerpt: truncateText(post.excerpt || '', 100),
+            faviconURL: site?.icon || '',
             siteTitle: site?.title || '',
             author: getAuthorsText(post.authors),
             onClose: handleClose

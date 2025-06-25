@@ -1,5 +1,5 @@
 import React, {useMemo} from 'react';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, ChartConfig, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, Table, TableBody, TableCell, TableRow, formatNumber, formatPercentage} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, ChartConfig, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, formatNumber, formatPercentage} from '@tryghost/shade';
 import {NewsletterRadialChart, NewsletterRadialChartData} from '../../Newsletter/components/NewsLetterRadialChart';
 import {Post} from '@tryghost/admin-x-framework/api/posts';
 import {cleanTrackedUrl, processAndGroupTopLinks} from '@src/utils/link-helpers';
@@ -63,7 +63,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
     const fullWidth = post.email_only || !isWebShown;
 
     return (
-        <Card className={`group/card ${fullWidth && 'col-span-2'}`}>
+        <Card className={`group/datalist overflow-hidden ${fullWidth && 'col-span-2'}`}>
             <div className='relative flex items-center justify-between gap-6'>
                 <CardHeader>
                     <CardTitle className='flex items-center gap-1.5 text-lg'>
@@ -71,7 +71,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                         Newsletter performance
                     </CardTitle>
                 </CardHeader>
-                <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover/card:translate-x-0 group-hover/card:opacity-100' size='sm' variant='outline' onClick={() => {
+                <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100' size='sm' variant='outline' onClick={() => {
                     navigate(`/analytics/beta/${postId}/newsletter`);
                 }}>View more</Button>
             </div>
@@ -131,41 +131,44 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                                 <span className='font-medium text-muted-foreground'>Top clicked links in this email</span>
                                 <HTable>Members</HTable>
                             </div>
-                            <Table>
-                                {topLinks.length > 0
-                                    ?
-                                    <TableBody>
-                                        {topLinks.slice(0, (fullWidth ? 6 : 3)).map((link) => {
+
+                            {topLinks.length > 0
+                                ?
+                                <DataList className="">
+                                    <DataListBody>
+                                        {topLinks.slice(0, (fullWidth ? 10 : 5)).map((link) => {
+                                            const percentage = stats.clicked > 0 ? link.count / stats.clicked : 0;
                                             return (
-                                                <TableRow key={link.link.link_id} className='border-none'>
-                                                    <TableCell className='max-w-0 px-0 group-hover:!bg-transparent'>
-                                                        <a
-                                                            className='block truncate hover:underline'
-                                                            href={link.link.to}
-                                                            rel="noreferrer"
-                                                            target='_blank'
-                                                            title={link.link.to}
-                                                        >
-                                                            {cleanTrackedUrl(link.link.to, true)}
-                                                        </a>
-                                                    </TableCell>
-                                                    <TableCell className='w-[10%] pl-3 pr-0 text-right font-mono text-sm group-hover:!bg-transparent'>{formatNumber(link.count || 0)}</TableCell>
-                                                </TableRow>
+                                                <DataListRow key={link.link.link_id}>
+                                                    <DataListBar style={{
+                                                        width: `${percentage ? Math.round(percentage * 100) : 0}%`
+                                                    }} />
+                                                    <DataListItemContent>
+                                                        <div className="flex items-center space-x-2 overflow-hidden">
+                                                            <LucideIcon.Link className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />
+                                                            <a className="block truncate font-medium hover:underline"
+                                                                href={link.link.to}
+                                                                rel="noreferrer"
+                                                                target='_blank'
+                                                                title={link.link.to}>
+                                                                {cleanTrackedUrl(link.link.to, true)}
+                                                            </a>
+                                                        </div>
+                                                    </DataListItemContent>
+                                                    <DataListItemValue>
+                                                        <DataListItemValueAbs>{formatNumber(link.count || 0)}</DataListItemValueAbs>
+                                                        <DataListItemValuePerc>{formatPercentage(percentage)}</DataListItemValuePerc>
+                                                    </DataListItemValue>
+                                                </DataListRow>
                                             );
                                         })}
-                                    </TableBody>
-                                    :
-                                    <TableBody>
-                                        <TableRow>
-                                            <TableCell colSpan={2}>
-                                                <div className='py-20 text-center text-sm text-gray-700'>
-                                                You have no links in your post.
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableBody>
-                                }
-                            </Table>
+                                    </DataListBody>
+                                </DataList>
+                                :
+                                <div className='py-20 text-center text-sm text-gray-700'>
+                                    You have no links in your post.
+                                </div>
+                            }
                         </div>
                     </div>
                     {/* <Button variant='outline' onClick={() => {
