@@ -185,7 +185,10 @@ describe('Members Signin', function () {
             // Remove ms precision (not supported by MySQL)
             startDate.setMilliseconds(0);
 
-            clock = sinon.useFakeTimers(startDate);
+            clock = sinon.useFakeTimers({
+                now: startDate,
+                toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date']
+            });
         });
 
         afterEach(function () {
@@ -315,7 +318,10 @@ describe('Members Signin', function () {
         beforeEach(async function () {
             await dbUtils.truncate('brute');
             await resetRateLimits();
-            clock = sinon.useFakeTimers(new Date());
+            clock = sinon.useFakeTimers({
+                now: new Date(),
+                toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date']
+            });
         });
 
         afterEach(function () {
