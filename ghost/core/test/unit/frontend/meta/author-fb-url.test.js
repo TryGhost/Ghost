@@ -15,19 +15,6 @@ describe('getAuthorFacebookUrl', function () {
             facebookUrl.should.equal('https://www.facebook.com/user');
         });
 
-    it('should return author facebook url if AMP post and has url',
-        function () {
-            const facebookUrl = getAuthorFacebookUrl({
-                context: ['amp', 'post'],
-                post: {
-                    primary_author: {
-                        facebook: 'https://www.facebook.com/user'
-                    }
-                }
-            });
-            facebookUrl.should.equal('https://www.facebook.com/user');
-        });
-
     it('should return null if context does not contain author facebook url and is a post',
         function () {
             const facebookUrl = getAuthorFacebookUrl({

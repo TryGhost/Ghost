@@ -187,7 +187,7 @@ function getAuthorSchema(metaData, data) {
 function getSchema(metaData, data) {
     if (!config.isPrivacyDisabled('useStructuredData')) {
         const context = data.context ? data.context : null;
-        if (_.includes(context, 'post') || _.includes(context, 'page') || _.includes(context, 'amp')) {
+        if (_.includes(context, 'post') || _.includes(context, 'page')) {
             return getPostSchema(metaData, data);
         } else if (_.includes(context, 'home')) {
             return getHomeSchema(metaData);

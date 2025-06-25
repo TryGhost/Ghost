@@ -258,32 +258,4 @@ describe('Contexts', function () {
             res.locals.context[0].should.eql('post');
         });
     });
-
-    describe('AMP', function () {
-        it('should correctly identify AMP post', function () {
-            res.locals.relativeUrl = '/welcome-to-ghost/amp/';
-            data.post = testUtils.DataGenerator.forKnex.createPost();
-
-            delete res.routerOptions;
-            renderer.context(req, res, data);
-
-            should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(2);
-            res.locals.context[0].should.eql('amp');
-            res.locals.context[1].should.eql('post');
-        });
-
-        it('should correctly identify AMP page', function () {
-            res.locals.relativeUrl = '/welcome-to-ghost/amp/';
-            data.page = testUtils.DataGenerator.forKnex.createPost({page: true});
-
-            delete res.routerOptions;
-            renderer.context(req, res, data);
-
-            should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(2);
-            res.locals.context[0].should.eql('amp');
-            res.locals.context[1].should.eql('page');
-        });
-    });
 });

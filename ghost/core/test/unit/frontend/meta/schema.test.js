@@ -1,6 +1,5 @@
 const should = require('should');
 const {getSchema, SOCIAL_PLATFORMS} = require('../../../../core/frontend/meta/schema');
-const markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc;
 const socialUrls = require('@tryghost/social-urls');
 
 // Re-usable social usernames for sameAs tests
@@ -238,111 +237,6 @@ describe('getSchema', function () {
                 }
             },
             url: 'http://mysite.com/post/my-page-slug/'
-        });
-        done();
-    });
-
-    it('should return post schema if context starts with amp', function (done) {
-        const metadata = {
-            site: {
-                title: 'Site Title',
-                url: 'http://mysite.com',
-                logo: {
-                    url: 'http://mysite.com/author/image/url/logo.jpg',
-                    dimensions: {
-                        width: 500,
-                        height: 500
-                    }
-                }
-            },
-            authorImage: {
-                url: 'http://mysite.com/author/image/url/me.jpg',
-                dimensions: {
-                    width: 500,
-                    height: 500
-                }
-            },
-            authorFacebook: 'testuser',
-            creatorTwitter: '@testuser',
-            authorUrl: 'http://mysite.com/author/me/',
-            metaTitle: 'Post Title',
-            url: 'http://mysite.com/post/my-amp-post-slug/',
-            publishedDate: '2015-12-25T05:35:01.234Z',
-            modifiedDate: '2016-01-21T22:13:05.412Z',
-            coverImage: {
-                url: 'http://mysite.com/content/image/mypostcoverimage.jpg',
-                dimensions: {
-                    width: 500,
-                    height: 500
-                }
-            },
-            keywords: ['one', 'two', 'tag'],
-            metaDescription: 'Post meta description',
-            excerpt: 'Post meta description'
-        };
-
-        const data = {
-            context: ['amp', 'post'],
-            post: {
-                title: 'Post Title',
-                slug: 'my-amp-post-slug',
-                mobiledoc: markdownToMobiledoc('some markdown'),
-                html: 'some html',
-                primary_author: {
-                    name: 'Post Author',
-                    website: 'http://myblogsite.com/',
-                    bio: 'My author bio.',
-                    facebook: 'testuser',
-                    twitter: '@testuser'
-                }
-            }
-        };
-
-        const schema = getSchema(metadata, data);
-
-        should.deepEqual(schema, {
-            '@context': 'https://schema.org',
-            '@type': 'Article',
-            author: {
-                '@type': 'Person',
-                image: {
-                    '@type': 'ImageObject',
-                    url: 'http://mysite.com/author/image/url/me.jpg',
-                    width: 500,
-                    height: 500
-                },
-                name: 'Post Author',
-                sameAs: [
-                    'http://myblogsite.com/',
-                    'https://www.facebook.com/testuser',
-                    'https://x.com/testuser'
-                ],
-                url: 'http://mysite.com/author/me/'
-            },
-            dateModified: '2016-01-21T22:13:05.412Z',
-            datePublished: '2015-12-25T05:35:01.234Z',
-            description: 'Post meta description',
-            headline: 'Post Title',
-            image: {
-                '@type': 'ImageObject',
-                url: 'http://mysite.com/content/image/mypostcoverimage.jpg',
-                width: 500,
-                height: 500
-            },
-            keywords: 'one, two, tag',
-            mainEntityOfPage: 'http://mysite.com/post/my-amp-post-slug/',
-            publisher: {
-                '@type': 'Organization',
-                name: 'Site Title',
-                url: 'http://mysite.com',
-                logo: {
-                    '@type': 'ImageObject',
-                    url: 'http://mysite.com/author/image/url/logo.jpg',
-                    width: 500,
-                    height: 500
-                }
-            },
-            url: 'http://mysite.com/post/my-amp-post-slug/'
         });
         done();
     });
