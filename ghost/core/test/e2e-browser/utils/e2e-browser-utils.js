@@ -1,3 +1,4 @@
+const constants = require('../../utils/fixtures/constants');
 const DataGenerator = require('../../utils/fixtures/data-generator');
 const {expect, test} = require('@playwright/test');
 const ObjectID = require('bson-objectid').default;
@@ -40,10 +41,10 @@ const setupGhost = async (page) => {
     ]);
 
     // Add owner user data from usual fixture
-    const ownerUser = DataGenerator.Content.users.find(user => user.id === '1');
+    const ownerUser = DataGenerator.Content.users.find(user => user.id === constants.OWNER_USER_ID);
 
     if (action === actions.signin) {
-        await signInAsUserById(page, '1');
+        await signInAsUserById(page, constants.OWNER_USER_ID);
     } else if (action === actions.setup) {
         // Complete setup process
         await page.getByPlaceholder('The Daily Awesome').click();
