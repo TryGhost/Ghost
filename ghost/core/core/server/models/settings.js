@@ -292,25 +292,12 @@ Settings = ghostBookshelf.Model.extend({
 
             // fetch other data that is used when inserting new settings
             const date = ghostBookshelf.knex.raw('CURRENT_TIMESTAMP');
-            let owner;
-            try {
-                owner = await ghostBookshelf.model('User').getOwnerUser();
-            } catch (e) {
-                // in some tests the owner is deleted and not recreated before setup
-                if (e.errorType === 'NotFoundError') {
-                    owner = {id: 1};
-                } else {
-                    throw e;
-                }
-            }
 
             const settingsDataToInsert = settingsToInsert.map((setting) => {
                 const settingValues = Object.assign({}, setting, {
                     id: ObjectID().toHexString(),
                     created_at: date,
-                    created_by: owner.id,
-                    updated_at: date,
-                    updated_by: owner.id
+                    updated_at: date
                 });
 
                 return _.pick(settingValues, columns);

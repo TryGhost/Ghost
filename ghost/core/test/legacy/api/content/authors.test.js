@@ -30,8 +30,7 @@ describe('Authors Content API', function () {
             email: 'bruteforcepasswordtestuser@example.com',
             password: hashedPassword,
             status: 'active',
-            created_at: '2019-01-01 00:00:00',
-            created_by: '1'
+            created_at: '2019-01-01 00:00:00'
         });
 
         const {id: postId} = await testUtils.knex('posts').first('id').where('slug', 'welcome');
@@ -70,8 +69,7 @@ describe('Authors Content API', function () {
             email: userEmail,
             password: hashedPassword,
             status: 'active',
-            created_at: '2019-01-01 00:00:00',
-            created_by: '1'
+            created_at: '2019-01-01 00:00:00'
         });
 
         const {id: postId} = await testUtils.knex('posts').first('id').where('slug', 'welcome');

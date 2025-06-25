@@ -180,9 +180,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                 mobiledoc: snippet.mobiledoc,
                 lexical: snippet.lexical,
                 created_at: snippet.created_at,
-                updated_at: snippet.updated_at,
-                created_by: snippet.created_by,
-                updated_by: snippet.updated_by
+                updated_at: snippet.updated_at
             });
         });
     });

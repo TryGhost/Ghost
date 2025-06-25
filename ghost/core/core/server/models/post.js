@@ -601,6 +601,28 @@ Post = ghostBookshelf.Model.extend({
             }
         }
 
+        // CASE: Force a change for scheduled posts within 2 minutes of
+        // publishing. This ensures the scheduler can detect last-minute
+        // touches to the post
+        const isScheduled = newStatus === 'scheduled';
+        const isUpdate = options.method === 'update';
+        const isWithin2Minutes = publishedAt && moment(publishedAt).diff(moment(), 'minutes') <= 2;
+        const isNotImporting = !options.importing;
+        const isNotMigrating = !options.migrating;
+
+        if (isScheduled && isUpdate && isWithin2Minutes && isNotImporting && isNotMigrating) {
+            // Check if no actual changes have been made
+            if (!this.changed || Object.keys(this.changed).length === 0) {
+                // Force a "touch" by setting a dummy property that will be stored in _changed
+                this.set('_touch', true);
+                // Immediately unset it so it doesn't get saved to the database
+                this.unset('_touch');
+                // But ensure the changed object still has it for event detection
+                this.changed = this.changed || {};
+                this.changed._touch = true;
+            }
+        }
+
         // CASE: detect lowercase/uppercase tag slugs
         if (!_.isUndefined(this.get('tags')) && !_.isNull(this.get('tags'))) {
             tagsToSave = [];
@@ -952,14 +974,6 @@ Post = ghostBookshelf.Model.extend({
         }
 
         return sequence(ops);
-    },
-
-    created_by: function createdBy() {
-        return this.belongsTo('User', 'created_by');
-    },
-
-    updated_by: function updatedBy() {
-        return this.belongsTo('User', 'updated_by');
     },
 
     published_by: function publishedBy() {
