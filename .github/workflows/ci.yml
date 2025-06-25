@@ -840,7 +840,7 @@ jobs:
 
       - name: Wait for Ghost to be ready
         run: |
-          timeout 60 bash -c 'until curl -f http://localhost:2368; do sleep 1; done'
+          timeout 120 bash -c 'until curl -f http://localhost:2368; do sleep 1; done'
 
       - name: Run E2E tests
         run: yarn test:e2e
