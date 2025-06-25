@@ -12,10 +12,6 @@ const features = [{
     description: 'Enables traffic analytics',
     flag: 'trafficAnalytics'
 }, {
-    title: 'Traffic Analytics (alpha)',
-    description: 'Enables alpha stage analytics features',
-    flag: 'trafficAnalyticsAlpha'
-}, {
     title: 'Email customization (internal beta)',
     description: 'Newsletter customization settings that have been released to Ghost\'s own production sites',
     flag: 'emailCustomization'
