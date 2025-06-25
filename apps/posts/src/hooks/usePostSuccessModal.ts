@@ -131,7 +131,7 @@ export const usePostSuccessModal = () => {
             postURL: post.url || '',
             primaryTitle: 'Boom! It\'s out there.',
             secondaryTitle: showPostCount && postCount ? 
-                `That's ${postCount} post${postCount !== 1 ? 's' : ''} published.` : 
+                `That's ${postCount.toLocaleString()} post${postCount !== 1 ? 's' : ''} published.` : 
                 'Spread the word!',
             description: getDescription(),
             featureImageURL: post.feature_image || '',
