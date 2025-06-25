@@ -102,7 +102,6 @@ class MembersImporter extends TableImporter {
             // 40% of users logged in within a week, 60% sometime since registering
             last_seen_at: luck(40) ? dateToDatabaseString(faker.date.recent(7)) : dateToDatabaseString(faker.date.between(timestamp, new Date())),
             created_at: dateToDatabaseString(timestamp),
-            created_by: id,
             updated_at: dateToDatabaseString(timestamp)
         };
     }

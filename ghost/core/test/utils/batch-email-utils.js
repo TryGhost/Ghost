@@ -1,6 +1,5 @@
 const {fixtureManager, mockManager} = require('./e2e-framework');
 const moment = require('moment');
-const ObjectId = require('bson-objectid').default;
 const models = require('../../core/server/models');
 const sinon = require('sinon');
 const jobManager = require('../../core/server/services/jobs/job-service');
@@ -23,8 +22,6 @@ async function createPublishedPostEmail(agent, settings = {}, email_recipient_fi
         feature_image_caption: 'Testing <b>feature image caption</b>',
         created_at: moment().subtract(2, 'days').toISOString(),
         updated_at: moment().subtract(2, 'days').toISOString(),
-        created_by: ObjectId().toHexString(),
-        updated_by: ObjectId().toHexString(),
         ...settings
     };
 

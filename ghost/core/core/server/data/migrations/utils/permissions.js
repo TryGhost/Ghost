@@ -30,16 +30,24 @@ async function addPermissionHelper(connection, config) {
 
     const date = connection.raw('CURRENT_TIMESTAMP');
 
-    await connection('permissions').insert({
+    const data = {
         id: ObjectId().toHexString(),
         name: config.name,
         action_type: config.action,
         object_type: config.object,
         created_at: date,
-        created_by: MIGRATION_USER,
-        updated_at: date,
-        updated_by: MIGRATION_USER
-    });
+        updated_at: date
+    };
+
+    if (await connection.schema.hasColumn('permissions', 'created_by')) {
+        data.created_by = MIGRATION_USER;
+    }
+
+    if (await connection.schema.hasColumn('permissions', 'updated_by')) {
+        data.updated_by = MIGRATION_USER;
+    }
+
+    await connection('permissions').insert(data);
 }
 
 /**

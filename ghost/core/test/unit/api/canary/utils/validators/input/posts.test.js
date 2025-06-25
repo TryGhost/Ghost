@@ -124,8 +124,6 @@ describe('Unit: endpoints/utils/validators/input/posts', function () {
                             authors: [{id: 'correct'}],
                             id: 'strip me',
                             created_at: 'strip me',
-                            created_by: 'strip me',
-                            updated_by: 'strip me',
                             published_by: 'strip me'
                         }]
                     }
@@ -137,8 +135,6 @@ describe('Unit: endpoints/utils/validators/input/posts', function () {
                 should.exist(frame.data.posts[0].authors);
                 should.not.exist(frame.data.posts[0].id);
                 should.not.exist(frame.data.posts[0].created_at);
-                should.not.exist(frame.data.posts[0].created_by);
-                should.not.exist(frame.data.posts[0].updated_by);
                 should.not.exist(frame.data.posts[0].published_by);
 
                 return result;

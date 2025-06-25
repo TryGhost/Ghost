@@ -32,8 +32,7 @@ class TagsImporter extends TableImporter {
             name: name,
             slug: slugify(name),
             description: faker.lorem.sentence(),
-            created_at: dateToDatabaseString(faker.date.between(threeYearsAgo, twoYearsAgo)),
-            created_by: this.users[faker.datatype.number(this.users.length - 1)].id
+            created_at: dateToDatabaseString(faker.date.between(threeYearsAgo, twoYearsAgo))
         };
     }
 }

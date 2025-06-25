@@ -188,9 +188,7 @@ async function setupPermissionsDb() {
             \`action_type\` varchar(50) not null,
             \`object_id\` varchar(24) null,
             \`created_at\` datetime not null,
-            \`created_by\` varchar(24) not null,
             \`updated_at\` datetime null,
-            \`updated_by\` varchar(24) null,
             primary key (\`id\`)
         );
     `);
@@ -211,9 +209,7 @@ async function setupPermissionsDb() {
             \`name\` varchar(50) not null,
             \`description\` varchar(2000) null,
             \`created_at\` datetime not null,
-            \`created_by\` varchar(24) not null,
             \`updated_at\` datetime null,
-            \`updated_by\` varchar(24) null,
             primary key (\`id\`)
         );
     `);
@@ -225,9 +221,7 @@ async function setupPermissionsDb() {
         name: 'Role Name',
         description: 'Role description',
         created_at: date,
-        created_by: utils.meta.MIGRATION_USER,
-        updated_at: date,
-        updated_by: utils.meta.MIGRATION_USER
+        updated_at: date
     });
 
     await knex('roles').insert({
@@ -235,9 +229,7 @@ async function setupPermissionsDb() {
         name: 'Other Role Name',
         description: 'Other Role description',
         created_at: date,
-        created_by: utils.meta.MIGRATION_USER,
-        updated_at: date,
-        updated_by: utils.meta.MIGRATION_USER
+        updated_at: date
     });
 
     await knex('permissions').insert({
@@ -246,9 +238,7 @@ async function setupPermissionsDb() {
         action_type: 'action',
         object_type: 'object',
         created_at: date,
-        created_by: utils.meta.MIGRATION_USER,
-        updated_at: date,
-        updated_by: utils.meta.MIGRATION_USER
+        updated_at: date
     });
 
     return knex;
@@ -273,9 +263,7 @@ async function setupSettingsDb() {
             \`type\` varchar(50) not null,
             \`flags\` varchar(50) null,
             \`created_at\` datetime not null,
-            \`created_by\` varchar(24) not null,
             \`updated_at\` datetime null,
-            \`updated_by\` varchar(24) null,
             primary key (\`id\`)
         );
     `);
@@ -670,8 +658,7 @@ describe('migrations/utils/settings', function () {
                 type: 'string',
                 group: 'test_group',
                 flags: 'PUBLIC',
-                created_at: knex.raw('CURRENT_TIMESTAMP'),
-                created_by: 1
+                created_at: knex.raw('CURRENT_TIMESTAMP')
             });
 
             const allSettingsAtStart = await knex('settings').select();

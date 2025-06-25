@@ -746,7 +746,6 @@
                     "type": "post",
                     "status": "published",
                     "visibility": "public",
-                    "created_by": "1",
                     "published_by": "1"
                 },
                 {
@@ -757,7 +756,6 @@
                     "type": "page",
                     "status": "published",
                     "visibility": "public",
-                    "created_by": "1",
                     "published_by": "1"
                 }
             ]

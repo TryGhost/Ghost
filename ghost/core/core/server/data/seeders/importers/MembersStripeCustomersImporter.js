@@ -51,8 +51,7 @@ class MembersStripeCustomersImporter extends TableImporter {
             })}`,
             name: this.model.name,
             email: this.model.email,
-            created_at: this.model.created_at,
-            created_by: 'unused'
+            created_at: this.model.created_at
         };
     }
 }

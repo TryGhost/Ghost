@@ -44,7 +44,6 @@ async function getKnexInstance() {
         table.string('secret');
         table.string('integration_id');
         table.datetime('created_at');
-        table.string('created_by');
     });
 
     await knexInstance.insert({

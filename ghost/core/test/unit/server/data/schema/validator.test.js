@@ -23,14 +23,14 @@ describe('Validate Schema', function () {
                         throw err;
                     }
 
-                    err.length.should.eql(6);
+                    err.length.should.eql(5);
 
                     const errorMessages = _.map(err, function (object) {
                         return object.message;
                     }).join(',');
 
                     // NOTE: Some of these fields are auto-filled in the model layer (e.g. created_at, created_at etc.)
-                    ['id', 'uuid', 'slug', 'title', 'created_at', 'created_by'].forEach(function (attr) {
+                    ['id', 'uuid', 'slug', 'title', 'created_at'].forEach(function (attr) {
                         errorMessages.should.match(new RegExp('posts.' + attr));
                     });
                 });

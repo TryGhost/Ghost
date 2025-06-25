@@ -287,9 +287,7 @@ class Base {
         _.each(this.dataToImport, (obj) => {
             _.each([
                 'author_id',
-                'published_by',
-                'created_by',
-                'updated_by'
+                'published_by'
             ], (key) => {
                 return handleObject(obj, key);
             });

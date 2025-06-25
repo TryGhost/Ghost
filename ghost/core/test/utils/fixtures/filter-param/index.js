@@ -39,24 +39,21 @@ data.tags = [
     {
         id: ObjectId().toHexString(),
         name: 'Getting Started',
-        slug: 'getting-started',
-        created_by: data.users[0].id
+        slug: 'getting-started'
     },
     {
         id: ObjectId().toHexString(),
         name: 'photo',
         slug: 'photo',
         feature_image: 'some/image/path.jpg',
-        description: 'Photo posts',
-        created_by: data.users[1].id
+        description: 'Photo posts'
     },
     {
         id: ObjectId().toHexString(),
         name: 'Video',
         slug: 'video',
         feature_image: 'some/image/path.jpg',
-        description: 'Video posts',
-        created_by: data.users[0].id
+        description: 'Video posts'
     },
     {
         id: ObjectId().toHexString(),
@@ -64,20 +61,17 @@ data.tags = [
         slug: 'hash-audio',
         feature_image: 'some/image/path.jpg',
         description: 'Audio posts',
-        visibility: 'internal',
-        created_by: data.users[0].id
+        visibility: 'internal'
     },
     {
         id: ObjectId().toHexString(),
         name: 'No Posts',
-        slug: 'no-posts',
-        created_by: data.users[1].id
+        slug: 'no-posts'
     },
     {
         id: ObjectId().toHexString(),
         name: 'Special',
-        slug: 'special',
-        created_by: data.users[1].id
+        slug: 'special'
     }
 ];
 

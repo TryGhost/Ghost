@@ -22,8 +22,7 @@ class UsersImporter extends TableImporter {
             password: await security.password.hash(faker.color.human()),
             email: faker.internet.email(name),
             profile_image: faker.internet.avatar(),
-            created_at: dateToDatabaseString(faker.date.between(new Date(2016, 0), new Date())),
-            created_by: 'unused'
+            created_at: dateToDatabaseString(faker.date.between(new Date(2016, 0), new Date()))
         };
     }
 }

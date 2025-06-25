@@ -53,9 +53,7 @@ const expectedProperties = {
             'password',
             'email',
             'created_at',
-            'created_by',
             'updated_at',
-            'updated_by',
             'last_seen',
             'status'
         )
@@ -80,8 +78,6 @@ _.each(expectedProperties, (value, key) => {
      */
     expectedProperties[key] = value
         .without(
-            'created_by',
-            'updated_by',
             'published_by'
         )
         .value();

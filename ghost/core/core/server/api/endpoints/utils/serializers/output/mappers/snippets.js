@@ -14,9 +14,7 @@ module.exports = (snippet, frame) => {
         mobiledoc: json.mobiledoc,
         lexical: json.lexical,
         created_at: json.created_at,
-        updated_at: json.updated_at,
-        created_by: json.created_by,
-        updated_by: json.updated_by
+        updated_at: json.updated_at
     };
 };
 
@@ -28,8 +26,6 @@ module.exports = (snippet, frame) => {
  * @prop {string} [lexical]
  * @prop {string} created_at
  * @prop {string} updated_at
- * @prop {string} created_by
- * @prop {string} updated_by
  */
 
 /**
