@@ -77,7 +77,7 @@ select `newsletters`.*, `members_newsletters`.`member_id` as `_pivot_member_id`,
 
 Then we update the member:
 ```
-update `members` set `uuid` = ?, `transient_id` = ?, `email` = ?, `status` = ?, `name` = ?, `expertise` = ?, `note` = ?, `geolocation` = ?, `enable_comment_notifications` = ?, `email_count` = ?, `email_opened_count` = ?, `email_open_rate` = ?, `email_disabled` = ?, `last_seen_at` = ?, `last_commented_at` = ?, `created_at` = ?, `created_by` = ?, `updated_at` = ?, `updated_by` = ? where `id` = ? trx34
+update `members` set `uuid` = ?, `transient_id` = ?, `email` = ?, `status` = ?, `name` = ?, `expertise` = ?, `note` = ?, `geolocation` = ?, `enable_comment_notifications` = ?, `email_count` = ?, `email_opened_count` = ?, `email_open_rate` = ?, `email_disabled` = ?, `last_seen_at` = ?, `last_commented_at` = ?, `created_at` = ?, `updated_at` = ? where `id` = ? trx34
 ```
 
 Then we select the member by ID again to get the freshly updated values from the DB:
