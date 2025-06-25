@@ -154,43 +154,11 @@ module.exports = class CommentsController {
     }
 
     /**
-     * Validates and sanitizes the created_at timestamp
-     * @param {any} createdAt - The created_at value to validate
-     * @returns {Date|undefined} - Valid Date object or undefined if invalid/not provided
-     */
-    #validateCreatedAt(createdAt) {
-        if (!createdAt) {
-            return undefined;
-        }
-
-        let date;
-        if (createdAt instanceof Date) {
-            date = createdAt;
-        } else if (typeof createdAt === 'string') {
-            // Validate ISO-8601 format and convert to Date
-            date = new Date(createdAt);
-        } else {
-            // Invalid type, return undefined to use default timestamp
-            return undefined;
-        }
-
-        // Check if the date is valid and not in the future
-        if (isNaN(date.getTime()) || date > new Date()) {
-            return undefined;
-        }
-
-        return date;
-    }
-
-    /**
      * @param {Frame} frame
      */
     async add(frame) {
         this.#checkMember(frame);
         const data = frame.data.comments[0];
-
-        // Validate and sanitize the created_at timestamp
-        const validatedCreatedAt = this.#validateCreatedAt(data.created_at);
 
         let result;
         if (data.parent_id) {
@@ -199,16 +167,14 @@ module.exports = class CommentsController {
                 data.in_reply_to_id,
                 frame.options.context.member.id,
                 data.html,
-                frame.options,
-                validatedCreatedAt
+                frame.options
             );
         } else {
             result = await this.service.commentOnPost(
                 data.post_id,
                 frame.options.context.member.id,
                 data.html,
-                frame.options,
-                validatedCreatedAt
+                frame.options
             );
         }
 
