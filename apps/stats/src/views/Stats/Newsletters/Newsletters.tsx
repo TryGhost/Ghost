@@ -7,7 +7,7 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 import {Navigate, useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
@@ -82,12 +82,10 @@ const NewsletterTableRows: React.FC<{
                                 <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
                                     navigate(`/posts/analytics/beta/${post.post_id}/`, {crossApp: true});
                                 }}>
-                                    <LucideIcon.Mail className='text-muted-foreground' size='16' strokeWidth={1.5} />
                                     {post.post_title}
                                 </Button>
                                 :
                                 <>
-                                    <LucideIcon.Mail className='text-muted-foreground' size='16' strokeWidth={1.5} />
                                     {post.post_title}
                                 </>
                             }

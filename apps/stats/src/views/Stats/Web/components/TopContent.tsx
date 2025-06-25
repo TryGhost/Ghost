@@ -54,19 +54,20 @@ const TopContentTable: React.FC<TopContentTableProps> = ({tableHeader = false, d
                 {data?.map((row: UnifiedContentData) => {
                     // Only make posts clickable (not pages), since there's no analytics route for pages
                     const isClickable = row.post_id && row.post_type === 'post';
+                    const clickHandler = isClickable ? getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type) : () => {};
 
                     return (
                         <DataListRow
                             key={row.pathname}
                             className={`group/row ${isClickable && 'hover:cursor-pointer'}`}
-                            onClick={getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type)}
+                            onClick={clickHandler}
                         >
                             <DataListBar style={{
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
                             }} />
                             <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
-                                <div className='flex items-center space-x-4 overflow-hidden'>
-                                    <div className={`truncate font-medium ${isClickable && 'group-hover/row:underline'}`}>
+                                <div className='flex items-center space-x-2 overflow-hidden'>
+                                    <div className={`truncate font-medium ${isClickable ? 'group-hover/row:underline' : ''}`}>
                                         {row.title}
                                     </div>
                                 </div>
