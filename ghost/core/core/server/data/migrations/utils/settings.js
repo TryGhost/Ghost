@@ -28,16 +28,25 @@ function addSetting({key, value, type, group, flags = null}) {
             logging.info(`Adding setting: ${key}`);
             const now = connection.raw('CURRENT_TIMESTAMP');
 
-            return connection('settings')
-                .insert({
-                    id: ObjectId().toHexString(),
-                    key,
-                    value,
-                    group,
-                    type,
-                    flags,
-                    created_at: now
-                });
+            const data = {
+                id: ObjectId().toHexString(),
+                key,
+                value,
+                group,
+                type,
+                flags,
+                created_at: now
+            };
+
+            if (await connection.schema.hasColumn('settings', 'created_by')) {
+                data.created_by = MIGRATION_USER;
+            }
+
+            if (await connection.schema.hasColumn('settings', 'updated_by')) {
+                data.updated_by = MIGRATION_USER;
+            }
+
+            return connection('settings').insert(data);
         },
         async function down(connection) {
             const settingExists = await connection('settings')
