@@ -73,7 +73,7 @@ interface APAvatarProps {
 const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, disabled = false, className = '', showFollowButton = false}) => {
     let iconSize = 20;
     let containerClass = `shrink-0 items-center justify-center rounded-full relative z-10 flex bg-black/5 dark:bg-gray-900 ${size === 'lg' || disabled ? '' : 'cursor-pointer'} ${className}`;
-    let imageClass = 'z-10 object-cover rounded-full';
+    let imageClass = 'z-10 object-cover rounded-full outline outline-[0.5px] outline-offset-[-0.5px] outline-black/10';
     const [iconUrl, setIconUrl] = useState(author?.icon?.url);
     const navigate = useNavigate();
     const {isEnabled} = useFeatureFlags();
@@ -127,6 +127,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
         imageClass = clsx('size-[60px]', imageClass);
         break;
     case 'lg':
+        iconSize = 32;
         containerClass = clsx('size-22', containerClass);
         imageClass = clsx('size-22', imageClass);
         break;
