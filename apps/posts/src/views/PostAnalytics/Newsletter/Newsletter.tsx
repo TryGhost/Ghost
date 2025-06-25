@@ -3,7 +3,7 @@ import Feedback from './components/Feedback';
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, HTable, Input, LucideIcon, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, Input, LucideIcon, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
 import {NewsletterRadialChart, NewsletterRadialChartData} from './components/NewsLetterRadialChart';
 import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {getLinkById} from '@src/utils/link-helpers';
@@ -350,7 +350,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                         }
                     </Card>
                     {shouldShowFeedback && <Feedback feedbackStats={feedbackStats} />}
-                    <Card>
+                    <Card className='group/datalist'>
                         <div className='flex items-center justify-between p-6'>
                             <CardHeader className='p-0'>
                                 <CardTitle>Newsletter clicks</CardTitle>
@@ -366,64 +366,74 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             :
                             <CardContent className='pb-0'>
                                 <Separator />
-                                {topLinks.length > 0 ?
-                                    <div className='flex w-full flex-col py-3'>
-                                        {paginatedTopLinks?.map((row) => {
-                                            const linkId = row.link.link_id;
-                                            const title = row.link.title;
-                                            const url = row.link.to;
-                                            const edited = row.link.edited;
+                                {topLinks.length > 0
+                                    ?
+                                    <DataList className="">
+                                        <DataListBody>
+                                            {paginatedTopLinks?.map((link) => {
+                                                const percentage = stats.clicked > 0 ? link.count / stats.clicked : 0;
+                                                const linkId = link.link.link_id;
+                                                const title = link.link.title;
+                                                const url = link.link.to;
+                                                const edited = link.link.edited;
 
-                                            return (
-                                                <div key={linkId} className='flex h-10 w-full items-center justify-between gap-3 rounded-sm border-none px-2 text-sm hover:cursor-pointer hover:bg-accent'>
-                                                    <div className='flex grow items-center gap-2 overflow-hidden'>
-                                                        {editingLinkId === linkId ? (
-                                                            <div ref={containerRef} className='flex w-full items-center gap-2'>
-                                                                <Input
-                                                                    ref={inputRef}
-                                                                    className="h-7 w-full border-border bg-background text-sm"
-                                                                    value={editedUrl}
-                                                                    onChange={e => setEditedUrl(e.target.value)}
-                                                                />
-                                                                <Button
-                                                                    size='sm'
-                                                                    onClick={handleUpdate}
-                                                                >
-                                                                        Update
-                                                                </Button>
-                                                            </div>
-                                                        ) : (
-                                                            <>
-                                                                <Button
-                                                                    className='shrink-0 bg-background'
-                                                                    size='sm'
-                                                                    variant='outline'
-                                                                    onClick={() => handleEdit(linkId)}
-                                                                >
-                                                                    <LucideIcon.Pen />
-                                                                </Button>
-                                                                <a
-                                                                    className='block truncate font-medium hover:underline'
-                                                                    href={url}
-                                                                    rel="noreferrer"
-                                                                    target='_blank'
-                                                                    title={title}
-                                                                >
-                                                                    {title}
-                                                                </a>
-                                                                {edited && (
-                                                                    <span className='text-xs text-gray-500'>(edited)</span>
-                                                                )}
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                    <div className='font-mono'>
-                                                        {formatNumber(row.count)}
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
+                                                return (
+                                                    <DataListRow key={linkId}>
+                                                        {editingLinkId !== linkId &&
+                                                            <DataListBar style={{
+                                                                width: `${percentage ? Math.round(percentage * 100) : 0}%`
+                                                            }} />
+                                                        }
+                                                        <DataListItemContent className='w-full'>
+                                                            {editingLinkId === linkId ? (
+                                                                <div ref={containerRef} className='flex w-full items-center gap-2'>
+                                                                    <Input
+                                                                        ref={inputRef}
+                                                                        className="z-50 h-7 w-full border-border bg-background text-sm"
+                                                                        value={editedUrl}
+                                                                        onChange={e => setEditedUrl(e.target.value)}
+                                                                    />
+                                                                    <Button
+                                                                        size='sm'
+                                                                        onClick={handleUpdate}
+                                                                    >
+                                                                            Update
+                                                                    </Button>
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    <Button
+                                                                        className='mr-2 shrink-0 bg-background'
+                                                                        size='sm'
+                                                                        variant='outline'
+                                                                        onClick={() => handleEdit(linkId)}
+                                                                    >
+                                                                        <LucideIcon.Pen />
+                                                                    </Button>
+                                                                    <a
+                                                                        className='block truncate font-medium hover:underline'
+                                                                        href={url}
+                                                                        rel="noreferrer"
+                                                                        target='_blank'
+                                                                        title={title}
+                                                                    >
+                                                                        {title}
+                                                                    </a>
+                                                                    {edited && (
+                                                                        <span className='text-xs text-gray-500'>(edited)</span>
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                        </DataListItemContent>
+                                                        <DataListItemValue>
+                                                            <DataListItemValueAbs>{formatNumber(link.count || 0)}</DataListItemValueAbs>
+                                                            <DataListItemValuePerc>{formatPercentage(percentage)}</DataListItemValuePerc>
+                                                        </DataListItemValue>
+                                                    </DataListRow>
+                                                );
+                                            })}
+                                        </DataListBody>
+                                    </DataList>
                                     :
                                     <div className='py-20 text-center text-sm text-gray-700'>
                                         You have no links in your post.
