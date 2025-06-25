@@ -127,8 +127,7 @@ export class ActivityPubService {
                 name: `ActivityPub ${expectedWebhook.event} Webhook`,
                 secret: secret,
                 integration_id: integration.id,
-                created_at: this.knex.raw('current_timestamp'),
-                created_by: '1'
+                created_at: this.knex.raw('current_timestamp')
             };
         });
 
