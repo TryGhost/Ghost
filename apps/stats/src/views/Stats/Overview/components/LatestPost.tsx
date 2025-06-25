@@ -171,7 +171,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                 }
 
                                 {/* Email metrics - show for email posts */}
-                                {metricsToShow.showEmailMetrics && appSettings?.newslettersEnabled && latestPostStats.email && (
+                                {metricsToShow.showEmailMetrics && latestPostStats.email && (
                                     <>
                                         {/* Show open rate - always display if email exists */}
                                         <div className={metricClassName} onClick={() => {
