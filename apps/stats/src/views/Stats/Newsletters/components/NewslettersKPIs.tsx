@@ -252,7 +252,7 @@ const NewsletterKPIs: React.FC<{
                             </div>
                             :
                             <>
-                                <ChartContainer className='max-h-[320px] min-h-[180px] w-full' config={barChartConfig}>
+                                <ChartContainer className='aspect-auto h-[200px] w-full md:h-[220px] xl:h-[320px]' config={barChartConfig}>
                                     <Recharts.BarChart
                                         className={isHoveringClickable ? '!cursor-pointer' : ''}
                                         data={avgsData}

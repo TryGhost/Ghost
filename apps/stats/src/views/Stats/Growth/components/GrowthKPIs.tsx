@@ -353,7 +353,7 @@ const GrowthKPIs: React.FC<{
                             />
                         </TabsContent>
                         <TabsContent value="change">
-                            <ChartContainer className='mt-6 max-h-[280px] min-h-[180px] w-full' config={paidChangeChartConfig}>
+                            <ChartContainer className='mt-6 aspect-auto h-[200px] w-full md:h-[220px] xl:h-[260px]' config={paidChangeChartConfig}>
                                 <Recharts.BarChart
                                     data={paidChangeChartData}
                                     stackOffset='sign'
