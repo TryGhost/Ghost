@@ -23,6 +23,7 @@ Invite = ghostBookshelf.Model.extend({
 
     actionsCollectCRUD: true,
     actionsResourceType: 'invite',
+    actionsExtraContext: ['email', 'status', 'role_id'],
 
     toJSON: function (unfilteredOptions) {
         const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, unfilteredOptions);
