@@ -25,7 +25,8 @@ const LimitService = require('@tryghost/limit-service');
 const limitService = new LimitService();
 
 // setup limit configuration
-// currently supported limit keys are: staff, members, customThemes, customIntegrations, uploads
+// currently supported limit keys are: staff, members, customThemes, customIntegrations, uploads,
+// limitStripeConnect, limitAnalytics, and limitActivityPub
 // all limit configs support custom "error" configuration that is a template string
 const limits = {
     // staff and member are "max" type of limits accepting "max" configuration
@@ -65,7 +66,10 @@ const limits = {
         max: 5000000,
         // formatting of the {{ max }} vairable is in MB, e.g: 5MB
         error: 'Your plan supports uploads of max size up to {{max}}. Please upgrade to reenable uploading.'
-    }
+    },
+    limitStripeConnect: {},
+    limitAnalytics: {},
+    limitActivityPub: {}
 };
 
 // This information is needed for the limit service to work with "max periodic" limits
@@ -160,9 +164,9 @@ At the moment there are four different types of limits that limit service allows
 4. `allowList` - checks if provided value is defined in configured "allowlist". Example usecase: "disable theme activation if it is not an official theme". To configure this limit define ` allowlist: ['VALUE_1', 'VALUE_2', 'VALUE_N']` property in the "limits" parameter.
 
 ### Supported limits
-There's a limited amount of limits that are supported by limit service. The are defined by "key" property name in the "config" module. List of currently supported limit names: `members`, `staff`, `customIntegrations`, `emails`, `customThemes`, `uploads`.
+There's a limited amount of limits that are supported by limit service. The are defined by "key" property name in the "config" module. List of currently supported limit names: `members`, `staff`, `customIntegrations`, `emails`, `customThemes`, `uploads`, `limitStripeConnect`, `limitAnalytics`, and `limitActivityPub`.
 
-All limits can act as `flag` or `allowList` types. Only certain (`members`, `staff`, and`customIntegrations`) can have a `max` limit. Only `emails` currently supports the `maxPeriodic` type of limit.
+All limits can act as `flag` or `allowList` types. Only certain (`members`, `staff`) can have a `max` limit. Only `emails` currently supports the `maxPeriodic` type of limit.
 
 ### Frontend usage
 In case the limit check is run without direct access to the database you can override `currentCountQuery` functions for each "max" or "maxPeriodic" type of limit. An example usecase would be a frontend client running in a browser. A browser client can check the limit data through HTTP request and then provide that data to the limit service. Example code to do exactly that:

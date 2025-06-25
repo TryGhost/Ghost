@@ -25,7 +25,7 @@ describe('Limit Service', function () {
             const config = {
                 disabled: true
             };
-            const limit = new FlagLimit({name: 'flaggy', config, errors});
+            const limit = new FlagLimit({name: 'limitFlaggy', config, errors});
 
             try {
                 await limit.errorIfWouldGoOverLimit();
@@ -37,7 +37,7 @@ describe('Limit Service', function () {
                 should.equal(err.errorType, 'HostLimitError');
 
                 should.exist(err.errorDetails);
-                should.equal(err.errorDetails.name, 'flaggy');
+                should.equal(err.errorDetails.name, 'limitFlaggy');
 
                 should.exist(err.message);
                 should.equal(err.message, 'Your plan does not support flaggy. Please upgrade to enable flaggy.');
