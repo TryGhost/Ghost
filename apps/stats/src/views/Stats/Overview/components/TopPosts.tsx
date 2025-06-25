@@ -47,7 +47,9 @@ const TopPosts: React.FC<TopPostsProps> = ({
                             {showOpenRate &&
                                 <TableHead className='w-[12%] whitespace-nowrap text-right'>Open rate</TableHead>
                             }
-                            <TableHead className='w-[12%] text-right'>Members</TableHead>
+                            {appSettings?.analytics.membersTrackSources &&
+                                <TableHead className='w-[12%] text-right'>Members</TableHead>
+                            }
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -69,13 +71,20 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                     {showOpenRate &&
                                     <TableCell className='w-[12%] group-hover:bg-transparent'><Skeleton /></TableCell>
                                     }
+                                    {appSettings?.analytics.membersTrackSources &&
                                     <TableCell className='w-[12%] group-hover:bg-transparent'><Skeleton /></TableCell>
+                                    }
                                 </TableRow>
                             ))
                             :
                             <>
                                 <TableRow className='border-none'>
-                                    <TableCell className='pointer-events-none !h-2 !p-0' colSpan={4}></TableCell>
+                                    <TableCell className='pointer-events-none !h-2 !p-0' colSpan={
+                                        1 + // Post title column
+                                        (appSettings?.analytics.webAnalytics ? 1 : 0) + // Visitors column
+                                        (appSettings?.newslettersEnabled ? 1 : 0) + // Open rate column
+                                        (appSettings?.analytics.membersTrackSources ? 1 : 0) // Members column
+                                    }></TableCell>
                                 </TableRow>
                                 {topPostsData?.stats?.map((post: TopPostViewsStats) => (
                                     <TableRow key={post.post_id} className='border-none hover:cursor-pointer' onClick={() => {
@@ -106,16 +115,23 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                             {post.open_rate ? `${Math.round(post.open_rate)}%` : <>&mdash;</>}
                                         </TableCell>
                                         }
+                                        {appSettings?.analytics.membersTrackSources &&
                                         <TableCell className='text-right font-mono'>
                                             {post.members > 0 ? `+${formatNumber(post.members)}` : '0'}
                                         </TableCell>
+                                        }
                                     </TableRow>
                                 ))}
                                 {(!topPostsData?.stats || topPostsData.stats.length === 0) && (
                                     <TableRow>
                                         <TableHead
                                             className='text-center font-normal text-muted-foreground'
-                                            colSpan={4}
+                                            colSpan={
+                                                1 + // Post title column
+                                                (appSettings?.analytics.webAnalytics ? 1 : 0) + // Visitors column
+                                                (appSettings?.newslettersEnabled ? 1 : 0) + // Open rate column
+                                                (appSettings?.analytics.membersTrackSources ? 1 : 0) // Members column
+                                            }
                                         >
                                     No data for the selected period
                                         </TableHead>
