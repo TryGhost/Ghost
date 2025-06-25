@@ -6,6 +6,7 @@ import {useMemo} from 'react';
 
 export type UsersHook = {
     totalUsers: number;
+    totalInvites: number;
     users: User[];
     invites: UserInvite[];
     ownerUser: User;
@@ -16,7 +17,9 @@ export type UsersHook = {
     currentUser: User|null;
     isLoading: boolean;
     hasNextPage?: boolean;
+    invitesHasNextPage?: boolean;
     fetchNextPage: () => void;
+    fetchNextInvitePage: () => void;
 };
 
 function getUsersByRole(users: User[], role: string): User[] {
@@ -42,7 +45,11 @@ function getOwnerUser(users: User[]): User {
 const useStaffUsers = (): UsersHook => {
     const {currentUser} = useGlobalData();
     const {data: {users, meta, isEnd} = {users: []}, isLoading: usersLoading, fetchNextPage} = useBrowseUsers();
-    const {data: {invites} = {invites: []}, isLoading: invitesLoading} = useBrowseInvites();
+    const {
+        data: {invites, meta: invitesMeta, isEnd: invitesIsEnd} = {invites: []}, 
+        isLoading: invitesLoading, 
+        fetchNextPage: fetchNextInvitePage
+    } = useBrowseInvites();
     const {data: {roles} = {}, isLoading: rolesLoading} = useBrowseRoles();
 
     const ownerUser = useMemo(() => getOwnerUser(users), [users]);
@@ -62,6 +69,7 @@ const useStaffUsers = (): UsersHook => {
 
     return {
         totalUsers: meta?.pagination.total || 0,
+        totalInvites: invitesMeta?.pagination.total || 0,
         users,
         ownerUser,
         adminUsers,
@@ -72,7 +80,9 @@ const useStaffUsers = (): UsersHook => {
         invites: mappedInvites,
         isLoading: usersLoading || invitesLoading || rolesLoading,
         hasNextPage: isEnd === false,
-        fetchNextPage
+        invitesHasNextPage: invitesIsEnd === false,
+        fetchNextPage,
+        fetchNextInvitePage
     };
 };
 
