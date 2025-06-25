@@ -107,7 +107,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
         });
     }, [processedData, totalVisitors]);
 
-    const topSources = extendedData.slice(0, 10);
+    const topSources = extendedData.slice(0, 11);
 
     // Generate description based on mode and range
     const title = 'Top sources';
@@ -150,7 +150,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                     </div>
                 )}
             </CardContent>
-            {extendedData.length > 10 &&
+            {extendedData.length > 11 &&
                 <CardFooter>
                     <Sheet>
                         <SheetTrigger asChild>

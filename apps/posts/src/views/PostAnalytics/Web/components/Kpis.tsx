@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import {Card, CardContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, sanitizeChartData} from '@tryghost/shade';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
-import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useSearchParams} from '@tryghost/admin-x-framework';
 
 export type KpiMetric = {
@@ -40,10 +39,10 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
 
 interface KpisProps {
     data: KpiDataItem[] | null | undefined;
+    range: number;
 }
 
-const Kpis:React.FC<KpisProps> = ({data}) => {
-    const {range} = useGlobalData();
+const Kpis:React.FC<KpisProps> = ({data, range}) => {
     const [searchParams] = useSearchParams();
     const initialTab = searchParams.get('tab') || 'visits';
     const [currentTab, setCurrentTab] = useState(initialTab);

@@ -93,7 +93,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                         </KpiCard>
                                         <KpiCard className='grow'>
                                             <KpiCardLabel>
-                                                <LucideIcon.CircleDollarSign strokeWidth={1.5} />
+                                                <LucideIcon.Coins strokeWidth={1.5} />
                                             MRR
                                             </KpiCardLabel>
                                             <KpiCardContent>
