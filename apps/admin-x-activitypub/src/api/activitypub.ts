@@ -40,6 +40,20 @@ export interface Thread {
     posts: Post[];
 }
 
+export interface ReplyChainResponse {
+    ancestors: {
+        chain: Post[];
+        hasMore: boolean;
+    };
+    post: Post;
+    children: Array<{
+        post: Post;
+        chain: Post[];
+        hasMore: boolean;
+    }>;
+    next: string | null;
+}
+
 export type ActivityPubCollectionResponse<T> = {data: T[], next: string | null};
 
 export interface GetProfileFollowersResponse {
@@ -111,6 +125,10 @@ export interface GetNotificationsResponse {
     next: string | null;
 }
 
+export interface GetNotificationsCountResponse {
+    count: number;
+}
+
 export interface GetBlockedAccountsResponse {
     accounts: Account[];
     next: string | null;
@@ -132,6 +150,7 @@ export interface Post {
     type: PostType;
     title: string;
     excerpt: string;
+    summary: string | null;
     content: string;
     url: string;
     featureImageUrl: string | null;
@@ -146,13 +165,13 @@ export interface Post {
         name: string;
         url: string;
     }[];
-    author: Pick<Account, 'id' | 'handle' | 'avatarUrl' | 'name' | 'url'>;
+    author: Pick<Account, 'id' | 'handle' | 'avatarUrl' | 'name' | 'url' | 'followedByMe'>;
     authoredByMe: boolean;
     repostCount: number;
     repostedByMe: boolean;
     repostedBy: Pick<
         Account,
-        'id' | 'handle' | 'avatarUrl' | 'name' | 'url'
+        'id' | 'handle' | 'avatarUrl' | 'name' | 'url' | 'followedByMe'
     > | null;
     metadata?: {
         ghostAuthors?: Array<{
@@ -448,6 +467,32 @@ export class ActivityPubAPI {
         };
     }
 
+    async getNotificationsCount(): Promise<GetNotificationsCountResponse> {
+        const url = new URL('.ghost/activitypub/notifications/unread/count', this.apiUrl);
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null) {
+            return {
+                count: 0
+            };
+        }
+
+        const count = typeof (json as Record<string, unknown>).count === 'number'
+            ? (json as {count: number}).count
+            : 0;
+
+        return {count};
+    }
+
+    async resetNotificationsCount() {
+        const url = new URL('.ghost/activitypub/notifications/unread/reset', this.apiUrl);
+
+        await this.fetchJSON(url, 'PUT');
+
+        return true;
+    }
+
     async getBlockedAccounts(next?: string): Promise<GetBlockedAccountsResponse> {
         const url = new URL('.ghost/activitypub/blocks/accounts', this.apiUrl);
         if (next) {
@@ -505,6 +550,15 @@ export class ActivityPubAPI {
         const url = new URL(`.ghost/activitypub/post/${encodeURIComponent(id)}`, this.apiUrl);
         const json = await this.fetchJSON(url);
         return json as Post;
+    }
+
+    async getReplies(postApId: string, next?: string): Promise<ReplyChainResponse> {
+        const url = new URL(`.ghost/activitypub/replies/${encodeURIComponent(postApId)}`, this.apiUrl);
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+        const json = await this.fetchJSON(url);
+        return json as ReplyChainResponse;
     }
 
     async updateAccount({

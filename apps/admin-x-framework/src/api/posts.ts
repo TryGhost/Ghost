@@ -1,9 +1,10 @@
-import {Meta, createQuery, createQueryWithId} from '../utils/api/hooks';
+import {Meta, createQuery, createQueryWithId, createMutation} from '../utils/api/hooks';
 
 export type Email = {
     opened_count: number;
     email_count: number;
-}
+    status?: string;
+};
 
 export type Post = {
     id: string;
@@ -11,10 +12,22 @@ export type Post = {
     slug: string;
     title: string;
     uuid: string;
+    feature_image?: string;
     count?: {
         clicks?: number;
+        positive_feedback?: number;
+        negative_feedback?: number;
     };
     email?: Email;
+    status?: string;
+    published_at?: string;
+    newsletter_id?: string;
+    newsletter?: object;
+    email_only?: boolean;
+    email_segment?: string;
+    email_recipient_filter?: string;
+    send_email_when_published?: boolean;
+    email_stats?: object;
 };
 
 export interface PostsResponseType {
@@ -38,4 +51,9 @@ export const getPost = createQueryWithId<PostsResponseType>({
 export const usePostsExports = createQuery<string>({
     dataType,
     path: '/posts/export/'
+});
+
+export const useDeletePost = createMutation<unknown, string>({
+    method: 'DELETE',
+    path: id => `/posts/${id}/`
 });

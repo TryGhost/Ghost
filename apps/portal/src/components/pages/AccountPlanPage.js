@@ -7,7 +7,6 @@ import {MultipleProductsPlansSection} from '../common/PlansSection';
 import {getDateString} from '../../utils/date-time';
 import {allowCompMemberUpgrade, formatNumber, getAvailablePrices, getFilteredPrices, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
-import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 
 export const AccountPlanPageStyles = `
     .account-plan.full-size .gh-portal-main-title {
@@ -161,7 +160,6 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
             <div className="gh-portal-logged-out-form-container gh-portal-cancellation-form">
                 <p>
                     <Interpolate
-                        syntax={SYNTAX_I18NEXT}
                         string={t(`If you cancel your subscription now, you will continue to have access until {periodEnd}.`)}
                         mapping={{
                             periodEnd: <strong>{getDateString(subscription.current_period_end)}</strong>

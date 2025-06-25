@@ -12,21 +12,17 @@ const features = [{
     description: 'Enables traffic analytics',
     flag: 'trafficAnalytics'
 }, {
-    title: 'Email customization',
-    description: 'Adding more control over the newsletter template',
+    title: 'Email customization (internal beta)',
+    description: 'Newsletter customization settings that have been released to Ghost\'s own production sites',
     flag: 'emailCustomization'
-}, {
-    title: 'Email customization (internal alpha)',
-    description: 'Wired up settings and updated email content',
-    flag: 'emailCustomizationAlpha'
 }, {
     title: 'Import Member Tier',
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
 }, {
-    title: 'Stats redesign',
-    description: 'Enables redesigned Stats page',
-    flag: 'trafficAnalyticsAlpha'
+    title: 'Updated main navigation (internal alpha)',
+    description: 'Enables simplified main navigation',
+    flag: 'updatedMainNav'
 }, {
     title: 'Explore',
     description: 'Enables keeping in touch with the new Explore API',

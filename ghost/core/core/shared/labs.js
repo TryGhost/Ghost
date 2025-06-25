@@ -43,16 +43,15 @@ const PRIVATE_FEATURES = [
     'stripeAutomaticTax',
     'webmentions',
     'trafficAnalytics',
+    'trafficAnalyticsTracking',
     'importMemberTier',
     'urlCache',
-    'emailCustomization',
-    'emailCustomizationAlpha',
     'mailEvents',
-    'collectionsCard',
     'lexicalIndicators',
-    'trafficAnalyticsAlpha',
+    'updatedMainNav',
     'contentVisibilityAlpha',
-    'explore'
+    'explore',
+    'emailCustomization'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
