@@ -213,5 +213,5 @@
     "Your input helps shape what gets published.": "ඔබගේ අදහස් ඉදිරියේදී සිදු කරන පළකිරීම් වැඩිදියුණු කිරීමට උදව් කරනු ඇත.",
     "Your subscription will expire on {expiryDate}": "ඔබගේ subscription එක {expiryDate} වැනි දින කල් ඉකුත් වනු ඇත",
     "Your subscription will renew on {renewalDate}": "ඔබේ දායකත්වය {renewalDate} දින නවීකරණය වේ",
-    "Your subscription will start on {subscriptionStart}": "ඔබගේ subscription එක {expiryDate} වැනි දින ආරම්භ වනු ඇත"
+    "Your subscription will start on {subscriptionStart}": "ඔබගේ subscription එක {subscriptionStart} වැනි දින ආරම්භ වනු ඇත"
 }
