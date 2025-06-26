@@ -2278,17 +2278,21 @@ function useFilteredAccountsFromJSON(options: {
     }, [followingIds, blockedAccountIds, blockedDomains, excludeFollowing, excludeCurrentUser, currentUser]);
 
     const isLoading = isLoadingFollowing || isLoadingBlockedAccounts || isLoadingBlockedDomains || isLoadingCurrentUser;
+    
+    // Track if we have finished loading all following data
+    const isFollowingDataComplete = !isLoadingFollowing && !hasNextPage;
 
     return {
         fetchAndFilterAccounts,
-        isLoading
+        isLoading,
+        isFollowingDataComplete
     };
 }
 
 export function useExploreProfilesForUser(handle: string) {
     const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.exploreProfiles(handle);
-    const {fetchAndFilterAccounts, isLoading} = useFilteredAccountsFromJSON({
+    const {fetchAndFilterAccounts, isLoading, isFollowingDataComplete} = useFilteredAccountsFromJSON({
         excludeFollowing: false
     });
 
@@ -2313,7 +2317,7 @@ export function useExploreProfilesForUser(handle: string) {
         queryFn: () => fetchExploreProfilesFromJSON(),
         getNextPageParam: () => undefined,
         staleTime: 60 * 60 * 1000,
-        enabled: !isLoading
+        enabled: !isLoading && isFollowingDataComplete
     });
 
     const updateExploreProfile = (id: string, updated: Partial<Account>) => {
@@ -2361,7 +2365,7 @@ export function useExploreProfilesForUser(handle: string) {
 export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.suggestedProfiles(handle, limit);
-    const {fetchAndFilterAccounts, isLoading} = useFilteredAccountsFromJSON({
+    const {fetchAndFilterAccounts, isLoading, isFollowingDataComplete} = useFilteredAccountsFromJSON({
         excludeFollowing: true,
         excludeCurrentUser: true
     });
@@ -2379,7 +2383,7 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
         },
         retry: false,
         staleTime: 60 * 60 * 1000,
-        enabled: !isLoading
+        enabled: !isLoading && isFollowingDataComplete
     });
 
     const updateSuggestedProfile = (id: string, updated: Partial<Account>) => {
