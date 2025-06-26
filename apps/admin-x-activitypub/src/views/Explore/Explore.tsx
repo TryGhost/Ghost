@@ -5,7 +5,7 @@ import React, {useEffect} from 'react';
 import {type Account} from '@src/api/activitypub';
 import {Button, H4, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 import {formatFollowNumber} from '@src/utils/content-formatters';
-import {useExploreProfilesForUser} from '@hooks/use-activity-pub-queries';
+import {useAccountForUser, useExploreProfilesForUser} from '@hooks/use-activity-pub-queries';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useOnboardingStatus} from '@src/components/layout/Onboarding';
 
@@ -18,6 +18,10 @@ interface ExploreProfileProps {
 export const ExploreProfile: React.FC<ExploreProfileProps & {
     onOpenChange?: (open: boolean) => void;
 }> = ({profile, update, isLoading, onOpenChange}) => {
+    const currentAccountQuery = useAccountForUser('index', 'me');
+    const {data: currentUser} = currentAccountQuery;
+    const isCurrentUser = profile.handle === currentUser?.handle;
+
     const onFollow = () => {
         update(profile.id, {
             followedByMe: true,
@@ -56,19 +60,22 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
                         <span className='line-clamp-1 font-semibold text-black dark:text-white'>{!isLoading ? profile.name : <Skeleton className='w-full max-w-48' />}</span>
                         <span className='line-clamp-1 text-sm text-gray-700'>{!isLoading ? profile.handle : <Skeleton className='w-32' />}</span>
                     </div>
-                    {!isLoading ?
-                        <FollowButton
-                            className='ml-auto'
-                            following={profile.followedByMe}
-                            handle={profile.handle}
-                            type='primary'
-                            onFollow={onFollow}
-                            onUnfollow={onUnfollow}
-                        /> :
+                    {!isLoading ? (
+                        !isCurrentUser ? (
+                            <FollowButton
+                                className='ml-auto'
+                                following={profile.followedByMe}
+                                handle={profile.handle}
+                                type='primary'
+                                onFollow={onFollow}
+                                onUnfollow={onUnfollow}
+                            />
+                        ) : null
+                    ) : (
                         <div className='inline-flex items-center'>
                             <Skeleton className='w-24' />
                         </div>
-                    }
+                    )}
                 </div>
                 {isLoading ?
                     <Skeleton className='w-full max-w-96' />

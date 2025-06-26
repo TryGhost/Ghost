@@ -2157,13 +2157,17 @@ export function useResetNotificationsCountForUser(handle: string) {
 
 function useFilteredAccountsFromJSON(options: {
     excludeFollowing?: boolean;
+    excludeCurrentUser?: boolean;
 } = {}) {
     const {
-        excludeFollowing = true
+        excludeFollowing = true,
+        excludeCurrentUser = false
     } = options;
     const {data: followingData, hasNextPage, fetchNextPage, isLoading: isLoadingFollowing} = useAccountFollowsForUser('me', 'following');
     const {data: blockedAccountsData, hasNextPage: hasNextBlockedAccounts, fetchNextPage: fetchNextBlockedAccounts, isLoading: isLoadingBlockedAccounts} = useBlockedAccountsForUser('me');
     const {data: blockedDomainsData, hasNextPage: hasNextBlockedDomains, fetchNextPage: fetchNextBlockedDomains, isLoading: isLoadingBlockedDomains} = useBlockedDomainsForUser('me');
+    const currentAccountQuery = useAccountForUser('index', 'me');
+    const {data: currentUser, isLoading: isLoadingCurrentUser} = currentAccountQuery;
 
     useEffect(() => {
         if (hasNextPage && !isLoadingFollowing) {
@@ -2247,6 +2251,10 @@ function useFilteredAccountsFromJSON(options: {
                     return false;
                 }
 
+                if (excludeCurrentUser && currentUser && account.handle === currentUser.handle) {
+                    return false;
+                }
+
                 const parts = account.handle.split('@').filter(part => part.length > 0);
                 const accountDomain = parts.length > 1 ? parts[parts.length - 1] : null;
                 if (accountDomain && blockedDomains.has(accountDomain)) {
@@ -2267,9 +2275,9 @@ function useFilteredAccountsFromJSON(options: {
         } catch (error) {
             return [];
         }
-    }, [followingIds, blockedAccountIds, blockedDomains, excludeFollowing]);
+    }, [followingIds, blockedAccountIds, blockedDomains, excludeFollowing, excludeCurrentUser, currentUser]);
 
-    const isLoading = isLoadingFollowing || isLoadingBlockedAccounts || isLoadingBlockedDomains;
+    const isLoading = isLoadingFollowing || isLoadingBlockedAccounts || isLoadingBlockedDomains || isLoadingCurrentUser;
 
     return {
         fetchAndFilterAccounts,
@@ -2354,7 +2362,8 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.suggestedProfiles(handle, limit);
     const {fetchAndFilterAccounts, isLoading} = useFilteredAccountsFromJSON({
-        excludeFollowing: true
+        excludeFollowing: true,
+        excludeCurrentUser: true
     });
 
     const suggestedProfilesQuery = useQuery({
