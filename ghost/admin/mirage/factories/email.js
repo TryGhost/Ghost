@@ -13,9 +13,7 @@ export default Factory.extend({
     uuid(i) { return `email-${i}`; },
 
     createdAtUTC: '2019-11-06T12:44:30.000Z',
-    createdBy: 1,
     updatedAtUTC: '2019-11-06T12:44:30.000Z',
-    updatedBy: 1,
 
     sent: trait({
         status: 'sent',
