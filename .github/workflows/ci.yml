@@ -1074,14 +1074,24 @@ jobs:
         if: github.event_name == 'pull_request'
         run: echo "branch_name=${{ github.ref }}" >> $GITHUB_ENV
 
+      - name: Set deployment parameters
+        run: |
+          if [[ "${{ needs.job_setup.outputs.is_main }}" == "true" ]]; then
+            echo "DEPLOY_REF=refs/heads/main" >> $GITHUB_ENV
+            echo "DEPLOY_VERSION=canary" >> $GITHUB_ENV
+          else
+            echo "DEPLOY_REF=refs/heads/6.x" >> $GITHUB_ENV
+            echo "DEPLOY_VERSION=six" >> $GITHUB_ENV
+          fi
+
       - name: Invoke build
         uses: aurelien-baudet/workflow-dispatch@v4
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           workflow: .github/workflows/deploy.yml
-          ref: ${{ needs.job_setup.outputs.is_main == 'true' && 'refs/heads/main' || 'refs/heads/6.x' }}
+          ref: ${{ env.DEPLOY_REF }}
           repo: TryGhost/Ghost-Moya
-          inputs: ${{ needs.job_setup.outputs.is_main == 'true' && format('{"version":"canary","environment":"staging","version_extra":"{0}"}', env.branch_name) || format('{"version":"six","environment":"staging","version_extra":"{0}"}', env.branch_name) }}
+          inputs: '{"version":"${{ env.DEPLOY_VERSION }}","environment":"staging","version_extra":"${{ env.branch_name }}"}'
           wait-for-completion-timeout: 25m
           wait-for-completion-interval: 30s
 
