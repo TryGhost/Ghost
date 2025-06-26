@@ -5,7 +5,7 @@ TOKEN "tracker" APPEND
 
 SCHEMA >
     `timestamp` DateTime `json:$.timestamp`,
-    `event_id` UUID `json:$.event_id`,
+    `event_id` UUID `json:$.event_id` DEFAULT generateUUIDv4(),
     `session_id` String `json:$.session_id`,
     `action` LowCardinality(String) `json:$.action`,
     `version` LowCardinality(String) `json:$.version`,
