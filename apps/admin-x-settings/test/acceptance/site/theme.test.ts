@@ -274,9 +274,27 @@ test.describe('Theme settings', async () => {
     });
 
     test('fires Install Theme modal when redirected from marketplace url', async ({page}) => {
+        // Positive test: Taste is in the allowlist
         await mockApi({page, requests: {
             ...globalDataRequests,
-            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes}
+            ...limitRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        hostSettings: {
+                            limits: {
+                                customThemes: {
+                                    allowlist: ['casper', 'headline', 'taste'], // Taste IS in the allowlist
+                                    error: 'Upgrade to use more themes'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }});
         await page.goto('/#/settings/theme/install?source=github&ref=TryGhost/Taste');
 
@@ -531,8 +549,6 @@ test.describe('Theme settings', async () => {
         }});
 
         await page.goto('/#/settings/theme/install?source=github&ref=TryGhost/Taste');
-
-        await page.waitForSelector('[data-testid="theme-modal"]');
 
         // Should show limit modal because 'taste' is not in the allowlist
         await expect(page.getByTestId('limit-modal')).toBeVisible();
