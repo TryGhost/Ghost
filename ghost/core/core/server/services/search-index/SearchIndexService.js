@@ -11,6 +11,7 @@ module.exports = class SearchIndexService {
         };
 
         const posts = await this.PostsService.browsePosts(options);
+
         return posts;
     }
 };
