@@ -52,6 +52,8 @@ describe('Unit | Adapter | embedded-relation-adapter', function () {
         return {pagination: {page, pages, total}};
     }
 
+    // To simulate a single page response similar to our old `limit=all` behaviour
+    // we build a the meta object to attach to the adapter response after looping
     function createExpectedFinalMeta(total) {
         return {
             pagination: {
@@ -253,6 +255,56 @@ describe('Unit | Adapter | embedded-relation-adapter', function () {
                     filter: 'status:published',
                     order: 'published_at desc'
                 });
+            });
+
+            it('handles endpoints that do not support pagination (no meta key)', async function () {
+                // This test verifies the fix prevents infinite loops when endpoints don't support pagination.
+                // The infinite loop occurred when:
+                // 1. Endpoint returns EQUAL TO or MORE than PAGE_SIZE items (e.g., 150)
+                // 2. No meta key is returned
+                // This makes the adapter think there might be more pages (since it got a "full" page)
+
+                const TOTAL_ITEMS = 150; // More than PAGE_SIZE to trigger the bug
+                const stubs = createMockStubs();
+                let callCount = 0;
+
+                stubs.buildQueryStub.callsFake((_, modelName, query) => {
+                    return {...query, include: 'tags'};
+                });
+
+                stubs.superQueryStub.callsFake(async () => {
+                    callCount = callCount + 1;
+
+                    // Safety limit to prevent actual infinite loop
+                    if (callCount > 3) {
+                        throw new Error(`Infinite loop detected: ${callCount} calls made`);
+                    }
+
+                    // Simulate endpoint without pagination support:
+                    // Always returns ALL items (150) regardless of page requested
+                    // No meta key - this is what triggers the bug
+                    return {
+                        [DATA_KEY]: createMockPosts(TOTAL_ITEMS)
+                    };
+                });
+
+                try {
+                    const result = await adapter.query(store, type, {limit: 'all'});
+
+                    // If we get here with the fix enabled, should have made only 1 call
+                    expect(callCount).to.equal(1, 'Fix prevents infinite loop - terminates after 1 call');
+                    expect(result[DATA_KEY]).to.have.lengthOf(TOTAL_ITEMS);
+                    expect(result.meta).to.exist;
+                    expect(result.meta.pagination.total).to.equal(TOTAL_ITEMS);
+                } catch (error) {
+                    if (error.message.includes('Infinite loop detected')) {
+                        // This is what happens when fix is commented out
+                        expect(callCount).to.be.greaterThan(3);
+                        // Test detects the bug by hitting the infinite loop
+                        expect.fail('Infinite loop detected');
+                    }
+                    throw error;
+                }
             });
         });
     });
