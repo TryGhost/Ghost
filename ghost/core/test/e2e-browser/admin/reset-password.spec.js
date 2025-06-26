@@ -1,5 +1,6 @@
 const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
+const constants = require('../../utils/fixtures/constants');
 const DataGenerator = require('../../utils/fixtures/data-generator');
 const passwordReset = require('../../../core/server/services/auth/passwordreset');
 const api = require('../../../core/server/api/endpoints/index');
@@ -14,7 +15,7 @@ test.describe('Admin', () => {
             await sharedPage.goto('/ghost');
 
             // Add owner user data from usual fixture
-            const ownerUser = DataGenerator.Content.users.find(user => user.id === '1');
+            const ownerUser = DataGenerator.Content.users.find(user => user.id === constants.OWNER_USER_ID);
 
             await sharedPage.locator('#identification').fill(ownerUser.email);
             await sharedPage.getByRole('button', {name: 'Forgot?'}).click();
@@ -48,7 +49,7 @@ test.describe('Admin', () => {
                 await sharedPage.goto('/ghost');
 
                 // Add owner user data from usual fixture
-                const ownerUser = DataGenerator.Content.users.find(user => user.id === '1');
+                const ownerUser = DataGenerator.Content.users.find(user => user.id === constants.OWNER_USER_ID);
 
                 await sharedPage.locator('#identification').fill(ownerUser.email);
                 await sharedPage.getByRole('button', {name: 'Forgot?'}).click();
