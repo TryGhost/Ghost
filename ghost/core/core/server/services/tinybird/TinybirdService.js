@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const {IncorrectUsageError} = require('@tryghost/errors');
+const errors = require('@tryghost/errors');
 
 const TINYBIRD_PIPES = [
     'api_kpis',
@@ -16,7 +16,7 @@ const TINYBIRD_PIPES = [
 class TinybirdService {
     constructor({workspaceId, adminToken, siteUuid}) {
         if (!workspaceId || !adminToken || !siteUuid) {
-            throw new IncorrectUsageError({
+            throw new errors.IncorrectUsageError({
                 message: 'TinybirdService requires workspaceId, adminToken, and siteUuid'
             });
         }
@@ -26,14 +26,12 @@ class TinybirdService {
         this.siteUuid = siteUuid;
     }
 
-    async getTinybirdJWT(name = `tinybird-jwt-${this.siteUuid}`) {
-        const now = new Date();
-        const expiresAt = new Date(now.getTime() + 10 * 60 * 1000); // 10 minutes
-
+    async getTinybirdJWT({name = `tinybird-jwt-${this.siteUuid}`, expiresInMinutes = 10} = {}) {
+        const expiresAt = Math.floor(Date.now() / 1000) + expiresInMinutes * 60;
         const payload = {
             workspace_id: this.workspaceId,
             name,
-            exp: Math.floor(expiresAt.getTime() / 1000),
+            exp: expiresAt,
             scopes: TINYBIRD_PIPES.map((pipe) => {
                 return {
                     type: 'PIPES:READ',
@@ -46,6 +44,29 @@ class TinybirdService {
         };
 
         return jwt.sign(payload, this.adminToken, {noTimestamp: true});
+    }
+
+    async isJWTExpired(token, bufferSeconds = 300) {
+        try {
+            const decoded = jwt.verify(token, this.adminToken);
+            if (typeof decoded !== 'object' || !decoded.exp) {
+                return true;
+            }
+            const now = Math.floor(Date.now() / 1000);
+            const timeRemaining = decoded.exp - now;
+            return timeRemaining < bufferSeconds;
+        } catch (error) {
+            return true;
+        }
+    }
+
+    async checkOrRefreshTinybirdJWT(token) {
+        const isExpired = await this.isJWTExpired(token);
+        if (isExpired) {
+            const newToken = await this.getTinybirdJWT();
+            return newToken;
+        }
+        return token;
     }
 }
 
