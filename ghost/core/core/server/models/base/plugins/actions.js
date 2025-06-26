@@ -107,11 +107,14 @@ module.exports = function (Bookshelf) {
                 }
             }
 
+            const previousPrimaryName = this.previous('title') || this.previous('name') || this.previous('email');
+            const currentPrimaryName = this.get('title') || this.get('name') || this.get('email');
+
             // Attach the primary name to the action (ie. the title or name of the model)
             if (event === 'deleted') {
-                context.primary_name = (this.previous('title') || this.previous('name'));
+                context.primary_name = previousPrimaryName;
             } else if (['added', 'edited'].includes(event)) {
-                context.primary_name = (this.get('title') || this.get('name') || this.previous('title') || this.previous('name'));
+                context.primary_name = currentPrimaryName || previousPrimaryName;
             }
 
             const data = {
