@@ -137,7 +137,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         navigate(`/posts/analytics/beta/${latestPostStats.id}/web`, {crossApp: true});
                                     }}>
                                         <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                            <LucideIcon.Eye size={16} strokeWidth={1.25} />
+                                            <LucideIcon.Globe size={16} strokeWidth={1.25} />
                                             <span className='hidden md:!visible md:!block'>
                                                 Visitors
                                             </span>
