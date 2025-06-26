@@ -37,11 +37,13 @@ module.exports = function (Bookshelf, pluginOptions) {
                 return options.context.user;
             } else if (options.context.integration) {
                 return pluginOptions.resolveIntegrationUserId({
-                    transacting: options.transacting
+                    transacting: options.transacting,
+                    context: options.context
                 });
             } else if (options.context.internal) {
                 return pluginOptions.resolveInternalUserId({
-                    transacting: options.transacting
+                    transacting: options.transacting,
+                    context: options.context
                 });
             } else if (this.get('id')) {
                 return this.get('id');
