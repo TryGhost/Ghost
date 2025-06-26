@@ -28,8 +28,6 @@ export default Model.extend(ValidationEngine, {
     visibility: attr('string', {defaultValue: 'public'}),
     createdAtUTC: attr('moment-utc'),
     updatedAtUTC: attr('moment-utc'),
-    createdBy: attr('number'),
-    updatedBy: attr('number'),
     count: attr('raw'),
 
     isInternal: equal('visibility', 'internal'),
