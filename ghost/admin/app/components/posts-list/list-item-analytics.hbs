@@ -159,7 +159,7 @@
     <div class="gh-post-list-metrics-container">
         {{!-- Opened / Signups column --}}
         {{#if (and @post.showEmailOpenAnalytics @post.showEmailClickAnalytics) }}
-            <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
+            <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics" title="Newsletter open rate">
                 <div class="gh-post-list-analytics-metric">
                     {{svg-jar "analytics-opens" class="gh-list-analytics-icon"}}
                     <span class="gh-content-email-stats-value">
@@ -179,7 +179,7 @@
 
         {{!-- Clicked / Conversions column --}}
         {{#if @post.showEmailClickAnalytics }}
-            <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
+            <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics" title="Newsletter click rate">
                 <div class="gh-post-list-analytics-metric">
                     {{svg-jar "analytics-clicks" class="gh-list-analytics-icon"}}
                     <span class="gh-content-email-stats-value">
@@ -193,7 +193,7 @@
             </LinkTo>
         {{else}}
             {{#if @post.showEmailOpenAnalytics }}
-                <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
+                <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics" title="Newsletter open rate">
                     <div class="gh-post-list-analytics-metric">
                         {{svg-jar "analytics-opens" class="gh-list-analytics-icon"}}
                         <span class="gh-content-email-stats-value">
@@ -216,7 +216,7 @@
         {{#if (or this.settings.webAnalytics false)}}
             {{#if @post.isPublished}}
                 {{#if this.hasVisitorData}}
-                    <LinkTo @route="posts-x" @model={{@post.id}} class="permalink gh-list-data gh-post-list-metrics">
+                    <LinkTo @route="posts-x" @model={{@post.id}} class="permalink gh-list-data gh-post-list-metrics" title="Unique visitors">
                         <div class="gh-post-list-analytics-metric">
                             {{svg-jar "analytics-visitors" class="gh-list-analytics-icon"}}
                             <span class="gh-content-email-stats-value">
@@ -232,7 +232,7 @@
         {{#if (or this.settings.webAnalytics false)}}
             {{#if @post.isPublished}}
                 {{#if this.hasMemberData}}
-                    <LinkTo @route="posts-x" @model={{@post.id}} class="permalink gh-list-data gh-post-list-metrics">
+                    <LinkTo @route="posts-x" @model={{@post.id}} class="permalink gh-list-data gh-post-list-metrics" title="Members signed up on this post">
                     {{!-- <LinkTo class="permalink gh-list-data gh-post-list-metrics" data-tooltip={{if this.totalMemberConversions (concat (format-number this.memberCounts.free) " free " (format-number this.memberCounts.paid) " paid ")}}> --}}
                         <div class="gh-post-list-analytics-metric">
                             {{svg-jar "analytics-members" class="gh-list-analytics-icon"}}
