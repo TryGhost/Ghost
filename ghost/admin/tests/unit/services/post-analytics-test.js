@@ -23,7 +23,7 @@ describe('Unit: Service: post-analytics', function () {
             }
         };
         featureStub = {
-            trafficAnalytics: true
+            trafficAnalyticsAlpha: true
         };
 
         service.ajax = {request: ajaxStub};
@@ -43,7 +43,7 @@ describe('Unit: Service: post-analytics', function () {
         });
 
         it('returns early if feature flag is disabled', async function () {
-            featureStub.trafficAnalytics = false;
+            featureStub.trafficAnalyticsAlpha = false;
             const result = await service.loadVisitorCounts(['uuid1']);
             expect(result).to.be.undefined;
             expect(ajaxStub.called).to.be.false;
@@ -140,7 +140,7 @@ describe('Unit: Service: post-analytics', function () {
         });
 
         it('returns early if feature flag is disabled', async function () {
-            featureStub.trafficAnalytics = false;
+            featureStub.trafficAnalyticsAlpha = false;
             const result = await service.loadMemberCounts([{id: '1', uuid: 'uuid1'}]);
             expect(result).to.be.undefined;
             expect(ajaxStub.called).to.be.false;
