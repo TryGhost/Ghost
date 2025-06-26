@@ -1,4 +1,4 @@
-import {renderHook, act} from '@testing-library/react';
+import {renderHook} from '@testing-library/react';
 import React, {ReactNode} from 'react';
 import useHandleError from '../../../src/hooks/useHandleError';
 import {FrameworkProvider} from '../../../src/providers/FrameworkProvider';
@@ -92,9 +92,7 @@ describe('useHandleError', () => {
         const {result} = renderHook(() => useHandleError(), {wrapper});
         const error = new Error('Test error');
 
-        act(() => {
-            result.current(error);
-        });
+        result.current(error);
 
         expect(console.error).toHaveBeenCalledWith(error); // eslint-disable-line no-console
     });
@@ -104,9 +102,7 @@ describe('useHandleError', () => {
         const {result} = renderHook(() => useHandleError(), {wrapper});
         const error = new Error('Test error');
 
-        act(() => {
-            result.current(error);
-        });
+        result.current(error);
 
         expect(Sentry.captureException).toHaveBeenCalledWith(error);
     });
@@ -116,9 +112,7 @@ describe('useHandleError', () => {
         const {result} = renderHook(() => useHandleError(), {wrapper});
         const error = new Error('Test error');
 
-        act(() => {
-            result.current(error);
-        });
+        result.current(error);
 
         expect(Sentry.captureException).not.toHaveBeenCalled();
     });
@@ -144,9 +138,7 @@ describe('useHandleError', () => {
             callback(scopeUsed);
         });
 
-        act(() => {
-            result.current(error);
-        });
+        result.current(error);
 
         expect(scopeUsed.setTag).toHaveBeenCalledWith('api_url', 'https://api.example.com/test');
         expect(scopeUsed.setTag).toHaveBeenCalledWith('api_response_status', 404);
@@ -157,9 +149,7 @@ describe('useHandleError', () => {
         const {result} = renderHook(() => useHandleError(), {wrapper});
         const error = new Error('Test error');
 
-        act(() => {
-            result.current(error);
-        });
+        result.current(error);
 
         expect(toast.remove).toHaveBeenCalled();
     });
@@ -169,9 +159,7 @@ describe('useHandleError', () => {
         const {result} = renderHook(() => useHandleError(), {wrapper});
         const error = new Error('Test error');
 
-        act(() => {
-            result.current(error, {withToast: false});
-        });
+        result.current(error, {withToast: false});
 
         expect(showToast).not.toHaveBeenCalled();
     });
@@ -183,9 +171,7 @@ describe('useHandleError', () => {
         const mockResponse = new Response(null, {status: 418});
         const error = new APIError(mockResponse);
 
-        act(() => {
-            result.current(error);
-        });
+        result.current(error);
 
         expect(showToast).not.toHaveBeenCalled();
     });
@@ -211,9 +197,7 @@ describe('useHandleError', () => {
         
         const error = new ValidationError(mockResponse, errorData);
 
-        act(() => {
-            result.current(error);
-        });
+        result.current(error);
 
         expect(showToast).toHaveBeenCalledWith({
             message: 'This field must be filled out',
@@ -242,9 +226,7 @@ describe('useHandleError', () => {
         
         const error = new ValidationError(mockResponse, errorData);
 
-        act(() => {
-            result.current(error);
-        });
+        result.current(error);
 
         expect(showToast).toHaveBeenCalledWith({
             message: 'Field is required',
@@ -258,9 +240,7 @@ describe('useHandleError', () => {
         
         const error = new APIError(undefined, undefined, 'API Error occurred');
 
-        act(() => {
-            result.current(error);
-        });
+        result.current(error);
 
         expect(showToast).toHaveBeenCalledWith({
             message: 'API Error occurred',
@@ -274,9 +254,7 @@ describe('useHandleError', () => {
         
         const error = new Error('Unknown error');
 
-        act(() => {
-            result.current(error);
-        });
+        result.current(error);
 
         expect(showToast).toHaveBeenCalledWith({
             message: 'Something went wrong, please try again.',
@@ -288,9 +266,7 @@ describe('useHandleError', () => {
         const wrapper = createWrapper();
         const {result} = renderHook(() => useHandleError(), {wrapper});
 
-        act(() => {
-            result.current('String error');
-        });
+        result.current('String error');
 
         expect(console.error).toHaveBeenCalledWith('String error'); // eslint-disable-line no-console
         expect(showToast).toHaveBeenCalledWith({
@@ -303,9 +279,7 @@ describe('useHandleError', () => {
         const wrapper = createWrapper();
         const {result} = renderHook(() => useHandleError(), {wrapper});
 
-        act(() => {
-            result.current(null);
-        });
+        result.current(null);
 
         expect(console.error).toHaveBeenCalledWith(null); // eslint-disable-line no-console
         expect(showToast).toHaveBeenCalledWith({

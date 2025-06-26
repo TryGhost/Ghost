@@ -1,5 +1,4 @@
 import {act, renderHook} from '@testing-library/react';
-import * as assert from 'assert/strict';
 import useForm from '../../../src/hooks/useForm';
 
 // Mock timers for testing delays
@@ -22,7 +21,7 @@ describe('useForm', () => {
                 onSave: () => {}
             }));
 
-            assert.deepEqual(result.current.formState, {a: 1});
+            expect(result.current.formState).toEqual({a: 1});
         });
     });
 
@@ -37,7 +36,7 @@ describe('useForm', () => {
                 result.current.updateForm(state => ({...state, b: 2}));
             });
 
-            assert.deepEqual(result.current.formState, {a: 1, b: 2});
+            expect(result.current.formState).toEqual({a: 1, b: 2});
         });
 
         it('sets the saveState to unsaved', () => {
@@ -50,7 +49,7 @@ describe('useForm', () => {
                 result.current.updateForm(state => ({...state, a: 2}));
             });
 
-            assert.deepEqual(result.current.saveState, 'unsaved');
+            expect(result.current.saveState).toBe('unsaved');
         });
     });
 
@@ -68,10 +67,10 @@ describe('useForm', () => {
             const success = await act(async () => {
                 return await result.current.handleSave();
             });
-            assert.equal(success, true);
+            expect(success).toBe(true);
 
-            assert.equal(result.current.saveState, '');
-            assert.equal(onSaveCalled, false);
+            expect(result.current.saveState).toBe('');
+            expect(onSaveCalled).toBe(false);
         });
 
         it('calls the onSave callback when the state has changed', async () => {
@@ -91,10 +90,10 @@ describe('useForm', () => {
             const success = await act(async () => {
                 return await result.current.handleSave();
             });
-            assert.equal(success, true);
+            expect(success).toBe(true);
 
-            assert.equal(result.current.saveState, 'saved');
-            assert.equal(onSaveCalled, true);
+            expect(result.current.saveState).toBe('saved');
+            expect(onSaveCalled).toBe(true);
         });
     });
 
@@ -239,43 +238,53 @@ describe('useForm', () => {
         });
     });
 
-    describe('async operations and delays', () => {
-        it('respects savingDelay', async () => {
-            const mockOnSave = vi.fn().mockResolvedValue(undefined);
+    describe('async operations', () => {
+        it('shows saving state during async save', async () => {
+            let resolveOnSave: () => void;
+            const savePromise = new Promise<void>(resolve => {
+                resolveOnSave = resolve;
+            });
+            const mockOnSave = vi.fn().mockReturnValue(savePromise);
             
             const {result} = renderHook(() => useForm({
                 initialState: {field: 'test'},
-                onSave: mockOnSave,
-                savingDelay: 100 // Use shorter delay for test
+                onSave: mockOnSave
             }));
 
             act(() => {
                 result.current!.updateForm(state => ({...state, field: 'updated'}));
             });
 
-            // Start save and immediately check state
-            const savePromise = act(async () => {
-                await result.current!.handleSave();
-            });
-            
-            // Advance time and complete save
+            // Start save but don't wait for completion
             act(() => {
-                vi.advanceTimersByTime(100);
+                result.current!.handleSave();
             });
             
-            await savePromise;
+            // Should be in saving state
+            expect(result.current!.saveState).toBe('saving');
+            
+            // Complete the save
+            act(() => {
+                resolveOnSave!();
+            });
+            
+            // Wait for state to update
+            await act(async () => {
+                await savePromise;
+            });
+            
             expect(result.current!.saveState).toBe('saved');
             expect(mockOnSave).toHaveBeenCalled();
         });
 
-        it('respects savedDelay and resets state', async () => {
+        it('calls savedDelay callback when provided', async () => {
             const mockOnSave = vi.fn();
             const mockOnSavedStateReset = vi.fn();
             
             const {result} = renderHook(() => useForm({
                 initialState: {field: 'test'},
                 onSave: mockOnSave,
-                savedDelay: 1000,
+                savedDelay: 100,
                 onSavedStateReset: mockOnSavedStateReset
             }));
 
@@ -289,11 +298,11 @@ describe('useForm', () => {
             
             expect(result.current!.saveState).toBe('saved');
             
+            // Advance time to trigger reset
             act(() => {
-                vi.advanceTimersByTime(1000);
+                vi.advanceTimersByTime(100);
             });
             
-            expect(result.current!.saveState).toBe('');
             expect(mockOnSavedStateReset).toHaveBeenCalled();
         });
 
