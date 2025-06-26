@@ -181,7 +181,7 @@ test.describe('Theme settings', async () => {
                         hostSettings: {
                             limits: {
                                 customThemes: {
-                                    allowlist: ['casper'],
+                                    allowlist: ['casper', 'source', 'edition'],
                                     error: 'Upgrade to enable custom themes'
                                 }
                             }
@@ -603,7 +603,7 @@ test.describe('Theme settings', async () => {
         await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
         const modal = page.getByTestId('theme-modal');
-        
+
         // Try to install a theme that's not in the allowlist
         await modal.getByRole('button', {name: /Headline/}).click();
 
@@ -616,5 +616,61 @@ test.describe('Theme settings', async () => {
 
         // Installation confirmation should not be visible
         await expect(page.getByTestId('confirmation-modal')).not.toBeVisible();
+    });
+
+    test('Shows limit modal before overwrite confirmation for already installed themes', async ({page}) => {
+        // Test case: User has Edition theme installed (from fixtures), tries to update it when it's not in the allowlist
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...limitRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        hostSettings: {
+                            limits: {
+                                customThemes: {
+                                    allowlist: ['casper', 'headline'], // Edition is NOT in the allowlist
+                                    error: 'Upgrade to use more themes'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }});
+
+        await page.goto('/');
+
+        const themeSection = page.getByTestId('theme');
+        await themeSection.getByRole('button', {name: 'Change theme'}).click();
+
+        const modal = page.getByTestId('theme-modal');
+
+        // Wait for modal to be ready
+        await expect(modal).toBeVisible();
+
+        await modal.getByRole('button', {name: /Edition/}).click();
+
+        // Wait for the theme preview to load
+        await expect(modal).toContainText('Edition');
+
+        // Edition is already installed, so the button should say "Update Edition"
+        // and would normally trigger the overwrite confirmation modal, but because
+        // we have a limit now that doesn't allow this theme, it should show the limit modal instead.
+        const installButton = modal.getByRole('button', {name: 'Update Edition'});
+        await expect(installButton).toBeVisible();
+
+        // Click the install/update button
+        await installButton.click();
+
+        // Should show limit modal FIRST, not the overwrite confirmation
+        await expect(page.getByTestId('limit-modal')).toBeVisible();
+        await expect(page.getByTestId('limit-modal')).toHaveText(/Upgrade to use more themes/);
+
+        // Overwrite confirmation should NOT be visible
+        await expect(page.getByTestId('confirmation-modal').filter({hasText: /overwrite/i})).not.toBeVisible();
     });
 });

@@ -2,46 +2,32 @@ import ChangeThemeModal from './ThemeModal';
 import DesignModal from './DesignModal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
-import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {LimitModal} from '@tryghost/admin-x-design-system';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
-import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {useCheckThemeLimitError} from '../../../hooks/useCheckThemeLimitError';
 
 const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
     const modal = useModal();
-    const limiter = useLimiter();
-    const {config} = useGlobalData();
     const {updateRoute} = useRouting();
     const [themeLimitError, setThemeLimitError] = useState<string|null>(null);
     const [isCheckingLimit, setIsCheckingLimit] = useState(false);
+    const {checkThemeLimitError, isThemeLimitCheckReady, allowedThemesList} = useCheckThemeLimitError();
 
     useEffect(() => {
         const checkIfThemeChangeAllowed = async () => {
             setIsCheckingLimit(true);
-            // If the allowlist only contains one single entry, we can assume that the user
-            // is not allowed to change themes at all.
-            const numberOfAllowedThemes = config.hostSettings?.limits?.customThemes?.allowlist?.length;
-            if (numberOfAllowedThemes === 1) {
-                // Sending a bad string to make sure it fails (empty string isn't valid)
-                await limiter?.errorIfWouldGoOverLimit('customThemes', {value: '.'}).catch((error) => {
-                    if (error instanceof HostLimitError) {
-                        setThemeLimitError(error?.message ?? 'Your current plan doesn\'t support changing themes.');
-                    }
-                });
-            } else {
-                // Ensure no error, if more than one theme is allowed
-                setThemeLimitError(null);
-            }
+            const error = await checkThemeLimitError();
+            setThemeLimitError(error);
             setIsCheckingLimit(false);
         };
 
-        if (pathName === 'design/change-theme' && limiter?.isLimited('customThemes')) {
+        if (pathName === 'design/change-theme' && isThemeLimitCheckReady) {
             checkIfThemeChangeAllowed();
         } else {
             setThemeLimitError(null);
             setIsCheckingLimit(false);
         }
-    }, [limiter, config.hostSettings?.limits?.customThemes?.allowlist?.length, pathName]);
+    }, [checkThemeLimitError, isThemeLimitCheckReady, pathName]);
 
     // Show limit modal if there's an error when accessing design/change-theme
     useEffect(() => {
@@ -70,38 +56,43 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
         const ref = searchParams.get('ref') || null;
         const source = searchParams.get('source') || null;
 
-        // Check if theme installation is limited (only if limiter is initialized)
-        if (limiter !== undefined && limiter?.isLimited('customThemes') && ref) {
-            const allowlist = config.hostSettings?.limits?.customThemes?.allowlist;
+        // Check if theme installation is limited
+        if (isThemeLimitCheckReady && ref) {
             const themeName = ref.split('/')[1]?.toLowerCase();
+            const isSingleTheme = allowedThemesList?.length === 1;
+
+            // Check if theme installation will be blocked
+            const isThemeInstallationBlocked = isSingleTheme || (allowedThemesList && !allowedThemesList.includes(themeName));
             
-            // If only one theme is allowed, don't even attempt to show the theme modal
-            if (allowlist?.length === 1) {
-                const limitError = config.hostSettings?.limits?.customThemes?.error || 'Upgrade to use custom themes';
-                NiceModal.show(LimitModal, {
-                    prompt: limitError,
-                    onOk: () => updateRoute({route: '/pro', isExternal: true})
+            // Show limit modal asynchronously if needed
+            checkThemeLimitError(themeName)
+                .then((error) => {
+                    if (error) {
+                        NiceModal.show(LimitModal, {
+                            prompt: error,
+                            onOk: () => updateRoute({route: '/pro', isExternal: true})
+                        });
+
+                        // Users with only one allowed theme should not be able to access the modal,
+                        // as they can't change themes anyway.
+                        if (isSingleTheme) {
+                            modal.remove();
+                            updateRoute('theme');
+                        } else {
+                            updateRoute('design/change-theme');
+                        }
+                    }
                 });
-                modal.remove();
-                return null;
-            }
-            
-            // Check if theme is in the allowlist (for multiple allowed themes)
-            if (allowlist && !allowlist.includes(themeName)) {
-                // Theme is not allowed, show limit modal
-                const limitError = config.hostSettings?.limits?.customThemes?.error || 'Upgrade to use custom themes';
-                NiceModal.show(LimitModal, {
-                    prompt: limitError,
-                    onOk: () => updateRoute({route: '/pro', isExternal: true})
-                });
-                // Let them browse the change theme modal after closing limit modal
-                updateRoute('design/change-theme');
+
+            // Don't render the ChangeThemeModal if we know the installation will be blocked
+            // This prevents UI issues with multiple modals and unnecessary rendering
+            if (isThemeInstallationBlocked) {
                 return null;
             }
         }
-        
+
         // If limiter isn't initialized yet, don't render the modal
-        if (limiter === undefined && config.hostSettings?.limits?.customThemes) {
+        if (!isThemeLimitCheckReady && allowedThemesList) {
             return null;
         }
 
