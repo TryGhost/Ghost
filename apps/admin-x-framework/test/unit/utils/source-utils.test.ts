@@ -89,9 +89,9 @@ describe('source-utils', () => {
 
     describe('extendSourcesWithPercentages', () => {
         const mockData: ProcessedSourceData[] = [
-            { source: 'Facebook', visits: 100, isDirectTraffic: false, iconSrc: '', displayName: 'Facebook' },
-            { source: 'Google', visits: 200, isDirectTraffic: false, iconSrc: '', displayName: 'Google' },
-            { source: 'Direct', visits: 300, isDirectTraffic: true, iconSrc: '', displayName: 'Direct' }
+            {source: 'Facebook', visits: 100, isDirectTraffic: false, iconSrc: '', displayName: 'Facebook'},
+            {source: 'Google', visits: 200, isDirectTraffic: false, iconSrc: '', displayName: 'Google'},
+            {source: 'Direct', visits: 300, isDirectTraffic: true, iconSrc: '', displayName: 'Direct'}
         ];
 
         it('adds percentages in visits mode', () => {
@@ -263,11 +263,11 @@ describe('source-utils', () => {
 
     describe('processSources', () => {
         const mockSources: BaseSourceData[] = [
-            { source: 'facebook', visits: 100 },
-            { source: 'google', visits: 200 },
-            { source: 'example.com', visits: 150 },
-            { source: null as any, visits: 50 },
-            { source: '', visits: 25 }
+            {source: 'facebook', visits: 100},
+            {source: 'google', visits: 200},
+            {source: 'example.com', visits: 150},
+            {source: null as any, visits: 50},
+            {source: '', visits: 25}
         ];
 
         it('processes sources in visits mode', () => {
@@ -293,9 +293,9 @@ describe('source-utils', () => {
 
         it('processes sources in growth mode', () => {
             const growthSources: BaseSourceData[] = [
-                { source: 'facebook', visits: 100, free_members: 10, paid_members: 2, mrr: 50 },
-                { source: 'google', visits: 200, free_members: 20, paid_members: 5, mrr: 100 },
-                { source: null as any, visits: 50, free_members: 5, paid_members: 1, mrr: 25 }
+                {source: 'facebook', visits: 100, free_members: 10, paid_members: 2, mrr: 50},
+                {source: 'google', visits: 200, free_members: 20, paid_members: 5, mrr: 100},
+                {source: null as any, visits: 50, free_members: 5, paid_members: 1, mrr: 25}
             ];
 
             const result = processSources({
@@ -316,9 +316,9 @@ describe('source-utils', () => {
 
         it('consolidates similar sources', () => {
             const duplicateSources: BaseSourceData[] = [
-                { source: 'facebook', visits: 100 },
-                { source: 'www.facebook.com', visits: 50 },
-                { source: 'Facebook', visits: 25 }
+                {source: 'facebook', visits: 100},
+                {source: 'www.facebook.com', visits: 50},
+                {source: 'Facebook', visits: 25}
             ];
 
             const result = processSources({
@@ -343,7 +343,7 @@ describe('source-utils', () => {
 
         it('generates correct favicon URLs', () => {
             const result = processSources({
-                data: [{ source: 'github.com', visits: 100 }],
+                data: [{source: 'github.com', visits: 100}],
                 mode: 'visits',
                 defaultSourceIconUrl: 'default.png'
             });
@@ -356,7 +356,7 @@ describe('source-utils', () => {
         it('uses site icon for direct traffic', () => {
             const siteIcon = 'https://example.com/favicon.ico';
             const result = processSources({
-                data: [{ source: null as any, visits: 100 }],
+                data: [{source: null as any, visits: 100}],
                 mode: 'visits',
                 siteUrl: 'https://example.com',
                 siteIcon,
@@ -370,7 +370,7 @@ describe('source-utils', () => {
 
         it('handles numeric source values', () => {
             const result = processSources({
-                data: [{ source: 123 as any, visits: 100 }],
+                data: [{source: 123 as any, visits: 100}],
                 mode: 'visits',
                 defaultSourceIconUrl: 'default.png'
             });
@@ -382,9 +382,9 @@ describe('source-utils', () => {
 
         it('sorts by visits in visits mode', () => {
             const sources: BaseSourceData[] = [
-                { source: 'facebook', visits: 50 },
-                { source: 'google', visits: 200 },
-                { source: 'twitter', visits: 100 }
+                {source: 'facebook', visits: 50},
+                {source: 'google', visits: 200},
+                {source: 'twitter', visits: 100}
             ];
 
             const result = processSources({
@@ -400,9 +400,9 @@ describe('source-utils', () => {
 
         it('excludes sources with zero visits', () => {
             const sources: BaseSourceData[] = [
-                { source: 'facebook', visits: 100 },
-                { source: 'google', visits: 0 },
-                { source: 'twitter' } // undefined visits
+                {source: 'facebook', visits: 100},
+                {source: 'google', visits: 0},
+                {source: 'twitter'} // undefined visits
             ];
 
             const result = processSources({
