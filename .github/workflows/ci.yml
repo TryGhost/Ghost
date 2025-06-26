@@ -823,19 +823,8 @@ jobs:
       - name: Build Admin
         run: yarn nx run ghost-admin:build:dev
 
-      - name: Debug nx daemon (before reset)
-        run: yarn nx daemon
-
-      - name: Start nx daemon
-        run: yarn nx daemon --start
-
-      - name: Debug nx daemon (after reset)
-        run: yarn nx daemon
-
       - name: Start Ghost
         run: |
-          yarn nx daemon --start
-          yarn nx daemon
           yarn dev --portal --comments --search --signup --announcement-bar &
 
       - name: Wait for Ghost to be ready
