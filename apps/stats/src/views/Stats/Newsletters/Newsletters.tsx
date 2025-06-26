@@ -43,6 +43,9 @@ const NewsletterTableRows: React.FC<{
         Boolean(shouldFetchStats)
     );
 
+    const {appSettings} = useAppContext();
+    const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
+
     // Data is already sorted by the API based on sortBy
     const sortedStats = useMemo(() => newsletterStatsData?.stats || [], [newsletterStatsData]);
 
@@ -60,16 +63,20 @@ const NewsletterTableRows: React.FC<{
                     <TableCell className='text-right font-mono text-sm'>
                         <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
                     </TableCell>
-                    <TableCell className='text-right font-mono text-sm'>
-                        <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
-                    </TableCell>
-                    <TableCell className='text-right font-mono text-sm'>
-                        <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
-                    </TableCell>
+                    {emailTrackOpensEnabled &&
+                        <TableCell className='text-right font-mono text-sm'>
+                            <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
+                        </TableCell>
+                    }
+                    {emailTrackClicksEnabled &&
+                        <TableCell className='text-right font-mono text-sm'>
+                            <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
+                        </TableCell>
+                    }
                 </TableRow>
             ))}
         </>
-    ), []);
+    ), [emailTrackOpensEnabled, emailTrackClicksEnabled]);
 
     // Memoize the data rows based on the actual data and loading states
     const dataRows = useMemo(() => (
@@ -97,24 +104,29 @@ const NewsletterTableRows: React.FC<{
                     <TableCell className='text-right font-mono text-sm'>
                         {formatNumber(post.sent_to)}
                     </TableCell>
-                    <TableCell className='text-right font-mono text-sm'>
-                        <span className="group-hover:hidden">{formatPercentage(post.open_rate)}</span>
-                        <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_opens)}</span>
-                    </TableCell>
-                    <TableCell className='text-right font-mono text-sm'>
-                        {isClicksLoading ? (
-                            <span className="inline-block h-4 w-8 animate-pulse rounded bg-gray-200"></span>
-                        ) : (
-                            <>
-                                <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
-                                <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_clicks)}</span>
-                            </>
-                        )}
-                    </TableCell>
+                    {emailTrackOpensEnabled &&
+                        <TableCell className='text-right font-mono text-sm'>
+                            <span className="group-hover:hidden">{formatPercentage(post.open_rate)}</span>
+                            <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_opens)}</span>
+                        </TableCell>
+                    }
+
+                    {emailTrackClicksEnabled &&
+                        <TableCell className='text-right font-mono text-sm'>
+                            {isClicksLoading ? (
+                                <span className="inline-block h-4 w-8 animate-pulse rounded bg-gray-200"></span>
+                            ) : (
+                                <>
+                                    <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
+                                    <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_clicks)}</span>
+                                </>
+                            )}
+                        </TableCell>
+                    }
                 </TableRow>
             ))}
         </>
-    ), [sortedStats, isClicksLoading, navigate]);
+    ), [sortedStats, isClicksLoading, navigate, emailTrackClicksEnabled, emailTrackOpensEnabled]);
 
     // Show loading rows while data is loading
     if (isStatsLoading || !newsletterStatsData) {
@@ -139,6 +151,8 @@ const NewsletterTableHeader: React.FC<{
             <CardDescription> Your best performing newsletters {getPeriodText(range)}</CardDescription>
         </CardHeader>
     ), [range]);
+    const {appSettings} = useAppContext();
+    const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
 
     return (
         <TableHeader>
@@ -156,16 +170,20 @@ const NewsletterTableHeader: React.FC<{
                     Sent
                     </SortButton>
                 </TableHead>
-                <TableHead className='w-[90px] text-right'>
-                    <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='open_rate desc'>
-                    Opens
-                    </SortButton>
-                </TableHead>
-                <TableHead className='w-[90px] text-right'>
-                    <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='click_rate desc'>
-                    Clicks
-                    </SortButton>
-                </TableHead>
+                {emailTrackOpensEnabled &&
+                    <TableHead className='w-[90px] text-right'>
+                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='open_rate desc'>
+                        Opens
+                        </SortButton>
+                    </TableHead>
+                }
+                {emailTrackClicksEnabled &&
+                    <TableHead className='w-[90px] text-right'>
+                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='click_rate desc'>
+                        Clicks
+                        </SortButton>
+                    </TableHead>
+                }
             </TableRow>
         </TableHeader>
     );

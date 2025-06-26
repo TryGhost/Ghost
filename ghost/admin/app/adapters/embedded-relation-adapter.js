@@ -55,6 +55,7 @@ export default class EmbeddedRelationAdapter extends BaseAdapter {
         const dataKey = pluralize(root);
 
         let hasMorePages = true;
+        let firstRequestMade = false;
         while (hasMorePages) {
             // Create a fresh query object for each iteration,
             // overriding the limit and page parameters
@@ -77,6 +78,16 @@ export default class EmbeddedRelationAdapter extends BaseAdapter {
 
             // Store metadata from this request (will use the last one)
             lastMeta = result.meta;
+
+            // Guard: if this is the first request and there's no meta key,
+            // assume the endpoint doesn't support pagination and return the data from this request
+            if (!firstRequestMade) {
+                firstRequestMade = true;
+                if (!result.meta) {
+                    hasMorePages = false;
+                    break;
+                }
+            }
 
             // Check if we should continue paginating
             // Stop if this page returned fewer results than requested

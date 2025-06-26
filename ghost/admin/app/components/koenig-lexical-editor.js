@@ -252,7 +252,7 @@ export default class KoenigLexicalEditor extends Component {
         if (this.offers) {
             return this.offers;
         }
-        this.offers = yield this.store.query('offer', {limit: 'all', filter: 'status:active'});
+        this.offers = yield this.store.query('offer', {filter: 'status:active'});
         return this.offers;
     }
 

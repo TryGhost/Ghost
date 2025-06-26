@@ -21,6 +21,7 @@ const Overview: React.FC = () => {
     const {totals, isLoading: isTotalsLoading, currencySymbol} = usePostReferrers(postId);
     const {startDate, endDate, timezone} = getRangeDates(STATS_RANGES.ALL_TIME.value);
     const {appSettings} = useAppContext();
+    const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
 
     // Calculate chart range based on days between today and post publication date
     const chartRange = useMemo(() => {
@@ -119,7 +120,7 @@ const Overview: React.FC = () => {
     const chartIsLoading = isPostLoading || isConfigLoading || chartLoading;
 
     // Use the utility function from admin-x-framework
-    const showNewsletterSection = hasBeenEmailed(post as Post);
+    const showNewsletterSection = hasBeenEmailed(post as Post) && emailTrackOpensEnabled && emailTrackClicksEnabled;
     const showWebSection = !post?.email_only && appSettings?.analytics.webAnalytics;
 
     // Redirect to Growth tab if this is a published-only post with web analytics disabled

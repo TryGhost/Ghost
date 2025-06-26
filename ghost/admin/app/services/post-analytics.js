@@ -41,7 +41,7 @@ export default class PostAnalyticsService extends Service {
         }
         
         // Check if traffic analytics is enabled
-        if (!this.feature.trafficAnalytics) {
+        if (!this.feature.trafficAnalyticsAlpha) {
             return Promise.resolve();
         }
         
@@ -78,7 +78,7 @@ export default class PostAnalyticsService extends Service {
         }
         
         // Check if traffic analytics is enabled
-        if (!this.feature.trafficAnalytics) {
+        if (!this.feature.trafficAnalyticsAlpha) {
             return Promise.resolve();
         }
         

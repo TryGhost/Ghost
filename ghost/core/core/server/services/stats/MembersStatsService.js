@@ -145,9 +145,9 @@ class MembersStatsService {
             runningComped -= row.comped_delta;
         }
 
-        // Generate complete date range from day before startDate to today (includes baseline)
+        // Generate complete date range from startDate to today
         const results = [];
-        const currentDate = moment(startDateMoment).subtract(1, 'day');
+        const currentDate = moment(startDateMoment);
         
         // Track the last known values for forward-filling
         let lastKnownTotals = {

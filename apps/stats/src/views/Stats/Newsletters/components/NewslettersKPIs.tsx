@@ -2,8 +2,8 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {AvgsDataItem} from '../Newsletters';
 import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 import {sanitizeChartData} from '@src/utils/chart-helpers';
+import {useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 
 interface BarTooltipPayload {
     value: number;
@@ -87,6 +87,8 @@ const NewsletterKPIs: React.FC<{
     const {range} = useGlobalData();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const {appSettings} = useAppContext();
+    const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
 
     const {totalSubscribers, avgOpenRate, avgClickRate} = totals;
 
@@ -166,10 +168,18 @@ const NewsletterKPIs: React.FC<{
         );
     }
 
+    let gridClass = 'grid-cols-3';
+    if (!emailTrackClicksEnabled || !emailTrackOpensEnabled) {
+        gridClass = 'grid-cols-2';
+    }
+    if (!emailTrackClicksEnabled && !emailTrackOpensEnabled) {
+        gridClass = 'grid-cols-1';
+    }
+
     return (
         <Tabs defaultValue={initialTab} variant='kpis'>
-            <TabsList className="-mx-6 hidden grid-cols-3 md:!visible md:!grid">
-                <KpiTabTrigger value="total-subscribers" onClick={() => {
+            <TabsList className={`-mx-6 hidden grid-cols-3 md:!visible md:!grid ${gridClass}`}>
+                <KpiTabTrigger className={`${!emailTrackOpensEnabled && !emailTrackClicksEnabled && 'cursor-auto after:hidden'}`} value="total-subscribers" onClick={() => {
                     handleTabChange('total-subscribers');
                 }}>
                     <KpiTabValue
@@ -178,59 +188,71 @@ const NewsletterKPIs: React.FC<{
                         value={formatNumber(totalSubscribers)}
                     />
                 </KpiTabTrigger>
-                <KpiTabTrigger value="avg-open-rate" onClick={() => {
-                    handleTabChange('avg-open-rate');
-                }}>
-                    <KpiTabValue
-                        className={isAvgsLoading ? 'opacity-50' : ''}
-                        color={tabConfig['avg-open-rate'].color}
-                        label="Avg. open rate"
-                        value={formatPercentage(avgOpenRate)}
-                    />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="avg-click-rate" onClick={() => {
-                    handleTabChange('avg-click-rate');
-                }}>
-                    <KpiTabValue
-                        className={isAvgsLoading ? 'opacity-50' : ''}
-                        color={tabConfig['avg-click-rate'].color}
-                        label="Avg. click rate"
-                        value={formatPercentage(avgClickRate)}
-                    />
-                </KpiTabTrigger>
+
+                {emailTrackOpensEnabled &&
+                    <KpiTabTrigger value="avg-open-rate" onClick={() => {
+                        handleTabChange('avg-open-rate');
+                    }}>
+                        <KpiTabValue
+                            className={isAvgsLoading ? 'opacity-50' : ''}
+                            color={tabConfig['avg-open-rate'].color}
+                            label="Avg. open rate"
+                            value={formatPercentage(avgOpenRate)}
+                        />
+                    </KpiTabTrigger>
+                }
+
+                {emailTrackClicksEnabled &&
+                    <KpiTabTrigger value="avg-click-rate" onClick={() => {
+                        handleTabChange('avg-click-rate');
+                    }}>
+                        <KpiTabValue
+                            className={isAvgsLoading ? 'opacity-50' : ''}
+                            color={tabConfig['avg-click-rate'].color}
+                            label="Avg. click rate"
+                            value={formatPercentage(avgClickRate)}
+                        />
+                    </KpiTabTrigger>
+                }
             </TabsList>
             <DropdownMenu>
                 <DropdownMenuTrigger className='md:hidden' asChild>
                     <KpiDropdownButton>
                         {currentTab === 'total-subscribers' &&
-                            <KpiTabValue
-                                color={tabConfig['total-subscribers'].color}
-                                label="Total subscribers"
-                                value={formatNumber(totalSubscribers)}
-                            />
+                                <KpiTabValue
+                                    color={tabConfig['total-subscribers'].color}
+                                    label="Total subscribers"
+                                    value={formatNumber(totalSubscribers)}
+                                />
                         }
                         {currentTab === 'avg-open-rate' &&
-                            <KpiTabValue
-                                className={isAvgsLoading ? 'opacity-50' : ''}
-                                color={tabConfig['avg-open-rate'].color}
-                                label="Avg. open rate"
-                                value={formatPercentage(avgOpenRate)}
-                            />
+                                <KpiTabValue
+                                    className={isAvgsLoading ? 'opacity-50' : ''}
+                                    color={tabConfig['avg-open-rate'].color}
+                                    label="Avg. open rate"
+                                    value={formatPercentage(avgOpenRate)}
+                                />
                         }
                         {currentTab === 'avg-click-rate' &&
-                            <KpiTabValue
-                                className={isAvgsLoading ? 'opacity-50' : ''}
-                                color={tabConfig['avg-open-rate'].color}
-                                label="Avg. open rate"
-                                value={formatPercentage(avgOpenRate)}
-                            />
+                                <KpiTabValue
+                                    className={isAvgsLoading ? 'opacity-50' : ''}
+                                    color={tabConfig['avg-open-rate'].color}
+                                    label="Avg. open rate"
+                                    value={formatPercentage(avgOpenRate)}
+                                />
                         }
                     </KpiDropdownButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align='end' className="w-56">
                     <DropdownMenuItem onClick={() => handleTabChange('total-subscribers')}>Total subscribers</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleTabChange('avg-open-rate')}>Avg. open rate</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleTabChange('avg-click-rate')}>Avg. click rate</DropdownMenuItem>
+
+                    {emailTrackOpensEnabled &&
+                            <DropdownMenuItem onClick={() => handleTabChange('avg-open-rate')}>Avg. open rate</DropdownMenuItem>
+                    }
+
+                    {emailTrackClicksEnabled &&
+                            <DropdownMenuItem onClick={() => handleTabChange('avg-click-rate')}>Avg. click rate</DropdownMenuItem>
+                    }
                 </DropdownMenuContent>
             </DropdownMenu>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>

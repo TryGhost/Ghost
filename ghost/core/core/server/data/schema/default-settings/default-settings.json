@@ -614,5 +614,19 @@
             "defaultValue": false,
             "type": "boolean"
         }
+    },
+    "social_web": {
+        "social_web": {
+            "defaultValue": "true",
+            "validations": {
+                "isIn": [
+                    [
+                        "true",
+                        "false"
+                    ]
+                ]
+            },
+            "type": "boolean"
+        }
     }
 }
