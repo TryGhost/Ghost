@@ -45,7 +45,7 @@ module.exports = class MentionSendingService {
         // for now we don't want to evaluate mentions when importing data (at least needs queueing set up)
         // we do not want to evaluate mentions with fixture (internal) data, e.g. generating posts
         // TODO: real solution is likely suppressing event emission when building fixture data
-        if (options && (options.importing || options.context.internal)) {
+        if (options && (options.importing || (options.context && options.context.internal))) {
             return;
         }
 
