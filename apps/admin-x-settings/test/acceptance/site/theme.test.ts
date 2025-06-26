@@ -542,9 +542,8 @@ test.describe('Theme settings', async () => {
         await expect(page.getByTestId('confirmation-modal')).not.toBeVisible();
     });
 
-    test('Theme install route blocks installation when theme is NOT in single-theme allowlist', async ({page}) => {
-        // When allowlist has only one theme and the theme being installed is NOT in that list,
-        // it should show the limit modal
+    test('Prevents installing themes not in allowlist via UI', async ({page}) => {
+        // Test the UI flow: clicking on a theme and trying to install when it's not in the allowlist
         await mockApi({page, requests: {
             ...globalDataRequests,
             ...limitRequests,
@@ -557,8 +556,8 @@ test.describe('Theme settings', async () => {
                         hostSettings: {
                             limits: {
                                 customThemes: {
-                                    allowlist: ['casper'],
-                                    error: 'Upgrade to use custom themes'
+                                    allowlist: ['casper', 'edition'], // Headline is NOT in the allowlist
+                                    error: 'Upgrade to use more themes'
                                 }
                             }
                         }
@@ -567,15 +566,24 @@ test.describe('Theme settings', async () => {
             }
         }});
 
-        await page.goto('/#/settings/theme/install?source=github&ref=TryGhost/Taste');
+        await page.goto('/');
 
-        await page.waitForSelector('[data-testid="theme-modal"]');
+        const themeSection = page.getByTestId('theme');
+        await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
-        // Should show limit modal because 'taste' is not in the single-theme allowlist
+        const modal = page.getByTestId('theme-modal');
+        
+        // Try to install a theme that's not in the allowlist
+        await modal.getByRole('button', {name: /Headline/}).click();
+
+        // Clicking install should show the limit modal
+        await modal.getByRole('button', {name: 'Install Headline'}).click();
+
+        // Should show limit modal instead of installation confirmation
         await expect(page.getByTestId('limit-modal')).toBeVisible();
-        await expect(page.getByTestId('limit-modal')).toHaveText(/Upgrade to use custom themes/);
+        await expect(page.getByTestId('limit-modal')).toHaveText(/Upgrade to use more themes/);
 
-        // Theme install modal should not be visible
+        // Installation confirmation should not be visible
         await expect(page.getByTestId('confirmation-modal')).not.toBeVisible();
     });
 });
