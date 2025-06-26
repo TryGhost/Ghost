@@ -298,9 +298,30 @@ const Newsletters: React.FC = () => {
             return [];
         }
 
+        const deltas = subscriberStatsData.stats[0].deltas;
+        
+        // If we only have one data point, create two points spanning the range
+        if (deltas.length === 1) {
+            const singlePoint = deltas[0];
+            const now = new Date();
+            const rangeInDays = range;
+            const startDate = new Date(now.getTime() - (rangeInDays * 24 * 60 * 60 * 1000));
+            
+            return [
+                {
+                    ...singlePoint,
+                    date: startDate.toISOString().split('T')[0] // Start of range
+                },
+                {
+                    ...singlePoint,
+                    date: now.toISOString().split('T')[0] // End of range (today)
+                }
+            ];
+        }
+
         // Convert to the required format - already in the correct format
-        return subscriberStatsData.stats[0].deltas;
-    }, [subscriberStatsData]);
+        return deltas;
+    }, [subscriberStatsData, range]);
 
     // Create avgsData from newsletter stats for the bar charts
     const avgsData: AvgsDataItem[] = useMemo(() => {
