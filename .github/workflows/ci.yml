@@ -824,8 +824,7 @@ jobs:
         run: yarn nx run ghost-admin:build:dev
 
       - name: Start Ghost
-        run: |
-          yarn dev --portal --comments --search --signup --announcement-bar &
+        run: yarn dev --portal --comments --search --signup --announcement-bar &
 
       - name: Wait for Ghost to be ready
         run: |
