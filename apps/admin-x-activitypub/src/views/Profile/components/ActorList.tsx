@@ -7,6 +7,7 @@ import getUsername from '@src/utils/get-username';
 import {Actor} from '@src/api/activitypub';
 import {Button, LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
+import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 type ActorListProps = {
@@ -26,6 +27,9 @@ const ActorList: React.FC<ActorListProps> = ({
     hasNextPage,
     isFetchingNextPage
 }) => {
+    const currentAccountQuery = useAccountForUser('index', 'me');
+    const {data: currentUser} = currentAccountQuery;
+    
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -64,6 +68,9 @@ const ActorList: React.FC<ActorListProps> = ({
                 ) : (
                     <div className='flex flex-col'>
                         {actors.map(({actor, isFollowing, blockedByMe, domainBlockedByMe}) => {
+                            const actorHandle = actor.handle || getUsername(actor);
+                            const isCurrentUser = actorHandle === currentUser?.handle;
+                            
                             return (
                                 <React.Fragment key={actor.id}>
                                     <ActivityItem key={actor.id}
@@ -76,18 +83,20 @@ const ActorList: React.FC<ActorListProps> = ({
                                         <div>
                                             <div className='text-gray-600 break-anywhere'>
                                                 <span className='mr-1 line-clamp-1 font-bold text-black dark:text-white'>{getName(actor)}</span>
-                                                <div className='line-clamp-1 text-sm'>{actor.handle || getUsername(actor)}</div>
+                                                <div className='line-clamp-1 text-sm'>{actorHandle}</div>
                                             </div>
                                         </div>
                                         {blockedByMe || domainBlockedByMe ?
                                             <Button className='pointer-events-none ml-auto min-w-[90px]' variant='destructive'>Blocked</Button> :
-                                            <FollowButton
-                                                className='ml-auto'
-                                                data-testid="follow-button"
-                                                following={isFollowing}
-                                                handle={actor.handle || getUsername(actor)}
-                                                type='secondary'
-                                            />
+                                            !isCurrentUser ? (
+                                                <FollowButton
+                                                    className='ml-auto'
+                                                    data-testid="follow-button"
+                                                    following={isFollowing}
+                                                    handle={actorHandle}
+                                                    type='secondary'
+                                                />
+                                            ) : null
                                         }
                                     </ActivityItem>
                                 </React.Fragment>

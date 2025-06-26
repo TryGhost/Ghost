@@ -94,17 +94,15 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
 
             return response;
         },
-        async replies({commentId, afterReplyId, limit, memberUuid}: {commentId: string; afterReplyId: string; limit?: number | 'all', memberUuid?: string}) {
-            const filter = `id:>'${afterReplyId}'`;
-
+        async replies({commentId, afterReplyId, limit, memberUuid}: {commentId: string; afterReplyId?: string; limit?: number, memberUuid?: string}) {
             const params = new URLSearchParams();
 
             if (limit) {
                 params.set('limit', limit.toString());
             }
 
-            if (filter) {
-                params.set('filter', filter);
+            if (afterReplyId) {
+                params.set('filter', `id:>'${afterReplyId}'`);
             }
 
             if (memberUuid) {
@@ -122,7 +120,7 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
             if (memberUuid) {
                 params.set('impersonate_member_uuid', memberUuid);
             }
-        
+
             return await callApi('readComment', {
                 commentId,
                 ...(params.toString() && {params: params.toString()})

@@ -23,12 +23,12 @@ export const createTestWrapper = () => {
             mutations: {retry: false}
         }
     });
-    
+
     const Wrapper = ({children}: {children: React.ReactNode}) => (
         React.createElement(QueryClientProvider, {client: queryClient}, children)
     );
     Wrapper.displayName = 'TestWrapper';
-    
+
     return Wrapper;
 };
 
@@ -128,4 +128,4 @@ export const createMockGlobalData = (siteUrl = 'https://ghost.org') => ({
 
 // Legacy compatibility
 export const setupUniversalMocks = setupStatsAppMocks;
-export const setupDefaultStatsMocks = setupStatsAppMocks; 
+export const setupDefaultStatsMocks = setupStatsAppMocks;

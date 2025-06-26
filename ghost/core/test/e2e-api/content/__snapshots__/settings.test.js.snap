@@ -80,6 +80,7 @@ Object {
         "url": "/contribute/",
       },
     ],
+    "site_uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     "support_email_address": "noreply@127.0.0.1",
     "timezone": "Etc/UTC",
     "title": "Ghost",

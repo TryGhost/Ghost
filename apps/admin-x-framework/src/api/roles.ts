@@ -20,5 +20,6 @@ const dataType = 'RolesResponseType';
 export const useBrowseRoles = createQuery<RolesResponseType>({
     dataType,
     path: '/roles/',
-    defaultSearchParams: {limit: 'all'}
+    // Ghost has a fixed-by-core number of roles so we know it's less than 100
+    defaultSearchParams: {limit: '100'}
 });

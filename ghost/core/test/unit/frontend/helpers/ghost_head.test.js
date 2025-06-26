@@ -384,6 +384,7 @@ describe('{{ghost_head}} helper', function () {
         getStub.withArgs('amp').returns(true);
         getStub.withArgs('comments_enabled').returns('off');
         getStub.withArgs('members_track_sources').returns(true);
+        getStub.withArgs('site_uuid').returns('77f09c60-5a34-4b4c-a3f6-e1b1d78f7412');
 
         // Force the usage of a fixed asset hash so we have reliable snapshots
         configUtils.set('assetHash', 'asset-hash');
@@ -1408,13 +1409,16 @@ describe('{{ghost_head}} helper', function () {
 
     describe('includes tinybird tracker script when config is set', function () {
         let labsStub;
+        function setAnalyticsFlags({analytics = false, tracking = false} = {}) {
+            labsStub.withArgs('trafficAnalytics').returns(analytics);
+            labsStub.withArgs('trafficAnalyticsTracking').returns(tracking);
+        }
         beforeEach(function () {
             configUtils.set({
                 tinybird: {
                     tracker: {
                         endpoint: 'https://e.ghost.org/tb/web_analytics',
                         token: 'tinybird_token',
-                        id: 'tb_test_site_uuid',
                         datasource: 'analytics_events',
                         local: {
                             enabled: false,
@@ -1426,7 +1430,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             });
             labsStub = sinon.stub(labs, 'isSet');
-            labsStub.withArgs('trafficAnalytics').returns(true);
+            setAnalyticsFlags({analytics: true, tracking: false});
             labsStub.withArgs('i18n').returns(true);
         });
 
@@ -1443,7 +1447,49 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not include tracker script when trafficAnalytics is not set', async function () {
-            labsStub.withArgs('trafficAnalytics').returns(false);
+            setAnalyticsFlags({analytics: false, tracking: false});
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js/);
+        });
+
+        it('includes tracker script when trafficAnalyticsTracking is set', async function () {
+            setAnalyticsFlags({analytics: false, tracking: true});
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/script defer src="\/public\/ghost-stats\.min\.js/);
+        });
+
+        it('includes tracker script when both trafficAnalytics and trafficAnalyticsTracking are set', async function () {
+            setAnalyticsFlags({analytics: true, tracking: true});
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/script defer src="\/public\/ghost-stats\.min\.js/);
+        });
+
+        it('does not include tracker script when neither trafficAnalytics nor trafficAnalyticsTracking is set', async function () {
+            setAnalyticsFlags({analytics: false, tracking: false});
 
             const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {

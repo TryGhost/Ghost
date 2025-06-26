@@ -1,4 +1,4 @@
-// UI components
+// UI components —  Basic building blocks (buttons, inputs, dialogs)
 export * from './components/ui/alert-dialog';
 export * from './components/ui/animated-number';
 export * from './components/ui/avatar';
@@ -18,6 +18,7 @@ export * from './components/ui/label';
 export * from './components/ui/loading-indicator';
 export * from './components/ui/navbar';
 export * from './components/ui/no-value-label';
+export * from './components/ui/pagemenu';
 export * from './components/ui/popover';
 export * from './components/ui/right-sidebar';
 export * from './components/ui/separator';
@@ -34,11 +35,14 @@ export * from './components/ui/tooltip';
 
 export type {DropdownMenuCheckboxItemProps as DropdownMenuCheckboxItemProps} from '@radix-ui/react-dropdown-menu';
 
-// Layout components
+// Layout components (headings, pages, view headers)
 export * from './components/layout/page';
 export {ErrorPage} from './components/layout/error-page';
 export * from './components/layout/heading';
 export * from './components/layout/view-header';
+
+// Feature components — Complete functional components (share modal, etc.)
+export {default as PostShareModal} from './components/features/post_share_modal';
 
 // Third party components
 export * as Recharts from 'recharts';

@@ -1,6 +1,5 @@
-import { v4 as uuidv4 } from 'uuid';
 import { getCountryForTimezone } from 'countries-and-timezones';
-import { getReferrer, parseReferrer } from '../utils/url-attribution';
+import { parseReferrer } from '../utils/url-attribution';
 import { processPayload } from '../utils/privacy';
 import { BrowserService } from './browser-service';
 
@@ -83,11 +82,16 @@ export class GhostStats {
             const controller = new AbortController();
             const timeoutId = this.browser.setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            if (config.globalAttributes?.site_uuid) {
+                headers['x-site-uuid'] = config.globalAttributes.site_uuid;
+            }
+
             const response = await this.browser.fetch(url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers,
                 body: JSON.stringify(data),
                 signal: controller.signal
             });
@@ -145,8 +149,7 @@ export class GhostStats {
                 'user-agent': navigator?.userAgent,
                 locale,
                 location: country,
-                referrer: getReferrer(location?.href),
-                parsedReferrer: parseReferrer(location?.href),
+                parsedReferrer: parseReferrer(location?.href), // this sends an object with source, medium, and url
                 pathname: location?.pathname,
                 href: location?.href,
             });

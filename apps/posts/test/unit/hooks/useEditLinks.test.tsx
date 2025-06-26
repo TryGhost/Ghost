@@ -2,9 +2,18 @@ import GlobalDataProvider from '@src/providers/PostAnalyticsContext';
 import React, {act} from 'react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {createErrorHandler, setupMswServer} from '@tryghost/admin-x-framework/test/msw-utils';
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 import {renderHook, waitFor} from '@testing-library/react';
 import {useEditLinks} from '@src/hooks/useEditLinks';
+
+// Mock useParams to provide postId
+vi.mock('@tryghost/admin-x-framework', async () => {
+    const actual = await vi.importActual('@tryghost/admin-x-framework');
+    return {
+        ...actual,
+        useParams: () => ({postId: 'test-post-id'})
+    };
+});
 
 // Set up MSW server with common Ghost API handlers
 const server = setupMswServer();

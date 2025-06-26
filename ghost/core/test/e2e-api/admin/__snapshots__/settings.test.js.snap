@@ -356,6 +356,10 @@ Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
     },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
   ],
 }
 `;
@@ -1155,6 +1159,10 @@ Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
     },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
   ],
 }
 `;
@@ -1529,6 +1537,10 @@ Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
     },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
   ],
 }
 `;
@@ -1901,6 +1913,10 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
     },
   ],
 }
@@ -2738,6 +2754,10 @@ Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
     },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
   ],
 }
 `;
@@ -3112,6 +3132,10 @@ Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
     },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
   ],
 }
 `;
@@ -3485,6 +3509,10 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
     },
   ],
 }
@@ -3864,6 +3892,10 @@ Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
     },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
   ],
 }
 `;
@@ -4236,6 +4268,10 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
     },
   ],
 }
@@ -4614,6 +4650,10 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
     },
   ],
 }
@@ -5357,6 +5397,10 @@ Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
     },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
   ],
 }
 `;
@@ -5730,6 +5774,10 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
     },
   ],
 }
@@ -6106,6 +6154,10 @@ Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
     },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
   ],
 }
 `;
@@ -6480,6 +6532,10 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
     },
   ],
 }
@@ -6917,6 +6973,10 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
     },
   ],
 }

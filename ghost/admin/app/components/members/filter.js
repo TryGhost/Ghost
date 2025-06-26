@@ -640,7 +640,7 @@ export default class MembersFilter extends Component {
 
     @task({drop: true})
     *fetchOffers() {
-        const response = yield this.store.query('offer', {limit: 'all'});
+        const response = yield this.store.findAll('offer');
         this.offers = response;
         return response;
     }

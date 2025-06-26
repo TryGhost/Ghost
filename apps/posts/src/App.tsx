@@ -1,35 +1,33 @@
 import React, {createContext, useContext} from 'react';
 import {APP_ROUTE_PREFIX, routes} from '@src/routes';
-import {FrameworkProvider, Outlet, RouterProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
-import {ShadeApp, ShadeAppProps} from '@tryghost/shade';
+import {AppContextType, BaseAppProps, FrameworkProvider, Outlet, RouterProvider} from '@tryghost/admin-x-framework';
+import {ShadeApp} from '@tryghost/shade';
 
-interface AppProps {
-    framework: TopLevelFrameworkProps;
-    designSystem: ShadeAppProps;
-    fromAnalytics?: boolean;
-}
-
-interface AppContextType {
+interface PostsAppContextType extends AppContextType {
     fromAnalytics: boolean;
-    externalNavigate: (url: string) => void;
 }
 
-const AppContext = createContext<AppContextType | undefined>(undefined);
+const PostsAppContext = createContext<PostsAppContextType | undefined>(undefined);
 
 export const useAppContext = () => {
-    const context = useContext(AppContext);
+    const context = useContext(PostsAppContext);
     if (context === undefined) {
         throw new Error('useAppContext must be used within an AppProvider');
     }
     return context;
 };
 
-const App: React.FC<AppProps> = ({framework, designSystem, fromAnalytics = false}) => {
-    const appContextValue: AppContextType = {
-        fromAnalytics,
+interface AppProps extends BaseAppProps {
+    fromAnalytics?: boolean;
+}
+
+const App: React.FC<AppProps> = ({framework, designSystem, fromAnalytics = false, appSettings}) => {
+    const appContextValue: PostsAppContextType = {
+        appSettings,
         externalNavigate: (url: string) => {
             window.location.href = url;
-        }
+        },
+        fromAnalytics
     };
 
     return (
@@ -41,13 +39,13 @@ const App: React.FC<AppProps> = ({framework, designSystem, fromAnalytics = false
                 refetchOnWindowFocus: false // Disable window focus refetch (Ember admin doesn't have this)
             }}
         >
-            <AppContext.Provider value={appContextValue}>
+            <PostsAppContext.Provider value={appContextValue}>
                 <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
                     <ShadeApp darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
                         <Outlet />
                     </ShadeApp>
                 </RouterProvider>
-            </AppContext.Provider>
+            </PostsAppContext.Provider>
         </FrameworkProvider>
     );
 };

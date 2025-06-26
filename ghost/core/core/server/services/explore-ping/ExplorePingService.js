@@ -29,7 +29,7 @@ module.exports = class ExplorePingService {
 
     async constructPayload() {
         /* eslint-disable camelcase */
-        const {title, description, icon, locale, accent_color, twitter, facebook} = this.settingsCache.getPublic();
+        const {title, description, icon, locale, accent_color, twitter, facebook, site_uuid} = this.settingsCache.getPublic();
 
         // Get post statistics
         const [totalPosts, lastPublishedAt, firstPublishedAt] = await Promise.all([
@@ -52,6 +52,7 @@ module.exports = class ExplorePingService {
 
         return {
             ghost: this.ghostVersion.full,
+            site_uuid,
             url: this.config.get('url'),
             title,
             description,

@@ -10,6 +10,7 @@ Object {
     "icon": null,
     "locale": "en",
     "logo": null,
+    "site_uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     "title": "Ghost",
     "url": "http://127.0.0.1:2369/",
     "version": StringMatching /\\\\d\\+\\\\\\.\\\\d\\+/,

@@ -1,0 +1,7 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+This repository uses yarn v1 as a package manager.
+All commands are prefixed with `yarn` instead of `npm`

@@ -29,7 +29,7 @@ const Navbar = React.forwardRef<HTMLDivElement, NavbarProps>(({children, classNa
     return (
         <div
             ref={ref}
-            className={cn('flex items-center border-b justify-between gap-5', className)}
+            className={cn('flex items-center border-b justify-between gap-x-5 gap-y-2', className)}
             {...props}
         >
             {children}

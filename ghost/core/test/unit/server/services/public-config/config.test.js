@@ -1,6 +1,8 @@
 const assert = require('assert/strict');
 const configUtils = require('../../../../utils/configUtils');
+const settingsCache = require('../../../../../core/shared/settings-cache');
 const getConfigProperties = require('../../../../../core/server/services/public-config/config');
+const sinon = require('sinon');
 
 // List of allowed keys to be returned by the public-config service
 // This is kind of a duplicate of the keys in the config.js output serializer in the api-framework
@@ -27,8 +29,14 @@ const allowedKeys = [
 
 describe('Public-config Service', function () {
     describe('Config Properties', function () {
+        beforeEach(async function () {
+            sinon.stub(settingsCache, 'get')
+                .withArgs('site_uuid')
+                .returns('931ade9e-a4f1-4217-8625-34bd34250c16');
+        });
         afterEach(async function () {
             await configUtils.restore();
+            sinon.restore();
         });
 
         it('should return the correct default config properties', function () {
@@ -84,7 +92,19 @@ describe('Public-config Service', function () {
 
             let configProperties = getConfigProperties();
 
-            assert.deepEqual(configProperties.stats, {endpoint: 'xxx'});
+            assert.deepEqual(configProperties.stats, {endpoint: 'xxx', id: '931ade9e-a4f1-4217-8625-34bd34250c16'});
+        });
+
+        it('should return stats id when tinybird config is set with the id key', function () {
+            configUtils.set('tinybird', {
+                stats: {
+                    id: '1234567890'
+                }
+            });
+
+            let configProperties = getConfigProperties();
+
+            assert.deepEqual(configProperties.stats.id, '1234567890');
         });
 
         it('should NOT return stats when tinybird config is set without the stats key', function () {

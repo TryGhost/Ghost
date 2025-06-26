@@ -2,10 +2,10 @@ import ExitSettingsButton from './components/ExitSettingsButton';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import Users from './components/settings/general/Users';
-import useFeatureFlag from './hooks/useFeatureFlag';
 import {Heading, confirmIfDirty, topLevelBackdropClasses, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
 import {ReactNode, useEffect} from 'react';
 import {canAccessSettings, hasAdminAccess, isEditorUser} from '@tryghost/admin-x-framework/api/users';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from './components/providers/GlobalDataProvider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -25,7 +25,8 @@ const MainContent: React.FC = () => {
     const {currentUser} = useGlobalData();
     const {route, updateRoute, loadingModal} = useRouting();
     const {isDirty} = useGlobalDirtyState();
-    const hasActivityPub = useFeatureFlag('ActivityPub');
+    const {settings} = useGlobalData();
+    const [hasActivityPub] = getSettingValues(settings, ['social_web_enabled']) as [boolean];
 
     const navigateAway = (escLocation: string) => {
         window.location.hash = escLocation;

@@ -41,7 +41,8 @@ describe('ExplorePingService', function () {
                 locale: 'en',
                 twitter: '@test',
                 facebook: 'testfb',
-                labs: JSON.stringify({})
+                labs: JSON.stringify({}),
+                site_uuid: '123e4567-e89b-12d3-a456-426614174000'
             })
         };
 
@@ -103,6 +104,7 @@ describe('ExplorePingService', function () {
 
             assert.deepEqual(payload, {
                 ghost: '4.0.0',
+                site_uuid: '123e4567-e89b-12d3-a456-426614174000',
                 url: 'https://example.com',
                 title: 'Test Blog',
                 description: 'Test Description',

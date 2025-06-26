@@ -102,11 +102,7 @@ export const EmptyState: React.FC<{title?: string, description: string, buttonAc
 export const OffersIndexModal = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
-    const {data: {offers: allOffers = []} = {}, isFetching: isFetchingOffers} = useBrowseOffers({
-        searchParams: {
-            limit: 'all'
-        }
-    });
+    const {data: {offers: allOffers = []} = {}, isFetching: isFetchingOffers} = useBrowseOffers();
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
     const activeOffers = allOffers.filter((offer) => {
         const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);

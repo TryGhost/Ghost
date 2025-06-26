@@ -39,6 +39,122 @@ export const SOURCE_DOMAIN_MAP: Record<string, string> = {
     newsletter: 'static.ghost.org'
 };
 
+// Comprehensive source normalization mapping
+export const SOURCE_NORMALIZATION_MAP = new Map<string, string>([
+    // Social Media Consolidation
+    ['facebook', 'Facebook'],
+    ['www.facebook.com', 'Facebook'],
+    ['l.facebook.com', 'Facebook'],
+    ['lm.facebook.com', 'Facebook'],
+    ['m.facebook.com', 'Facebook'],
+    ['twitter', 'Twitter'],
+    ['x.com', 'Twitter'],
+    ['com.twitter.android', 'Twitter'],
+    ['go.bsky.app', 'Bluesky'],
+    ['bsky', 'Bluesky'],
+    ['bsky.app', 'Bluesky'],
+    ['linkedin', 'LinkedIn'],
+    ['www.linkedin.com', 'LinkedIn'],
+    ['linkedin.com', 'LinkedIn'],
+    ['instagram', 'Instagram'],
+    ['www.instagram.com', 'Instagram'],
+    ['instagram.com', 'Instagram'],
+    ['youtube', 'YouTube'],
+    ['www.youtube.com', 'YouTube'],
+    ['youtube.com', 'YouTube'],
+    ['m.youtube.com', 'YouTube'],
+    ['threads', 'Threads'],
+    ['www.threads.net', 'Threads'],
+    ['threads.net', 'Threads'],
+    ['tiktok', 'TikTok'],
+    ['www.tiktok.com', 'TikTok'],
+    ['tiktok.com', 'TikTok'],
+    ['pinterest', 'Pinterest'],
+    ['www.pinterest.com', 'Pinterest'],
+    ['pinterest.com', 'Pinterest'],
+    ['reddit', 'Reddit'],
+    ['www.reddit.com', 'Reddit'],
+    ['reddit.com', 'Reddit'],
+    ['whatsapp', 'WhatsApp'],
+    ['whatsapp.com', 'WhatsApp'],
+    ['www.whatsapp.com', 'WhatsApp'],
+    ['telegram', 'Telegram'],
+    ['telegram.org', 'Telegram'],
+    ['www.telegram.org', 'Telegram'],
+    ['t.me', 'Telegram'],
+    ['news.ycombinator.com', 'Hacker News'],
+    ['substack', 'Substack'],
+    ['substack.com', 'Substack'],
+    ['www.substack.com', 'Substack'],
+    ['medium', 'Medium'],
+    ['medium.com', 'Medium'],
+    ['www.medium.com', 'Medium'],
+
+    // Search Engines
+    ['google', 'Google'],
+    ['www.google.com', 'Google'],
+    ['google.com', 'Google'],
+    ['bing', 'Bing'],
+    ['www.bing.com', 'Bing'],
+    ['bing.com', 'Bing'],
+    ['yahoo', 'Yahoo'],
+    ['www.yahoo.com', 'Yahoo'],
+    ['yahoo.com', 'Yahoo'],
+    ['search.yahoo.com', 'Yahoo'],
+    ['duckduckgo', 'DuckDuckGo'],
+    ['duckduckgo.com', 'DuckDuckGo'],
+    ['www.duckduckgo.com', 'DuckDuckGo'],
+    ['search.brave.com', 'Brave Search'],
+    ['yandex', 'Yandex'],
+    ['yandex.com', 'Yandex'],
+    ['www.yandex.com', 'Yandex'],
+    ['baidu', 'Baidu'],
+    ['baidu.com', 'Baidu'],
+    ['www.baidu.com', 'Baidu'],
+    ['ecosia', 'Ecosia'],
+    ['www.ecosia.org', 'Ecosia'],
+    ['ecosia.org', 'Ecosia'],
+
+    // Email Platforms
+    ['gmail', 'Gmail'],
+    ['mail.google.com', 'Gmail'],
+    ['gmail.com', 'Gmail'],
+    ['outlook', 'Outlook'],
+    ['outlook.live.com', 'Outlook'],
+    ['outlook.com', 'Outlook'],
+    ['hotmail.com', 'Outlook'],
+    ['mail.yahoo.com', 'Yahoo Mail'],
+    ['ymail.com', 'Yahoo Mail'],
+    ['icloud.com', 'Apple Mail'],
+    ['me.com', 'Apple Mail'],
+    ['mac.com', 'Apple Mail'],
+
+    // News Aggregators
+    ['news.google.com', 'Google News'],
+    ['apple.news', 'Apple News'],
+    ['flipboard', 'Flipboard'],
+    ['flipboard.com', 'Flipboard'],
+    ['www.flipboard.com', 'Flipboard'],
+    ['smartnews', 'SmartNews'],
+    ['smartnews.com', 'SmartNews'],
+    ['www.smartnews.com', 'SmartNews']
+]);
+
+/**
+ * Normalize source names to consistent display names
+ * @param source - Raw source string from referrer data
+ * @returns Normalized source name or 'Direct' for empty/null sources
+ */
+export function normalizeSource(source: string | null): string {
+    if (!source || source === '') {
+        return 'Direct';
+    }
+
+    // Case-insensitive lookup
+    const lowerSource = source.toLowerCase();
+    return SOURCE_NORMALIZATION_MAP.get(lowerSource) || source;
+}
+
 // Helper function to extract domain from URL
 export const extractDomain = (url: string): string | null => {
     try {

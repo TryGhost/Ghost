@@ -1,16 +1,13 @@
 import GlobalDataProvider from './providers/GlobalDataProvider';
 import {APP_ROUTE_PREFIX, routes} from '@src/routes';
-import {FrameworkProvider, Outlet, RouterProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
-import {ShadeApp, ShadeAppProps} from '@tryghost/shade';
+import {AppProvider, BaseAppProps, FrameworkProvider, Outlet, RouterProvider} from '@tryghost/admin-x-framework';
+import {ShadeApp} from '@tryghost/shade';
 
-interface AppProps {
-    framework: TopLevelFrameworkProps;
-    designSystem: ShadeAppProps;
-}
+export {useAppContext} from '@tryghost/admin-x-framework';
 
-const App: React.FC<AppProps> = ({framework, designSystem}) => {
+const App: React.FC<BaseAppProps> = ({framework, designSystem, appSettings}) => {
     return (
-        <FrameworkProvider 
+        <FrameworkProvider
             {...framework}
             queryClientOptions={{
                 staleTime: 0, // Always consider data stale (matches Ember admin route behavior)
@@ -18,13 +15,15 @@ const App: React.FC<AppProps> = ({framework, designSystem}) => {
                 refetchOnWindowFocus: false // Disable window focus refetch (Ember admin doesn't have this)
             }}
         >
-            <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
-                <GlobalDataProvider>
-                    <ShadeApp darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
-                        <Outlet />
-                    </ShadeApp>
-                </GlobalDataProvider>
-            </RouterProvider>
+            <AppProvider appSettings={appSettings}>
+                <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
+                    <GlobalDataProvider>
+                        <ShadeApp darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
+                            <Outlet />
+                        </ShadeApp>
+                    </GlobalDataProvider>
+                </RouterProvider>
+            </AppProvider>
         </FrameworkProvider>
     );
 };

@@ -1,7 +1,14 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, stringMatching, anyContentLength} = matchers;
+const {anyEtag, stringMatching, anyContentLength, anyUuid} = matchers;
 const assert = require('assert/strict');
 const models = require('../../../core/server/models');
+
+const siteMatcherObject = {
+    site: {
+        version: stringMatching(/\d+\.\d+/),
+        site_uuid: anyUuid
+    }
+};
 
 describe('Site Public Settings', function () {
     let membersAgent;
@@ -21,11 +28,7 @@ describe('Site Public Settings', function () {
     it('Can retrieve site pubic config', async function () {
         const {body} = await membersAgent
             .get('/api/site')
-            .matchBodySnapshot({
-                site: {
-                    version: stringMatching(/\d+\.\d+/)
-                }
-            })
+            .matchBodySnapshot(siteMatcherObject)
             .matchHeaderSnapshot({
                 etag: anyEtag,
                 'content-length': anyContentLength
@@ -41,11 +44,7 @@ describe('Site Public Settings', function () {
 
         const {body} = await membersAgent
             .get('/api/site')
-            .matchBodySnapshot({
-                site: {
-                    version: stringMatching(/\d+\.\d+/)
-                }
-            })
+            .matchBodySnapshot(siteMatcherObject)
             .matchHeaderSnapshot({
                 etag: anyEtag,
                 'content-length': anyContentLength
@@ -70,11 +69,7 @@ describe('Site Public Settings', function () {
 
         const {body} = await membersAgent
             .get('/api/site')
-            .matchBodySnapshot({
-                site: {
-                    version: stringMatching(/\d+\.\d+/)
-                }
-            })
+            .matchBodySnapshot(siteMatcherObject)
             .matchHeaderSnapshot({
                 etag: anyEtag,
                 'content-length': anyContentLength

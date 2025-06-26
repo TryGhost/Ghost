@@ -1,0 +1,24 @@
+
+- name: default_site_uuid
+  description: Test active visitors with default site UUID
+  parameters: site_uuid=mock_site_uuid
+  expected_result: |
+    {"active_visitors":16}
+
+- name: active_visitors_default
+  description: Test active visitors with only required site_uuid parameter
+  parameters: site_uuid=mock_site_uuid
+  expected_result: |
+    {"active_visitors":16}
+
+- name: active_visitors_with_post
+  description: Test active visitors filtered by specific post
+  parameters: site_uuid=mock_site_uuid&post_uuid=6b8635fb-292f-4422-9fe4-d76cfab2ba31
+  expected_result: |
+    {"active_visitors":9}
+
+- name: active_visitors_custom_site
+  description: Test active visitors with custom site UUID
+  parameters: site_uuid=custom_site_abc
+  expected_result: |
+    {"active_visitors":0}

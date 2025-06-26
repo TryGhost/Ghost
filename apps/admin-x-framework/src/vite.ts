@@ -42,7 +42,7 @@ export default function adminXViteConfig({packageName, entry, overrides}: {packa
                     'react-dom': 'ReactDOM'
                 }
             }),
-            cssInjectedByJsPlugin()
+            cssInjectedByJsPlugin() as PluginOption // Cast to avoid type conflicts
         ],
         define: {
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),

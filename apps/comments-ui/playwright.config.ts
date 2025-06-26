@@ -16,7 +16,7 @@ export default defineConfig({
     /* Hardcode to use all cores in CI */
     workers: process.env.CI ? '100%' : undefined,
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-    reporter: 'html',
+    reporter: process.env.PLAYWRIGHT_REPORTER ?? 'html',
     timeout: process.env.PLAYWRIGHT_SLOWMO ? 100000 : 20000,
     expect: {
         timeout: process.env.PLAYWRIGHT_SLOWMO ? 100000 : 5000

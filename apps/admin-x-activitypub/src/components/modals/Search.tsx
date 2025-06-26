@@ -4,9 +4,9 @@ import FollowButton from '@components/global/FollowButton';
 import React, {useEffect, useRef} from 'react';
 import {Button, H4, Input, LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade';
 import {SuggestedProfiles} from '../global/SuggestedProfiles';
+import {useAccountForUser, useSearchForUser} from '@hooks/use-activity-pub-queries';
 import {useDebounce} from 'use-debounce';
 import {useNavigate} from '@tryghost/admin-x-framework';
-import {useSearchForUser} from '@hooks/use-activity-pub-queries';
 
 interface AccountSearchResult {
     id: string;
@@ -27,6 +27,10 @@ interface AccountSearchResultItemProps {
 const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
     onOpenChange?: (open: boolean) => void;
 }> = ({account, update, onOpenChange}) => {
+    const currentAccountQuery = useAccountForUser('index', 'me');
+    const {data: currentUser} = currentAccountQuery;
+    const isCurrentUser = account.handle === currentUser?.handle;
+
     const onFollow = () => {
         update(account.id, {
             followedByMe: true,
@@ -64,14 +68,16 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
             </div>
             {account.blockedByMe || account.domainBlockedByMe ?
                 <Button className='pointer-events-none ml-auto min-w-[90px]' variant='destructive'>Blocked</Button> :
-                <FollowButton
-                    className='ml-auto'
-                    following={account.followedByMe}
-                    handle={account.handle}
-                    type='secondary'
-                    onFollow={onFollow}
-                    onUnfollow={onUnfollow}
-                />
+                !isCurrentUser ? (
+                    <FollowButton
+                        className='ml-auto'
+                        following={account.followedByMe}
+                        handle={account.handle}
+                        type='secondary'
+                        onFollow={onFollow}
+                        onUnfollow={onUnfollow}
+                    />
+                ) : null
             }
         </ActivityItem>
     );
@@ -135,7 +141,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                 <Input
                     ref={queryInputRef}
                     autoComplete='off'
-                    className='flex h-10 w-full items-center rounded-lg border-0 bg-transparent px-0 py-1.5 focus-visible:border-0 focus-visible:bg-transparent focus-visible:shadow-none focus-visible:outline-0 dark:text-white dark:placeholder:text-gray-800'
+                    className='flex h-10 w-full items-center rounded-lg border-0 bg-transparent px-0 py-1.5 focus-visible:border-0 focus-visible:bg-transparent focus-visible:shadow-none focus-visible:outline-0 dark:bg-[#101114] dark:text-white dark:placeholder:text-gray-800'
                     placeholder='Enter a handle or account URL...'
                     title="Search"
                     type='text'
@@ -166,7 +172,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                 )}
                 {showSuggested && (
                     <>
-                        <H4>Suggested accounts</H4>
+                        <H4>More people to follow</H4>
                         <SuggestedProfiles
                             onOpenChange={onOpenChange}
                         />

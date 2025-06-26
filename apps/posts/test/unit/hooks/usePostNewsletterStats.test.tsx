@@ -93,7 +93,8 @@ describe('usePostNewsletterStats', () => {
 
     it('handles missing data gracefully', async () => {
         mockApiHook(mocks.mockGetPost, undefined);
-        mockApiHook(mocks.mockUseNewsletterStatsByNewsletterId, undefined);
+        mockApiHook(mocks.mockUseNewsletterBasicStats, undefined);
+        mockApiHook(mocks.mockUseNewsletterClickStats, undefined);
         mockApiHook(mocks.mockUseTopLinks, undefined);
 
         const {result} = renderHook(() => usePostNewsletterStats(testPostId), {wrapper});
