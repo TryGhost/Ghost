@@ -48,18 +48,16 @@ const SuggestedProfiles: React.FC = () => {
 
                 <div
                     ref={scrollContainerRef}
-                    className='scrollbar-hide flex gap-4 overflow-x-auto'
+                    className='flex snap-x snap-mandatory gap-4 overflow-x-auto'
                     style={{
                         scrollbarWidth: 'none',
-                        msOverflowStyle: 'none',
-                        scrollSnapType: 'x mandatory'
+                        msOverflowStyle: 'none'
                     }}
                 >
                     {(isLoadingSuggestedProfiles ? Array(10).fill(null) : (suggestedProfilesData || [])).map((profile, index) => (
                         <div
                             key={profile?.id || `loading-${index}`}
-                            className='relative w-40 shrink-0 rounded-lg bg-gray-75 p-4 dark:bg-gray-925/30'
-                            style={{scrollSnapAlign: 'start'}}
+                            className='relative w-40 shrink-0 snap-start rounded-lg bg-gray-75 p-4 dark:bg-gray-925/30'
                             onClick={!isLoadingSuggestedProfiles && profile ? () => navigate(`/profile/${profile.handle}`) : undefined}
                         >
                             <Button
