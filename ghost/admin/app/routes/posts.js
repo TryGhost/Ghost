@@ -15,7 +15,7 @@ class PostsWithAnalytics extends InfinityModel {
 
     async afterInfinityModel(posts) {
         // Only fetch analytics for published/sent posts when feature is enabled AND web analytics is enabled
-        if (!this.feature.trafficAnalytics || !this.settings.webAnalytics) {
+        if (!this.feature.trafficAnalyticsAlpha || !this.settings.webAnalytics) {
             return posts;
         }
         
@@ -68,7 +68,7 @@ export default class PostsRoute extends AuthenticatedRoute {
 
     model(params) {
         // Reset analytics cache every time we load the posts index to ensure fresh data
-        if (this.feature.trafficAnalytics && this.settings.webAnalytics) {
+        if (this.feature.trafficAnalyticsAlpha && this.settings.webAnalytics) {
             this.postAnalytics.reset();
         }
         
@@ -157,7 +157,7 @@ export default class PostsRoute extends AuthenticatedRoute {
      */
     async _fetchAnalyticsForPosts(model) {
         // Only fetch analytics when feature is enabled AND web analytics is enabled
-        if (!this.feature.trafficAnalytics || !this.settings.webAnalytics) {
+        if (!this.feature.trafficAnalyticsAlpha || !this.settings.webAnalytics) {
             return;
         }
         
