@@ -374,6 +374,60 @@
     opacity: 0;
 }
 
+.gh-post-with-feature-image {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.gh-post-list-feature-image {
+    flex-shrink: 0;
+    background-color: #F8F8FA;
+    width: 100px;
+    aspect-ratio: 16/10;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    padding: 16px;
+}
+
+.gh-posts-list-item-group:hover .gh-post-list-feature-image {
+    background-color: var(--whitegrey-l1);
+}
+
+.gh-post-list-feature-image-placeholder {
+    position: relative;
+    background-color: var(--lightgrey);
+    height: 3px;
+    width: 100%;
+    margin-top: -16px;
+    opacity: 0.6;
+}
+
+.gh-post-list-feature-image-placeholder:before,
+.gh-post-list-feature-image-placeholder:after {
+    position: absolute;
+    display: block;
+    content: "";
+    height: 3px;
+    left: 0;
+    background-color: var(--lightgrey);
+}
+
+.gh-posts-list-item-group:hover .gh-post-list-feature-image-placeholder {
+    opacity: 1.0;
+}
+
+.gh-post-list-feature-image-placeholder:before {
+    top: 8px;
+    right: 12px;
+}
+
+.gh-post-list-feature-image-placeholder:after {
+    top: 16px;
+    right: 8px;
+}
+
 .gh-post-list-external path {
     fill: var(--midgrey);
 }
@@ -648,6 +702,10 @@
 
     .gh-posts-list-item .gh-post-list-metrics {
         width: 0;
+    }
+
+    .gh-post-list-analytics .gh-post-list-metrics-container {
+        display: none;
     }
 
     .gh-posts-list-item .gh-post-list-metrics > * {
