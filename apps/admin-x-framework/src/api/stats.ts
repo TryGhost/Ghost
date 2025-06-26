@@ -154,6 +154,9 @@ export type TopPostViewsStats = {
     views: number;
     open_rate: number | null;
     members: number;
+    authors?: {
+        name: string;
+    }[];
 };
 
 export type TopPostViewsResponseType = {

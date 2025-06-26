@@ -36,7 +36,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
     return (
         <Card className='group/card bg-gradient-to-tr from-muted/40 to-muted/0 to-50%'>
             <CardHeader>
-                <CardTitle className='flex items-baseline justify-between leading-snug text-muted-foreground'>
+                <CardTitle className='flex items-baseline justify-between font-medium leading-snug text-muted-foreground'>
                     Latest post performance
                 </CardTitle>
                 <CardDescription className='hidden'>How your last post did</CardDescription>
@@ -91,7 +91,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                 }}>{latestPostStats.title}</div>
                                 <div className='mt-1 text-sm text-muted-foreground'>
                                     {latestPostStats.authors && latestPostStats.authors.length > 0 && (
-                                        <span>By {latestPostStats.authors.map(author => author.name).join(', ')} • </span>
+                                        <span>By {latestPostStats.authors.map(author => author.name).join(', ')} &mdash; </span>
                                     )}
                                     Published {formatDisplayDate(latestPostStats.published_at)}
                                 </div>

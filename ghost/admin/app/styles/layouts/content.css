@@ -1643,6 +1643,7 @@
     font-weight: 500;
     margin: 0;
     color: var(--middarkgrey);
+    font-family: var(--font-family-mono);
 }
 
 .gh-posts-list-item-group:hover .gh-post-list-analytics .gh-content-email-stats-value {
