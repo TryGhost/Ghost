@@ -1,0 +1,48 @@
+---
+description: Ghost Admin Ember.js Testing Guidelines
+globs:
+alwaysApply: false
+---
+
+# Ghost Admin Ember.js Project Rules
+
+## Testing
+
+This is an Ember.js project that uses ember-exam for running tests. Here are the correct commands:
+
+### Running Tests
+
+- **All tests**: `yarn test` (uses ember-exam with --split 2 --parallel)
+- **Specific test filter**: `yarn ember test --filter="test-name-pattern"`
+- **Verbose output**: `yarn ember test --filter="test-name" --reporter tap`
+
+### Important Notes
+
+1. **Do NOT use**: `yarn test --grep` - this fails with ember-exam
+2. **Use ember test directly**: For filtering, always use `yarn ember test --filter="pattern"`. "pattern" is case-sensitive and should match a `describe` or `it` name.
+3. **Test file location**: Tests are in `tests/acceptance/`, `tests/unit/` and `tests/integration/` directories
+4. **Test framework**: Uses Mocha with Chai assertions and Sinon for mocking
+
+### Examples
+
+```bash
+# Run all tests
+yarn test
+
+# Run specific adapter tests
+yarn ember test --filter="embedded-relation-adapter"
+
+# Run with verbose TAP output
+yarn ember test --filter="embedded-relation-adapter" --reporter tap
+
+# Run integration tests
+yarn ember test --filter="Integration"
+```
+
+## Package Manager
+
+This project uses **yarn v1** as the package manager. Always use `yarn` commands instead of `npm`.
+
+## Node Version
+
+The project supports specific Node.js versions (see package.json engines field). Current warning indicates Node v22.16.0 may not be fully tested but generally works.
