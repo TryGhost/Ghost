@@ -6,7 +6,7 @@ import {useNewsletterBasicStats, useNewsletterClickStats, useNewsletterStats, us
 /**
  * Represents the possible fields to order top newsletters by.
  */
-export type TopNewslettersOrder = 'date desc' | 'open_rate desc' | 'click_rate desc' | 'sent_to desc' | 'date asc' | 'open_rate asc' | 'click_rate asc' | 'sent_to asc';
+export type TopNewslettersOrder = 'date desc' | 'open_rate desc' | 'click_rate desc' | 'sent_to desc';
 
 /**
  * Hook to fetch Newsletter Stats, handling the conversion from a numeric range
