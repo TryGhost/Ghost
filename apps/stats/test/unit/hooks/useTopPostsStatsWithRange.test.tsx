@@ -1,15 +1,8 @@
+import moment from 'moment';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {createTestWrapper, setupStatsAppMocks} from '../../utils/test-helpers';
 import {renderHook} from '@testing-library/react';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
-
-// Mock the dependencies
-vi.mock('@src/hooks/useGrowthStats', () => ({
-    getRangeDates: vi.fn((range: number) => ({
-        dateFrom: `2024-01-${String(31 - range).padStart(2, '0')}`,
-        endDate: '2024-01-31'
-    }))
-}));
 
 vi.mock('@tryghost/admin-x-framework/api/stats');
 vi.mock('@src/providers/GlobalDataProvider');
@@ -31,10 +24,14 @@ describe('useTopPostsStatsWithRange', () => {
         const wrapper = createTestWrapper();
         renderHook(() => useTopPostsStatsWithRange(), {wrapper});
         
+        // Calculate expected dates dynamically
+        const expectedStartDate = moment().subtract(29, 'days').format('YYYY-MM-DD');
+        const expectedEndDate = moment().format('YYYY-MM-DD');
+        
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: '2024-01-01',
-                date_to: '2024-01-31',
+                date_from: expectedStartDate,
+                date_to: expectedEndDate,
                 order: 'mrr desc'
             }
         });
@@ -44,10 +41,14 @@ describe('useTopPostsStatsWithRange', () => {
         const wrapper = createTestWrapper();
         renderHook(() => useTopPostsStatsWithRange(7), {wrapper});
         
+        // Calculate expected dates dynamically
+        const expectedStartDate = moment().subtract(6, 'days').format('YYYY-MM-DD');
+        const expectedEndDate = moment().format('YYYY-MM-DD');
+        
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: '2024-01-24',
-                date_to: '2024-01-31',
+                date_from: expectedStartDate,
+                date_to: expectedEndDate,
                 order: 'mrr desc'
             }
         });
@@ -57,10 +58,14 @@ describe('useTopPostsStatsWithRange', () => {
         const wrapper = createTestWrapper();
         renderHook(() => useTopPostsStatsWithRange(14), {wrapper});
         
+        // Calculate expected dates dynamically
+        const expectedStartDate = moment().subtract(13, 'days').format('YYYY-MM-DD');
+        const expectedEndDate = moment().format('YYYY-MM-DD');
+        
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: '2024-01-17',
-                date_to: '2024-01-31',
+                date_from: expectedStartDate,
+                date_to: expectedEndDate,
                 order: 'mrr desc'
             }
         });
@@ -70,10 +75,14 @@ describe('useTopPostsStatsWithRange', () => {
         const wrapper = createTestWrapper();
         renderHook(() => useTopPostsStatsWithRange(30, 'free_members desc'), {wrapper});
         
+        // Calculate expected dates dynamically
+        const expectedStartDate = moment().subtract(29, 'days').format('YYYY-MM-DD');
+        const expectedEndDate = moment().format('YYYY-MM-DD');
+        
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: '2024-01-01',
-                date_to: '2024-01-31',
+                date_from: expectedStartDate,
+                date_to: expectedEndDate,
                 order: 'free_members desc'
             }
         });
@@ -83,10 +92,14 @@ describe('useTopPostsStatsWithRange', () => {
         const wrapper = createTestWrapper();
         renderHook(() => useTopPostsStatsWithRange(30, 'paid_members desc'), {wrapper});
         
+        // Calculate expected dates dynamically
+        const expectedStartDate = moment().subtract(29, 'days').format('YYYY-MM-DD');
+        const expectedEndDate = moment().format('YYYY-MM-DD');
+        
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: '2024-01-01',
-                date_to: '2024-01-31',
+                date_from: expectedStartDate,
+                date_to: expectedEndDate,
                 order: 'paid_members desc'
             }
         });

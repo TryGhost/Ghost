@@ -1,6 +1,6 @@
 import moment from 'moment';
 import {MemberStatusItem, MrrHistoryItem, useMemberCountHistory, useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
-import {formatNumber, formatPercentage, getRangeDates} from '@tryghost/shade';
+import {formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getSymbol} from '@tryghost/admin-x-framework';
 import {useMemo} from 'react';
 
@@ -187,7 +187,7 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
 export const useGrowthStats = (range: number) => {
     // Calculate date range using Shade's timezone-aware getRangeDates
     const {startDate, endDate} = useMemo(() => getRangeDates(range), [range]);
-    const dateFrom = startDate;
+    const dateFrom = formatQueryDate(startDate);
 
     // Fetch member count history from API
     // For single day ranges, we need at least 2 days of data to show a proper delta
