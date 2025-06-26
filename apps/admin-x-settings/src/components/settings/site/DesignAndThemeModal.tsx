@@ -70,6 +70,41 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
         const ref = searchParams.get('ref') || null;
         const source = searchParams.get('source') || null;
 
+        // Check if theme installation is limited (only if limiter is initialized)
+        if (limiter !== undefined && limiter?.isLimited('customThemes') && ref) {
+            const allowlist = config.hostSettings?.limits?.customThemes?.allowlist;
+            const themeName = ref.split('/')[1]?.toLowerCase();
+            
+            // If only one theme is allowed, don't even attempt to show the theme modal
+            if (allowlist?.length === 1) {
+                const limitError = config.hostSettings?.limits?.customThemes?.error || 'Upgrade to use custom themes';
+                NiceModal.show(LimitModal, {
+                    prompt: limitError,
+                    onOk: () => updateRoute({route: '/pro', isExternal: true})
+                });
+                modal.remove();
+                return null;
+            }
+            
+            // Check if theme is in the allowlist (for multiple allowed themes)
+            if (allowlist && !allowlist.includes(themeName)) {
+                // Theme is not allowed, show limit modal
+                const limitError = config.hostSettings?.limits?.customThemes?.error || 'Upgrade to use custom themes';
+                NiceModal.show(LimitModal, {
+                    prompt: limitError,
+                    onOk: () => updateRoute({route: '/pro', isExternal: true})
+                });
+                // Let them browse the change theme modal after closing limit modal
+                updateRoute('design/change-theme');
+                return null;
+            }
+        }
+        
+        // If limiter isn't initialized yet, don't render the modal
+        if (limiter === undefined && config.hostSettings?.limits?.customThemes) {
+            return null;
+        }
+
         return <ChangeThemeModal source={source} themeRef={ref} />;
     } else {
         modal.remove();
