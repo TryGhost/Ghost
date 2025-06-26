@@ -35,9 +35,7 @@ export default BaseModel.extend(ValidationEngine, {
     metaDescription: attr('string'),
     lastLoginUTC: attr('moment-utc'),
     createdAtUTC: attr('moment-utc'),
-    createdBy: attr('number'),
     updatedAtUTC: attr('moment-utc'),
-    updatedBy: attr('number'),
     roles: hasMany('role', {
         embedded: 'always',
         async: false
