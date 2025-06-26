@@ -49,7 +49,7 @@ test.describe('Feed', async () => {
             }
         }, options: {useActivityPub: true}});
 
-        await page.goto('#/feed');
+        await page.goto('#/notes');
 
         // Wait for the feed to load
         const feedList = page.getByRole('list');
@@ -91,7 +91,7 @@ test.describe('Feed', async () => {
             }
         }, options: {useActivityPub: true}});
 
-        await page.goto('#/feed');
+        await page.goto('#/notes');
 
         // Wait for the feed list to be visible
         const feedList = page.getByTestId('feed-list');
@@ -128,7 +128,7 @@ test.describe('Feed', async () => {
             }
         }, options: {useActivityPub: true}});
 
-        await page.goto('#/feed');
+        await page.goto('#/notes');
 
         // Wait for the feed list to be visible
         const feedList = page.getByTestId('feed-list');
@@ -175,7 +175,7 @@ test.describe('Feed', async () => {
             }
         }, options: {useActivityPub: true}});
 
-        await page.goto('#/feed');
+        await page.goto('#/notes');
 
         // Wait for the feed list to be visible
         const feedList = page.getByTestId('feed-list');
@@ -247,7 +247,7 @@ test.describe('Feed', async () => {
             }
         }, options: {useActivityPub: true}});
 
-        await page.goto('#/feed');
+        await page.goto('#/notes');
 
         // Wait for the feed list to be visible
         const feedList = page.getByTestId('feed-list');
