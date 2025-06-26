@@ -1077,11 +1077,9 @@ jobs:
       - name: Set deployment parameters
         run: |
           if [[ "${{ needs.job_setup.outputs.is_main }}" == "true" ]]; then
-            echo "DEPLOY_REF=refs/heads/main" >> $GITHUB_ENV
-            echo "DEPLOY_VERSION=canary" >> $GITHUB_ENV
+            echo "deploy_version=canary" >> $GITHUB_ENV
           else
-            echo "DEPLOY_REF=refs/heads/6.x" >> $GITHUB_ENV
-            echo "DEPLOY_VERSION=six" >> $GITHUB_ENV
+            echo "deploy_version=six" >> $GITHUB_ENV
           fi
 
       - name: Invoke build
@@ -1089,9 +1087,10 @@ jobs:
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           workflow: .github/workflows/deploy.yml
-          ref: ${{ env.DEPLOY_REF }}
+          ref: 'refs/heads/main' # this is the ref of Ghost-Moya
           repo: TryGhost/Ghost-Moya
-          inputs: '{"version":"${{ env.DEPLOY_VERSION }}","environment":"staging","version_extra":"${{ env.branch_name }}"}'
+          # env.branch_name is the branch of Ghost itself
+          inputs: '{"version":"${{ env.deploy_version }}","environment":"staging","version_extra":"${{ env.branch_name }}"}'
           wait-for-completion-timeout: 25m
           wait-for-completion-interval: 30s
 
