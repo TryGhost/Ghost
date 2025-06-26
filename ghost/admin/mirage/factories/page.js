@@ -5,7 +5,6 @@ export default Factory.extend({
     codeinjectionFoot: null,
     codeinjectionHead: null,
     createdAt: '2015-09-11T09:44:29.871Z',
-    createdBy: 1,
     customExcerpt: null,
     customTemplate: null,
     description(i) { return `Title for page ${i}.`; },
@@ -32,7 +31,6 @@ export default Factory.extend({
     twitterTitle: null,
     emailSubject: null,
     updatedAt: '2015-10-19T16:25:07.756Z',
-    updatedBy: 1,
     uuid(i) { return `page-${i}`; },
 
     authors() { return []; },

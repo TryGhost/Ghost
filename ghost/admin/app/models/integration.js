@@ -11,9 +11,7 @@ export default Model.extend(ValidationEngine, {
     iconImage: attr('string'),
     description: attr('string'),
     createdAtUTC: attr('moment-utc'),
-    createdBy: attr('number'),
     updatedAtUTC: attr('moment-utc'),
-    updatedBy: attr('number'),
 
     apiKeys: hasMany('api-key', {
         embedded: 'always',
