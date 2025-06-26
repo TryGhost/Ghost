@@ -241,7 +241,7 @@ describe('useForm', () => {
     describe('async operations', () => {
         it('shows saving state during async save', async () => {
             let resolveOnSave: () => void;
-            const savePromise = new Promise<void>(resolve => {
+            const savePromise = new Promise<void>((resolve) => {
                 resolveOnSave = resolve;
             });
             const mockOnSave = vi.fn().mockReturnValue(savePromise);

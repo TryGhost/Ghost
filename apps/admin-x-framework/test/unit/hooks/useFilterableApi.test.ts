@@ -447,8 +447,8 @@ describe('useFilterableApi', () => {
             const results = await Promise.all([promise1, promise2, promise3]);
 
             // All calls should return data
-            results.forEach(result => {
-                expect(result).toEqual(mockData);
+            results.forEach((resultItem) => {
+                expect(resultItem).toEqual(mockData);
             });
         });
     });
