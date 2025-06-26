@@ -25,11 +25,7 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     font-size: 18px;
-    {{#hasFeature "emailCustomization"}}
     line-height: 0;
-    {{else}}
-    line-height: 1.4;
-    {{/hasFeature}}
     margin: 0;
     padding: 0;
     -ms-text-size-adjust: 100%;
@@ -56,16 +52,12 @@ table td {
 ------------------------------------- */
 .body {
     width: 100%;
-    {{#hasFeature "emailCustomization"}}
     line-height: 1.4;
-    {{/hasFeature}}
     background-color: {{backgroundColor}} !important;
 }
 
 .header {
-    {{#hasFeature "emailCustomization"}}
     line-height: 1.4;
-    {{/hasFeature}}
     {{#if headerBackgroundColor}}
     background-color: {{headerBackgroundColor}};
     {{else}}

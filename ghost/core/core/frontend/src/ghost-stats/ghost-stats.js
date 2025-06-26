@@ -1,6 +1,5 @@
-import { v4 as uuidv4 } from 'uuid';
 import { getCountryForTimezone } from 'countries-and-timezones';
-import { getReferrer, parseReferrer } from '../utils/url-attribution';
+import { parseReferrer } from '../utils/url-attribution';
 import { processPayload } from '../utils/privacy';
 import { BrowserService } from './browser-service';
 
@@ -150,8 +149,7 @@ export class GhostStats {
                 'user-agent': navigator?.userAgent,
                 locale,
                 location: country,
-                referrer: getReferrer(location?.href),
-                parsedReferrer: parseReferrer(location?.href),
+                parsedReferrer: parseReferrer(location?.href), // this sends an object with source, medium, and url
                 pathname: location?.pathname,
                 href: location?.href,
             });

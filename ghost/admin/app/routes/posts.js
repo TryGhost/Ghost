@@ -11,10 +11,11 @@ import {inject as service} from '@ember/service';
 class PostsWithAnalytics extends InfinityModel {
     @service postAnalytics;
     @service feature;
+    @service settings;
 
     async afterInfinityModel(posts) {
-        // Only fetch analytics for published/sent posts when feature is enabled
-        if (!this.feature.trafficAnalyticsAlpha) {
+        // Only fetch analytics for published/sent posts when feature is enabled AND web analytics is enabled
+        if (!this.feature.trafficAnalyticsAlpha || !this.settings.webAnalytics) {
             return posts;
         }
         
@@ -35,6 +36,7 @@ export default class PostsRoute extends AuthenticatedRoute {
     @service router;
     @service feature;
     @service postAnalytics;
+    @service settings;
 
     queryParams = {
         type: {refreshModel: true},
@@ -65,8 +67,8 @@ export default class PostsRoute extends AuthenticatedRoute {
     }
 
     model(params) {
-        // Reset analytics cache when model changes (filters change)
-        if (this.feature.trafficAnalyticsAlpha) {
+        // Reset analytics cache every time we load the posts index to ensure fresh data
+        if (this.feature.trafficAnalyticsAlpha && this.settings.webAnalytics) {
             this.postAnalytics.reset();
         }
         
@@ -154,8 +156,8 @@ export default class PostsRoute extends AuthenticatedRoute {
      * @param {Object} model - The posts model containing infinity models
      */
     async _fetchAnalyticsForPosts(model) {
-        // Only fetch analytics when feature is enabled
-        if (!this.feature.trafficAnalyticsAlpha) {
+        // Only fetch analytics when feature is enabled AND web analytics is enabled
+        if (!this.feature.trafficAnalyticsAlpha || !this.settings.webAnalytics) {
             return;
         }
         

@@ -5,118 +5,7 @@ import {getFaviconDomain, getSymbol} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
-import {useReferrersGrowth} from '@src/hooks/useReferrersGrowth';
-
-// Source normalization mapping - same as Posts app
-const SOURCE_MAPPING = new Map<string, string>([
-    // Social Media Consolidation
-    ['facebook', 'Facebook'],
-    ['www.facebook.com', 'Facebook'],
-    ['l.facebook.com', 'Facebook'],
-    ['lm.facebook.com', 'Facebook'],
-    ['m.facebook.com', 'Facebook'],
-    ['twitter', 'Twitter'],
-    ['x.com', 'Twitter'],
-    ['com.twitter.android', 'Twitter'],
-    ['go.bsky.app', 'Bluesky'],
-    ['bsky', 'Bluesky'],
-    ['bsky.app', 'Bluesky'],
-    ['linkedin', 'LinkedIn'],
-    ['www.linkedin.com', 'LinkedIn'],
-    ['linkedin.com', 'LinkedIn'],
-    ['instagram', 'Instagram'],
-    ['www.instagram.com', 'Instagram'],
-    ['instagram.com', 'Instagram'],
-    ['youtube', 'YouTube'],
-    ['www.youtube.com', 'YouTube'],
-    ['youtube.com', 'YouTube'],
-    ['m.youtube.com', 'YouTube'],
-    ['threads', 'Threads'],
-    ['www.threads.net', 'Threads'],
-    ['threads.net', 'Threads'],
-    ['tiktok', 'TikTok'],
-    ['www.tiktok.com', 'TikTok'],
-    ['tiktok.com', 'TikTok'],
-    ['pinterest', 'Pinterest'],
-    ['www.pinterest.com', 'Pinterest'],
-    ['pinterest.com', 'Pinterest'],
-    ['reddit', 'Reddit'],
-    ['www.reddit.com', 'Reddit'],
-    ['reddit.com', 'Reddit'],
-    ['whatsapp', 'WhatsApp'],
-    ['whatsapp.com', 'WhatsApp'],
-    ['www.whatsapp.com', 'WhatsApp'],
-    ['telegram', 'Telegram'],
-    ['telegram.org', 'Telegram'],
-    ['www.telegram.org', 'Telegram'],
-    ['t.me', 'Telegram'],
-    ['news.ycombinator.com', 'Hacker News'],
-    ['substack', 'Substack'],
-    ['substack.com', 'Substack'],
-    ['www.substack.com', 'Substack'],
-    ['medium', 'Medium'],
-    ['medium.com', 'Medium'],
-    ['www.medium.com', 'Medium'],
-
-    // Search Engines
-    ['google', 'Google'],
-    ['www.google.com', 'Google'],
-    ['google.com', 'Google'],
-    ['bing', 'Bing'],
-    ['www.bing.com', 'Bing'],
-    ['bing.com', 'Bing'],
-    ['yahoo', 'Yahoo'],
-    ['www.yahoo.com', 'Yahoo'],
-    ['yahoo.com', 'Yahoo'],
-    ['search.yahoo.com', 'Yahoo'],
-    ['duckduckgo', 'DuckDuckGo'],
-    ['duckduckgo.com', 'DuckDuckGo'],
-    ['www.duckduckgo.com', 'DuckDuckGo'],
-    ['search.brave.com', 'Brave Search'],
-    ['yandex', 'Yandex'],
-    ['yandex.com', 'Yandex'],
-    ['www.yandex.com', 'Yandex'],
-    ['baidu', 'Baidu'],
-    ['baidu.com', 'Baidu'],
-    ['www.baidu.com', 'Baidu'],
-    ['ecosia', 'Ecosia'],
-    ['www.ecosia.org', 'Ecosia'],
-    ['ecosia.org', 'Ecosia'],
-
-    // Email Platforms
-    ['gmail', 'Gmail'],
-    ['mail.google.com', 'Gmail'],
-    ['gmail.com', 'Gmail'],
-    ['outlook', 'Outlook'],
-    ['outlook.live.com', 'Outlook'],
-    ['outlook.com', 'Outlook'],
-    ['hotmail.com', 'Outlook'],
-    ['mail.yahoo.com', 'Yahoo Mail'],
-    ['ymail.com', 'Yahoo Mail'],
-    ['icloud.com', 'Apple Mail'],
-    ['me.com', 'Apple Mail'],
-    ['mac.com', 'Apple Mail'],
-
-    // News Aggregators
-    ['news.google.com', 'Google News'],
-    ['apple.news', 'Apple News'],
-    ['flipboard', 'Flipboard'],
-    ['flipboard.com', 'Flipboard'],
-    ['www.flipboard.com', 'Flipboard'],
-    ['smartnews', 'SmartNews'],
-    ['smartnews.com', 'SmartNews'],
-    ['www.smartnews.com', 'SmartNews']
-]);
-
-const normalizeSource = (source: string): string => {
-    if (!source || source === '') {
-        return 'Direct';
-    }
-
-    // Case-insensitive lookup
-    const lowerSource = source.toLowerCase();
-    return SOURCE_MAPPING.get(lowerSource) || source;
-};
+import {useTopSourcesGrowth} from '@src/hooks/useTopSourcesGrowth';
 
 interface ProcessedReferrerData {
     source: string;
@@ -128,53 +17,18 @@ interface ProcessedReferrerData {
     linkUrl?: string;
 }
 
-type SourcesOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc' | 'source asc' | 'source desc';
+type SourcesOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc' | 'source desc';
 
 interface GrowthSourcesTableProps {
     data: ProcessedReferrerData[];
     currencySymbol: string;
     limit?: number;
     defaultSourceIconUrl: string;
-    sortBy: SourcesOrder;
 }
 
-const GrowthSourcesTableBody: React.FC<GrowthSourcesTableProps> = ({data, currencySymbol, limit, defaultSourceIconUrl, sortBy}) => {
-    const sortedData = React.useMemo(() => {
-        const [field, direction = 'desc'] = sortBy.split(' ');
-
-        return [...data].sort((a, b) => {
-            let valueA, valueB;
-
-            switch (field) {
-            case 'source':
-                valueA = a.source.toLowerCase();
-                valueB = b.source.toLowerCase();
-                break;
-            case 'free_members':
-                valueA = a.free_members;
-                valueB = b.free_members;
-                break;
-            case 'paid_members':
-                valueA = a.paid_members;
-                valueB = b.paid_members;
-                break;
-            case 'mrr':
-                valueA = a.mrr;
-                valueB = b.mrr;
-                break;
-            default:
-                return 0;
-            }
-
-            if (direction === 'desc') {
-                return valueA < valueB ? 1 : valueA > valueB ? -1 : 0;
-            } else {
-                return valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
-            }
-        });
-    }, [data, sortBy]);
-
-    const displayData = limit ? sortedData.slice(0, limit) : sortedData;
+const GrowthSourcesTableBody: React.FC<GrowthSourcesTableProps> = ({data, currencySymbol, limit, defaultSourceIconUrl}) => {
+    // Data is already sorted by the backend, so we just need to apply limit if specified
+    const displayData = limit ? data.slice(0, limit) : data;
 
     return (
         <TableBody>
@@ -223,17 +77,30 @@ interface GrowthSourcesProps {
     range: number;
     limit?: number;
     showViewAll?: boolean;
+    sortBy?: SourcesOrder;
+    setSortBy?: (sortBy: SourcesOrder) => void;
 }
 
 export const GrowthSources: React.FC<GrowthSourcesProps> = ({
     range,
     limit = 20,
-    showViewAll = false
+    showViewAll = false,
+    sortBy: externalSortBy,
+    setSortBy: externalSetSortBy
 }) => {
     const {data: globalData} = useGlobalData();
-    const {data: referrersData, isLoading} = useReferrersGrowth(range);
     const {data: mrrHistoryResponse} = useMrrHistory();
-    const [sortBy, setSortBy] = useState<SourcesOrder>('free_members desc');
+    
+    // Use external sort state if provided, otherwise use internal state
+    const [internalSortBy, setInternalSortBy] = useState<SourcesOrder>('free_members desc');
+    const sortBy = externalSortBy || internalSortBy;
+    const setSortBy = externalSetSortBy || setInternalSortBy;
+
+    // Convert our sort format to backend format
+    const backendOrderBy = sortBy.replace('free_members', 'signups').replace('paid_members', 'paid_conversions');
+    
+    // Use the new endpoint with server-side sorting and limiting
+    const {data: referrersData, isLoading} = useTopSourcesGrowth(range, backendOrderBy, limit);
 
     // Get site URL for favicon processing
     const siteUrl = globalData?.url as string | undefined;
@@ -259,50 +126,32 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
         return getSymbol('usd');
     }, [mrrHistoryResponse]);
 
-    // Process and aggregate referrer data
+    // Process data for display (no client-side sorting needed since backend handles it)
     const processedData = React.useMemo((): ProcessedReferrerData[] => {
         if (!referrersData?.stats) {
             return [];
         }
 
-        // Group by source and sum metrics
-        const sourceMap = new Map<string, {signups: number, paid_conversions: number, mrr: number}>();
+        // Map the backend data to our display format
+        // Backend already returns normalized source names, so no need for client-side normalization
+        return referrersData.stats.map((item) => {
+            const source = item.source || 'Direct'; // Backend should handle this, but fallback just in case
+            const {domain: faviconDomain} = getFaviconDomain(source, siteUrl);
+            const iconSrc = faviconDomain
+                ? `https://www.faviconextractor.com/favicon/${faviconDomain}?larger=true`
+                : defaultSourceIconUrl;
+            const linkUrl = faviconDomain ? `https://${faviconDomain}` : undefined;
 
-        referrersData.stats.forEach((item) => {
-            const normalizedSource = normalizeSource(item.source || '');
-            const existing = sourceMap.get(normalizedSource) || {signups: 0, paid_conversions: 0, mrr: 0};
-            sourceMap.set(normalizedSource, {
-                signups: existing.signups + item.signups,
-                paid_conversions: existing.paid_conversions + item.paid_conversions,
-                mrr: existing.mrr + item.mrr
-            });
+            return {
+                source,
+                free_members: item.signups, // Backend returns 'signups', we map to 'free_members' for display
+                paid_members: item.paid_conversions, // Backend returns 'paid_conversions', we map to 'paid_members' for display  
+                mrr: item.mrr,
+                iconSrc,
+                displayName: source,
+                linkUrl
+            };
         });
-
-        // Convert to array and calculate metrics
-        return Array.from(sourceMap.entries())
-            .map(([source, metrics]) => {
-                const {domain: faviconDomain} = getFaviconDomain(source, siteUrl);
-                const iconSrc = faviconDomain
-                    ? `https://www.faviconextractor.com/favicon/${faviconDomain}?larger=true`
-                    : defaultSourceIconUrl;
-                const linkUrl = faviconDomain ? `https://${faviconDomain}` : undefined;
-
-                return {
-                    source,
-                    free_members: metrics.signups, // Free signups from members_created_events
-                    paid_members: metrics.paid_conversions, // Paid conversions from members_subscription_created_events
-                    mrr: metrics.mrr,
-                    iconSrc,
-                    displayName: source,
-                    linkUrl
-                };
-            })
-            .filter((item) => {
-                return item.free_members >= 0 && (item.free_members > 0 || item.paid_members > 0); // Skip sources with negative free members, only show sources with conversions
-            })
-            .sort((a, b) => {
-                return (b.free_members + b.paid_members) - (a.free_members + a.paid_members); // Sort by total conversions
-            });
     }, [referrersData, siteUrl]);
 
     const title = 'Top sources';
@@ -322,7 +171,6 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
                     data={processedData}
                     defaultSourceIconUrl={defaultSourceIconUrl}
                     limit={limit}
-                    sortBy={sortBy}
                 />
             ) : (
                 <TableBody>
@@ -388,7 +236,6 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
                                                 currencySymbol={currencySymbol}
                                                 data={processedData}
                                                 defaultSourceIconUrl={defaultSourceIconUrl}
-                                                sortBy={sortBy}
                                             />
                                         </Table>
                                     </div>
