@@ -16,6 +16,12 @@ const mockUseNewsletterStats = vi.mocked(useNewsletterStats);
 const mockUseSubscriberCount = vi.mocked(useSubscriberCount);
 const mockUseBrowseNewsletters = vi.mocked(useBrowseNewsletters);
 
+// Helper function for calculating expected date ranges
+const getExpectedDateRange = (days: number) => ({
+    expectedDateFrom: moment().subtract(days - 1, 'days').format('YYYY-MM-DD'),
+    expectedDateTo: moment().format('YYYY-MM-DD')
+});
+
 describe('Newsletter Stats Hooks', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -126,15 +132,14 @@ describe('Newsletter Stats Hooks', () => {
             const {result} = renderHook(() => useNewsletterStatsWithRange(), {wrapper});
             
             // Calculate expected dates dynamically
-            const expectedDateFrom = moment().subtract(29, 'days').format('YYYY-MM-DD');
-            const expectedDateTo = moment().format('YYYY-MM-DD');
+            const expectedDateRange = getExpectedDateRange(30);
             
             // The hook should be called with default parameters
             expect(result.current).toBeDefined();
             expect(mockUseNewsletterStats).toHaveBeenCalledWith({
                 searchParams: {
-                    date_from: expectedDateFrom,
-                    date_to: expectedDateTo,
+                    date_from: expectedDateRange.expectedDateFrom,
+                    date_to: expectedDateRange.expectedDateTo,
                     order: 'date desc'
                 },
                 enabled: true
@@ -146,14 +151,13 @@ describe('Newsletter Stats Hooks', () => {
             const {result} = renderHook(() => useNewsletterStatsWithRange(7), {wrapper});
             
             // Calculate expected dates dynamically
-            const expectedDateFrom = moment().subtract(6, 'days').format('YYYY-MM-DD');
-            const expectedDateTo = moment().format('YYYY-MM-DD');
+            const expectedDateRange = getExpectedDateRange(7);
             
             expect(result.current).toBeDefined();
             expect(mockUseNewsletterStats).toHaveBeenCalledWith({
                 searchParams: {
-                    date_from: expectedDateFrom,
-                    date_to: expectedDateTo,
+                    date_from: expectedDateRange.expectedDateFrom,
+                    date_to: expectedDateRange.expectedDateTo,
                     order: 'date desc'
                 },
                 enabled: true
@@ -165,14 +169,13 @@ describe('Newsletter Stats Hooks', () => {
             const {result} = renderHook(() => useNewsletterStatsWithRange(14), {wrapper});
             
             // Calculate expected dates dynamically
-            const expectedDateFrom = moment().subtract(13, 'days').format('YYYY-MM-DD');
-            const expectedDateTo = moment().format('YYYY-MM-DD');
+            const expectedDateRange = getExpectedDateRange(14);
             
             expect(result.current).toBeDefined();
             expect(mockUseNewsletterStats).toHaveBeenCalledWith({
                 searchParams: {
-                    date_from: expectedDateFrom,
-                    date_to: expectedDateTo,
+                    date_from: expectedDateRange.expectedDateFrom,
+                    date_to: expectedDateRange.expectedDateTo,
                     order: 'date desc'
                 },
                 enabled: true
@@ -184,14 +187,13 @@ describe('Newsletter Stats Hooks', () => {
             const {result} = renderHook(() => useNewsletterStatsWithRange(30, 'open_rate desc'), {wrapper});
             
             // Calculate expected dates dynamically
-            const expectedDateFrom = moment().subtract(29, 'days').format('YYYY-MM-DD');
-            const expectedDateTo = moment().format('YYYY-MM-DD');
+            const expectedDateRange = getExpectedDateRange(30);
             
             expect(result.current).toBeDefined();
             expect(mockUseNewsletterStats).toHaveBeenCalledWith({
                 searchParams: {
-                    date_from: expectedDateFrom,
-                    date_to: expectedDateTo,
+                    date_from: expectedDateRange.expectedDateFrom,
+                    date_to: expectedDateRange.expectedDateTo,
                     order: 'open_rate desc'
                 },
                 enabled: true
@@ -203,14 +205,13 @@ describe('Newsletter Stats Hooks', () => {
             const {result} = renderHook(() => useNewsletterStatsWithRange(30, 'date desc', 'newsletter-123'), {wrapper});
             
             // Calculate expected dates dynamically
-            const expectedDateFrom = moment().subtract(29, 'days').format('YYYY-MM-DD');
-            const expectedDateTo = moment().format('YYYY-MM-DD');
+            const expectedDateRange = getExpectedDateRange(30);
             
             expect(result.current).toBeDefined();
             expect(mockUseNewsletterStats).toHaveBeenCalledWith({
                 searchParams: {
-                    date_from: expectedDateFrom,
-                    date_to: expectedDateTo,
+                    date_from: expectedDateRange.expectedDateFrom,
+                    date_to: expectedDateRange.expectedDateTo,
                     order: 'date desc',
                     newsletter_id: 'newsletter-123'
                 },
@@ -225,14 +226,13 @@ describe('Newsletter Stats Hooks', () => {
             const {result} = renderHook(() => useSubscriberCountWithRange(), {wrapper});
             
             // Calculate expected dates dynamically
-            const expectedDateFrom = moment().subtract(29, 'days').format('YYYY-MM-DD');
-            const expectedDateTo = moment().format('YYYY-MM-DD');
+            const expectedDateRange = getExpectedDateRange(30);
             
             expect(result.current).toBeDefined();
             expect(mockUseSubscriberCount).toHaveBeenCalledWith({
                 searchParams: {
-                    date_from: expectedDateFrom,
-                    date_to: expectedDateTo
+                    date_from: expectedDateRange.expectedDateFrom,
+                    date_to: expectedDateRange.expectedDateTo
                 },
                 enabled: true
             });
@@ -243,14 +243,13 @@ describe('Newsletter Stats Hooks', () => {
             const {result} = renderHook(() => useSubscriberCountWithRange(7), {wrapper});
             
             // Calculate expected dates dynamically
-            const expectedDateFrom = moment().subtract(6, 'days').format('YYYY-MM-DD');
-            const expectedDateTo = moment().format('YYYY-MM-DD');
+            const expectedDateRange = getExpectedDateRange(7);
             
             expect(result.current).toBeDefined();
             expect(mockUseSubscriberCount).toHaveBeenCalledWith({
                 searchParams: {
-                    date_from: expectedDateFrom,
-                    date_to: expectedDateTo
+                    date_from: expectedDateRange.expectedDateFrom,
+                    date_to: expectedDateRange.expectedDateTo
                 },
                 enabled: true
             });
@@ -261,14 +260,13 @@ describe('Newsletter Stats Hooks', () => {
             const {result} = renderHook(() => useSubscriberCountWithRange(30, 'newsletter-123'), {wrapper});
             
             // Calculate expected dates dynamically
-            const expectedDateFrom = moment().subtract(29, 'days').format('YYYY-MM-DD');
-            const expectedDateTo = moment().format('YYYY-MM-DD');
+            const expectedDateRange = getExpectedDateRange(30);
             
             expect(result.current).toBeDefined();
             expect(mockUseSubscriberCount).toHaveBeenCalledWith({
                 searchParams: {
-                    date_from: expectedDateFrom,
-                    date_to: expectedDateTo,
+                    date_from: expectedDateRange.expectedDateFrom,
+                    date_to: expectedDateRange.expectedDateTo,
                     newsletter_id: 'newsletter-123'
                 },
                 enabled: true

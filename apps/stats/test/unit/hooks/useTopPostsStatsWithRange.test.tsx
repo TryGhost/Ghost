@@ -4,6 +4,12 @@ import {createTestWrapper, setupStatsAppMocks} from '../../utils/test-helpers';
 import {renderHook} from '@testing-library/react';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 
+// Helper function for calculating expected date ranges
+const getExpectedDateRange = (days: number) => ({
+    expectedDateFrom: moment().subtract(days - 1, 'days').format('YYYY-MM-DD'),
+    expectedDateTo: moment().format('YYYY-MM-DD')
+});
+
 vi.mock('@tryghost/admin-x-framework/api/stats');
 vi.mock('@src/providers/GlobalDataProvider');
 
@@ -24,14 +30,12 @@ describe('useTopPostsStatsWithRange', () => {
         const wrapper = createTestWrapper();
         renderHook(() => useTopPostsStatsWithRange(), {wrapper});
         
-        // Calculate expected dates dynamically
-        const expectedStartDate = moment().subtract(29, 'days').format('YYYY-MM-DD');
-        const expectedEndDate = moment().format('YYYY-MM-DD');
+        const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(30);
         
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: expectedStartDate,
-                date_to: expectedEndDate,
+                date_from: expectedDateFrom,
+                date_to: expectedDateTo,
                 order: 'mrr desc'
             }
         });
@@ -41,14 +45,12 @@ describe('useTopPostsStatsWithRange', () => {
         const wrapper = createTestWrapper();
         renderHook(() => useTopPostsStatsWithRange(7), {wrapper});
         
-        // Calculate expected dates dynamically
-        const expectedStartDate = moment().subtract(6, 'days').format('YYYY-MM-DD');
-        const expectedEndDate = moment().format('YYYY-MM-DD');
+        const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(7);
         
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: expectedStartDate,
-                date_to: expectedEndDate,
+                date_from: expectedDateFrom,
+                date_to: expectedDateTo,
                 order: 'mrr desc'
             }
         });
@@ -58,14 +60,12 @@ describe('useTopPostsStatsWithRange', () => {
         const wrapper = createTestWrapper();
         renderHook(() => useTopPostsStatsWithRange(14), {wrapper});
         
-        // Calculate expected dates dynamically
-        const expectedStartDate = moment().subtract(13, 'days').format('YYYY-MM-DD');
-        const expectedEndDate = moment().format('YYYY-MM-DD');
+        const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(14);
         
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: expectedStartDate,
-                date_to: expectedEndDate,
+                date_from: expectedDateFrom,
+                date_to: expectedDateTo,
                 order: 'mrr desc'
             }
         });
@@ -75,14 +75,12 @@ describe('useTopPostsStatsWithRange', () => {
         const wrapper = createTestWrapper();
         renderHook(() => useTopPostsStatsWithRange(30, 'free_members desc'), {wrapper});
         
-        // Calculate expected dates dynamically
-        const expectedStartDate = moment().subtract(29, 'days').format('YYYY-MM-DD');
-        const expectedEndDate = moment().format('YYYY-MM-DD');
+        const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(30);
         
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: expectedStartDate,
-                date_to: expectedEndDate,
+                date_from: expectedDateFrom,
+                date_to: expectedDateTo,
                 order: 'free_members desc'
             }
         });
@@ -92,14 +90,12 @@ describe('useTopPostsStatsWithRange', () => {
         const wrapper = createTestWrapper();
         renderHook(() => useTopPostsStatsWithRange(30, 'paid_members desc'), {wrapper});
         
-        // Calculate expected dates dynamically
-        const expectedStartDate = moment().subtract(29, 'days').format('YYYY-MM-DD');
-        const expectedEndDate = moment().format('YYYY-MM-DD');
+        const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(30);
         
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: expectedStartDate,
-                date_to: expectedEndDate,
+                date_from: expectedDateFrom,
+                date_to: expectedDateTo,
                 order: 'paid_members desc'
             }
         });
