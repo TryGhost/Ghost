@@ -246,21 +246,31 @@ class FixtureManager {
     processFixtures(fixtures, placeholderMap) {
         const cache = new Map();
 
+        const processString = (str, replacements) => {
+            let result = str;
+
+            for (const placeholder in replacements) {
+                if (result.includes(placeholder)) {
+                    if (!cache.has(placeholder)) {
+                        cache.set(placeholder, replacements[placeholder](models));
+                    }
+
+                    const processedValue = cache.get(placeholder);
+
+                    result = result.replaceAll(placeholder, processedValue);
+                }
+            }
+
+            return result;
+        };
+
         const replacePlaceholders = (obj, replacements) => {
             if (obj === null || obj === undefined) {
                 return obj;
             }
 
             if (typeof obj === 'string') {
-                if (cache.has(obj)) {
-                    return cache.get(obj);
-                }
-
-                const value = replacements[obj] !== undefined ? replacements[obj](models) : obj;
-
-                cache.set(obj, value);
-
-                return value;
+                return processString(obj, replacements);
             }
 
             if (Array.isArray(obj)) {
@@ -272,11 +282,8 @@ class FixtureManager {
 
                 for (const key in obj) {
                     if (Object.prototype.hasOwnProperty.call(obj, key)) {
-                        const newKey = cache.has(key) ? cache.get(key) : key;
-
-                        if (!cache.has(key)) {
-                            cache.set(key, newKey);
-                        }
+                        // Process the key itself for placeholders
+                        const newKey = processString(key, replacements);
 
                         result[newKey] = replacePlaceholders(obj[key], replacements);
                     }
