@@ -48,6 +48,7 @@ const PRIVATE_FEATURES = [
     'urlCache',
     'mailEvents',
     'lexicalIndicators',
+    'trafficAnalyticsAlpha',
     'updatedMainNav',
     'contentVisibilityAlpha',
     'explore',
