@@ -1,4 +1,4 @@
-import {getRangeDates} from './useGrowthStats';
+import {getRangeDates} from '@tryghost/shade';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useMemo} from 'react';
 import {useNewsletterBasicStats, useNewsletterClickStats, useNewsletterStats, useSubscriberCount} from '@tryghost/admin-x-framework/api/stats';

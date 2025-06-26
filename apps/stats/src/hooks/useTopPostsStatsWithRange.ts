@@ -1,4 +1,4 @@
-import {getRangeDates} from './useGrowthStats';
+import {getRangeDates} from '@tryghost/shade';
 import {useMemo} from 'react';
 import {useTopPostsStats} from '@tryghost/admin-x-framework/api/stats';
 
