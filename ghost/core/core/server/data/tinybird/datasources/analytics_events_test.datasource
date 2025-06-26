@@ -10,7 +10,7 @@ SCHEMA >
     `action` LowCardinality(String) `json:$.action`,
     `version` LowCardinality(String) `json:$.version`,
     `payload` JSON(max_dynamic_types=4, max_dynamic_paths=32) `json:$.payload`,
-    `site_uuid` String `json:$.payload.site_uuid`
+    `site_uuid` LowCardinality(String) `json:$.payload.site_uuid`
 
 ENGINE "MergeTree"
 ENGINE_PARTITION_KEY "toYYYYMM(timestamp)"
