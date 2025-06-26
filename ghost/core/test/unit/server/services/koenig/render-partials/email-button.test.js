@@ -10,7 +10,7 @@ describe('koenig/services/render-partials/email-button', function () {
                 text: '',
                 alignment: '',
                 buttonWidth: '',
-                color: 'accent',
+                color: '',
                 style: 'fill'
             });
         });
@@ -32,7 +32,7 @@ describe('koenig/services/render-partials/email-button', function () {
                 text: '',
                 alignment: '',
                 buttonWidth: '',
-                color: 'accent',
+                color: '',
                 style: 'fill'
             });
         });
@@ -50,6 +50,10 @@ describe('koenig/services/render-partials/email-button', function () {
         it('returns white for a dark colored fill', function () {
             const result = emailButton._getTextColor({color: '#222222', style: 'fill'});
             assert.equal(result, '#FFFFFF');
+        });
+        it('handles invalid hex colors', function () {
+            const result = emailButton._getTextColor({color: 'invalid', style: 'fill'});
+            assert.equal(result, '');
         });
     });
 
@@ -79,7 +83,7 @@ describe('koenig/services/render-partials/email-button', function () {
         });
         it('returns expected style for outline custom color button', function () {
             const result = emailButton._getButtonStyle({color: '#222222', style: 'outline'});
-            assert.equal(result, 'border: 1px solid #222222; background-color: transparent; color: #222222 !important;');
+            assert.equal(result, 'color: #222222 !important; border: 1px solid #222222; border-color: currentColor; background-color: transparent;');
         });
     });
 

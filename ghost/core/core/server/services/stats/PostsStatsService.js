@@ -1,5 +1,9 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
+const urlUtils = require('../../../shared/url-utils');
+
+// Import source normalization from ReferrersStatsService
+const {normalizeSource} = require('./ReferrersStatsService');
 
 /**
  * @typedef {Object} StatsServiceOptions
@@ -8,6 +12,30 @@ const errors = require('@tryghost/errors');
  * @property {string} [date_from] - optional start date filter (YYYY-MM-DD)
  * @property {string} [date_to] - optional end date filter (YYYY-MM-DD)
  * @property {string} [timezone='UTC'] - optional timezone for date interpretation
+ * @property {string} [post_type] - optional filter by post type ('post' or 'page')
+ */
+
+/**
+ * @typedef {Object} TopPostsOptions
+ * @property {string} [order='free_members desc'] - Sort order (e.g., 'free_members desc', 'paid_members desc', 'mrr desc')
+ * @property {number} [limit=20] - Maximum number of results to return
+ * @property {string} [date_from] - Start date filter in YYYY-MM-DD format
+ * @property {string} [date_to] - End date filter in YYYY-MM-DD format
+ * @property {string} [post_type] - Filter by post type ('post', 'page')
+ */
+
+/**
+ * @typedef {Object} AttributionResult
+ * @property {string} [post_id] - Post ID if this is a post/page
+ * @property {string} attribution_url - The URL that drove the conversion
+ * @property {string} attribution_type - Type of attribution ('post', 'page', 'url', 'tag', 'author')
+ * @property {string} attribution_id - ID of the attributed resource
+ * @property {string} title - Display title for the content
+ * @property {string} [published_at] - Publication date
+ * @property {number} free_members - Number of free member conversions
+ * @property {number} paid_members - Number of paid member conversions
+ * @property {number} mrr - Monthly recurring revenue impact
+ * @property {string} [post_type] - Post type if applicable
  */
 
 /**
@@ -17,6 +45,7 @@ const errors = require('@tryghost/errors');
  * @property {number} free_members - Count of members who signed up on this post but paid elsewhere/never
  * @property {number} paid_members - Count of members whose paid conversion event was attributed to this post
  * @property {number} mrr - Total MRR from paid conversions attributed to this post
+ * @property {string} published_at - The date the post was published
  */
 
 /**
@@ -50,22 +79,24 @@ class PostsStatsService {
      * @param {object} deps
      * @param {import('knex').Knex} deps.knex - Database client
      * @param {object} [deps.tinybirdClient] - Tinybird client for analytics
+     * @param {object} [deps.urlService] - URL service for checking URL existence
      */
     constructor(deps) {
         this.knex = deps.knex;
         this.tinybirdClient = deps.tinybirdClient;
+        this.urlService = deps.urlService;
     }
 
     /**
      * Get top posts by attribution metrics (free_members, paid_members, or mrr)
      *
-     * @param {StatsServiceOptions} options
-     * @returns {Promise<{data: TopPostResult[]}>} The top posts based on the requested attribution metric
+     * @param {TopPostsOptions} options
+     * @returns {Promise<{data: AttributionResult[]}>} The top posts based on the requested attribution metric
      */
     async getTopPosts(options) {
         try {
             const order = options.order || 'free_members desc';
-            const limitRaw = Number.parseInt(String(options.limit ?? 20), 10); // Ensure options.limit is a string for parseInt
+            const limitRaw = Number.parseInt(String(options.limit ?? 20), 10);
             const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 20;
             const [orderField, orderDirection = 'desc'] = order.split(' ');
 
@@ -80,37 +111,182 @@ class PostsStatsService {
                 });
             }
 
-            // Build the main query using CTEs for clarity with the new logic
-            const freeMembersCTE = this._buildFreeMembersSubquery(options);
-            const paidMembersCTE = this._buildPaidMembersSubquery(options);
-            const mrrCTE = this._buildMrrSubquery(options);
+            // Start from attribution events and aggregate by URL to include ALL paths that drove conversions
+            const freeMembersCTE = this._buildFreeMembersSubquery(options, true);
+            const paidMembersCTE = this._buildPaidMembersSubquery(options, true);
+            const mrrCTE = this._buildMrrSubquery(options, true);
 
-            let query = this.knex
-                .with('free', freeMembersCTE)
-                .with('paid', paidMembersCTE)
-                .with('mrr', mrrCTE)
-                .select(
+            // Store knex reference for use in callbacks
+            const knex = this.knex;
+
+            const results = await this.knex
+                .with('free_attr', freeMembersCTE)
+                .with('paid_attr', paidMembersCTE)
+                .with('mrr_attr', mrrCTE)
+                .with('all_urls', function () {
+                    this.select('attribution_url')
+                        .from('free_attr')
+                        .union(function () {
+                            this.select('attribution_url').from('paid_attr');
+                        })
+                        .union(function () {
+                            this.select('attribution_url').from('mrr_attr');
+                        });
+                })
+                .with('url_metadata', function () {
+                    // Get the first occurrence of each URL with its metadata
+                    this.select('attribution_url')
+                        .select(knex.raw('MIN(attribution_type) as attribution_type'))
+                        .select(knex.raw('MIN(attribution_id) as attribution_id'))
+                        .from(function () {
+                            const subquery1 = this.select('attribution_url', 'attribution_type', 'attribution_id')
+                                .from('members_created_events')
+                                .whereNotNull('attribution_url');
+                            if (options.date_from || options.date_to) {
+                                if (options.date_from) {
+                                    subquery1.where('created_at', '>=', options.date_from);
+                                }
+                                if (options.date_to) {
+                                    subquery1.where('created_at', '<=', options.date_to + ' 23:59:59');
+                                }
+                            }
+                            
+                            subquery1.union(function () {
+                                const subquery2 = this.select('attribution_url', 'attribution_type', 'attribution_id')
+                                    .from('members_subscription_created_events')
+                                    .whereNotNull('attribution_url');
+                                if (options.date_from || options.date_to) {
+                                    if (options.date_from) {
+                                        subquery2.where('created_at', '>=', options.date_from);
+                                    }
+                                    if (options.date_to) {
+                                        subquery2.where('created_at', '<=', options.date_to + ' 23:59:59');
+                                    }
+                                }
+                            })
+                                .as('combined');
+                        })
+                        .groupBy('attribution_url');
+                })
+                .select([
+                    'all_urls.attribution_url',
+                    'url_metadata.attribution_type',
+                    'url_metadata.attribution_id',
                     'p.id as post_id',
                     'p.title',
-                    this.knex.raw('COALESCE(free.free_members, 0) as free_members'),
-                    this.knex.raw('COALESCE(paid.paid_members, 0) as paid_members'),
-                    this.knex.raw('COALESCE(mrr.mrr, 0) as mrr')
-                )
-                .from('posts as p')
-                .leftJoin('free', 'p.id', 'free.post_id')
-                .leftJoin('paid', 'p.id', 'paid.post_id')
-                .leftJoin('mrr', 'p.id', 'mrr.post_id')
-                .where('p.status', 'published');
-
-            const results = await query
+                    'p.published_at',
+                    knex.raw('COALESCE(free_attr.free_members, 0) as free_members'),
+                    knex.raw('COALESCE(paid_attr.paid_members, 0) as paid_members'),
+                    knex.raw('COALESCE(mrr_attr.mrr, 0) as mrr')
+                ])
+                .from('all_urls')
+                .leftJoin('free_attr', 'all_urls.attribution_url', 'free_attr.attribution_url')
+                .leftJoin('paid_attr', 'all_urls.attribution_url', 'paid_attr.attribution_url')
+                .leftJoin('mrr_attr', 'all_urls.attribution_url', 'mrr_attr.attribution_url')
+                .leftJoin('url_metadata', 'all_urls.attribution_url', 'url_metadata.attribution_url')
+                .leftJoin('posts as p', function () {
+                    this.on('url_metadata.attribution_id', 'p.id')
+                        .andOnIn('url_metadata.attribution_type', ['post', 'page']);
+                })
+                .whereRaw('(COALESCE(free_attr.free_members, 0) > 0 OR COALESCE(paid_attr.paid_members, 0) > 0 OR COALESCE(mrr_attr.mrr, 0) > 0)')
                 .orderBy(orderField, orderDirection)
                 .limit(limit);
 
-            return {data: results};
+            // Apply post_type filter after getting results if specified
+            let filteredResults = results;
+            if (options.post_type && ['post', 'page'].includes(options.post_type)) {
+                filteredResults = results.filter((row) => {
+                    if (options.post_type === 'post') {
+                        // Posts tab: Only posts (attribution_type = 'post' && has post_id)
+                        return row.attribution_type === 'post' && row.post_id !== null;
+                    } else if (options.post_type === 'page') {
+                        // Pages tab: Everything except posts
+                        return !(row.attribution_type === 'post' && row.post_id !== null);
+                    }
+                    return false;
+                });
+            }
+
+            // Transform results to include titles using urlService for path resolution
+            const transformedResults = await this._enrichWithTitles(filteredResults);
+
+            return {data: transformedResults.slice(0, limit)};
         } catch (error) {
             logging.error('Error fetching top posts by attribution:', error);
             return {data: []};
         }
+    }
+
+    async _enrichWithTitles(results) {
+        if (!results || !results.length) {
+            return [];
+        }
+
+        // Transform results and enrich with titles and URL existence validation
+        return results.map((row) => {
+            const title = row.title || this._generateTitleFromPath(row.attribution_url);
+            
+            // Check if URL exists using the URL service
+            let urlExists = true; // Default to true for backward compatibility
+            
+            if (this.urlService && row.attribution_url) {
+                try {
+                    // Check if URL service is ready
+                    if (this.urlService.hasFinished && this.urlService.hasFinished()) {
+                        const resource = this.urlService.getResource(row.attribution_url);
+                        urlExists = !!resource; // Convert to boolean
+                    }
+                    // If URL service isn't ready, we default to true (clickable)
+                } catch (error) {
+                    // If there's an error checking the URL service, default to true
+                    urlExists = true;
+                }
+            }
+
+            return {
+                post_id: row.post_id,
+                attribution_url: row.attribution_url,
+                attribution_type: row.attribution_type,
+                attribution_id: row.attribution_id,
+                title,
+                published_at: row.published_at,
+                free_members: row.free_members,
+                paid_members: row.paid_members,
+                mrr: row.mrr,
+                post_type: row.attribution_type === 'post' ? 'post' : (row.attribution_type === 'page' ? 'page' : null),
+                url_exists: urlExists
+            };
+        });
+    }
+
+    _generateTitleFromPath(path) {
+        if (!path) {
+            return 'Unknown';
+        }
+        
+        // Handle common Ghost paths
+        if (path === '/') {
+            return 'Homepage';
+        }
+        if (path.startsWith('/tag/')) {
+            const segments = path.split('/');
+            return segments.length > 2 && segments[2] ? `tag/${segments[2]}` : 'tag/unknown';
+        }
+        if (path.startsWith('/tags/')) {
+            const segments = path.split('/');
+            return segments.length > 2 && segments[2] ? `tag/${segments[2]}` : 'tag/unknown';
+        }
+        if (path.startsWith('/author/')) {
+            const segments = path.split('/');
+            return segments.length > 2 && segments[2] ? `author/${segments[2]}` : 'author/unknown';
+        }  
+        if (path.startsWith('/authors/')) {
+            const segments = path.split('/');
+            return segments.length > 2 && segments[2] ? `author/${segments[2]}` : 'author/unknown';
+        }
+        
+        // For other paths, just return the path itself
+        return path;
     }
 
     /**
@@ -194,7 +370,37 @@ class PostsStatsService {
                 .orderBy(orderField, orderDirection)
                 .limit(limit);
 
-            return {data: results};
+            // Apply source normalization and group by normalized source
+            const normalizedResults = new Map();
+            
+            results.forEach((row) => {
+                const normalizedSource = normalizeSource(row.source);
+                const existing = normalizedResults.get(normalizedSource) || {
+                    source: normalizedSource,
+                    referrer_url: row.referrer_url,
+                    free_members: 0,
+                    paid_members: 0,
+                    mrr: 0
+                };
+                
+                existing.free_members += row.free_members;
+                existing.paid_members += row.paid_members;
+                existing.mrr += row.mrr;
+                
+                normalizedResults.set(normalizedSource, existing);
+            });
+
+            // Convert back to array and sort again since normalization might have changed the order
+            const finalResults = Array.from(normalizedResults.values());
+            finalResults.sort((a, b) => {
+                if (orderDirection === 'desc') {
+                    return b[orderField] - a[orderField];
+                } else {
+                    return a[orderField] - b[orderField];
+                }
+            });
+
+            return {data: finalResults.slice(0, limit)};
         } catch (error) {
             logging.error(`Error fetching referrers for post ${postId}:`, error);
             return {data: []};
@@ -248,21 +454,58 @@ class PostsStatsService {
      * (Signed up on Post, Paid Elsewhere/Never)
      * @private
      * @param {StatsServiceOptions} options
+     * @param {boolean} groupByUrl - Whether to group by attribution_url instead of attribution_id
      * @returns {import('knex').Knex.QueryBuilder}
      */
-    _buildFreeMembersSubquery(options) {
+    _buildFreeMembersSubquery(options, groupByUrl = false) {
         const knex = this.knex;
+        const selectField = groupByUrl ? 'mce.attribution_url' : 'mce.attribution_id as post_id';
+        const groupByField = groupByUrl ? 'mce.attribution_url' : 'mce.attribution_id';
+        const joinCondition = groupByUrl ? 'mce.attribution_url' : 'mce.attribution_id';
+        
         let subquery = knex('members_created_events as mce')
-            .select('mce.attribution_id as post_id')
+            .select(selectField)
             .countDistinct('mce.member_id as free_members')
             .leftJoin('members_subscription_created_events as msce', function () {
                 this.on('mce.member_id', '=', 'msce.member_id')
-                    .andOn('mce.attribution_id', '=', 'msce.attribution_id')
-                    .andOnVal('msce.attribution_type', '=', 'post');
+                    .andOn(joinCondition, '=', groupByUrl ? 'msce.attribution_url' : 'msce.attribution_id');
+                // Add attribution_type condition based on post_type filter
+                if (options.post_type === 'page') {
+                    this.andOnVal('msce.attribution_type', '=', 'page');
+                } else if (options.post_type === 'post') {
+                    this.andOnVal('msce.attribution_type', '=', 'post');
+                } else {
+                    // If no post_type specified, include both
+                    this.andOn(function () {
+                        this.on('msce.attribution_type', '=', knex.raw('?', ['post']))
+                            .orOn('msce.attribution_type', '=', knex.raw('?', ['page']));
+                    });
+                }
             })
-            .where('mce.attribution_type', 'post')
             .whereNull('msce.id')
-            .groupBy('mce.attribution_id');
+            .groupBy(groupByField);
+
+        // Filter attribution_type based on post_type - only when grouping by post_id
+        if (!groupByUrl) {
+            if (options.post_type === 'page') {
+                subquery = subquery.where('mce.attribution_type', 'page');
+            } else if (options.post_type === 'post') {
+                subquery = subquery.where('mce.attribution_type', 'post');
+            } else {
+                // If no post_type specified, include both
+                subquery = subquery.whereIn('mce.attribution_type', ['post', 'page']);
+            }
+        } else {
+            // When groupByUrl=true, include posts, pages, and system pages (url, tag, author)
+            if (options.post_type === 'page') {
+                subquery = subquery.where('mce.attribution_type', '!=', 'post');
+            } else if (options.post_type === 'post') {
+                subquery = subquery.where('mce.attribution_type', 'post');
+            } else {
+                // Include all types that can drive conversions
+                subquery = subquery.whereIn('mce.attribution_type', ['post', 'page', 'url', 'tag', 'author']);
+            }
+        }
 
         this._applyDateFilter(subquery, options, 'mce.created_at');
         return subquery;
@@ -273,15 +516,40 @@ class PostsStatsService {
      * (Paid conversion attributed to this post)
      * @private
      * @param {StatsServiceOptions} options
+     * @param {boolean} groupByUrl - Whether to group by attribution_url instead of attribution_id
      * @returns {import('knex').Knex.QueryBuilder}
      */
-    _buildPaidMembersSubquery(options) {
+    _buildPaidMembersSubquery(options, groupByUrl = false) {
         const knex = this.knex;
+        const selectField = groupByUrl ? 'msce.attribution_url' : 'msce.attribution_id as post_id';
+        const groupByField = groupByUrl ? 'msce.attribution_url' : 'msce.attribution_id';
+        
         let subquery = knex('members_subscription_created_events as msce')
-            .select('msce.attribution_id as post_id')
+            .select(selectField)
             .countDistinct('msce.member_id as paid_members')
-            .where('msce.attribution_type', 'post')
-            .groupBy('msce.attribution_id');
+            .groupBy(groupByField);
+
+        // Filter attribution_type based on post_type - only when grouping by post_id
+        if (!groupByUrl) {
+            if (options.post_type === 'page') {
+                subquery = subquery.where('msce.attribution_type', 'page');
+            } else if (options.post_type === 'post') {
+                subquery = subquery.where('msce.attribution_type', 'post');
+            } else {
+                // If no post_type specified, include both
+                subquery = subquery.whereIn('msce.attribution_type', ['post', 'page']);
+            }
+        } else {
+            // When groupByUrl=true, include posts, pages, and system pages (url, tag, author)
+            if (options.post_type === 'page') {
+                subquery = subquery.where('msce.attribution_type', '!=', 'post');
+            } else if (options.post_type === 'post') {
+                subquery = subquery.where('msce.attribution_type', 'post');
+            } else {
+                // Include all types that can drive conversions
+                subquery = subquery.whereIn('msce.attribution_type', ['post', 'page', 'url', 'tag', 'author']);
+            }
+        }
 
         this._applyDateFilter(subquery, options, 'msce.created_at');
         return subquery;
@@ -292,18 +560,44 @@ class PostsStatsService {
      * (Paid Conversions Attributed to Post)
      * @private
      * @param {StatsServiceOptions} options
+     * @param {boolean} groupByUrl - Whether to group by attribution_url instead of attribution_id
      * @returns {import('knex').Knex.QueryBuilder}
      */
-    _buildMrrSubquery(options) {
+    _buildMrrSubquery(options, groupByUrl = false) {
+        const selectField = groupByUrl ? 'msce.attribution_url' : 'msce.attribution_id as post_id';
+        const groupByField = groupByUrl ? 'msce.attribution_url' : 'msce.attribution_id';
+        
         let subquery = this.knex('members_subscription_created_events as msce')
-            .select('msce.attribution_id as post_id')
+            .select(selectField)
             .sum('mpse.mrr_delta as mrr')
             .join('members_paid_subscription_events as mpse', function () {
                 this.on('mpse.subscription_id', '=', 'msce.subscription_id');
                 this.andOn('mpse.member_id', '=', 'msce.member_id');
             })
-            .where('msce.attribution_type', 'post')
-            .groupBy('msce.attribution_id');
+            .groupBy(groupByField);
+
+        // Filter attribution_type based on post_type - only when grouping by post_id
+        if (!groupByUrl) {
+            if (options.post_type === 'page') {
+                subquery = subquery.where('msce.attribution_type', 'page');
+            } else if (options.post_type === 'post') {
+                subquery = subquery.where('msce.attribution_type', 'post');
+            } else {
+                // If no post_type specified, include both
+                subquery = subquery.whereIn('msce.attribution_type', ['post', 'page']);
+            }
+        } else {
+            // When groupByUrl=true, include posts, pages, and system pages (url, tag, author)
+            if (options.post_type === 'page') {
+                // Pages tab: Include actual pages AND system pages (everything except posts)
+                subquery = subquery.where('msce.attribution_type', '!=', 'post');
+            } else if (options.post_type === 'post') {
+                subquery = subquery.where('msce.attribution_type', 'post');
+            } else {
+                // Include all types that can drive conversions
+                subquery = subquery.whereIn('msce.attribution_type', ['post', 'page', 'url', 'tag', 'author']);
+            }
+        }
 
         this._applyDateFilter(subquery, options, 'msce.created_at');
         return subquery;
@@ -476,9 +770,11 @@ class PostsStatsService {
                 dateFilter = this.knex.raw(`p.published_at >= ?`, [options.date_from]);
             }
             if (options.date_to) {
+                // Make date_to inclusive of the entire day by adding 23:59:59
+                const endOfDay = options.date_to + ' 23:59:59';
                 dateFilter = options.date_from
-                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, options.date_to])
-                    : this.knex.raw(`p.published_at <= ?`, [options.date_to]);
+                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, endOfDay])
+                    : this.knex.raw(`p.published_at <= ?`, [endOfDay]);
             }
 
             // Subquery to count clicks from members_click_events
@@ -508,7 +804,7 @@ class PostsStatsService {
                 .leftJoin(clicksSubquery, 'p.id', 'clicks.post_id')
                 .where('p.newsletter_id', newsletterId)
                 .whereIn('p.status', ['sent', 'published'])
-                .whereNotNull('e.id') // Ensure there is an associated email record
+                // Show all newsletters that were sent, even if no email record exists or has 0 engagement
                 .whereRaw(dateFilter)
                 .orderBy(orderFieldMap[orderField], orderDirection)
                 .limit(limit);
@@ -518,6 +814,175 @@ class PostsStatsService {
             return {data: results};
         } catch (error) {
             logging.error(`Error fetching newsletter stats for newsletter ${newsletterId}:`, error);
+            return {data: []};
+        }
+    }
+
+    /**
+     * Get newsletter basic statistics (without click data) for faster loading
+     *
+     * @param {string} newsletterId - ID of the newsletter to get stats for
+     * @param {Object} options - Query options
+     * @param {string} [options.order] - Sort order (e.g., 'date desc', 'open_rate desc', 'click_rate desc')
+     * @param {number} [options.limit] - Number of results to return (default: 20)
+     * @param {string} [options.date_from] - Optional start date filter (YYYY-MM-DD)
+     * @param {string} [options.date_to] - Optional end date filter (YYYY-MM-DD)
+     * @returns {Promise<{data: Array}>} The newsletter basic stats (with click data when ordering by click_rate)
+     */
+    async getNewsletterBasicStats(newsletterId, options = {}) {
+        try {
+            const order = options.order || 'date desc';
+            const limitRaw = Number.parseInt(String(options.limit ?? 20), 10);
+            const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 20;
+
+            // Parse order field and direction
+            let [orderField, orderDirection = 'desc'] = order.split(' ');
+
+            // Map frontend order fields to database fields (simplified for ORDER BY)
+            const orderFieldMap = {
+                date: 'send_date',
+                open_rate: 'open_rate',
+                sent_to: 'sent_to',
+                click_rate: 'click_rate'
+            };
+
+            // Validate order field (now including click_rate)
+            if (!Object.keys(orderFieldMap).includes(orderField)) {
+                throw new errors.BadRequestError({
+                    message: `Invalid order field: ${orderField}. Must be one of: date, open_rate, sent_to, click_rate`
+                });
+            }
+
+            // Validate order direction
+            if (!['asc', 'desc'].includes(orderDirection.toLowerCase())) {
+                throw new errors.BadRequestError({
+                    message: `Invalid order direction: ${orderDirection}`
+                });
+            }
+
+            // Build date filters if provided
+            let dateFilter = this.knex.raw('1=1');
+            if (options.date_from) {
+                dateFilter = this.knex.raw(`p.published_at >= ?`, [options.date_from]);
+            }
+            if (options.date_to) {
+                // Make date_to inclusive of the entire day by adding 23:59:59
+                const endOfDay = options.date_to + ' 23:59:59';
+                dateFilter = options.date_from
+                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, endOfDay])
+                    : this.knex.raw(`p.published_at <= ?`, [endOfDay]);
+            }
+
+            let query;
+
+            // If ordering by click_rate, we need to include click data
+            if (orderField === 'click_rate') {
+                // Subquery to count clicks from members_click_events
+                const clicksSubquery = this.knex
+                    .select('r.post_id')
+                    .countDistinct('mce.member_id as click_count')
+                    .from('redirects as r')
+                    .leftJoin('members_click_events as mce', 'r.id', 'mce.redirect_id')
+                    .whereNotNull('r.post_id')
+                    .groupBy('r.post_id')
+                    .as('clicks');
+
+                // Build the query with click data
+                query = this.knex
+                    .select(
+                        'p.id as post_id',
+                        'p.title as post_title',
+                        'p.published_at as send_date',
+                        this.knex.raw('COALESCE(e.email_count, 0) as sent_to'),
+                        this.knex.raw('COALESCE(e.opened_count, 0) as total_opens'),
+                        this.knex.raw('CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate'),
+                        this.knex.raw('COALESCE(clicks.click_count, 0) as total_clicks'),
+                        this.knex.raw('CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(clicks.click_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as click_rate')
+                    )
+                    .from('posts as p')
+                    .leftJoin('emails as e', 'p.id', 'e.post_id')
+                    .leftJoin(clicksSubquery, 'p.id', 'clicks.post_id')
+                    .where('p.newsletter_id', newsletterId)
+                    .whereIn('p.status', ['sent', 'published'])
+                    // Show all newsletters that were sent, even if no email record exists or has 0 engagement
+                    .whereRaw(dateFilter)
+                    .orderBy(orderFieldMap[orderField], orderDirection)
+                    .limit(limit);
+            } else {
+                // Build the query without click data for better performance
+                query = this.knex
+                    .select(
+                        'p.id as post_id',
+                        'p.title as post_title',
+                        'p.published_at as send_date',
+                        this.knex.raw('COALESCE(e.email_count, 0) as sent_to'),
+                        this.knex.raw('COALESCE(e.opened_count, 0) as total_opens'),
+                        this.knex.raw('CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate')
+                    )
+                    .from('posts as p')
+                    .leftJoin('emails as e', 'p.id', 'e.post_id')
+                    .where('p.newsletter_id', newsletterId)
+                    .whereIn('p.status', ['sent', 'published'])
+                    // Show all newsletters that were sent, even if no email record exists or has 0 engagement
+                    .whereRaw(dateFilter)
+                    .orderBy(orderFieldMap[orderField], orderDirection)
+                    .limit(limit);
+            }
+
+            const results = await query;
+
+            return {data: results};
+        } catch (error) {
+            logging.error(`Error fetching newsletter basic stats for newsletter ${newsletterId}:`, error);
+            return {data: []};
+        }
+    }
+
+    /**
+     * Get newsletter click statistics for specific posts
+     *
+     * @param {string} newsletterId - ID of the newsletter to get click stats for
+     * @param {Array<string>|string} postIds - Array of post IDs or comma-separated string of post IDs to get click data for
+     * @returns {Promise<{data: Array}>} The newsletter click stats
+     */
+    async getNewsletterClickStats(newsletterId, postIds = []) {
+        try {
+            // Handle postIds as either array or comma-separated string
+            let postIdsArray = [];
+            if (Array.isArray(postIds)) {
+                postIdsArray = postIds;
+            } else if (typeof postIds === 'string' && postIds.length > 0) {
+                postIdsArray = postIds.split(',').map(id => id.trim()).filter(id => id.length > 0);
+            }
+
+            if (postIdsArray.length === 0) {
+                return {data: []};
+            }
+
+            // Subquery to count clicks from members_click_events
+            const clicksQuery = this.knex
+                .select(
+                    'r.post_id',
+                    this.knex.raw('COALESCE(COUNT(DISTINCT mce.member_id), 0) as total_clicks'),
+                    this.knex.raw('MAX(COALESCE(e.email_count, 0)) as email_count')
+                )
+                .from('redirects as r')
+                .leftJoin('members_click_events as mce', 'r.id', 'mce.redirect_id')
+                .leftJoin('posts as p', 'r.post_id', 'p.id')
+                .leftJoin('emails as e', 'p.id', 'e.post_id')
+                .whereIn('r.post_id', postIdsArray)
+                .where('p.newsletter_id', newsletterId)
+                .whereNotNull('r.post_id')
+                .groupBy('r.post_id')
+                .select(
+                    this.knex.raw('CASE WHEN MAX(COALESCE(e.email_count, 0)) > 0 THEN COALESCE(COUNT(DISTINCT mce.member_id), 0) / MAX(COALESCE(e.email_count, 0)) ELSE 0 END as click_rate')
+                );
+
+            const results = await clicksQuery;
+
+            return {data: results};
+        } catch (error) {
+            logging.error(`Error fetching newsletter click stats for newsletter ${newsletterId}:`, error);
             return {data: []};
         }
     }
@@ -533,37 +998,25 @@ class PostsStatsService {
      */
     async getNewsletterSubscriberStats(newsletterId, options = {}) {
         try {
-            // Get total subscriber count, filtering out members with email disabled
-            const totalResult = await this.knex('members_newsletters as mn')
-                .countDistinct('mn.member_id as total')
-                .join('members as m', 'm.id', 'mn.member_id')
-                .where('mn.newsletter_id', newsletterId)
-                .where('m.email_disabled', 0);
+            // Run both queries in parallel for better performance
+            const [totalResult, rawDeltas] = await Promise.all([
+                // Get total subscriber count (optimized query - avoid JOIN)
+                this.knex('members_newsletters as mn')
+                    .countDistinct('mn.member_id as total')
+                    .where('mn.newsletter_id', newsletterId)
+                    .whereNotExists(function () {
+                        this.select('*')
+                            .from('members as m')
+                            .whereRaw('m.id = mn.member_id')
+                            .where('m.email_disabled', 1);
+                    }),
+                
+                // Get daily deltas (optimized query)
+                this._getNewsletterSubscriberDeltas(newsletterId, options)
+            ]);
 
             const totalValue = totalResult[0] ? totalResult[0].total : 0;
             const total = parseInt(String(totalValue), 10);
-
-            // Get daily deltas within date range for the specific newsletter
-            let deltasQuery = this.knex('members_subscribe_events as mse')
-                .select(
-                    this.knex.raw(`DATE(mse.created_at) as date`),
-                    this.knex.raw(`SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as value`)
-                )
-                .join('members as m', 'm.id', 'mse.member_id')
-                .where('mse.newsletter_id', newsletterId)
-                .where('m.email_disabled', 0) // Only include events for members with emails enabled
-                .groupByRaw('DATE(mse.created_at)')
-                .orderBy('date', 'asc');
-
-            // Apply date filters
-            if (options.date_from) {
-                deltasQuery.where('mse.created_at', '>=', options.date_from);
-            }
-            if (options.date_to) {
-                deltasQuery.where('mse.created_at', '<=', `${options.date_to} 23:59:59`);
-            }
-
-            const rawDeltas = await deltasQuery;
 
             // Transform raw database results to properly typed objects
             const deltas = [];
@@ -598,52 +1051,81 @@ class PostsStatsService {
     }
 
     /**
-     * Get stats for the latest published post including open rate, member delta, and visitor count
-     * @returns {Promise<{data: Object|null, errors?: Array<{message: string}>}>}
+     * Optimized query to get newsletter subscriber deltas
+     * @private
      */
-    async getLatestPostStats() {
-        try {
-            // Get the latest published post
-            const latestPost = await this.knex('posts as p')
-                .select(
-                    'p.id',
-                    'p.uuid',
-                    'p.title',
-                    'p.slug',
-                    'p.feature_image',
-                    'p.published_at',
-                    'e.email_count',
-                    'e.opened_count'
-                )
-                .leftJoin('emails as e', 'p.id', 'e.post_id')
-                .where('p.status', 'published')
-                .whereNotNull('p.published_at')
-                .orderBy('p.published_at', 'desc')
-                .first();
+    async _getNewsletterSubscriberDeltas(newsletterId, options = {}) {
+        // Build optimized deltas query - avoid expensive JOIN
+        let deltasQuery = this.knex('members_subscribe_events as mse')
+            .select(
+                this.knex.raw(`DATE(mse.created_at) as date`),
+                this.knex.raw(`SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as value`)
+            )
+            .where('mse.newsletter_id', newsletterId)
+            .whereNotExists(function () {
+                this.select('*')
+                    .from('members as m')
+                    .whereRaw('m.id = mse.member_id')
+                    .where('m.email_disabled', 1);
+            })
+            .groupByRaw('DATE(mse.created_at)')
+            .orderBy('date', 'asc');
 
-            if (!latestPost) {
+        // Apply date filters early to reduce dataset
+        if (options.date_from) {
+            deltasQuery.where('mse.created_at', '>=', options.date_from);
+        }
+        if (options.date_to) {
+            deltasQuery.where('mse.created_at', '<=', `${options.date_to} 23:59:59`);
+        }
+
+        return await deltasQuery;
+    }
+
+    /**
+     * Get stats for a specific post by ID (analytics only, no post content)
+     * @param {string} postId - The post ID to get stats for
+     * @returns {Promise<{data: Array<{id: string, recipient_count: number|null, opened_count: number|null, open_rate: number|null, member_delta: number, free_members: number, paid_members: number, visitors: number}>}>}
+     */
+    async getPostStats(postId) {
+        try {
+            // Validate postId parameter
+            if (!postId || postId.trim() === '') {
+                return {data: []};
+            }
+            
+            // Get basic post info for stats calculations
+            const postData = await this.knex('posts')
+                .select('posts.id', 'posts.uuid', 'posts.published_at', 'e.email_count', 'e.opened_count')
+                .leftJoin('emails as e', 'posts.id', 'e.post_id')
+                .where('posts.id', postId)
+                .where('posts.status', 'published')
+                .first();
+                
+            if (!postData) {
                 return {data: []};
             }
 
-            // Get member delta from members_created_events
-            const memberDelta = await this.knex('members_created_events')
-                .count('id as count')
-                .where('attribution_id', latestPost.id)
-                .where('attribution_type', 'post')
-                .first();
+            // Get member attribution counts
+            const memberAttributionCounts = await this._getMemberAttributionCounts([postData.id]);
+            const attributionCount = memberAttributionCounts.find(ac => ac.post_id === postData.id);
+            
+            const freeMembers = attributionCount ? attributionCount.free_members : 0;
+            const paidMembers = attributionCount ? attributionCount.paid_members : 0;
+            const totalMembers = freeMembers + paidMembers;
 
             // Calculate open rate
-            const openRate = latestPost.email_count ? 
-                (latestPost.opened_count / latestPost.email_count) * 100 : 
+            const openRate = postData.email_count ? 
+                (postData.opened_count / postData.email_count) * 100 : 
                 null;
 
             // Get visitor count from Tinybird
             let visitors = 0;
-            if (this.tinybirdClient) {
+            if (this.tinybirdClient && postData.uuid) {
                 try {
-                    const dateFrom = new Date(latestPost.published_at).toISOString().split('T')[0];
+                    const dateFrom = new Date(postData.published_at).toISOString().split('T')[0];
                     const visitorData = await this.tinybirdClient.fetch('api_top_pages', {
-                        post_uuid: latestPost.uuid,
+                        post_uuid: postData.uuid,
                         dateFrom: dateFrom
                     });
 
@@ -655,21 +1137,18 @@ class PostsStatsService {
 
             return {
                 data: [{
-                    id: latestPost.id,
-                    title: latestPost.title,
-                    slug: latestPost.slug,
-                    feature_image: latestPost.feature_image,
-                    published_at: latestPost.published_at,
-                    recipient_count: latestPost.email_count,
-                    opened_count: latestPost.opened_count,
+                    id: postData.id,
+                    recipient_count: postData.email_count || null,
+                    opened_count: postData.opened_count || null,
                     open_rate: openRate,
-                    member_delta: memberDelta.count,
+                    member_delta: totalMembers,
+                    free_members: freeMembers,
+                    paid_members: paidMembers,
                     visitors: visitors
                 }]
             };
         } catch (error) {
-            // Log the error but return a valid response
-            logging.error('Error fetching latest post stats:', error);
+            logging.error(`Error fetching post stats for post ${postId}:`, error);
             return {data: []};
         }
     }
@@ -679,62 +1158,264 @@ class PostsStatsService {
      * @param {Object} options
      * @param {string} options.date_from - Start date in YYYY-MM-DD format
      * @param {string} options.date_to - End date in YYYY-MM-DD format
-     * @param {string} options.timezone - Timezone to use for date interpretation
+     * @param {string} [options.timezone] - Timezone to use for date interpretation (default: 'UTC')
      * @param {number} [options.limit] - Maximum number of posts to return (default: 5)
      * @returns {Promise<Object>} Top posts with view counts and additional Ghost data
      */
     async getTopPostsViews(options) {
         try {
-            if (!this.tinybirdClient) {
-                return [];
+            const limit = options.limit || 5;
+            const timezone = options.timezone || 'UTC';
+            let viewsData = [];
+
+            if (this.tinybirdClient) {
+                const tinybirdOptions = {
+                    dateFrom: options.date_from,
+                    dateTo: options.date_to,
+                    timezone: timezone,
+                    post_type: 'post',
+                    limit: limit
+                };
+
+                viewsData = await this.tinybirdClient.fetch('api_top_pages', tinybirdOptions) || [];
             }
 
-            const tinybirdOptions = {
-                dateFrom: options.date_from,
-                dateTo: options.date_to,
-                timezone: options.timezone,
-                limit: options.limit
-            };
-
-            const viewsData = await this.tinybirdClient.fetch('api_top_pages', tinybirdOptions);
-
-            if (!viewsData?.length) {
-                return [];
-            }
-
-            const postUuids = viewsData.filter(row => row.post_uuid).map(row => row.post_uuid);
+            // Filter out any rows without post_uuid and get unique UUIDs
+            const postUuids = [...new Set(viewsData.filter(row => row.post_uuid).map(row => row.post_uuid))];
             
+            // Get posts data from Ghost DB for the posts we have views for
             const posts = await this.knex('posts as p')
                 .select(
                     'p.id as post_id',
                     'p.uuid as post_uuid',
                     'p.title',
                     'p.published_at',
+                    'p.feature_image',
                     'emails.email_count',
                     'emails.opened_count'
                 )
                 .leftJoin('emails', 'emails.post_id', 'p.id')
                 .whereIn('p.uuid', postUuids);
 
-            return viewsData.map((row) => {
+            // Get member attribution counts for these posts (model after GrowthStats logic)
+            const memberAttributionCounts = await this._getMemberAttributionCounts(posts.map(p => p.post_id), options);
+
+            // Process posts with views
+            const postsWithViews = viewsData.map((row) => {
                 const post = posts.find(p => p.post_uuid === row.post_uuid);
 
                 if (!post) {
                     return null;
                 }
 
+                // Find the member attribution count for this post
+                const attributionCount = memberAttributionCounts.find(ac => ac.post_id === post.post_id);
+                const memberCount = attributionCount ? (attributionCount.free_members + attributionCount.paid_members) : 0;
+
                 return {
                     post_id: post.post_id,
                     title: post.title,
                     published_at: post.published_at,
+                    feature_image: post.feature_image ? urlUtils.transformReadyToAbsolute(post.feature_image) : post.feature_image,
                     views: row.visits,
                     open_rate: post.email_count > 0 ? (post.opened_count / post.email_count) * 100 : null,
-                    members: post.email_count || 0
+                    members: memberCount
                 };
             }).filter(Boolean);
+
+            // Calculate how many more posts we need - we want to always return 5 posts
+            const remainingCount = limit - postsWithViews.length;
+
+            // If we need more posts, get the latest ones excluding the ones we already have
+            let additionalPosts = [];
+            let additionalMemberAttributionCounts = [];
+            if (remainingCount > 0) {
+                // Get post IDs that we already have to exclude them
+                const existingPostIds = postsWithViews.map(p => p.post_id);
+                
+                additionalPosts = await this.knex('posts as p')
+                    .select(
+                        'p.id as post_id',
+                        'p.uuid as post_uuid',
+                        'p.title',
+                        'p.published_at',
+                        'p.feature_image',
+                        'emails.email_count',
+                        'emails.opened_count'
+                    )
+                    .leftJoin('emails', 'emails.post_id', 'p.id')
+                    .whereNotIn('p.uuid', postUuids)
+                    .whereNotIn('p.id', existingPostIds)
+                    .where('p.status', 'published')
+                    .whereNotNull('p.published_at')
+                    .orderBy('p.published_at', 'desc')
+                    .limit(remainingCount);
+
+                // Get member attribution counts for additional posts
+                if (additionalPosts.length > 0) {
+                    additionalMemberAttributionCounts = await this._getMemberAttributionCounts(additionalPosts.map(p => p.post_id), options);
+                }
+            }
+
+            // Process additional posts with 0 views
+            const additionalPostsWithZeroViews = additionalPosts.map((post) => {
+                // Find the member attribution count for this post
+                const attributionCount = additionalMemberAttributionCounts.find(ac => ac.post_id === post.post_id);
+                const memberCount = attributionCount ? (attributionCount.free_members + attributionCount.paid_members) : 0;
+
+                return {
+                    post_id: post.post_id,
+                    title: post.title,
+                    published_at: post.published_at,
+                    feature_image: post.feature_image ? urlUtils.transformReadyToAbsolute(post.feature_image) : post.feature_image,
+                    views: 0,
+                    open_rate: post.email_count > 0 ? (post.opened_count / post.email_count) * 100 : null,
+                    members: memberCount
+                };
+            });
+
+            // Combine both sets of posts
+            return {data: [...postsWithViews, ...additionalPostsWithZeroViews]};
         } catch (error) {
             logging.error('Error fetching top posts views:', error);
+            return {data: []};
+        }
+    }
+
+    /**
+     * Get member attribution counts for a set of post IDs, modeling after GrowthStats logic
+     * Properly handles both free and paid members with deduplication
+     * @private
+     * @param {string[]} postIds - Array of post IDs to get attribution counts for
+     * @param {Object} options - Date filter options
+     * @returns {Promise<Array<{post_id: string, free_members: number, paid_members: number}>>}
+     */
+    async _getMemberAttributionCounts(postIds, options = {}) {
+        if (!postIds.length) {
             return [];
+        }
+
+        try {
+            // Build free members query (modeled after _buildFreeMembersSubquery)
+            // Members who signed up on post but paid elsewhere/never
+            let freeMembersQuery = this.knex('members_created_events as mce')
+                .select('mce.attribution_id as post_id')
+                .countDistinct('mce.member_id as free_members')
+                .leftJoin('members_subscription_created_events as msce', function () {
+                    this.on('mce.member_id', '=', 'msce.member_id')
+                        .andOn('mce.attribution_id', '=', 'msce.attribution_id')
+                        .andOnVal('msce.attribution_type', '=', 'post');
+                })
+                .where('mce.attribution_type', 'post')
+                .whereIn('mce.attribution_id', postIds)
+                .whereNull('msce.id')
+                .groupBy('mce.attribution_id');
+
+            // Apply date filter to free members query
+            this._applyDateFilter(freeMembersQuery, options, 'mce.created_at');
+
+            // Build paid members query (modeled after _buildPaidMembersSubquery)
+            // Members whose paid conversion was attributed to this post
+            let paidMembersQuery = this.knex('members_subscription_created_events as msce')
+                .select('msce.attribution_id as post_id')
+                .countDistinct('msce.member_id as paid_members')
+                .where('msce.attribution_type', 'post')
+                .whereIn('msce.attribution_id', postIds)
+                .groupBy('msce.attribution_id');
+
+            // Apply date filter to paid members query
+            this._applyDateFilter(paidMembersQuery, options, 'msce.created_at');
+
+            // Execute both queries
+            const [freeResults, paidResults] = await Promise.all([
+                freeMembersQuery,
+                paidMembersQuery
+            ]);
+
+            // Combine results for each post
+            const combinedResults = postIds.map((postId) => {
+                const freeResult = freeResults.find(r => r.post_id === postId);
+                const paidResult = paidResults.find(r => r.post_id === postId);
+
+                return {
+                    post_id: postId,
+                    free_members: freeResult ? freeResult.free_members : 0,
+                    paid_members: paidResult ? paidResult.paid_members : 0
+                };
+            });
+
+            return combinedResults;
+        } catch (error) {
+            logging.error('Error fetching member attribution counts:', error);
+            return postIds.map(postId => ({
+                post_id: postId,
+                free_members: 0,
+                paid_members: 0
+            }));
+        }
+    }
+
+    /**
+     * Get member attribution counts for multiple posts
+     * @param {string[]} postIds - Array of post IDs
+     * @param {Object} options - Date filter options
+     * @returns {Promise<Object>} Map of post ID to member counts
+     */
+    async getPostsMemberCounts(postIds, options = {}) {
+        try {
+            const attributionCounts = await this._getMemberAttributionCounts(postIds, options);
+            
+            // Convert array to object mapping post_id -> counts
+            const memberCounts = {};
+            attributionCounts.forEach((count) => {
+                memberCounts[count.post_id] = {
+                    free_members: count.free_members,
+                    paid_members: count.paid_members
+                };
+            });
+            
+            return memberCounts;
+        } catch (error) {
+            logging.error('Error fetching member counts:', error);
+            return {};
+        }
+    }
+
+    /**
+     * Get visitor counts for multiple posts from Tinybird
+     * @param {string[]} postUuids - Array of post UUIDs
+     * @returns {Promise<Object>} Map of post UUID to visitor count
+     */
+    async getPostsVisitorCounts(postUuids) {
+        try {
+            if (!postUuids || !Array.isArray(postUuids) || postUuids.length === 0) {
+                return {};
+            }
+
+            if (!this.tinybirdClient) {
+                // Return empty object if Tinybird is not configured
+                return {};
+            }
+
+            // Fetch visitor counts from Tinybird for all posts
+            const visitorData = await this.tinybirdClient.fetch('api_post_visitor_counts', {
+                post_uuids: postUuids
+            });
+
+            // Convert the response to a simple UUID -> count mapping
+            const visitorCounts = {};
+            if (visitorData && Array.isArray(visitorData)) {
+                visitorData.forEach((row) => {
+                    if (row.post_uuid && row.visits !== undefined) {
+                        visitorCounts[row.post_uuid] = row.visits;
+                    }
+                });
+            }
+
+            return visitorCounts;
+        } catch (error) {
+            logging.error('Error fetching visitor counts from Tinybird:', error);
+            return {};
         }
     }
 }

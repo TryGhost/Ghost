@@ -5,9 +5,10 @@ const logging = require('@tryghost/logging');
  * @param {object} deps - Configuration and request dependencies
  * @param {object} deps.config - Ghost configuration
  * @param {object} deps.request - HTTP request client
+ * @param {object} deps.settingsCache - Settings cache client
  * @returns {Object} Tinybird client with methods
  */
-const create = ({config, request}) => {
+const create = ({config, request, settingsCache}) => {
     /**
      * Builds a Tinybird API request
      * @param {string} pipeName - The name of the Tinybird pipe to query
@@ -16,11 +17,16 @@ const create = ({config, request}) => {
      * @param {string} [options.dateTo] - End date in YYYY-MM-DD format
      * @param {string} [options.timezone] - Timezone for the query
      * @param {string} [options.memberStatus] - Member status filter (defaults to 'all')
+     * @param {string} [options.postType] - Post type filter
      * @param {string} [options.tbVersion] - Tinybird version for API URL
      * @returns {Object} Object with URL and request options
      */
     const buildRequest = (pipeName, options = {}) => {
         const statsConfig = config.get('tinybird:stats');
+        // Use tinybird:stats:id if provided, otherwise use site_uuid from settings cache
+        // Allows overriding site_uuid via config
+        // This is temporary until we have a proper way to use mock data locally
+        const siteUuid = statsConfig.id || settingsCache.get('site_uuid');
         const localEnabled = statsConfig?.local?.enabled ?? false;
         const endpoint = localEnabled ? statsConfig.local.endpoint : statsConfig.endpoint;
         const token = localEnabled ? statsConfig.local.token : statsConfig.token;
@@ -34,7 +40,7 @@ const create = ({config, request}) => {
 
         // Use snake_case for query parameters as expected by Tinybird API
         const searchParams = {
-            site_uuid: statsConfig.id
+            site_uuid: siteUuid
         };
 
         // todo: refactor all uses to simply pass options through
@@ -50,11 +56,18 @@ const create = ({config, request}) => {
         if (options.memberStatus) {
             searchParams.member_status = options.memberStatus;
         }
-        
-        // Add any other options that might be needed (like post_uuid)
+        if (options.postType) {
+            searchParams.post_type = options.postType;
+        }
+        // Add any other options that might be needed
         Object.entries(options).forEach(([key, value]) => {
-            if (!['dateFrom', 'dateTo', 'timezone', 'memberStatus'].includes(key)) {
-                searchParams[key] = value;
+            if (!['dateFrom', 'dateTo', 'timezone', 'memberStatus', 'postType', 'tbVersion'].includes(key)) {
+                // Handle arrays by converting them to comma-separated strings for Tinybird
+                if (Array.isArray(value)) {
+                    searchParams[key] = value.join(',');
+                } else {
+                    searchParams[key] = value;
+                }
             }
         });
         

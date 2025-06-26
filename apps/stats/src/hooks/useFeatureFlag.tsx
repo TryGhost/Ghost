@@ -15,7 +15,14 @@ export const useFeatureFlag = (flagName: string, fallbackPath: string) => {
     
     // Parse labs settings
     const labsJSON = getSettingValue<string>(settings, 'labs') || '{}';
-    const labs = JSON.parse(labsJSON);
+    let labs: Record<string, unknown> = {};
+    
+    try {
+        labs = JSON.parse(labsJSON);
+    } catch (error) {
+        // If JSON parsing fails, fall back to empty object
+        labs = {};
+    }
     
     // Check if the feature flag is enabled
     const isEnabled = labs[flagName] === true;

@@ -79,9 +79,9 @@ class StatsService {
     }
 
     /**
-     * Get top posts by attribution metrics
+     * Get top posts by attribution metrics (includes all content that drove conversions)
      * @param {import('./PostsStatsService').TopPostsOptions} options
-     * @returns {Promise<{data: import('./PostsStatsService').TopPostResult[]}>}
+     * @returns {Promise<{data: import('./PostsStatsService').AttributionResult[]}>}
      */
     async getTopPosts(options = {}) {
         // Return the original { data: results } structure
@@ -111,6 +111,13 @@ class StatsService {
     }
 
     /**
+     * @param {string[]} postIds
+     */
+    async getPostsMemberCounts(postIds) {
+        return await this.posts.getPostsMemberCounts(postIds);
+    }
+
+    /**
      * Get newsletter stats for sent posts
      * @param {Object} options
      * @param {string} [options.newsletter_id] - ID of the specific newsletter to get stats for
@@ -118,7 +125,7 @@ class StatsService {
      * @param {number} [options.limit=20] - Max number of results to return
      * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
      * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
-     * @returns {Promise<{data: Object[]}>}
+     * @returns {Promise<{data: import('./PostsStatsService').NewsletterStatResult[]}>}
      */
     async getNewsletterStats(options = {}) {
         // Extract newsletter_id from options
@@ -141,7 +148,7 @@ class StatsService {
      * @param {string} [options.newsletter_id] - ID of the specific newsletter to get stats for
      * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
      * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
-     * @returns {Promise<{data: Object}>}
+     * @returns {Promise<{data: import('./PostsStatsService').NewsletterSubscriberStats[]}>}
      */
     async getNewsletterSubscriberStats(options = {}) {
         // Extract newsletter_id from options
@@ -157,11 +164,75 @@ class StatsService {
     }
 
     /**
-     * Get stats for the latest published post
+     * Get stats for a specific post by ID
+     * @param {string} postId - The post ID to get stats for
      * @returns {Promise<{data: Object}>}
      */
-    async getLatestPostStats() {
-        return await this.posts.getLatestPostStats();
+    async getPostStats(postId) {
+        return await this.posts.getPostStats(postId);
+    }
+
+    /**
+     * Get visitor counts for multiple posts
+     * @param {string[]} postUuids - Array of post UUIDs
+     * @returns {Promise<{data: Object}>} Visitor counts mapped by post UUID
+     */
+    async getPostsVisitorCounts(postUuids) {
+        const visitorCounts = await this.posts.getPostsVisitorCounts(postUuids);
+        return {
+            data: {
+                visitor_counts: visitorCounts
+            }
+        };
+    }
+
+    /**
+     * Get newsletter basic stats for sent posts (without click data)
+     * @param {Object} options
+     * @param {string} [options.newsletter_id] - ID of the specific newsletter to get stats for
+     * @param {string} [options.order='published_at desc'] - Order field and direction
+     * @param {number} [options.limit=20] - Max number of results to return
+     * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
+     * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
+     * @returns {Promise<{data: import('./PostsStatsService').NewsletterStatResult[]}>}
+     */
+    async getNewsletterBasicStats(options = {}) {
+        // Extract newsletter_id from options
+        const {newsletter_id: newsletterId, ...otherOptions} = options;
+        
+        // If no newsletterId is provided, we can't get specific stats
+        if (!newsletterId) {
+            return {data: []};
+        }
+        
+        // Return newsletter basic stats for the specific newsletter
+        const result = await this.posts.getNewsletterBasicStats(newsletterId, otherOptions);
+        return result;
+    }
+
+    /**
+     * Get newsletter click stats for specific posts
+     * @param {Object} options
+     * @param {string} [options.newsletter_id] - ID of the specific newsletter to get stats for
+     * @param {string} [options.post_ids] - Comma-separated string of post IDs to get click data for
+     * @returns {Promise<{data: Object[]}>}
+     */
+    async getNewsletterClickStats(options = {}) {
+        // Extract newsletter_id and post_ids from options
+        const {newsletter_id: newsletterId, post_ids: postIds} = options;
+        
+        // If no newsletterId is provided, we can't get specific stats
+        if (!newsletterId) {
+            return {data: []};
+        }
+        
+        // Return newsletter click stats for the specific newsletter and posts
+        const result = await this.posts.getNewsletterClickStats(newsletterId, postIds);
+        return result;
+    }
+
+    async getTopSourcesWithRange(startDate, endDate, orderBy, limit) {
+        return this.referrers.getTopSourcesWithRange(startDate, endDate, orderBy, limit);
     }
 
     /**
@@ -174,12 +245,14 @@ class StatsService {
         let tinybirdClient = null;
         const config = deps.config || require('../../../shared/config');
         const request = deps.request || require('../../lib/request-external');
+        const settingsCache = deps.settingsCache || require('../../../shared/settings-cache');
 
         // Only create the client if Tinybird is configured
         if (config.get('tinybird') && config.get('tinybird:stats')) {
             tinybirdClient = tinybird.create({
                 config,
-                request
+                request,
+                settingsCache
             });
         }
 
