@@ -26,7 +26,7 @@ const limitService = new LimitService();
 
 // setup limit configuration
 // currently supported limit keys are: staff, members, customThemes, customIntegrations, uploads,
-// limitStripeConnect, limitAnalytics, and limitActivityPub
+// limitStripeConnect, limitAnalytics, and limitSocialWeb
 // all limit configs support custom "error" configuration that is a template string
 const limits = {
     // staff and member are "max" type of limits accepting "max" configuration
@@ -64,17 +64,17 @@ const limits = {
     uploads: {
         // max key is in bytes
         max: 5000000,
-        // formatting of the {{ max }} vairable is in MB, e.g: 5MB
+        // formatting of the {{ max }} variable is in MB, e.g: 5MB
         error: 'Your plan supports uploads of max size up to {{max}}. Please upgrade to reenable uploading.'
     },
     limitStripeConnect: {},
     limitAnalytics: {},
-    limitActivityPub: {}
+    limitSocialWeb: {}
 };
 
 // This information is needed for the limit service to work with "max periodic" limits
 // The interval value has to be 'month' as that's the only interval that was needed for
-// current usecase
+// current use case
 // The startDate has to be in ISO 8601 format (https://en.wikipedia.org/wiki/ISO_8601)
 const subscription = {
     interval: 'month',
@@ -112,7 +112,7 @@ if (limitService.isLimited('staff')) {
     await limitService.errorIfWouldGoOverLimit('staff', {max: 100});
 }
 
-// "max" types of limits have currentCountQuery method reguring a number that is currently in use for the limit
+// "max" types of limits have currentCountQuery method requiring a number that is currently in use for the limit
 // for example it could be 1, 3, 5 or whatever amount of 'staff' is currently in the system
 const staffCount = await limitService.currentCountQuery('staff');
 
@@ -158,18 +158,18 @@ db.transaction((transacting) => {
 
 ### Types of limits
 At the moment there are four different types of limits that limit service allows to define. These types are:
-1. `flag` - is an "on/off" switch for certain feature. Example usecase: "disable all emails". It's identified by a `disabled: true` property in the "limits" configuration. It is possible to overwrite the limit by providing a `currentCountQuery` for it. This is useful in cases where we introduce new limits to existing plans and customers have already been using the feature affected by the limit. By providing a `currentCountQuery` that detects if the feature is already in use, we won't disable it.
-2. `max` - checks if the maximum amount of the resource has been used up.Example usecase: "disable creating a staff user when maximum of 5 has been reached". To configure this limit add `max: NUMBER` to the configuration. The limits that support max checks are: `members`, and `staff`
-3. `maxPeriodic` - it's a variation of `max` type with a difference that the check is done over certain period of time. Example usecase: "disable sending emails when the sent emails count has acceded a limit for last billing period". To enable this limit define `maxPeriodic: NUMBER` in the limit configuration and provide a subscription configuration when initializing the limit service instance. The subscription object comes as a separate parameter and has to contain two properties: `startDate` and `interval`, where `startDate` is a date in  ISO 8601 format and period is `'month'` (other values like `'year'` are not supported yet)
-4. `allowList` - checks if provided value is defined in configured "allowlist". Example usecase: "disable theme activation if it is not an official theme". To configure this limit define ` allowlist: ['VALUE_1', 'VALUE_2', 'VALUE_N']` property in the "limits" parameter.
+1. `flag` - is an "on/off" switch for certain feature. Example use case: "disable all emails". It's identified by a `disabled: true` property in the "limits" configuration. It is possible to overwrite the limit by providing a `currentCountQuery` for it. This is useful in cases where we introduce new limits to existing plans and customers have already been using the feature affected by the limit. By providing a `currentCountQuery` that detects if the feature is already in use, we won't disable it.
+2. `max` - checks if the maximum amount of the resource has been used up.Example use case: "disable creating a staff user when maximum of 5 has been reached". To configure this limit add `max: NUMBER` to the configuration. The limits that support max checks are: `members`, and `staff`
+3. `maxPeriodic` - it's a variation of `max` type with a difference that the check is done over certain period of time. Example use case: "disable sending emails when the sent emails count has acceded a limit for last billing period". To enable this limit define `maxPeriodic: NUMBER` in the limit configuration and provide a subscription configuration when initializing the limit service instance. The subscription object comes as a separate parameter and has to contain two properties: `startDate` and `interval`, where `startDate` is a date in  ISO 8601 format and period is `'month'` (other values like `'year'` are not supported yet)
+4. `allowList` - checks if provided value is defined in configured "allowlist". Example use case: "disable theme activation if it is not an official theme". To configure this limit define ` allowlist: ['VALUE_1', 'VALUE_2', 'VALUE_N']` property in the "limits" parameter.
 
 ### Supported limits
-There's a limited amount of limits that are supported by limit service. The are defined by "key" property name in the "config" module. List of currently supported limit names: `members`, `staff`, `customIntegrations`, `emails`, `customThemes`, `uploads`, `limitStripeConnect`, `limitAnalytics`, and `limitActivityPub`.
+There's a limited amount of limits that are supported by limit service. The are defined by "key" property name in the "config" module. List of currently supported limit names: `members`, `staff`, `customIntegrations`, `emails`, `customThemes`, `uploads`, `limitStripeConnect`, `limitAnalytics`, and `limitSocialWeb`.
 
 All limits can act as `flag` or `allowList` types. Only certain (`members`, `staff`) can have a `max` limit. Only `emails` currently supports the `maxPeriodic` type of limit.
 
 ### Frontend usage
-In case the limit check is run without direct access to the database you can override `currentCountQuery` functions for each "max" or "maxPeriodic" type of limit. An example usecase would be a frontend client running in a browser. A browser client can check the limit data through HTTP request and then provide that data to the limit service. Example code to do exactly that:
+In case the limit check is run without direct access to the database you can override `currentCountQuery` functions for each "max" or "maxPeriodic" type of limit. An example use case would be a frontend client running in a browser. A browser client can check the limit data through HTTP request and then provide that data to the limit service. Example code to do exactly that:
 
 ```js
 const limitService = new LimitService();

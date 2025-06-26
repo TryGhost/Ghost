@@ -133,22 +133,22 @@ describe('Limit Service', function () {
                 members: {max: 100},
                 emails: {disabled: true},
                 limitStripeConnect: {disabled: true},
-                limitActivityPub: {disabled: true}
+                limitSocialWeb: {disabled: true}
             };
 
             limitService.loadLimits({limits, errors});
 
-            limitService.limits.should.be.an.Object().with.properties(['staff', 'members', 'emails', 'limitStripeConnect', 'limitActivityPub']);
+            limitService.limits.should.be.an.Object().with.properties(['staff', 'members', 'emails', 'limitStripeConnect', 'limitSocialWeb']);
             limitService.limits.staff.should.be.an.instanceOf(MaxLimit);
             limitService.limits.members.should.be.an.instanceOf(MaxLimit);
             limitService.limits.emails.should.be.an.instanceOf(FlagLimit);
             limitService.limits.limitStripeConnect.should.be.an.instanceOf(FlagLimit);
-            limitService.limits.limitActivityPub.should.be.an.instanceOf(FlagLimit);
+            limitService.limits.limitSocialWeb.should.be.an.instanceOf(FlagLimit);
             limitService.isLimited('staff').should.be.true();
             limitService.isLimited('members').should.be.true();
             limitService.isLimited('emails').should.be.true();
             limitService.isLimited('limitStripeConnect').should.be.true();
-            limitService.isLimited('limitActivityPub').should.be.true();
+            limitService.isLimited('limitSocialWeb').should.be.true();
         });
 
         it('can load camel cased limits', function () {
@@ -266,7 +266,7 @@ describe('Limit Service', function () {
                 limitStripeConnect: {
                     disabled: true
                 },
-                limitActivityPub: {
+                limitSocialWeb: {
                     disabled: true
                 }
             };
@@ -313,7 +313,7 @@ describe('Limit Service', function () {
                     disabled: true
                     // No currentCountQuery - will be considered over limit
                 },
-                limitActivityPub: {
+                limitSocialWeb: {
                     disabled: true
                     // No currentCountQuery - will be considered over limit
                 }
@@ -514,7 +514,7 @@ describe('Limit Service', function () {
                 limitStripeConnect: {
                     disabled: false // Not disabled, so won't be over limit
                 },
-                limitActivityPub: {
+                limitSocialWeb: {
                     disabled: false // Not disabled, so won't be over limit
                 }
             };
@@ -537,7 +537,7 @@ describe('Limit Service', function () {
             // Should return false because no limits are exceeded
             (await limitService.checkIfAnyOverLimit(options)).should.be.false();
 
-            // We have 4 flag limits now: customIntegrations, limitAnalytics, limitStripeConnect, and limitActivityPub
+            // We have 4 flag limits now: customIntegrations, limitAnalytics, limitStripeConnect, and limitSocialWeb
             sinon.assert.callCount(flagSpy, 4);
             sinon.assert.alwaysCalledWithExactly(flagSpy, options);
 
