@@ -197,7 +197,7 @@ const TopNewslettersTable: React.FC<{
     selectedNewsletterId: string | null | undefined;
     shouldFetchStats: boolean;
 }> = React.memo(({range, selectedNewsletterId, shouldFetchStats}) => {
-    const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
+    const [sortBy, setSortBy] = useState<TopNewslettersOrder>('open_rate desc');
 
     return (
         <Card className='w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]'>
