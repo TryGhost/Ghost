@@ -212,6 +212,6 @@
     "Your email has failed to resubscribe, please try again": "",
     "Your input helps shape what gets published.": "",
     "Your subscription will expire on {expiryDate}": "Áskrift þinni lýkur {expiryDate}",
-    "Your subscription will renew on {renewalDate}": "Áskrift þín verður endurnýjuð {expiryDate}",
+    "Your subscription will renew on {renewalDate}": "Áskrift þín verður endurnýjuð þann {renewalDate}",
     "Your subscription will start on {subscriptionStart}": "Áskrift þín hefst {subscriptionStart}"
 }
