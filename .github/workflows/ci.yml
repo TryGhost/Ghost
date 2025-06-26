@@ -32,6 +32,7 @@ jobs:
     env:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
       IS_DEVELOPMENT: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/5.x' || github.ref == 'refs/heads/6.x' }}
+      IS_SIX: ${{ github.ref == 'refs/heads/6.x' }}
     permissions:
       pull-requests: read
     steps:
@@ -200,6 +201,7 @@ jobs:
       base_commit: ${{ env.BASE_COMMIT }}
       is_main: ${{ env.IS_MAIN }}
       is_development: ${{ env.IS_DEVELOPMENT }}
+      is_six: ${{ env.IS_SIX }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
@@ -1050,6 +1052,7 @@ jobs:
       && needs.job_required_tests.result == 'success'
       && (
         needs.job_setup.outputs.is_main == 'true'
+        || needs.job_setup.outputs.is_six == 'true'
         || (
           github.event_name == 'pull_request'
           && (
@@ -1076,9 +1079,9 @@ jobs:
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           workflow: .github/workflows/deploy.yml
-          ref: 'refs/heads/main'
+          ref: ${{ needs.job_setup.outputs.is_main == 'true' && 'refs/heads/main' || 'refs/heads/6.x' }}
           repo: TryGhost/Ghost-Moya
-          inputs: '{"version":"canary","environment":"staging","version_extra":"${{ env.branch_name }}"}'
+          inputs: ${{ needs.job_setup.outputs.is_main == 'true' && format('{"version":"canary","environment":"staging","version_extra":"{0}"}', env.branch_name) || format('{"version":"six","environment":"staging","version_extra":"{0}"}', env.branch_name) }}
           wait-for-completion-timeout: 25m
           wait-for-completion-interval: 30s
 
