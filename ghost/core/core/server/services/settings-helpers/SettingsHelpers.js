@@ -219,6 +219,19 @@ class SettingsHelpers {
         ]));
     }
 
+    /**
+     * Social web (ActivityPub) is enabled if:
+     * - Social web is enabled in the settings
+     * - 'ActivityPub' flag is enabled in the labs, for compatibility with Ghost 5.x
+     * - Config allows it (TODO)
+     * - Billing allows it (TODO)
+     *
+     * @returns {boolean}
+     */
+    isSocialWebEnabled() {
+        return this.settingsCache.get('social_web') === true && this.labs.isSet('ActivityPub');
+    }
+
     // PRIVATE
 
     #managedEmailEnabled() {
