@@ -4,7 +4,7 @@ import GhostContentAPI from '@tryghost/content-api';
 const cjkEncoderPresetCodepoint = {
     finalize: (terms) => {
         let results = [];
-     
+
         for (const term of terms) {
             results.push(...tokenizeCjkByCodePoint(term));
         }
@@ -26,7 +26,7 @@ function isCJK(codePoint) {
         (codePoint >= 0x2F800 && codePoint <= 0x2FA1F) // Supplementary ideographs
     );
 }
-  
+
 export function tokenizeCjkByCodePoint(text) {
     const result = [];
     let buffer = '';
@@ -59,6 +59,9 @@ const encoderSet = new Flexsearch.Encoder(
 
 export default class SearchIndex {
     constructor({adminUrl, apiKey, dir}) {
+        this.apiUrl = adminUrl;
+        this.apiKey = apiKey;
+
         this.api = new GhostContentAPI({
             url: adminUrl,
             key: apiKey,
@@ -101,6 +104,22 @@ export default class SearchIndex {
         this.search = this.search.bind(this);
     }
 
+    async #initPostIndex() {
+        const posts = await this.#fetchPosts();
+
+        if (posts.length > 0) {
+            this.#updatePostIndex(posts);
+        }
+    }
+
+    async #fetchPosts() {
+        const url = `${this.apiUrl}/ghost/api/content/search-index/posts/?key=${this.apiKey}`;
+        const response = await fetch(url);
+        const json = await response.json();
+
+        return json.posts;
+    }
+
     #updatePostIndex(posts) {
         posts.forEach((post) => {
             this.postsIndex.add(post);
@@ -120,18 +139,7 @@ export default class SearchIndex {
     }
 
     async init() {
-        let posts = await this.api.posts.browse({
-            limit: '10000',
-            fields: 'id,slug,title,excerpt,url,updated_at,visibility',
-            order: 'updated_at DESC'
-        });
-
-        if (posts || posts.length > 0) {
-            if (!posts.length) {
-                posts = [posts];
-            }
-            this.#updatePostIndex(posts);
-        }
+        await this.#initPostIndex();
 
         let authors = await this.api.authors.browse({
             limit: '10000',
