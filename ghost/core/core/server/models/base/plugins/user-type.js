@@ -54,16 +54,5 @@ module.exports = function (Bookshelf, pluginOptions) {
                 });
             }
         }
-    }, {
-        /**
-         * please use these static definitions when comparing id's
-         * we keep type Number, because we have too many check's where we rely on Number
-         * context.user ? true : false (if context.user is 0 as number, this condition is false)
-         */
-        internalUser: 1,
-
-        isInternalUser: function isInternalUser(id) {
-            return id === Bookshelf.Model.internalUser || id === Bookshelf.Model.internalUser.toString();
-        }
     });
 };
