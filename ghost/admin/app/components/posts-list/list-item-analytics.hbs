@@ -53,8 +53,11 @@
         </a>
     {{else}}
         <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data gh-post-list-title gh-post-with-feature-image">
-            <div class="gh-post-list-feature-image">
-                <div class="gh-post-list-feature-image-placeholder"></div>
+            <div class="gh-post-list-feature-image" style="background-image: url({{@post.featureImage}});">
+                {{!-- Fallback to placeholder --}}
+                {{#unless @post.featureImage}}
+                    <div class="gh-post-list-feature-image-placeholder"></div>
+                {{/unless}}
             </div>
             <div>
                 <h3 class="gh-content-entry-title">
