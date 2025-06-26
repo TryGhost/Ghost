@@ -6,9 +6,7 @@ export default Model.extend({
     email: attr('string'),
     expires: attr('number'),
     createdAtUTC: attr('moment-utc'),
-    createdBy: attr('number'),
     updatedAtUTC: attr('moment-utc'),
-    updatedBy: attr('number'),
     status: attr('string'),
 
     role: belongsTo('role', {async: false}),
