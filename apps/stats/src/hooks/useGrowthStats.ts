@@ -190,9 +190,12 @@ export const useGrowthStats = (range: number) => {
     const dateFrom = startDate;
 
     // Fetch member count history from API
+    // For single day ranges, we need at least 2 days of data to show a proper delta
+    const memberDataStartDate = range === 1 ? moment(dateFrom).subtract(1, 'day').format('YYYY-MM-DD') : dateFrom;
+    
     const {data: memberCountResponse, isLoading: isMemberCountLoading} = useMemberCountHistory({
         searchParams: {
-            date_from: dateFrom
+            date_from: memberDataStartDate
         }
     });
 
@@ -211,16 +214,19 @@ export const useGrowthStats = (range: number) => {
         }
         
         // For single day (Today), ensure we have two data points for a proper line
-        if (range === 1 && rawData.length > 0) {
-            const todayData = rawData[rawData.length - 1]; // Most recent data point
+        if (range === 1 && rawData.length >= 2) {
+            // We should have yesterday's data and today's data
+            const yesterdayData = rawData[rawData.length - 2]; // Yesterday's EOD counts
+            const todayData = rawData[rawData.length - 1]; // Today's EOD counts
+            
             const startOfToday = moment(dateFrom).format('YYYY-MM-DD'); // 6/26
             const startOfTomorrow = moment(dateFrom).add(1, 'day').format('YYYY-MM-DD'); // 6/27
             
             // Create two data points:
             // 1. Yesterday's EOD count attributed to start of today (6/26)
-            // 2. Today's current count attributed to start of tomorrow (6/27)
+            // 2. Today's EOD count attributed to start of tomorrow (6/27)
             const startPoint = {
-                ...todayData,
+                ...yesterdayData,
                 date: startOfToday
             };
             
