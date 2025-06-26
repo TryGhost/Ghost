@@ -77,7 +77,8 @@ const EDITABLE_SETTINGS = [
     'body_font',
     'heading_font',
     'blocked_email_domains',
-    'require_email_mfa'
+    'require_email_mfa',
+    'social_web'
 ];
 
 module.exports = {
