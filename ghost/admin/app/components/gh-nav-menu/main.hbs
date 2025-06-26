@@ -28,7 +28,7 @@
 
             {{#if (and (feature "updatedMainNav") this.session.user.isAdmin)}}
                 <ul class="gh-nav-list gh-nav-main">
-                    {{#if (and (feature "ActivityPub") this.session.user.isAdmin)}}
+                    {{#if (and this.settings.socialWebEnabled this.session.user.isAdmin)}}
                         <li>
                             <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "ap-network" class="gh-icon-ap-network"}}Network</LinkTo>
                         </li>
@@ -53,7 +53,7 @@
                 </ul>
             {{else}}
                 <ul class="gh-nav-list gh-nav-main">
-                    {{#if (and (feature "ActivityPub") this.session.user.isAdmin)}}
+                    {{#if (and this.settings.socialWebEnabled this.session.user.isAdmin)}}
                         <li class="relative gh-nav-list-ap">
                             <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "house"}}Home
                                 {{#unless this.notificationsCount.isLoading}}
@@ -67,7 +67,7 @@
                     {{#if (gh-user-can-admin this.session.user)}}
                         <li class="relative gh-nav-list-home">
                             <LinkTo @route="dashboard" @alt="Dashboard" data-test-nav="dashboard">
-                                {{#if (and (feature "ActivityPub") this.session.user.isAdmin)}}
+                                {{#if (and this.settings.socialWebEnabled this.session.user.isAdmin)}}
                                     {{svg-jar "gauge"}}
                                 {{else}}
                                     {{svg-jar "house"}}
@@ -94,7 +94,7 @@
                         </li>
                     {{/if}}
                     {{#if (gh-user-can-admin this.session.user)}}
-                        {{#if (not (and (feature "ActivityPub") this.session.user.isAdmin))}}
+                        {{#if (not (and this.settings.socialWebEnabled this.session.user.isAdmin))}}
                             <li class="relative">
                                 <a href="javascript:void(0)" class={{if this.explore.exploreWindowOpen "active" }} {{on "click" (fn
                                     this.toggleExploreWindow "" )}} data-test-nav="explore">
