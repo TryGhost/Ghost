@@ -23,6 +23,10 @@ const TopPosts: React.FC<TopPostsProps> = ({
     const {range} = useGlobalData();
     const {appSettings} = useAppContext();
 
+    // Show open rate if newsletters are enabled and email tracking is enabled
+    const showWebAnalytics = appSettings?.analytics.webAnalytics;
+    const showOpenRate = appSettings?.newslettersEnabled && appSettings?.analytics.emailTrackOpens;
+
     return (
         <Card className='group/card w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)] lg:col-span-2'>
             <CardContent>
@@ -37,10 +41,10 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                     <CardDescription className='hidden'>Most viewed posts in this period</CardDescription>
                                 </CardHeader>
                             </TableHead>
-                            {appSettings?.analytics.webAnalytics &&
+                            {showWebAnalytics &&
                                 <TableHead className='w-[12%] text-right'>Visitors</TableHead>
                             }
-                            {appSettings?.newslettersEnabled &&
+                            {showOpenRate &&
                                 <TableHead className='w-[12%] whitespace-nowrap text-right'>Open rate</TableHead>
                             }
                             <TableHead className='w-[12%] text-right'>Members</TableHead>
@@ -59,10 +63,10 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                             </div>
                                         </div>
                                     </TableCell>
-                                    {appSettings?.analytics.webAnalytics &&
+                                    {showWebAnalytics &&
                                     <TableCell className='w-[12%] group-hover:bg-transparent'><Skeleton /></TableCell>
                                     }
-                                    {appSettings?.newslettersEnabled &&
+                                    {showOpenRate &&
                                     <TableCell className='w-[12%] group-hover:bg-transparent'><Skeleton /></TableCell>
                                     }
                                     <TableCell className='w-[12%] group-hover:bg-transparent'><Skeleton /></TableCell>
@@ -92,12 +96,12 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                 </div>
                                             </div>
                                         </TableCell>
-                                        {appSettings?.analytics.webAnalytics &&
+                                        {showWebAnalytics &&
                                         <TableCell className='text-right font-mono'>
                                             {formatNumber(post.views)}
                                         </TableCell>
                                         }
-                                        {appSettings?.newslettersEnabled &&
+                                        {showOpenRate &&
                                         <TableCell className='text-right font-mono'>
                                             {post.open_rate ? `${Math.round(post.open_rate)}%` : <>&mdash;</>}
                                         </TableCell>

@@ -21,6 +21,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
     const [isShareOpen, setIsShareOpen] = useState(false);
     const {site, settings} = useGlobalData();
     const {appSettings} = useAppContext();
+    const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
 
     // Get site title from settings or site data
     const siteTitle = site.title || String(settings.find(setting => setting.key === 'title')?.value || 'Ghost Site');
@@ -173,37 +174,38 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                 {/* Email metrics - show for email posts */}
                                 {metricsToShow.showEmailMetrics && latestPostStats.email && (
                                     <>
-                                        {/* Show open rate - always display if email exists */}
-                                        <div className={metricClassName} onClick={() => {
-                                            navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
-                                        }}>
-                                            <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                                <LucideIcon.MailOpen size={16} strokeWidth={1.25} />
-                                                <span className='hidden whitespace-nowrap md:!visible md:!block'>Open rate</span>
+                                        {emailTrackOpensEnabled && (
+                                            <div className={metricClassName} onClick={() => {
+                                                navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
+                                            }}>
+                                                <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
+                                                    <LucideIcon.MailOpen size={16} strokeWidth={1.25} />
+                                                    <span className='hidden whitespace-nowrap md:!visible md:!block'>Open rate</span>
+                                                </div>
+                                                <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                                    {latestPostStats.email.email_count ?
+                                                        formatPercentage((latestPostStats.email.opened_count || 0) / latestPostStats.email.email_count)
+                                                        : '0%'
+                                                    }
+                                                </span>
                                             </div>
-                                            <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
-                                                {latestPostStats.email.email_count ?
-                                                    formatPercentage((latestPostStats.email.opened_count || 0) / latestPostStats.email.email_count)
-                                                    : '0%'
-                                                }
-                                            </span>
-                                        </div>
-
-                                        {/* Show click rate - display if email exists and has clicks data */}
-                                        <div className={metricClassName} onClick={() => {
-                                            navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
-                                        }}>
-                                            <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                                <LucideIcon.MousePointerClick size={16} strokeWidth={1.25} />
-                                                <span className='hidden whitespace-nowrap md:!visible md:!block'>Click rate</span>
+                                        )}
+                                        {emailTrackClicksEnabled && (
+                                            <div className={metricClassName} onClick={() => {
+                                                navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
+                                            }}>
+                                                <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
+                                                    <LucideIcon.MousePointerClick size={16} strokeWidth={1.25} />
+                                                    <span className='hidden whitespace-nowrap md:!visible md:!block'>Click rate</span>
+                                                </div>
+                                                <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                                    {latestPostStats.email.email_count && latestPostStats.count?.clicks ?
+                                                        formatPercentage((latestPostStats.count.clicks || 0) / latestPostStats.email.email_count)
+                                                        : '0%'
+                                                    }
+                                                </span>
                                             </div>
-                                            <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
-                                                {latestPostStats.email.email_count && latestPostStats.count?.clicks ?
-                                                    formatPercentage((latestPostStats.count.clicks || 0) / latestPostStats.email.email_count)
-                                                    : '0%'
-                                                }
-                                            </span>
-                                        </div>
+                                        )}
                                     </>
                                 )}
                             </div>
