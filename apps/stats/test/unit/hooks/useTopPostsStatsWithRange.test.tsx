@@ -1,15 +1,14 @@
+import moment from 'moment';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {createTestWrapper, setupStatsAppMocks} from '../../utils/test-helpers';
 import {renderHook} from '@testing-library/react';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 
-// Mock the dependencies
-vi.mock('@src/hooks/useGrowthStats', () => ({
-    getRangeDates: vi.fn((range: number) => ({
-        dateFrom: `2024-01-${String(31 - range).padStart(2, '0')}`,
-        endDate: '2024-01-31'
-    }))
-}));
+// Helper function for calculating expected date ranges
+const getExpectedDateRange = (days: number) => ({
+    expectedDateFrom: moment().subtract(days - 1, 'days').format('YYYY-MM-DD'),
+    expectedDateTo: moment().format('YYYY-MM-DD')
+});
 
 vi.mock('@tryghost/admin-x-framework/api/stats');
 vi.mock('@src/providers/GlobalDataProvider');
@@ -31,10 +30,12 @@ describe('useTopPostsStatsWithRange', () => {
         const wrapper = createTestWrapper();
         renderHook(() => useTopPostsStatsWithRange(), {wrapper});
         
+        const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(30);
+        
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: '2024-01-01',
-                date_to: '2024-01-31',
+                date_from: expectedDateFrom,
+                date_to: expectedDateTo,
                 order: 'mrr desc'
             }
         });
@@ -44,10 +45,12 @@ describe('useTopPostsStatsWithRange', () => {
         const wrapper = createTestWrapper();
         renderHook(() => useTopPostsStatsWithRange(7), {wrapper});
         
+        const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(7);
+        
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: '2024-01-24',
-                date_to: '2024-01-31',
+                date_from: expectedDateFrom,
+                date_to: expectedDateTo,
                 order: 'mrr desc'
             }
         });
@@ -57,10 +60,12 @@ describe('useTopPostsStatsWithRange', () => {
         const wrapper = createTestWrapper();
         renderHook(() => useTopPostsStatsWithRange(14), {wrapper});
         
+        const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(14);
+        
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: '2024-01-17',
-                date_to: '2024-01-31',
+                date_from: expectedDateFrom,
+                date_to: expectedDateTo,
                 order: 'mrr desc'
             }
         });
@@ -70,10 +75,12 @@ describe('useTopPostsStatsWithRange', () => {
         const wrapper = createTestWrapper();
         renderHook(() => useTopPostsStatsWithRange(30, 'free_members desc'), {wrapper});
         
+        const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(30);
+        
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: '2024-01-01',
-                date_to: '2024-01-31',
+                date_from: expectedDateFrom,
+                date_to: expectedDateTo,
                 order: 'free_members desc'
             }
         });
@@ -83,10 +90,12 @@ describe('useTopPostsStatsWithRange', () => {
         const wrapper = createTestWrapper();
         renderHook(() => useTopPostsStatsWithRange(30, 'paid_members desc'), {wrapper});
         
+        const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(30);
+        
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: '2024-01-01',
-                date_to: '2024-01-31',
+                date_from: expectedDateFrom,
+                date_to: expectedDateTo,
                 order: 'paid_members desc'
             }
         });

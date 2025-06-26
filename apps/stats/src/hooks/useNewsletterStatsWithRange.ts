@@ -1,4 +1,4 @@
-import {getRangeDates} from './useGrowthStats';
+import {formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useMemo} from 'react';
 import {useNewsletterBasicStats, useNewsletterClickStats, useNewsletterStats, useSubscriberCount} from '@tryghost/admin-x-framework/api/stats';
@@ -23,13 +23,13 @@ export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslette
     const currentOrder = order ?? 'date desc'; // Default to date descending
 
     // Calculate date strings using the helper, memoize for stability
-    const {dateFrom, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
+    const {startDate, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
 
     // Build search params
     const searchParams = useMemo(() => {
         const params: Record<string, string> = {
-            date_from: dateFrom,
-            date_to: endDate,
+            date_from: formatQueryDate(startDate),
+            date_to: formatQueryDate(endDate),
             order: currentOrder
         };
 
@@ -38,7 +38,7 @@ export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslette
         }
 
         return params;
-    }, [dateFrom, endDate, currentOrder, newsletterId]);
+    }, [startDate, endDate, currentOrder, newsletterId]);
 
     // Conditionally call the hook or return empty state
     const realResult = useNewsletterStats({searchParams, enabled: shouldFetch});
@@ -69,13 +69,13 @@ export const useSubscriberCountWithRange = (range?: number, newsletterId?: strin
     const currentRange = range ?? 30;
 
     // Calculate date strings using the helper, memoize for stability
-    const {dateFrom, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
+    const {startDate, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
 
     // Build search params
     const searchParams = useMemo(() => {
         const params: Record<string, string> = {
-            date_from: dateFrom,
-            date_to: endDate
+            date_from: formatQueryDate(startDate),
+            date_to: formatQueryDate(endDate)
         };
 
         if (newsletterId) {
@@ -83,7 +83,7 @@ export const useSubscriberCountWithRange = (range?: number, newsletterId?: strin
         }
 
         return params;
-    }, [dateFrom, endDate, newsletterId]);
+    }, [startDate, endDate, newsletterId]);
 
     // Conditionally call the hook or return empty state
     const realResult = useSubscriberCount({searchParams, enabled: shouldFetch});
@@ -124,13 +124,13 @@ export const useNewsletterBasicStatsWithRange = (range?: number, order?: TopNews
     const currentOrder = order ?? 'date desc'; // Default to date descending
 
     // Calculate date strings using the helper, memoize for stability
-    const {dateFrom, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
+    const {startDate, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
 
     // Build search params
     const searchParams = useMemo(() => {
         const params: Record<string, string> = {
-            date_from: dateFrom,
-            date_to: endDate,
+            date_from: formatQueryDate(startDate),
+            date_to: formatQueryDate(endDate),
             order: currentOrder
         };
 
@@ -139,7 +139,7 @@ export const useNewsletterBasicStatsWithRange = (range?: number, order?: TopNews
         }
 
         return params;
-    }, [dateFrom, endDate, currentOrder, newsletterId]);
+    }, [startDate, endDate, currentOrder, newsletterId]);
 
     // Conditionally call the hook or return empty state
     const realResult = useNewsletterBasicStats({searchParams, enabled: shouldFetch});
