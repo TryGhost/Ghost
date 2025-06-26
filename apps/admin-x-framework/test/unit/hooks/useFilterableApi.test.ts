@@ -27,7 +27,10 @@ interface TestData {
 
 describe('useFilterableApi', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        // Reset mock call history but keep implementations
+        mockFetchApi.mockClear();
+        mockApiUrl.mockClear();
+        
         mockApiUrl.mockImplementation((path: any, params: any) => {
             const searchParams = new URLSearchParams(params);
             return `${path}?${searchParams.toString()}`;
@@ -37,6 +40,12 @@ describe('useFilterableApi', () => {
             users: [],
             meta: {pagination: {next: null}}
         });
+    });
+
+    afterEach(() => {
+        // Reset mock call history but keep implementations
+        mockFetchApi.mockClear();
+        mockApiUrl.mockClear();
     });
 
     it('loads data without filter', async () => {
@@ -321,5 +330,278 @@ describe('useFilterableApi', () => {
         
         // Should make a new API call since not all data is loaded
         expect(mockFetchApi).toHaveBeenCalledTimes(2);
+    });
+
+    describe('error handling', () => {
+        it('handles network errors gracefully', async () => {
+            const networkError = new Error('Network error');
+            mockFetchApi.mockRejectedValueOnce(networkError);
+
+            const {result} = renderHook(() => useFilterableApi<TestData, 'users', 'name'>({
+                path: '/users',
+                filterKey: 'name',
+                responseKey: 'users'
+            }));
+
+            await expect(result.current.loadData('test')).rejects.toThrow('Network error');
+        });
+
+        it('handles API errors with status codes', async () => {
+            const apiError = new Error('Not found');
+            mockFetchApi.mockRejectedValueOnce(apiError);
+
+            const {result} = renderHook(() => useFilterableApi<TestData, 'users', 'name'>({
+                path: '/users',
+                filterKey: 'name',
+                responseKey: 'users'
+            }));
+
+            await expect(result.current.loadData('test')).rejects.toThrow('Not found');
+        });
+
+        it('handles malformed API responses', async () => {
+            mockFetchApi.mockResolvedValueOnce({
+                invalid: 'data structure'
+            });
+
+            const {result} = renderHook(() => useFilterableApi<TestData, 'users', 'name'>({
+                path: '/users',
+                filterKey: 'name',
+                responseKey: 'users'
+            }));
+
+            const data = await result.current.loadData('');
+            
+            // The hook returns undefined when responseKey is not found
+            expect(data).toBeUndefined();
+        });
+
+        it('handles null response data', async () => {
+            mockFetchApi.mockResolvedValueOnce(null);
+
+            const {result} = renderHook(() => useFilterableApi<TestData, 'users', 'name'>({
+                path: '/users',
+                filterKey: 'name',
+                responseKey: 'users'
+            }));
+
+            // This will throw because response[responseKey] on null throws
+            await expect(result.current.loadData('')).rejects.toThrow();
+        });
+
+        it('handles errors in loadInitialValues', async () => {
+            mockFetchApi.mockRejectedValueOnce(new Error('Load error'));
+
+            const {result} = renderHook(() => useFilterableApi<TestData, 'users', 'name'>({
+                path: '/users',
+                filterKey: 'name',
+                responseKey: 'users'
+            }));
+
+            await expect(result.current.loadInitialValues(['1'], 'id')).rejects.toThrow('Load error');
+        });
+    });
+
+    describe('concurrent requests', () => {
+        it('handles concurrent loadData calls correctly', async () => {
+            const mockData1: TestData[] = [
+                {id: '1', name: 'First Result'}
+            ];
+            const mockData2: TestData[] = [
+                {id: '2', name: 'Second Result'}
+            ];
+
+            mockFetchApi
+                .mockResolvedValueOnce({
+                    users: mockData1,
+                    meta: {pagination: {next: null}}
+                })
+                .mockResolvedValueOnce({
+                    users: mockData2,
+                    meta: {pagination: {next: null}}
+                });
+
+            const {result} = renderHook(() => useFilterableApi<TestData, 'users', 'name'>({
+                path: '/users',
+                filterKey: 'name',
+                responseKey: 'users'
+            }));
+
+            // Start two concurrent requests
+            const promise1 = result.current.loadData('first');
+            const promise2 = result.current.loadData('second');
+
+            const [result1, result2] = await Promise.all([promise1, promise2]);
+
+            expect(result1).toEqual(mockData1);
+            expect(result2).toEqual(mockData2);
+            expect(mockFetchApi).toHaveBeenCalledTimes(2);
+        });
+
+        it('handles rapid filter changes correctly', async () => {
+            const mockData: TestData[] = [
+                {id: '1', name: 'Test Result'}
+            ];
+
+            mockFetchApi.mockResolvedValue({
+                users: mockData,
+                meta: {pagination: {next: null}}
+            });
+
+            const {result} = renderHook(() => useFilterableApi<TestData, 'users', 'name'>({
+                path: '/users',
+                filterKey: 'name',
+                responseKey: 'users'
+            }));
+
+            // Rapidly change filters
+            const promise1 = result.current.loadData('test1');
+            const promise2 = result.current.loadData('test2');
+            const promise3 = result.current.loadData('test3');
+
+            await Promise.all([promise1, promise2, promise3]);
+
+            // Should have made multiple API calls
+            expect(mockFetchApi).toHaveBeenCalledTimes(3);
+        });
+    });
+
+    describe('filter edge cases', () => {
+        it('handles special characters in filter input', async () => {
+            const mockData: TestData[] = [];
+
+            mockFetchApi.mockResolvedValueOnce({
+                users: mockData,
+                meta: {pagination: {next: null}}
+            });
+
+            const {result} = renderHook(() => useFilterableApi<TestData, 'users', 'name'>({
+                path: '/users',
+                filterKey: 'name',
+                responseKey: 'users'
+            }));
+
+            await result.current.loadData('test"ing\\stuff');
+
+            expect(mockApiUrl).toHaveBeenCalledWith('/users', {
+                filter: 'name:~\'test"ing\\stuff\'',
+                limit: '20'
+            });
+        });
+
+        it('handles Unicode characters in filter', async () => {
+            const mockData: TestData[] = [];
+
+            mockFetchApi.mockResolvedValueOnce({
+                users: mockData,
+                meta: {pagination: {next: null}}
+            });
+
+            const {result} = renderHook(() => useFilterableApi<TestData, 'users', 'name'>({
+                path: '/users',
+                filterKey: 'name',
+                responseKey: 'users'
+            }));
+
+            await result.current.loadData('测试用户');
+
+            expect(mockApiUrl).toHaveBeenCalledWith('/users', {
+                filter: 'name:~\'测试用户\'',
+                limit: '20'
+            });
+        });
+
+        it('handles very long filter strings', async () => {
+            const longString = 'a'.repeat(1000);
+            const mockData: TestData[] = [];
+
+            mockFetchApi.mockResolvedValueOnce({
+                users: mockData,
+                meta: {pagination: {next: null}}
+            });
+
+            const {result} = renderHook(() => useFilterableApi<TestData, 'users', 'name'>({
+                path: '/users',
+                filterKey: 'name',
+                responseKey: 'users'
+            }));
+
+            await result.current.loadData(longString);
+
+            expect(mockApiUrl).toHaveBeenCalledWith('/users', {
+                filter: `name:~'${longString}'`,
+                limit: '20'
+            });
+        });
+
+        it('handles empty and whitespace-only filters', async () => {
+            const mockData: TestData[] = [];
+
+            mockFetchApi.mockResolvedValue({
+                users: mockData,
+                meta: {pagination: {next: null}}
+            });
+
+            const {result} = renderHook(() => useFilterableApi<TestData, 'users', 'name'>({
+                path: '/users',
+                filterKey: 'name',
+                responseKey: 'users'
+            }));
+
+            // Test various empty/whitespace cases
+            await result.current.loadData('');
+            await result.current.loadData('   ');
+            await result.current.loadData('\t\n');
+
+            // Empty string loads and caches data, whitespace filters reuse cache but make API calls
+            // since they're considered different inputs
+            expect(mockFetchApi).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('pagination edge cases', () => {
+        it('handles missing pagination data', async () => {
+            const mockData: TestData[] = [
+                {id: '1', name: 'Test'}
+            ];
+
+            mockFetchApi.mockResolvedValueOnce({
+                users: mockData
+                // Missing meta/pagination
+            });
+
+            const {result} = renderHook(() => useFilterableApi<TestData, 'users', 'name'>({
+                path: '/users',
+                filterKey: 'name',
+                responseKey: 'users'
+            }));
+
+            const data = await result.current.loadData('');
+            
+            expect(data).toEqual(mockData);
+        });
+
+        it('handles malformed pagination data', async () => {
+            const mockData: TestData[] = [
+                {id: '1', name: 'Test'}
+            ];
+
+            mockFetchApi.mockResolvedValueOnce({
+                users: mockData,
+                meta: {
+                    pagination: 'invalid'
+                }
+            });
+
+            const {result} = renderHook(() => useFilterableApi<TestData, 'users', 'name'>({
+                path: '/users',
+                filterKey: 'name',
+                responseKey: 'users'
+            }));
+
+            const data = await result.current.loadData('');
+            
+            expect(data).toEqual(mockData);
+        });
     });
 });

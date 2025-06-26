@@ -76,6 +76,7 @@ describe('useHandleError', () => {
     });
 
     afterEach(() => {
+        vi.clearAllMocks();
         vi.restoreAllMocks();
     });
 

@@ -19,17 +19,6 @@ const mockUseQuery = vi.mocked(useQuery);
 const mockGetStatEndpointUrl = vi.mocked(getStatEndpointUrl);
 const mockGetToken = vi.mocked(getToken);
 
-// Mock timer functions globally
-Object.defineProperty(global, 'setInterval', {
-    value: vi.fn(() => 123 as any),
-    writable: true
-});
-
-Object.defineProperty(global, 'clearInterval', {
-    value: vi.fn(),
-    writable: true
-});
-
 describe('useActiveVisitors', () => {
     beforeEach(() => {
         vi.useFakeTimers();

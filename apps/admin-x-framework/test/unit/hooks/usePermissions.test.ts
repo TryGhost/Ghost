@@ -16,6 +16,11 @@ describe('usePermissions', () => {
         mockUseCurrentUser.mockReturnValue({data: null, isLoading: false});
     });
 
+    afterEach(() => {
+        vi.clearAllMocks();
+        vi.restoreAllMocks();
+    });
+
     it('returns false when current user is not loaded', () => {
         mockUseCurrentUser.mockReturnValue({
             data: null
