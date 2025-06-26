@@ -74,14 +74,14 @@ export default class Main extends Component.extend(ShortcutsMixin) {
         this._routeChangeHandler = () => {
             const current = this.router.currentRouteName || '';
             const prev = this.previousRoute || '';
-        
+
             if (prev.startsWith('activitypub-x') && !current.startsWith('activitypub-x')) {
                 this.notificationsCount.fetchCount();
             }
-        
+
             this.previousRoute = current;
         };
-        
+
         this.router.on('routeDidChange', this._routeChangeHandler);
     }
 
