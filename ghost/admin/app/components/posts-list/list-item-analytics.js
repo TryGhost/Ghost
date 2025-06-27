@@ -12,6 +12,7 @@ export default class PostsListItemClicks extends Component {
     @service postAnalytics;
 
     @tracked isHovered = false;
+    @tracked tooltipPosition = 'above'; // 'above' or 'below'
 
     @inject config;
 
@@ -62,8 +63,21 @@ export default class PostsListItemClicks extends Component {
     }
 
     @action
-    mouseOver() {
+    mouseOver(event) {
         this.isHovered = true;
+        this.calculateTooltipPosition(event.currentTarget);
+    }
+
+    calculateTooltipPosition(element) {
+        const rect = element.getBoundingClientRect();
+        const tooltipHeight = 120; // Approximate tooltip height
+        const viewportPadding = 40; // Minimum distance from viewport edge
+
+        // Check if there's enough space above the element
+        const spaceAbove = rect.top;
+        const hasEnoughSpaceAbove = spaceAbove >= (tooltipHeight + viewportPadding);
+
+        this.tooltipPosition = hasEnoughSpaceAbove ? 'above' : 'below';
     }
 
     @action

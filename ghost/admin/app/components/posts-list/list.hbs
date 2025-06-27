@@ -4,7 +4,7 @@
         {{#if (or @model.scheduledInfinityModel (or @model.draftInfinityModel @model.publishedAndSentInfinityModel))}}
             {{#if @model.scheduledInfinityModel}}
                 {{#each @model.scheduledInfinityModel as |post|}}
-                    <list.item @id={{post.id}} class="gh-posts-list-item-group">
+                    <list.item @id={{post.id}} class="gh-posts-list-item-group gh-posts-list-item-analytics">
                         <PostsList::ListItemAnalytics
                             @post={{post}}
                             data-test-post-id={{post.id}}
@@ -14,7 +14,7 @@
             {{/if}}
             {{#if (and @model.draftInfinityModel (or (not @model.scheduledInfinityModel) (and @model.scheduledInfinityModel @model.scheduledInfinityModel.reachedInfinity)))}}
                 {{#each @model.draftInfinityModel as |post|}}
-                    <list.item @id={{post.id}} class="gh-posts-list-item-group">
+                    <list.item @id={{post.id}} class="gh-posts-list-item-group gh-posts-list-item-analytics">
                         <PostsList::ListItemAnalytics
                             @post={{post}}
                             data-test-post-id={{post.id}}
@@ -24,7 +24,7 @@
             {{/if}}
             {{#if (and @model.publishedAndSentInfinityModel (and (or (not @model.scheduledInfinityModel) @model.scheduledInfinityModel.reachedInfinity) (or (not @model.draftInfinityModel) @model.draftInfinityModel.reachedInfinity)))}}
                 {{#each @model.publishedAndSentInfinityModel as |post|}}
-                    <list.item @id={{post.id}} class="gh-posts-list-item-group">
+                    <list.item @id={{post.id}} class="gh-posts-list-item-group gh-posts-list-item-analytics">
                         <PostsList::ListItemAnalytics
                             @post={{post}}
                             data-test-post-id={{post.id}}

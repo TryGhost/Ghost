@@ -161,11 +161,24 @@
     {{!-- Metrics columns wrapper --}}
     <div class="gh-post-list-analytics-right">
         <div class="gh-post-list-metrics-container">
+
             {{!-- Visitor count column (only show for published posts when traffic analytics is enabled AND web analytics is enabled) --}}
             {{#if (or this.settings.webAnalytics false)}}
                 {{#if @post.isPublished}}
                     {{#if this.hasVisitorData}}
-                        <LinkTo @route="posts-x" @model={{@post.id}} class="permalink gh-list-data gh-post-list-metrics" title="Unique visitors">
+                        <LinkTo @route="posts-x" @model={{@post.id}} class="permalink gh-list-data gh-post-list-metrics  gh-post-list-analytics-tt-container">
+                            <div class="gh-post-list-analytics-tooltip {{this.tooltipPosition}}">
+                                <h3>Web traffic</h3>
+                                <div class="metrics">
+                                    <div class="metric">
+                                        <div class="data">
+                                            {{svg-jar "analytics-visitors"}}
+                                            Visitors
+                                        </div>
+                                        <span>{{format-number this.visitorCount}}</span>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="gh-post-list-analytics-metric">
                                 {{svg-jar "analytics-visitors" class="gh-list-analytics-icon"}}
                                 <span class="gh-content-email-stats-value">
@@ -177,59 +190,94 @@
                 {{/if}}
             {{/if}}
 
-            {{!-- Opened / Signups column --}}
-            {{#if (and @post.showEmailOpenAnalytics @post.showEmailClickAnalytics) }}
-                <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics" title="Newsletter open rate">
-                    <div class="gh-post-list-analytics-metric">
-                        {{svg-jar "analytics-opens" class="gh-list-analytics-icon"}}
-                        <span class="gh-content-email-stats-value">
-                            {{#if this.isHovered}}
-                                {{format-number @post.email.openedCount}}
-                            {{else}}
-                                {{@post.email.openRate}}%
-                            {{/if}}
-                        </span>
+            <div class="gh-post-analytics-email-metrics gh-post-list-analytics-tt-container">
+                <div class="gh-post-list-analytics-tooltip {{this.tooltipPosition}}">
+                    <h3>Newsletter performance</h3>
+                    <div class="metrics">
+                        <div class="metric">
+                            <div class="data">
+                                {{svg-jar "analytics-opens"}}
+                                Opens
+                            </div>
+                            <span>{{format-number @post.email.openedCount}}</span>
+                        </div>
+                        <div class="metric">
+                            <div class="data">
+                                {{svg-jar "analytics-visitors"}}
+                                Clicks
+                            </div>
+                            <span>{{format-number @post.count.clicks}}</span>
+                        </div>
                     </div>
-                </LinkTo>
-            {{/if}}
-
-            {{!-- Clicked / Conversions column --}}
-            {{#if @post.showEmailClickAnalytics }}
-                <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics" title="Newsletter click rate">
-                    <div class="gh-post-list-analytics-metric">
-                        {{svg-jar "analytics-clicks" class="gh-list-analytics-icon"}}
-                        <span class="gh-content-email-stats-value">
-                            {{#if this.isHovered}}
-                                {{format-number @post.count.clicks}}
-                            {{else}}
-                                {{@post.clickRate}}%
-                            {{/if}}
-                        </span>
-                    </div>
-                </LinkTo>
-            {{else}}
-                {{#if @post.showEmailOpenAnalytics }}
-                    <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics" title="Newsletter open rate">
+                </div>
+                {{!-- Opened / Signups column --}}
+                {{#if (and @post.showEmailOpenAnalytics @post.showEmailClickAnalytics) }}
+                    <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
                         <div class="gh-post-list-analytics-metric">
                             {{svg-jar "analytics-opens" class="gh-list-analytics-icon"}}
                             <span class="gh-content-email-stats-value">
-                                {{#if this.isHovered}}
-                                    {{format-number @post.email.openedCount}}
-                                {{else}}
-                                    {{@post.email.openRate}}%
-                                {{/if}}
+                                {{@post.email.openRate}}%
                             </span>
                         </div>
                     </LinkTo>
                 {{/if}}
-            {{/if}}
+
+                {{!-- Clicked / Conversions column --}}
+                {{#if @post.showEmailClickAnalytics }}
+                    <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
+                        <div class="gh-post-list-analytics-metric">
+                            {{svg-jar "analytics-clicks" class="gh-list-analytics-icon"}}
+                            <span class="gh-content-email-stats-value">
+                                {{@post.clickRate}}%
+                                {{!-- {{#if this.isHovered}}
+                                    {{format-number @post.count.clicks}}
+                                {{else}}
+                                {{/if}} --}}
+                            </span>
+                        </div>
+                    </LinkTo>
+                {{else}}
+                    {{#if @post.showEmailOpenAnalytics }}
+                        <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
+                            <div class="gh-post-list-analytics-metric">
+                                {{svg-jar "analytics-opens" class="gh-list-analytics-icon"}}
+                                <span class="gh-content-email-stats-value">
+                                        {{@post.email.openRate}}%
+                                    {{!-- {{#if this.isHovered}}
+                                        {{format-number @post.email.openedCount}}
+                                    {{else}}
+                                    {{/if}} --}}
+                                </span>
+                            </div>
+                        </LinkTo>
+                    {{/if}}
+                {{/if}}
+            </div>
 
             {{!-- Member conversions column (only show for published posts when traffic analytics is enabled AND web analytics is enabled) --}}
             {{#if (or this.settings.webAnalytics false)}}
                 {{#if @post.isPublished}}
                     {{#if this.hasMemberData}}
-                        <LinkTo @route="posts-x" @model={{@post.id}} class="permalink gh-list-data gh-post-list-metrics" title="Members signed up on this post">
-                        {{!-- <LinkTo class="permalink gh-list-data gh-post-list-metrics" data-tooltip={{if this.totalMemberConversions (concat (format-number this.memberCounts.free) " free " (format-number this.memberCounts.paid) " paid ")}}> --}}
+                        <LinkTo @route="posts-x" @model={{@post.id}} class="permalink gh-list-data gh-post-list-metrics gh-post-list-analytics-tt-container">
+                        <div class="gh-post-list-analytics-tooltip {{this.tooltipPosition}}">
+                            <h3>New members</h3>
+                            <div class="metrics">
+                                <div class="metric">
+                                    <div class="data">
+                                        {{svg-jar "analytics-visitors"}}
+                                        Free
+                                    </div>
+                                    <span>{{format-number this.memberCounts.free}}</span>
+                                </div>
+                                <div class="metric">
+                                    <div class="data">
+                                        {{svg-jar "analytics-visitors"}}
+                                        Paid
+                                    </div>
+                                    <span>{{format-number this.memberCounts.paid}}</span>
+                                </div>
+                            </div>
+                        </div>
                             <div class="gh-post-list-analytics-metric">
                                 {{svg-jar "analytics-members" class="gh-list-analytics-icon"}}
                                 <span class="gh-content-email-stats-value">
