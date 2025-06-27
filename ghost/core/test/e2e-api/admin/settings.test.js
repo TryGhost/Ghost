@@ -8,7 +8,7 @@ const {stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion} = 
 const models = require('../../../core/server/models');
 const {anyErrorId} = matchers;
 
-const CURRENT_SETTINGS_COUNT = 89;
+const CURRENT_SETTINGS_COUNT = 87;
 
 const settingsMatcher = {};
 
@@ -31,10 +31,10 @@ const matchSettingsArray = (length) => {
         settingsArray[26] = publicHashSettingMatcher;
     }
 
-    if (length > 61) {
+    if (length > 59) {
         // Added a setting that is alphabetically before 'labs'? then you need to increment this counter.
         // Item at index x is the lab settings, which changes as we add and remove features
-        settingsArray[61] = labsSettingMatcher;
+        settingsArray[59] = labsSettingMatcher;
     }
 
     return settingsArray;
