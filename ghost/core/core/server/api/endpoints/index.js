@@ -263,5 +263,9 @@ module.exports = {
 
     get recommendationsPublic() {
         return apiFramework.pipeline(require('./recommendations-public'), localUtils, 'content');
+    },
+
+    get searchIndex() {
+        return apiFramework.pipeline(require('./search-index-public'), localUtils, 'content');
     }
 };

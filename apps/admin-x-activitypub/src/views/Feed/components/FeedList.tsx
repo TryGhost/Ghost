@@ -9,7 +9,6 @@ import {Button, LoadingIndicator, LucideIcon, Separator} from '@tryghost/shade';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {useEffect, useRef} from 'react';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 export type FeedListProps = {
@@ -30,7 +29,6 @@ const FeedList:React.FC<FeedListProps> = ({
     isFetchingNextPage
 }) => {
     const navigate = useNavigate();
-    const {isEnabled} = useFeatureFlags();
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -94,13 +92,13 @@ const FeedList:React.FC<FeedListProps> = ({
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
                                                         onClick={() => {
-                                                            navigate(`/feed/${encodeURIComponent(activity.id)}`);
+                                                            navigate(`/notes/${encodeURIComponent(activity.id)}`);
                                                         }}
                                                     />
                                                     {index < activities.length - 1 && (
                                                         <Separator />
                                                     )}
-                                                    {index === 3 && isEnabled('follow') && (
+                                                    {index === 3 && (
                                                         <SuggestedProfiles />
                                                     )}
                                                     {index === loadMoreIndex && (
