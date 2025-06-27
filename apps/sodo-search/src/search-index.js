@@ -104,7 +104,7 @@ export default class SearchIndex {
         this.search = this.search.bind(this);
     }
 
-    async #initPostIndex() {
+    async #populatePostIndex() {
         const posts = await this.#fetchPosts();
 
         if (posts.length > 0) {
@@ -113,11 +113,17 @@ export default class SearchIndex {
     }
 
     async #fetchPosts() {
-        const url = `${this.apiUrl}/ghost/api/content/search-index/posts/?key=${this.apiKey}`;
-        const response = await fetch(url);
-        const json = await response.json();
+        try {
+            const url = `${this.apiUrl}/ghost/api/content/search-index/posts/?key=${this.apiKey}`;
+            const response = await fetch(url);
+            const json = await response.json();
 
-        return json.posts;
+            return json.posts;
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Error fetching posts:', error);
+            return [];
+        }
     }
 
     #updatePostIndex(posts) {
@@ -139,7 +145,7 @@ export default class SearchIndex {
     }
 
     async init() {
-        await this.#initPostIndex();
+        await this.#populatePostIndex();
 
         let authors = await this.api.authors.browse({
             limit: '10000',
