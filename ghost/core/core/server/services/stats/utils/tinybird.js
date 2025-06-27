@@ -30,7 +30,7 @@ const create = ({config, request, settingsCache, tinybirdService}) => {
         const siteUuid = statsConfig.id || settingsCache.get('site_uuid');
         const localEnabled = statsConfig?.local?.enabled ?? false;
         const endpoint = localEnabled ? statsConfig.local.endpoint : statsConfig.endpoint;
-        const token = tinybirdService.getServerToken();
+        const token = tinybirdService.getToken();
 
         // Use tbVersion if provided for constructing the URL
         const pipeUrl = (options.tbVersion && !localEnabled) ? 

@@ -28,32 +28,32 @@ describe('TinybirdService', function () {
         assert.ok(tinybirdService);
     });
 
-    describe('_generateTinybirdJWT', function () {
+    describe('_generateToken', function () {
         it('should exist', function () {
-            assert.ok(tinybirdService._generateTinybirdJWT);
+            assert.ok(tinybirdService._generateToken);
         });
 
         it('should return a string', async function () {
-            const token = tinybirdService._generateTinybirdJWT();
+            const token = tinybirdService._generateToken();
             assert.ok(token);
             assert.equal(typeof token, 'string');
         });
 
         it('should return a valid JWT', async function () {
-            const token = tinybirdService._generateTinybirdJWT();
+            const token = tinybirdService._generateToken();
             const decoded = jwt.verify(token, tinybirdConfig.adminToken);
             assert.ok(decoded);
         });
 
         it('should return a JWT with the correct name', async function () {
-            const token = tinybirdService._generateTinybirdJWT({name: 'test-name'});
+            const token = tinybirdService._generateToken({name: 'test-name'});
             const decoded = jwt.verify(token, tinybirdConfig.adminToken);
             assert.ok(decoded);
             assert.equal(decoded.name, 'test-name');
         });
 
         it('should return a JWT with the correct scopes', async function () {
-            const token = tinybirdService._generateTinybirdJWT();
+            const token = tinybirdService._generateToken();
             const decoded = jwt.verify(token, tinybirdConfig.adminToken);
             assert.ok(decoded);
             decoded.scopes.forEach((scope) => {
@@ -71,7 +71,7 @@ describe('TinybirdService', function () {
         });
 
         it('should return false for a valid JWT', async function () {
-            const token = tinybirdService._generateTinybirdJWT();
+            const token = tinybirdService._generateToken();
             const isExpired = tinybirdService._isJWTExpired(token);
             assert.ok(!isExpired);
         });
@@ -83,7 +83,7 @@ describe('TinybirdService', function () {
 
         it('should return true for a JWT that is about to expire', async function () {
             // Create token that expires in 1 minute
-            const token = tinybirdService._generateTinybirdJWT({expiresInMinutes: 1});
+            const token = tinybirdService._generateToken({expiresInMinutes: 1});
             // Check if the token is expired with a buffer of 300 seconds = 5 minutes
             const isExpired = tinybirdService._isJWTExpired(token);
             assert.ok(isExpired);
@@ -91,72 +91,35 @@ describe('TinybirdService', function () {
 
         it('should return false for a JWT that is not about to expire', async function () {
             // Create token that expires in 10 minutes
-            const token = tinybirdService._generateTinybirdJWT({expiresInMinutes: 10});
+            const token = tinybirdService._generateToken({expiresInMinutes: 10});
             // Check if the token is expired with a buffer of 300 seconds = 5 minutes
             const isExpired = tinybirdService._isJWTExpired(token);
             assert.ok(!isExpired);
         });
     });
 
-    describe('_generateServerToken', function () {
+    describe('getToken', function () {
         it('should exist', function () {
-            assert.ok(tinybirdService._generateServerToken);
-        });
-
-        it('should return a valid JWT', async function () {
-            const token = tinybirdService._generateServerToken();
-            const decoded = jwt.verify(token, tinybirdConfig.adminToken);
-            assert.ok(decoded);
-        });
-
-        it('should return a JWT with the correct name', async function () {
-            const token = tinybirdService._generateServerToken();
-            const decoded = jwt.verify(token, tinybirdConfig.adminToken);
-            assert.ok(decoded);
-            assert.equal(decoded.name, 'ghost-server-token-' + siteUuid);
-        });
-
-        it('should return a JWT with the correct scopes', async function () {
-            const token = tinybirdService._generateServerToken();
-            const decoded = jwt.verify(token, tinybirdConfig.adminToken);
-            assert.ok(decoded);
-            decoded.scopes.forEach((scope) => {
-                assert.ok(scope.type === 'PIPES:READ');
-                assert.ok(scope.resource);
-                assert.ok(scope.fixed_params);
-                assert.ok(scope.fixed_params.site_uuid === siteUuid);
-            });
-        });
-
-        it('should return a JWT that is not expired', async function () {
-            const token = tinybirdService._generateServerToken();
-            const isExpired = tinybirdService._isJWTExpired(token);
-            assert.ok(!isExpired);
-        });
-    });
-
-    describe('getServerToken', function () {
-        it('should exist', function () {
-            assert.ok(tinybirdService.getServerToken);
+            assert.ok(tinybirdService.getToken);
         });
         
         it('should return the existing server JWT token if it is not expired', async function () {
-            const token = tinybirdService.getServerToken();
-            const newToken = tinybirdService.getServerToken();
+            const token = tinybirdService.getToken();
+            const newToken = tinybirdService.getToken();
             assert.equal(token, newToken);
         });
 
         it('should return a new server token if the existing one is about to expire', function () {
             const token = tinybirdService._serverToken;
             clock.tick(56 * 60 * 1000); // 56 minutes - past the 5 minute buffer for a 60 minute token
-            const newToken = tinybirdService.getServerToken();
+            const newToken = tinybirdService.getToken();
             assert.notEqual(token, newToken);
         });
 
         it('should return a new server token if the existing one is expired', function () {
             const token = tinybirdService._serverToken;
             clock.tick(60 * 60 * 1000); // 1 hour
-            const newToken = tinybirdService.getServerToken();
+            const newToken = tinybirdService.getToken();
             assert.notEqual(token, newToken);
         });
 
@@ -170,7 +133,7 @@ describe('TinybirdService', function () {
                 }
             };
             tinybirdService = new TinybirdService({tinybirdConfig, siteUuid});
-            const token = tinybirdService.getServerToken();
+            const token = tinybirdService.getToken();
             assert.equal(token, 'local-token');
         });
 
@@ -181,7 +144,7 @@ describe('TinybirdService', function () {
                 token: 'stats-token'
             };
             tinybirdService = new TinybirdService({tinybirdConfig, siteUuid});
-            const token = tinybirdService.getServerToken();
+            const token = tinybirdService.getToken();
             assert.equal(token, 'stats-token');
         });
     });

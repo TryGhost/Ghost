@@ -31,7 +31,7 @@ describe('Tinybird Client', function () {
         });
         mockSettingsCache.get.withArgs('site_uuid').returns('931ade9e-a4f1-4217-8625-34bd34250c16');
         mockTinybirdService = {
-            getServerToken: sinon.stub().returns('mock-jwt-token')
+            getToken: sinon.stub().returns('mock-jwt-token')
         };
 
         // Create tinybird client with mocked dependencies

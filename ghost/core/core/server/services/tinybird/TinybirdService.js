@@ -82,12 +82,12 @@ class TinybirdService {
      * For now we need to remain backwards compatible with the old stats token
      * @returns {string|null} The server token or null if generation fails
      */
-    getServerToken() {
+    getToken({name = `tinybird-jwt-${this.siteUuid}`, expiresInMinutes = 60} = {}) {
         // Prefer JWT tokens if enabled
         if (this.isJwtEnabled) {
             // Generate a new JWT token if it doesn't exist or is expired
             if (!this._serverToken || this._isJWTExpired(this._serverToken)) {
-                this._serverToken = this._generateServerToken();
+                this._serverToken = this._generateToken({name, expiresInMinutes});
             }
             return this._serverToken;
         }
@@ -103,35 +103,13 @@ class TinybirdService {
         return null;
     }
 
-    getFrontendToken() {
-        if (this.isJwtEnabled) {
-            return this._generateTinybirdJWT({name: 'ghost-frontend-token-' + this.siteUuid, expiresInMinutes: 30});
-        }
-        if (this.isLocalEnabled) {
-            return this.tinybirdConfig.stats.local?.token;
-        }
-        if (this.isStatsEnabled) {
-            return this.tinybirdConfig.stats.token;
-        }
-        return null;
-    }
-
-    /**
-     * Generates a server token with 60-minute expiration
-     * @returns {string} The generated server token
-     * @private
-     */
-    _generateServerToken() {
-        return this._generateTinybirdJWT({name: 'ghost-server-token-' + this.siteUuid, expiresInMinutes: 60});
-    }
-
     /**
      * Generates a Tinybird JWT token with specified options
      * @param {JWTGenerationOptions} [options={}] - Token generation options
      * @returns {string} The signed JWT token
      * @private
      */
-    _generateTinybirdJWT({name = `tinybird-jwt-${this.siteUuid}`, expiresInMinutes = 30} = {}) {
+    _generateToken({name = `tinybird-jwt-${this.siteUuid}`, expiresInMinutes = 60} = {}) {
         const expiresAt = Math.floor(Date.now() / 1000) + expiresInMinutes * 60;
         
         /** @type {TinybirdJWTPayload} */

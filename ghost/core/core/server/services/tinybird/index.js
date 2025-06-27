@@ -14,7 +14,7 @@ function getInstance() {
     const tinybirdConfig = config.get('tinybird');
     const siteUuid = settingsCache.get('site_uuid');
 
-    if (!tinybirdConfig.workspaceId || !tinybirdConfig.adminToken || !siteUuid) {
+    if (!tinybirdConfig || !siteUuid) {
         logging.warn('Tinybird service not configured');
         return;
     }
