@@ -46,7 +46,7 @@ const AlphaFeatures: React.FC = () => {
             for (const feature of features) {
                 if (feature.limitName && limiter?.isLimited(feature.limitName)) {
                     try {
-                        await limiter.errorIfIsOverLimit(feature.limitName);
+                        await limiter.errorIfWouldGoOverLimit(feature.limitName);
                         filtered.push(feature);
                     } catch (error) {
                         if (!(error instanceof HostLimitError)) {
