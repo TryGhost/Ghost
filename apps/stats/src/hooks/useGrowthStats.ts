@@ -355,9 +355,12 @@ export const useGrowthStats = (range: number) => {
 
         // Filter to requested date range
         const dateFromMoment = moment(dateFrom);
-        return subscriptionArray.filter(item => moment(item.date).isSameOrAfter(dateFromMoment)
-        );
-    }, [subscriptionStatsResponse, dateFrom]);
+        const dateToMoment = moment(endDate);
+        return subscriptionArray.filter((item) => {
+            const itemDate = moment(item.date);
+            return itemDate.isSameOrAfter(dateFromMoment) && itemDate.isSameOrBefore(dateToMoment);
+        });
+    }, [subscriptionStatsResponse, dateFrom, endDate]);
 
     return {
         isLoading,
