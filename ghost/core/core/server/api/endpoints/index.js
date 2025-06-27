@@ -181,6 +181,10 @@ module.exports = {
         return apiFramework.pipeline(require('./custom-theme-settings'), localUtils);
     },
 
+    get tinybird() {
+        return apiFramework.pipeline(require('./tinybird'), localUtils);
+    },
+
     get serializers() {
         return require('./utils/serializers');
     },
