@@ -71,9 +71,9 @@ const GrowthKPIs: React.FC<{
     const {totalMembers, freeMembers, paidMembers, mrr, percentChanges, directions} = totals;
 
     // Helper function to fill missing data points with zeros
-    const fillMissingDataPoints = (data: {date: string; signups: number; cancellations: number}[], range: number) => {
-        // For "Today" (range = 1), show just one data point for the current date
-        if (range === 1) {
+    const fillMissingDataPoints = (data: {date: string; signups: number; cancellations: number}[], dateRange: number) => {
+        // For "Today" (dateRange = 1), show just one data point for the current date
+        if (dateRange === 1) {
             const today = moment().format('YYYY-MM-DD');
             const todayData = data.find(item => item.date === today);
             
@@ -84,9 +84,9 @@ const GrowthKPIs: React.FC<{
             }];
         }
         
-        const {startDate, endDate} = getRangeDates(range);
+        const {startDate, endDate} = getRangeDates(dateRange);
         const dateSpan = moment(endDate).diff(moment(startDate), 'days');
-        const strategy = determineAggregationStrategy(range, dateSpan, 'sum');
+        const strategy = determineAggregationStrategy(dateRange, dateSpan, 'sum');
         
         // Create a map of existing data by date
         const dataMap = new Map(data.map(item => [item.date, item]));
