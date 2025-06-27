@@ -1,6 +1,6 @@
 import FeatureImagePlaceholder from '../../components/FeatureImagePlaceholder';
 import React from 'react';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, SkeletonTable, TableHead, TableRow, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, SkeletonTable, TableHead, TableRow, cn, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {TopPostViewsStats} from '@tryghost/admin-x-framework/api/stats';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
