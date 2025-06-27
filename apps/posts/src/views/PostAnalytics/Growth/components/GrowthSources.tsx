@@ -1,6 +1,7 @@
 import React from 'react';
-import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber} from '@tryghost/shade';
+import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources, useNavigate} from '@tryghost/admin-x-framework';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber} from '@tryghost/shade';
+import {useAppContext} from '@src/App';
 
 // Default source icon URL - apps can override this
 const DEFAULT_SOURCE_ICON_URL = 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64';
@@ -93,6 +94,8 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
     defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL,
     getPeriodText
 }) => {
+    const {appSettings} = useAppContext();
+    const navigate = useNavigate();
     // Process and group sources data with pre-computed icons and display values
     const processedData = React.useMemo(() => {
         return processSources({
@@ -136,7 +139,20 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
                 </CardHeader>
             }
             <CardContent>
-                {topSources.length > 0 ? (
+                {mode === 'growth' && !appSettings?.analytics.membersTrackSources ? (
+                    <EmptyIndicator
+                        actions={
+                            <Button variant='outline' onClick={() => navigate('/settings/analytics', {crossApp: true})}>
+                                Open settings
+                            </Button>
+                        }
+                        className='py-10'
+                        description='Enable member source tracking in settings to see which content drives member growth.'
+                        title='Member sources have been disabled'
+                    >
+                        <LucideIcon.Activity />
+                    </EmptyIndicator>
+                ) : topSources.length > 0 ? (
                     <SourcesTable
                         data={topSources}
                         defaultSourceIconUrl={defaultSourceIconUrl}
