@@ -74,13 +74,14 @@ class TinybirdService {
         this.isLocalEnabled = !!tinybirdConfig.stats?.local?.enabled;
         this.isStatsEnabled = !!tinybirdConfig.stats?.token;
         this._serverToken = null;
+        this._serverTokenExp = null;
     }
 
     /**
      * Gets the server token, refreshing it if it's about to expire
      * We're moving towards using JWT tokens for all Tinybird requests
      * For now we need to remain backwards compatible with the old stats token
-     * @returns {string|null} The server token or null if generation fails
+     * @returns {{token: string, exp?: number}|null} Object with token and optional exp, or null if generation fails
      */
     getToken({name = `tinybird-jwt-${this.siteUuid}`, expiresInMinutes = 60} = {}) {
         // Prefer JWT tokens if enabled
@@ -89,16 +90,24 @@ class TinybirdService {
             if (!this._serverToken || this._isJWTExpired(this._serverToken)) {
                 const tokenData = this._generateToken({name, expiresInMinutes});
                 this._serverToken = tokenData.token;
+                this._serverTokenExp = tokenData.exp;
             }
-            return this._serverToken;
+            return {
+                token: this._serverToken,
+                exp: this._serverTokenExp
+            };
         }
         // If local stats are enabled, use the local token
         if (this.isLocalEnabled) {
-            return this.tinybirdConfig.stats.local?.token;
+            return {
+                token: this.tinybirdConfig.stats.local?.token
+            };
         }
         // If stats are enabled, use the stats token
         if (this.isStatsEnabled) {
-            return this.tinybirdConfig.stats.token;
+            return {
+                token: this.tinybirdConfig.stats.token
+            };
         }
         // If no token is available, return null
         return null;

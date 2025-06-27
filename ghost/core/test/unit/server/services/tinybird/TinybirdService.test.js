@@ -115,23 +115,29 @@ describe('TinybirdService', function () {
         });
         
         it('should return the existing server JWT token if it is not expired', async function () {
-            const token = tinybirdService.getToken();
-            const newToken = tinybirdService.getToken();
-            assert.equal(token, newToken);
+            const tokenResult = tinybirdService.getToken();
+            const newTokenResult = tinybirdService.getToken();
+            assert.deepEqual(tokenResult, newTokenResult);
+            assert.ok(tokenResult.token);
+            assert.ok(typeof tokenResult.exp === 'number');
         });
 
         it('should return a new server token if the existing one is about to expire', function () {
-            const token = tinybirdService._serverToken;
+            const initialResult = tinybirdService.getToken();
+            const initialToken = initialResult.token;
             clock.tick(56 * 60 * 1000); // 56 minutes - past the 5 minute buffer for a 60 minute token
-            const newToken = tinybirdService.getToken();
-            assert.notEqual(token, newToken);
+            const newResult = tinybirdService.getToken();
+            assert.notEqual(initialToken, newResult.token);
+            assert.ok(typeof newResult.exp === 'number');
         });
 
         it('should return a new server token if the existing one is expired', function () {
-            const token = tinybirdService._serverToken;
+            const initialResult = tinybirdService.getToken();
+            const initialToken = initialResult.token;
             clock.tick(60 * 60 * 1000); // 1 hour
-            const newToken = tinybirdService.getToken();
-            assert.notEqual(token, newToken);
+            const newResult = tinybirdService.getToken();
+            assert.notEqual(initialToken, newResult.token);
+            assert.ok(typeof newResult.exp === 'number');
         });
 
         it('should return the local token if jwt is not enabled and local is enabled', function () {
@@ -144,8 +150,9 @@ describe('TinybirdService', function () {
                 }
             };
             tinybirdService = new TinybirdService({tinybirdConfig, siteUuid});
-            const token = tinybirdService.getToken();
-            assert.equal(token, 'local-token');
+            const result = tinybirdService.getToken();
+            assert.equal(result.token, 'local-token');
+            assert.equal(result.exp, undefined);
         });
 
         it('should return the stats token if jwt is not enabled and local is not enabled', function () {
@@ -155,8 +162,9 @@ describe('TinybirdService', function () {
                 token: 'stats-token'
             };
             tinybirdService = new TinybirdService({tinybirdConfig, siteUuid});
-            const token = tinybirdService.getToken();
-            assert.equal(token, 'stats-token');
+            const result = tinybirdService.getToken();
+            assert.equal(result.token, 'stats-token');
+            assert.equal(result.exp, undefined);
         });
     });
 });
