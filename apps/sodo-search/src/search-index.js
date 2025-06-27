@@ -132,6 +132,28 @@ export default class SearchIndex {
         });
     }
 
+    async #populateAuthorsIndex() {
+        const authors = await this.#fetchAuthors();
+
+        if (authors.length > 0) {
+            this.#updateAuthorsIndex(authors);
+        }
+    }
+
+    async #fetchAuthors() {
+        try {
+            const url = `${this.apiUrl}/ghost/api/content/search-index/authors/?key=${this.apiKey}`;
+            const response = await fetch(url);
+            const json = await response.json();
+
+            return json.authors;
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Error fetching authors:', error);
+            return [];
+        }
+    }
+
     #updateAuthorsIndex(authors) {
         authors.forEach((author) => {
             this.authorsIndex.add(author);
@@ -146,20 +168,7 @@ export default class SearchIndex {
 
     async init() {
         await this.#populatePostIndex();
-
-        let authors = await this.api.authors.browse({
-            limit: '10000',
-            fields: 'id,slug,name,url,profile_image',
-            order: 'updated_at DESC'
-        });
-
-        if (authors || authors.length > 0) {
-            if (!authors.length) {
-                authors = [authors];
-            }
-
-            this.#updateAuthorsIndex(authors);
-        }
+        await this.#populateAuthorsIndex();
 
         let tags = await this.api.tags.browse({
             limit: '10000',

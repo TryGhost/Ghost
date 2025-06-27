@@ -12,7 +12,7 @@ describe('search index', function () {
             .reply(200, {
                 posts: []
             })
-            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
+            .get('/search-index/authors/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 authors: []
             })
@@ -47,7 +47,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/awesome-barcelona-life/'
                 }]
             })
-            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
+            .get('/search-index/authors/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 authors: [{
                     id: 'different_uniq',
@@ -130,7 +130,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/awesome-barcelona-life2/'
                 }]
             })
-            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
+            .get('/search-index/authors/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 authors: [{
                     id: 'different_uniq',
@@ -212,7 +212,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/a-post-in-chinese/'
                 }]
             })
-            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
+            .get('/search-index/authors/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 authors: [{
                     id: 'different_uniq',
@@ -281,7 +281,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/khdshvt-nyv-yvrq/'
                 }]
             })
-            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
+            .get('/search-index/authors/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 authors: [{
                     id: 'author',
@@ -365,7 +365,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/some-other-hash/'
                 }]
             })
-            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
+            .get('/search-index/authors/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 authors: [{
                     id: 'different_uniq',
