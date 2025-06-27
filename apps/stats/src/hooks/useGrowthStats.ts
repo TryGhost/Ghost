@@ -1,5 +1,5 @@
 import moment from 'moment';
-import {MemberStatusItem, MrrHistoryItem, useMemberCountHistory, useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
+import {MemberStatusItem, MrrHistoryItem, useMemberCountHistory, useMrrHistory, useSubscriptionStats} from '@tryghost/admin-x-framework/api/stats';
 import {formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getSymbol} from '@tryghost/admin-x-framework';
 import {useMemo} from 'react';
@@ -201,6 +201,9 @@ export const useGrowthStats = (range: number) => {
 
     const {data: mrrHistoryResponse, isLoading: isMrrLoading} = useMrrHistory();
 
+    // Fetch subscription stats for real subscription events
+    const {data: subscriptionStatsResponse, isLoading: isSubscriptionLoading} = useSubscriptionStats();
+
     // Process member data with stable reference
     const memberData = useMemo(() => {
         let rawData: MemberStatusItem[] = [];
@@ -319,7 +322,41 @@ export const useGrowthStats = (range: number) => {
         return getSymbol(selectedCurrency);
     }, [selectedCurrency]);
 
-    const isLoading = useMemo(() => isMemberCountLoading || isMrrLoading, [isMemberCountLoading, isMrrLoading]);
+    const isLoading = useMemo(() => isMemberCountLoading || isMrrLoading || isSubscriptionLoading, [isMemberCountLoading, isMrrLoading, isSubscriptionLoading]);
+
+    // Process subscription data for real subscription events (like Ember dashboard)
+    const subscriptionData = useMemo(() => {
+        if (!subscriptionStatsResponse?.stats) {
+            return [];
+        }
+
+        // Merge subscription stats by date (like Ember's mergeStatsByDate)
+        const mergedByDate = subscriptionStatsResponse.stats.reduce((acc, current) => {
+            const dateKey = current.date;
+            
+            if (!acc[dateKey]) {
+                acc[dateKey] = {
+                    date: dateKey,
+                    signups: 0,
+                    cancellations: 0
+                };
+            }
+            
+            acc[dateKey].signups += current.signups;
+            acc[dateKey].cancellations += current.cancellations;
+            
+            return acc;
+        }, {} as Record<string, {date: string; signups: number; cancellations: number}>);
+
+        // Convert to array and sort by date
+        const subscriptionArray = Object.values(mergedByDate).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+
+        // Filter to requested date range
+        const dateFromMoment = moment(dateFrom);
+        return subscriptionArray.filter(item => moment(item.date).isSameOrAfter(dateFromMoment)
+        );
+    }, [subscriptionStatsResponse, dateFrom]);
 
     return {
         isLoading,
@@ -329,6 +366,7 @@ export const useGrowthStats = (range: number) => {
         endDate,
         totals: totalsData,
         chartData,
+        subscriptionData,
         selectedCurrency,
         currencySymbol
     };
