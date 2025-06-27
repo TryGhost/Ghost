@@ -9,24 +9,16 @@ const {MaxLimit, AllowlistLimit, FlagLimit, MaxPeriodicLimit} = require('../lib/
 
 describe('Limit Service', function () {
     describe('Flag Limit', function () {
-        it('throws if is over limit when disabled', async function () {
+        it('do nothing if is over limit', async function () {
+            // NOTE: the behavior of flag limit in "is over limit" use case is flawed and should not be relied on
+            // possible solution could be throwing an error to prevent clients from using it?
             const config = {
                 disabled: true
             };
-            const limit = new FlagLimit({name: 'limitFlaggy', config, errors});
+            const limit = new FlagLimit({name: 'flaggy', config, errors});
 
-            try {
-                await limit.errorIfIsOverLimit();
-                should.fail(limit, 'Should have errored');
-            } catch (err) {
-                should.exist(err);
-                should.exist(err.errorType);
-                should.equal(err.errorType, 'HostLimitError');
-                should.exist(err.errorDetails);
-                should.equal(err.errorDetails.name, 'limitFlaggy');
-                should.exist(err.message);
-                should.equal(err.message, 'Your plan does not support flaggy. Please upgrade to enable flaggy.');
-            }
+            const result = await limit.errorIfIsOverLimit();
+            should(result).be.undefined();
         });
 
         it('throws if would go over limit', async function () {
@@ -49,78 +41,6 @@ describe('Limit Service', function () {
 
                 should.exist(err.message);
                 should.equal(err.message, 'Your plan does not support flaggy. Please upgrade to enable flaggy.');
-            }
-        });
-
-        it('does not throw if feature is in use when currentCountQuery returns true', async function () {
-            const config = {
-                disabled: true,
-                currentCountQuery: () => true
-            };
-            const limit = new FlagLimit({name: 'flaggy', config, errors});
-
-            const result = await limit.errorIfIsOverLimit();
-            should(result).be.undefined();
-        });
-
-        it('throws if feature is not in use when currentCountQuery returns false', async function () {
-            const config = {
-                disabled: true,
-                currentCountQuery: () => false
-            };
-            const limit = new FlagLimit({name: 'limitFlaggy', config, errors});
-
-            try {
-                await limit.errorIfIsOverLimit();
-                should.fail(limit, 'Should have errored');
-            } catch (err) {
-                should.exist(err);
-                should.equal(err.errorType, 'HostLimitError');
-            }
-        });
-
-        it('calls currentCountQuery with transacting option', async function () {
-            const currentCountQueryStub = sinon.stub().resolves(true);
-            const config = {
-                disabled: true,
-                currentCountQuery: currentCountQueryStub
-            };
-            const db = {
-                knex: 'connection'
-            };
-            const limit = new FlagLimit({name: 'flaggy', config, db, errors});
-            const transaction = 'transaction';
-
-            await limit.errorIfIsOverLimit({transacting: transaction});
-            
-            sinon.assert.calledOnce(currentCountQueryStub);
-            sinon.assert.calledWithExactly(currentCountQueryStub, transaction);
-        });
-
-        it('errorIfWouldGoOverLimit behaves the same as errorIfIsOverLimit', async function () {
-            const config = {
-                disabled: true,
-                currentCountQuery: () => true
-            };
-            const limit = new FlagLimit({name: 'flaggy', config, errors});
-
-            // Should not throw when feature is in use
-            const result = await limit.errorIfWouldGoOverLimit();
-            should(result).be.undefined();
-
-            // Should throw when feature is not in use
-            const config2 = {
-                disabled: true,
-                currentCountQuery: () => false
-            };
-            const limit2 = new FlagLimit({name: 'limitFlaggy', config: config2, errors});
-
-            try {
-                await limit2.errorIfWouldGoOverLimit();
-                should.fail(limit2, 'Should have errored');
-            } catch (err) {
-                should.exist(err);
-                should.equal(err.errorType, 'HostLimitError');
             }
         });
     });

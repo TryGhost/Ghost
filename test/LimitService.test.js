@@ -281,7 +281,7 @@ describe('Limit Service', function () {
             (await limitService.checkIfAnyOverLimit()).should.be.true();
         });
 
-        it('Confirms when a flag limit without currentCountQuery is disabled', async function () {
+        it('Does not check flag limits when checking if any are over limit', async function () {
             const limitService = new LimitService();
 
             let limits = {
@@ -303,19 +303,15 @@ describe('Limit Service', function () {
                 // },
                 customIntegrations: {
                     disabled: true
-                    // No currentCountQuery - will be considered over limit
                 },
                 limitAnalytics: {
-                    disabled: true,
-                    currentCountQuery: () => true // Feature is in use, so limit won't be exceeded (grandfathered)
+                    disabled: true
                 },
                 limitStripeConnect: {
                     disabled: true
-                    // No currentCountQuery - will be considered over limit
                 },
                 limitSocialWeb: {
                     disabled: true
-                    // No currentCountQuery - will be considered over limit
                 }
             };
 
@@ -326,8 +322,8 @@ describe('Limit Service', function () {
 
             limitService.loadLimits({limits, errors, subscription});
 
-            // Should return true because customIntegrations is disabled without currentCountQuery
-            (await limitService.checkIfAnyOverLimit()).should.be.true();
+            // Should return false because flag limits' errorIfIsOverLimit does not throw
+            (await limitService.checkIfAnyOverLimit()).should.be.false();
         });
 
         it('Returns nothing if limit is not configured', async function () {
