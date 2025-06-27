@@ -8,7 +8,7 @@ describe('search index', function () {
         const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage});
 
         const scope = nock('http://localhost:3000/ghost/api/content')
-            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+            .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 posts: []
             })
@@ -38,7 +38,7 @@ describe('search index', function () {
         const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage});
 
         nock('http://localhost:3000/ghost/api/content')
-            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+            .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 posts: [{
                     id: 'sounique',
@@ -115,7 +115,7 @@ describe('search index', function () {
         const searchIndex = new SearchIndex({adminUrl, apiKey, dir: 'ltr', storage: localStorage});
 
         nock('http://localhost:3000/ghost/api/content')
-            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+            .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 posts: [{
                     id: 'sounique',
@@ -191,7 +191,7 @@ describe('search index', function () {
         const searchIndex = new SearchIndex({adminUrl, apiKey, dir: 'ltr', storage: localStorage});
 
         nock('http://localhost:3000/ghost/api/content')
-            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+            .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 posts: [{
                     id: 'sounique',
@@ -272,7 +272,7 @@ describe('search index', function () {
         const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage});
 
         nock('http://localhost:3000/ghost/api/content')
-            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+            .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 posts: [{
                     id: 'post',
@@ -344,7 +344,7 @@ describe('search index', function () {
         const searchIndex = new SearchIndex({adminUrl, apiKey, dir: 'ltr', storage: localStorage});
 
         nock('http://localhost:3000/ghost/api/content')
-            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+            .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 posts: [{
                     id: 'sounique',
