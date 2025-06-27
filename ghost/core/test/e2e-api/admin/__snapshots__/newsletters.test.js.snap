@@ -1235,6 +1235,28 @@ Object {
 }
 `;
 
+exports[`Newsletters API Host Settings: newsletter limits Disabled Newsletter / Max limit 0 Request fails when newsletter limit is 0 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Nuh uh",
+      "details": Object {
+        "limit": 0,
+        "name": "newsletters",
+        "total": 3,
+      },
+      "ghostErrorCode": null,
+      "help": "https://ghost.org/help/",
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Host Limit error, cannot save newsletter.",
+      "property": null,
+      "type": "HostLimitError",
+    },
+  ],
+}
+`;
+
 exports[`Newsletters API Host Settings: newsletter limits Max limit Adding a newsletter now doesn't fail 1: [body] 1`] = `
 Object {
   "meta": Object {
