@@ -227,6 +227,24 @@ export const formatNumber = (value: number): string => {
     return new Intl.NumberFormat('en-US').format(Math.round(value));
 };
 
+// Abbreviate numbers
+export function abbreviateNumber(number: number) {
+    const num = Number(number);
+
+    if (num < 1000) {
+        return formatNumber(num);
+    }
+
+    // For numbers >= 1000, show as x.yk format
+    const abbreviated = num / 1000;
+    const rounded = Math.round(abbreviated * 10) / 10; // Round to 1 decimal place
+
+    // Remove .0 if it's a whole number
+    const formatted = rounded % 1 === 0 ? rounded.toString() : rounded.toFixed(1);
+
+    return `${formatted}k`;
+}
+
 // Format time duration
 export const formatDuration = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
