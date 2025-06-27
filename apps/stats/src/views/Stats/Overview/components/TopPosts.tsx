@@ -8,11 +8,11 @@ import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
 interface PostlistTooptipProps {
     title?: string;
-    metrics?: [{
+    metrics?: Array<{
         icon?: React.ReactNode;
         label: string;
         metric: React.ReactNode;
-    }]
+    }>
     className?: string;
 };
 
@@ -120,14 +120,24 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                     </div>
                                                 </div>
                                             }
-                                            {showOpenRate && post.open_rate !== null &&
+                                            {showOpenRate && post.sent_count !== null &&
                                                 <div className='group/tooltip relative flex w-[66px] lg:w-[92px]'>
                                                     <PostListTooltip
                                                         metrics={[
                                                             {
+                                                                icon: <LucideIcon.Send className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
+                                                                label: 'Sent',
+                                                                metric: formatNumber(post.sent_count || 0)
+                                                            },
+                                                            {
                                                                 icon: <LucideIcon.MailOpen className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
                                                                 label: 'Opens',
-                                                                metric: post.open_rate ? '2,985' : '0'
+                                                                metric: formatNumber(post.opened_count || 0)
+                                                            },
+                                                            {
+                                                                icon: <LucideIcon.MousePointer className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
+                                                                label: 'Clicks',
+                                                                metric: formatNumber(post.clicked_count || 0)
                                                             }
                                                         ]}
                                                         title='Newsletter performance'

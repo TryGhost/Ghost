@@ -1183,7 +1183,7 @@ class PostsStatsService {
             // Filter out any rows without post_uuid and get unique UUIDs
             const postUuids = [...new Set(viewsData.filter(row => row.post_uuid).map(row => row.post_uuid))];
             
-            // Get posts data from Ghost DB for the posts we have views for
+            // Get posts data from Ghost DB - prioritize posts that were sent as newsletters
             const posts = await this.knex('posts as p')
                 .select(
                     'p.id as post_id',
@@ -1195,10 +1195,18 @@ class PostsStatsService {
                     'emails.opened_count'
                 )
                 .leftJoin('emails', 'emails.post_id', 'p.id')
-                .whereIn('p.uuid', postUuids);
+                .where('p.status', 'published')
+                .whereNotNull('emails.email_count') // Only get posts that were sent as newsletters
+                .whereNotNull('p.published_at')
+                .orderByRaw('CASE WHEN p.uuid IN (?) THEN 0 ELSE 1 END', [postUuids.length > 0 ? postUuids : ['none']])
+                .orderBy('p.published_at', 'desc')
+                .limit(limit);
 
-            // Get member attribution counts for these posts (model after GrowthStats logic)
-            const memberAttributionCounts = await this._getMemberAttributionCounts(posts.map(p => p.post_id), options);
+            // Get member attribution counts and click counts for these posts
+            const [memberAttributionCounts, clickCounts] = await Promise.all([
+                this._getMemberAttributionCounts(posts.map(p => p.post_id), options),
+                this.getPostsClickCounts(posts.map(p => p.post_id))
+            ]);
 
             // Process posts with views
             const postsWithViews = viewsData.map((row) => {
@@ -1211,6 +1219,7 @@ class PostsStatsService {
                 // Find the member attribution count for this post
                 const attributionCount = memberAttributionCounts.find(ac => ac.post_id === post.post_id);
                 const memberCount = attributionCount ? (attributionCount.free_members + attributionCount.paid_members) : 0;
+                const clickCount = clickCounts[post.post_id] || 0;
 
                 return {
                     post_id: post.post_id,
@@ -1218,7 +1227,11 @@ class PostsStatsService {
                     published_at: post.published_at,
                     feature_image: post.feature_image ? urlUtils.transformReadyToAbsolute(post.feature_image) : post.feature_image,
                     views: row.visits,
+                    sent_count: post.email_count || null,
+                    opened_count: post.opened_count || null,
                     open_rate: post.email_count > 0 ? (post.opened_count / post.email_count) * 100 : null,
+                    clicked_count: clickCount,
+                    click_rate: post.email_count > 0 ? (clickCount / post.email_count) * 100 : null,
                     members: memberCount
                 };
             }).filter(Boolean);
@@ -1229,6 +1242,7 @@ class PostsStatsService {
             // If we need more posts, get the latest ones excluding the ones we already have
             let additionalPosts = [];
             let additionalMemberAttributionCounts = [];
+            let additionalClickCounts = {};
             if (remainingCount > 0) {
                 // Get post IDs that we already have to exclude them
                 const existingPostIds = postsWithViews.map(p => p.post_id);
@@ -1251,9 +1265,12 @@ class PostsStatsService {
                     .orderBy('p.published_at', 'desc')
                     .limit(remainingCount);
 
-                // Get member attribution counts for additional posts
+                // Get member attribution counts and click counts for additional posts
                 if (additionalPosts.length > 0) {
-                    additionalMemberAttributionCounts = await this._getMemberAttributionCounts(additionalPosts.map(p => p.post_id), options);
+                    [additionalMemberAttributionCounts, additionalClickCounts] = await Promise.all([
+                        this._getMemberAttributionCounts(additionalPosts.map(p => p.post_id), options),
+                        this.getPostsClickCounts(additionalPosts.map(p => p.post_id))
+                    ]);
                 }
             }
 
@@ -1262,6 +1279,7 @@ class PostsStatsService {
                 // Find the member attribution count for this post
                 const attributionCount = additionalMemberAttributionCounts.find(ac => ac.post_id === post.post_id);
                 const memberCount = attributionCount ? (attributionCount.free_members + attributionCount.paid_members) : 0;
+                const clickCount = additionalClickCounts[post.post_id] || 0;
 
                 return {
                     post_id: post.post_id,
@@ -1269,7 +1287,11 @@ class PostsStatsService {
                     published_at: post.published_at,
                     feature_image: post.feature_image ? urlUtils.transformReadyToAbsolute(post.feature_image) : post.feature_image,
                     views: 0,
+                    sent_count: post.email_count || null,
+                    opened_count: post.opened_count || null,
                     open_rate: post.email_count > 0 ? (post.opened_count / post.email_count) * 100 : null,
+                    clicked_count: clickCount,
+                    click_rate: post.email_count > 0 ? (clickCount / post.email_count) * 100 : null,
                     members: memberCount
                 };
             });
@@ -1415,6 +1437,44 @@ class PostsStatsService {
             return visitorCounts;
         } catch (error) {
             logging.error('Error fetching visitor counts from Tinybird:', error);
+            return {};
+        }
+    }
+
+    /**
+     * Get click counts for multiple posts
+     * @param {string[]} postIds - Array of post IDs
+     * @returns {Promise<Object>} Map of post ID to click count
+     */
+    async getPostsClickCounts(postIds) {
+        try {
+            if (!postIds || !Array.isArray(postIds) || postIds.length === 0) {
+                return {};
+            }
+
+            // Query to count clicks from members_click_events for multiple posts
+            const clicksQuery = await this.knex
+                .select(
+                    'r.post_id',
+                    this.knex.raw('COALESCE(COUNT(DISTINCT mce.member_id), 0) as total_clicks')
+                )
+                .from('redirects as r')
+                .leftJoin('members_click_events as mce', 'r.id', 'mce.redirect_id')
+                .whereIn('r.post_id', postIds)
+                .whereNotNull('r.post_id')
+                .groupBy('r.post_id');
+
+            // Convert the response to a simple post_id -> count mapping
+            const clickCounts = {};
+            clicksQuery.forEach((row) => {
+                if (row.post_id) {
+                    clickCounts[row.post_id] = row.total_clicks || 0;
+                }
+            });
+
+            return clickCounts;
+        } catch (error) {
+            logging.error('Error fetching click counts:', error);
             return {};
         }
     }
