@@ -679,6 +679,8 @@ describe('PostsStatsService', function () {
             // Add member attribution data
             await _createFreeSignupEvent('post1', 'member_1', 'twitter', new Date('2025-01-16'));
             await _createFreeSignupEvent('post1', 'member_2', 'facebook', new Date('2025-01-16'));
+            // Create a paid member: first the signup, then the paid conversion
+            await _createFreeSignupEvent('post2', 'member_3', 'google', new Date('2025-01-17'));
             await _createPaidConversionEvent('post2', 'member_3', 'sub_1', 1000, 'google', new Date('2025-01-17'));
             await _createFreeSignupEvent('post3', 'member_4', 'linkedin', new Date('2025-01-18'));
 
@@ -715,8 +717,8 @@ describe('PostsStatsService', function () {
                     open_rate: 75,
                     clicked_count: 0,
                     click_rate: 0,
-                    members: 0,
-                    free_members: 0,
+                    members: 1,
+                    free_members: 1,
                     paid_members: 0
                 },
                 {
@@ -730,9 +732,9 @@ describe('PostsStatsService', function () {
                     open_rate: 75,
                     clicked_count: 1,
                     click_rate: 0.5,
-                    members: 0,
+                    members: 1,
                     free_members: 0,
-                    paid_members: 0
+                    paid_members: 1
                 },
                 {
                     post_id: 'post1',
@@ -745,8 +747,8 @@ describe('PostsStatsService', function () {
                     open_rate: 50,
                     clicked_count: 2,
                     click_rate: 2,
-                    members: 0,
-                    free_members: 0,
+                    members: 2,
+                    free_members: 2,
                     paid_members: 0
                 }
             ];
@@ -787,9 +789,13 @@ describe('PostsStatsService', function () {
             // Add member attribution data
             await _createFreeSignupEvent('post1', 'member_1', 'twitter', new Date('2025-01-16'));
             await _createFreeSignupEvent('post1', 'member_2', 'facebook', new Date('2025-01-16'));
+            // Create a paid member: first the signup, then the paid conversion
+            await _createFreeSignupEvent('post2', 'member_3', 'google', new Date('2025-01-17'));
             await _createPaidConversionEvent('post2', 'member_3', 'sub_1', 1500, 'google', new Date('2025-01-17'));
             await _createFreeSignupEvent('post3', 'member_4', 'linkedin', new Date('2025-01-18'));
             await _createFreeSignupEvent('post3', 'member_5', 'reddit', new Date('2025-01-18'));
+            // Create a paid member: first the signup, then the paid conversion
+            await _createFreeSignupEvent('post4', 'member_6', 'direct', new Date('2025-01-19'));
             await _createPaidConversionEvent('post4', 'member_6', 'sub_2', 2000, 'direct', new Date('2025-01-19'));
 
             // Add click tracking data
@@ -839,8 +845,8 @@ describe('PostsStatsService', function () {
                     open_rate: 50,
                     clicked_count: 2,
                     click_rate: 2,
-                    members: 0,
-                    free_members: 0,
+                    members: 2,
+                    free_members: 2,
                     paid_members: 0
                 },
                 {
@@ -854,9 +860,9 @@ describe('PostsStatsService', function () {
                     open_rate: 75,
                     clicked_count: 1,
                     click_rate: 0.5,
-                    members: 0,
+                    members: 1,
                     free_members: 0,
-                    paid_members: 0
+                    paid_members: 1
                 },
                 {
                     post_id: 'post4',
@@ -869,9 +875,9 @@ describe('PostsStatsService', function () {
                     open_rate: 75,
                     clicked_count: 2,
                     click_rate: 0.5,
-                    members: 0,
+                    members: 1,
                     free_members: 0,
-                    paid_members: 0
+                    paid_members: 1
                 },
                 {
                     post_id: 'post3',
@@ -884,8 +890,8 @@ describe('PostsStatsService', function () {
                     open_rate: 75,
                     clicked_count: 1,
                     click_rate: 0.33333333333333337,
-                    members: 0,
-                    free_members: 0,
+                    members: 2,
+                    free_members: 2,
                     paid_members: 0
                 }
             ];
