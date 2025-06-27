@@ -79,7 +79,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                     <>
                         <div className='flex flex-col gap-6 px-6 transition-all md:flex-row md:items-start xl:col-span-2'>
                             {latestPostStats.feature_image &&
-                                    <div className='aspect-[16/10] w-full min-w-[100px] rounded-sm bg-cover bg-center sm:max-w-[50%] lg:max-w-[260px] xl:max-w-[232px]' style={{
+                                    <div className='aspect-[16/10] w-full min-w-[100px] rounded-sm bg-cover bg-center sm:max-w-[170px] lg:max-w-[170px] xl:max-w-[232px]' style={{
                                         backgroundImage: `url(${latestPostStats.feature_image})`
                                     }}></div>
                             }
@@ -129,7 +129,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                             </div>
                         </div>
 
-                        <div className='-ml-4 flex w-full flex-col items-stretch gap-2 pr-6 text-sm sidebar:max-w-[320px] xl:h-full xl:max-w-none'>
+                        <div className='-ml-4 flex w-full flex-col items-stretch gap-2 pr-6 text-sm xl:h-full xl:max-w-none'>
                             <div className='grid grid-cols-2 gap-6 pl-10 lg:border-l xl:h-full'>
                                 {/* Web metrics - only for published posts */}
                                 {metricsToShow.showWebMetrics && appSettings?.analytics.webAnalytics &&
