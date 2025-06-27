@@ -203,7 +203,7 @@
                         </div>
                         <div class="metric">
                             <div class="data">
-                                {{svg-jar "analytics-visitors"}}
+                                {{svg-jar "analytics-clicks"}}
                                 Clicks
                             </div>
                             <span>{{format-number @post.count.clicks}}</span>
@@ -229,10 +229,6 @@
                             {{svg-jar "analytics-clicks" class="gh-list-analytics-icon"}}
                             <span class="gh-content-email-stats-value">
                                 {{@post.clickRate}}%
-                                {{!-- {{#if this.isHovered}}
-                                    {{format-number @post.count.clicks}}
-                                {{else}}
-                                {{/if}} --}}
                             </span>
                         </div>
                     </LinkTo>
@@ -243,10 +239,6 @@
                                 {{svg-jar "analytics-opens" class="gh-list-analytics-icon"}}
                                 <span class="gh-content-email-stats-value">
                                         {{@post.email.openRate}}%
-                                    {{!-- {{#if this.isHovered}}
-                                        {{format-number @post.email.openedCount}}
-                                    {{else}}
-                                    {{/if}} --}}
                                 </span>
                             </div>
                         </LinkTo>
@@ -264,14 +256,14 @@
                             <div class="metrics">
                                 <div class="metric">
                                     <div class="data">
-                                        {{svg-jar "analytics-visitors"}}
+                                        {{svg-jar "analytics-free-members"}}
                                         Free
                                     </div>
                                     <span>{{format-number this.memberCounts.free}}</span>
                                 </div>
                                 <div class="metric">
                                     <div class="data">
-                                        {{svg-jar "analytics-visitors"}}
+                                        {{svg-jar "analytics-paid-members"}}
                                         Paid
                                     </div>
                                     <span>{{format-number this.memberCounts.paid}}</span>
