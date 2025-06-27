@@ -900,7 +900,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                             repostCount={replyGroup.mainReply.object.repostCount ?? 0}
                                                             type='Note'
                                                             onClick={() => {
-                                                                navigate(`/feed/${encodeURIComponent(replyGroup.mainReply.id)}`);
+                                                                navigate(`/notes/${encodeURIComponent(replyGroup.mainReply.id)}`);
                                                             }}
                                                             onDelete={handleDelete}
                                                         />
@@ -921,7 +921,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                 repostCount={replyGroup.chain[0].object.repostCount ?? 0}
                                                                 type='Note'
                                                                 onClick={() => {
-                                                                    navigate(`/feed/${encodeURIComponent(replyGroup.chain[0].id)}`);
+                                                                    navigate(`/notes/${encodeURIComponent(replyGroup.chain[0].id)}`);
                                                                 }}
                                                                 onDelete={handleDelete}
                                                             />
@@ -948,7 +948,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                     repostCount={chainItem.object.repostCount ?? 0}
                                                                     type='Note'
                                                                     onClick={() => {
-                                                                        navigate(`/feed/${encodeURIComponent(chainItem.id)}`);
+                                                                        navigate(`/notes/${encodeURIComponent(chainItem.id)}`);
                                                                     }}
                                                                     onDelete={handleDelete}
                                                                 />

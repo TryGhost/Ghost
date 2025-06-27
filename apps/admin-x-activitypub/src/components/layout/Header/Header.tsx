@@ -30,7 +30,7 @@ const Header: React.FC = () => {
         onlyBackButton = true;
     }
 
-    if (baseRoute === 'feed' && canGoBack) {
+    if (baseRoute === 'notes' && canGoBack) {
         onlyBackButton = true;
     }
 

@@ -94,7 +94,7 @@ const FeedList:React.FC<FeedListProps> = ({
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
                                                         onClick={() => {
-                                                            navigate(`/feed/${encodeURIComponent(activity.id)}`);
+                                                            navigate(`/notes/${encodeURIComponent(activity.id)}`);
                                                         }}
                                                     />
                                                     {index < activities.length - 1 && (

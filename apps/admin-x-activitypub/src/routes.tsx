@@ -30,25 +30,25 @@ export const routes: CustomRouteObject[] = [
         children: [
             {
                 index: true,
-                element: <Navigate to="inbox" />
+                element: <Navigate to="reader" />
             },
             {
-                path: 'inbox',
+                path: 'reader',
                 element: <Inbox />,
-                pageTitle: 'Inbox'
+                pageTitle: 'Reader'
             },
             {
-                path: 'inbox/:postId',
+                path: 'reader/:postId',
                 element: <Inbox />,
-                pageTitle: 'Inbox'
+                pageTitle: 'Reader'
             },
             {
-                path: 'feed',
+                path: 'notes',
                 element: <Feed />,
-                pageTitle: 'Feed'
+                pageTitle: 'Notes'
             },
             {
-                path: 'feed/:postId',
+                path: 'notes/:postId',
                 element: <Note />,
                 pageTitle: 'Note'
             },
