@@ -3,102 +3,81 @@ const ObjectID = require('bson-objectid').default;
 
 const {createTransactionalMigration} = require('../../utils');
 
-const LEGACY_OWNER_USER_ID = '1';
+const LEGACY_HARDCODED_USER_ID = '1';
 
 module.exports = createTransactionalMigration(
     async function up(knex) {
         const newId = (new ObjectID()).toHexString();
 
-        logging.info(`Updating owner user ID from ${LEGACY_OWNER_USER_ID} to ${newId}`);
+        logging.info(`Updating hardcoded user ID from ${LEGACY_HARDCODED_USER_ID} to ${newId}`);
 
-        const currentOwnerUser = await knex('users').where('id', LEGACY_OWNER_USER_ID).first();
+        const currentUserWithHardcodedId = await knex('users').where('id', LEGACY_HARDCODED_USER_ID).first();
 
-        if (!currentOwnerUser) {
-            logging.warn(`Owner user with ID ${LEGACY_OWNER_USER_ID} not found, skipping migration`);
-
-            return;
-        }
-
-        // Verify this user actually has the Owner role
-        const ownerRole = await knex('roles').where('name', 'Owner').first();
-
-        if (!ownerRole) {
-            logging.warn('Owner role not found, skipping migration');
-
-            return;
-        }
-
-        const isOwner = await knex('roles_users')
-            .where('user_id', LEGACY_OWNER_USER_ID)
-            .where('role_id', ownerRole.id)
-            .first();
-
-        if (!isOwner) {
-            logging.warn(`User with ID ${LEGACY_OWNER_USER_ID} is not the owner, skipping migration`);
+        if (!currentUserWithHardcodedId) {
+            logging.warn(`User with ID ${LEGACY_HARDCODED_USER_ID} not found, skipping migration`);
 
             return;
         }
 
         const now = Date.now();
-        const email = currentOwnerUser.email;
-        const slug = currentOwnerUser.slug;
+        const email = currentUserWithHardcodedId.email;
+        const slug = currentUserWithHardcodedId.slug;
         const temporaryEmail = `migrating-${now}@migration.local`;
         const temporarySlug = `migrating-${now}`;
 
-        // Step 1: Create a clone of the current owner user using the new ID.
-        // This is so we can assign existing references to the new owner user ID
+        // Step 1: Create a clone of the current user using the new ID.
+        // This is so we can assign existing references to the new user ID
         // without violating foreign key constraints. We also need to use a
         // temporary email and slug to avoid duplicate constraint errors
-        const clonedOwnerUser = {
-            ...currentOwnerUser,
+        const clonedUser = {
+            ...currentUserWithHardcodedId,
             id: newId,
             slug: temporarySlug,
             email: temporaryEmail
         };
 
-        await knex('users').insert(clonedOwnerUser);
+        await knex('users').insert(clonedUser);
 
-        logging.info(`Cloned existing owner user with updated properties - ID: ${newId}, email: ${temporaryEmail}, slug: ${temporarySlug}`);
+        logging.info(`Cloned existing user with updated properties - ID: ${newId}, email: ${temporaryEmail}, slug: ${temporarySlug}`);
 
-        // Step 2: Update all references to the current owner user ID to point
-        // to the cloned owner user ID. The order matters to avoid foreign key
+        // Step 2: Update all references to the current user ID to point
+        // to the cloned user ID. The order matters to avoid foreign key
         // constraint violations.
 
         // 1. Tables with user_id column
-        await knex('roles_users').where('user_id', LEGACY_OWNER_USER_ID).update({user_id: newId});
-        await knex('permissions_users').where('user_id', LEGACY_OWNER_USER_ID).update({user_id: newId});
-        await knex('sessions').where('user_id', LEGACY_OWNER_USER_ID).update({user_id: newId});
-        await knex('api_keys').where('user_id', LEGACY_OWNER_USER_ID).update({user_id: newId});
+        await knex('roles_users').where('user_id', LEGACY_HARDCODED_USER_ID).update({user_id: newId});
+        await knex('permissions_users').where('user_id', LEGACY_HARDCODED_USER_ID).update({user_id: newId});
+        await knex('sessions').where('user_id', LEGACY_HARDCODED_USER_ID).update({user_id: newId});
+        await knex('api_keys').where('user_id', LEGACY_HARDCODED_USER_ID).update({user_id: newId});
 
         // 2. Tables with author_id column
-        await knex('posts_authors').where('author_id', LEGACY_OWNER_USER_ID).update({author_id: newId});
-        await knex('post_revisions').where('author_id', LEGACY_OWNER_USER_ID).update({author_id: newId});
+        await knex('posts_authors').where('author_id', LEGACY_HARDCODED_USER_ID).update({author_id: newId});
+        await knex('post_revisions').where('author_id', LEGACY_HARDCODED_USER_ID).update({author_id: newId});
 
         // 3. Tables with published_by column (nullable)
-        await knex('posts').where('published_by', LEGACY_OWNER_USER_ID).update({published_by: newId});
+        await knex('posts').where('published_by', LEGACY_HARDCODED_USER_ID).update({published_by: newId});
 
         // 4. Actions table with actor_id
         await knex('actions')
-            .where('actor_id', LEGACY_OWNER_USER_ID)
+            .where('actor_id', LEGACY_HARDCODED_USER_ID)
             .where('actor_type', 'user')
             .update({actor_id: newId});
 
         // Step 3: Clean up the now redundant user record identified by the
-        // legacy owner user ID as there should be no references to it anymore
-        await knex('users').where('id', LEGACY_OWNER_USER_ID).del();
+        // legacy user ID as there should be no references to it anymore
+        await knex('users').where('id', LEGACY_HARDCODED_USER_ID).del();
 
-        logging.info(`Removed user with ID: ${LEGACY_OWNER_USER_ID}`);
+        logging.info(`Removed user with ID: ${LEGACY_HARDCODED_USER_ID}`);
 
-        // Step 4: Restore the original slug and email on the cloned owner user
-        // record
+        // Step 4: Restore the original slug and email on the cloned user record
         await knex('users').where('id', newId).update({
             slug,
             email
         });
 
-        logging.info(`Restored owner user slug and email: ${slug}, ${email}`);
+        logging.info(`Restored user slug and email: ${slug}, ${email}`);
 
-        logging.info(`Successfully updated owner user ID from ${LEGACY_OWNER_USER_ID} to ${newId}`);
+        logging.info(`Successfully updated user ID from ${LEGACY_HARDCODED_USER_ID} to ${newId}`);
     },
 
     async function down() {
