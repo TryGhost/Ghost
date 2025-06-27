@@ -1318,11 +1318,12 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
     const queryClient = useQueryClient();
 
     return useMutation({
-        async mutationFn({inReplyTo, content, imageUrl}: {inReplyTo: string, content: string, imageUrl?: string}) {
+        async mutationFn({inReplyTo, content, imageUrl, altText}: {inReplyTo: string, content: string, imageUrl?: string, altText?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.reply(inReplyTo, content, imageUrl);
+            const image = imageUrl ? {url: imageUrl, altText} : undefined;
+            return api.reply(inReplyTo, content, image);
         },
         onMutate: ({inReplyTo}) => {
             if (!actorProps) {
@@ -1383,11 +1384,12 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
     const queryKeyPostsByAccount = QUERY_KEYS.profilePosts('index');
 
     return useMutation({
-        async mutationFn({content, imageUrl}: {content: string, imageUrl?: string}) {
+        async mutationFn({content, imageUrl, altText}: {content: string, imageUrl?: string, altText?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.note(content, imageUrl);
+            const image = imageUrl ? {url: imageUrl, altText} : undefined;
+            return api.note(content, image);
         },
         onMutate: ({content, imageUrl}) => {
             if (!actorProps) {
