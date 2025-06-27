@@ -10,7 +10,7 @@ const {
 // NOTE: The tests do not use the shared page, as it needs to clear cookies
 test.describe('Two-Factor authentication', () => {
     function fetchOwnerUserFixture() {
-        return DataGenerator.Content.users.find(user => user.id === '1');
+        return DataGenerator.Content.users[0];
     }
 
     test.beforeEach(async ({page}) => {
