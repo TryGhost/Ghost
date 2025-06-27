@@ -247,7 +247,6 @@ module.exports = function apiRoutes() {
     router.get('/tinybird/token', mw.authAdminApi, http(api.tinybird.token));
 
     // ## Sessions
-    router.get('/session', mw.authAdminApi, http(api.session.read));
     // We don't need auth when creating a new session (logging in)
     router.post('/session',
         shared.middleware.brute.globalBlock,
