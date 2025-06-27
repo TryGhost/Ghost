@@ -12,11 +12,19 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
     const [themeChangeError, setThemeChangeError] = useState<string|null>(null);
     const [isCheckingLimit, setIsCheckingLimit] = useState(false);
     const [isCheckingInstallation, setIsCheckingInstallation] = useState(false);
-    const {checkThemeLimitError, isThemeLimitCheckReady, noThemeChangesAllowed, isThemeLimited} = useCheckThemeLimitError();
+    const {checkThemeLimitError, isThemeLimitCheckReady, noThemeChangesAllowed, isThemeLimited, allowedThemesList} = useCheckThemeLimitError();
     const [installationAllowed, setInstallationAllowed] = useState<boolean | null>(null);
 
     useEffect(() => {
         const checkIfThemeChangeAllowed = async () => {
+            // Only check limits if we have a single-theme allowlist
+            // Multiple themes don't need this check since users can change between allowed themes
+            if (!noThemeChangesAllowed) {
+                setIsCheckingLimit(false);
+                setThemeChangeError(null);
+                return;
+            }
+
             setIsCheckingLimit(true);
             const error = await checkThemeLimitError();
             setThemeChangeError(error);
@@ -38,7 +46,7 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
             setThemeChangeError(null);
             setIsCheckingLimit(false);
         }
-    }, [checkThemeLimitError, isThemeLimitCheckReady, pathName, modal, updateRoute]);
+    }, [checkThemeLimitError, isThemeLimitCheckReady, pathName, modal, updateRoute, noThemeChangesAllowed]);
 
     // Check theme installation limits
     useEffect(() => {
@@ -130,6 +138,11 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
         
         return <ChangeThemeModal />;
     } else if (pathName === 'theme/install') {
+        // Don't render the modal if limits aren't ready yet
+        if (!isThemeLimitCheckReady) {
+            return null;
+        }
+
         // Parse URL params inline since we need them immediately
         const url = window.location.href;
         const fragment = url.split('#')[1];
@@ -143,9 +156,20 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
             source = searchParams.get('source');
         }
 
-        // Don't render the modal if limits aren't ready yet or we're still checking
-        // or if we haven't determined if installation is allowed yet
-        if (!isThemeLimitCheckReady || isCheckingInstallation || installationAllowed === null) {
+        // Check if the theme installation will be blocked
+        // This prevents the modal from being created before the useEffect runs
+        if (ref && allowedThemesList) {
+            const themeName = ref.split('/')[1]?.toLowerCase();
+            const isThemeInstallationBlocked = noThemeChangesAllowed || !allowedThemesList.includes(themeName);
+            
+            if (isThemeInstallationBlocked) {
+                // The useEffect will handle showing the limit modal and redirecting
+                return null;
+            }
+        }
+
+        // Don't render if we're still checking or if we haven't determined if installation is allowed yet
+        if (isCheckingInstallation || installationAllowed === null) {
             return null;
         }
 

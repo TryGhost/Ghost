@@ -556,9 +556,6 @@ test.describe('Theme settings', async () => {
 
         // Theme modal should be visible (behind the limit modal) but NO confirmation modal
         await expect(page.getByTestId('theme-modal')).toBeVisible();
-        
-        // Wait a bit to ensure no confirmation modal appears
-        await page.waitForTimeout(1000);
         await expect(page.getByTestId('confirmation-modal')).not.toBeVisible();
 
         // Close the limit modal
@@ -604,9 +601,6 @@ test.describe('Theme settings', async () => {
 
         // Theme modal should not be visible at all
         await expect(page.getByTestId('theme-modal')).not.toBeVisible();
-        
-        // Wait a bit to ensure no confirmation modal appears
-        await page.waitForTimeout(1000);
         await expect(page.getByTestId('confirmation-modal')).not.toBeVisible();
     });
 
