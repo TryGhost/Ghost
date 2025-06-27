@@ -70,6 +70,11 @@
                             </LinkTo>
                         </li>
                     {{/if}}
+                    {{#if (and (gh-user-can-admin this.session.user) this.config.stats (feature "trafficAnalytics"))}}
+                        <li class="relative">
+                            <LinkTo @route="stats-x">{{svg-jar "graph-chart-up-arrow"}}Analytics</LinkTo>
+                        </li>
+                    {{/if}}
                     {{#if (gh-user-can-admin this.session.user)}}
                         <li class="relative gh-nav-list-home">
                             <LinkTo @route="dashboard" @alt="Dashboard" data-test-nav="dashboard">
@@ -94,11 +99,6 @@
                             <span>{{svg-jar "external"}}</span>
                         </a>
                     </li>
-                    {{#if (and (gh-user-can-admin this.session.user) this.config.stats (feature "trafficAnalytics"))}}
-                        <li class="relative">
-                            <LinkTo @route="stats-x">{{svg-jar "graph-chart-up-arrow"}}Analytics</LinkTo>
-                        </li>
-                    {{/if}}
                     {{#if (gh-user-can-admin this.session.user)}}
                         {{#if (not (and this.settings.socialWebEnabled this.session.user.isAdmin))}}
                             <li class="relative">
