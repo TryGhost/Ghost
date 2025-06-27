@@ -171,6 +171,8 @@
         }
     },
     "optimization": {
+        "maxLimit": 100,
+        "allowLimitAll": false,
         "getHelper": {
             "timeout": {
                 "threshold": 5000,
