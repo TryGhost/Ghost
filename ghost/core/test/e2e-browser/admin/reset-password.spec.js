@@ -14,7 +14,7 @@ test.describe('Admin', () => {
             await sharedPage.goto('/ghost');
 
             // Add owner user data from usual fixture
-            const ownerUser = DataGenerator.Content.users.find(user => user.id === '1');
+            const ownerUser = DataGenerator.Content.users[0];
 
             await sharedPage.locator('#identification').fill(ownerUser.email);
             await sharedPage.getByRole('button', {name: 'Forgot?'}).click();
@@ -48,7 +48,7 @@ test.describe('Admin', () => {
                 await sharedPage.goto('/ghost');
 
                 // Add owner user data from usual fixture
-                const ownerUser = DataGenerator.Content.users.find(user => user.id === '1');
+                const ownerUser = DataGenerator.Content.users[0];
 
                 await sharedPage.locator('#identification').fill(ownerUser.email);
                 await sharedPage.getByRole('button', {name: 'Forgot?'}).click();
