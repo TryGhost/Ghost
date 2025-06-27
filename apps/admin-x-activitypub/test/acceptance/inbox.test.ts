@@ -13,7 +13,7 @@ test.describe('Inbox', async () => {
         await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
-                path: '/inbox',
+                path: '/feed/reader',
                 response: inboxFixture
             }
         }, options: {useActivityPub: true}});
@@ -45,7 +45,7 @@ test.describe('Inbox', async () => {
         await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
-                path: '/inbox',
+                path: '/feed/reader',
                 response: inboxFixture
             },
             getPost: {
@@ -110,7 +110,7 @@ test.describe('Inbox', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
-                path: '/inbox',
+                path: '/feed/reader',
                 response: inboxFixture
             },
             likePost: {
@@ -156,7 +156,7 @@ test.describe('Inbox', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
-                path: '/inbox',
+                path: '/feed/reader',
                 response: inboxFixture
             },
             getPost: {
@@ -245,7 +245,7 @@ test.describe('Inbox', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
-                path: '/inbox',
+                path: '/feed/reader',
                 response: inboxFixture
             },
             repostPost: {

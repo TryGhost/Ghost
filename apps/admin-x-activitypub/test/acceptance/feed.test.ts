@@ -13,7 +13,7 @@ test.describe('Feed', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getFeed: {
                 method: 'GET',
-                path: '/feed',
+                path: '/feed/notes',
                 response: feedFixture
             },
             getActivityPubUser: {
@@ -86,7 +86,7 @@ test.describe('Feed', async () => {
         await mockApi({page, requests: {
             getFeed: {
                 method: 'GET',
-                path: '/feed',
+                path: '/feed/notes',
                 response: feedFixture
             }
         }, options: {useActivityPub: true}});
@@ -118,7 +118,7 @@ test.describe('Feed', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getFeed: {
                 method: 'GET',
-                path: '/feed',
+                path: '/feed/notes',
                 response: feedFixture
             },
             likePost: {
@@ -165,7 +165,7 @@ test.describe('Feed', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getFeed: {
                 method: 'GET',
-                path: '/feed',
+                path: '/feed/notes',
                 response: feedFixture
             },
             repostPost: {
@@ -207,7 +207,7 @@ test.describe('Feed', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getFeed: {
                 method: 'GET',
-                path: '/feed',
+                path: '/feed/notes',
                 response: feedFixture
             },
             getPost: {

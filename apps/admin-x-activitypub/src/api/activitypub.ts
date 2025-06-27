@@ -396,11 +396,11 @@ export class ActivityPubAPI {
     }
 
     async getFeed(next?: string): Promise<PaginatedPostsResponse> {
-        return this.getPaginatedPosts('.ghost/activitypub/feed', next);
+        return this.getPaginatedPosts('.ghost/activitypub/feed/notes', next);
     }
 
     async getInbox(next?: string): Promise<PaginatedPostsResponse> {
-        return this.getPaginatedPosts('.ghost/activitypub/inbox', next);
+        return this.getPaginatedPosts('.ghost/activitypub/feed/reader', next);
     }
 
     async getPostsByAccount(handle: string, next?: string): Promise<PaginatedPostsResponse> {
