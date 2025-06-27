@@ -766,7 +766,8 @@ Post = ghostBookshelf.Model.extend({
         if ((newStatus === 'published' || newStatus === 'sent') && this.hasChanged('status')) {
             // unless published_by is set and we're importing, set published_by to contextUser
             if (!(this.get('published_by') && options.importing)) {
-                this.set('published_by', String(this.contextUser(options)));
+                const userId = await this.contextUser(options);
+                this.set('published_by', String(userId));
             }
         } else {
             // In any other case (except import), `published_by` should not be changed
@@ -910,7 +911,7 @@ Post = ghostBookshelf.Model.extend({
                     revision_interval_ms: POST_REVISIONS_INTERVAL_MS
                 }
             });
-            let authorId = this.contextUser(options);
+            let authorId = await this.contextUser(options);
             const authorExists = await ghostBookshelf.model('User').findOne({id: authorId}, {transacting: options.transacting});
             if (!authorExists) {
                 authorId = await ghostBookshelf.model('User').getOwnerUser().get('id');
