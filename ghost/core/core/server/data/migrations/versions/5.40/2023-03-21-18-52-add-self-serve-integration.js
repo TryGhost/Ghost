@@ -1,6 +1,8 @@
 const logging = require('@tryghost/logging');
 const {default: ObjectID} = require('bson-objectid');
-const {createTransactionalMigration, meta} = require('../../utils');
+const {createTransactionalMigration} = require('../../utils');
+
+const MIGRATION_USER = 1;
 
 module.exports = createTransactionalMigration(
     async function up(knex) {
@@ -22,7 +24,7 @@ module.exports = createTransactionalMigration(
             description: 'Core Integration for the Self-Serve migration tool',
             slug: 'self-serve-migration',
             created_at: knex.raw('current_timestamp'),
-            created_by: meta.MIGRATION_USER
+            created_by: MIGRATION_USER
         });
     },
     async function down(knex) {

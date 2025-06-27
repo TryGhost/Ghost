@@ -1,6 +1,8 @@
 const logging = require('@tryghost/logging');
-const {createTransactionalMigration, meta} = require('../../utils');
+const {createTransactionalMigration} = require('../../utils');
 const ObjectID = require('bson-objectid').default;
+
+const MIGRATION_USER = 1;
 
 module.exports = createTransactionalMigration(
     async function up(knex) {
@@ -25,7 +27,7 @@ module.exports = createTransactionalMigration(
                 name: 'Ghost ActivityPub',
                 description: 'Internal Integration for ActivityPub',
                 created_at: knex.raw('current_timestamp'),
-                created_by: meta.MIGRATION_USER
+                created_by: MIGRATION_USER
             })
             .into('integrations');
     },
