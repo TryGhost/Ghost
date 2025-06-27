@@ -4,8 +4,6 @@ const SubscriptionStatsService = require('./SubscriptionStatsService');
 const ReferrersStatsService = require('./ReferrersStatsService');
 const PostsStatsService = require('./PostsStatsService');
 const ContentStatsService = require('./ContentStatsService');
-const tinybird = require('./utils/tinybird');
-
 class StatsService {
     /**
      * @param {object} deps
@@ -249,10 +247,13 @@ class StatsService {
 
         // Only create the client if Tinybird is configured
         if (config.get('tinybird') && config.get('tinybird:stats')) {
-            tinybirdClient = tinybird.create({
+            // TODO: move the tinybird client to the tinybird service
+            const tinybirdService = require('../tinybird');
+            tinybirdClient = require('./utils/tinybird').create({
                 config,
                 request,
-                settingsCache
+                settingsCache,
+                tinybirdService
             });
         }
 

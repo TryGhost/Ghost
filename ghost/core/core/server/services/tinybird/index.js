@@ -1,5 +1,5 @@
 const TinybirdService = require('./TinybirdService');
-const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 
 let instance = null;
 
@@ -16,9 +16,8 @@ function getInstance() {
     const siteUuid = settingsCache.get('site_uuid');
 
     if (!workspaceId || !adminToken || !siteUuid) {
-        throw new errors.IncorrectUsageError({
-            message: 'Tinybird service not configured properly'
-        });
+        logging.warn('Tinybird service not configured');
+        return;
     }
 
     instance = new TinybirdService({
