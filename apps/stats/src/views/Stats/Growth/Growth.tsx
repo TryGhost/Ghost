@@ -50,7 +50,7 @@ const Growth: React.FC = () => {
     const initialTab = searchParams.get('tab') || 'total-members';
 
     // Get stats from custom hook once
-    const {isLoading, chartData, totals, currencySymbol} = useGrowthStats(range);
+    const {isLoading, chartData, totals, currencySymbol, subscriptionData} = useGrowthStats(range);
 
     // Get growth data with post_type filtering - only call when not on Sources tab
     const {data: topPostsData} = useTopPostsStatsWithRange(
@@ -134,6 +134,7 @@ const Growth: React.FC = () => {
                             currencySymbol={currencySymbol}
                             initialTab={initialTab}
                             isLoading={isPageLoading}
+                            subscriptionData={subscriptionData}
                             totals={totals}
                         />
                     </CardContent>
