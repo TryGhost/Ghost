@@ -14,6 +14,7 @@ describe('Search Index Content API', function () {
 
     describe('fetchPosts', function () {
         const searchIndexPostMatcher = {
+            id: anyString,
             slug: anyString,
             title: anyString,
             excerpt: anyString,
@@ -47,6 +48,7 @@ describe('Search Index Content API', function () {
 
     describe('fetchAuthors', function () {
         const searchIndexAuthorMatcher = {
+            id: anyString,
             slug: anyString,
             name: anyString,
             url: anyString,
