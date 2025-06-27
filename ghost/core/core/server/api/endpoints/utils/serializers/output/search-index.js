@@ -53,5 +53,28 @@ module.exports = {
         frame.response = {
             authors
         };
+    },
+
+    async fetchTags(models, apiConfig, frame) {
+        debug('fetchTags');
+
+        let tags = [];
+
+        const keys = [
+            'id',
+            'slug',
+            'name',
+            'url'
+        ];
+
+        for (let model of models.data) {
+            let tag = await mappers.tags(model, frame);
+            tag = _.pick(tag, keys);
+            tags.push(tag);
+        }
+
+        frame.response = {
+            tags
+        };
     }
 };
