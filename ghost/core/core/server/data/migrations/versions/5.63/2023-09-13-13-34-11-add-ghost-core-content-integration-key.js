@@ -4,7 +4,9 @@ const {InternalServerError} = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const security = require('@tryghost/security');
 const {default: ObjectID} = require('bson-objectid');
-const {createTransactionalMigration, meta} = require('../../utils');
+const {createTransactionalMigration} = require('../../utils');
+
+const MIGRATION_USER = 1;
 
 const coreContentIntegration = {
     slug: 'ghost-core-content',
@@ -45,7 +47,7 @@ const addIntegrationContentKey = async (knex, integration) => {
         role_id: null,
         integration_id: existingIntegration.id,
         created_at: knex.raw('current_timestamp'),
-        created_by: meta.MIGRATION_USER
+        created_by: MIGRATION_USER
     });
 };
 
