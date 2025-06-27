@@ -20,7 +20,7 @@ const create = ({config, request, settingsCache, tinybirdService}) => {
      * @param {string} [options.memberStatus] - Member status filter (defaults to 'all')
      * @param {string} [options.postType] - Post type filter
      * @param {string} [options.tbVersion] - Tinybird version for API URL
-     * @returns {Promise<Object>} Object with URL and request options
+     * @returns {Object} Object with URL and request options
      */
     const buildRequest = (pipeName, options = {}) => {
         const statsConfig = config.get('tinybird:stats');
