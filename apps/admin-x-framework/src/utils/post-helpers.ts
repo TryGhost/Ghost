@@ -38,14 +38,16 @@ function hasBeenEmailed(post: Post): boolean {
 }
 
 /**
- * Gets the appropriate metrics to display based on post type
+ * Gets the appropriate metrics to display based on post type and settings
  */
-export function getPostMetricsToDisplay(post: Post) {
+export function getPostMetricsToDisplay(post: Post, settings?: {membersTrackSources?: boolean}) {
+    const showMemberGrowth = settings?.membersTrackSources ?? true;
+    
     if (isEmailOnly(post)) {
         return {
             showEmailMetrics: true,
             showWebMetrics: false,
-            showMemberGrowth: true
+            showMemberGrowth
         };
     }
     
@@ -53,7 +55,7 @@ export function getPostMetricsToDisplay(post: Post) {
         return {
             showEmailMetrics: false,
             showWebMetrics: true,
-            showMemberGrowth: true
+            showMemberGrowth
         };
     }
     
@@ -61,7 +63,7 @@ export function getPostMetricsToDisplay(post: Post) {
         return {
             showEmailMetrics: true,
             showWebMetrics: true,
-            showMemberGrowth: true
+            showMemberGrowth
         };
     }
     
@@ -69,7 +71,7 @@ export function getPostMetricsToDisplay(post: Post) {
     return {
         showEmailMetrics: false,
         showWebMetrics: true,
-        showMemberGrowth: true
+        showMemberGrowth
     };
 }
 

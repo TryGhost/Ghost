@@ -27,7 +27,9 @@ const LatestPost: React.FC<LatestPostProps> = ({
     const siteTitle = site.title || String(settings.find(setting => setting.key === 'title')?.value || 'Ghost Site');
 
     // Calculate metrics to show outside of JSX
-    const metricsToShow = latestPostStats ? getPostMetricsToDisplay(latestPostStats as Post) : null;
+    const metricsToShow = latestPostStats ? getPostMetricsToDisplay(latestPostStats as Post, {
+        membersTrackSources: appSettings?.analytics.membersTrackSources
+    }) : null;
 
     const metricClassName = 'group mr-2 flex flex-col gap-1.5 hover:cursor-pointer';
 
@@ -146,7 +148,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                     </div>
                                 }
 
-                                {/* Member growth - always show if available */}
+                                {/* Member growth - show if available and member tracking is enabled */}
                                 {metricsToShow.showMemberGrowth &&
                                     <div className={
                                         cn(

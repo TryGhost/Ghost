@@ -6,7 +6,7 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {CONTENT_TYPES, ContentType, getContentTitle, getGrowthContentDescription} from '@src/utils/content-helpers';
 import {getClickHandler} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -206,7 +206,23 @@ const Growth: React.FC = () => {
                                     />
                                     :
                                     <TableBody>
-                                        {transformedTopPosts.length > 0 ? (
+                                        {!appSettings?.analytics.membersTrackSources ? (
+                                            <TableRow className='last:border-none'>
+                                                <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                                                    <EmptyIndicator
+                                                        actions={
+                                                            <Button variant='outline' onClick={() => navigate('/settings/analytics', {crossApp: true})}>
+                                                                Open settings
+                                                            </Button>
+                                                        }
+                                                        description='Enable member source tracking in settings to see which content drives member growth.'
+                                                        title='Member sources have been disabled'
+                                                    >
+                                                        <LucideIcon.Activity />
+                                                    </EmptyIndicator>
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : transformedTopPosts.length > 0 ? (
                                             transformedTopPosts.map((post, index) => (
                                                 <TableRow key={`${selectedContentType}-${post.post_id || `${post.title}-${index}`}`} className='last:border-none'>
                                                     <TableCell>
