@@ -160,7 +160,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
 
     const title = `${author?.name} ${handle}`;
     const isClickedUser = avatarClickedUser === handle;
-    const displayFollowButton = isEnabled('follow') && (showFollowButton || isClickedUser);
+    const displayFollowButton = showFollowButton || isClickedUser;
 
     if (iconUrl) {
         return (

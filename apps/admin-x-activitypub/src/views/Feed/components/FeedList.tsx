@@ -100,7 +100,7 @@ const FeedList:React.FC<FeedListProps> = ({
                                                     {index < activities.length - 1 && (
                                                         <Separator />
                                                     )}
-                                                    {index === 3 && isEnabled('follow') && (
+                                                    {index === 3 && (
                                                         <SuggestedProfiles />
                                                     )}
                                                     {index === loadMoreIndex && (
