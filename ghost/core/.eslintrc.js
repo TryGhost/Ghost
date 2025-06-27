@@ -86,6 +86,21 @@ module.exports = {
             }
         },
         {
+            files: 'core/server/data/schema/schema.js',
+            rules: {
+                'no-restricted-syntax': ['error',
+                    {
+                        selector: 'Property[key.name="created_by"]',
+                        message: '`created_by` is not allowed - The action log should be used to record user actions.'
+                    },
+                    {
+                        selector: 'Property[key.name="updated_by"]',
+                        message: '`updated_by` is not allowed - The action log should be used to record user actions.'
+                    }
+                ]
+            }
+        },
+        {
             files: ['core/frontend/helpers/**', 'core/frontend/apps/*/lib/helpers/**'],
             rules: {
                 'ghost/filenames/match-regex': ['off', '^[a-z0-9-.]$', null, true]
