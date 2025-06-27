@@ -1,7 +1,9 @@
 import Route from '@ember/routing/route';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
 export default class HomeRoute extends Route {
+    @inject config;
     @service feature;
     @service modals;
     @service router;
@@ -13,6 +15,11 @@ export default class HomeRoute extends Route {
 
         if (transition.to?.queryParams?.firstStart === 'true') {
             return this.router.transitionTo('setup.done');
+        }
+
+        // Redirect to Analytics if trafficAnalytics is enabled and user has access
+        if (this.config.stats && this.feature.trafficAnalytics && this.session.user.isAdmin) {
+            return this.router.transitionTo('stats-x');
         }
 
         if (this.settings.socialWebEnabled && this.session.user.isAdmin) {
