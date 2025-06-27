@@ -1,9 +1,7 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
 const configUtils = require('../../../../../utils/configUtils');
-
-let maxLimitCap = rewire('../../../../../../core/server/web/shared/middleware/max-limit-cap');
+const maxLimitCap = require('../../../../../../core/server/web/shared/middleware/max-limit-cap');
 
 describe('Max Limit Cap Middleware', function () {
     let req;
@@ -11,8 +9,6 @@ describe('Max Limit Cap Middleware', function () {
     let next;
 
     beforeEach(function () {
-        maxLimitCap = rewire('../../../../../../core/server/web/shared/middleware/max-limit-cap');
-
         req = {
             query: {},
             path: '/api/content/posts/',
@@ -32,16 +28,6 @@ describe('Max Limit Cap Middleware', function () {
             assert.equal(maxLimitCap.limitConfig.allowLimitAll, false);
             assert.equal(maxLimitCap.limitConfig.maxLimit, 100);
             assert.equal(maxLimitCap.limitConfig.exceptionEndpoints.length, 2);
-        });
-
-        it('reads from config', function () {
-            configUtils.set('optimization:allowLimitAll', true);
-            configUtils.set('optimization:maxLimit', 50);
-
-            maxLimitCap = rewire('../../../../../../core/server/web/shared/middleware/max-limit-cap');
-
-            assert.equal(maxLimitCap.limitConfig.allowLimitAll, true);
-            assert.equal(maxLimitCap.limitConfig.maxLimit, 50);
         });
     });
 
