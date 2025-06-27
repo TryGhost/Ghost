@@ -38,3 +38,7 @@ export {Link, NavLink, Outlet, useLocation, useParams, useSearchParams, redirect
 // Data fetching
 export type {InfiniteData} from '@tanstack/react-query';
 export {useQueryClient} from '@tanstack/react-query';
+
+// API
+export type {TinybirdToken, TinybirdTokenResponseType} from './api/tinybird';
+export {getTinybirdToken} from './api/tinybird';
