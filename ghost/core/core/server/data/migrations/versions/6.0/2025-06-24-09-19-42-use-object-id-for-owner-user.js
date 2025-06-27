@@ -9,19 +9,41 @@ module.exports = createTransactionalMigration(
     async function up(knex) {
         const newId = (new ObjectID()).toHexString();
 
-        logging.info(`Updating owner user ID from "${LEGACY_OWNER_USER_ID}" to "${newId}"`);
+        logging.info(`Updating owner user ID from ${LEGACY_OWNER_USER_ID} to ${newId}`);
 
         const currentOwnerUser = await knex('users').where('id', LEGACY_OWNER_USER_ID).first();
 
         if (!currentOwnerUser) {
-            logging.info(`Owner user with ID "${LEGACY_OWNER_USER_ID}" not found, skipping migration`);
+            logging.warn(`Owner user with ID ${LEGACY_OWNER_USER_ID} not found, skipping migration`);
+
             return;
         }
 
+        // Verify this user actually has the Owner role
+        const ownerRole = await knex('roles').where('name', 'Owner').first();
+
+        if (!ownerRole) {
+            logging.warn('Owner role not found, skipping migration');
+
+            return;
+        }
+
+        const isOwner = await knex('roles_users')
+            .where('user_id', LEGACY_OWNER_USER_ID)
+            .where('role_id', ownerRole.id)
+            .first();
+
+        if (!isOwner) {
+            logging.warn(`User with ID ${LEGACY_OWNER_USER_ID} is not the owner, skipping migration`);
+
+            return;
+        }
+
+        const now = Date.now();
         const email = currentOwnerUser.email;
         const slug = currentOwnerUser.slug;
-        const temporaryEmail = `migrating-${newId}`;
-        const temporarySlug = `migrating-${newId}`;
+        const temporaryEmail = `migrating-${now}@migration.local`;
+        const temporarySlug = `migrating-${now}`;
 
         // Step 1: Create a clone of the current owner user using the new ID.
         // This is so we can assign existing references to the new owner user ID
@@ -80,7 +102,7 @@ module.exports = createTransactionalMigration(
     },
 
     async function down(knex) {
-        logging.info(`Rolling back owner user ID migration - converting back to legacy ID "${LEGACY_OWNER_USER_ID}"`);
+        logging.info(`Rolling back owner user ID migration - reverting back to legacy ID: ${LEGACY_OWNER_USER_ID}`);
 
         // Find the current owner user by querying the roles table
         const ownerRole = await knex('roles').where('name', 'Owner').first();
@@ -107,13 +129,20 @@ module.exports = createTransactionalMigration(
             return;
         }
 
+        if (String(currentOwnerUser.id) === LEGACY_OWNER_USER_ID) {
+            logging.warn(`Owner user ${currentOwnerUser.email} is already using the legacy ID: ${LEGACY_OWNER_USER_ID}, skipping migration`);
+
+            return;
+        }
+
+        const now = Date.now();
         const currentOwnerUserId = currentOwnerUser.id;
         const email = currentOwnerUser.email;
         const slug = currentOwnerUser.slug;
-        const temporaryEmail = `rollback-${LEGACY_OWNER_USER_ID}`;
-        const temporarySlug = `rollback-${LEGACY_OWNER_USER_ID}`;
+        const temporaryEmail = `rollback-${now}@migration.local`;
+        const temporarySlug = `rollback-${now}`;
 
-        logging.info(`Found owner user with ID "${currentOwnerUserId}", rolling back to "${LEGACY_OWNER_USER_ID}"`);
+        logging.info(`Found owner user with ID: ${currentOwnerUserId}, rolling back to ${LEGACY_OWNER_USER_ID}`);
 
         // Step 1: Create a clone of the current owner user using the legacy ID
         const clonedOwnerUser = {
@@ -125,7 +154,7 @@ module.exports = createTransactionalMigration(
 
         await knex('users').insert(clonedOwnerUser);
 
-        logging.info(`Cloned owner user with legacy ID: ${LEGACY_OWNER_USER_ID}`);
+        logging.info(`Cloned existing owner user with updated properties - ID: ${LEGACY_OWNER_USER_ID}, email: ${temporaryEmail}, slug: ${temporarySlug}`);
 
         // Step 2: Update all references back to the legacy owner user ID
         // The order matters to avoid foreign key constraint violations
