@@ -233,14 +233,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -687,14 +679,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -1054,14 +1038,6 @@ Object {
     Object {
       "key": "email_verification_required",
       "value": false,
-    },
-    Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
     },
     Object {
       "key": "firstpromoter",
@@ -1454,14 +1430,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -1623,7 +1591,7 @@ exports[`Settings API Edit can edit Stripe settings when Stripe Connect limit is
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4799",
+  "content-length": "4753",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1895,14 +1863,6 @@ Object {
     Object {
       "key": "email_verification_required",
       "value": false,
-    },
-    Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
     },
     Object {
       "key": "firstpromoter",
@@ -2294,14 +2254,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -2690,14 +2642,6 @@ Object {
     Object {
       "key": "email_verification_required",
       "value": false,
-    },
-    Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
     },
     Object {
       "key": "firstpromoter",
@@ -3154,14 +3098,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -3552,14 +3488,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -3948,14 +3876,6 @@ Object {
     Object {
       "key": "email_verification_required",
       "value": false,
-    },
-    Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
     },
     Object {
       "key": "firstpromoter",
@@ -4352,14 +4272,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -4747,14 +4659,6 @@ Object {
     Object {
       "key": "email_verification_required",
       "value": false,
-    },
-    Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
     },
     Object {
       "key": "firstpromoter",
@@ -5151,14 +5055,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -5548,14 +5444,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -5915,14 +5803,6 @@ Object {
     Object {
       "key": "email_verification_required",
       "value": false,
-    },
-    Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
     },
     Object {
       "key": "firstpromoter",
@@ -6313,14 +6193,6 @@ Object {
     Object {
       "key": "email_verification_required",
       "value": false,
-    },
-    Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
     },
     Object {
       "key": "firstpromoter",
@@ -6714,14 +6586,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -7111,14 +6975,6 @@ Object {
     Object {
       "key": "email_verification_required",
       "value": false,
-    },
-    Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
     },
     Object {
       "key": "firstpromoter",
@@ -7572,14 +7428,6 @@ Object {
     Object {
       "key": "email_verification_required",
       "value": false,
-    },
-    Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
     },
     Object {
       "key": "firstpromoter",
