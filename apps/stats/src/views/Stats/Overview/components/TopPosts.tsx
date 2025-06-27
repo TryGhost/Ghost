@@ -1,6 +1,6 @@
 import FeatureImagePlaceholder from '../../components/FeatureImagePlaceholder';
 import React from 'react';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, SkeletonTable, TableHead, TableRow, cn, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, SkeletonTable, TableHead, TableRow, abbreviateNumber, cn, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {TopPostViewsStats} from '@tryghost/admin-x-framework/api/stats';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
@@ -27,7 +27,7 @@ const PostListTooltip:React.FC<PostlistTooptipProps> = ({
                 cn('pointer-events-none absolute bottom-[calc(100%+2px)] left-1/2 z-50 min-w-[160px] -translate-x-1/2 rounded-md bg-background p-3 text-sm opacity-0 shadow-md transition-all group-hover/tooltip:bottom-[calc(100%+12px)] group-hover/tooltip:opacity-100', className)
             }>
                 <div className='mb-1.5 whitespace-nowrap border-b pb-1.5 pr-10 font-medium text-muted-foreground'>{title}</div>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1.5">
                     {metrics?.map(metric => (
                         <div key={metric.label} className="flex items-center justify-between gap-5">
                             <div className="flex items-center gap-1 whitespace-nowrap">
@@ -67,7 +67,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
     const metricClass = 'flex items-center justify-end gap-1 rounded-md px-2 py-1 font-mono text-gray-800 hover:bg-muted-foreground/10 group-hover:text-foreground';
 
     return (
-        <Card className='group/card w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)] lg:col-span-2'>
+        <Card className='group/card w-full lg:col-span-2'>
             <CardHeader>
                 <CardTitle className='flex items-baseline justify-between font-medium  leading-snug text-muted-foreground'>
                     Top posts {getPeriodText(range)}
@@ -116,7 +116,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                     />
                                                     <div className={metricClass}>
                                                         <LucideIcon.Globe className='text-muted-foreground group-hover:text-foreground' size={16} strokeWidth={1.5} />
-                                                        {formatNumber(post.views)}
+                                                        {abbreviateNumber(post.views)}
                                                     </div>
                                                 </div>
                                             }
@@ -153,7 +153,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                     className='left-auto right-0 translate-x-0'
                                                     metrics={[
                                                         {
-                                                            icon: <LucideIcon.UserPlus className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
+                                                            icon: <LucideIcon.User className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
                                                             label: 'Free members',
                                                             metric: post.free_members > 0 ? `+${formatNumber(post.free_members)}` : '0'
                                                         },
