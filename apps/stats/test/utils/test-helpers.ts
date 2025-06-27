@@ -129,3 +129,8 @@ export const createMockGlobalData = (siteUrl = 'https://ghost.org') => ({
 // Legacy compatibility
 export const setupUniversalMocks = setupStatsAppMocks;
 export const setupDefaultStatsMocks = setupStatsAppMocks;
+
+// Re-export new testing utilities
+export * from './date-testing-utils';
+export * from './mock-factories';
+export * from './hook-testing-utils';

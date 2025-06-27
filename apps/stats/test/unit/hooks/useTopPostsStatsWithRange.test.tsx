@@ -1,29 +1,47 @@
-import moment from 'moment';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {createTestWrapper, setupStatsAppMocks} from '../../utils/test-helpers';
+import {createTestWrapper, setupStatsAppMocks, setupDateMocking, getExpectedDateRange} from '../../utils/test-helpers';
 import {renderHook} from '@testing-library/react';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 
-// Helper function for calculating expected date ranges
-const getExpectedDateRange = (days: number) => ({
-    expectedDateFrom: moment().subtract(days - 1, 'days').format('YYYY-MM-DD'),
-    expectedDateTo: moment().format('YYYY-MM-DD')
-});
-
 vi.mock('@tryghost/admin-x-framework/api/stats');
 vi.mock('@src/providers/GlobalDataProvider');
+vi.mock('@tryghost/shade', () => ({
+    formatQueryDate: vi.fn(),
+    getRangeDates: vi.fn()
+}));
 
 const mockUseTopPostsStats = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).useTopPostsStats;
+const {formatQueryDate, getRangeDates} = await import('@tryghost/shade');
+const mockFormatQueryDate = vi.mocked(formatQueryDate);
+const mockGetRangeDates = vi.mocked(getRangeDates);
 
 describe('useTopPostsStatsWithRange', () => {
     let mocks: ReturnType<typeof setupStatsAppMocks>;
+    let dateMocking: ReturnType<typeof setupDateMocking>;
 
     beforeEach(() => {
         vi.clearAllMocks();
         mocks = setupStatsAppMocks();
+        dateMocking = setupDateMocking();
+        
+        // Mock the date functions with consistent behavior
+        mockGetRangeDates.mockImplementation((range: number) => {
+            const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(range);
+            return {
+                startDate: new Date(expectedDateFrom + 'T00:00:00.000Z'),
+                endDate: new Date(expectedDateTo + 'T23:59:59.999Z'),
+                timezone: 'UTC'
+            };
+        });
+        
+        mockFormatQueryDate.mockImplementation((date: Date) => date.toISOString().split('T')[0]);
         
         // Apply the mocks to the actual imported modules
         mockUseTopPostsStats.mockImplementation(mocks.mockUseTopPostsStats);
+    });
+
+    afterEach(() => {
+        dateMocking.cleanup();
     });
 
     it('uses default range of 30 days when no range provided', () => {

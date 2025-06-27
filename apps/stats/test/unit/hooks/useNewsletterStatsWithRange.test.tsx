@@ -1,6 +1,5 @@
-import moment from 'moment';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {createTestWrapper, setupStatsAppMocks} from '../../utils/test-helpers';
+import {createTestWrapper, setupStatsAppMocks, setupDateMocking, getExpectedDateRange} from '../../utils/test-helpers';
 import {renderHook} from '@testing-library/react';
 import {
     useNewsletterStatsWithRange, 
@@ -25,17 +24,44 @@ const mockUseNewsletterBasicStats = vi.mocked(useNewsletterBasicStats);
 const mockUseNewsletterClickStats = vi.mocked(useNewsletterClickStats);
 const mockUseBrowseNewsletters = vi.mocked(useBrowseNewsletters);
 
-// Helper function for calculating expected date ranges
-const getExpectedDateRange = (days: number) => ({
-    expectedDateFrom: moment().subtract(days - 1, 'days').format('YYYY-MM-DD'),
-    expectedDateTo: moment().format('YYYY-MM-DD')
-});
+// Mock external date functions
+vi.mock('@tryghost/shade', () => ({
+    formatQueryDate: vi.fn(),
+    getRangeDates: vi.fn()
+}));
+
+const {formatQueryDate, getRangeDates} = await import('@tryghost/shade');
+const mockFormatQueryDate = vi.mocked(formatQueryDate);
+const mockGetRangeDates = vi.mocked(getRangeDates);
 
 describe('Newsletter Stats Hooks', () => {
+    let dateMocking: ReturnType<typeof setupDateMocking>;
+
     beforeEach(() => {
         vi.clearAllMocks();
         setupStatsAppMocks();
         
+        // Setup consistent date mocking
+        dateMocking = setupDateMocking();
+        
+        // Mock the date functions with consistent behavior
+        mockGetRangeDates.mockImplementation((range: number) => {
+            const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(range);
+            return {
+                startDate: new Date(expectedDateFrom + 'T00:00:00.000Z'),
+                endDate: new Date(expectedDateTo + 'T23:59:59.999Z'),
+                timezone: 'UTC'
+            };
+        });
+        
+        mockFormatQueryDate.mockImplementation((date: Date) => date.toISOString().split('T')[0]);
+    });
+
+    afterEach(() => {
+        dateMocking.cleanup();
+    });
+
+    beforeEach(() => {
         // Apply the mocks to the actual imported modules with default return values
         mockUseNewsletterStats.mockReturnValue({
             data: {
