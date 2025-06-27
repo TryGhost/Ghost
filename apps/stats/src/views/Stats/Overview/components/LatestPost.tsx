@@ -36,7 +36,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
     return (
         <Card className='group/card bg-gradient-to-tr from-muted/40 to-muted/0 to-50%'>
             <CardHeader>
-                <CardTitle className='flex items-baseline justify-between leading-snug text-muted-foreground'>
+                <CardTitle className='flex items-baseline justify-between font-medium leading-snug text-muted-foreground'>
                     Latest post performance
                 </CardTitle>
                 <CardDescription className='hidden'>How your last post did</CardDescription>
@@ -79,7 +79,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                     <>
                         <div className='flex flex-col gap-6 px-6 transition-all md:flex-row md:items-start xl:col-span-2'>
                             {latestPostStats.feature_image &&
-                                    <div className='aspect-[16/10] w-full min-w-[100px] rounded-sm bg-cover bg-center sm:max-w-[50%] lg:max-w-[260px] xl:max-w-[232px]' style={{
+                                    <div className='aspect-[16/10] w-full min-w-[100px] rounded-sm bg-cover bg-center sm:max-w-[170px] lg:max-w-[170px] xl:max-w-[232px]' style={{
                                         backgroundImage: `url(${latestPostStats.feature_image})`
                                     }}></div>
                             }
@@ -91,7 +91,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                 }}>{latestPostStats.title}</div>
                                 <div className='mt-1 text-sm text-muted-foreground'>
                                     {latestPostStats.authors && latestPostStats.authors.length > 0 && (
-                                        <span>By {latestPostStats.authors.map(author => author.name).join(', ')} • </span>
+                                        <span>By {latestPostStats.authors.map(author => author.name).join(', ')} &mdash; </span>
                                     )}
                                     Published {formatDisplayDate(latestPostStats.published_at)}
                                 </div>
@@ -129,7 +129,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                             </div>
                         </div>
 
-                        <div className='-ml-4 flex w-full flex-col items-stretch gap-2 pr-6 text-sm sidebar:max-w-[320px] xl:h-full xl:max-w-none'>
+                        <div className='-ml-4 flex w-full flex-col items-stretch gap-2 pr-6 text-sm xl:h-full xl:max-w-none'>
                             <div className='grid grid-cols-2 gap-6 pl-10 lg:border-l xl:h-full'>
                                 {/* Web metrics - only for published posts */}
                                 {metricsToShow.showWebMetrics && appSettings?.analytics.webAnalytics &&
@@ -137,7 +137,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         navigate(`/posts/analytics/beta/${latestPostStats.id}/web`, {crossApp: true});
                                     }}>
                                         <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                            <LucideIcon.Eye size={16} strokeWidth={1.25} />
+                                            <LucideIcon.Globe size={16} strokeWidth={1.25} />
                                             <span className='hidden md:!visible md:!block'>
                                                 Visitors
                                             </span>
@@ -182,7 +182,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             }}>
                                                 <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                                     <LucideIcon.MailOpen size={16} strokeWidth={1.25} />
-                                                    <span className='hidden whitespace-nowrap md:!visible md:!block'>Open rate</span>
+                                                    <span className='hidden whitespace-nowrap md:!visible md:!block'>Opens</span>
                                                 </div>
                                                 <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
                                                     {latestPostStats.email.email_count ?
@@ -198,7 +198,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             }}>
                                                 <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                                     <LucideIcon.MousePointerClick size={16} strokeWidth={1.25} />
-                                                    <span className='hidden whitespace-nowrap md:!visible md:!block'>Click rate</span>
+                                                    <span className='hidden whitespace-nowrap md:!visible md:!block'>Clicks</span>
                                                 </div>
                                                 <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
                                                     {latestPostStats.email.email_count && latestPostStats.count?.clicks ?
