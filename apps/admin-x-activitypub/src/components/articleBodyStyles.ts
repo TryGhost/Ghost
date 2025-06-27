@@ -1,8 +1,7 @@
 const articleBodyStyles = () => {
     return `<style>
 
-/* 1. Variables
-/* ---------------------------------------------------------- */
+/* Variables */
 
 :root {
     --color-white: #fff;
@@ -37,8 +36,7 @@ const articleBodyStyles = () => {
     --background-color: #15171a;
 }
 
-/* 2. Resets
-/* ---------------------------------------------------------- */
+/* Resets */
 
 *, *::before, *::after {
     box-sizing: border-box;
@@ -82,8 +80,7 @@ h1, h2, h3, h4, h5, h6 {
     line-height: 1.2;
 }
 
-/* 3. Globals
-/* ---------------------------------------------------------- */
+/* Globals */
 
 html {
     --container-width: 840px;
@@ -266,8 +263,7 @@ html.has-light-text .gh-article-author-image span {
     width: 100%;
 }
 
-/* 15. Content
-/* ---------------------------------------------------------- */
+/* Content */
 
 /* Content refers to styling all page and post content that is
 created within the Ghost editor. The main content handles
@@ -458,8 +454,7 @@ html.has-sepia-bg .gh-content a:not([class]) {
     background: rgb(255 225 54 / 25%);
 }
 
-/* 16. Cards
-/* ---------------------------------------------------------- */
+/* Cards */
 
 /* Add extra margin before/after any cards, except for when immediately preceeded by a heading */
 
@@ -532,8 +527,46 @@ figcaption a {
     text-decoration: underline;
 }
 
-/* 20. Design settings
-/* ---------------------------------------------------------- */
+/* Paid content styles */
+
+.gh-paid-content-notice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 36px;
+    background: rgba(0, 0, 0, 0.035);
+    border-radius: 14px;
+    font-size: 16px;
+}
+
+html.has-light-text .gh-paid-content-notice {
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.gh-paid-content-notice h3 {
+    letter-spacing: -0.015em !important;
+}
+
+.gh-paid-content-notice p {
+    max-width: 350px;
+    text-align: center;
+    line-height: 1.3em;
+}
+
+.gh-paid-content-cta {
+    display: block;
+    color: var(--background-color) !important;
+    background: var(--color-primary-text);
+    text-decoration: none !important;
+    font-weight: 600;
+    font-size: 0.9em;
+    padding: 8px 16px;
+    margin-top: 8px;
+    border-radius: 6px;
+}
+
+/* Design settings /*
 
 .has-serif-body {
     --font-size-multiplier: 1.1;
