@@ -29,8 +29,14 @@
             {{#if (and (feature "updatedMainNav") this.session.user.isAdmin)}}
                 <ul class="gh-nav-list gh-nav-main">
                     {{#if (and this.settings.socialWebEnabled this.session.user.isAdmin)}}
-                        <li>
-                            <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "ap-network" class="gh-icon-ap-network"}}Network</LinkTo>
+                        <li class="relative gh-nav-list-ap">
+                            <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "ap-network" class="gh-icon-ap-network"}}Network
+                                {{#unless this.notificationsCount.isLoading}}
+                                    {{#if (gt this.notificationsCount.count 0)}}
+                                        <span class="gh-nav-member-count">{{format-number this.notificationsCount.count}}</span>
+                                    {{/if}}
+                                {{/unless}}
+                            </LinkTo>
                         </li>
                     {{/if}}
                     {{#if (and (gh-user-can-admin this.session.user) this.config.stats (feature "trafficAnalytics"))}}
