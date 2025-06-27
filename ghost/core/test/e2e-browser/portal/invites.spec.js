@@ -2,6 +2,7 @@ const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
 const security = require('@tryghost/security');
 const models = require('../../../core/server/models');
+const DataGenerator = require('../../utils/fixtures/data-generator');
 const {signInAsUserById, signOutCurrentUser} = require('../utils/e2e-browser-utils');
 
 test.describe('Portal', () => {
@@ -66,7 +67,7 @@ test.describe('Portal', () => {
 
             await signOutCurrentUser(sharedPage);
 
-            await signInAsUserById(sharedPage, '1');
+            await signInAsUserById(sharedPage, DataGenerator.Content.users[0].id);
         });
 
         test.describe('2FA invite test', () => {
@@ -133,7 +134,7 @@ test.describe('Portal', () => {
 
                 await signOutCurrentUser(sharedPage);
 
-                await signInAsUserById(sharedPage, '1');
+                await signInAsUserById(sharedPage, DataGenerator.Content.users[0].id);
             });
         });
     });

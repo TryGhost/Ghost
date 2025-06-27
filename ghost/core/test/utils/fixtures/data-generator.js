@@ -2,6 +2,7 @@ const _ = require('lodash');
 const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const moment = require('moment');
+
 const DataGenerator = {};
 
 DataGenerator.markdownToMobiledoc = function markdownToMobiledoc(content) {
@@ -126,8 +127,8 @@ DataGenerator.Content = {
     // Password = Sl1m3rson99
     users: [
         {
-            // owner (owner is still id 1 because of permissions)
-            id: '1',
+            // owner
+            id: '5951f5fc0000000000000000',
             name: 'Joe Bloggs',
             slug: 'joe-bloggs',
             email: 'jbloggs@example.com',

@@ -722,7 +722,7 @@
             "name": "User",
             "entries": [
                 {
-                    "id": 1,
+                    "id": "5951f5fc0000000000000000",
                     "name": "Ghost",
                     "email": "ghost@example.com",
                     "free_member_signup_notification": true,
@@ -1209,7 +1209,7 @@
                 "match": "name"
             },
             "entries": {
-                "1": ["Owner"]
+                "5951f5fc0000000000000000": ["Owner"]
             }
         }
     ]
