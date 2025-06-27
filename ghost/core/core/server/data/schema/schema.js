@@ -229,7 +229,6 @@ module.exports = {
             defaultTo: 'core',
             validations: {
                 isIn: [[
-                    'amp',
                     'core',
                     'email',
                     'labs',

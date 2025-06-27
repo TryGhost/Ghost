@@ -233,14 +233,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -687,14 +679,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -1054,14 +1038,6 @@ Object {
     Object {
       "key": "email_verification_required",
       "value": false,
-    },
-    Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
     },
     Object {
       "key": "firstpromoter",
@@ -1454,14 +1430,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -1849,14 +1817,6 @@ Object {
     Object {
       "key": "email_verification_required",
       "value": false,
-    },
-    Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
     },
     Object {
       "key": "firstpromoter",
@@ -2247,14 +2207,6 @@ Object {
     Object {
       "key": "email_verification_required",
       "value": false,
-    },
-    Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
     },
     Object {
       "key": "firstpromoter",
@@ -2711,14 +2663,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -3109,14 +3053,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -3505,14 +3441,6 @@ Object {
     Object {
       "key": "email_verification_required",
       "value": false,
-    },
-    Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
     },
     Object {
       "key": "firstpromoter",
@@ -3909,14 +3837,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -4304,14 +4224,6 @@ Object {
     Object {
       "key": "email_verification_required",
       "value": false,
-    },
-    Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
     },
     Object {
       "key": "firstpromoter",
@@ -4708,14 +4620,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -5105,14 +5009,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -5472,14 +5368,6 @@ Object {
     Object {
       "key": "email_verification_required",
       "value": false,
-    },
-    Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
     },
     Object {
       "key": "firstpromoter",
@@ -5870,14 +5758,6 @@ Object {
     Object {
       "key": "email_verification_required",
       "value": false,
-    },
-    Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
     },
     Object {
       "key": "firstpromoter",
@@ -6271,14 +6151,6 @@ Object {
       "value": false,
     },
     Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
-    },
-    Object {
       "key": "firstpromoter",
       "value": false,
     },
@@ -6668,14 +6540,6 @@ Object {
     Object {
       "key": "email_verification_required",
       "value": false,
-    },
-    Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
     },
     Object {
       "key": "firstpromoter",
@@ -7129,14 +6993,6 @@ Object {
     Object {
       "key": "email_verification_required",
       "value": false,
-    },
-    Object {
-      "key": "amp",
-      "value": false,
-    },
-    Object {
-      "key": "amp_gtag_id",
-      "value": null,
     },
     Object {
       "key": "firstpromoter",
