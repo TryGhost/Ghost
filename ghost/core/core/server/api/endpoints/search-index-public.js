@@ -20,6 +20,15 @@ const controller = {
         query() {
             return searchIndexService.fetchAuthors();
         }
+    },
+    fetchTags: {
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: true,
+        query() {
+            return searchIndexService.fetchTags();
+        }
     }
 };
 
