@@ -4,7 +4,7 @@ const TinybirdServiceWrapper = require('../../services/tinybird');
 const controller = {
     docName: 'tinybird',
 
-    read: {
+    token: {
         headers: {
             cacheInvalidate: false
         },

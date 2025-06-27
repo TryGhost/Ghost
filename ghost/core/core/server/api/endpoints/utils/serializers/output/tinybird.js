@@ -5,7 +5,7 @@ module.exports = {
         debug('all');
 
         frame.response = {
-            tinybird: data
+            token: data
         };
     }
 };
