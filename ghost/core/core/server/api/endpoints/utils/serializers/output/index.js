@@ -143,5 +143,9 @@ module.exports = {
 
     get search_index() {
         return require('./search-index');
+    },
+
+    get tinybird() {
+        return require('./tinybird');
     }
 };
