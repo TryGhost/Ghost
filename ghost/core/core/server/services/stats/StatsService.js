@@ -248,12 +248,13 @@ class StatsService {
         // Only create the client if Tinybird is configured
         if (config.get('tinybird') && config.get('tinybird:stats')) {
             // TODO: move the tinybird client to the tinybird service
-            const tinybirdService = require('../tinybird');
+            const TinybirdServiceWrapper = require('../tinybird');
+            TinybirdServiceWrapper.init();
             tinybirdClient = require('./utils/tinybird').create({
                 config,
                 request,
                 settingsCache,
-                tinybirdService
+                tinybirdService: TinybirdServiceWrapper.instance
             });
         }
 

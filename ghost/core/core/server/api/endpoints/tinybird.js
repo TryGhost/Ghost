@@ -1,4 +1,4 @@
-const getTinybirdService = require('../../services/tinybird');
+const TinybirdServiceWrapper = require('../../services/tinybird');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -13,8 +13,8 @@ const controller = {
             method: 'browse'
         },
         async query() {
-            const tinybirdService = getTinybirdService();
-            const token = tinybirdService ? tinybirdService.getToken() : null;
+            TinybirdServiceWrapper.init();
+            const token = TinybirdServiceWrapper.instance ? TinybirdServiceWrapper.instance.getToken() : null;
             return {token};
         }
     }
