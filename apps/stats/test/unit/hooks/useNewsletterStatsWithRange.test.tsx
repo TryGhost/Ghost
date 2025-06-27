@@ -2,18 +2,27 @@ import moment from 'moment';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {createTestWrapper, setupStatsAppMocks} from '../../utils/test-helpers';
 import {renderHook} from '@testing-library/react';
-import {useNewsletterStatsWithRange, useNewslettersList, useSubscriberCountWithRange} from '@src/hooks/useNewsletterStatsWithRange';
+import {
+    useNewsletterStatsWithRange, 
+    useNewslettersList, 
+    useSubscriberCountWithRange,
+    useNewsletterBasicStatsWithRange,
+    useNewsletterClickStatsWithRange,
+    useNewsletterStatsWithRangeSplit
+} from '@src/hooks/useNewsletterStatsWithRange';
 
 // Mock the API hooks
 vi.mock('@tryghost/admin-x-framework/api/stats');
 vi.mock('@tryghost/admin-x-framework/api/newsletters');
 vi.mock('@src/providers/GlobalDataProvider');
 
-const {useNewsletterStats, useSubscriberCount} = await import('@tryghost/admin-x-framework/api/stats');
+const {useNewsletterStats, useSubscriberCount, useNewsletterBasicStats, useNewsletterClickStats} = await import('@tryghost/admin-x-framework/api/stats');
 const {useBrowseNewsletters} = await import('@tryghost/admin-x-framework/api/newsletters');
 
 const mockUseNewsletterStats = vi.mocked(useNewsletterStats);
 const mockUseSubscriberCount = vi.mocked(useSubscriberCount);
+const mockUseNewsletterBasicStats = vi.mocked(useNewsletterBasicStats);
+const mockUseNewsletterClickStats = vi.mocked(useNewsletterClickStats);
 const mockUseBrowseNewsletters = vi.mocked(useBrowseNewsletters);
 
 // Helper function for calculating expected date ranges
@@ -62,6 +71,60 @@ describe('Newsletter Stats Hooks', () => {
         } as any);
         
         mockUseSubscriberCount.mockReturnValue({
+            data: {stats: []},
+            isLoading: false,
+            error: null,
+            isError: false,
+            isLoadingError: false,
+            isRefetchError: false,
+            isSuccess: true,
+            isFetching: false,
+            isStale: false,
+            refetch: vi.fn(),
+            dataUpdatedAt: 0,
+            errorUpdatedAt: 0,
+            failureCount: 0,
+            failureReason: null,
+            fetchStatus: 'idle' as const,
+            isRefetching: false,
+            status: 'success' as const
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
+
+        mockUseNewsletterBasicStats.mockReturnValue({
+            data: {
+                stats: [], 
+                meta: {
+                    pagination: {
+                        page: 1,
+                        limit: 15,
+                        pages: 1,
+                        total: 0,
+                        next: null,
+                        prev: null
+                    }
+                }
+            },
+            isLoading: false,
+            error: null,
+            isError: false,
+            isLoadingError: false,
+            isRefetchError: false,
+            isSuccess: true,
+            isFetching: false,
+            isStale: false,
+            refetch: vi.fn(),
+            dataUpdatedAt: 0,
+            errorUpdatedAt: 0,
+            failureCount: 0,
+            failureReason: null,
+            fetchStatus: 'idle' as const,
+            isRefetching: false,
+            status: 'success' as const
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
+
+        mockUseNewsletterClickStats.mockReturnValue({
             data: {stats: []},
             isLoading: false,
             error: null,
@@ -281,6 +344,498 @@ describe('Newsletter Stats Hooks', () => {
             
             expect(result.current).toBeDefined();
             expect(mockUseBrowseNewsletters).toHaveBeenCalledWith();
+        });
+    });
+
+    describe('useNewsletterStatsWithRange - shouldFetch parameter', () => {
+        it('returns empty state when shouldFetch is false', () => {
+            const wrapper = createTestWrapper();
+            const mockRefetch = vi.fn();
+            
+            mockUseNewsletterStats.mockReturnValue({
+                refetch: mockRefetch,
+                data: undefined,
+                isLoading: false,
+                error: null
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any);
+
+            const {result} = renderHook(() => useNewsletterStatsWithRange(30, 'date desc', undefined, false), {wrapper});
+            
+            expect(result.current).toEqual({
+                data: undefined,
+                isLoading: false,
+                error: null,
+                isError: false,
+                refetch: mockRefetch
+            });
+        });
+
+        it('calls real API when shouldFetch is true', () => {
+            const wrapper = createTestWrapper();
+            const {result} = renderHook(() => useNewsletterStatsWithRange(30, 'date desc', undefined, true), {wrapper});
+            
+            expect(result.current).toBeDefined();
+            expect(mockUseNewsletterStats).toHaveBeenCalledWith({
+                searchParams: expect.any(Object),
+                enabled: true
+            });
+        });
+    });
+
+    describe('useSubscriberCountWithRange - shouldFetch parameter', () => {
+        it('returns empty state when shouldFetch is false', () => {
+            const wrapper = createTestWrapper();
+            const mockRefetch = vi.fn();
+            
+            mockUseSubscriberCount.mockReturnValue({
+                refetch: mockRefetch,
+                data: undefined,
+                isLoading: false,
+                error: null
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any);
+
+            const {result} = renderHook(() => useSubscriberCountWithRange(30, undefined, false), {wrapper});
+            
+            expect(result.current).toEqual({
+                data: undefined,
+                isLoading: false,
+                error: null,
+                isError: false,
+                refetch: mockRefetch
+            });
+        });
+
+        it('calls real API when shouldFetch is true', () => {
+            const wrapper = createTestWrapper();
+            const {result} = renderHook(() => useSubscriberCountWithRange(30, undefined, true), {wrapper});
+            
+            expect(result.current).toBeDefined();
+            expect(mockUseSubscriberCount).toHaveBeenCalledWith({
+                searchParams: expect.any(Object),
+                enabled: true
+            });
+        });
+    });
+
+    describe('useNewsletterBasicStatsWithRange', () => {
+        it('uses default range of 30 days when no range provided', () => {
+            const wrapper = createTestWrapper();
+            const {result} = renderHook(() => useNewsletterBasicStatsWithRange(), {wrapper});
+            
+            const expectedDateRange = getExpectedDateRange(30);
+            
+            expect(result.current).toBeDefined();
+            expect(mockUseNewsletterBasicStats).toHaveBeenCalledWith({
+                searchParams: {
+                    date_from: expectedDateRange.expectedDateFrom,
+                    date_to: expectedDateRange.expectedDateTo,
+                    order: 'date desc'
+                },
+                enabled: true
+            });
+        });
+
+        it('accepts custom range and order parameters', () => {
+            const wrapper = createTestWrapper();
+            const {result} = renderHook(() => useNewsletterBasicStatsWithRange(7, 'open_rate desc'), {wrapper});
+            
+            const expectedDateRange = getExpectedDateRange(7);
+            
+            expect(result.current).toBeDefined();
+            expect(mockUseNewsletterBasicStats).toHaveBeenCalledWith({
+                searchParams: {
+                    date_from: expectedDateRange.expectedDateFrom,
+                    date_to: expectedDateRange.expectedDateTo,
+                    order: 'open_rate desc'
+                },
+                enabled: true
+            });
+        });
+
+        it('accepts newsletter ID parameter', () => {
+            const wrapper = createTestWrapper();
+            const {result} = renderHook(() => useNewsletterBasicStatsWithRange(30, 'date desc', 'newsletter-456'), {wrapper});
+            
+            const expectedDateRange = getExpectedDateRange(30);
+            
+            expect(result.current).toBeDefined();
+            expect(mockUseNewsletterBasicStats).toHaveBeenCalledWith({
+                searchParams: {
+                    date_from: expectedDateRange.expectedDateFrom,
+                    date_to: expectedDateRange.expectedDateTo,
+                    order: 'date desc',
+                    newsletter_id: 'newsletter-456'
+                },
+                enabled: true
+            });
+        });
+
+        it('returns empty state when shouldFetch is false', () => {
+            const wrapper = createTestWrapper();
+            const mockRefetch = vi.fn();
+            
+            mockUseNewsletterBasicStats.mockReturnValue({
+                refetch: mockRefetch,
+                data: undefined,
+                isLoading: false,
+                error: null
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any);
+
+            const {result} = renderHook(() => useNewsletterBasicStatsWithRange(30, 'date desc', undefined, false), {wrapper});
+            
+            expect(result.current).toEqual({
+                data: undefined,
+                isLoading: false,
+                error: null,
+                isError: false,
+                refetch: mockRefetch
+            });
+        });
+    });
+
+    describe('useNewsletterClickStatsWithRange', () => {
+        it('builds search params with newsletter ID', () => {
+            const wrapper = createTestWrapper();
+            const {result} = renderHook(() => useNewsletterClickStatsWithRange('newsletter-789'), {wrapper});
+            
+            expect(result.current).toBeDefined();
+            expect(mockUseNewsletterClickStats).toHaveBeenCalledWith({
+                searchParams: {
+                    newsletter_id: 'newsletter-789'
+                },
+                enabled: true
+            });
+        });
+
+        it('builds search params with post IDs', () => {
+            const wrapper = createTestWrapper();
+            const postIds = ['post-1', 'post-2', 'post-3'];
+            const {result} = renderHook(() => useNewsletterClickStatsWithRange(undefined, postIds), {wrapper});
+            
+            expect(result.current).toBeDefined();
+            expect(mockUseNewsletterClickStats).toHaveBeenCalledWith({
+                searchParams: {
+                    post_ids: 'post-1,post-2,post-3'
+                },
+                enabled: true
+            });
+        });
+
+        it('builds search params with both newsletter ID and post IDs', () => {
+            const wrapper = createTestWrapper();
+            const postIds = ['post-1', 'post-2'];
+            const {result} = renderHook(() => useNewsletterClickStatsWithRange('newsletter-789', postIds), {wrapper});
+            
+            expect(result.current).toBeDefined();
+            expect(mockUseNewsletterClickStats).toHaveBeenCalledWith({
+                searchParams: {
+                    newsletter_id: 'newsletter-789',
+                    post_ids: 'post-1,post-2'
+                },
+                enabled: true
+            });
+        });
+
+        it('builds empty search params when no newsletter ID or post IDs', () => {
+            const wrapper = createTestWrapper();
+            const {result} = renderHook(() => useNewsletterClickStatsWithRange(), {wrapper});
+            
+            expect(result.current).toBeDefined();
+            expect(mockUseNewsletterClickStats).toHaveBeenCalledWith({
+                searchParams: {},
+                enabled: true
+            });
+        });
+
+        it('handles empty post IDs array', () => {
+            const wrapper = createTestWrapper();
+            const {result} = renderHook(() => useNewsletterClickStatsWithRange('newsletter-789', []), {wrapper});
+            
+            expect(result.current).toBeDefined();
+            expect(mockUseNewsletterClickStats).toHaveBeenCalledWith({
+                searchParams: {
+                    newsletter_id: 'newsletter-789'
+                },
+                enabled: true
+            });
+        });
+
+        it('returns empty state when shouldFetch is false', () => {
+            const wrapper = createTestWrapper();
+            const mockRefetch = vi.fn();
+            
+            mockUseNewsletterClickStats.mockReturnValue({
+                refetch: mockRefetch,
+                data: undefined,
+                isLoading: false,
+                error: null
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any);
+
+            const {result} = renderHook(() => useNewsletterClickStatsWithRange('newsletter-123', [], false), {wrapper});
+            
+            expect(result.current).toEqual({
+                data: undefined,
+                isLoading: false,
+                error: null,
+                isError: false,
+                refetch: mockRefetch
+            });
+        });
+    });
+
+    describe('useNewsletterStatsWithRangeSplit', () => {
+        it('combines basic stats and click stats', () => {
+            const wrapper = createTestWrapper();
+            
+            const basicStatsData = {
+                stats: [
+                    { post_id: 'post-1', open_rate: 0.5, subject: 'Subject 1' },
+                    { post_id: 'post-2', open_rate: 0.6, subject: 'Subject 2' }
+                ],
+                meta: { pagination: { total: 2 } }
+            };
+
+            const clickStatsData = {
+                stats: [
+                    { post_id: 'post-1', total_clicks: 100, click_rate: 0.1 },
+                    { post_id: 'post-2', total_clicks: 150, click_rate: 0.15 }
+                ]
+            };
+
+            mockUseNewsletterBasicStats.mockReturnValue({
+                data: basicStatsData,
+                isLoading: false,
+                error: null,
+                isError: false,
+                refetch: vi.fn()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any);
+
+            mockUseNewsletterClickStats.mockReturnValue({
+                data: clickStatsData,
+                isLoading: false,
+                error: null,
+                isError: false,
+                refetch: vi.fn()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any);
+
+            const {result} = renderHook(() => useNewsletterStatsWithRangeSplit(), {wrapper});
+            
+            expect(result.current.data).toEqual({
+                stats: [
+                    { post_id: 'post-1', open_rate: 0.5, subject: 'Subject 1', total_clicks: 100, click_rate: 0.1 },
+                    { post_id: 'post-2', open_rate: 0.6, subject: 'Subject 2', total_clicks: 150, click_rate: 0.15 }
+                ],
+                meta: { pagination: { total: 2 } }
+            });
+        });
+
+        it('handles missing click stats with default values', () => {
+            const wrapper = createTestWrapper();
+            
+            const basicStatsData = {
+                stats: [
+                    { post_id: 'post-1', open_rate: 0.5, subject: 'Subject 1' }
+                ],
+                meta: { pagination: { total: 1 } }
+            };
+
+            mockUseNewsletterBasicStats.mockReturnValue({
+                data: basicStatsData,
+                isLoading: false,
+                error: null,
+                isError: false,
+                refetch: vi.fn()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any);
+
+            mockUseNewsletterClickStats.mockReturnValue({
+                data: { stats: [] },
+                isLoading: false,
+                error: null,
+                isError: false,
+                refetch: vi.fn()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any);
+
+            const {result} = renderHook(() => useNewsletterStatsWithRangeSplit(), {wrapper});
+            
+            expect(result.current.data).toEqual({
+                stats: [
+                    { post_id: 'post-1', open_rate: 0.5, subject: 'Subject 1', total_clicks: 0, click_rate: 0 }
+                ],
+                meta: { pagination: { total: 1 } }
+            });
+        });
+
+        it('returns undefined when no basic stats', () => {
+            const wrapper = createTestWrapper();
+            
+            mockUseNewsletterBasicStats.mockReturnValue({
+                data: null,
+                isLoading: false,
+                error: null,
+                isError: false,
+                refetch: vi.fn()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any);
+
+            const {result} = renderHook(() => useNewsletterStatsWithRangeSplit(), {wrapper});
+            
+            expect(result.current.data).toBeUndefined();
+        });
+
+        it('returns undefined when basic stats has no stats array', () => {
+            const wrapper = createTestWrapper();
+            
+            mockUseNewsletterBasicStats.mockReturnValue({
+                data: { meta: { pagination: { total: 0 } } },
+                isLoading: false,
+                error: null,
+                isError: false,
+                refetch: vi.fn()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any);
+
+            const {result} = renderHook(() => useNewsletterStatsWithRangeSplit(), {wrapper});
+            
+            expect(result.current.data).toBeUndefined();
+        });
+
+        it('handles loading states correctly', () => {
+            const wrapper = createTestWrapper();
+            
+            mockUseNewsletterBasicStats.mockReturnValue({
+                data: null,
+                isLoading: true,
+                error: null,
+                isError: false,
+                refetch: vi.fn()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any);
+
+            mockUseNewsletterClickStats.mockReturnValue({
+                data: null,
+                isLoading: false,
+                error: null,
+                isError: false,
+                refetch: vi.fn()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any);
+
+            const {result} = renderHook(() => useNewsletterStatsWithRangeSplit(), {wrapper});
+            
+            expect(result.current.isLoading).toBe(true);
+            expect(result.current.isClicksLoading).toBe(false);
+        });
+
+        it('handles error states correctly', () => {
+            const wrapper = createTestWrapper();
+            const basicError = new Error('Basic stats error');
+            const clickError = new Error('Click stats error');
+            
+            mockUseNewsletterBasicStats.mockReturnValue({
+                data: null,
+                isLoading: false,
+                error: basicError,
+                isError: true,
+                refetch: vi.fn()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any);
+
+            mockUseNewsletterClickStats.mockReturnValue({
+                data: null,
+                isLoading: false,
+                error: clickError,
+                isError: true,
+                refetch: vi.fn()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any);
+
+            const {result} = renderHook(() => useNewsletterStatsWithRangeSplit(), {wrapper});
+            
+            expect(result.current.error).toBe(basicError);
+            expect(result.current.isError).toBe(true);
+        });
+
+        it('disables click stats when no post IDs available', () => {
+            const wrapper = createTestWrapper();
+            
+            const basicStatsData = {
+                stats: [],
+                meta: { pagination: { total: 0 } }
+            };
+
+            mockUseNewsletterBasicStats.mockReturnValue({
+                data: basicStatsData,
+                isLoading: false,
+                error: null,
+                isError: false,
+                refetch: vi.fn()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any);
+
+            renderHook(() => useNewsletterStatsWithRangeSplit(30, 'date desc', 'newsletter-123', true), {wrapper});
+            
+            // Click stats should be called with enabled: false since no post IDs
+            expect(mockUseNewsletterClickStats).toHaveBeenCalledWith({
+                searchParams: { newsletter_id: 'newsletter-123' },
+                enabled: false
+            });
+        });
+
+        it('calls refetch on both hooks', () => {
+            const wrapper = createTestWrapper();
+            const basicRefetch = vi.fn();
+            const clickRefetch = vi.fn();
+            
+            mockUseNewsletterBasicStats.mockReturnValue({
+                data: { stats: [] },
+                isLoading: false,
+                error: null,
+                isError: false,
+                refetch: basicRefetch
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any);
+
+            mockUseNewsletterClickStats.mockReturnValue({
+                data: { stats: [] },
+                isLoading: false,
+                error: null,
+                isError: false,
+                refetch: clickRefetch
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any);
+
+            const {result} = renderHook(() => useNewsletterStatsWithRangeSplit(), {wrapper});
+            
+            result.current.refetch();
+            
+            expect(basicRefetch).toHaveBeenCalled();
+            expect(clickRefetch).toHaveBeenCalled();
+        });
+
+        it('accepts custom parameters and passes them correctly', () => {
+            const wrapper = createTestWrapper();
+            
+            renderHook(() => useNewsletterStatsWithRangeSplit(7, 'click_rate desc', 'newsletter-456', true), {wrapper});
+            
+            const expectedDateRange = getExpectedDateRange(7);
+            
+            expect(mockUseNewsletterBasicStats).toHaveBeenCalledWith({
+                searchParams: {
+                    date_from: expectedDateRange.expectedDateFrom,
+                    date_to: expectedDateRange.expectedDateTo,
+                    order: 'click_rate desc',
+                    newsletter_id: 'newsletter-456'
+                },
+                enabled: true
+            });
         });
     });
 }); 
