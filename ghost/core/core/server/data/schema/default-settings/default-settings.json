@@ -427,19 +427,6 @@
             "flags": "RO"
         }
     },
-    "amp": {
-        "amp": {
-            "defaultValue": "false",
-            "validations": {
-                "isIn": [["true", "false"]]
-            },
-            "type": "boolean"
-        },
-        "amp_gtag_id": {
-            "defaultValue": null,
-            "type": "string"
-        }
-    },
     "firstpromoter": {
         "firstpromoter": {
             "defaultValue": "false",
