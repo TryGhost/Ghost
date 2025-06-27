@@ -1,5 +1,7 @@
 const assert = require('assert/strict');
 
+const models = require('../../../core/server/models');
+const context = require('../../utils/fixtures/context');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyISODateTimeWithTZ, anyString} = matchers;
 
@@ -66,6 +68,40 @@ describe('Search Index Content API', function () {
                     authors: new Array(2)
                         .fill(searchIndexAuthorMatcher)
                 });
+        });
+    });
+
+    describe('fetchTags', function () {
+        const searchIndexTagMatcher = {
+            id: anyString,
+            slug: anyString,
+            name: anyString,
+            url: anyString
+        };
+
+        it('should return a list of tags', async function () {
+            await agent.get('search-index/tags')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    tags: new Array(6)
+                        .fill(searchIndexTagMatcher)
+                });
+        });
+
+        it('does not return internal tags', async function () {
+            const internalTag = await models.Tag.add({
+                name: 'Internal Tag',
+                slug: 'internal-tag',
+                visibility: 'internal'
+            }, context.internal);
+
+            const tags = await agent.get('search-index/tags').expectStatus(200);
+
+            assert.equal(tags.body.tags.find(tag => tag.id === internalTag.id), undefined, 'should not include internal tag');
         });
     });
 });

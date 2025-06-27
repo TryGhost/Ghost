@@ -27,4 +27,17 @@ module.exports = class SearchIndexService {
 
         return authors;
     }
+
+    async fetchTags() {
+        const options = {
+            limit: '10000',
+            order: 'updated_at DESC',
+            columns: ['id', 'slug', 'name', 'url'],
+            filter: 'visibility:public'
+        };
+
+        const tags = await this.models.Tag.findPage(options);
+
+        return tags;
+    }
 };
