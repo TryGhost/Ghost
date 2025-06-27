@@ -25,8 +25,8 @@ describe('Admin API - Max Limit Cap', function () {
         sinon.restore();
     });
 
-    // Factory for creating bulk test data
-    async function createBulkTestData() {
+    // Helper function to create a post with associated email record
+    async function createPostWithEmail() {
         // Create a post that will have an email
         const {body: postBody} = await agent.post('posts/')
             .body({posts: [{
@@ -57,11 +57,13 @@ describe('Admin API - Max Limit Cap', function () {
             updated_at: new Date()
         });
 
-        testEmail = {id: emailId};
+        return emailId;
+    }
 
-        // Create 10 email batches (more than our limit of 5)
+    // Helper function to create email batches
+    async function createEmailBatches(emailId, count = 10) {
         const batches = [];
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < count; i++) {
             batches.push({
                 id: ObjectId().toHexString(),
                 email_id: emailId,
@@ -74,11 +76,15 @@ describe('Admin API - Max Limit Cap', function () {
         }
 
         await db.knex('email_batches').insert(batches);
+        return batches;
+    }
 
-        // Create email recipients first (needed for failures foreign key)
+    // Helper function to create email recipients
+    async function createEmailRecipients(emailId, batches, count = 10) {
         const recipients = [];
         const recipientIds = [];
-        for (let i = 0; i < 10; i++) {
+
+        for (let i = 0; i < count; i++) {
             const recipientId = ObjectId().toHexString();
             recipientIds.push(recipientId);
             recipients.push({
@@ -92,11 +98,15 @@ describe('Admin API - Max Limit Cap', function () {
                 failed_at: new Date()
             });
         }
-        await db.knex('email_recipients').insert(recipients);
 
-        // Create 10 recipient failures
+        await db.knex('email_recipients').insert(recipients);
+        return {recipients, recipientIds};
+    }
+
+    // Helper function to create recipient failures
+    async function createRecipientFailures(emailId, recipients, recipientIds, count = 10) {
         const failures = [];
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < count; i++) {
             failures.push({
                 id: ObjectId().toHexString(),
                 email_id: emailId,
@@ -110,7 +120,11 @@ describe('Admin API - Max Limit Cap', function () {
         }
 
         await db.knex('email_recipient_failures').insert(failures);
+        return failures;
+    }
 
+    // Helper function to create additional posts if needed
+    async function createAdditionalPosts() {
         // Create additional posts for testing regular endpoints
         // Only if we don't have enough posts already
         const {body: postsCheck} = await agent.get('posts/')
@@ -144,6 +158,25 @@ describe('Admin API - Max Limit Cap', function () {
                 await db.knex('posts').insert(additionalPosts);
             }
         }
+    }
+
+    // Factory for creating bulk test data
+    async function createBulkTestData() {
+        // Create post with email record
+        const emailId = await createPostWithEmail();
+        testEmail = {id: emailId};
+
+        // Create email batches (more than our limit of 5)
+        const batches = await createEmailBatches(emailId, 10);
+
+        // Create email recipients (needed for failures foreign key)
+        const {recipients, recipientIds} = await createEmailRecipients(emailId, batches, 10);
+
+        // Create recipient failures
+        await createRecipientFailures(emailId, recipients, recipientIds, 10);
+
+        // Create additional posts for testing regular endpoints
+        await createAdditionalPosts();
     }
 
     describe('Posts API', function () {
