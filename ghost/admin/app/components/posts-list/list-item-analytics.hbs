@@ -173,7 +173,7 @@
                                     <div class="metric">
                                         <div class="data">
                                             {{svg-jar "analytics-visitors"}}
-                                            Visitors
+                                            Unique visitors
                                         </div>
                                         <span>{{format-number this.visitorCount}}</span>
                                     </div>
@@ -182,7 +182,7 @@
                             <div class="gh-post-list-analytics-metric">
                                 {{svg-jar "analytics-visitors" class="gh-list-analytics-icon"}}
                                 <span class="gh-content-email-stats-value">
-                                    {{format-number this.visitorCount}}
+                                    {{abbreviate-number this.visitorCount}}
                                 </span>
                             </div>
                         </LinkTo>
