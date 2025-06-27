@@ -1,11 +1,12 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsContent, TabsList, TabsTrigger, centsToDollars, formatDisplayDateWithRange, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsContent, TabsList, TabsTrigger, centsToDollars, formatDisplayDateWithRange, formatNumber, getRangeDates} from '@tryghost/shade';
 import {DiffDirection} from '@src/hooks/useGrowthStats';
 import {STATS_RANGES} from '@src/utils/constants';
-import {sanitizeChartData} from '@src/utils/chart-helpers';
+import {sanitizeChartData, determineAggregationStrategy} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
+import moment from 'moment';
 
 type ChartDataItem = {
     date: string;
@@ -68,6 +69,66 @@ const GrowthKPIs: React.FC<{
     };
 
     const {totalMembers, freeMembers, paidMembers, mrr, percentChanges, directions} = totals;
+
+    // Helper function to fill missing data points with zeros
+    const fillMissingDataPoints = (data: {date: string; signups: number; cancellations: number}[], range: number) => {
+        // For "Today" (range = 1), show just one data point for the current date
+        if (range === 1) {
+            const today = moment().format('YYYY-MM-DD');
+            const todayData = data.find(item => item.date === today);
+            
+            return [{
+                date: today,
+                signups: todayData?.signups || 0,
+                cancellations: todayData?.cancellations || 0
+            }];
+        }
+        
+        const {startDate, endDate} = getRangeDates(range);
+        const dateSpan = moment(endDate).diff(moment(startDate), 'days');
+        const strategy = determineAggregationStrategy(range, dateSpan, 'sum');
+        
+        // Create a map of existing data by date
+        const dataMap = new Map(data.map(item => [item.date, item]));
+        
+        const filledData: {date: string; signups: number; cancellations: number}[] = [];
+        let currentDate = moment(startDate);
+        const endMoment = moment(endDate);
+        
+        while (currentDate.isSameOrBefore(endMoment)) {
+            let dateKey: string;
+            let increment: moment.unitOfTime.DurationConstructor;
+            
+            switch (strategy) {
+            case 'weekly':
+                dateKey = currentDate.startOf('week').format('YYYY-MM-DD');
+                increment = 'week';
+                break;
+            case 'monthly':
+                dateKey = currentDate.startOf('month').format('YYYY-MM-DD');
+                increment = 'month';
+                break;
+            default:
+                dateKey = currentDate.format('YYYY-MM-DD');
+                increment = 'day';
+            }
+            
+            const existingData = dataMap.get(dateKey);
+            if (existingData) {
+                filledData.push(existingData);
+            } else {
+                filledData.push({
+                    date: dateKey,
+                    signups: 0,
+                    cancellations: 0
+                });
+            }
+            
+            currentDate.add(1, increment);
+        }
+        
+        return filledData;
+    };
 
     // Create chart data based on selected tab
     const chartData = useMemo(() => {
@@ -178,32 +239,76 @@ const GrowthKPIs: React.FC<{
             return [];
         }
 
-        if (!allChartData || allChartData.length === 0) {
-            return [];
-        }
-
         // Use subscription data if available (like Ember dashboard), otherwise fall back to member data
         if (subscriptionData && subscriptionData.length > 0) {
-            // Create a map of subscription data by date for quick lookup
-            const subscriptionByDate = new Map(
-                subscriptionData.map(item => [item.date, item])
-            );
-
-            // Use member data structure but replace subscription values with real subscription data
-            const sanitizedData = sanitizeChartData(allChartData, range, 'paid', 'exact');
+            // For "Today" range, show just the change for today
+            if (range === 1) {
+                const today = moment().format('YYYY-MM-DD');
+                const todayData = subscriptionData.find(item => item.date === today);
+                
+                return [{
+                    date: formatDisplayDateWithRange(new Date(today), range),
+                    new: todayData?.signups || 0,
+                    cancelled: -(todayData?.cancellations || 0) // Negative for the stacked bar chart
+                }];
+            }
             
-            return sanitizedData.map((item) => {
-                const subData = subscriptionByDate.get(item.date);
+            // Apply proper aggregation to subscription data using 'sum' aggregation type FIRST
+            // This will properly sum signups and cancellations within each time period
+            const signupsData = sanitizeChartData(subscriptionData, range, 'signups', 'sum');
+            const cancellationsData = sanitizeChartData(subscriptionData, range, 'cancellations', 'sum');
+            
+            // Combine the aggregated data
+            const combinedData = signupsData.map(item => ({
+                date: item.date,
+                signups: item.signups || 0,
+                cancellations: cancellationsData.find(c => c.date === item.date)?.cancellations || 0
+            }));
+            
+            // Add any cancellation-only dates that might be missing from signups
+            cancellationsData.forEach(cancelItem => {
+                if (!combinedData.find(item => item.date === cancelItem.date)) {
+                    combinedData.push({
+                        date: cancelItem.date,
+                        signups: 0,
+                        cancellations: cancelItem.cancellations || 0
+                    });
+                }
+            });
+            
+            // Sort by date
+            combinedData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            
+            // Now fill missing data points with zeros to ensure consistent display
+            const filledData = fillMissingDataPoints(combinedData, range);
+            
+            return filledData.map((item) => {
                 const date = new Date(item.date);
 
                 return {
                     date: formatDisplayDateWithRange(date, range),
-                    new: subData?.signups || 0,
-                    cancelled: -(subData?.cancellations || 0) // Negative for the stacked bar chart
+                    new: item.signups || 0,
+                    cancelled: -(item.cancellations || 0) // Negative for the stacked bar chart
                 };
             });
         } else {
             // Fall back to member count data
+            if (!allChartData || allChartData.length === 0) {
+                return [];
+            }
+
+            // For "Today" range, show just today's change
+            if (range === 1) {
+                const today = moment().format('YYYY-MM-DD');
+                const todayData = allChartData.find(item => item.date === today);
+                
+                return [{
+                    date: formatDisplayDateWithRange(new Date(today), range),
+                    new: todayData?.paid_subscribed || 0,
+                    cancelled: -(todayData?.paid_canceled || 0) // Negative for the stacked bar chart
+                }];
+            }
+
             const sanitizedData = sanitizeChartData(allChartData, range, 'paid', 'exact');
 
             return sanitizedData.map((item) => {
