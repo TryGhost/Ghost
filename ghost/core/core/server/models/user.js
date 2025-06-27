@@ -774,6 +774,35 @@ User = ghostBookshelf.Model.extend({
         });
     },
 
+    ownerIdCache: {
+        value: null,
+        set(value) {
+            this.value = value;
+        },
+        get() {
+            return this.value;
+        },
+        clear() {
+            this.value = null;
+        }
+    },
+
+    getOwnerId: function getOwnerId(options) {
+        if (this.ownerIdCache.value !== null) {
+            return Promise.resolve(this.ownerIdCache.value);
+        }
+
+        return this.getOwnerUser(options).then((owner) => {
+            this.ownerIdCache.set(owner.id);
+
+            return owner.id;
+        });
+    },
+
+    generateId: function generateId() {
+        return ObjectId().toHexString();
+    },
+
     /**
      * Checks if a user has permission to perform an action on another user
      *
@@ -1108,6 +1137,8 @@ User = ghostBookshelf.Model.extend({
                 ]);
             })
             .then((results) => {
+                this.ownerIdCache.clear();
+
                 return Users.forge()
                     .query('whereIn', 'id', [contextUser.id, results[2]])
                     .fetch({withRelated: ['roles']});
