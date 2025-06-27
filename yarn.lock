@@ -8179,10 +8179,10 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/limit-service@1.3.1":
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.3.1.tgz#44a8847da0595564443e19a44f8e293002eca42f"
-  integrity sha512-ewUaS/TXtBucf88OOhUSkj2C2aIXIkedXYG4NTJiefTLRPhrHOU907AOETqXHlzQAAGpRpOdbEwCNNkn1M4gOw==
+"@tryghost/limit-service@1.3.2":
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.3.2.tgz#d60342f4f418e6e85b04bcfe73d78022594d3aa5"
+  integrity sha512-8IT/6DIFIZNwrxh2XAjoAmbcReyACpnI/R5N1XokLLLFcvS0cmI/91DsvhjD759digsedlwK+ndgA2ah1+mh2g==
   dependencies:
     "@tryghost/errors" "^1.2.26"
     lodash "^4.17.21"
