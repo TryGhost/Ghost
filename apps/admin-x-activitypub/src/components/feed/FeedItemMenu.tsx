@@ -16,7 +16,6 @@ import {
     PopoverTrigger,
     buttonVariants
 } from '@tryghost/shade';
-import {useFeatureFlags} from '../../lib/feature-flags';
 
 interface FeedItemMenuProps {
     trigger: React.ReactNode;
@@ -43,7 +42,6 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
     onFollow = () => {},
     onUnfollow = () => {}
 }) => {
-    const {isEnabled} = useFeatureFlags();
     const handleCopyLinkClick = (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
         onCopyLink();
@@ -79,7 +77,7 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
                                 </Button>
                             </PopoverClose>
                         }
-                        {!authoredByMe && isEnabled('follow') &&
+                        {!authoredByMe &&
                             <PopoverClose asChild>
                                 <Button className='justify-start' variant='ghost' onClick={handleFollowClick}>
                                     {followedByMe ? <LucideIcon.UserRoundMinus /> : <LucideIcon.UserRoundPlus />}
