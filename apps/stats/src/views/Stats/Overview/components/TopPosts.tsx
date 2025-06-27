@@ -140,7 +140,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                             }
                                             <div className='group/tooltip relative flex w-[66px] lg:w-[92px]'>
                                                 <PostListTooltip
-                                                    className='left-[calc(-50%-16px)]'
+                                                    className='left-auto right-0 translate-x-0'
                                                     metrics={[
                                                         {
                                                             icon: <LucideIcon.UserPlus className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
