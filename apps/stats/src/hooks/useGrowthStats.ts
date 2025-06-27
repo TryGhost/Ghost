@@ -8,7 +8,7 @@ import {useMemo} from 'react';
 export type DiffDirection = 'up' | 'down' | 'same';
 
 // Calculate totals from member data
-const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem[], dateFrom: string) => {
+const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem[], dateFrom: string, memberCountTotals?: {paid: number; free: number; comped: number}) => {
     if (!memberData.length) {
         return {
             totalMembers: 0,
@@ -30,13 +30,14 @@ const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
         };
     }
 
-    // Get latest values
+    // Use current totals from API meta if available (like Ember), otherwise use latest time series data
+    const currentTotals = memberCountTotals || memberData[memberData.length - 1];
     const latest = memberData.length > 0 ? memberData[memberData.length - 1] : {free: 0, paid: 0, comped: 0};
 
     const latestMrr = mrrData.length > 0 ? mrrData[mrrData.length - 1] : {mrr: 0};
 
-    // Calculate total members
-    const totalMembers = latest.free + latest.paid + latest.comped;
+    // Calculate total members using current totals (like Ember dashboard)
+    const totalMembers = currentTotals.free + currentTotals.paid + currentTotals.comped;
 
     const totalMrr = latestMrr.mrr;
 
@@ -125,8 +126,8 @@ const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
 
     return {
         totalMembers,
-        freeMembers: latest.free,
-        paidMembers: latest.paid,
+        freeMembers: currentTotals.free,
+        paidMembers: currentTotals.paid + currentTotals.comped,
         mrr: totalMrr,
         percentChanges,
         directions
@@ -312,7 +313,7 @@ export const useGrowthStats = (range: number) => {
     }, [mrrHistoryResponse, dateFrom]);
 
     // Calculate totals
-    const totalsData = useMemo(() => calculateTotals(memberData, mrrData, dateFrom), [memberData, mrrData, dateFrom]);
+    const totalsData = useMemo(() => calculateTotals(memberData, mrrData, dateFrom, memberCountResponse?.meta?.totals), [memberData, mrrData, dateFrom, memberCountResponse?.meta?.totals]);
 
     // Format chart data
     const chartData = useMemo(() => formatChartData(memberData, mrrData), [memberData, mrrData]);
