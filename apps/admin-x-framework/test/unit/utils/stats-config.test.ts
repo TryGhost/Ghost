@@ -1,5 +1,12 @@
 import {getStatEndpointUrl, getToken} from '../../../src/utils/stats-config';
 import {StatsConfig} from '../../../src/providers/FrameworkProvider';
+import {getTinybirdToken} from '../../../src/api/tinybird';
+import {vi} from 'vitest';
+
+// Mock getTinybirdToken
+vi.mock('../../../src/api/tinybird', () => ({
+    getTinybirdToken: vi.fn()
+}));
 
 describe('stats-config utils', () => {
     describe('getStatEndpointUrl', () => {
@@ -153,6 +160,16 @@ describe('stats-config utils', () => {
 
         it('handles null config object', () => {
             expect(getToken(null as any)).toBeUndefined();
+        });
+
+        it('returns token from getTinybirdToken when no config is provided', () => {
+            const mockToken = 'api-fetched-token';
+            vi.mocked(getTinybirdToken).mockReturnValue({
+                data: { tinybird: { token: mockToken } },
+                refetch: vi.fn()
+            } as any);
+
+            expect(getToken()).toBe(mockToken);
         });
     });
 });
