@@ -1,6 +1,6 @@
 import React from 'react';
-import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber} from '@tryghost/shade';
+import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources, useNavigate} from '@tryghost/admin-x-framework';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber} from '@tryghost/shade';
 import {useAppContext} from '@src/App';
 
 // Default source icon URL - apps can override this
@@ -95,6 +95,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
     getPeriodText
 }) => {
     const {appSettings} = useAppContext();
+    const navigate = useNavigate();
     // Process and group sources data with pre-computed icons and display values
     const processedData = React.useMemo(() => {
         return processSources({
@@ -139,21 +140,18 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
             }
             <CardContent>
                 {mode === 'growth' && !appSettings?.analytics.membersTrackSources ? (
-                    <div className='flex flex-col items-center justify-center space-y-3 py-20 text-center'>
-                        <div className='flex size-12 items-center justify-center rounded-full bg-muted'>
-                            <svg className='size-6 text-muted-foreground' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                <path d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' strokeLinecap='round' strokeLinejoin='round' strokeWidth={1.5} />
-                            </svg>
-                        </div>
-                        <div className='space-y-1'>
-                            <h3 className='text-sm font-medium text-foreground'>
-                                Member sources have been disabled
-                            </h3>
-                            <p className='text-sm text-muted-foreground'>
-                                Enable member source tracking in settings to see which content drives member growth.
-                            </p>
-                        </div>
-                    </div>
+                    <EmptyIndicator
+                        actions={
+                            <Button variant='outline' onClick={() => navigate('/settings/analytics', {crossApp: true})}>
+                                Open settings
+                            </Button>
+                        }
+                        className='py-10'
+                        description='Enable member source tracking in settings to see which content drives member growth.'
+                        title='Member sources have been disabled'
+                    >
+                        <LucideIcon.Activity />
+                    </EmptyIndicator>
                 ) : topSources.length > 0 ? (
                     <SourcesTable
                         data={topSources}
