@@ -123,6 +123,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                             {showOpenRate && post.sent_count !== null &&
                                                 <div className='group/tooltip relative flex w-[66px] lg:w-[92px]'>
                                                     <PostListTooltip
+                                                        className={`${!appSettings?.analytics.membersTrackSources ? 'left-auto right-0 translate-x-0' : ''}`}
                                                         metrics={[
                                                             {
                                                                 icon: <LucideIcon.Send className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
@@ -148,28 +149,30 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                     </div>
                                                 </div>
                                             }
-                                            <div className='group/tooltip relative flex w-[66px] lg:w-[92px]'>
-                                                <PostListTooltip
-                                                    className='left-auto right-0 translate-x-0'
-                                                    metrics={[
-                                                        {
-                                                            icon: <LucideIcon.User className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
-                                                            label: 'Free members',
-                                                            metric: post.free_members > 0 ? `+${formatNumber(post.free_members)}` : '0'
-                                                        },
-                                                        {
-                                                            icon: <LucideIcon.CreditCard className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
-                                                            label: 'Paid members',
-                                                            metric: post.paid_members > 0 ? `+${formatNumber(post.paid_members)}` : '0'
-                                                        }
-                                                    ]}
-                                                    title='New members'
-                                                />
-                                                <div className={metricClass}>
-                                                    <LucideIcon.UserPlus className='text-muted-foreground group-hover:text-foreground' size={16} strokeWidth={1.5} />
-                                                    {post.members > 0 ? `+${formatNumber(post.members)}` : '0'}
+                                            {appSettings?.analytics.membersTrackSources &&
+                                                <div className='group/tooltip relative flex w-[66px] lg:w-[92px]'>
+                                                    <PostListTooltip
+                                                        className='left-auto right-0 translate-x-0'
+                                                        metrics={[
+                                                            {
+                                                                icon: <LucideIcon.User className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
+                                                                label: 'Free members',
+                                                                metric: post.free_members > 0 ? `+${formatNumber(post.free_members)}` : '0'
+                                                            },
+                                                            {
+                                                                icon: <LucideIcon.CreditCard className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
+                                                                label: 'Paid members',
+                                                                metric: post.paid_members > 0 ? `+${formatNumber(post.paid_members)}` : '0'
+                                                            }
+                                                        ]}
+                                                        title='New members'
+                                                    />
+                                                    <div className={metricClass}>
+                                                        <LucideIcon.UserPlus className='text-muted-foreground group-hover:text-foreground' size={16} strokeWidth={1.5} />
+                                                        {post.members > 0 ? `+${formatNumber(post.members)}` : '0'}
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            }
                                         </div>
                                     </div>
                                 );

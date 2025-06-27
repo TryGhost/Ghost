@@ -256,7 +256,7 @@
             </div>
 
             {{!-- Member conversions column (only show for published posts when traffic analytics is enabled AND web analytics is enabled) --}}
-            {{#if (or this.settings.webAnalytics false)}}
+            {{#if (or this.settings.membersTrackSources false)}}
                 {{#if @post.isPublished}}
                     {{#if this.hasMemberData}}
                         <LinkTo @route="posts-x" @model={{@post.id}} class="permalink gh-list-data gh-post-list-metrics gh-post-list-analytics-tt-container">
