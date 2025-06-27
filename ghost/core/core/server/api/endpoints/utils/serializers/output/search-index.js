@@ -14,6 +14,7 @@ module.exports = {
             'title',
             'excerpt',
             'url',
+            'status',
             'created_at',
             'updated_at',
             'published_at',

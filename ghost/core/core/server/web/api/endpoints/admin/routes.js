@@ -375,5 +375,8 @@ module.exports = function apiRoutes() {
     // Feedback
     router.get('/feedback/:id', mw.authAdminApi, http(api.feedbackMembers.browse));
 
+    // Search index
+    router.get('/search-index/posts', mw.authAdminApi, http(api.searchIndex.fetchPosts));
+
     return router;
 };

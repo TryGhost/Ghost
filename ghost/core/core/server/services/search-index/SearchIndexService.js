@@ -4,15 +4,8 @@ module.exports = class SearchIndexService {
         this.models = models;
     }
 
-    async fetchPosts() {
-        const options = {
-            limit: '10000',
-            order: 'updated_at DESC',
-            columns: ['id', 'slug', 'title', 'excerpt', 'url', 'created_at', 'updated_at', 'published_at', 'visibility']
-        };
-
+    async fetchPosts(options) {
         const posts = await this.PostsService.browsePosts(options);
-
         return posts;
     }
 
