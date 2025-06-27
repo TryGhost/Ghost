@@ -9,6 +9,9 @@ vi.mock('../../../src/api/tinybird', () => ({
 }));
 
 describe('stats-config utils', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
     describe('getStatEndpointUrl', () => {
         it('returns empty string when config is null', () => {
             expect(getStatEndpointUrl(null, 'endpoint')).toBe('');
@@ -101,75 +104,91 @@ describe('stats-config utils', () => {
     });
 
     describe('getToken', () => {
-        it('returns undefined when config is undefined', () => {
-            expect(getToken(undefined)).toBeUndefined();
+        const mockTokenFromApi: string = 'api-fetched-token';
+        
+        describe('when getTinybirdToken returns a token', () => {
+            beforeEach(() => {
+                vi.clearAllMocks();
+                vi.mocked(getTinybirdToken).mockReturnValue({
+                    data: {tinybird: {token: mockTokenFromApi}},
+                    refetch: vi.fn()
+                } as any);
+            });     
+
+            it('returns token from getTinybirdToken when it returns a token', () => {
+                expect(getToken()).toBe(mockTokenFromApi);
+            });
         });
 
-        it('returns production token when local is not enabled', () => {
-            const config: StatsConfig = {
-                token: 'prod-token'
-            };
-            expect(getToken(config)).toBe('prod-token');
-        });
+        describe('when getTinybirdToken returns a null token', () => {
+            beforeEach(() => {
+                vi.clearAllMocks();
+                vi.mocked(getTinybirdToken).mockReturnValue({
+                    data: {tinybird: {token: null}},
+                    refetch: vi.fn()
+                } as any);
+            });
 
-        it('returns local token when local is enabled', () => {
-            const config: StatsConfig = {
-                token: 'prod-token',
-                local: {
-                    enabled: true,
-                    token: 'local-token'
-                }
-            };
-            expect(getToken(config)).toBe('local-token');
-        });
+            it('returns undefined when config is undefined', () => {
+                expect(getToken(undefined)).toBeUndefined();
+            });
 
-        it('returns undefined when local is enabled but local token is missing', () => {
-            const config: StatsConfig = {
-                token: 'prod-token',
-                local: {
-                    enabled: true
-                }
-            };
-            expect(getToken(config)).toBeUndefined();
-        });
+            it('returns production token when local is not enabled', () => {
+                const config: StatsConfig = {
+                    token: 'prod-token'
+                };
+                expect(getToken(config)).toBe('prod-token');
+            });
 
-        it('returns production token when local.enabled is false', () => {
-            const config: StatsConfig = {
-                token: 'prod-token',
-                local: {
-                    enabled: false,
-                    token: 'local-token'
-                }
-            };
-            expect(getToken(config)).toBe('prod-token');
-        });
+            it('returns local token when local is enabled', () => {
+                const config: StatsConfig = {
+                    token: 'prod-token',
+                    local: {
+                        enabled: true,
+                        token: 'local-token'
+                    }
+                };
+                expect(getToken(config)).toBe('local-token');
+            });
 
-        it('returns undefined when no tokens are provided', () => {
-            const config: StatsConfig = {
-                endpoint: 'https://api.example.com'
-            };
-            expect(getToken(config)).toBeUndefined();
-        });
+            it('returns undefined when local is enabled but local token is missing', () => {
+                const config: StatsConfig = {
+                    token: 'prod-token',
+                    local: {
+                        enabled: true
+                    }
+                };
+                expect(getToken(config)).toBeUndefined();
+            });
 
-        it('handles empty token strings', () => {
-            const config: StatsConfig = {
-                token: ''
-            };
-            expect(getToken(config)).toBe('');
-        });
+            it('returns production token when local.enabled is false', () => {
+                const config: StatsConfig = {
+                    token: 'prod-token',
+                    local: {
+                        enabled: false,
+                        token: 'local-token'
+                    }
+                };
+                expect(getToken(config)).toBe('prod-token');
+            });
 
-        it('handles null config object', () => {
-            expect(getToken(null as any)).toBeUndefined();
-        });
+            it('returns undefined when no tokens are provided', () => {
+                const config: StatsConfig = {
+                    endpoint: 'https://api.example.com'
+                };
+                expect(getToken(config)).toBeUndefined();
+            });
 
-        it('returns token from getTinybirdToken when no config is provided', () => {
-            const mockToken = 'api-fetched-token';
-            vi.mocked(getTinybirdToken).mockReturnValue({
-                data: { tinybird: { token: mockToken } },
-                refetch: vi.fn()
-            } as any);
+            it('handles empty token strings', () => {
+                const config: StatsConfig = {
+                    token: ''
+                };
+                expect(getToken(config)).toBe('');
+            });
 
-            expect(getToken()).toBe(mockToken);
+            it('handles null config object', () => {
+                expect(getToken(null as any)).toBeUndefined();
+            });
         });
     });
 });
