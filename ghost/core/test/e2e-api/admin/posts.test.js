@@ -343,7 +343,7 @@ describe('Posts API', function () {
         it('Errors if feature_image_alt is too long', async function () {
             const post = {
                 title: 'Feature image alt too long',
-                feature_image_alt: 'a'.repeat(201)
+                feature_image_alt: 'a'.repeat(301)
             };
 
             await agent
@@ -354,7 +354,7 @@ describe('Posts API', function () {
                     errors: [{
                         id: anyErrorId,
                         // TODO: this should be `posts.feature_image_alt` but we're hitting revision errors first
-                        context: stringMatching(/.*post_revisions\.feature_image_alt] exceeds maximum length of 191 characters.*/)
+                        context: stringMatching(/.*post_revisions\.feature_image_alt] exceeds maximum length of 300 characters.*/)
                     }]
                 });
         });
