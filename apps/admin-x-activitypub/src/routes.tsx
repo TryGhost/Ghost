@@ -33,6 +33,14 @@ export const routes: CustomRouteObject[] = [
                 element: <Navigate to="reader" />
             },
             {
+                path: 'inbox',
+                element: <Navigate to="../reader" replace />
+            },
+            {
+                path: 'feed',
+                element: <Navigate to="../notes" replace />
+            },
+            {
                 path: 'reader',
                 element: <Inbox />,
                 pageTitle: 'Reader'
