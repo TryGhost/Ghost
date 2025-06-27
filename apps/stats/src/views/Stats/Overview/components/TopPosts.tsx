@@ -85,7 +85,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                     <div className='group relative flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:hidden before:rounded-md before:bg-accent before:opacity-80 before:content-[""] first:!border-border hover:cursor-pointer hover:border-transparent hover:before:block md:items-center [&+div]:hover:border-transparent' onClick={() => {
                                         navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
                                     }}>
-                                        <div className='z-10 flex min-w-[160px] grow items-start gap-4 lg:min-w-[320px]'>
+                                        <div className='z-10 flex min-w-[160px] grow items-start gap-4 md:items-center lg:min-w-[320px]'>
                                             {post.feature_image ?
                                                 <div className='hidden aspect-[16/10] w-[80px] shrink-0 rounded-sm bg-cover bg-center sm:!visible sm:!block lg:w-[100px]' style={{
                                                     backgroundImage: `url(${post.feature_image})`
@@ -98,7 +98,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                 <span className='text-sm text-muted-foreground'>
                                                     {/* By {post.authors?.map(author => author.name).join(', ')} &mdash;  */}
                                                     {formatDisplayDate(post.published_at)}</span>
-                                                <span className='text-sm text-muted-foreground'>Published</span>
+                                                {/* <span className='text-sm text-muted-foreground'>Published</span> */}
                                             </div>
                                         </div>
                                         <div className='z-10 flex flex-col items-end justify-center gap-0.5 text-sm md:flex-row md:items-center md:justify-end md:gap-3'>
