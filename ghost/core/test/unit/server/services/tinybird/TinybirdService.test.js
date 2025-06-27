@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const TinybirdService = require('../../../../../core/server/services/tinybird');
+const TinybirdService = require('../../../../../core/server/services/tinybird/TinybirdService');
 const jwt = require('jsonwebtoken');
 
 describe('TinybirdService', function () {
