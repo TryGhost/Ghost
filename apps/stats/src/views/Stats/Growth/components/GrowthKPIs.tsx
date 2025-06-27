@@ -41,11 +41,12 @@ type Totals = {
 
 const GrowthKPIs: React.FC<{
     chartData: ChartDataItem[];
+    subscriptionData?: {date: string; signups: number; cancellations: number}[];
     totals: Totals;
     initialTab?: string;
     currencySymbol: string;
     isLoading: boolean;
-}> = ({chartData: allChartData, totals, initialTab = 'total-members', currencySymbol, isLoading}) => {
+}> = ({chartData: allChartData, subscriptionData, totals, initialTab = 'total-members', currencySymbol, isLoading}) => {
     const [currentTab, setCurrentTab] = useState(initialTab);
     const [paidChartTab, setPaidChartTab] = useState('total');
     const {range} = useGlobalData();
@@ -181,21 +182,41 @@ const GrowthKPIs: React.FC<{
             return [];
         }
 
-        // First sanitize the data for the current range
-        const sanitizedData = sanitizeChartData(allChartData, range, 'paid', 'exact');
+        // Use subscription data if available (like Ember dashboard), otherwise fall back to member data
+        if (subscriptionData && subscriptionData.length > 0) {
+            // Create a map of subscription data by date for quick lookup
+            const subscriptionByDate = new Map(
+                subscriptionData.map(item => [item.date, item])
+            );
 
-        // Transform the sanitized data into the format expected by the chart
-        return sanitizedData.map((item) => {
-            // Format date in a more readable format (e.g., "25 May")
-            const date = new Date(item.date);
+            // Use member data structure but replace subscription values with real subscription data
+            const sanitizedData = sanitizeChartData(allChartData, range, 'paid', 'exact');
+            
+            return sanitizedData.map((item) => {
+                const subData = subscriptionByDate.get(item.date);
+                const date = new Date(item.date);
 
-            return {
-                date: formatDisplayDateWithRange(date, range),
-                new: item.paid_subscribed || 0,
-                cancelled: -(item.paid_canceled || 0) // Negative for the stacked bar chart
-            };
-        });
-    }, [currentTab, allChartData, range]);
+                return {
+                    date: formatDisplayDateWithRange(date, range),
+                    new: subData?.signups || 0,
+                    cancelled: -(subData?.cancellations || 0) // Negative for the stacked bar chart
+                };
+            });
+        } else {
+            // Fall back to member count data
+            const sanitizedData = sanitizeChartData(allChartData, range, 'paid', 'exact');
+
+            return sanitizedData.map((item) => {
+                const date = new Date(item.date);
+
+                return {
+                    date: formatDisplayDateWithRange(date, range),
+                    new: item.paid_subscribed || 0,
+                    cancelled: -(item.paid_canceled || 0) // Negative for the stacked bar chart
+                };
+            });
+        }
+    }, [currentTab, allChartData, subscriptionData, range]);
 
     const paidChangeChartConfig = {
         new: {
