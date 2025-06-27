@@ -213,7 +213,8 @@ describe('e2e {{#get}} helper', function () {
                 inverse
             });
             assert.equal(fn.secondCall.args[0].posts.length, initialCount - 1);
-            assert.equal(fn.secondCall.args[0].meta.pagination.limit, 'all');
+            // 'all' is capped to 100 since 6.x
+            assert.equal(fn.secondCall.args[0].meta.pagination.limit, 100);
             assert.equal(fn.secondCall.args[0].meta.cacheabilityOptimisation, true);
             const foundFilteredPost = fn.secondCall.args[0].posts.find(post => post.id === firstPostUsually.id);
             assert.equal(foundFilteredPost, undefined);
