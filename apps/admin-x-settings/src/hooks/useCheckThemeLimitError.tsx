@@ -7,31 +7,32 @@ interface UseCheckThemeLimitErrorReturn {
     isThemeLimited: boolean;
     isThemeLimitCheckReady: boolean;
     allowedThemesList: string[] | undefined;
+    noThemeChangesAllowed: boolean;
 }
 
 export const useCheckThemeLimitError = (): UseCheckThemeLimitErrorReturn => {
     const limiter = useLimiter();
     const {config} = useGlobalData();
-    
+
+    const allowedThemesList = config.hostSettings?.limits?.customThemes?.allowlist as string[] | undefined;
+    // Single theme: always error
+    const noThemeChangesAllowed = allowedThemesList?.length === 1 || false;
+
     const checkError = useCallback(async (themeName?: string): Promise<string | null> => {
         if (!limiter?.isLimited('customThemes')) {
             return null;
         }
-        
-        const allowlist = config.hostSettings?.limits?.customThemes?.allowlist as string[] | undefined;
-        const isSingleTheme = allowlist?.length === 1;
-        
-        // Single theme: always error
-        // Multiple themes: error if specific theme not in allowlist
-        const shouldError = isSingleTheme || (themeName && allowlist && !allowlist.includes(themeName.toLowerCase()));
-        
+
+        // Multiple themes: error if specific theme not in allowlist, error when no theme changes allowed
+        const shouldError = noThemeChangesAllowed || (themeName && allowedThemesList && !allowedThemesList.includes(themeName.toLowerCase()));
+
         if (!shouldError) {
             return null;
         }
-        
+
         try {
             // Use '.' for single theme to force error, or specific theme name
-            const value = isSingleTheme ? '.' : (themeName || '.');
+            const value = noThemeChangesAllowed ? '.' : (themeName || '.');
             await limiter.errorIfWouldGoOverLimit('customThemes', {value});
             return null; // No error
         } catch (error) {
@@ -40,12 +41,13 @@ export const useCheckThemeLimitError = (): UseCheckThemeLimitErrorReturn => {
             }
             return null;
         }
-    }, [limiter, config.hostSettings?.limits?.customThemes?.allowlist]);
-    
+    }, [limiter, allowedThemesList, noThemeChangesAllowed]);
+
     return {
         checkThemeLimitError: checkError,
         isThemeLimited: limiter?.isLimited('customThemes') || false,
-        isThemeLimitCheckReady: limiter !== undefined,
-        allowedThemesList: config.hostSettings?.limits?.customThemes?.allowlist as string[] | undefined
+        isThemeLimitCheckReady: true, // Always ready - if limiter is undefined, there are no limits
+        allowedThemesList,
+        noThemeChangesAllowed
     };
 };
