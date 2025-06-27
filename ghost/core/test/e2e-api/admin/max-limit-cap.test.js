@@ -5,13 +5,15 @@ const db = require('../../../core/server/data/db');
 const ObjectId = require('bson-objectid').default;
 const maxLimitCap = require('../../../core/server/web/shared/middleware/max-limit-cap');
 
+const MAX_LIMIT = 5;
+
 describe('Admin API - Max Limit Cap', function () {
     let agent;
     let testEmail; // Store reference to test email for exception endpoint tests
 
     before(async function () {
         // Set a lower max limit for testing
-        sinon.stub(maxLimitCap.limitConfig, 'maxLimit').value(5);
+        sinon.stub(maxLimitCap.limitConfig, 'maxLimit').value(MAX_LIMIT);
 
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'members');
@@ -180,22 +182,22 @@ describe('Admin API - Max Limit Cap', function () {
     }
 
     describe('Posts API', function () {
-        it('should cap limit to 5 when limit exceeds max', async function () {
+        it(`should cap limit to ${MAX_LIMIT} when limit exceeds max`, async function () {
             const {body} = await agent.get('posts/?limit=10')
                 .expectStatus(200);
 
             // Even though we requested 10, we should only get max 5
-            body.posts.length.should.equal(5);
-            body.meta.pagination.limit.should.equal(5);
+            body.posts.length.should.equal(MAX_LIMIT);
+            body.meta.pagination.limit.should.equal(MAX_LIMIT);
         });
 
-        it('should cap limit to 5 when limit is "all"', async function () {
+        it(`should cap limit to ${MAX_LIMIT} when limit is "all"`, async function () {
             const {body} = await agent.get('posts/?limit=all')
                 .expectStatus(200);
 
             // "all" should be capped to 5
-            body.posts.length.should.equal(5);
-            body.meta.pagination.limit.should.equal(5);
+            body.posts.length.should.equal(MAX_LIMIT);
+            body.meta.pagination.limit.should.equal(MAX_LIMIT);
         });
 
         it('should respect smaller limits', async function () {
@@ -207,22 +209,24 @@ describe('Admin API - Max Limit Cap', function () {
         });
 
         it('should allow large limits for export endpoint', async function () {
-            // The export endpoint should bypass the limit cap
-            await agent.get('posts/export/?limit=200')
+            // The export endpoint should bypass the limit cap, it returns a CSV file
+            // so we should check we get one with appropriate number of rows
+            const {text} = await agent.get('posts/export/?limit=1000')
                 .expectStatus(200);
+
+            // Check CSV file has more than MAX_LIMIT rows + 1 for header row
+            text.split('\n').length.should.be.greaterThan(MAX_LIMIT + 1);
         });
     });
 
     describe('Members API', function () {
-        it('should cap limit to 5 when limit exceeds max', async function () {
+        it(`should cap limit to ${MAX_LIMIT} when limit exceeds max`, async function () {
             const {body} = await agent.get('members/?limit=10')
                 .expectStatus(200);
 
             // Even though we requested 10, we should only get max 5
-            body.members.length.should.be.lessThanOrEqual(5);
-            if (body.members.length === 5) {
-                body.meta.pagination.limit.should.equal(5);
-            }
+            body.members.length.should.be.lessThanOrEqual(MAX_LIMIT);
+            body.meta.pagination.limit.should.equal(MAX_LIMIT);
         });
 
         it('should cap limit to 5 when limit is "all"', async function () {
@@ -230,55 +234,40 @@ describe('Admin API - Max Limit Cap', function () {
                 .expectStatus(200);
 
             // "all" should be capped to 5
-            body.members.length.should.be.lessThanOrEqual(5);
-            if (body.members.length === 5) {
-                body.meta.pagination.limit.should.equal(5);
-            }
+            body.members.length.should.be.lessThanOrEqual(MAX_LIMIT);
+            body.meta.pagination.limit.should.equal(MAX_LIMIT);
         });
     });
 
     describe('Tags API', function () {
-        it('should cap limit to 5 when limit exceeds max', async function () {
+        it(`should cap limit to ${MAX_LIMIT} when limit exceeds max`, async function () {
             const {body} = await agent.get('tags/?limit=10')
                 .expectStatus(200);
 
             // Even though we requested 10, we should only get max 5
-            body.tags.length.should.equal(5);
-            body.meta.pagination.limit.should.equal(5);
+            body.tags.length.should.equal(MAX_LIMIT);
+            body.meta.pagination.limit.should.equal(MAX_LIMIT);
         });
     });
 
     describe('Pages API', function () {
-        it('should cap limit to 5 when limit exceeds max', async function () {
+        it(`should cap limit to ${MAX_LIMIT} when limit exceeds max`, async function () {
             const {body} = await agent.get('pages/?limit=10')
                 .expectStatus(200);
 
             // Even though we requested 10, we should only get max 5
-            body.pages.length.should.be.lessThanOrEqual(5);
-            if (body.pages.length === 5) {
-                body.meta.pagination.limit.should.equal(5);
-            }
+            body.pages.length.should.be.lessThanOrEqual(MAX_LIMIT);
+            body.meta.pagination.limit.should.equal(MAX_LIMIT);
         });
     });
 
     describe('Exception Endpoints', function () {
         it('should bypass limit cap for emails batches endpoint', async function () {
             if (!testEmail) {
-                this.skip();
-                return;
+                throw new Error('Test email not found');
             }
 
-            // First, verify that regular emails endpoint is capped
-            const {body: emailsBody} = await agent.get('emails/?limit=10')
-                .expectStatus(200);
-
-            // Regular endpoint should cap at 5
-            emailsBody.emails.length.should.be.lessThanOrEqual(5);
-            if (emailsBody.emails.length === 5) {
-                emailsBody.meta.pagination.limit.should.equal(5);
-            }
-
-            // Now test the exception endpoint - should return all 10 batches
+            // Test the exception endpoint - should return all 10 batches
             const {body: batchesBody} = await agent.get(`emails/${testEmail.id}/batches/?limit=10`)
                 .expectStatus(200);
 
@@ -289,8 +278,7 @@ describe('Admin API - Max Limit Cap', function () {
 
         it('should bypass limit cap for emails recipient-failures endpoint', async function () {
             if (!testEmail) {
-                this.skip();
-                return;
+                throw new Error('Test email not found');
             }
 
             // Test the exception endpoint - should return all 10 failures
@@ -304,8 +292,7 @@ describe('Admin API - Max Limit Cap', function () {
 
         it('should allow "all" for exception endpoints', async function () {
             if (!testEmail) {
-                this.skip();
-                return;
+                throw new Error('Test email not found');
             }
 
             // Test batches with limit=all
@@ -314,6 +301,7 @@ describe('Admin API - Max Limit Cap', function () {
 
             // Should return all batches (10)
             batchesBody.batches.length.should.equal(10);
+            batchesBody.meta.pagination.limit.should.equal('all');
 
             // Test failures with limit=all
             const {body: failuresBody} = await agent.get(`emails/${testEmail.id}/recipient-failures/?limit=all`)
@@ -321,6 +309,7 @@ describe('Admin API - Max Limit Cap', function () {
 
             // Should return all failures (10)
             failuresBody.failures.length.should.equal(10);
+            failuresBody.meta.pagination.limit.should.equal('all');
         });
     });
 
@@ -330,8 +319,8 @@ describe('Admin API - Max Limit Cap', function () {
                 .expectStatus(200);
 
             // Invalid limit should be capped to 5
-            body.posts.length.should.equal(5);
-            body.meta.pagination.limit.should.equal(5);
+            body.posts.length.should.equal(MAX_LIMIT);
+            body.meta.pagination.limit.should.equal(MAX_LIMIT);
         });
 
         it('should handle limit=0', async function () {
