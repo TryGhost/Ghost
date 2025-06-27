@@ -1,7 +1,9 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
+const rewire = require('rewire');
 const configUtils = require('../../../../../utils/configUtils');
-const maxLimitCap = require('../../../../../../core/server/web/shared/middleware/max-limit-cap');
+
+let maxLimitCap = rewire('../../../../../../core/server/web/shared/middleware/max-limit-cap');
 
 describe('Max Limit Cap Middleware', function () {
     let req;
@@ -9,6 +11,8 @@ describe('Max Limit Cap Middleware', function () {
     let next;
 
     beforeEach(function () {
+        maxLimitCap = rewire('../../../../../../core/server/web/shared/middleware/max-limit-cap');
+
         req = {
             query: {},
             path: '/api/content/posts/',
@@ -21,6 +25,24 @@ describe('Max Limit Cap Middleware', function () {
     afterEach(function () {
         sinon.restore();
         configUtils.restore();
+    });
+
+    describe('limitConfig', function () {
+        it('should have the correct default values', function () {
+            assert.equal(maxLimitCap.limitConfig.allowLimitAll, false);
+            assert.equal(maxLimitCap.limitConfig.maxLimit, 100);
+            assert.equal(maxLimitCap.limitConfig.exceptionEndpoints.length, 2);
+        });
+
+        it('reads from config', function () {
+            configUtils.set('optimization:allowLimitAll', true);
+            configUtils.set('optimization:maxLimit', 50);
+
+            maxLimitCap = rewire('../../../../../../core/server/web/shared/middleware/max-limit-cap');
+
+            assert.equal(maxLimitCap.limitConfig.allowLimitAll, true);
+            assert.equal(maxLimitCap.limitConfig.maxLimit, 50);
+        });
     });
 
     describe('when no limit is specified', function () {
@@ -85,9 +107,8 @@ describe('Max Limit Cap Middleware', function () {
         });
 
         it('should allow "all" when allowLimitAll is true', function () {
-            // This test is skipped because config values are loaded at module load time
-            // and cannot be changed dynamically in tests
-            configUtils.set('optimization:allowLimitAll', true);
+            sinon.stub(maxLimitCap.limitConfig, 'allowLimitAll').value(true);
+
             req.query.limit = 'all';
 
             maxLimitCap[0](req, res, next);
@@ -99,9 +120,8 @@ describe('Max Limit Cap Middleware', function () {
 
     describe('with custom maxLimit configuration', function () {
         it('should use custom maxLimit value', function () {
-            // This test is skipped because config values are loaded at module load time
-            // and cannot be changed dynamically in tests
-            configUtils.set('optimization:maxLimit', 50);
+            sinon.stub(maxLimitCap.limitConfig, 'maxLimit').value(50);
+
             req.query.limit = 75;
 
             maxLimitCap[0](req, res, next);
@@ -111,7 +131,8 @@ describe('Max Limit Cap Middleware', function () {
         });
 
         it('should not modify limit below custom maxLimit', function () {
-            configUtils.set('optimization:maxLimit', 50);
+            sinon.stub(maxLimitCap.limitConfig, 'maxLimit').value(50);
+
             req.query.limit = 30;
 
             maxLimitCap[0](req, res, next);

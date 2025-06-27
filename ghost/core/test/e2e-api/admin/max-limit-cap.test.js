@@ -1,8 +1,9 @@
 const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
 const should = require('should');
-const configUtils = require('../../utils/configUtils');
+const sinon = require('sinon');
 const db = require('../../../core/server/data/db');
 const ObjectId = require('bson-objectid').default;
+const maxLimitCap = require('../../../core/server/web/shared/middleware/max-limit-cap');
 
 describe('Admin API - Max Limit Cap', function () {
     let agent;
@@ -10,7 +11,7 @@ describe('Admin API - Max Limit Cap', function () {
 
     before(async function () {
         // Set a lower max limit for testing
-        configUtils.set('optimization:maxLimit', 5);
+        sinon.stub(maxLimitCap.limitConfig, 'maxLimit').value(5);
 
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'members');
@@ -21,7 +22,7 @@ describe('Admin API - Max Limit Cap', function () {
     });
 
     after(function () {
-        configUtils.restore();
+        sinon.restore();
     });
 
     // Factory for creating bulk test data
