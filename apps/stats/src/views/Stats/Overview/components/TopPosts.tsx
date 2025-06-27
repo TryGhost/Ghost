@@ -26,7 +26,7 @@ const PostListTooltip:React.FC<PostlistTooptipProps> = ({
             <div className={
                 cn('pointer-events-none absolute bottom-[calc(100%+2px)] left-1/2 z-50 min-w-[160px] -translate-x-1/2 rounded-md bg-background p-3 text-sm opacity-0 shadow-md transition-all group-hover/tooltip:bottom-[calc(100%+12px)] group-hover/tooltip:opacity-100', className)
             }>
-                <div className='mb-1.5 whitespace-nowrap border-b pb-1.5 font-medium text-muted-foreground'>{title}</div>
+                <div className='mb-1.5 whitespace-nowrap border-b pb-1.5 pr-10 font-medium text-muted-foreground'>{title}</div>
                 <div className="flex flex-col gap-1">
                     {metrics?.map(metric => (
                         <div key={metric.label} className="flex items-center justify-between gap-5">
