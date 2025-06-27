@@ -322,60 +322,66 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
 
     // probably not the best place to handle the logic here, something for cleanup.
     useEffect(() => {
-        // this grabs the theme ref from the url and installs it
-        if (source && themeRef && !installedFromMarketplace) {
-            const themeName = themeRef.split('/')[1];
-            let titleText = 'Install Theme';
-            const existingThemeNames = themes?.map(t => t.name) || [];
-            let willOverwrite = existingThemeNames.includes(themeName.toLowerCase());
-            const index = existingThemeNames.indexOf(themeName.toLowerCase());
-            // get the theme that will be overwritten
-            const themeToOverwrite = themes?.[index];
-            let prompt = <>By clicking below, <strong>{themeName}</strong> will automatically be activated as the theme for your site.
-                {willOverwrite &&
-                <>
-                    <br/>
-                    <br/>
-                    This will overwrite your existing version of <strong>Liebling</strong>{themeToOverwrite?.active ? ' which is your active theme' : ''}. All custom changes will be lost.
-                </>
-                }
-            </>;
-            NiceModal.show(ConfirmationModal, {
-                title: titleText,
-                prompt,
-                okLabel: 'Install',
-                cancelLabel: 'Cancel',
-                okRunningLabel: 'Installing...',
-                okColor: 'black',
-                onOk: async (confirmModal) => {
-                    let data: ThemesInstallResponseType | undefined;
-                    setInstalledFromMarketplace(true);
-                    try {
-                        if (willOverwrite) {
-                            if (themes) {
-                                themes.splice(index, 1);
+        const handleUrlInstallation = async () => {
+            // this grabs the theme ref from the url and installs it
+            // Only show confirmation if we have explicit source and themeRef props (not from URL params after redirect)
+            if (source && themeRef && !installedFromMarketplace) {
+                const themeName = themeRef.split('/')[1];
+                
+                let titleText = 'Install Theme';
+                const existingThemeNames = themes?.map(t => t.name) || [];
+                let willOverwrite = existingThemeNames.includes(themeName.toLowerCase());
+                const index = existingThemeNames.indexOf(themeName.toLowerCase());
+                // get the theme that will be overwritten
+                const themeToOverwrite = themes?.[index];
+                let prompt = <>By clicking below, <strong>{themeName}</strong> will automatically be activated as the theme for your site.
+                    {willOverwrite &&
+                    <>
+                        <br/>
+                        <br/>
+                        This will overwrite your existing version of <strong>Liebling</strong>{themeToOverwrite?.active ? ' which is your active theme' : ''}. All custom changes will be lost.
+                    </>
+                    }
+                </>;
+                NiceModal.show(ConfirmationModal, {
+                    title: titleText,
+                    prompt,
+                    okLabel: 'Install',
+                    cancelLabel: 'Cancel',
+                    okRunningLabel: 'Installing...',
+                    okColor: 'black',
+                    onOk: async (confirmModal) => {
+                        let data: ThemesInstallResponseType | undefined;
+                        setInstalledFromMarketplace(true);
+                        try {
+                            if (willOverwrite) {
+                                if (themes) {
+                                    themes.splice(index, 1);
+                                }
                             }
+                            data = await installTheme(themeRef);
+                            if (data?.themes[0]) {
+                                await activateTheme(data.themes[0].name);
+                                showToast({
+                                    title: 'Theme activated',
+                                    type: 'success',
+                                    message: <div><span className='capitalize'>{data.themes[0].name}</span> is now your active theme</div>
+                                });
+                            }
+                            confirmModal?.remove();
+                            updateRoute('');
+                        } catch (e) {
+                            handleError(e);
                         }
-                        data = await installTheme(themeRef);
-                        if (data?.themes[0]) {
-                            await activateTheme(data.themes[0].name);
-                            showToast({
-                                title: 'Theme activated',
-                                type: 'success',
-                                message: <div><span className='capitalize'>{data.themes[0].name}</span> is now your active theme</div>
-                            });
+                        if (!data) {
+                            return;
                         }
-                        confirmModal?.remove();
-                        updateRoute('');
-                    } catch (e) {
-                        handleError(e);
                     }
-                    if (!data) {
-                        return;
-                    }
-                }
-            });
-        }
+                });
+            }
+        };
+
+        handleUrlInstallation();
     }, [themeRef, source, installTheme, handleError, activateTheme, updateRoute, themes, installedFromMarketplace, refParam]);
 
     if (!themes) {

@@ -420,6 +420,23 @@ test.describe('Theme settings', async () => {
         await mockApi({page, requests: {
             ...globalDataRequests,
             browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        hostSettings: {
+                            limits: {
+                                staff: {
+                                    max: 10,
+                                    error: 'You have reached the maximum number of staff users'
+                                }
+                                // No customThemes limit
+                            }
+                        }
+                    }
+                }
+            },
             installTheme: {method: 'POST', path: /^\/themes\/install\/\?/, response: {
                 themes: [{
                     name: 'taste',
@@ -505,7 +522,7 @@ test.describe('Theme settings', async () => {
         await expect(page.getByTestId('toast-success')).toHaveText(/taste is now your active theme/);
     });
 
-    test('Theme install route blocks installation when theme is NOT in allowlist', async ({page}) => {
+    test('Theme install route blocks installation, but shows change theme modal when theme is NOT in allowlist', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
             ...limitRequests,
@@ -530,12 +547,26 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/#/settings/theme/install?source=github&ref=TryGhost/Taste');
 
+        // Should be redirected to design/change-theme
+        await expect(page).toHaveURL(/#\/settings\/design\/change-theme/);
+
         // Should show limit modal because 'taste' is not in the allowlist
         await expect(page.getByTestId('limit-modal')).toBeVisible();
         await expect(page.getByTestId('limit-modal')).toHaveText(/Upgrade to use more themes/);
 
-        // Theme install modal should not be visible
+        // Theme modal should be visible (behind the limit modal) but NO confirmation modal
+        await expect(page.getByTestId('theme-modal')).toBeVisible();
+        
+        // Wait a bit to ensure no confirmation modal appears
+        await page.waitForTimeout(1000);
         await expect(page.getByTestId('confirmation-modal')).not.toBeVisible();
+
+        // Close the limit modal
+        await page.getByRole('button', {name: 'Cancel'}).click();
+
+        // Should stay on design/change-theme with the change theme modal visible
+        await expect(page).toHaveURL(/#\/settings\/design\/change-theme/);
+        await expect(page.getByTestId('theme-modal')).toBeVisible();
     });
 
     test('Theme install route blocks installation with single-theme allowlist', async ({page}) => {
@@ -568,8 +599,14 @@ test.describe('Theme settings', async () => {
         await expect(page.getByTestId('limit-modal')).toBeVisible();
         await expect(page.getByTestId('limit-modal')).toHaveText(/Upgrade to use custom themes/);
 
+        // Should be redirected to /theme (not change-theme)
+        await expect(page).toHaveURL(/#\/settings\/theme/);
+
         // Theme modal should not be visible at all
         await expect(page.getByTestId('theme-modal')).not.toBeVisible();
+        
+        // Wait a bit to ensure no confirmation modal appears
+        await page.waitForTimeout(1000);
         await expect(page.getByTestId('confirmation-modal')).not.toBeVisible();
     });
 
