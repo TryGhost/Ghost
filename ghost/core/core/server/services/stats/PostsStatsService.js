@@ -699,7 +699,7 @@ class PostsStatsService {
                 // Attempt to parse and validate the date
                 const fromDate = new Date(options.date_from);
                 if (!isNaN(fromDate.getTime())) {
-                    query.where(dateColumn, '>=', options.date_from);
+                    query.where(dateColumn, '>=', fromDate);
                 } else {
                     logging.warn(`Invalid date_from format: ${options.date_from}. Skipping filter.`);
                 }
@@ -711,8 +711,10 @@ class PostsStatsService {
             try {
                 const toDate = new Date(options.date_to);
                 if (!isNaN(toDate.getTime())) {
-                    // Include the whole day for the 'to' date
-                    query.where(dateColumn, '<=', options.date_to + ' 23:59:59');
+                    // Include the whole day for the 'to' date by setting to end of day
+                    const endOfDay = new Date(toDate);
+                    endOfDay.setHours(23, 59, 59, 999);
+                    query.where(dateColumn, '<=', endOfDay);
                 } else {
                     logging.warn(`Invalid date_to format: ${options.date_to}. Skipping filter.`);
                 }
