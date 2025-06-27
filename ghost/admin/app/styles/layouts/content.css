@@ -458,6 +458,11 @@
     padding-right: 0;
 }
 
+.gh-post-list-analytics-right {
+    display: flex;
+    align-items: center;
+}
+
 .gh-post-list-analytics-metric {
     display: flex;
     gap: 5px;
