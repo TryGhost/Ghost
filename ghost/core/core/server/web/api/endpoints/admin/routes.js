@@ -243,7 +243,6 @@ module.exports = function apiRoutes() {
     router.post('/slack/test', mw.authAdminApi, http(api.slack.sendTest));
 
     // ## Sessions
-    router.get('/session', mw.authAdminApi, http(api.session.read));
     // We don't need auth when creating a new session (logging in)
     router.post('/session',
         shared.middleware.brute.globalBlock,
