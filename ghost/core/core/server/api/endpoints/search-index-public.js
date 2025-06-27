@@ -11,6 +11,15 @@ const controller = {
         query() {
             return searchIndexService.fetchPosts();
         }
+    },
+    fetchAuthors: {
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: true,
+        query() {
+            return searchIndexService.fetchAuthors();
+        }
     }
 };
 

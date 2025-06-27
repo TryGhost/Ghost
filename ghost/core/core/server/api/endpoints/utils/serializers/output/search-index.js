@@ -29,5 +29,29 @@ module.exports = {
         frame.response = {
             posts
         };
+    },
+
+    async fetchAuthors(models, apiConfig, frame) {
+        debug('fetchAuthors');
+
+        let authors = [];
+
+        const keys = [
+            'id',
+            'slug',
+            'name',
+            'url',
+            'profile_image'
+        ];
+
+        for (let model of models.data) {
+            let author = await mappers.authors(model, frame);
+            author = _.pick(author, keys);
+            authors.push(author);
+        }
+
+        frame.response = {
+            authors
+        };
     }
 };
