@@ -180,7 +180,7 @@ const Overview: React.FC = () => {
     return (
         <StatsLayout>
             <StatsHeader>
-                <DateRangeSelect />
+                <DateRangeSelect excludeRanges={['today']} />
             </StatsHeader>
             <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
                 <OverviewKPIs
