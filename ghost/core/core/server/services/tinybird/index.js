@@ -11,18 +11,16 @@ function getInstance() {
     const config = require('../../../shared/config');
     const settingsCache = require('../../../shared/settings-cache');
 
-    const workspaceId = config.get('tinybird:workspaceId');
-    const adminToken = config.get('tinybird:adminToken');
+    const tinybirdConfig = config.get('tinybird');
     const siteUuid = settingsCache.get('site_uuid');
 
-    if (!workspaceId || !adminToken || !siteUuid) {
+    if (!tinybirdConfig.workspaceId || !tinybirdConfig.adminToken || !siteUuid) {
         logging.warn('Tinybird service not configured');
         return;
     }
 
     instance = new TinybirdService({
-        workspaceId,
-        adminToken,
+        tinybirdConfig,
         siteUuid
     });
 
