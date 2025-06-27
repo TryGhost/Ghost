@@ -1,7 +1,7 @@
 import React from 'react';
-import {H1, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
-// import {useFeatureFlag} from '@src/hooks/useFeatureFlag';
-import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
+import {H1, LucideIcon, Navbar, NavbarActions, PageMenu, PageMenuItem, formatNumber} from '@tryghost/shade';
+import {useActiveVisitors, useAppContext, useLocation, useNavigate} from '@tryghost/admin-x-framework';
+import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
 interface StatsHeaderProps {
     children?: React.ReactNode;
@@ -12,92 +12,81 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
 }) => {
     const navigate = useNavigate();
     const location = useLocation();
-    // const alphaFlag = useFeatureFlag('trafficAnalyticsAlpha', '/');
+    const {appSettings} = useAppContext();
+    const {site, statsConfig} = useGlobalData();
+    const {activeVisitors, isLoading: isActiveVisitorsLoading} = useActiveVisitors({
+        statsConfig,
+        enabled: appSettings?.analytics?.webAnalytics ?? false
+    });
 
     return (
         <>
             <header className='z-40 -mx-8 bg-white/70 backdrop-blur-md dark:bg-black'>
-                <div className='relative flex w-full items-start justify-between gap-5 px-8 pb-0 pt-8'>
+                <div className='relative flex w-full items-center justify-between gap-5 px-8 pb-0 pt-8'>
                     <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
                         Analytics
                     </H1>
+                    {appSettings?.analytics.webAnalytics && (
+                        <div className='flex items-center gap-2 text-sm'>
+                            {site?.url && (
+                                <div className='hidden items-center gap-1.5 sm:!visible sm:!flex'>
+                                    {/* No need for favicon as it's already shown in the left sidebar + globe icon represents "web" better */}
+                                    <LucideIcon.Globe className='text-muted-foreground' size={16} strokeWidth={1.5} />
+                                    <a
+                                        className='text-sm font-medium transition-all hover:opacity-75 dark:text-gray-100'
+                                        href={site.url}
+                                        rel="noopener noreferrer"
+                                        target="_blank"
+                                        title={`Visit ${new URL(site.url).hostname}`}
+                                    >
+                                        {new URL(site.url).hostname}
+                                    </a>
+                                    <span className='text-border'>|</span>
+                                </div>
+                            )}
+                            <div
+                                className='flex items-center gap-2 text-sm text-muted-foreground'
+                                title='Active visitors in the last 5 minutes · Updates every 60 seconds'
+                            >
+                                <span className='text-sm'>
+                                    {isActiveVisitorsLoading ? '' : formatNumber(activeVisitors)} online
+                                </span>
+                                <div className={`size-2 rounded-full ${isActiveVisitorsLoading ? 'animate-pulse bg-muted' : activeVisitors ? 'bg-green-500' : 'border border-muted-foreground'}`}></div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </header>
-            <Navbar className='sticky top-0 z-40 items-center border-none bg-white/70 py-8 backdrop-blur-md dark:bg-black'>
-                <Tabs className="w-full" defaultValue={location.pathname} variant='pill'>
-                    <TabsList>
-                        <TabsTrigger value="/" onClick={() => {
-                            navigate('/');
-                        }}>
-                            Overview
-                        </TabsTrigger>
-                        <TabsTrigger value="/web/" onClick={() => {
+            <Navbar className='sticky top-0 z-40 flex-col items-start gap-y-5 border-none bg-white/70 py-8 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
+                <PageMenu defaultValue={location.pathname} responsive>
+                    <PageMenuItem value="/" onClick={() => {
+                        navigate('/');
+                    }}>Overview</PageMenuItem>
+
+                    {appSettings?.analytics.webAnalytics &&
+                        <PageMenuItem value="/web/" onClick={() => {
                             navigate('/web/');
-                        }}>
-                        Web traffic
-                        </TabsTrigger>
-                        <TabsTrigger value="/newsletters/" onClick={() => {
+                        }}>Web traffic</PageMenuItem>
+                    }
+
+                    {appSettings?.newslettersEnabled &&
+                        <PageMenuItem value="/newsletters/" onClick={() => {
                             navigate('/newsletters/');
-                        }}>
-                        Newsletters
-                        </TabsTrigger>
-                        <TabsTrigger value="/growth/" onClick={() => {
-                            navigate('/growth/');
-                        }}>
-                        Growth
-                        </TabsTrigger>
-                        <TabsTrigger value="/locations/" onClick={() => {
-                            navigate('/locations/');
-                        }}>
-                        Locations
-                        </TabsTrigger>
-                    </TabsList>
-                </Tabs>
+                        }}>Newsletters</PageMenuItem>
+                    }
+
+                    <PageMenuItem value="/growth/" onClick={() => {
+                        navigate('/growth/');
+                    }}>Growth</PageMenuItem>
+
+                    <PageMenuItem value="/locations/" onClick={() => {
+                        navigate('/locations/');
+                    }}>Locations</PageMenuItem>
+                </PageMenu>
                 <NavbarActions>
                     {children}
                 </NavbarActions>
             </Navbar>
-            {/* <header className='z-50 -mx-8'>
-                <div className='flex w-full flex-col items-stretch gap-8 p-8'>
-                    <H1 className='mt-1'>Stats</H1>
-                    <Navbar className='sticky top-0 border-none bg-white/70 pt-0.5 backdrop-blur-md dark:bg-black'>
-                        <Tabs className="w-full" defaultValue={location.pathname} variant='pill'>
-                            <TabsList>
-                                {alphaFlag.isEnabled &&
-                                <TabsTrigger value="/overview/" onClick={() => {
-                                    navigate('/overview/');
-                                }}>
-                                    Overview
-                                </TabsTrigger>
-                                }
-                                <TabsTrigger value="/" onClick={() => {
-                                    navigate('/');
-                                }}>
-                                Web traffic
-                                </TabsTrigger>
-                                <TabsTrigger value="/newsletters/" onClick={() => {
-                                    navigate('/newsletters/');
-                                }}>
-                                Newsletters
-                                </TabsTrigger>
-                                <TabsTrigger value="/growth/" onClick={() => {
-                                    navigate('/growth/');
-                                }}>
-                                Growth
-                                </TabsTrigger>
-                                <TabsTrigger value="/locations/" onClick={() => {
-                                    navigate('/locations/');
-                                }}>
-                                Locations
-                                </TabsTrigger>
-                            </TabsList>
-                        </Tabs>
-                        <NavbarActions>
-                            {children}
-                        </NavbarActions>
-                    </Navbar>
-                </div>
-            </header> */}
         </>
     );
 };

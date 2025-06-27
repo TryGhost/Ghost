@@ -45,7 +45,9 @@ const dataType = 'OffersResponseType';
 
 export const useBrowseOffers = createQuery<OffersResponseType>({
     dataType,
-    path: '/offers/'
+    path: '/offers/',
+    // offers endpoint doesn't support limit or pagination so we exclude the default ?limit=20
+    defaultSearchParams: {}
 });
 
 export const useBrowseOffersById = createQueryWithId<OffersResponseType>({

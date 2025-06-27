@@ -18,7 +18,7 @@ env:
     ${{ github.workspace }}/ghost/*/node_modules
     ~/.cache/ms-playwright/
   NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
-  NODE_VERSION: 20.11.1
+  NODE_VERSION: 22.13.1
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -42,12 +42,10 @@ jobs:
           fetch-depth: 2
 
       - name: Output GitHub context
+        if: env.RUNNER_DEBUG == '1'
         run: |
-          echo "GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
-          echo "GITHUB_CONTEXT: $GITHUB_CONTEXT"
-        env:
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-          GITHUB_CONTEXT: ${{ toJson(github.event) }}
+          echo "GITHUB_EVENT_NAME: ${{ github.event_name }}"
+          echo "GITHUB_CONTEXT: ${{ toJson(github.event) }}"
 
       - name: Get metadata (push)
         if: github.event_name == 'push'
@@ -81,7 +79,7 @@ jobs:
           fi
 
       - name: Determine added packages
-        uses: dorny/paths-filter@v2.12.0
+        uses: dorny/paths-filter@v3.0.2
         id: added
         with:
           filters: |
@@ -89,7 +87,7 @@ jobs:
               - added: 'ghost/**/package.json'
 
       - name: Determine changed packages
-        uses: AurorNZ/paths-filter@v3.0.1
+        uses: AurorNZ/paths-filter@v4.0.0
         id: changed
         with:
           filters: |
@@ -130,16 +128,11 @@ jobs:
             sodo-search:
               - *shared
               - 'apps/sodo-search/**'
-            tinybird-forward:
+            tinybird:
               - 'ghost/core/core/server/data/tinybird/**'
               - '!ghost/core/core/server/data/tinybird/**/*.md'
             any-code:
               - '!**/*.md'
-
-      - name: 'Checkout current commit'
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ env.HEAD_COMMIT }}
 
       - name: Compute lockfile hash
         run: echo "hash=lockfile-${{ hashFiles('yarn.lock') }}" >> "$GITHUB_ENV"
@@ -175,6 +168,11 @@ jobs:
           key: ${{ env.cachekey }}
           restore-keys: ${{ env.IS_DEVELOPMENT == 'false' && env.DEPENDENCY_CACHE_RESTORE_KEYS || 'dep-never-restore'}}
 
+      - name: Define Node test matrix
+        id: node_matrix
+        run: |
+          echo 'matrix=["20.11.1", "22.13.1"]' >> $GITHUB_OUTPUT
+
       - name: Set up Node
         uses: actions/setup-node@v4
         env:
@@ -184,6 +182,7 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --prefer-offline --frozen-lockfile
+
 
     outputs:
       changed_admin: ${{ steps.changed.outputs.admin }}
@@ -195,7 +194,7 @@ jobs:
       changed_portal: ${{ steps.changed.outputs.portal }}
       changed_signup_form: ${{ steps.changed.outputs.signup-form }}
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
-      changed_tinybird_forward: ${{ steps.changed.outputs.tinybird-forward }}
+      changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
@@ -204,6 +203,8 @@ jobs:
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
+      node_version: ${{ env.NODE_VERSION }}
+      node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
 
   job_lint:
     runs-on: ubuntu-latest
@@ -435,7 +436,7 @@ jobs:
     if: needs.job_setup.outputs.changed_any_code == 'true'
     strategy:
       matrix:
-        node: [ '20.11.1', '22.13.1' ]
+        node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     name: Unit tests (Node ${{ matrix.node }})
     steps:
       - uses: actions/checkout@v4
@@ -453,7 +454,7 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Set timezone (non-UTC)
-        uses: szenius/set-timezone@v1.2
+        uses: szenius/set-timezone@v2.0
         with:
           timezoneLinux: "America/New_York"
 
@@ -464,7 +465,7 @@ jobs:
       - run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
 
       - uses: actions/upload-artifact@v4
-        if: startsWith(matrix.node, '20')
+        if: matrix.node == env.NODE_VERSION
         with:
           name: unit-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
@@ -482,12 +483,12 @@ jobs:
     if: needs.job_setup.outputs.changed_core == 'true'
     strategy:
       matrix:
-        node: [ '20.11.1', '22.13.1' ]
+        node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
         env:
           - DB: mysql8
             NODE_ENV: testing-mysql
         include:
-          - node: 20.11.1
+          - node: ${{ needs.job_setup.outputs.node_version }}
             env:
               DB: sqlite3
               NODE_ENV: testing
@@ -529,12 +530,9 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Set timezone (non-UTC)
-        uses: szenius/set-timezone@v1.2
+        uses: szenius/set-timezone@v2.0
         with:
           timezoneLinux: "America/New_York"
-
-      - name: Record start time
-        run: date +%s > ${{ runner.temp }}/startTime # Get start time for test suite
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
@@ -552,55 +550,13 @@ jobs:
         working-directory: ghost/core
         run: yarn test:ci:integration
 
-      # Get runtime in seconds for test suite
-      - name: Record test duration
-        run: |
-          startTime="$(cat ${{ runner.temp }}/startTime)"
-          endTime="$(date +%s)"
-          echo "test_time=$(($endTime-$startTime))" >> $GITHUB_ENV
-
       - uses: actions/upload-artifact@v4
-        if: startsWith(matrix.node, '20') && contains(matrix.env.DB, 'mysql')
+        if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
         with:
           name: e2e-coverage
           path: |
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
-
-      # Continue on error if TailScale service is down
-      - name: Tailscale Action
-        timeout-minutes: 2
-        continue-on-error: true
-        if: (github.event_name == 'push' && github.repository_owner == 'TryGhost') || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'TryGhost/'))
-        uses: tailscale/github-action@v1
-        with:
-          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
-
-      # Report time taken to metrics service
-      # Continue on error if previous TailScale step fails
-      - name: Store test duration
-        uses: tryghost/actions/actions/trigger-metric@main
-        timeout-minutes: 1
-        continue-on-error: true
-        if: (github.event_name == 'push' && github.repository_owner == 'TryGhost') || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'TryGhost/'))
-        with:
-          metricName: 'test-time'
-          metricValue: ${{ env.test_time }}
-          configuration: |
-            {
-              "metrics": {
-                "transports": ["elasticsearch"],
-                "metadata": {
-                  "database": "${{ matrix.env.DB }}",
-                  "node": "${{ matrix.node }}"
-                }
-              },
-              "elasticsearch": {
-                "host": "${{ secrets.ELASTICSEARCH_HOST }}",
-                "username": "${{ secrets.ELASTICSEARCH_USERNAME }}",
-                "password": "${{ secrets.ELASTICSEARCH_PASSWORD }}"
-              }
-            }
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -616,11 +572,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - node: 20.11.1
+          - node: ${{ needs.job_setup.outputs.node_version }}
             env:
               DB: mysql8
               NODE_ENV: testing-mysql
-          - node: 20.11.1
+          - node: ${{ needs.job_setup.outputs.node_version }}
             env:
               DB: sqlite3
               NODE_ENV: testing
@@ -835,14 +791,63 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  job_tinybird_forward:
-    name: Tinybird Tests (Forward)
+  job_e2e-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_tinybird_forward == 'true'
+    if: needs.job_setup.outputs.changed_any_code == 'true'
+    name: E2E tests
     env:
-      TINYBIRD_HOST: ${{ secrets.TINYBIRD_HOST }}
-      TINYBIRD_TOKEN: ${{ secrets.TINYBIRD_TOKEN }}
+      CI: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-node@v4
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Setup Playwright
+        uses: ./.github/actions/setup-playwright
+
+      - name: Run migrations
+        working-directory: ghost/core
+        run: yarn knex-migrator init
+
+      - name: Build Admin
+        run: yarn nx run ghost-admin:build:dev
+
+      - name: Start Ghost
+        run: yarn dev --portal --comments --search --signup --announcement-bar &
+
+      - name: Wait for Ghost to be ready
+        run: |
+          timeout 120 bash -c 'until curl -f http://localhost:2368; do sleep 1; done'
+
+      - name: Run E2E tests
+        run: yarn test:e2e
+        env:
+          GHOST_BASE_URL: http://localhost:2368
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-playwright-report
+          path: e2e/test-results
+          retention-days: 30
+
+  job_tinybird-tests:
+    name: Tinybird Tests
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_tinybird == 'true'
     defaults:
         run:
           working-directory: ghost/core/core/server/data/tinybird
@@ -851,6 +856,11 @@ jobs:
         image: tinybirdco/tinybird-local:latest
         ports:
           - 7181:7181
+    env:
+      TINYBIRD_HOST: ${{ secrets.TINYBIRD_HOST }}
+      TINYBIRD_TOKEN: ${{ secrets.TINYBIRD_TOKEN }}
+      TINYBIRD_HOST_STAGING: ${{ secrets.TINYBIRD_HOST_STAGING }}
+      TINYBIRD_TOKEN_STAGING: ${{ secrets.TINYBIRD_TOKEN_STAGING }}
     steps:
       - uses: actions/checkout@v4
       - name: Install Tinybird CLI
@@ -859,7 +869,9 @@ jobs:
         run: tb build
       - name: Test project
         run: tb test run
-      - name: Deployment check
+      - name: Deployment check - Staging
+        run: tb --cloud --host ${{ env.TINYBIRD_HOST_STAGING }} --token ${{ env.TINYBIRD_TOKEN_STAGING }} deploy --check
+      - name: Deployment check - Production
         run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deploy --check
 
   job_ghost-cli:
@@ -976,7 +988,6 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           flags: admin-tests
-          move_coverage_to_trash: true
 
       - name: Restore E2E coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
@@ -994,7 +1005,6 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           flags: e2e-tests
-          move_coverage_to_trash: true
 
   job_required_tests:
     name: All required tests passed or skipped
@@ -1013,7 +1023,8 @@ jobs:
         job_admin_x_activitypub,
         job_comments_ui,
         job_signup_form,
-        job_tinybird_forward
+        job_e2e-tests,
+        job_tinybird-tests
       ]
     if: always()
     runs-on: ubuntu-latest
@@ -1061,7 +1072,7 @@ jobs:
         run: echo "branch_name=${{ github.ref }}" >> $GITHUB_ENV
 
       - name: Invoke build
-        uses: aurelien-baudet/workflow-dispatch@v2
+        uses: aurelien-baudet/workflow-dispatch@v4
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           workflow: .github/workflows/deploy.yml
@@ -1173,26 +1184,41 @@ jobs:
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
 
-  deploy_tinybird_forward:
-    name: Deploy Tinybird (Forward)
+  deploy_tinybird_staging:
+    name: Deploy Tinybird - Staging
     runs-on: ubuntu-latest
     needs: [
       job_setup,
-      job_tinybird_forward
+      job_tinybird-tests
     ]
-    if: always() && needs.job_setup.outputs.changed_tinybird_forward == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird_forward.result == 'success' && needs.job_setup.outputs.is_main == 'true'
-    env:
-      TINYBIRD_HOST: ${{ secrets.TINYBIRD_HOST }}
-      TINYBIRD_TOKEN: ${{ secrets.TINYBIRD_TOKEN }}
-    defaults:
-      run:
-        working-directory: ghost/core/core/server/data/tinybird
+    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install Tinybird CLI
-        run: curl -fsSL https://tinybird.co/install.sh | sh
-      - name: Check the deployment
-        run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deployment create --check
-      - name: Create a staging deployment
-        run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deployment create --wait
+      - name: Deploy to Staging
+        uses: ./.github/actions/deploy-tinybird
+        with:
+          host: ${{ secrets.TINYBIRD_HOST_STAGING }}
+          token: ${{ secrets.TINYBIRD_TOKEN_STAGING }}
+          workspace: 'Staging'
+          slack-webhook: ${{ secrets.ANALYTICS_SLACK_WEBHOOK_URL }}
+
+  deploy_tinybird_production:
+    name: Deploy Tinybird - Production
+    runs-on: ubuntu-latest
+    needs: [
+      job_setup,
+      job_tinybird-tests,
+      deploy_tinybird_staging
+    ]
+    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.deploy_tinybird_staging.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Deploy to Production
+        uses: ./.github/actions/deploy-tinybird
+        with:
+          host: ${{ secrets.TINYBIRD_HOST }}
+          token: ${{ secrets.TINYBIRD_TOKEN }}
+          workspace: 'Production'
+          slack-webhook: ${{ secrets.ANALYTICS_SLACK_WEBHOOK_URL }}

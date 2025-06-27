@@ -1,36 +1,11 @@
 import moment from 'moment';
 import {MemberStatusItem, MrrHistoryItem, useMemberCountHistory, useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
-import {formatNumber, formatPercentage} from '@tryghost/shade';
+import {formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getSymbol} from '@tryghost/admin-x-framework';
 import {useMemo} from 'react';
 
 // Type for direction values
 export type DiffDirection = 'up' | 'down' | 'same';
-
-// Helper function to convert range to date parameters
-export const getRangeDates = (rangeInDays: number) => {
-    // Always use UTC to stay aligned with the backend's date arithmetic
-    const endDate = moment.utc().format('YYYY-MM-DD');
-    let dateFrom;
-
-    if (rangeInDays === 1) {
-        // Today
-        dateFrom = endDate;
-    } else if (rangeInDays === 1000) {
-        // All time - use a far past date
-        dateFrom = '2010-01-01';
-    } else if (rangeInDays === -1) {
-        // Year to date - use January 1st of current year
-        dateFrom = moment.utc().startOf('year').format('YYYY-MM-DD');
-    } else {
-        // Specific range
-        // Guard against invalid ranges
-        const safeRange = Math.max(1, rangeInDays);
-        dateFrom = moment.utc().subtract(safeRange - 1, 'days').format('YYYY-MM-DD');
-    }
-
-    return {dateFrom, endDate};
-};
 
 // Calculate totals from member data
 const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem[], dateFrom: string) => {
@@ -191,6 +166,8 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
         const comped = lastMemberItem?.comped ?? 0;
         const value = free + paid + comped;
         const mrr = lastMrrItem?.mrr ?? 0;
+        const paidSubscribed = lastMemberItem?.paid_subscribed ?? 0;
+        const paidCanceled = lastMemberItem?.paid_canceled ?? 0;
 
         return {
             date,
@@ -199,6 +176,8 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
             paid,
             comped,
             mrr,
+            paid_subscribed: paidSubscribed,
+            paid_canceled: paidCanceled,
             formattedValue: formatNumber(value),
             label: 'Total members' // Consider if label needs update based on data type?
         };
@@ -206,13 +185,17 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
 };
 
 export const useGrowthStats = (range: number) => {
-    // Calculate date range
-    const {dateFrom, endDate} = useMemo(() => getRangeDates(range), [range]);
+    // Calculate date range using Shade's timezone-aware getRangeDates
+    const {startDate, endDate} = useMemo(() => getRangeDates(range), [range]);
+    const dateFrom = formatQueryDate(startDate);
 
     // Fetch member count history from API
+    // For single day ranges, we need at least 2 days of data to show a proper delta
+    const memberDataStartDate = range === 1 ? moment(dateFrom).subtract(1, 'day').format('YYYY-MM-DD') : dateFrom;
+    
     const {data: memberCountResponse, isLoading: isMemberCountLoading} = useMemberCountHistory({
         searchParams: {
-            date_from: dateFrom
+            date_from: memberDataStartDate
         }
     });
 
@@ -220,20 +203,48 @@ export const useGrowthStats = (range: number) => {
 
     // Process member data with stable reference
     const memberData = useMemo(() => {
+        let rawData: MemberStatusItem[] = [];
+        
         // Check the structure of the response and extract data
         if (memberCountResponse?.stats) {
-            return memberCountResponse.stats;
+            rawData = memberCountResponse.stats;
         } else if (Array.isArray(memberCountResponse)) {
             // If response is directly an array
-            return memberCountResponse;
+            rawData = memberCountResponse;
         }
-        return [];
-    }, [memberCountResponse]);
+        
+        // For single day (Today), ensure we have two data points for a proper line
+        if (range === 1 && rawData.length >= 2) {
+            // We should have yesterday's data and today's data
+            const yesterdayData = rawData[rawData.length - 2]; // Yesterday's EOD counts
+            const todayData = rawData[rawData.length - 1]; // Today's EOD counts
+            
+            const startOfToday = moment(dateFrom).format('YYYY-MM-DD'); // 6/26
+            const startOfTomorrow = moment(dateFrom).add(1, 'day').format('YYYY-MM-DD'); // 6/27
+            
+            // Create two data points:
+            // 1. Yesterday's EOD count attributed to start of today (6/26)
+            // 2. Today's EOD count attributed to start of tomorrow (6/27)
+            const startPoint = {
+                ...yesterdayData,
+                date: startOfToday
+            };
+            
+            const endPoint = {
+                ...todayData,
+                date: startOfTomorrow
+            };
+            
+            return [startPoint, endPoint];
+        }
+        
+        return rawData;
+    }, [memberCountResponse, range, dateFrom]);
 
     const {mrrData, selectedCurrency} = useMemo(() => {
-        // HACK: We should do this filtering on the backend, but the API doesn't support it yet
-        const dateFromMoment = moment(dateFrom).subtract(1, 'day');
-        const dateToMoment = moment().startOf('day'); // Today
+        const dateFromMoment = moment(dateFrom);
+        // For "Today" range (1 day), use end of today to match visitor data behavior
+        const dateToMoment = range === 1 ? moment().endOf('day') : moment().startOf('day');
 
         if (mrrHistoryResponse?.stats && mrrHistoryResponse?.meta?.totals) {
             // Select the currency with the highest total MRR value (same logic as Dashboard)
@@ -276,8 +287,9 @@ export const useGrowthStats = (range: number) => {
                 }
             }
 
-            // Always ensure we have a data point at the end of the range (today)
-            const hasEndPoint = result.some(item => moment(item.date).isSame(dateToMoment, 'day'));
+            // Always ensure we have a data point at the end of the range
+            const endDateToCheck = range === 1 ? moment().startOf('day') : dateToMoment;
+            const hasEndPoint = result.some(item => moment(item.date).isSame(endDateToCheck, 'day'));
             if (!hasEndPoint && result.length > 0) {
                 // Use the most recent value in our result set
                 const sortedResult = [...result].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -285,7 +297,7 @@ export const useGrowthStats = (range: number) => {
 
                 result.push({
                     ...mostRecentValue,
-                    date: dateToMoment.format('YYYY-MM-DD')
+                    date: endDateToCheck.format('YYYY-MM-DD')
                 });
             }
 

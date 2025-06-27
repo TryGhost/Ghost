@@ -54,14 +54,6 @@ class StatsService {
     }
 
     /**
-     * @param {string} startDate - Start date in YYYY-MM-DD format
-     * @param {string} endDate - End date in YYYY-MM-DD format
-     */
-    async getReferrersHistoryWithRange(startDate, endDate) {
-        return this.referrers.getReferrersHistoryWithRange(startDate, endDate);
-    }
-
-    /**
      * @param {string} postId
      */
     async getPostReferrers(postId) {
@@ -87,9 +79,9 @@ class StatsService {
     }
 
     /**
-     * Get top posts by attribution metrics
+     * Get top posts by attribution metrics (includes all content that drove conversions)
      * @param {import('./PostsStatsService').TopPostsOptions} options
-     * @returns {Promise<{data: import('./PostsStatsService').TopPostResult[]}>}
+     * @returns {Promise<{data: import('./PostsStatsService').AttributionResult[]}>}
      */
     async getTopPosts(options = {}) {
         // Return the original { data: results } structure
@@ -133,7 +125,7 @@ class StatsService {
      * @param {number} [options.limit=20] - Max number of results to return
      * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
      * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
-     * @returns {Promise<{data: Object[]}>}
+     * @returns {Promise<{data: import('./PostsStatsService').NewsletterStatResult[]}>}
      */
     async getNewsletterStats(options = {}) {
         // Extract newsletter_id from options
@@ -156,7 +148,7 @@ class StatsService {
      * @param {string} [options.newsletter_id] - ID of the specific newsletter to get stats for
      * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
      * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
-     * @returns {Promise<{data: Object}>}
+     * @returns {Promise<{data: import('./PostsStatsService').NewsletterSubscriberStats[]}>}
      */
     async getNewsletterSubscriberStats(options = {}) {
         // Extract newsletter_id from options
@@ -202,7 +194,7 @@ class StatsService {
      * @param {number} [options.limit=20] - Max number of results to return
      * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
      * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
-     * @returns {Promise<{data: Object[]}>}
+     * @returns {Promise<{data: import('./PostsStatsService').NewsletterStatResult[]}>}
      */
     async getNewsletterBasicStats(options = {}) {
         // Extract newsletter_id from options
@@ -237,6 +229,10 @@ class StatsService {
         // Return newsletter click stats for the specific newsletter and posts
         const result = await this.posts.getNewsletterClickStats(newsletterId, postIds);
         return result;
+    }
+
+    async getTopSourcesWithRange(startDate, endDate, orderBy, limit) {
+        return this.referrers.getTopSourcesWithRange(startDate, endDate, orderBy, limit);
     }
 
     /**

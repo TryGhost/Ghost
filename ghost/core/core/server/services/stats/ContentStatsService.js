@@ -160,7 +160,7 @@ class ContentStatsService {
     }
 
     /**
-     * Enrich top pages data with titles
+     * Enrich top pages data with titles and URL existence validation
      * @param {Array<TopContentDataItem>} data - Raw page data
      * @param {string} [postType] - Optional post type filter ('post' or 'page')
      * @returns {Promise<Array<TopContentDataItem>>} Enriched page data
@@ -176,13 +176,31 @@ class ContentStatsService {
 
         // Enrich the data with post titles or UrlService lookups
         const enrichedData = await Promise.all(data.map(async (item) => {
+            // Check URL existence using the URL service
+            let urlExists = false;
+            
+            if (this.urlService && item.pathname) {
+                try {
+                    // Check if URL service is ready
+                    if (this.urlService.hasFinished && this.urlService.hasFinished()) {
+                        const resource = this.urlService.getResource(item.pathname);
+                        urlExists = !!resource; // Convert to boolean
+                    }
+                    // If URL service isn't ready, we default to true (clickable)
+                } catch (error) {
+                    // If there's an error checking the URL service, default to true
+                    urlExists = true;
+                }
+            }
+
             // Check if post_uuid is available directly
             if (item.post_uuid && titleMap[item.post_uuid]) {
                 return {
                     ...item,
                     title: titleMap[item.post_uuid].title,
                     post_id: titleMap[item.post_uuid].id,
-                    post_type: titleMap[item.post_uuid].type
+                    post_type: titleMap[item.post_uuid].type,
+                    url_exists: urlExists
                 };
             }
 
@@ -193,7 +211,8 @@ class ContentStatsService {
                     ...item,
                     title: resourceInfo.title,
                     resourceType: resourceInfo.resourceType,
-                    post_type: null
+                    post_type: null,
+                    url_exists: urlExists
                 };
             }
 
@@ -202,7 +221,8 @@ class ContentStatsService {
             return {
                 ...item,
                 title: formattedPath,
-                post_type: null
+                post_type: null,
+                url_exists: urlExists
             };
         }));
 
