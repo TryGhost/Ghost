@@ -194,6 +194,15 @@
                 <div class="gh-post-list-analytics-tooltip {{this.tooltipPosition}}">
                     <h3>Newsletter performance</h3>
                     <div class="metrics">
+                        {{#if @post.email}}
+                        <div class="metric">
+                            <div class="data">
+                                {{svg-jar "analytics-tab-sent"}}
+                                Sent
+                            </div>
+                            <span>{{format-number @post.email.emailCount}}</span>
+                        </div>
+                        {{/if}}
                         <div class="metric">
                             <div class="data">
                                 {{svg-jar "analytics-opens"}}
