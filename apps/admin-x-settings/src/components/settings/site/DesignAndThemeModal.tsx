@@ -42,72 +42,78 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
 
     // Check theme installation limits
     useEffect(() => {
-        const checkThemeInstallation = async () => {
-            if (pathName === 'theme/install') {
-                if (!isThemeLimitCheckReady) {
-                    // Still loading limit check
-                    setIsCheckingInstallation(true);
-                    return;
-                }
-                
-                setIsCheckingInstallation(true);
-                const url = window.location.href;
-                const fragment = url.split('#')[1];
-                const queryParams = fragment?.split('?')[1];
-
-                if (queryParams) {
-                    const searchParams = new URLSearchParams(queryParams);
-                    const ref = searchParams.get('ref');
-
-                    if (ref) {
-                        const themeName = ref.split('/')[1]?.toLowerCase();
-                        
-                        // Let the hook handle all the logic about whether to show an error
-                        const error = await checkThemeLimitError(themeName);
-                        if (error) {
-                            setInstallationAllowed(false);
-                            
-                            // Redirect based on whether theme changes are allowed
-                            if (noThemeChangesAllowed) {
-                                // Single theme - show limit modal and redirect to /theme
-                                NiceModal.show(LimitModal, {
-                                    prompt: error,
-                                    onOk: () => updateRoute({route: '/pro', isExternal: true})
-                                });
-                                modal.remove();
-                                updateRoute('theme');
-                            } else {
-                                // Multiple themes allowed - redirect to change-theme and show limit modal there
-                                // Clear the current modal first
-                                modal.remove();
-                                updateRoute('design/change-theme');
-                                // Show the limit modal after a small delay to ensure the route change happens first
-                                setTimeout(() => {
-                                    NiceModal.show(LimitModal, {
-                                        prompt: error,
-                                        onOk: () => updateRoute({route: '/pro', isExternal: true})
-                                    });
-                                }, 100);
-                            }
-                        } else {
-                            // Installation is allowed
-                            setInstallationAllowed(true);
-                        }
-                        setIsCheckingInstallation(false);
-                    } else {
-                        // No ref param, don't allow installation (invalid URL)
-                        setInstallationAllowed(false);
-                        setIsCheckingInstallation(false);
-                    }
-                } else {
-                    // No query params, don't allow installation (invalid URL)
-                    setInstallationAllowed(false);
-                    setIsCheckingInstallation(false);
-                }
-            } else {
-                // Not on theme/install path
-                setIsCheckingInstallation(false);
+        // Helper to extract theme ref from URL
+        const getThemeRefFromUrl = () => {
+            const url = window.location.href;
+            const fragment = url.split('#')[1];
+            const queryParams = fragment?.split('?')[1];
+            
+            if (!queryParams) {
+                return null;
             }
+            
+            const searchParams = new URLSearchParams(queryParams);
+            return searchParams.get('ref');
+        };
+
+        // Helper to handle theme limit error
+        const handleThemeLimitError = (error: string) => {
+            const limitModalConfig = {
+                prompt: error,
+                onOk: () => updateRoute({route: '/pro', isExternal: true})
+            };
+
+            if (noThemeChangesAllowed) {
+                // Single theme - show limit modal and redirect to /theme
+                NiceModal.show(LimitModal, limitModalConfig);
+                modal.remove();
+                updateRoute('theme');
+            } else {
+                // Multiple themes allowed - redirect to change-theme and show limit modal there
+                modal.remove();
+                updateRoute('design/change-theme');
+                // Show the limit modal after a small delay to ensure the route change happens first
+                setTimeout(() => {
+                    NiceModal.show(LimitModal, limitModalConfig);
+                }, 100);
+            }
+        };
+
+        const checkThemeInstallation = async () => {
+            // Early return if not on theme/install path
+            if (pathName !== 'theme/install') {
+                setIsCheckingInstallation(false);
+                return;
+            }
+
+            // Still loading limit check
+            if (!isThemeLimitCheckReady) {
+                setIsCheckingInstallation(true);
+                return;
+            }
+            
+            setIsCheckingInstallation(true);
+            
+            const ref = getThemeRefFromUrl();
+            
+            if (!ref) {
+                // Invalid URL - no ref param
+                setInstallationAllowed(false);
+                setIsCheckingInstallation(false);
+                return;
+            }
+
+            const themeName = ref.split('/')[1]?.toLowerCase();
+            const error = await checkThemeLimitError(themeName);
+            
+            if (error) {
+                setInstallationAllowed(false);
+                handleThemeLimitError(error);
+            } else {
+                setInstallationAllowed(true);
+            }
+            
+            setIsCheckingInstallation(false);
         };
 
         checkThemeInstallation();
