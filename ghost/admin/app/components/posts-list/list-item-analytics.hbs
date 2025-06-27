@@ -166,7 +166,7 @@
             {{#if (or this.settings.webAnalytics false)}}
                 {{#if @post.isPublished}}
                     {{#if this.hasVisitorData}}
-                        <LinkTo @route="posts-x" @model={{@post.id}} class="permalink gh-list-data gh-post-list-metrics  gh-post-list-analytics-tt-container">
+                        <LinkTo @route="posts-x" @model={{@post.id}} class="permalink gh-list-data gh-post-list-metrics gh-post-list-analytics-tt-container">
                             <div class="gh-post-list-analytics-tooltip {{this.tooltipPosition}}">
                                 <h3>Web traffic</h3>
                                 <div class="metrics">
