@@ -1115,8 +1115,8 @@ jobs:
           - package_name: '@tryghost/sodo-search'
             package_path: 'apps/sodo-search'
             cdn_paths: |
-              'https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/sodo-search.min.js'
-              'https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/main.css'
+              https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/sodo-search.min.js
+              https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/main.css
           - package_name: '@tryghost/comments-ui'
             package_path: 'apps/comments-ui'
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/comments-ui@~CURRENT_MINOR/umd/comments-ui.min.js'
