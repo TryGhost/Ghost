@@ -116,7 +116,9 @@ function parseOptions(globals, data, options) {
     }
 
     // Adjust limit to Ghost's max allowed value (default: 100 and no limit=all)
-    options.limit = applyLimitCap(options.limit);
+    if (options.limit) {
+        options.limit = applyLimitCap(options.limit);
+    }
 
     return options;
 }
