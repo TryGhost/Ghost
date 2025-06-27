@@ -9,7 +9,7 @@ module.exports = createTransactionalMigration(
     async function up(knex) {
         const newId = (new ObjectID()).toHexString();
 
-        logging.info(`Updating hardcoded user ID from ${LEGACY_HARDCODED_USER_ID} to ${newId}`);
+        logging.info(`Updating hardcoded user ID ${LEGACY_HARDCODED_USER_ID} to ${newId}`);
 
         const currentUserWithHardcodedId = await knex('users').where('id', LEGACY_HARDCODED_USER_ID).first();
 
@@ -67,7 +67,7 @@ module.exports = createTransactionalMigration(
         // legacy user ID as there should be no references to it anymore
         await knex('users').where('id', LEGACY_HARDCODED_USER_ID).del();
 
-        logging.info(`Removed user with ID: ${LEGACY_HARDCODED_USER_ID}`);
+        logging.info(`Removed user with ID ${LEGACY_HARDCODED_USER_ID}`);
 
         // Step 4: Restore the original slug and email on the cloned user record
         await knex('users').where('id', newId).update({
