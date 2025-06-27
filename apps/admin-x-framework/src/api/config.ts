@@ -39,6 +39,22 @@ export type Config = {
             newsletters?: {
                 max?: number
                 error?: string
+            },
+            customThemes?: {
+                allowlist?: string[],
+                error?: string
+            },
+            limitStripeConnect?: {
+                disabled: boolean,
+                error?: string
+            },
+            limitAnalytics?: {
+                disabled: boolean,
+                error?: string
+            },
+            limitSocialWeb?: {
+                disabled: boolean,
+                error?: string
             }
         }
         billing?: {
