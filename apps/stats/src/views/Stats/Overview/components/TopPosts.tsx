@@ -1,6 +1,6 @@
 import FeatureImagePlaceholder from '../../components/FeatureImagePlaceholder';
 import React from 'react';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, SkeletonTable, TableHead, TableRow, cn, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, SkeletonTable, TableHead, TableRow, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 import {TopPostViewsStats} from '@tryghost/admin-x-framework/api/stats';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
@@ -11,7 +11,7 @@ interface PostlistTooptipProps {
     metrics?: [{
         icon?: React.ReactNode;
         label: string;
-        metric: string;
+        metric: React.ReactNode;
     }]
     className?: string;
 };
@@ -26,7 +26,7 @@ const PostListTooltip:React.FC<PostlistTooptipProps> = ({
             <div className={
                 cn('pointer-events-none absolute bottom-[calc(100%+2px)] left-1/2 z-50 min-w-[160px] -translate-x-1/2 rounded-md bg-background p-3 text-sm opacity-0 shadow-md transition-all group-hover/tooltip:bottom-[calc(100%+12px)] group-hover/tooltip:opacity-100', className)
             }>
-                <div className='mb-1.5 border-b pb-1.5 font-medium text-muted-foreground'>{title}</div>
+                <div className='mb-1.5 whitespace-nowrap border-b pb-1.5 font-medium text-muted-foreground'>{title}</div>
                 <div className="flex flex-col gap-1">
                     {metrics?.map(metric => (
                         <div key={metric.label} className="flex items-center justify-between gap-5">
@@ -126,11 +126,11 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                         metrics={[
                                                             {
                                                                 icon: <LucideIcon.MailOpen className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
-                                                                label: 'Open rate',
-                                                                metric: post.open_rate ? `${Math.round(post.open_rate)}%` : '0'
+                                                                label: 'Opens',
+                                                                metric: post.open_rate ? '2,985' : '0'
                                                             }
                                                         ]}
-                                                        title='Open rate'
+                                                        title='Newsletter performance'
                                                     />
                                                     <div className={metricClass}>
                                                         <LucideIcon.MailOpen className='text-muted-foreground group-hover:text-foreground' size={16} strokeWidth={1.5} />

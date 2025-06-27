@@ -182,7 +182,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             }}>
                                                 <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                                     <LucideIcon.MailOpen size={16} strokeWidth={1.25} />
-                                                    <span className='hidden whitespace-nowrap md:!visible md:!block'>Open rate</span>
+                                                    <span className='hidden whitespace-nowrap md:!visible md:!block'>Opens</span>
                                                 </div>
                                                 <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
                                                     {latestPostStats.email.email_count ?
@@ -198,7 +198,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             }}>
                                                 <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                                     <LucideIcon.MousePointerClick size={16} strokeWidth={1.25} />
-                                                    <span className='hidden whitespace-nowrap md:!visible md:!block'>Click rate</span>
+                                                    <span className='hidden whitespace-nowrap md:!visible md:!block'>Clicks</span>
                                                 </div>
                                                 <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
                                                     {latestPostStats.email.email_count && latestPostStats.count?.clicks ?
