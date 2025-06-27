@@ -158,6 +158,8 @@ export type TopPostViewsStats = {
     clicked_count: number;
     click_rate: number | null;
     members: number;
+    free_members: number;
+    paid_members: number;
     authors?: {
         name: string;
     }[];

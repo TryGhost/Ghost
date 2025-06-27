@@ -1196,7 +1196,6 @@ class PostsStatsService {
                 )
                 .leftJoin('emails', 'emails.post_id', 'p.id')
                 .where('p.status', 'published')
-                .whereNotNull('emails.email_count') // Only get posts that were sent as newsletters
                 .whereNotNull('p.published_at')
                 .orderByRaw('CASE WHEN p.uuid IN (?) THEN 0 ELSE 1 END', [postUuids.length > 0 ? postUuids : ['none']])
                 .orderBy('p.published_at', 'desc')
@@ -1232,7 +1231,9 @@ class PostsStatsService {
                     open_rate: post.email_count > 0 ? (post.opened_count / post.email_count) * 100 : null,
                     clicked_count: clickCount,
                     click_rate: post.email_count > 0 ? (clickCount / post.email_count) * 100 : null,
-                    members: memberCount
+                    members: memberCount,
+                    free_members: attributionCount ? attributionCount.free_members : 0,
+                    paid_members: attributionCount ? attributionCount.paid_members : 0
                 };
             }).filter(Boolean);
 
@@ -1292,7 +1293,9 @@ class PostsStatsService {
                     open_rate: post.email_count > 0 ? (post.opened_count / post.email_count) * 100 : null,
                     clicked_count: clickCount,
                     click_rate: post.email_count > 0 ? (clickCount / post.email_count) * 100 : null,
-                    members: memberCount
+                    members: memberCount,
+                    free_members: attributionCount ? attributionCount.free_members : 0,
+                    paid_members: attributionCount ? attributionCount.paid_members : 0
                 };
             });
 

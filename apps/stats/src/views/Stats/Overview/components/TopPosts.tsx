@@ -154,11 +154,16 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                     metrics={[
                                                         {
                                                             icon: <LucideIcon.UserPlus className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
-                                                            label: 'New members',
-                                                            metric: post.members > 0 ? `+${formatNumber(post.members)}` : '0'
+                                                            label: 'Free members',
+                                                            metric: post.free_members > 0 ? `+${formatNumber(post.free_members)}` : '0'
+                                                        },
+                                                        {
+                                                            icon: <LucideIcon.CreditCard className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
+                                                            label: 'Paid members',
+                                                            metric: post.paid_members > 0 ? `+${formatNumber(post.paid_members)}` : '0'
                                                         }
                                                     ]}
-                                                    title='Members'
+                                                    title='New members'
                                                 />
                                                 <div className={metricClass}>
                                                     <LucideIcon.UserPlus className='text-muted-foreground group-hover:text-foreground' size={16} strokeWidth={1.5} />
