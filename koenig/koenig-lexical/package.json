@@ -77,7 +77,7 @@
     "@testing-library/jest-dom": "6.6.3",
     "@testing-library/react": "16.3.0",
     "@tryghost/color-utils": "0.2.7",
-    "@tryghost/helpers": "1.1.96",
+    "@tryghost/helpers": "1.1.97",
     "@tryghost/kg-clean-basic-html": "4.2.7",
     "@tryghost/kg-converters": "1.1.7",
     "@tryghost/kg-default-nodes": "2.0.1",
