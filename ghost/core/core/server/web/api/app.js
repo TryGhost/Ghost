@@ -2,6 +2,7 @@ const debug = require('@tryghost/debug')('web:api:default:app');
 const config = require('../../../shared/config');
 const express = require('../../../shared/express');
 const sentry = require('../../../shared/sentry');
+const middleware = require('../shared/middleware');
 const errorHandler = require('@tryghost/mw-error-handler');
 const APIVersionCompatibilityService = require('../../services/api-version-compatibility');
 
@@ -18,6 +19,9 @@ module.exports = function setupApiApp() {
 
     apiApp.use(APIVersionCompatibilityService.versionRewrites);
     apiApp.use(APIVersionCompatibilityService.contentVersion);
+
+    // Enforce capped limit parameter
+    apiApp.use(middleware.maxLimitCap);
 
     apiApp.lazyUse('/content/', require('./endpoints/content/app'));
     apiApp.lazyUse('/admin/', require('./endpoints/admin/app'));
