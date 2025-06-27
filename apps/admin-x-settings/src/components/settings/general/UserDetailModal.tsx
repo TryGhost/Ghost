@@ -40,7 +40,7 @@ const validators: Record<string, (u: Partial<User>) => string> = {
         return valid ? '' : 'Enter a valid URL';
     },
     bio: ({bio}) => {
-        const valid = !bio || bio.length <= 200;
+        const valid = !bio || bio.length <= 250;
         return valid ? '' : 'Bio is too long';
     },
     location: ({location}) => {
@@ -427,8 +427,8 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         style={{
                             backgroundImage: formState.cover_image ? `url(${formState.cover_image})` : 'none'
                         }}>
-                        <div className='flex w-full flex-col gap-2'>
-                            <div className='flex flex-nowrap items-start justify-between gap-3'>
+                        <div className='flex flex-col gap-2 w-full'>
+                            <div className='flex flex-nowrap gap-3 justify-between items-start'>
                                 <div>
                                     <ImageUpload
                                         deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-10 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:!visible'
@@ -463,7 +463,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                         <Icon colorClass='black' name='user-add' size='lg' />
                                     </ImageUpload>
                                 </div>
-                                <div className='flex flex-nowrap items-start gap-3'>
+                                <div className='flex flex-nowrap gap-3 items-start'>
                                     <ImageUpload
                                         buttonContainerClassName='flex items-end gap-4 justify-end flex-nowrap'
                                         deleteButtonClassName={coverButtonClasses}

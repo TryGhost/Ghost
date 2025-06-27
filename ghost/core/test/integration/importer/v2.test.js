@@ -372,7 +372,7 @@ describe('Importer', function () {
             exportData.data.tags[0].meta_title = new Array(305).join('a');
 
             exportData.data.users[0] = testUtils.DataGenerator.forKnex.createUser();
-            exportData.data.users[0].bio = new Array(300).join('a');
+            exportData.data.users[0].bio = new Array(251).join('a');
 
             exportData.data.users[1] = testUtils.DataGenerator.forKnex.createUser({
                 email: 'thisisareallylongemailaddressIamhappytobeusingacharactercounterbutIhavealongwaytogoyetImeanserioulsywhohasemailaddressthislongthereisnowaythiswillpassvalidationsonghost100andisarealedgecase'
@@ -389,7 +389,7 @@ describe('Importer', function () {
                     response.length.should.equal(6);
                     // NOTE: a duplicated tag.slug is a warning
                     response[0].errorType.should.equal('ValidationError');
-                    response[0].message.should.eql('Value in [users.bio] exceeds maximum length of 200 characters.');
+                    response[0].message.should.eql('Value in [users.bio] exceeds maximum length of 250 characters.');
 
                     response[1].errorType.should.equal('ValidationError');
                     response[1].message.should.eql('Validation (isEmail) failed for email');
