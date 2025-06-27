@@ -438,7 +438,7 @@ describe('User API', function () {
         should.exist(res.body.password[0].message);
 
         await request
-            .get(localUtils.API.getApiQuery('session/'))
+            .get(localUtils.API.getApiQuery('users/me/'))
             .set('Origin', config.get('url'))
             .expect(200);
     });
