@@ -39,7 +39,7 @@ module.exports = {
                 'core/server/data/migrations/versions/3.*/*'
             ],
             rules: {
-                'ghost/filenames/match-regex': ['error', '^(?:\\d{4}(?:-\\d{2}){4,5}|\\d{2})(?:-[a-zA-Z]+){2,}$', true]
+                'ghost/filenames/match-regex': ['error', '^(?:\\d{4}(?:-\\d{2}){4,5}|\\d{2})(?:-[a-zA-Z0-9]+){2,}$', true]
             }
         },
         {
