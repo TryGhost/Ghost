@@ -294,32 +294,49 @@ describe('Newsletters API', function () {
             configUtils.set('hostSettings:limits', undefined);
         });
 
-        it('Request fails when newsletter limit is in place', async function () {
-            configUtils.set('hostSettings:limits', {
-                newsletters: {
-                    disabled: true,
-                    error: 'Nuh uh'
-                }
+        describe('Disabled Newsletter / Max limit 0', function () {
+            before(async function () {
+                configUtils.set('hostSettings:limits', {
+                    newsletters: {
+                        max: 0,
+                        error: 'Nuh uh'
+                    }
+                });
+
+                agent = await agentProvider.getAdminAPIAgent();
+                await fixtureManager.init('newsletters', 'members:newsletters');
+                await agent.loginAsOwner();
             });
 
-            agent = await agentProvider.getAdminAPIAgent();
-            await fixtureManager.init('newsletters', 'members:newsletters');
-            await agent.loginAsOwner();
+            it('Request fails when newsletter limit is 0', async function () {
+                const newsletter = {
+                    name: 'Naughty newsletter'
+                };
 
-            const newsletter = {
-                name: 'Naughty newsletter'
-            };
+                sinon.stub(logging, 'error');
+                await agent
+                    .post(`newsletters/?opt_in_existing=true`)
+                    .body({newsletters: [newsletter]})
+                    .expectStatus(403)
+                    .matchBodySnapshot({
+                        errors: [{
+                            id: anyUuid,
+                            details: {
+                                name: 'newsletters',
+                                limit: 0,
+                                total: 3
+                            }
+                        }]
+                    });
 
-            sinon.stub(logging, 'error');
-            await agent
-                .post(`newsletters/?opt_in_existing=true`)
-                .body({newsletters: [newsletter]})
-                .expectStatus(403)
-                .matchBodySnapshot({
-                    errors: [{
-                        id: anyUuid
-                    }]
+                // Reset the limit back to 3 for other tests
+                configUtils.set('hostSettings:limits', {
+                    newsletters: {
+                        max: 3,
+                        error: 'Your plan supports up to {{max}} newsletters. Please upgrade to add more.'
+                    }
                 });
+            });
         });
 
         describe('Max limit', function () {
