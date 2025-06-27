@@ -4,7 +4,6 @@ import getUsername from '@utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LucideIcon, Skeleton} from '@tryghost/shade';
 import {toast} from 'sonner';
-import {useFeatureFlags} from '../../lib/feature-flags';
 import {useFollowMutationForUser, useUnfollowMutationForUser} from '../../hooks/use-activity-pub-queries';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
@@ -76,7 +75,6 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
     let imageClass = 'z-10 object-cover rounded-full outline outline-[0.5px] outline-offset-[-0.5px] outline-black/10';
     const [iconUrl, setIconUrl] = useState(author?.icon?.url);
     const navigate = useNavigate();
-    const {isEnabled} = useFeatureFlags();
 
     const followMutation = useFollowMutationForUser(
         'index',
