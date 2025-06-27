@@ -32,7 +32,7 @@ describe('Search Index API', function () {
                     posts: new Array(11).fill(searchIndexPostMatcher)
                 });
 
-            // Explicitely check that expensive fields are not included
+            // Explicitly double-check that expensive fields are not included
             const post = response.body.posts[0];
             assert.equal(post.excerpt, undefined);
             assert.equal(post.html, undefined);
