@@ -19,6 +19,15 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
             const error = await checkThemeLimitError();
             setThemeLimitError(error);
             setIsCheckingLimit(false);
+            
+            // Show limit modal immediately if there's an error
+            if (error) {
+                NiceModal.show(LimitModal, {
+                    prompt: error,
+                    onOk: () => updateRoute({route: '/pro', isExternal: true})
+                });
+                modal.remove(); // Close the current modal
+            }
         };
 
         if (pathName === 'design/change-theme' && isThemeLimitCheckReady) {
@@ -27,18 +36,52 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
             setThemeLimitError(null);
             setIsCheckingLimit(false);
         }
-    }, [checkThemeLimitError, isThemeLimitCheckReady, pathName]);
+    }, [checkThemeLimitError, isThemeLimitCheckReady, pathName, modal, updateRoute]);
 
-    // Show limit modal if there's an error when accessing design/change-theme
+
+    // Check theme installation limits
     useEffect(() => {
-        if (pathName === 'design/change-theme' && themeLimitError && !isCheckingLimit) {
-            NiceModal.show(LimitModal, {
-                prompt: themeLimitError,
-                onOk: () => updateRoute({route: '/pro', isExternal: true})
-            });
-            modal.remove(); // Close the current modal
-        }
-    }, [themeLimitError, isCheckingLimit, pathName, updateRoute, modal]);
+        const checkThemeInstallation = async () => {
+            if (pathName === 'theme/install' && isThemeLimitCheckReady) {
+                // Parse URL params
+                const url = window.location.href;
+                const fragment = url.split('#')[1];
+                const queryParams = fragment?.split('?')[1];
+                
+                if (queryParams) {
+                    const searchParams = new URLSearchParams(queryParams);
+                    const ref = searchParams.get('ref');
+                    
+                    if (ref) {
+                        const themeName = ref.split('/')[1]?.toLowerCase();
+                        const isSingleTheme = allowedThemesList?.length === 1;
+                        
+                        // Check if theme installation will be blocked
+                        const isThemeInstallationBlocked = isSingleTheme || (allowedThemesList && !allowedThemesList.includes(themeName));
+                        
+                        if (isThemeInstallationBlocked) {
+                            const error = await checkThemeLimitError(themeName);
+                            if (error) {
+                                NiceModal.show(LimitModal, {
+                                    prompt: error,
+                                    onOk: () => updateRoute({route: '/pro', isExternal: true})
+                                });
+                                
+                                if (isSingleTheme) {
+                                    modal.remove();
+                                    updateRoute('theme');
+                                } else {
+                                    updateRoute('design/change-theme');
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        
+        checkThemeInstallation();
+    }, [pathName, isThemeLimitCheckReady, allowedThemesList, checkThemeLimitError, modal, updateRoute]);
 
     if (pathName === 'design/edit') {
         return <DesignModal />;
@@ -49,51 +92,34 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
         }
         return <ChangeThemeModal />;
     } else if (pathName === 'theme/install') {
+        // Parse URL params inline since we need them immediately
         const url = window.location.href;
         const fragment = url.split('#')[1];
-        const queryParams = fragment.split('?')[1];
-        const searchParams = new URLSearchParams(queryParams);
-        const ref = searchParams.get('ref') || null;
-        const source = searchParams.get('source') || null;
-
-        // Check if theme installation is limited
-        if (isThemeLimitCheckReady && ref) {
-            const themeName = ref.split('/')[1]?.toLowerCase();
-            const isSingleTheme = allowedThemesList?.length === 1;
-
-            // Check if theme installation will be blocked
-            const isThemeInstallationBlocked = isSingleTheme || (allowedThemesList && !allowedThemesList.includes(themeName));
-            
-            // Show limit modal asynchronously if needed
-            checkThemeLimitError(themeName)
-                .then((error) => {
-                    if (error) {
-                        NiceModal.show(LimitModal, {
-                            prompt: error,
-                            onOk: () => updateRoute({route: '/pro', isExternal: true})
-                        });
-
-                        // Users with only one allowed theme should not be able to access the modal,
-                        // as they can't change themes anyway.
-                        if (isSingleTheme) {
-                            modal.remove();
-                            updateRoute('theme');
-                        } else {
-                            updateRoute('design/change-theme');
-                        }
-                    }
-                });
-
-            // Don't render the ChangeThemeModal if we know the installation will be blocked
-            // This prevents UI issues with multiple modals and unnecessary rendering
-            if (isThemeInstallationBlocked) {
-                return null;
-            }
+        const queryParams = fragment?.split('?')[1];
+        let ref: string | null = null;
+        let source: string | null = null;
+        
+        if (queryParams) {
+            const searchParams = new URLSearchParams(queryParams);
+            ref = searchParams.get('ref');
+            source = searchParams.get('source');
         }
 
-        // If limiter isn't initialized yet, don't render the modal
-        if (!isThemeLimitCheckReady && allowedThemesList) {
+        // Don't render the modal if limits aren't ready yet
+        if (!isThemeLimitCheckReady) {
             return null;
+        }
+
+        // Only check for blocking if there are actual limits (allowedThemesList is defined)
+        if (ref && allowedThemesList) {
+            const themeName = ref.split('/')[1]?.toLowerCase();
+            const isSingleTheme = allowedThemesList.length === 1;
+            const isThemeInstallationBlocked = isSingleTheme || !allowedThemesList.includes(themeName);
+            
+            if (isThemeInstallationBlocked) {
+                // The useEffect will handle showing the limit modal
+                return null;
+            }
         }
 
         return <ChangeThemeModal source={source} themeRef={ref} />;
