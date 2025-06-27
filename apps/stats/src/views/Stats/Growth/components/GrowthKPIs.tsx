@@ -1,12 +1,12 @@
 import React, {useEffect, useMemo, useState} from 'react';
+import moment from 'moment';
 import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsContent, TabsList, TabsTrigger, centsToDollars, formatDisplayDateWithRange, formatNumber, getRangeDates} from '@tryghost/shade';
 import {DiffDirection} from '@src/hooks/useGrowthStats';
 import {STATS_RANGES} from '@src/utils/constants';
-import {sanitizeChartData, determineAggregationStrategy} from '@src/utils/chart-helpers';
+import {determineAggregationStrategy, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
-import moment from 'moment';
 
 type ChartDataItem = {
     date: string;
@@ -92,7 +92,7 @@ const GrowthKPIs: React.FC<{
         const dataMap = new Map(data.map(item => [item.date, item]));
         
         const filledData: {date: string; signups: number; cancellations: number}[] = [];
-        let currentDate = moment(startDate);
+        const currentDate = moment(startDate);
         const endMoment = moment(endDate);
         
         while (currentDate.isSameOrBefore(endMoment)) {
@@ -266,7 +266,7 @@ const GrowthKPIs: React.FC<{
             }));
             
             // Add any cancellation-only dates that might be missing from signups
-            cancellationsData.forEach(cancelItem => {
+            cancellationsData.forEach((cancelItem) => {
                 if (!combinedData.find(item => item.date === cancelItem.date)) {
                     combinedData.push({
                         date: cancelItem.date,

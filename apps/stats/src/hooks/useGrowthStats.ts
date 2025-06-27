@@ -356,7 +356,7 @@ export const useGrowthStats = (range: number) => {
         // Filter to requested date range
         const dateFromMoment = moment(dateFrom);
         const dateToMoment = moment(endDate);
-        return subscriptionArray.filter(item => {
+        return subscriptionArray.filter((item) => {
             const itemDate = moment(item.date);
             return itemDate.isSameOrAfter(dateFromMoment) && itemDate.isSameOrBefore(dateToMoment);
         });
