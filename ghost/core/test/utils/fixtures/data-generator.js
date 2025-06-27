@@ -3,8 +3,6 @@ const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const moment = require('moment');
 
-const constants = require('./constants');
-
 const DataGenerator = {};
 
 DataGenerator.markdownToMobiledoc = function markdownToMobiledoc(content) {
@@ -130,7 +128,7 @@ DataGenerator.Content = {
     users: [
         {
             // owner
-            id: constants.OWNER_USER_ID,
+            id: '5951f5fc0000000000000000',
             name: 'Joe Bloggs',
             slug: 'joe-bloggs',
             email: 'jbloggs@example.com',

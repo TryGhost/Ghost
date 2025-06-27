@@ -1,4 +1,3 @@
-const constants = require('../../utils/fixtures/constants');
 const DataGenerator = require('../../utils/fixtures/data-generator');
 const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
@@ -11,7 +10,7 @@ const {
 // NOTE: The tests do not use the shared page, as it needs to clear cookies
 test.describe('Two-Factor authentication', () => {
     function fetchOwnerUserFixture() {
-        return DataGenerator.Content.users.find(user => user.id === constants.OWNER_USER_ID);
+        return DataGenerator.Content.users[0];
     }
 
     test.beforeEach(async ({page}) => {
