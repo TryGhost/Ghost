@@ -2558,7 +2558,7 @@ span.dropdown .gh-post-list-cta > span {
 .gh-post-list-analytics-tooltip {
     position: absolute;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(calc(-50%));
     background: var(--white);
     padding: 12px;
     border-radius: 7px;
@@ -2573,21 +2573,21 @@ span.dropdown .gh-post-list-cta > span {
 
 /* Above positioning (default) */
 .gh-post-list-analytics-tooltip.above {
-    bottom: calc(100% + 4px);
+    bottom: calc(100% - 10px);
 }
 
 .gh-post-list-analytics-tt-container:hover .gh-post-list-analytics-tooltip.above {
-    bottom: calc(100% + 16px);
+    bottom: calc(100% - 2px);
     opacity: 1.0;
 }
 
 /* Below positioning */
 .gh-post-list-analytics-tooltip.below {
-    top: calc(100% + 4px);
+    top: calc(100%);
 }
 
 .gh-post-list-analytics-tt-container:hover .gh-post-list-analytics-tooltip.below {
-    top: calc(100% + 16px);
+    top: calc(100% - 8px);
     opacity: 1.0;
 }
 

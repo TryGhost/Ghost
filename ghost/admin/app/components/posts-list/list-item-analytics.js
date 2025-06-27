@@ -70,8 +70,8 @@ export default class PostsListItemClicks extends Component {
 
     calculateTooltipPosition(element) {
         const rect = element.getBoundingClientRect();
-        const tooltipHeight = 120; // Approximate tooltip height
-        const viewportPadding = 40; // Minimum distance from viewport edge
+        const tooltipHeight = 100; // Approximate tooltip height
+        const viewportPadding = 10; // Minimum distance from viewport edge
 
         // Check if there's enough space above the element
         const spaceAbove = rect.top;
