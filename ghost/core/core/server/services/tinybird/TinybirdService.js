@@ -87,7 +87,8 @@ class TinybirdService {
         if (this.isJwtEnabled) {
             // Generate a new JWT token if it doesn't exist or is expired
             if (!this._serverToken || this._isJWTExpired(this._serverToken)) {
-                this._serverToken = this._generateToken({name, expiresInMinutes});
+                const tokenData = this._generateToken({name, expiresInMinutes});
+                this._serverToken = tokenData.token;
             }
             return this._serverToken;
         }
@@ -106,7 +107,7 @@ class TinybirdService {
     /**
      * Generates a Tinybird JWT token with specified options
      * @param {JWTGenerationOptions} [options={}] - Token generation options
-     * @returns {string} The signed JWT token
+     * @returns {{token: string, exp: number}} Object containing the signed JWT token and expiration timestamp
      * @private
      */
     _generateToken({name = `tinybird-jwt-${this.siteUuid}`, expiresInMinutes = 60} = {}) {
@@ -128,7 +129,12 @@ class TinybirdService {
             })
         };
 
-        return jwt.sign(payload, this.tinybirdConfig.adminToken, {noTimestamp: true});
+        const token = jwt.sign(payload, this.tinybirdConfig.adminToken, {noTimestamp: true});
+        
+        return {
+            token,
+            exp: expiresAt
+        };
     }
 
     /**
