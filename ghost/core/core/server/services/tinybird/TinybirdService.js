@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const errors = require('@tryghost/errors');
 
 /**
  * @typedef {Object} TinybirdConfig
@@ -69,7 +70,7 @@ class TinybirdService {
         this.siteUuid = tinybirdConfig?.stats?.id || siteUuid;
 
         // Flags for determining which token to use
-        // We should aim to simplify this in the future
+        // TODO: deprecate local and stats tokens to simplify this logic once JWTs are rolled out completely
         this.isJwtEnabled = !!tinybirdConfig?.workspaceId && !!tinybirdConfig?.adminToken;
         this.isLocalEnabled = !!tinybirdConfig?.stats?.local?.enabled;
         this.isStatsEnabled = !!tinybirdConfig?.stats?.token;
@@ -79,6 +80,8 @@ class TinybirdService {
 
     /**
      * Check if the service is enabled (has valid configuration)
+     * Note: this checks if the Tinybird service itself is available based on the config
+     * It does not check that the trafficAnalytics features/flags/settings are enabled
      * @returns {boolean} True if the service has necessary configuration to function
      */
     get isEnabled() {
@@ -87,9 +90,9 @@ class TinybirdService {
     }
 
     /**
-     * Gets the server token, refreshing it if it's about to expire
+     * Gets a token for reading data from Tinybird API endpoints
      * We're moving towards using JWT tokens for all Tinybird requests
-     * For now we need to remain backwards compatible with the old stats token
+     * For now we need to remain backwards compatible with the old stats & local tokens
      * @returns {{token: string, exp?: number}|null} Object with token and optional exp, or null if generation fails
      */
     getToken({name = `tinybird-jwt-${this.siteUuid}`, expiresInMinutes = 180} = {}) {
@@ -114,13 +117,13 @@ class TinybirdService {
         // If local stats are enabled, use the local token
         if (this.isLocalEnabled) {
             return {
-                token: this.tinybirdConfig.stats.local?.token
+                token: this.tinybirdConfig?.stats?.local?.token
             };
         }
         // If stats are enabled, use the stats token
         if (this.isStatsEnabled) {
             return {
-                token: this.tinybirdConfig.stats.token
+                token: this.tinybirdConfig?.stats?.token
             };
         }
         // This shouldn't happen if isEnabled is true, but just in case
@@ -134,6 +137,13 @@ class TinybirdService {
      * @private
      */
     _generateToken({name = `tinybird-jwt-${this.siteUuid}`, expiresInMinutes = 60} = {}) {
+        if (!this.isJwtEnabled) {
+            throw new errors.IncorrectUsageError({
+                message: 'Tinybird JWT tokens are not enabled',
+                context: 'Please provide your Tinybird workspaceId and adminToken in Ghost\'s configuration'
+            });
+        }
+
         const expiresAt = Math.floor(Date.now() / 1000) + expiresInMinutes * 60;
         
         /** @type {TinybirdJWTPayload} */
@@ -186,12 +196,23 @@ class TinybirdService {
 let instance = null;
 
 /**
- * Initialize the TinybirdService singleton
- * This should be called once during boot in initServices()
- * It can also be called again to pick up configuration changes (e.g., in tests)
- * The instance is always created, but may be disabled if not properly configured
+ * Get the TinybirdService singleton instance
+ * @param {Object} options
+ * @param {boolean} [options.reset=false] - Reset the instance for testing
+ * @returns {TinybirdService} The TinybirdService instance
  */
-function init() {
+function getInstance({reset = false} = {}) {
+    // Reset instance if requested (for testing)
+    if (reset) {
+        instance = null;
+    }
+    
+    // Return existing instance if available
+    if (instance) {
+        return instance;
+    }
+    
+    // Initialize new instance
     const config = require('../../../shared/config');
     const settingsCache = require('../../../shared/settings-cache');
 
@@ -204,18 +225,5 @@ function init() {
     return instance;
 }
 
-// Reset the instance for testing
-function reset() {
-    instance = null;
-}
-
 module.exports = TinybirdService;
-module.exports.init = init;
-module.exports.reset = reset;
-module.exports.getInstance = () => {
-    // Lazy initialization for cases where init() hasn't been called (e.g., unit tests)
-    if (!instance) {
-        init();
-    }
-    return instance;
-};
+module.exports.getInstance = getInstance;

@@ -1,15 +1,14 @@
 const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
 const assert = require('assert/strict');
 const configUtils = require('../../utils/configUtils');
-const tinybirdService = require('../../../core/server/services/tinybird');
+const TinybirdService = require('../../../core/server/services/tinybird');
 
 describe('Tinybird API', function () {
     let agent;
 
     // Helper to reinitialize TinybirdService after config changes
     function reinitializeTinybirdService() {
-        tinybirdService.reset();
-        tinybirdService.init();
+        TinybirdService.getInstance({reset: true});
     }
 
     // Helper to set config and reinitialize the service
