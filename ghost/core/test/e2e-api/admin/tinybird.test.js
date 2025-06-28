@@ -1,9 +1,28 @@
 const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
 const assert = require('assert/strict');
 const configUtils = require('../../utils/configUtils');
+const tinybirdService = require('../../../core/server/services/tinybird');
 
 describe('Tinybird API', function () {
     let agent;
+
+    // Helper to reinitialize TinybirdService after config changes
+    function reinitializeTinybirdService() {
+        tinybirdService.reset();
+        tinybirdService.init();
+    }
+
+    // Helper to set config and reinitialize the service
+    function configureTinybird(config) {
+        configUtils.set('tinybird', config);
+        reinitializeTinybirdService();
+    }
+
+    // Helper to restore config and reinitialize the service
+    async function restoreTinybird() {
+        await configUtils.restore();
+        reinitializeTinybirdService();
+    }
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
@@ -24,14 +43,14 @@ describe('Tinybird API', function () {
 
         describe('With Tinybird configuration', function () {
             before(async function () {
-                configUtils.set('tinybird', {
+                configureTinybird({
                     workspaceId: 'test-workspace-id',
                     adminToken: 'test-admin-token'
                 });
             });
 
             after(async function () {
-                await configUtils.restore();
+                await restoreTinybird();
             });
 
             it('Can get a Tinybird JWT token', async function () {
@@ -70,7 +89,7 @@ describe('Tinybird API', function () {
 
         describe('With stats token only (no JWT)', function () {
             before(async function () {
-                configUtils.set('tinybird', {
+                configureTinybird({
                     stats: {
                         token: 'static-stats-token'
                     }
@@ -78,7 +97,7 @@ describe('Tinybird API', function () {
             });
 
             after(async function () {
-                await configUtils.restore();
+                await restoreTinybird();
             });
 
             it('Returns static token without exp field', async function () {
@@ -94,7 +113,7 @@ describe('Tinybird API', function () {
 
         describe('With local stats token only (no JWT)', function () {
             before(async function () {
-                configUtils.set('tinybird', {
+                configureTinybird({
                     stats: {
                         local: {
                             enabled: true,
@@ -105,7 +124,7 @@ describe('Tinybird API', function () {
             });
 
             after(async function () {
-                await configUtils.restore();
+                await restoreTinybird();
             });
 
             it('Returns local token without exp field', async function () {
@@ -123,14 +142,14 @@ describe('Tinybird API', function () {
     describe('As Admin', function () {
         before(async function () {
             await agent.loginAsAdmin();
-            configUtils.set('tinybird', {
+            configureTinybird({
                 workspaceId: 'test-workspace-id',
                 adminToken: 'test-admin-token'
             });
         });
 
         after(async function () {
-            await configUtils.restore();
+            await restoreTinybird();
         });
 
         it('Can get a Tinybird JWT token', async function () {

@@ -239,22 +239,22 @@ class StatsService {
      * @returns {StatsService}
      **/
     static create(deps) {
-        // Create the Tinybird client if config exists
+        // Create the Tinybird client if the service is enabled
         let tinybirdClient = null;
-        const config = deps.config || require('../../../shared/config');
-        const request = deps.request || require('../../lib/request-external');
-        const settingsCache = deps.settingsCache || require('../../../shared/settings-cache');
-
-        // Only create the client if Tinybird is configured
-        if (config.get('tinybird') && config.get('tinybird:stats')) {
+        const tinybirdService = require('../tinybird');
+        const instance = tinybirdService.getInstance();
+        
+        if (instance.isEnabled) {
             // TODO: move the tinybird client to the tinybird service
-            const TinybirdServiceWrapper = require('../tinybird');
-            TinybirdServiceWrapper.init();
+            const config = deps.config || require('../../../shared/config');
+            const request = deps.request || require('../../lib/request-external');
+            const settingsCache = deps.settingsCache || require('../../../shared/settings-cache');
+            
             tinybirdClient = require('./utils/tinybird').create({
                 config,
                 request,
                 settingsCache,
-                tinybirdService: TinybirdServiceWrapper.instance
+                tinybirdService: instance
             });
         }
 

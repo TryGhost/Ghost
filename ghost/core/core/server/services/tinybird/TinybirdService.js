@@ -65,7 +65,7 @@ class TinybirdService {
      * @param {TinybirdConstructorOptions} options - Configuration options
      */
     constructor({tinybirdConfig, siteUuid}) {
-        this.tinybirdConfig = tinybirdConfig;
+        this.tinybirdConfig = tinybirdConfig || {};
         this.siteUuid = tinybirdConfig?.stats?.id || siteUuid;
 
         // Flags for determining which token to use
@@ -78,12 +78,26 @@ class TinybirdService {
     }
 
     /**
+     * Check if the service is enabled (has valid configuration)
+     * @returns {boolean} True if the service has necessary configuration to function
+     */
+    get isEnabled() {
+        // Service needs at least one token type and a site UUID
+        return !!(this.siteUuid && (this.isJwtEnabled || this.isLocalEnabled || this.isStatsEnabled));
+    }
+
+    /**
      * Gets the server token, refreshing it if it's about to expire
      * We're moving towards using JWT tokens for all Tinybird requests
      * For now we need to remain backwards compatible with the old stats token
      * @returns {{token: string, exp?: number}|null} Object with token and optional exp, or null if generation fails
      */
     getToken({name = `tinybird-jwt-${this.siteUuid}`, expiresInMinutes = 180} = {}) {
+        // Return null if service is not enabled
+        if (!this.isEnabled) {
+            return null;
+        }
+
         // Prefer JWT tokens if enabled
         if (this.isJwtEnabled) {
             // Generate a new JWT token if it doesn't exist or is expired
@@ -109,7 +123,7 @@ class TinybirdService {
                 token: this.tinybirdConfig.stats.token
             };
         }
-        // If no token is available, return null
+        // This shouldn't happen if isEnabled is true, but just in case
         return null;
     }
 
@@ -168,4 +182,40 @@ class TinybirdService {
     }
 }
 
+// Static instance for singleton pattern
+let instance = null;
+
+/**
+ * Initialize the TinybirdService singleton
+ * This should be called once during boot in initServices()
+ * It can also be called again to pick up configuration changes (e.g., in tests)
+ * The instance is always created, but may be disabled if not properly configured
+ */
+function init() {
+    const config = require('../../../shared/config');
+    const settingsCache = require('../../../shared/settings-cache');
+
+    // Always create an instance, even if not configured
+    instance = new TinybirdService({
+        tinybirdConfig: config.get('tinybird') || {},
+        siteUuid: settingsCache.get('site_uuid')
+    });
+    
+    return instance;
+}
+
+// Reset the instance for testing
+function reset() {
+    instance = null;
+}
+
 module.exports = TinybirdService;
+module.exports.init = init;
+module.exports.reset = reset;
+module.exports.getInstance = () => {
+    // Lazy initialization for cases where init() hasn't been called (e.g., unit tests)
+    if (!instance) {
+        init();
+    }
+    return instance;
+};
