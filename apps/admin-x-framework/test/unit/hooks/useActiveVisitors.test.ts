@@ -25,7 +25,12 @@ describe('useActiveVisitors', () => {
         mockUseQuery.mockReturnValue({
             data: null,
             loading: false,
-            error: null
+            error: null,
+            meta: null,
+            statistics: null,
+            endpoint: 'https://api.example.com/api_active_visitors',
+            token: 'mock-token',
+            refresh: vi.fn()
         });
         mockGetStatEndpointUrl.mockImplementation((_config: any, endpoint: any) => `https://api.example.com/${endpoint}`);
         mockGetToken.mockReturnValue('mock-token');
@@ -61,7 +66,12 @@ describe('useActiveVisitors', () => {
         mockUseQuery.mockReturnValue({
             data: null,
             loading: true,
-            error: null
+            error: null,
+            meta: null,
+            statistics: null,
+            endpoint: 'https://api.example.com/api_active_visitors',
+            token: 'mock-token',
+            refresh: vi.fn()
         });
 
         const {result} = renderHook(() => useActiveVisitors({enabled: true}));
@@ -76,7 +86,12 @@ describe('useActiveVisitors', () => {
         mockUseQuery.mockReturnValue({
             data: [{active_visitors: 25}],
             loading: false,
-            error: null
+            error: null,
+            meta: null,
+            statistics: null,
+            endpoint: 'https://api.example.com/api_active_visitors',
+            token: 'mock-token',
+            refresh: vi.fn()
         });
 
         const {result, rerender} = renderHook(() => useActiveVisitors({enabled: true}));
@@ -86,7 +101,12 @@ describe('useActiveVisitors', () => {
         mockUseQuery.mockReturnValue({
             data: null,
             loading: true,
-            error: null
+            error: null,
+            meta: null,
+            statistics: null,
+            endpoint: 'https://api.example.com/api_active_visitors',
+            token: 'mock-token',
+            refresh: vi.fn()
         });
 
         rerender();
@@ -99,7 +119,12 @@ describe('useActiveVisitors', () => {
         mockUseQuery.mockReturnValue({
             data: [{active_visitors: 42}],
             loading: false,
-            error: null
+            error: null,
+            meta: null,
+            statistics: null,
+            endpoint: 'https://api.example.com/api_active_visitors',
+            token: 'mock-token',
+            refresh: vi.fn()
         });
 
         const {result} = renderHook(() => useActiveVisitors({enabled: true}));
@@ -109,11 +134,16 @@ describe('useActiveVisitors', () => {
     });
 
     it('handles error state', () => {
-        const mockError = new Error('Network error');
+        const mockError = 'Network error';
         mockUseQuery.mockReturnValue({
             data: null,
             loading: false,
-            error: mockError
+            error: mockError,
+            meta: null,
+            statistics: null,
+            endpoint: 'https://api.example.com/api_active_visitors',
+            token: 'mock-token',
+            refresh: vi.fn()
         });
 
         const {result} = renderHook(() => useActiveVisitors({enabled: true}));
@@ -246,7 +276,12 @@ describe('useActiveVisitors', () => {
         mockUseQuery.mockReturnValue({
             data: [{active_visitors: 25}],
             loading: false,
-            error: null
+            error: null,
+            meta: null,
+            statistics: null,
+            endpoint: 'https://api.example.com/api_active_visitors',
+            token: 'mock-token',
+            refresh: vi.fn()
         });
 
         const {result, rerender} = renderHook(() => useActiveVisitors({enabled: true}));
@@ -256,7 +291,12 @@ describe('useActiveVisitors', () => {
         mockUseQuery.mockReturnValue({
             data: null,
             loading: true,
-            error: null
+            error: null,
+            meta: null,
+            statistics: null,
+            endpoint: 'https://api.example.com/api_active_visitors',
+            token: 'mock-token',
+            refresh: vi.fn()
         });
 
         rerender();
@@ -270,7 +310,12 @@ describe('useActiveVisitors', () => {
         mockUseQuery.mockReturnValue({
             data: [{active_visitors: 0}],
             loading: false,
-            error: null
+            error: null,
+            meta: null,
+            statistics: null,
+            endpoint: 'https://api.example.com/api_active_visitors',
+            token: 'mock-token',
+            refresh: vi.fn()
         });
 
         const {result} = renderHook(() => useActiveVisitors({enabled: true}));
@@ -282,7 +327,12 @@ describe('useActiveVisitors', () => {
         mockUseQuery.mockReturnValue({
             data: [{some_other_field: 42}],
             loading: false,
-            error: null
+            error: null,
+            meta: null,
+            statistics: null,
+            endpoint: 'https://api.example.com/api_active_visitors',
+            token: 'mock-token',
+            refresh: vi.fn()
         });
 
         const {result} = renderHook(() => useActiveVisitors({enabled: true}));
@@ -306,7 +356,12 @@ describe('useActiveVisitors', () => {
         mockUseQuery.mockReturnValue({
             data: null,
             loading: false,
-            error: null
+            error: null,
+            meta: null,
+            statistics: null,
+            endpoint: 'https://api.example.com/api_active_visitors',
+            token: 'mock-token',
+            refresh: vi.fn()
         });
 
         const {result, rerender} = renderHook(() => useActiveVisitors({enabled: true}));
@@ -316,7 +371,12 @@ describe('useActiveVisitors', () => {
         mockUseQuery.mockReturnValue({
             data: [{active_visitors: 15}],
             loading: false,
-            error: null
+            error: null,
+            meta: null,
+            statistics: null,
+            endpoint: 'https://api.example.com/api_active_visitors',
+            token: 'mock-token',
+            refresh: vi.fn()
         });
 
         rerender();
@@ -327,7 +387,12 @@ describe('useActiveVisitors', () => {
         mockUseQuery.mockReturnValue({
             data: null,
             loading: false,
-            error: null
+            error: null,
+            meta: null,
+            statistics: null,
+            endpoint: 'https://api.example.com/api_active_visitors',
+            token: 'mock-token',
+            refresh: vi.fn()
         });
 
         rerender();
@@ -368,7 +433,12 @@ describe('useActiveVisitors', () => {
         mockUseQuery.mockReturnValue({
             data: [{active_visitors: 20}],
             loading: false,
-            error: null
+            error: null,
+            meta: null,
+            statistics: null,
+            endpoint: 'https://api.example.com/api_active_visitors',
+            token: 'mock-token',
+            refresh: vi.fn()
         });
 
         const {result, rerender} = renderHook(
@@ -382,7 +452,12 @@ describe('useActiveVisitors', () => {
         mockUseQuery.mockReturnValue({
             data: [{active_visitors: 30}],
             loading: false,
-            error: null
+            error: null,
+            meta: null,
+            statistics: null,
+            endpoint: 'https://api.example.com/api_active_visitors',
+            token: 'mock-token',
+            refresh: vi.fn()
         });
 
         rerender({enabled: false});
