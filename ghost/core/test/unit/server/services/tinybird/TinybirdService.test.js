@@ -28,6 +28,12 @@ describe('TinybirdService', function () {
         assert.ok(tinybirdService);
     });
 
+    it('should not throw an error if tinybirdConfig is not set', function () {
+        tinybirdConfig = null;
+        tinybirdService = new TinybirdService({tinybirdConfig, siteUuid});
+        assert.ok(tinybirdService);
+    });
+
     describe('_generateToken', function () {
         it('should exist', function () {
             assert.ok(tinybirdService._generateToken);
@@ -165,6 +171,19 @@ describe('TinybirdService', function () {
             const result = tinybirdService.getToken();
             assert.equal(result.token, 'stats-token');
             assert.equal(result.exp, undefined);
+        });
+    });
+
+    describe('getConfig', function () {
+        it('should exist', function () {
+            assert.ok(tinybirdService.getConfig);
+        });
+
+        it('should return null if tinybirdConfig is not set', function () {
+            tinybirdConfig = null;
+            tinybirdService = new TinybirdService({tinybirdConfig, siteUuid});
+            const result = tinybirdService.getConfig();
+            assert.equal(result, null);
         });
     });
 });

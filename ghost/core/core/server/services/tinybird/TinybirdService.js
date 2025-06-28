@@ -66,13 +66,13 @@ class TinybirdService {
      */
     constructor({tinybirdConfig, siteUuid}) {
         this.tinybirdConfig = tinybirdConfig;
-        this.siteUuid = tinybirdConfig.stats?.id || siteUuid;
+        this.siteUuid = tinybirdConfig?.stats?.id || siteUuid;
 
         // Flags for determining which token to use
         // We should aim to simplify this in the future
-        this.isJwtEnabled = !!tinybirdConfig.workspaceId && !!tinybirdConfig.adminToken;
-        this.isLocalEnabled = !!tinybirdConfig.stats?.local?.enabled;
-        this.isStatsEnabled = !!tinybirdConfig.stats?.token;
+        this.isJwtEnabled = !!tinybirdConfig?.workspaceId && !!tinybirdConfig?.adminToken;
+        this.isLocalEnabled = !!tinybirdConfig?.stats?.local?.enabled;
+        this.isStatsEnabled = !!tinybirdConfig?.stats?.token;
         this._serverToken = null;
         this._serverTokenExp = null;
     }
@@ -111,6 +111,27 @@ class TinybirdService {
         }
         // If no token is available, return null
         return null;
+    }
+
+    getConfig() {
+        if (this.tinybirdConfig && this.tinybirdConfig?.stats) {
+            const tokenData = this.getToken();
+            return {
+                id: this.siteUuid,
+                token: tokenData.token,
+                tokenExp: tokenData.exp,
+                endpoint: this.tinybirdConfig.stats.endpoint,
+                datasource: this.tinybirdConfig.stats.datasource,
+                local: {
+                    enabled: this.isLocalEnabled,
+                    token: this.tinybirdConfig.stats.local?.token,
+                    endpoint: this.tinybirdConfig.stats.local?.endpoint,
+                    datasource: this.tinybirdConfig.stats.local?.datasource
+                }
+            };
+        } else {
+            return null;
+        }
     }
 
     /**
