@@ -28,6 +28,12 @@ describe('TinybirdService', function () {
         assert.ok(tinybirdService);
     });
 
+    it('should not throw an error if tinybirdConfig is not set', function () {
+        tinybirdConfig = null;
+        tinybirdService = new TinybirdService({tinybirdConfig, siteUuid});
+        assert.ok(tinybirdService);
+    });
+
     describe('_generateToken', function () {
         it('should exist', function () {
             assert.ok(tinybirdService._generateToken);

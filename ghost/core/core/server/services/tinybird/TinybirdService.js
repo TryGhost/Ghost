@@ -66,13 +66,13 @@ class TinybirdService {
      */
     constructor({tinybirdConfig, siteUuid}) {
         this.tinybirdConfig = tinybirdConfig;
-        this.siteUuid = tinybirdConfig.stats?.id || siteUuid;
+        this.siteUuid = tinybirdConfig?.stats?.id || siteUuid;
 
         // Flags for determining which token to use
         // We should aim to simplify this in the future
-        this.isJwtEnabled = !!tinybirdConfig.workspaceId && !!tinybirdConfig.adminToken;
-        this.isLocalEnabled = !!tinybirdConfig.stats?.local?.enabled;
-        this.isStatsEnabled = !!tinybirdConfig.stats?.token;
+        this.isJwtEnabled = !!tinybirdConfig?.workspaceId && !!tinybirdConfig?.adminToken;
+        this.isLocalEnabled = !!tinybirdConfig?.stats?.local?.enabled;
+        this.isStatsEnabled = !!tinybirdConfig?.stats?.token;
         this._serverToken = null;
         this._serverTokenExp = null;
     }
