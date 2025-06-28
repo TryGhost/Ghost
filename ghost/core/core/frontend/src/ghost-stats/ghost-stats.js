@@ -58,6 +58,19 @@ export class GhostStats {
         return !!(config.host && config.token);
     }
 
+    generateUUID() {
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            return crypto.randomUUID();
+        }
+
+        // Fallback to a simple UUID generator
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
     async trackEvent(name, payload) {
         try {
             // Check if we have required configuration
@@ -66,6 +79,7 @@ export class GhostStats {
             }
 
             const url = `${config.host}?name=${encodeURIComponent(config.datasource)}&token=${encodeURIComponent(config.token)}`;
+            payload.event_id = this.generateUUID();
 
             // Process the payload, masking sensitive data
             const processedPayload = processPayload(payload, config.globalAttributes, config.stringifyPayload);
