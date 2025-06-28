@@ -12,8 +12,12 @@ export const getStatEndpointUrl = (config?: StatsConfig | null, endpoint?: strin
 };
 
 export const getToken = (config?: StatsConfig) => {
-    // Try to get token from getTinybirdToken first
-    const tinybirdQuery = getTinybirdToken();
+    // Try to get token from getTinybirdToken first with automatic refresh
+    const tinybirdQuery = getTinybirdToken({
+        refetchInterval: 120 * 60 * 1000, // 2 hours — tokens expire after 3 hours
+        refetchIntervalInBackground: true,
+        notifyOnChangeProps: [] // Never trigger re-renders
+    });
     const apiToken = tinybirdQuery.data?.tinybird?.token;
     
     if (apiToken && typeof apiToken === 'string') {

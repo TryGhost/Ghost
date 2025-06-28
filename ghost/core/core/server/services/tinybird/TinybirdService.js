@@ -83,7 +83,7 @@ class TinybirdService {
      * For now we need to remain backwards compatible with the old stats token
      * @returns {{token: string, exp?: number}|null} Object with token and optional exp, or null if generation fails
      */
-    getToken({name = `tinybird-jwt-${this.siteUuid}`, expiresInMinutes = 60} = {}) {
+    getToken({name = `tinybird-jwt-${this.siteUuid}`, expiresInMinutes = 180} = {}) {
         // Prefer JWT tokens if enabled
         if (this.isJwtEnabled) {
             // Generate a new JWT token if it doesn't exist or is expired

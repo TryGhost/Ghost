@@ -125,7 +125,7 @@ describe('TinybirdService', function () {
         it('should return a new server token if the existing one is about to expire', function () {
             const initialResult = tinybirdService.getToken();
             const initialToken = initialResult.token;
-            clock.tick(56 * 60 * 1000); // 56 minutes - past the 5 minute buffer for a 60 minute token
+            clock.tick(176 * 60 * 1000); // 176 minutes - past the 5 minute buffer for a 3 hour token
             const newResult = tinybirdService.getToken();
             assert.notEqual(initialToken, newResult.token);
             assert.ok(typeof newResult.exp === 'number');
@@ -134,7 +134,7 @@ describe('TinybirdService', function () {
         it('should return a new server token if the existing one is expired', function () {
             const initialResult = tinybirdService.getToken();
             const initialToken = initialResult.token;
-            clock.tick(60 * 60 * 1000); // 1 hour
+            clock.tick(180 * 60 * 1000); // 3 hours
             const newResult = tinybirdService.getToken();
             assert.notEqual(initialToken, newResult.token);
             assert.ok(typeof newResult.exp === 'number');
