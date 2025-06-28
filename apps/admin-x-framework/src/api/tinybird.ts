@@ -2,6 +2,7 @@ import {Meta, createQuery} from '../utils/api/hooks';
 
 export interface TinybirdToken {
     token: string;
+    exp?: number;
 }
 
 export interface TinybirdTokenResponseType {
