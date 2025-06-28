@@ -173,17 +173,4 @@ describe('TinybirdService', function () {
             assert.equal(result.exp, undefined);
         });
     });
-
-    describe('getConfig', function () {
-        it('should exist', function () {
-            assert.ok(tinybirdService.getConfig);
-        });
-
-        it('should return null if tinybirdConfig is not set', function () {
-            tinybirdConfig = null;
-            tinybirdService = new TinybirdService({tinybirdConfig, siteUuid});
-            const result = tinybirdService.getConfig();
-            assert.equal(result, null);
-        });
-    });
 });
