@@ -12,6 +12,8 @@ export {default as useForm} from './hooks/useForm';
 export type {Dirtyable, ErrorMessages, FormHook, OkProps, SaveHandler, SaveState} from './hooks/useForm';
 export {default as useHandleError} from './hooks/useHandleError';
 export {default as useFilterableApi} from './hooks/useFilterableApi';
+export {useTinybirdToken} from './hooks/useTinybirdToken';
+export type {UseTinybirdTokenResult} from './hooks/useTinybirdToken';
 
 // Currency utilities
 export {getSymbol} from './utils/currency';

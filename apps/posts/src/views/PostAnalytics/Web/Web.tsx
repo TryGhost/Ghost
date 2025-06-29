@@ -7,7 +7,7 @@ import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import Sources from './components/Sources';
 import {BarChartLoadingIndicator, Card, CardContent, formatQueryDate, getRangeDates, getRangeForStartDate} from '@tryghost/shade';
-import {BaseSourceData, getStatEndpointUrl, getToken, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {BaseSourceData, getStatEndpointUrl, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 
 import {useEffect, useMemo} from 'react';
@@ -30,14 +30,7 @@ interface postAnalyticsProps {}
 const Web: React.FC<postAnalyticsProps> = () => {
     const navigate = useNavigate();
     const {postId} = useParams();
-    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    const {range, audience} = useGlobalData();
-
-    // Get global data for site info
-    const {data: globalData} = useGlobalData();
-
-    // Get post data from context
-    const {post, isPostLoading} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, audience, data: globalData, post, isPostLoading, tinybirdToken} = useGlobalData();
 
     // Redirect to Overview if this is an email-only post
     useEffect(() => {
@@ -84,21 +77,21 @@ const Web: React.FC<postAnalyticsProps> = () => {
     // Get web kpi data
     const {data: kpiData, loading: isKpisLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
+        token: tinybirdToken,
         params: params
     });
 
     // Get locations data
     const {data: locationsData, loading: isLocationsLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_top_locations'),
-        token: getToken(statsConfig),
+        token: tinybirdToken,
         params: params
     });
 
     // Get sources data
     const {data: sourcesData, loading: isSourcesLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
-        token: getToken(statsConfig),
+        token: tinybirdToken,
         params: params
     });
 
