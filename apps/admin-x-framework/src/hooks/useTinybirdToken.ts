@@ -1,4 +1,5 @@
 import {getTinybirdToken} from '../api/tinybird';
+import {TinybirdTokenResponseType} from '../api/tinybird';
 
 export interface UseTinybirdTokenResult {
     token: string | undefined;
@@ -8,7 +9,7 @@ export interface UseTinybirdTokenResult {
 }
 
 // Calculate refresh interval based on token expiration
-const calculateRefreshInterval = (data: any) => {
+const calculateRefreshInterval = (data: TinybirdTokenResponseType) => {
     const exp = data?.tinybird?.exp;
     if (!exp || typeof exp !== 'number') {
         // Fallback to 2 hours if no expiration info
