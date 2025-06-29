@@ -40,6 +40,7 @@ export default class SearchProviderBasicService extends Service {
     @service ajax;
     @service notifications;
     @service store;
+    @service ghostPaths;
 
     content = [];
 
@@ -85,9 +86,15 @@ export default class SearchProviderBasicService extends Service {
     }
 
     async _loadSearchable(searchable, content) {
-        const url = `${this.store.adapterFor(searchable.model).urlForQuery({}, searchable.model)}/`;
-        const maxSearchableLimit = '10000';
-        const query = {fields: searchable.fields, limit: maxSearchableLimit};
+        let url;
+        let query;
+        if (searchable.model === 'post') {
+            url = this.ghostPaths.url.api(`search-index/${pluralize(searchable.model)}`);
+            query = {};
+        } else {
+            url = `${this.store.adapterFor(searchable.model).urlForQuery({}, searchable.model)}/`;
+            query = {fields: searchable.fields, limit: '10000'};
+        }
 
         try {
             const response = await this.ajax.request(url, {data: query});
