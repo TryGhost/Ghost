@@ -10,11 +10,23 @@ export interface UseTinybirdTokenResult {
 // Stable query options - created once and reused
 const TINYBIRD_QUERY_OPTIONS = {
     refetchInterval: 120 * 60 * 1000, // 2 hours — tokens expire after 3 hours
-    refetchIntervalInBackground: true
+    refetchIntervalInBackground: true,
+    staleTime: 110 * 60 * 1000 // 110 minutes - prevent refetch during navigation
 } as const;
 
 export const useTinybirdToken = (): UseTinybirdTokenResult => {
+    console.log('🐦 useTinybirdToken called');
     const tinybirdQuery = getTinybirdToken(TINYBIRD_QUERY_OPTIONS);
+    
+    console.log('🐦 Query state:', {
+        isLoading: tinybirdQuery.isLoading,
+        isFetching: tinybirdQuery.isFetching,
+        isStale: tinybirdQuery.isStale,
+        hasData: !!tinybirdQuery.data,
+        dataUpdatedAt: new Date(tinybirdQuery.dataUpdatedAt || 0).toLocaleTimeString(),
+        status: tinybirdQuery.status,
+        fetchStatus: tinybirdQuery.fetchStatus
+    });
 
     const apiToken = tinybirdQuery.data?.tinybird?.token;
     
