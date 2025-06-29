@@ -8,7 +8,7 @@ import StatsView from '../layout/StatsView';
 import TopPosts from './components/TopPosts';
 import {GhAreaChartDataItem, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {getAudienceQueryParam} from '../components/AudienceSelect';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
+import {getStatEndpointUrl, useTinybirdToken} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
@@ -78,6 +78,7 @@ const Overview: React.FC = () => {
             timezone
         }
     });
+    const {token} = useTinybirdToken();
 
     /* Get visitors
     /* ---------------------------------------------------------------------- */
@@ -91,7 +92,7 @@ const Overview: React.FC = () => {
 
     const {data: visitorsData, loading: isVisitorsLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
+        token: token,
         params: visitorsParams
     });
 
