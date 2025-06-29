@@ -17,6 +17,26 @@ describe('Admin API', function () {
         assert.equal(user.slug, expected.slug);
     }
 
+    describe('Switch Authentication Methods', function () {
+        it('can use a restricted cookie session, then switch to a token', async function () {
+            // editor doesn't have permission to access /members, so this should fail
+            await agent.loginAsEditor();
+            await agent.get('members').expectStatus(403);
+            // the backup token has permission to access /members
+            await agent.useBackupAdminAPIKey();
+            await agent.get('members').expectStatus(200);
+        });
+
+        it('can use a restricted token, then switch to a cookie session', async function () {
+            // the backup token doesn't have permission to access /users, so this should fail
+            await agent.useBackupAdminAPIKey();
+            await agent.get('users').expectStatus(403);
+            // the admin token has permission to access /users
+            await agent.loginAsAdmin();
+            await agent.get('users').expectStatus(200);
+        });
+    });
+
     // The intention of these tests is to generally demonstrate that the staff token is working
     describe('Staff Tokens - Can fetch own data', function () {
         it('Owner', async function () {
@@ -106,16 +126,12 @@ describe('Admin API', function () {
                     .get('users')
                     .expectStatus(403);
             });
-        });
-    });
 
-    // Make sure that user auth works in tests, after using a token
-    describe('User Authentication', function () {
-        it('can do user auth after a token is used', async function () {
-            await agent.loginAsOwner();
-            await agent
-                .get('users/me')
-                .expectStatus(200);
+            it('Request to list members should succeed', async function () {
+                await agent
+                    .get('members')
+                    .expectStatus(200);
+            });
         });
     });
 
@@ -190,7 +206,6 @@ describe('Admin API', function () {
 
             it('Regular user authentication should work (if user has permission)', async function () {
                 await agent.loginAsOwner();
-                // Note: This will likely fail with validation or other errors, but not the staff token error
                 await agent
                     .put('users/owner')
                     .body({

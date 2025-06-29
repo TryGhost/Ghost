@@ -57,7 +57,7 @@ class AdminAPITestAgent extends TestAgent {
     }
 
     async loginAs(email, password, role) {
-        this.resetAuth();
+        this.resetAuthentication();
 
         if (role) {
             let user = getRoleUserFromFixtures(role);
@@ -116,6 +116,8 @@ class AdminAPITestAgent extends TestAgent {
      * @param {String} apiKeySecret
      */
     async useToken(apiKeyId, apiKeySecret) {
+        this.resetAuthentication();
+
         const token = createValidAPIToken(apiKeyId, apiKeySecret);
 
         // Set the Authorization header for subsequent requests
