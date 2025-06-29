@@ -15,18 +15,7 @@ const TINYBIRD_QUERY_OPTIONS = {
 } as const;
 
 export const useTinybirdToken = (): UseTinybirdTokenResult => {
-    console.log('🐦 useTinybirdToken called');
     const tinybirdQuery = getTinybirdToken(TINYBIRD_QUERY_OPTIONS);
-    
-    console.log('🐦 Query state:', {
-        isLoading: tinybirdQuery.isLoading,
-        isFetching: tinybirdQuery.isFetching,
-        isStale: tinybirdQuery.isStale,
-        hasData: !!tinybirdQuery.data,
-        dataUpdatedAt: new Date(tinybirdQuery.dataUpdatedAt || 0).toLocaleTimeString(),
-        status: tinybirdQuery.status,
-        fetchStatus: tinybirdQuery.fetchStatus
-    });
 
     const apiToken = tinybirdQuery.data?.tinybird?.token;
     
