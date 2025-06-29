@@ -7,15 +7,8 @@ export interface UseTinybirdTokenResult {
     refetch: () => void;
 }
 
-// Stable query options - created once and reused
-const TINYBIRD_QUERY_OPTIONS = {
-    refetchInterval: 120 * 60 * 1000, // 2 hours — tokens expire after 3 hours
-    refetchIntervalInBackground: true,
-    staleTime: 130 * 60 * 1000 // 130 minutes - longer than refetch interval to prevent redundant fetches
-} as const;
-
 export const useTinybirdToken = (): UseTinybirdTokenResult => {
-    const tinybirdQuery = getTinybirdToken(TINYBIRD_QUERY_OPTIONS);
+    const tinybirdQuery = getTinybirdToken();
 
     const apiToken = tinybirdQuery.data?.tinybird?.token;
     

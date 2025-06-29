@@ -19,8 +19,8 @@ describe('useTinybirdToken', () => {
     beforeEach(() => {
         queryClient = new QueryClient({
             defaultOptions: {
-                queries: { retry: false },
-                mutations: { retry: false }
+                queries: {retry: false},
+                mutations: {retry: false}
             }
         });
         wrapper = ({children}) => React.createElement(QueryClientProvider, {client: queryClient}, children);
@@ -60,7 +60,7 @@ describe('useTinybirdToken', () => {
         expect(result.current.token).toBeUndefined();
     });
 
-    it('uses stable query options object to enable React Query caching', () => {
+    it('uses built-in query options without requiring consumer configuration', () => {
         const mockRefetch = vi.fn();
         
         mockGetTinybirdToken.mockReturnValue({
@@ -76,23 +76,16 @@ describe('useTinybirdToken', () => {
         // Second render in same QueryClient context 
         renderHook(() => useTinybirdToken(), {wrapper});
         
-        // Verify that the same stable options object is passed both times
-        // This ensures React Query can recognize it as the same query for caching
-        const expectedOptions = {
-            refetchInterval: 120 * 60 * 1000,
-            refetchIntervalInBackground: true,
-            staleTime: 130 * 60 * 1000
-        };
+        // Verify that getTinybirdToken is called without any options
+        // Options are now built-in to the query itself
+        expect(mockGetTinybirdToken).toHaveBeenCalledWith();
         
-        expect(mockGetTinybirdToken).toHaveBeenCalledWith(expectedOptions);
-        
-        // Verify both calls used the exact same options object reference
-        const call1Options = mockGetTinybirdToken.mock.calls[0][0];
-        const call2Options = mockGetTinybirdToken.mock.calls[1][0];
-        expect(call1Options).toBe(call2Options); // Same reference, not just equal values
+        // Verify both calls used no parameters (built-in options)
+        expect(mockGetTinybirdToken.mock.calls[0]).toHaveLength(0);
+        expect(mockGetTinybirdToken.mock.calls[1]).toHaveLength(0);
     });
 
-    it('passes correct query options for token refresh behavior', () => {
+    it('uses built-in query options for optimal token refresh behavior', () => {
         mockGetTinybirdToken.mockReturnValue({
             data: {tinybird: {token: 'test-token'}},
             isLoading: false,
@@ -102,11 +95,9 @@ describe('useTinybirdToken', () => {
 
         renderHook(() => useTinybirdToken(), {wrapper});
 
-        expect(mockGetTinybirdToken).toHaveBeenCalledWith({
-            refetchInterval: 120 * 60 * 1000, // 2 hours
-            refetchIntervalInBackground: true,
-            staleTime: 130 * 60 * 1000 // 130 minutes
-        });
+        // Verify no options needed - they're built into getTinybirdToken
+        expect(mockGetTinybirdToken).toHaveBeenCalledWith();
+        expect(mockGetTinybirdToken.mock.calls[0]).toHaveLength(0);
     });
 
     it('creates validation error for invalid token types', () => {
@@ -211,7 +202,7 @@ describe('useTinybirdToken', () => {
         };
 
         mockGetTinybirdToken.mockImplementation(() => {
-            fetchCount++;
+            fetchCount += 1;
             return {
                 ...queryState,
                 data: {tinybird: {token: `token-v${fetchCount}`}}
