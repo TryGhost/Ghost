@@ -1,5 +1,7 @@
 import {renderHook, act} from '@testing-library/react';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {useActiveVisitors} from '../../../src/hooks/useActiveVisitors';
+import React from 'react';
 
 // Mock the @tinybirdco/charts module
 vi.mock('@tinybirdco/charts', () => ({
@@ -8,20 +10,36 @@ vi.mock('@tinybirdco/charts', () => ({
 
 // Mock the stats-config utils
 vi.mock('../../../src/utils/stats-config', () => ({
-    getStatEndpointUrl: vi.fn(),
-    getToken: vi.fn()
+    getStatEndpointUrl: vi.fn()
+}));
+
+// Mock the useTinybirdToken hook
+vi.mock('../../../src/hooks/useTinybirdToken', () => ({
+    useTinybirdToken: vi.fn()
 }));
 
 import {useQuery} from '@tinybirdco/charts';
-import {getStatEndpointUrl, getToken} from '../../../src/utils/stats-config';
+import {getStatEndpointUrl} from '../../../src/utils/stats-config';
+import {useTinybirdToken} from '../../../src/hooks/useTinybirdToken';
 
 const mockUseQuery = vi.mocked(useQuery);
 const mockGetStatEndpointUrl = vi.mocked(getStatEndpointUrl);
-const mockGetToken = vi.mocked(getToken);
+const mockUseTinybirdToken = vi.mocked(useTinybirdToken);
 
 describe('useActiveVisitors', () => {
+    let queryClient: QueryClient;
+    let wrapper: React.FC<{children: React.ReactNode}>;
+
     beforeEach(() => {
         vi.useFakeTimers();
+        queryClient = new QueryClient({
+            defaultOptions: {
+                queries: {retry: false},
+                mutations: {retry: false}
+            }
+        });
+        wrapper = ({children}) => React.createElement(QueryClientProvider, {client: queryClient}, children);
+        
         mockUseQuery.mockReturnValue({
             data: null,
             loading: false,
@@ -33,7 +51,12 @@ describe('useActiveVisitors', () => {
             refresh: vi.fn()
         });
         mockGetStatEndpointUrl.mockImplementation((_config: any, endpoint: any) => `https://api.example.com/${endpoint}`);
-        mockGetToken.mockReturnValue('mock-token');
+        mockUseTinybirdToken.mockReturnValue({
+            token: 'mock-token',
+            isLoading: false,
+            error: null,
+            refetch: vi.fn()
+        });
     });
 
     afterEach(() => {
@@ -43,7 +66,7 @@ describe('useActiveVisitors', () => {
     });
 
     it('returns initial state when enabled is true', () => {
-        const {result} = renderHook(() => useActiveVisitors({enabled: true}));
+        const {result} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
 
         expect(result.current).toEqual({
             activeVisitors: 0,
@@ -53,7 +76,7 @@ describe('useActiveVisitors', () => {
     });
 
     it('returns zero state when enabled is false', () => {
-        const {result} = renderHook(() => useActiveVisitors({enabled: false}));
+        const {result} = renderHook(() => useActiveVisitors({enabled: false}), {wrapper});
 
         expect(result.current).toEqual({
             activeVisitors: 0,
@@ -74,7 +97,7 @@ describe('useActiveVisitors', () => {
             refresh: vi.fn()
         });
 
-        const {result} = renderHook(() => useActiveVisitors({enabled: true}));
+        const {result} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
 
         // Should show loading on initial load when no lastKnownCount exists
         expect(result.current.isLoading).toBe(true);
@@ -94,7 +117,7 @@ describe('useActiveVisitors', () => {
             refresh: vi.fn()
         });
 
-        const {result, rerender} = renderHook(() => useActiveVisitors({enabled: true}));
+        const {result, rerender} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
         expect(result.current.activeVisitors).toBe(25);
 
         // Second render with loading but data should not show loading
@@ -127,7 +150,7 @@ describe('useActiveVisitors', () => {
             refresh: vi.fn()
         });
 
-        const {result} = renderHook(() => useActiveVisitors({enabled: true}));
+        const {result} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
 
         expect(result.current.activeVisitors).toBe(42);
         expect(result.current.isLoading).toBe(false);
@@ -146,33 +169,33 @@ describe('useActiveVisitors', () => {
             refresh: vi.fn()
         });
 
-        const {result} = renderHook(() => useActiveVisitors({enabled: true}));
+        const {result} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
 
         expect(result.current.error).toBe(mockError);
     });
 
-    it('calls getStatEndpointUrl and getToken with correct parameters', () => {
+    it('calls getStatEndpointUrl with correct parameters and uses tinybirdToken', () => {
         const statsConfig = {
             id: 'test-site-id',
             endpoint: 'https://api.test.com',
             token: 'test-token'
         };
 
-        renderHook(() => useActiveVisitors({statsConfig, enabled: true}));
+        renderHook(() => useActiveVisitors({statsConfig, enabled: true}), {wrapper});
 
         expect(mockGetStatEndpointUrl).toHaveBeenCalledWith(statsConfig, 'api_active_visitors');
-        expect(mockGetToken).toHaveBeenCalledWith(statsConfig);
+        expect(mockUseTinybirdToken).toHaveBeenCalled();
     });
 
-    it('calls getStatEndpointUrl and getToken with undefined when no statsConfig', () => {
-        renderHook(() => useActiveVisitors({enabled: true}));
+    it('calls getStatEndpointUrl with undefined when no statsConfig and uses tinybirdToken', () => {
+        renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
 
         expect(mockGetStatEndpointUrl).toHaveBeenCalledWith(undefined, 'api_active_visitors');
-        expect(mockGetToken).toHaveBeenCalledWith(undefined);
+        expect(mockUseTinybirdToken).toHaveBeenCalled();
     });
 
     it('sets up 60-second interval when enabled', () => {
-        renderHook(() => useActiveVisitors({enabled: true}));
+        renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
 
         // Initially refreshKey should be 0
         expect(mockUseQuery).toHaveBeenCalledWith(
@@ -199,7 +222,7 @@ describe('useActiveVisitors', () => {
     });
 
     it('does not set up interval when disabled', () => {
-        renderHook(() => useActiveVisitors({enabled: false}));
+        renderHook(() => useActiveVisitors({enabled: false}), {wrapper});
 
         // Fast-forward 60 seconds
         act(() => {
@@ -218,7 +241,7 @@ describe('useActiveVisitors', () => {
 
     it('includes postUuid in params when provided', () => {
         const postUuid = 'test-post-uuid';
-        renderHook(() => useActiveVisitors({postUuid, enabled: true}));
+        renderHook(() => useActiveVisitors({postUuid, enabled: true}), {wrapper});
 
         expect(mockUseQuery).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -230,7 +253,7 @@ describe('useActiveVisitors', () => {
     });
 
     it('does not include postUuid in params when not provided', () => {
-        renderHook(() => useActiveVisitors({enabled: true}));
+        renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
 
         expect(mockUseQuery).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -248,7 +271,7 @@ describe('useActiveVisitors', () => {
             token: 'test-token'
         };
 
-        renderHook(() => useActiveVisitors({statsConfig, enabled: true}));
+        renderHook(() => useActiveVisitors({statsConfig, enabled: true}), {wrapper});
 
         expect(mockUseQuery).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -260,7 +283,7 @@ describe('useActiveVisitors', () => {
     });
 
     it('uses empty string for site_uuid when no statsConfig', () => {
-        renderHook(() => useActiveVisitors({enabled: true}));
+        renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
 
         expect(mockUseQuery).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -284,7 +307,7 @@ describe('useActiveVisitors', () => {
             refresh: vi.fn()
         });
 
-        const {result, rerender} = renderHook(() => useActiveVisitors({enabled: true}));
+        const {result, rerender} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
         expect(result.current.activeVisitors).toBe(25);
 
         // Simulate refresh with loading state but no new data
@@ -318,7 +341,7 @@ describe('useActiveVisitors', () => {
             refresh: vi.fn()
         });
 
-        const {result} = renderHook(() => useActiveVisitors({enabled: true}));
+        const {result} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
 
         expect(result.current.activeVisitors).toBe(0);
     });
@@ -335,7 +358,7 @@ describe('useActiveVisitors', () => {
             refresh: vi.fn()
         });
 
-        const {result} = renderHook(() => useActiveVisitors({enabled: true}));
+        const {result} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
 
         expect(result.current.activeVisitors).toBe(0);
     });
@@ -344,7 +367,7 @@ describe('useActiveVisitors', () => {
         // Spy on clearInterval before creating the hook
         const clearIntervalSpy = vi.spyOn(global, 'clearInterval');
         
-        const {unmount} = renderHook(() => useActiveVisitors({enabled: true}));
+        const {unmount} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
 
         unmount();
 
@@ -364,7 +387,7 @@ describe('useActiveVisitors', () => {
             refresh: vi.fn()
         });
 
-        const {result, rerender} = renderHook(() => useActiveVisitors({enabled: true}));
+        const {result, rerender} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
         expect(result.current.activeVisitors).toBe(0);
 
         // Provide valid data
@@ -409,11 +432,11 @@ describe('useActiveVisitors', () => {
 
         const {rerender} = renderHook(
             ({statsConfig}) => useActiveVisitors({statsConfig, enabled: true}),
-            {initialProps: {statsConfig: initialStatsConfig}}
+            {initialProps: {statsConfig: initialStatsConfig}, wrapper}
         );
 
         expect(mockGetStatEndpointUrl).toHaveBeenCalledWith(initialStatsConfig, 'api_active_visitors');
-        expect(mockGetToken).toHaveBeenCalledWith(initialStatsConfig);
+        expect(mockUseTinybirdToken).toHaveBeenCalled();
 
         // Change statsConfig
         const newStatsConfig = {
@@ -425,7 +448,7 @@ describe('useActiveVisitors', () => {
         rerender({statsConfig: newStatsConfig});
 
         expect(mockGetStatEndpointUrl).toHaveBeenCalledWith(newStatsConfig, 'api_active_visitors');
-        expect(mockGetToken).toHaveBeenCalledWith(newStatsConfig);
+        expect(mockUseTinybirdToken).toHaveBeenCalled();
     });
 
     it('does not update lastKnownCount when disabled', () => {
@@ -443,7 +466,7 @@ describe('useActiveVisitors', () => {
 
         const {result, rerender} = renderHook(
             ({enabled}) => useActiveVisitors({enabled}),
-            {initialProps: {enabled: true}}
+            {initialProps: {enabled: true}, wrapper}
         );
 
         expect(result.current.activeVisitors).toBe(20);
@@ -471,11 +494,16 @@ describe('useActiveVisitors', () => {
         const clearIntervalSpy = vi.spyOn(global, 'clearInterval');
         const setIntervalSpy = vi.spyOn(global, 'setInterval');
 
+        // Clear any previous calls
+        setIntervalSpy.mockClear();
+        clearIntervalSpy.mockClear();
+
         const {rerender} = renderHook(
             ({enabled}) => useActiveVisitors({enabled}),
-            {initialProps: {enabled: true}}
+            {initialProps: {enabled: true}, wrapper}
         );
 
+        expect(setIntervalSpy).toHaveBeenCalledTimes(1);
         const firstIntervalId = setIntervalSpy.mock.results[0]?.value;
 
         // Disable

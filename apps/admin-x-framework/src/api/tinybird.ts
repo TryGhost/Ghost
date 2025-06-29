@@ -12,7 +12,18 @@ export interface TinybirdTokenResponseType {
 
 const dataType = 'TinybirdTokenResponseType';
 
-export const getTinybirdToken = createQuery<TinybirdTokenResponseType>({
+// Built-in query options for optimal token caching
+const TINYBIRD_QUERY_OPTIONS = {
+    refetchInterval: 120 * 60 * 1000, // 2 hours — tokens expire after 3 hours
+    refetchIntervalInBackground: true,
+    staleTime: 110 * 60 * 1000 // 110 minutes - shorter than refetch interval so automatic refresh works
+} as const;
+
+const baseTinybirdTokenQuery = createQuery<TinybirdTokenResponseType>({
     dataType,
     path: '/tinybird/token/'
 });
+
+export const getTinybirdToken = () => {
+    return baseTinybirdTokenQuery(TINYBIRD_QUERY_OPTIONS);
+};
