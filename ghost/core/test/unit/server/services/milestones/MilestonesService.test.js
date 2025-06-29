@@ -34,6 +34,10 @@ describe('MilestonesService', function () {
             {
                 currency: 'eur',
                 values: [0, 1000, 10000, 50000, 100000, 250000, 500000, 1000000]
+            },
+            {
+                currency: 'jpy',
+                values: [0, 1000, 10000, 50000, 100000, 250000, 500000, 1000000]
             }
         ],
         members: [0, 100, 1000, 10000, 50000, 100000, 250000, 500000, 1000000],
@@ -73,6 +77,29 @@ describe('MilestonesService', function () {
             assert(domainEventSpyResult.data.milestone);
             assert(domainEventSpyResult.data.meta.currentValue === 43);
             assert(domainEventSpyResult.data.meta.reason === 'initial');
+        });
+
+        it('Adds initial JPY ARR milestone without sending email', async function () {
+            repository = new InMemoryMilestoneRepository({DomainEvents});
+            const service = new MilestonesService({
+                repository,
+                milestonesConfig,
+                queries: {
+                    async getARR() {
+                        return [{currency: 'jpy', arr: 750}];
+                    },
+                    async hasImportedMembersInPeriod() {
+                        return false;
+                    },
+                    async getDefaultCurrency() {
+                        return 'jpy';
+                    }
+                }
+            });
+            const result = await service.checkMilestones('arr');
+            assert(result.currency === 'jpy');
+            assert(result.value === 0);
+            assert(result.name === 'arr-0-jpy');
         });
 
         it('Adds first ARR milestones but does not send email if no previous milestones', async function () {
