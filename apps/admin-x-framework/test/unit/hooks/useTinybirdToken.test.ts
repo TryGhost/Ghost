@@ -197,7 +197,7 @@ describe('useTinybirdToken', () => {
         renderHook(() => useTinybirdToken(), {wrapper: Wrapper});
 
         expect(mockGetTinybirdToken).toHaveBeenCalledWith({
-            refetchInterval: expect.any(Function),
+            refetchInterval: 120 * 60 * 1000,
             refetchIntervalInBackground: true
         });
     });
