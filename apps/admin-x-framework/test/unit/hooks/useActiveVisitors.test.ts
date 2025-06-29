@@ -34,8 +34,8 @@ describe('useActiveVisitors', () => {
         vi.useFakeTimers();
         queryClient = new QueryClient({
             defaultOptions: {
-                queries: { retry: false },
-                mutations: { retry: false }
+                queries: {retry: false},
+                mutations: {retry: false}
             }
         });
         wrapper = ({children}) => React.createElement(QueryClientProvider, {client: queryClient}, children);
