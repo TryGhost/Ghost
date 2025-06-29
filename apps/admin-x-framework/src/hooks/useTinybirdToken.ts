@@ -11,7 +11,7 @@ export interface UseTinybirdTokenResult {
 const TINYBIRD_QUERY_OPTIONS = {
     refetchInterval: 120 * 60 * 1000, // 2 hours — tokens expire after 3 hours
     refetchIntervalInBackground: true,
-    staleTime: 110 * 60 * 1000 // 110 minutes - prevent refetch during navigation
+    staleTime: 130 * 60 * 1000 // 130 minutes - longer than refetch interval to prevent redundant fetches
 } as const;
 
 export const useTinybirdToken = (): UseTinybirdTokenResult => {
