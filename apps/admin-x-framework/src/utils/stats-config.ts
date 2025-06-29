@@ -11,8 +11,8 @@ export const getStatEndpointUrl = (config?: StatsConfig | null, endpoint?: strin
         `${config.endpoint || ''}/v0/pipes/${endpoint}.json?${params}`;
 };
 
-export const getToken = (config?: StatsConfig) => {
-    // Try to get token from getTinybirdToken first with automatic refresh
+export const getToken = () => {
+    // Get token from getTinybirdToken API only
     const tinybirdQuery = getTinybirdToken({
         refetchInterval: 120 * 60 * 1000, // 2 hours — tokens expire after 3 hours
         refetchIntervalInBackground: true,
@@ -20,10 +20,5 @@ export const getToken = (config?: StatsConfig) => {
     });
     const apiToken = tinybirdQuery.data?.tinybird?.token;
     
-    if (apiToken && typeof apiToken === 'string') {
-        return apiToken;
-    }
-    
-    // Fallback to config-based token
-    return config?.local?.enabled ? config?.local?.token : config?.token;
+    return (apiToken && typeof apiToken === 'string') ? apiToken : undefined;
 }; 

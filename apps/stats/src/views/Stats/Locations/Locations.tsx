@@ -8,7 +8,7 @@ import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, Icon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, SkeletonTable, cn, formatNumber, formatPercentage, formatQueryDate, getRangeDates, useSimplePagination} from '@tryghost/shade';
-import {Navigate, getStatEndpointUrl, useAppContext, useTinybirdToken} from '@tryghost/admin-x-framework';
+import {Navigate, getStatEndpointUrl, useAppContext} from '@tryghost/admin-x-framework';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -56,13 +56,11 @@ interface ProcessedLocationData {
 }
 
 const Locations:React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    const {range, audience} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, audience, tinybirdToken} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
     const ITEMS_PER_PAGE = 10;
     const {appSettings} = useAppContext();
-    const {token} = useTinybirdToken();
 
     const params = {
         site_uuid: statsConfig?.id || '',
@@ -74,7 +72,7 @@ const Locations:React.FC = () => {
 
     const {data, loading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_top_locations'),
-        token,
+        token: tinybirdToken,
         params
     });
 
