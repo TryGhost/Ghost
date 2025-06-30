@@ -15,7 +15,6 @@ const DEFAULT_DATASOURCE = 'analytics_events';
 // Runtime configuration
 let config = {
     host: null,
-    token: null,
     domain: null,
     datasource: DEFAULT_DATASOURCE,
     stringifyPayload: true,
@@ -40,7 +39,6 @@ export class GhostStats {
 
         // Get required parameters
         config.host = currentScript.getAttribute('data-host');
-        config.token = currentScript.getAttribute('data-token');
         config.domain = currentScript.getAttribute('data-domain');
         
         // Get optional parameters
@@ -55,7 +53,7 @@ export class GhostStats {
         }
 
         // Validate required configuration
-        return !!(config.host && config.token);
+        return !!(config.host);
     }
 
     generateUUID() {
@@ -74,11 +72,11 @@ export class GhostStats {
     async trackEvent(name, payload) {
         try {
             // Check if we have required configuration
-            if (!config.host || !config.token) {
-                throw new Error('Missing required configuration (host or token)');
+            if (!config.host) {
+                throw new Error('Missing required configuration: host');
             }
 
-            const url = `${config.host}?name=${encodeURIComponent(config.datasource)}&token=${encodeURIComponent(config.token)}`;
+            const url = `${config.host}?name=${encodeURIComponent(config.datasource)}`;
             payload.event_id = this.generateUUID();
 
             // Process the payload, masking sensitive data

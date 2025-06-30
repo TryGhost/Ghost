@@ -170,7 +170,6 @@ describe('ghost-stats.js', function () {
     describe('GhostStats Configuration', function () {
         it('should initialize with required configuration', function () {
             mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
-            mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
             
             expect(ghostStats.initConfig()).to.be.true;
         });
@@ -184,7 +183,6 @@ describe('ghost-stats.js', function () {
 
         it('should process global attributes', async function () {
             mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
-            mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
             mockDocument.currentScript.attributes = [
                 {name: 'tb_attr1', value: 'value1'},
                 {name: 'tb_attr2', value: 'value2'}
@@ -202,7 +200,6 @@ describe('ghost-stats.js', function () {
     describe('GhostStats Event Tracking', function () {
         beforeEach(function () {
             mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
-            mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
             mockDocument.currentScript.attributes = [
                 {name: 'tb_site_uuid', value: 'test-site-uuid'}
             ];
@@ -266,7 +263,7 @@ describe('ghost-stats.js', function () {
             
             // Verify request structure
             const [url, options] = mockFetch.firstCall.args;
-            expect(url).to.equal('https://test.com?name=analytics_events&token=test-token');
+            expect(url).to.equal('https://test.com?name=analytics_events');
             expect(options.method).to.equal('POST');
             expect(options.headers['Content-Type']).to.equal('application/json');
             expect(options.headers['x-site-uuid']).to.equal('test-site-uuid');
@@ -381,7 +378,6 @@ describe('ghost-stats.js', function () {
     describe('GhostStats Event Listeners', function () {
         beforeEach(function () {
             mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
-            mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
             ghostStats.initConfig();
         });
 
@@ -444,7 +440,6 @@ describe('ghost-stats.js', function () {
     describe('GhostStats Initialization', function () {
         it('should initialize successfully with proper configuration', function () {
             mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
-            mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
 
             expect(ghostStats.init()).to.be.true;
             expect(mockWindow.Tinybird).to.exist;
@@ -468,7 +463,6 @@ describe('ghost-stats.js', function () {
 
         it('should set up global Tinybird API when initialized', function () {
             mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
-            mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
 
             ghostStats.init();
 
