@@ -4,11 +4,18 @@ import {
     mockApi
 } from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
+import {tinybirdConfig} from '../utils/tinybird-helpers.ts';
 
 test.describe('Stats App', () => {
     test('loads with default mocked data', async ({page}) => {
         // Use the default mock requests - includes all common endpoints
-        await mockApi({page, requests: createMockRequests()});
+        await mockApi({page, requests: createMockRequests(
+            {browseTinyBirdToken: {
+                method: 'GET',
+                path: /^\/tinybird\/token\//,
+                response: tinybirdConfig
+            }}
+        )});
 
         const overviewPage = new OverviewTab(page);
         await overviewPage.visit();
@@ -36,6 +43,11 @@ test.describe('Stats App', () => {
                 method: 'GET',
                 path: /^\/stats\/member_count\//,
                 response: customMemberHistory
+            },
+            browseTinyBirdToken: {
+                method: 'GET',
+                path: /^\/tinybird\/token\//,
+                response: tinybirdConfig
             }
         })});
 
