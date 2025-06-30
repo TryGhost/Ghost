@@ -309,17 +309,31 @@ export const expectMemoization = <T extends any[], R>( // eslint-disable-line @t
         ({deps}) => hookFunction(...deps),
         {initialProps: {deps: initialDeps}}
     );
-    const firstResult = result.current;
+    const initialResult = result.current;
     
-    // Rerender with same dependencies - should return same reference
+    // Rerender with same dependencies - should return same reference (memoization working)
     rerender({deps: initialDeps});
-    expect(result.current).toBe(firstResult);
+    expect(result.current).toBe(initialResult);
     
-    // Test each changed dependency set
+    // Test each changed dependency set - each should produce a new result
+    let previousResult = initialResult;
     changedDeps.forEach((newDeps) => {
         rerender({deps: newDeps});
-        expect(result.current).not.toBe(firstResult);
+        const currentResult = result.current;
+        
+        // Should be different from previous result (dependency change detected)
+        expect(currentResult).not.toBe(previousResult);
+        
+        // Re-render with same deps again to test memoization for this specific set
+        rerender({deps: newDeps});
+        expect(result.current).toBe(currentResult);
+        
+        previousResult = currentResult;
     });
+    
+    // Finally, rerender with initial dependencies again - should return initial result
+    rerender({deps: initialDeps});
+    expect(result.current).toBe(initialResult);
 };
 
 /**
