@@ -327,7 +327,6 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
             // Only show confirmation if we have explicit source and themeRef props (not from URL params after redirect)
             if (source && themeRef && !installedFromMarketplace) {
                 const themeName = themeRef.split('/')[1];
-                
                 let titleText = 'Install Theme';
                 const existingThemeNames = themes?.map(t => t.name) || [];
                 let willOverwrite = existingThemeNames.includes(themeName.toLowerCase());
@@ -420,9 +419,6 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                         onOk: async (confirmModal) => {
                             confirmModal?.remove();
                             await performInstallation();
-                            resolve();
-                        },
-                        onCancel: () => {
                             resolve();
                         }
                     });
