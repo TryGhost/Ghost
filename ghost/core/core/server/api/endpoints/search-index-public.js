@@ -15,7 +15,7 @@ const controller = {
                 filter: 'type:post',
                 limit: '10000',
                 order: 'updated_at DESC',
-                columns: ['id', 'slug', 'title', 'excerpt', 'url', 'created_at', 'updated_at', 'published_at', 'visibility']
+                columns: ['id', 'slug', 'title', 'excerpt', 'url', 'updated_at', 'visibility']
             };
 
             return postsService.browsePosts(options);
