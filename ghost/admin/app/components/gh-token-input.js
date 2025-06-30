@@ -162,10 +162,6 @@ export default class GhTokenInput extends Component {
         if (searchAction) {
             let results = yield searchAction(term, select);
 
-            if (results.toArray) {
-                results = results.toArray();
-            }
-
             this._addCreateOption(term, results);
             return results;
         }

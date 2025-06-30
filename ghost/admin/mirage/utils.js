@@ -116,6 +116,8 @@ export function extractFilterParam(param, filter = '') {
 
     if (result.startsWith('[')) {
         match = result.replace(/^\[|\]$/g, '').split(',');
+    } else if (result.startsWith('~')) {
+        match = result.replace(/^~/, '').replace(/\\'/g, `'`).replace(/^'|'$/g, '');
     } else {
         match = [result];
     }
