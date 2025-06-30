@@ -106,7 +106,7 @@ const Overview: React.FC = () => {
         });
     }, [visitorsData, range]);
     const visitorsYRange: [number, number] = useMemo(() => {
-        const defaultRange = [0, 1];
+        const defaultRange: [number, number] = [0, 1];
         if (!visitorsChartData || visitorsChartData.length === 0) {
             return defaultRange; // Default range when no data
         }
@@ -191,9 +191,6 @@ const Overview: React.FC = () => {
     }, [visitorsData]);
 
     const isPageLoading = isConfigLoading;
-
-    console.log('visitorsChartData', visitorsChartData);
-    console.log('visitorsYRange', visitorsYRange);
 
     return (
         <StatsLayout>
