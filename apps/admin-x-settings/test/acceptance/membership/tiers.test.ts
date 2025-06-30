@@ -260,4 +260,53 @@ test.describe('Tier settings', async () => {
 
         expect(decodedUrl).toMatch(/\/\{\"route\":\"\/pro\",\"isExternal\":true\}$/);
     });
+
+    test('Shows limit modal when directly accessing stripe-connect route with limitStripeConnect', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...limitRequests,
+            browseSettings: globalDataRequests.browseSettings, // No Stripe configured
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        hostSettings: {
+                            limits: {
+                                limitStripeConnect: {
+                                    disabled: true,
+                                    error: 'Your current plan doesn\'t support Stripe Connect.'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }});
+
+        // Navigate directly to stripe-connect route
+        await page.goto('/#/settings/stripe-connect');
+
+        // Wait for limit modal to appear (limit check should happen on route load)
+        await page.waitForSelector('[data-testid="limit-modal"]', {timeout: 10000});
+
+        // Should show limit modal instead of Stripe Connect modal
+        await expect(page.getByTestId('limit-modal')).toBeVisible();
+        await expect(page.getByTestId('limit-modal')).toHaveText(/Your current plan doesn't support Stripe Connect/);
+
+        // Stripe modal should not be visible
+        await expect(page.getByTestId('stripe-modal')).not.toBeVisible();
+
+        // Click upgrade
+        const limitModal = page.getByTestId('limit-modal');
+        await limitModal.getByRole('button', {name: 'Upgrade'}).click();
+
+        // The route should be updated to /pro
+        const newPageUrl = page.url();
+        const newPageUrlObject = new URL(newPageUrl);
+        const decodedUrl = decodeURIComponent(newPageUrlObject.pathname);
+
+        expect(decodedUrl).toMatch(/\/\{\"route\":\"\/pro\",\"isExternal\":true\}$/);
+    });
 });
