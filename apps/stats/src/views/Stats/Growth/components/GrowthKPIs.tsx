@@ -76,29 +76,29 @@ const GrowthKPIs: React.FC<{
         if (dateRange === 1) {
             const today = moment().format('YYYY-MM-DD');
             const todayData = data.find(item => item.date === today);
-            
+
             return [{
                 date: today,
                 signups: todayData?.signups || 0,
                 cancellations: todayData?.cancellations || 0
             }];
         }
-        
+
         const {startDate, endDate} = getRangeDates(dateRange);
         const dateSpan = moment(endDate).diff(moment(startDate), 'days');
         const strategy = determineAggregationStrategy(dateRange, dateSpan, 'sum');
-        
+
         // Create a map of existing data by date
         const dataMap = new Map(data.map(item => [item.date, item]));
-        
+
         const filledData: {date: string; signups: number; cancellations: number}[] = [];
         const currentDate = moment(startDate);
         const endMoment = moment(endDate);
-        
+
         while (currentDate.isSameOrBefore(endMoment)) {
             let dateKey: string;
             let increment: moment.unitOfTime.DurationConstructor;
-            
+
             switch (strategy) {
             case 'weekly':
                 dateKey = currentDate.startOf('week').format('YYYY-MM-DD');
@@ -112,7 +112,7 @@ const GrowthKPIs: React.FC<{
                 dateKey = currentDate.format('YYYY-MM-DD');
                 increment = 'day';
             }
-            
+
             const existingData = dataMap.get(dateKey);
             if (existingData) {
                 filledData.push(existingData);
@@ -123,10 +123,10 @@ const GrowthKPIs: React.FC<{
                     cancellations: 0
                 });
             }
-            
+
             currentDate.add(1, increment);
         }
-        
+
         return filledData;
     };
 
@@ -162,56 +162,43 @@ const GrowthKPIs: React.FC<{
 
         switch (currentTab) {
         case 'free-members':
-            processedData = sanitizedData.map((item, index) => {
-                const diffValue = index === 0 ? null : item.free - sanitizedData[index - 1].free;
+            processedData = sanitizedData.map((item) => {
                 return {
                     ...item,
                     value: item.free,
                     formattedValue: formatNumber(item.free),
-                    label: 'Free members',
-                    diffValue,
-                    formattedDiffValue: diffValue === null ? null : (diffValue < 0 ? `-${formatNumber(diffValue)}` : `+${formatNumber(diffValue)}`)
+                    label: 'Free members'
                 };
             });
             break;
         case 'paid-members':
-            processedData = sanitizedData.map((item, index) => {
-                const diffValue = index === 0 ? null : item.paid - sanitizedData[index - 1].paid;
+            processedData = sanitizedData.map((item) => {
                 return {
                     ...item,
                     value: item.paid,
                     formattedValue: formatNumber(item.paid),
-                    label: 'Paid members',
-                    diffValue,
-                    formattedDiffValue: diffValue === null ? null : (diffValue < 0 ? `-${formatNumber(diffValue)}` : `+${formatNumber(diffValue)}`)
+                    label: 'Paid members'
                 };
             });
             break;
         case 'mrr':
-            processedData = sanitizedData.map((item, index) => {
-                const diffValue = index === 0 ? null : centsToDollars(item.mrr) - centsToDollars(sanitizedData[index - 1].mrr);
+            processedData = sanitizedData.map((item) => {
                 return {
                     ...item,
                     value: centsToDollars(item.mrr),
                     formattedValue: `${currencySymbol}${formatNumber(centsToDollars(item.mrr))}`,
-                    label: 'MRR',
-                    diffValue,
-                    formattedDiffValue: diffValue === null ? null : (diffValue < 0 ? `-${currencySymbol}${formatNumber(diffValue * -1)}` : `+${currencySymbol}${formatNumber(diffValue)}`)
+                    label: 'MRR'
                 };
             });
             break;
         default:
-            processedData = sanitizedData.map((item, index) => {
+            processedData = sanitizedData.map((item) => {
                 const currentTotal = item.free + item.paid + item.comped;
-                const previousTotal = index === 0 ? null : sanitizedData[index - 1].free + sanitizedData[index - 1].paid + sanitizedData[index - 1].comped;
-                const diffValue = index === 0 ? null : currentTotal - previousTotal!;
                 return {
                     ...item,
                     value: currentTotal,
                     formattedValue: formatNumber(currentTotal),
-                    label: 'Total members',
-                    diffValue,
-                    formattedDiffValue: diffValue === null ? null : (diffValue < 0 ? `-${formatNumber(diffValue)}` : `+${formatNumber(diffValue)}`)
+                    label: 'Total members'
                 };
             });
         }
@@ -245,26 +232,26 @@ const GrowthKPIs: React.FC<{
             if (range === 1) {
                 const today = moment().format('YYYY-MM-DD');
                 const todayData = subscriptionData.find(item => item.date === today);
-                
+
                 return [{
                     date: formatDisplayDateWithRange(new Date(today), range),
                     new: todayData?.signups || 0,
                     cancelled: -(todayData?.cancellations || 0) // Negative for the stacked bar chart
                 }];
             }
-            
+
             // Apply proper aggregation to subscription data using 'sum' aggregation type FIRST
             // This will properly sum signups and cancellations within each time period
             const signupsData = sanitizeChartData(subscriptionData, range, 'signups', 'sum');
             const cancellationsData = sanitizeChartData(subscriptionData, range, 'cancellations', 'sum');
-            
+
             // Combine the aggregated data
             const combinedData = signupsData.map(item => ({
                 date: item.date,
                 signups: item.signups || 0,
                 cancellations: cancellationsData.find(c => c.date === item.date)?.cancellations || 0
             }));
-            
+
             // Add any cancellation-only dates that might be missing from signups
             cancellationsData.forEach((cancelItem) => {
                 if (!combinedData.find(item => item.date === cancelItem.date)) {
@@ -275,13 +262,13 @@ const GrowthKPIs: React.FC<{
                     });
                 }
             });
-            
+
             // Sort by date
             combinedData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-            
+
             // Now fill missing data points with zeros to ensure consistent display
             const filledData = fillMissingDataPoints(combinedData, range);
-            
+
             return filledData.map((item) => {
                 const date = new Date(item.date);
 
@@ -301,7 +288,7 @@ const GrowthKPIs: React.FC<{
             if (range === 1) {
                 const today = moment().format('YYYY-MM-DD');
                 const todayData = allChartData.find(item => item.date === today);
-                
+
                 return [{
                     date: formatDisplayDateWithRange(new Date(today), range),
                     new: todayData?.paid_subscribed || 0,
