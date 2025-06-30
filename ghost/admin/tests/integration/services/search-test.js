@@ -54,6 +54,7 @@ suites.forEach((suite) => {
             secondPost = this.server.create('post', {title: 'Second post', slug: 'second-post'});
             firstPage = this.server.create('page', {title: 'First page', slug: 'first-page'});
             firstTag = this.server.create('tag', {name: 'First tag', slug: 'first-tag'});
+            firstUser = this.server.create('user', {name: 'First user', slug: 'first-user'});
         });
 
         it('is using correct provider', async function () {
@@ -63,9 +64,10 @@ suites.forEach((suite) => {
         it('returns urls for search results', async function () {
             const results = await search.searchTask.perform('first');
 
-            expect(results[0].options[0].url).to.equal('http://localhost:4200/tag/first-tag/');
-            expect(results[1].options[0].url).to.equal('http://localhost:4200/p/post-0/');
-            expect(results[2].options[0].url).to.equal('http://localhost:4200/p/page-0/');
+            expect(results[0].options[0].url).to.equal('http://localhost:4200/user/first-user/');
+            expect(results[1].options[0].url).to.equal('http://localhost:4200/tag/first-tag/');
+            expect(results[2].options[0].url).to.equal('http://localhost:4200/p/post-0/');
+            expect(results[3].options[0].url).to.equal('http://localhost:4200/p/page-0/');
         });
 
         it('returns additional post-related fields', async function () {

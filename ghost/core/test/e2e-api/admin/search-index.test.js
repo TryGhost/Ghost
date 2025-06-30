@@ -93,4 +93,26 @@ describe('Search Index API', function () {
                 });
         });
     });
+
+    describe('fetchUsers', function () {
+        const searchIndexUserMatcher = {
+            id: anyString,
+            slug: anyString,
+            name: anyString,
+            url: anyString,
+            profile_image: anyString
+        };
+
+        it('should return a list of users', async function () {
+            await agent.get('/search-index/users')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    users: new Array(2).fill(searchIndexUserMatcher)
+                });
+        });
+    });
 });

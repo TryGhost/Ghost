@@ -53,4 +53,22 @@ export default function mockSearchIndex(server) {
             tags: searchTags
         };
     });
+
+    server.get('/search-index/users', function ({users}) {
+        const searchUsers = users.all().models.map((user) => {
+            const url = `http://localhost:4200/user/${user.slug}/`;
+
+            return {
+                id: user.id,
+                slug: user.slug,
+                name: user.name,
+                url: url,
+                profile_image: user.profileImage
+            };
+        });
+
+        return {
+            users: searchUsers
+        };
+    });
 }

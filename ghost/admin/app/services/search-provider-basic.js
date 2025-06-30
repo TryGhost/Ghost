@@ -9,28 +9,24 @@ export const SEARCHABLES = [
     {
         name: 'Staff',
         model: 'user',
-        fields: ['id', 'slug', 'url', 'name'], // id not used but required for API to have correct url
         idField: 'slug',
         titleField: 'name'
     },
     {
         name: 'Tags',
         model: 'tag',
-        fields: ['slug', 'url', 'name'],
         idField: 'slug',
         titleField: 'name'
     },
     {
         name: 'Posts',
         model: 'post',
-        fields: ['id', 'url', 'title', 'status', 'published_at', 'visibility'],
         idField: 'id',
         titleField: 'title'
     },
     {
         name: 'Pages',
         model: 'page',
-        fields: ['id', 'url', 'title', 'status', 'published_at', 'visibility'],
         idField: 'id',
         titleField: 'title'
     }
@@ -39,7 +35,6 @@ export const SEARCHABLES = [
 export default class SearchProviderBasicService extends Service {
     @service ajax;
     @service notifications;
-    @service store;
     @service ghostPaths;
 
     content = [];
@@ -86,15 +81,8 @@ export default class SearchProviderBasicService extends Service {
     }
 
     async _loadSearchable(searchable, content) {
-        let url;
-        let query;
-        if (searchable.model === 'post' || searchable.model === 'page' || searchable.model === 'tag') {
-            url = this.ghostPaths.url.api(`search-index/${pluralize(searchable.model)}`);
-            query = {};
-        } else {
-            url = `${this.store.adapterFor(searchable.model).urlForQuery({}, searchable.model)}/`;
-            query = {fields: searchable.fields, limit: '10000'};
-        }
+        const url = this.ghostPaths.url.api(`search-index/${pluralize(searchable.model)}`);
+        const query = {};
 
         try {
             const response = await this.ajax.request(url, {data: query});
