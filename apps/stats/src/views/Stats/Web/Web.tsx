@@ -78,14 +78,14 @@ const Web: React.FC = () => {
     // Get KPI data
     const {data: kpiData, loading: kpiLoading} = useTinybirdQuery({
         endpoint: 'api_kpis',
-        statsConfig: statsConfig || {id: ''},
+        statsConfig,
         params
     });
 
     // Get top sources data
     const {data: sourcesData, loading: isSourcesLoading} = useTinybirdQuery({
         endpoint: 'api_top_sources',
-        statsConfig: statsConfig || {id: ''},
+        statsConfig,
         params
     });
 

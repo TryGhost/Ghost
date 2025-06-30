@@ -71,7 +71,7 @@ const Locations:React.FC = () => {
 
     const {data, loading} = useTinybirdQuery({
         endpoint: 'api_top_locations',
-        statsConfig: statsConfig || {id: ''},
+        statsConfig,
         params
     });
 

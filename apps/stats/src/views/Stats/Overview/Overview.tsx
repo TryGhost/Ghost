@@ -89,7 +89,7 @@ const Overview: React.FC = () => {
 
     const {data: visitorsData, loading: isVisitorsLoading} = useTinybirdQuery({
         endpoint: 'api_kpis',
-        statsConfig: statsConfig || {id: ''},
+        statsConfig,
         params: visitorsParams
     });
 
