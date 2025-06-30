@@ -1,8 +1,8 @@
-import React, {useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import moment from 'moment-timezone';
-import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, PostShareModal, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
+import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, PageMenu, PageMenuItem, PostShareModal, formatNumber} from '@tryghost/shade';
 import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
-import {hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
+import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '../../../App';
 import {useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -17,17 +17,42 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     children
 }) => {
     const navigate = useNavigate();
-    const {fromAnalytics} = useAppContext();
+    const {fromAnalytics, appSettings} = useAppContext();
     const {mutateAsync: deletePost} = useDeletePost();
     const handleError = useHandleError();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
-    const {site} = useGlobalData();
+    const {site, statsConfig, post, isPostLoading, postId} = useGlobalData();
 
-    // Use shared post data from context
-    const {post, isPostLoading, postId} = useGlobalData();
-    // Use the utility function from admin-x-framework
-    const showNewsletterTab = hasBeenEmailed(post as Post);
+    // Use the active visitors hook with post-specific filtering
+    const {activeVisitors, isLoading: isActiveVisitorsLoading} = useActiveVisitors({
+        postUuid: post?.uuid,
+        statsConfig,
+        enabled: appSettings?.analytics?.webAnalytics ?? false
+    });
+    
+    // Determine which tabs to show based on post type and settings
+    const availableTabs = useMemo(() => {
+        if (!post) {
+            return [];
+        }
+        const tabs = [];
+        
+        // Only show Overview and Web tabs if it's NOT a published-only post with web analytics disabled
+        const isPublishedOnlyWithoutWebAnalytics = isPublishedOnly(post as Post) && !appSettings?.analytics.webAnalytics;
+        if (!isPublishedOnlyWithoutWebAnalytics) {
+            tabs.push('Overview');   
+            if (!post.email_only && appSettings?.analytics.webAnalytics) {
+                tabs.push('Web');
+            }
+        }
+        if (hasBeenEmailed(post as Post)) {
+            tabs.push('Newsletter');
+        }
+        tabs.push('Growth');
+        
+        return tabs;
+    }, [post, appSettings?.analytics.webAnalytics]);
 
     const handleDeletePost = () => {
         if (!post) {
@@ -57,7 +82,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
             <header className='z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-black'>
                 <div className='relative flex min-h-[102px] w-full items-start justify-between gap-5 px-8 pb-0 pt-8'>
                     <div className='flex w-full flex-col gap-5'>
-                        <div className='flex w-full items-center justify-between'>
+                        <div className='flex w-full flex-col justify-between md:flex-row md:items-center'>
                             <Breadcrumb>
                                 <BreadcrumbList>
                                     {fromAnalytics
@@ -78,7 +103,17 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                     </BreadcrumbItem>
                                 </BreadcrumbList>
                             </Breadcrumb>
-                            <div className='flex items-center gap-2'>
+                            <div className='flex w-full items-center gap-2 md:w-auto'>
+                                {appSettings?.analytics.webAnalytics && !post?.email_only && (
+                                    <div className='mr-3 flex grow items-center gap-2 text-sm md:grow-0'>
+                                        <div className='flex items-center gap-2 text-sm text-muted-foreground' title='Active readers in the last 5 minutes · Updates every 60 seconds'>
+                                            <span className='text-sm'>
+                                                {isActiveVisitorsLoading ? '' : formatNumber(activeVisitors)} reading now
+                                            </span>
+                                            <div className={`size-2 rounded-full ${isActiveVisitorsLoading ? 'animate-pulse bg-muted' : activeVisitors ? 'bg-green-500' : 'border border-muted-foreground'}`}></div>
+                                        </div>
+                                    </div>
+                                )}
                                 {/* <Button variant='outline'><LucideIcon.RefreshCw /></Button> */}
                                 {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                                 {!isPostLoading &&
@@ -137,19 +172,21 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                             </div>
                         </div>
                         {!isPostLoading &&
-                        <div className='flex items-center gap-6'>
+                        <div className='flex items-start gap-6 md:items-center'>
                             {post?.feature_image &&
-                                <div className='h-[82px] w-[132px] rounded-md bg-cover bg-center' style={{
+                                <div className='aspect-[16/10] w-full max-w-[100px] rounded-md bg-cover bg-center md:max-w-[132px]' style={{
                                     backgroundImage: `url(${post.feature_image})`
                                 }}></div>
                             }
                             <div>
-                                <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
+                                <H1 className='-ml-px max-w-[920px] indent-0 text-xl md:min-h-[35px] md:text-3xl md:leading-[1.2em]'>
                                     {post?.title}
                                 </H1>
                                 {post?.published_at && (
                                     <div className='mt-0.5 flex items-center justify-start text-sm leading-[1.65em] text-muted-foreground'>
-                            Published on your site on {moment.utc(post.published_at).format('D MMM YYYY')} at {moment.utc(post.published_at).format('HH:mm')}
+                                        {isEmailOnly(post as Post) && `Sent on ${moment.utc(post.published_at).format('D MMM YYYY')} at ${moment.utc(post.published_at).format('HH:mm')}`}
+                                        {isPublishedOnly(post as Post) && `Published on your site on ${moment.utc(post.published_at).format('D MMM YYYY')} at ${moment.utc(post.published_at).format('HH:mm')}`}
+                                        {isPublishedAndEmailed(post as Post) && `Published and sent on ${moment.utc(post.published_at).format('D MMM YYYY')} at ${moment.utc(post.published_at).format('HH:mm')}`}
                                     </div>
                                 )}
                             </div>
@@ -158,38 +195,44 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     </div>
                 </div>
             </header>
-            <Navbar className='sticky top-0 z-50 -mb-8 items-center border-none bg-white/70 py-8 backdrop-blur-md dark:bg-black'>
-                <Tabs className="flex h-9 w-full items-center" defaultValue={currentTab} variant='pill'>
-                    <TabsList>
-                        <TabsTrigger value="Overview" onClick={() => {
-                            navigate(`/analytics/beta/${postId}`);
-                        }}>
-                            Overview
-                        </TabsTrigger>
-                        {!post?.email_only && (
-                            <TabsTrigger value="Web" onClick={() => {
+            <Navbar className='sticky top-0 z-50 -mb-8 flex-col items-start gap-y-5 border-none bg-white/70 py-8 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
+                {!isPostLoading && (
+                    <PageMenu className='min-h-[34px]' defaultValue={currentTab} responsive>
+                        {availableTabs.includes('Overview') && (
+                            <PageMenuItem value="Overview" onClick={() => {
+                                navigate(`/analytics/beta/${postId}`);
+                            }}>
+                                    Overview
+                            </PageMenuItem>
+                        )}
+                        {availableTabs.includes('Web') && (
+                            <PageMenuItem value="Web" onClick={() => {
                                 navigate(`/analytics/beta/${postId}/web`);
                             }}>
-                                Web traffic
-                            </TabsTrigger>
+                                    Web traffic
+                            </PageMenuItem>
                         )}
-                        {showNewsletterTab && (
-                            <TabsTrigger value="Newsletter" onClick={() => {
+                        {availableTabs.includes('Newsletter') && (
+                            <PageMenuItem value="Newsletter" onClick={() => {
                                 navigate(`/analytics/beta/${postId}/newsletter`);
                             }}>
-                                Newsletter
-                            </TabsTrigger>
+                                    Newsletter
+                            </PageMenuItem>
                         )}
-                        <TabsTrigger value="Growth" onClick={() => {
-                            navigate(`/analytics/beta/${postId}/growth`);
-                        }}>
-                            Growth
-                        </TabsTrigger>
-                    </TabsList>
-                </Tabs>
-                <NavbarActions>
-                    {children}
-                </NavbarActions>
+                        {availableTabs.includes('Growth') && (
+                            <PageMenuItem value="Growth" onClick={() => {
+                                navigate(`/analytics/beta/${postId}/growth`);
+                            }}>
+                                    Growth
+                            </PageMenuItem>
+                        )}
+                    </PageMenu>
+                )}
+                {children &&
+                    <NavbarActions>
+                        {children}
+                    </NavbarActions>
+                }
             </Navbar>
 
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

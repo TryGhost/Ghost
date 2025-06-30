@@ -81,9 +81,16 @@ class CanThisResult {
                     // Check api key permissions if they were passed
                     hasApiKeyPermission = true;
                     if (!_.isNull(apiKeyPermissions)) {
-                        // api key request have no user, but we want the user permissions checks to pass
-                        hasUserPermission = true;
-                        hasApiKeyPermission = _.some(apiKeyPermissions, checkPermission);
+                        if (loadedPermissions.user) {
+                            // Staff API key scenario: both user and API key present
+                            // Use USER permissions and ignore API key permissions
+                            hasApiKeyPermission = true; // Allow API key check to pass
+                        } else {
+                            // Traditional API key scenario: API key only, no user
+                            // Use API key permissions as before
+                            hasUserPermission = true;
+                            hasApiKeyPermission = _.some(apiKeyPermissions, checkPermission);
+                        }
                     }
 
                     // Offer a chance for the TargetModel to override the results

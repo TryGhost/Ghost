@@ -8,10 +8,10 @@ import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, Icon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, SkeletonTable, cn, formatNumber, formatPercentage, formatQueryDate, getRangeDates, useSimplePagination} from '@tryghost/shade';
+import {Navigate, getStatEndpointUrl, useAppContext} from '@tryghost/admin-x-framework';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {getPeriodText} from '@src/utils/chart-helpers';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -56,11 +56,11 @@ interface ProcessedLocationData {
 }
 
 const Locations:React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    const {range, audience} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, audience, tinybirdToken} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
     const ITEMS_PER_PAGE = 10;
+    const {appSettings} = useAppContext();
 
     const params = {
         site_uuid: statsConfig?.id || '',
@@ -72,7 +72,7 @@ const Locations:React.FC = () => {
 
     const {data, loading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_top_locations'),
-        token: getToken(statsConfig),
+        token: tinybirdToken,
         params
     });
 
@@ -141,31 +141,31 @@ const Locations:React.FC = () => {
             // We have to do this manually because dynamic classnames are not interpreted by TailwindCSS
             switch (currentData.relativeValue) {
             case 10:
-                opacity = 'opacity-10';
-                break;
-            case 20:
-                opacity = 'opacity-20';
-                break;
-            case 30:
-                opacity = 'opacity-30';
-                break;
-            case 40:
                 opacity = 'opacity-40';
                 break;
-            case 50:
+            case 20:
+                opacity = 'opacity-40';
+                break;
+            case 30:
+                opacity = 'opacity-45';
+                break;
+            case 40:
                 opacity = 'opacity-50';
                 break;
-            case 60:
+            case 50:
                 opacity = 'opacity-60';
+                break;
+            case 60:
+                opacity = 'opacity-65';
                 break;
             case 70:
                 opacity = 'opacity-70';
                 break;
             case 80:
-                opacity = 'opacity-80';
+                opacity = 'opacity-75';
                 break;
             case 90:
-                opacity = 'opacity-90';
+                opacity = 'opacity-95';
                 break;
             }
             return cn('fill-[hsl(var(--chart-blue))]', opacity);
@@ -198,6 +198,12 @@ const Locations:React.FC = () => {
 
     const isLoading = isConfigLoading || loading;
 
+    if (!appSettings?.analytics.webAnalytics) {
+        return (
+            <Navigate to='/' />
+        );
+    }
+
     return (
         <StatsLayout>
             <StatsHeader>
@@ -211,7 +217,7 @@ const Locations:React.FC = () => {
                         <CardDescription>A geographic breakdown of your readers {getPeriodText(range)}</CardDescription>
                     </CardHeader>
                     <CardContent className='p-0'>
-                        <div className='grid grid-cols-3 items-stretch'>
+                        <div className='flex flex-col lg:grid lg:grid-cols-3 lg:items-stretch'>
                             <div className='svg-map-container relative col-span-2 mx-auto w-full max-w-[740px] px-8 py-12 [&_.svg-map]:stroke-background'>
                                 <SVGMap
                                     locationClassName={getLocationClassName}

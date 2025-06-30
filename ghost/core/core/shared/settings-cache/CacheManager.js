@@ -14,6 +14,7 @@ const _ = require('lodash');
 
 /**
  * @typedef {Object} PublicSettingsCache
+ * @property {string|null} site_uuid - The blog's site UUID
  * @property {string|null} title - The blog's title
  * @property {string|null} description - The blog's description
  * @property {string|null} logo - URL to the blog's logo
@@ -60,6 +61,7 @@ const _ = require('lodash');
  * @property {string|null} support_email_address - Support email address
  * @property {string|null} editor_default_email_recipients - Default email recipients for editor
  * @property {string|null} labs - JSON string of enabled labs features
+ * @property {boolean|null} social_web_enabled - Whether social web is enabled
  * @property {never} [x] - Prevent accessing undefined properties
  */
 

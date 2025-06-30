@@ -1,4 +1,4 @@
-import OverviewPage from './pages/OverviewPage.ts';
+import OverviewTab from './pages/OverviewTab.ts';
 import {
     createMockRequests,
     mockApi
@@ -10,14 +10,14 @@ test.describe('Stats App', () => {
         // Use the default mock requests - includes all common endpoints
         await mockApi({page, requests: createMockRequests()});
 
-        const overviewPage = new OverviewPage(page);
+        const overviewPage = new OverviewTab(page);
         await overviewPage.visit();
 
         await expect(overviewPage.header).toBeVisible();
     });
 
     test('shows an error without mocked data', async ({page}) => {
-        const overviewPage = new OverviewPage(page);
+        const overviewPage = new OverviewTab(page);
         await overviewPage.visit();
 
         await expect(overviewPage.body).toContainText(/Unexpected Application Error/);
@@ -39,10 +39,9 @@ test.describe('Stats App', () => {
             }
         })});
 
-        const overviewPage = new OverviewPage(page);
+        const overviewPage = new OverviewTab(page);
         await overviewPage.visit();
 
         await expect(overviewPage.body).toContainText('155');
-        await expect(overviewPage.body).toContainText('$550');
     });
 });

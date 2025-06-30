@@ -51,6 +51,10 @@ describe('koenig/services/render-partials/email-button', function () {
             const result = emailButton._getTextColor({color: '#222222', style: 'fill'});
             assert.equal(result, '#FFFFFF');
         });
+        it('handles invalid hex colors', function () {
+            const result = emailButton._getTextColor({color: 'invalid', style: 'fill'});
+            assert.equal(result, '');
+        });
     });
 
     describe('_getButtonClasses', function () {

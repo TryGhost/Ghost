@@ -90,6 +90,7 @@ export const defaultMockData = {
         data: undefined,
         site: undefined,
         statsConfig: undefined,
+        tinybirdToken: 'mock-tinybird-token',
         range: 30,
         audience: 7,
         setAudience: vi.fn(),
@@ -120,7 +121,17 @@ export const defaultMockData = {
             tags: [],
             tiers: []
         },
-        isPostLoading: false
+        isPostLoading: false,
+        postType: {
+            isEmailOnly: false,
+            isPublishedOnly: false,
+            isPublishedAndEmailed: true,
+            metricsToDisplay: {
+                showEmailMetrics: true,
+                showWebMetrics: true,
+                showMemberGrowth: true
+            }
+        }
     }
 };
 

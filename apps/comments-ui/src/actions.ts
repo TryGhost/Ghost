@@ -55,12 +55,39 @@ async function setOrder({state, data: {order}, options, api, dispatchAction}: {s
     }
 }
 
-async function loadMoreReplies({state, api, data: {comment, limit}, isReply}: {state: EditableAppContext, api: GhostApi, data: {comment: any, limit?: number | 'all'}, isReply: boolean}): Promise<Partial<EditableAppContext>> {
-    let data;
-    if (state.admin && state.adminApi && !isReply) { // we don't want the admin api to load reply data for replying to a reply, so we pass isReply: true
-        data = await state.adminApi.replies({commentId: comment.id, afterReplyId: comment.replies[comment.replies.length - 1]?.id, limit, memberUuid: state.member?.uuid});
+async function loadMoreReplies({state, api, data: {comment, limit}, isReply}: {state: EditableAppContext, api: GhostApi, data: {comment: Comment, limit?: number | 'all'}, isReply: boolean}): Promise<Partial<EditableAppContext>> {
+    const fetchReplies = async (afterReplyId: string | undefined, requestLimit: number) => {
+        if (state.admin && state.adminApi && !isReply) { // we don't want the admin api to load reply data for replying to a reply, so we pass isReply: true
+            return await state.adminApi.replies({commentId: comment.id, afterReplyId, limit: requestLimit, memberUuid: state.member?.uuid});
+        } else {
+            return await api.comments.replies({commentId: comment.id, afterReplyId, limit: requestLimit});
+        }
+    };
+
+    let afterReplyId: string | undefined = comment.replies && comment.replies.length > 0
+        ? comment.replies[comment.replies.length - 1]?.id
+        : undefined;
+
+    let allComments: Comment[] = [];
+
+    if (limit === 'all') {
+        let hasMore = true;
+
+        while (hasMore) {
+            const data = await fetchReplies(afterReplyId, 100);
+            allComments.push(...data.comments);
+            hasMore = !!data.meta.pagination.next;
+
+            if (data.comments && data.comments.length > 0) {
+                afterReplyId = data.comments[data.comments.length - 1]?.id;
+            } else {
+                // If no comments returned, stop pagination to prevent infinite loop
+                hasMore = false;
+            }
+        }
     } else {
-        data = await api.comments.replies({commentId: comment.id, afterReplyId: comment.replies[comment.replies.length - 1]?.id, limit});
+        const data = await fetchReplies(afterReplyId, limit as number || 100);
+        allComments = data.comments;
     }
 
     // Note: we store the comments from new to old, and show them in reverse order
@@ -69,7 +96,7 @@ async function loadMoreReplies({state, api, data: {comment, limit}, isReply}: {s
             if (c.id === comment.id) {
                 return {
                     ...comment,
-                    replies: [...comment.replies, ...data.comments]
+                    replies: [...comment.replies, ...allComments]
                 };
             }
             return c;
@@ -390,9 +417,13 @@ async function openCommentForm({data: newForm, api, state}: {data: OpenCommentFo
     const topLevelCommentId = newForm.parent_id || newForm.id;
     if (newForm.type === 'reply' && !state.openCommentForms.some(f => f.id === topLevelCommentId || f.parent_id === topLevelCommentId)) {
         const comment = state.comments.find(c => c.id === topLevelCommentId);
-        // we don't want the admin api to load reply data for replying to a reply, so we pass isReply: true
-        const newCommentsState = await loadMoreReplies({state, api, data: {comment, limit: 'all'}, isReply: true});
-        otherStateChanges = {...otherStateChanges, ...newCommentsState};
+
+        if (comment) {
+            // we don't want the admin api to load reply data for replying to a reply, so we pass isReply: true
+            // TODO: why don't we want the admin api to load reply data for replying to a reply?
+            const newCommentsState = await loadMoreReplies({state, api, data: {comment, limit: 'all'}, isReply: true});
+            otherStateChanges = {...otherStateChanges, ...newCommentsState};
+        }
     }
 
     // We want to keep the number of displayed forms to a minimum so when opening a

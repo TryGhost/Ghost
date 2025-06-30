@@ -17,6 +17,7 @@ export default class Posts extends AdminXComponent {
             fromAnalytics: fromAnalytics,
             appSettings: {
                 paidMembersEnabled: this.settings.paidMembersEnabled,
+                newslettersEnabled: this.settings.editorDefaultEmailRecipients !== 'disabled',
                 analytics: {
                     emailTrackOpens: this.settings.emailTrackOpens,
                     emailTrackClicks: this.settings.emailTrackClicks,

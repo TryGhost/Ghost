@@ -6,13 +6,14 @@ import Locations from './components/Locations';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import Sources from './components/Sources';
-import {BarChartLoadingIndicator, Card, CardContent, formatQueryDate, getRangeDates} from '@tryghost/shade';
-import {BaseSourceData, getStatEndpointUrl, getToken, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {BarChartLoadingIndicator, Card, CardContent, formatQueryDate, getRangeDates, getRangeForStartDate} from '@tryghost/shade';
+import {BaseSourceData, getStatEndpointUrl, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 
 import {useEffect, useMemo} from 'react';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 
+import {STATS_RANGES} from '@src/utils/constants';
 import {useQuery} from '@tinybirdco/charts';
 
 // Array of values that represent unknown locations
@@ -29,15 +30,7 @@ interface postAnalyticsProps {}
 const Web: React.FC<postAnalyticsProps> = () => {
     const navigate = useNavigate();
     const {postId} = useParams();
-    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    const {range, audience} = useGlobalData();
-    const {startDate, endDate, timezone} = getRangeDates(range);
-
-    // Get global data for site info
-    const {data: globalData} = useGlobalData();
-
-    // Get post data from context
-    const {post, isPostLoading} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, audience, data: globalData, post, isPostLoading, tinybirdToken} = useGlobalData();
 
     // Redirect to Overview if this is an email-only post
     useEffect(() => {
@@ -45,6 +38,20 @@ const Web: React.FC<postAnalyticsProps> = () => {
             navigate(`/analytics/beta/${postId}`);
         }
     }, [isPostLoading, post?.email_only, navigate, postId]);
+
+    // Calculate chart range based on days between today and post publication date
+    const chartRange = useMemo(() => {
+        if (!post?.published_at) {
+            return STATS_RANGES.ALL_TIME.value; // Fallback if no publication date
+        }
+        const calculatedRange = getRangeForStartDate(post.published_at);
+        if (range > calculatedRange) {
+            return calculatedRange;
+        }
+        return range;
+    }, [post?.published_at, range]);
+
+    const {startDate, endDate, timezone} = getRangeDates(chartRange);
 
     // Get params
     const params = useMemo(() => {
@@ -70,21 +77,21 @@ const Web: React.FC<postAnalyticsProps> = () => {
     // Get web kpi data
     const {data: kpiData, loading: isKpisLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
+        token: tinybirdToken,
         params: params
     });
 
     // Get locations data
     const {data: locationsData, loading: isLocationsLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_top_locations'),
-        token: getToken(statsConfig),
+        token: tinybirdToken,
         params: params
     });
 
     // Get sources data
     const {data: sourcesData, loading: isSourcesLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
-        token: getToken(statsConfig),
+        token: tinybirdToken,
         params: params
     });
 
@@ -153,15 +160,18 @@ const Web: React.FC<postAnalyticsProps> = () => {
                     :
                     kpiData && kpiData.length !== 0 && kpiValues.visits !== '0' ?
                         <>
-                            <Kpis data={kpiData as KpiDataItem[] | null} />
-                            <div className='grid grid-cols-2 gap-8'>
+                            <Kpis
+                                data={kpiData as KpiDataItem[] | null}
+                                range={chartRange}
+                            />
+                            <div className='flex flex-col gap-8 lg:grid lg:grid-cols-2'>
                                 <Locations
                                     data={processedLocationsData}
                                     isLoading={isLocationsLoading}
                                 />
                                 <Sources
                                     data={sourcesData as BaseSourceData[] | null}
-                                    range={range}
+                                    range={chartRange}
                                     siteIcon={siteIcon}
                                     siteUrl={testingSiteUrl}
                                     totalVisitors={totalSourcesVisits}

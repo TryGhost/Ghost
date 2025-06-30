@@ -1,6 +1,5 @@
-import { v4 as uuidv4 } from 'uuid';
 import { getCountryForTimezone } from 'countries-and-timezones';
-import { getReferrer, parseReferrer } from '../utils/url-attribution';
+import { parseReferrer } from '../utils/url-attribution';
 import { processPayload } from '../utils/privacy';
 import { BrowserService } from './browser-service';
 
@@ -59,6 +58,19 @@ export class GhostStats {
         return !!(config.host && config.token);
     }
 
+    generateUUID() {
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            return crypto.randomUUID();
+        }
+
+        // Fallback to a simple UUID generator
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
     async trackEvent(name, payload) {
         try {
             // Check if we have required configuration
@@ -67,6 +79,7 @@ export class GhostStats {
             }
 
             const url = `${config.host}?name=${encodeURIComponent(config.datasource)}&token=${encodeURIComponent(config.token)}`;
+            payload.event_id = this.generateUUID();
 
             // Process the payload, masking sensitive data
             const processedPayload = processPayload(payload, config.globalAttributes, config.stringifyPayload);
@@ -150,8 +163,7 @@ export class GhostStats {
                 'user-agent': navigator?.userAgent,
                 locale,
                 location: country,
-                referrer: getReferrer(location?.href),
-                parsedReferrer: parseReferrer(location?.href),
+                parsedReferrer: parseReferrer(location?.href), // this sends an object with source, medium, and url
                 pathname: location?.pathname,
                 href: location?.href,
             });

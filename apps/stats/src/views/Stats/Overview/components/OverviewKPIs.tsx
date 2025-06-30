@@ -72,7 +72,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
-            <KpiCardHeader className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
+            <KpiCardHeader className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-2 xl:pb-4'>
                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
                     <KpiCardHeaderLabel className={onClick && 'transition-all group-hover:text-foreground'}>
                         {color && <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color}}></span>}
@@ -127,48 +127,55 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
     const {range} = useGlobalData();
     const {appSettings} = useAppContext();
 
-    const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] hover:!cursor-pointer';
+    const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] min-h-[100px] hover:!cursor-pointer';
 
     if (isLoading) {
         return (
-            <EmptyCard className='flex h-[calc(10vw+116px)] max-h-[416px] items-center justify-center hover:!cursor-pointer'>
+            <EmptyCard className='flex h-[calc(10vw+116px)] max-h-[416px] min-h-20 items-center justify-center hover:!cursor-pointer'>
                 <BarChartLoadingIndicator />
             </EmptyCard>
         );
     }
 
-    let containerClass = '';
-    if (appSettings?.paidMembersEnabled) {
-        containerClass = 'grid grid-cols-3 gap-8';
-    } else {
-        containerClass = 'grid grid-cols-2 gap-8';
+    let cols = 'lg:grid-cols-3';
+    if ((appSettings?.analytics.webAnalytics && !appSettings?.paidMembersEnabled) ||
+        (!appSettings?.analytics.webAnalytics && appSettings?.paidMembersEnabled)) {
+        cols = 'lg:grid-cols-2';
     }
+
+    if (!appSettings?.analytics.webAnalytics && !appSettings?.paidMembersEnabled) {
+        cols = 'lg:grid-cols-1';
+    }
+
+    const containerClass = `flex flex-col lg:grid ${cols} gap-8`;
 
     return (
         <div className={containerClass}>
-            <OverviewKPICard
-                description='Number of individual people who visited your website'
-                diffDirection='empty'
-                formattedValue={kpiValues.visits}
-                iconName='Eye'
-                linkto='/web/'
-                title='Unique visitors'
-                onClick={() => {
-                    navigate('/web/');
-                }}
-            >
-                <GhAreaChart
-                    className={areaChartClassName}
-                    color='hsl(var(--chart-blue))'
-                    data={visitorsChartData}
-                    id="visitors"
-                    range={range}
-                    showHorizontalLines={true}
-                    showYAxisValues={false}
-                    syncId="overview-charts"
-                    yAxisRange={visitorsYRange}
-                />
-            </OverviewKPICard>
+            {appSettings?.analytics.webAnalytics === true &&
+                <OverviewKPICard
+                    description='Number of individual people who visited your website'
+                    diffDirection='empty'
+                    formattedValue={kpiValues.visits}
+                    iconName='Globe'
+                    linkto='/web/'
+                    title='Unique visitors'
+                    onClick={() => {
+                        navigate('/web/');
+                    }}
+                >
+                    <GhAreaChart
+                        className={areaChartClassName}
+                        color='hsl(var(--chart-blue))'
+                        data={visitorsChartData}
+                        id="visitors"
+                        range={range}
+                        showHorizontalLines={true}
+                        showYAxisValues={false}
+                        syncId="overview-charts"
+                        yAxisRange={visitorsYRange}
+                    />
+                </OverviewKPICard>
+            }
 
             <OverviewKPICard
                 description='How number of members of your publication changed over time'

@@ -107,7 +107,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
         });
     }, [processedData, totalVisitors]);
 
-    const topSources = extendedData.slice(0, 10);
+    const topSources = extendedData.slice(0, 11);
 
     // Generate description based on mode and range
     const title = 'Top sources';
@@ -150,14 +150,14 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                     </div>
                 )}
             </CardContent>
-            {extendedData.length > 10 &&
+            {extendedData.length > 11 &&
                 <CardFooter>
                     <Sheet>
                         <SheetTrigger asChild>
                             <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                         </SheetTrigger>
                         <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
+                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
                                 <SheetTitle>{title}</SheetTitle>
                                 <SheetDescription>{description}</SheetDescription>
                             </SheetHeader>
