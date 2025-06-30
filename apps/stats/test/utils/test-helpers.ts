@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react';
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {
     createErrorMock,
     createLoadingMock,
@@ -14,23 +12,6 @@ import {vi} from 'vitest';
 
 // Import types from API modules
 import type {NewsletterStatsResponseType, TopPostsStatsResponseType} from '@tryghost/admin-x-framework/api/stats';
-
-// Create a test wrapper with QueryClient
-export const createTestWrapper = () => {
-    const queryClient = new QueryClient({
-        defaultOptions: {
-            queries: {retry: false},
-            mutations: {retry: false}
-        }
-    });
-
-    const Wrapper = ({children}: {children: React.ReactNode}) => (
-        React.createElement(QueryClientProvider, {client: queryClient}, children)
-    );
-    Wrapper.displayName = 'TestWrapper';
-
-    return Wrapper;
-};
 
 // Re-export centralized utilities for convenience
 export {

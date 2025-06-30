@@ -1,5 +1,6 @@
+import {TestWrapper} from '@tryghost/admin-x-framework/test/test-utils';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {createTestWrapper, getExpectedDateRange, setupDateMocking, setupStatsAppMocks} from '../../utils/test-helpers';
+import {getExpectedDateRange, setupDateMocking, setupStatsAppMocks} from '../../utils/test-helpers';
 import {renderHook} from '@testing-library/react';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 
@@ -45,7 +46,7 @@ describe('useTopPostsStatsWithRange', () => {
     });
 
     it('uses default range of 30 days when no range provided', () => {
-        const wrapper = createTestWrapper();
+        const wrapper = TestWrapper;
         renderHook(() => useTopPostsStatsWithRange(), {wrapper});
         
         const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(30);
@@ -60,7 +61,7 @@ describe('useTopPostsStatsWithRange', () => {
     });
 
     it('uses default order of "mrr desc" when no order provided', () => {
-        const wrapper = createTestWrapper();
+        const wrapper = TestWrapper;
         renderHook(() => useTopPostsStatsWithRange(7), {wrapper});
         
         const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(7);
@@ -75,7 +76,7 @@ describe('useTopPostsStatsWithRange', () => {
     });
 
     it('accepts custom range parameter', () => {
-        const wrapper = createTestWrapper();
+        const wrapper = TestWrapper;
         renderHook(() => useTopPostsStatsWithRange(14), {wrapper});
         
         const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(14);
@@ -90,7 +91,7 @@ describe('useTopPostsStatsWithRange', () => {
     });
 
     it('accepts custom order parameter', () => {
-        const wrapper = createTestWrapper();
+        const wrapper = TestWrapper;
         renderHook(() => useTopPostsStatsWithRange(30, 'free_members desc'), {wrapper});
         
         const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(30);
@@ -105,7 +106,7 @@ describe('useTopPostsStatsWithRange', () => {
     });
 
     it('accepts paid_members desc order', () => {
-        const wrapper = createTestWrapper();
+        const wrapper = TestWrapper;
         renderHook(() => useTopPostsStatsWithRange(30, 'paid_members desc'), {wrapper});
         
         const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(30);
@@ -120,7 +121,7 @@ describe('useTopPostsStatsWithRange', () => {
     });
 
     it('filters out undefined values from search params', () => {
-        const wrapper = createTestWrapper();
+        const wrapper = TestWrapper;
         renderHook(() => useTopPostsStatsWithRange(7, 'mrr desc'), {wrapper});
         
         const calledWith = mockUseTopPostsStats.mock.calls[0]?.[0];
@@ -137,7 +138,7 @@ describe('useTopPostsStatsWithRange', () => {
     });
 
     it('returns the result from useTopPostsStats', () => {
-        const wrapper = createTestWrapper();
+        const wrapper = TestWrapper;
         const {result} = renderHook(() => useTopPostsStatsWithRange(), {wrapper});
         
         // Just verify that the hook returns something (the mocked result)

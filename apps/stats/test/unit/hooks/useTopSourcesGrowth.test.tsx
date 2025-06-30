@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {createMockQueryResult} from '../../utils/mock-factories';
+import {createMockApiReturn} from '@tryghost/admin-x-framework/test/hook-testing-utils';
 import {renderHook} from '@testing-library/react';
 import {useTopSourcesGrowth} from '@src/hooks/useTopSourcesGrowth';
 import type {ReferrerHistoryResponseType} from '@tryghost/admin-x-framework/api/referrers';
@@ -51,7 +51,7 @@ describe('useTopSourcesGrowth', () => {
         
         mockGetAudienceQueryParam.mockReturnValue('all');
         
-        mockUseTopSourcesGrowthAPI.mockReturnValue(createMockQueryResult<ReferrerHistoryResponseType>(
+        mockUseTopSourcesGrowthAPI.mockReturnValue(createMockApiReturn<ReferrerHistoryResponseType>(
             {stats: []},
             false
         ));
@@ -167,7 +167,7 @@ describe('useTopSourcesGrowth', () => {
     });
 
     it('returns the result from useTopSourcesGrowthAPI', () => {
-        const mockResult = createMockQueryResult<ReferrerHistoryResponseType>(
+        const mockResult = createMockApiReturn<ReferrerHistoryResponseType>(
             {stats: [{source: 'Google', signups: 100, date: '2024-01-01', paid_conversions: 10, mrr: 1000}]},
             false
         );
@@ -180,7 +180,7 @@ describe('useTopSourcesGrowth', () => {
     });
 
     it('handles loading state', () => {
-        const mockResult = createMockQueryResult<ReferrerHistoryResponseType>(
+        const mockResult = createMockApiReturn<ReferrerHistoryResponseType>(
             undefined,
             true
         );
@@ -194,7 +194,7 @@ describe('useTopSourcesGrowth', () => {
 
     it('handles error state', () => {
         const mockError = new Error('API Error');
-        const mockResult = createMockQueryResult<ReferrerHistoryResponseType>(
+        const mockResult = createMockApiReturn<ReferrerHistoryResponseType>(
             undefined,
             false,
             mockError

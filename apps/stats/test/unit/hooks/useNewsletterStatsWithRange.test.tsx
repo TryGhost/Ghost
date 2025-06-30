@@ -1,5 +1,6 @@
+import {TestWrapper} from '@tryghost/admin-x-framework/test/test-utils';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {createTestWrapper, getExpectedDateRange, setupDateMocking, setupStatsAppMocks} from '../../utils/test-helpers';
+import {getExpectedDateRange, setupDateMocking, setupStatsAppMocks} from '../../utils/test-helpers';
 import {renderHook} from '@testing-library/react';
 import {
     useNewsletterBasicStatsWithRange, 
@@ -215,7 +216,7 @@ describe('Newsletter Stats Hooks', () => {
 
     describe('useNewsletterStatsWithRange', () => {
         it('uses default range of 30 days when no range provided', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const {result} = renderHook(() => useNewsletterStatsWithRange(), {wrapper});
             
             // Calculate expected dates dynamically
@@ -234,7 +235,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('uses default order of "date desc" when no order provided', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const {result} = renderHook(() => useNewsletterStatsWithRange(7), {wrapper});
             
             // Calculate expected dates dynamically
@@ -252,7 +253,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('accepts custom range parameter', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const {result} = renderHook(() => useNewsletterStatsWithRange(14), {wrapper});
             
             // Calculate expected dates dynamically
@@ -270,7 +271,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('accepts custom order parameter', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const {result} = renderHook(() => useNewsletterStatsWithRange(30, 'open_rate desc'), {wrapper});
             
             // Calculate expected dates dynamically
@@ -288,7 +289,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('accepts newsletter ID parameter', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const {result} = renderHook(() => useNewsletterStatsWithRange(30, 'date desc', 'newsletter-123'), {wrapper});
             
             // Calculate expected dates dynamically
@@ -309,7 +310,7 @@ describe('Newsletter Stats Hooks', () => {
 
     describe('useSubscriberCountWithRange', () => {
         it('uses default range of 30 days when no range provided', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const {result} = renderHook(() => useSubscriberCountWithRange(), {wrapper});
             
             // Calculate expected dates dynamically
@@ -326,7 +327,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('accepts custom range parameter', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const {result} = renderHook(() => useSubscriberCountWithRange(7), {wrapper});
             
             // Calculate expected dates dynamically
@@ -343,7 +344,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('accepts newsletter ID parameter', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const {result} = renderHook(() => useSubscriberCountWithRange(30, 'newsletter-123'), {wrapper});
             
             // Calculate expected dates dynamically
@@ -363,7 +364,7 @@ describe('Newsletter Stats Hooks', () => {
 
     describe('useNewslettersList', () => {
         it('calls useBrowseNewsletters', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const {result} = renderHook(() => useNewslettersList(), {wrapper});
             
             expect(result.current).toBeDefined();
@@ -373,7 +374,7 @@ describe('Newsletter Stats Hooks', () => {
 
     describe('useNewsletterStatsWithRange - shouldFetch parameter', () => {
         it('returns empty state when shouldFetch is false', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const mockRefetch = vi.fn();
             
             mockUseNewsletterStats.mockReturnValue({
@@ -396,7 +397,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('calls real API when shouldFetch is true', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const {result} = renderHook(() => useNewsletterStatsWithRange(30, 'date desc', undefined, true), {wrapper});
             
             expect(result.current).toBeDefined();
@@ -409,7 +410,7 @@ describe('Newsletter Stats Hooks', () => {
 
     describe('useSubscriberCountWithRange - shouldFetch parameter', () => {
         it('returns empty state when shouldFetch is false', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const mockRefetch = vi.fn();
             
             mockUseSubscriberCount.mockReturnValue({
@@ -432,7 +433,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('calls real API when shouldFetch is true', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const {result} = renderHook(() => useSubscriberCountWithRange(30, undefined, true), {wrapper});
             
             expect(result.current).toBeDefined();
@@ -445,7 +446,7 @@ describe('Newsletter Stats Hooks', () => {
 
     describe('useNewsletterBasicStatsWithRange', () => {
         it('uses default range of 30 days when no range provided', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const {result} = renderHook(() => useNewsletterBasicStatsWithRange(), {wrapper});
             
             const expectedDateRange = getExpectedDateRange(30);
@@ -462,7 +463,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('accepts custom range and order parameters', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const {result} = renderHook(() => useNewsletterBasicStatsWithRange(7, 'open_rate desc'), {wrapper});
             
             const expectedDateRange = getExpectedDateRange(7);
@@ -479,7 +480,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('accepts newsletter ID parameter', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const {result} = renderHook(() => useNewsletterBasicStatsWithRange(30, 'date desc', 'newsletter-456'), {wrapper});
             
             const expectedDateRange = getExpectedDateRange(30);
@@ -497,7 +498,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('returns empty state when shouldFetch is false', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const mockRefetch = vi.fn();
             
             mockUseNewsletterBasicStats.mockReturnValue({
@@ -522,7 +523,7 @@ describe('Newsletter Stats Hooks', () => {
 
     describe('useNewsletterClickStatsWithRange', () => {
         it('builds search params with newsletter ID', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const {result} = renderHook(() => useNewsletterClickStatsWithRange('newsletter-789'), {wrapper});
             
             expect(result.current).toBeDefined();
@@ -535,7 +536,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('builds search params with post IDs', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const postIds = ['post-1', 'post-2', 'post-3'];
             const {result} = renderHook(() => useNewsletterClickStatsWithRange(undefined, postIds), {wrapper});
             
@@ -549,7 +550,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('builds search params with both newsletter ID and post IDs', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const postIds = ['post-1', 'post-2'];
             const {result} = renderHook(() => useNewsletterClickStatsWithRange('newsletter-789', postIds), {wrapper});
             
@@ -564,7 +565,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('builds empty search params when no newsletter ID or post IDs', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const {result} = renderHook(() => useNewsletterClickStatsWithRange(), {wrapper});
             
             expect(result.current).toBeDefined();
@@ -575,7 +576,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('handles empty post IDs array', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const {result} = renderHook(() => useNewsletterClickStatsWithRange('newsletter-789', []), {wrapper});
             
             expect(result.current).toBeDefined();
@@ -588,7 +589,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('returns empty state when shouldFetch is false', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const mockRefetch = vi.fn();
             
             mockUseNewsletterClickStats.mockReturnValue({
@@ -613,7 +614,7 @@ describe('Newsletter Stats Hooks', () => {
 
     describe('useNewsletterStatsWithRangeSplit', () => {
         it('combines basic stats and click stats', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             
             const basicStatsData = {
                 stats: [
@@ -660,7 +661,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('handles missing click stats with default values', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             
             const basicStatsData = {
                 stats: [
@@ -698,7 +699,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('returns undefined when no basic stats', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             
             mockUseNewsletterBasicStats.mockReturnValue({
                 data: null,
@@ -715,7 +716,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('returns undefined when basic stats has no stats array', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             
             mockUseNewsletterBasicStats.mockReturnValue({
                 data: {meta: {pagination: {total: 0}}},
@@ -732,7 +733,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('handles loading states correctly', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             
             mockUseNewsletterBasicStats.mockReturnValue({
                 data: null,
@@ -759,7 +760,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('handles error states correctly', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const basicError = new Error('Basic stats error');
             const clickError = new Error('Click stats error');
             
@@ -788,7 +789,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('disables click stats when no post IDs available', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             
             const basicStatsData = {
                 stats: [],
@@ -814,7 +815,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('calls refetch on both hooks', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             const basicRefetch = vi.fn();
             const clickRefetch = vi.fn();
             
@@ -845,7 +846,7 @@ describe('Newsletter Stats Hooks', () => {
         });
 
         it('accepts custom parameters and passes them correctly', () => {
-            const wrapper = createTestWrapper();
+            const wrapper = TestWrapper;
             
             renderHook(() => useNewsletterStatsWithRangeSplit(7, 'click_rate desc', 'newsletter-456', true), {wrapper});
             

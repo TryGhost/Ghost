@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {createMockQueryResult} from '../../utils/mock-factories';
+import {createMockApiReturn} from '@tryghost/admin-x-framework/test/hook-testing-utils';
 import {renderHook, waitFor} from '@testing-library/react';
 import {useLatestPostStats} from '@src/hooks/useLatestPostStats';
 import type {PostStatsResponseType} from '@tryghost/admin-x-framework/api/stats';
@@ -58,12 +58,12 @@ describe('useLatestPostStats', () => {
     });
 
     it('fetches latest post with correct parameters', () => {
-        mockUseBrowsePosts.mockReturnValue(createMockQueryResult<PostsResponseType>(
+        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
             {posts: [mockPost]} as PostsResponseType,
             false
         ));
         
-        mockUsePostStats.mockReturnValue(createMockQueryResult<PostStatsResponseType>(
+        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
             mockStatsData as PostStatsResponseType,
             false
         ));
@@ -81,7 +81,7 @@ describe('useLatestPostStats', () => {
     });
 
     it('does not fetch stats when no post is available', () => {
-        mockUseBrowsePosts.mockReturnValue(createMockQueryResult<PostsResponseType>(
+        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
             {posts: []} as PostsResponseType,
             false
         ));
@@ -94,12 +94,12 @@ describe('useLatestPostStats', () => {
     });
 
     it('fetches stats when post is available', () => {
-        mockUseBrowsePosts.mockReturnValue(createMockQueryResult<PostsResponseType>(
+        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
             {posts: [mockPost]} as PostsResponseType,
             false
         ));
 
-        mockUsePostStats.mockReturnValue(createMockQueryResult<PostStatsResponseType>(
+        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
             mockStatsData as PostStatsResponseType,
             false
         ));
@@ -112,12 +112,12 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns combined post and stats data', async () => {
-        mockUseBrowsePosts.mockReturnValue(createMockQueryResult<PostsResponseType>(
+        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
             {posts: [mockPost]} as PostsResponseType,
             false
         ));
 
-        mockUsePostStats.mockReturnValue(createMockQueryResult<PostStatsResponseType>(
+        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
             mockStatsData as PostStatsResponseType,
             false
         ));
@@ -160,12 +160,12 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns post with default stats when stats are not available', async () => {
-        mockUseBrowsePosts.mockReturnValue(createMockQueryResult<PostsResponseType>(
+        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
             {posts: [mockPost]} as PostsResponseType,
             false
         ));
 
-        mockUsePostStats.mockReturnValue(createMockQueryResult<PostStatsResponseType>(
+        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
             undefined,
             false
         ));
@@ -208,12 +208,12 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns post with default stats when stats array is empty', async () => {
-        mockUseBrowsePosts.mockReturnValue(createMockQueryResult<PostsResponseType>(
+        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
             {posts: [mockPost]} as PostsResponseType,
             false
         ));
 
-        mockUsePostStats.mockReturnValue(createMockQueryResult<PostStatsResponseType>(
+        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
             {stats: []} as PostStatsResponseType,
             false
         ));
@@ -229,12 +229,12 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns null when no post is available', () => {
-        mockUseBrowsePosts.mockReturnValue(createMockQueryResult<PostsResponseType>(
+        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
             {posts: []} as PostsResponseType,
             false
         ));
 
-        mockUsePostStats.mockReturnValue(createMockQueryResult<PostStatsResponseType>(
+        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
             undefined,
             false
         ));
@@ -245,12 +245,12 @@ describe('useLatestPostStats', () => {
     });
 
     it('handles posts data being undefined', () => {
-        mockUseBrowsePosts.mockReturnValue(createMockQueryResult<PostsResponseType>(
+        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
             undefined,
             false
         ));
 
-        mockUsePostStats.mockReturnValue(createMockQueryResult<PostStatsResponseType>(
+        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
             undefined,
             false
         ));
@@ -270,12 +270,12 @@ describe('useLatestPostStats', () => {
             url: ''
         };
 
-        mockUseBrowsePosts.mockReturnValue(createMockQueryResult<PostsResponseType>(
+        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
             {posts: [minimalPost]} as PostsResponseType,
             false
         ));
 
-        mockUsePostStats.mockReturnValue(createMockQueryResult<PostStatsResponseType>(
+        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
             mockStatsData as PostStatsResponseType,
             false
         ));
@@ -311,12 +311,12 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns correct loading state when posts are loading', () => {
-        mockUseBrowsePosts.mockReturnValue(createMockQueryResult<PostsResponseType>(
+        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
             {posts: []} as PostsResponseType,
             true
         ));
 
-        mockUsePostStats.mockReturnValue(createMockQueryResult<PostStatsResponseType>(
+        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
             undefined,
             false
         ));
@@ -327,12 +327,12 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns correct loading state when stats are loading', () => {
-        mockUseBrowsePosts.mockReturnValue(createMockQueryResult<PostsResponseType>(
+        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
             {posts: [mockPost]} as PostsResponseType,
             false
         ));
 
-        mockUsePostStats.mockReturnValue(createMockQueryResult<PostStatsResponseType>(
+        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
             undefined,
             true
         ));
@@ -343,12 +343,12 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns false loading when posts loaded but no post ID (stats not fetched)', () => {
-        mockUseBrowsePosts.mockReturnValue(createMockQueryResult<PostsResponseType>(
+        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
             {posts: []} as PostsResponseType,
             false
         ));
 
-        mockUsePostStats.mockReturnValue(createMockQueryResult<PostStatsResponseType>(
+        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
             undefined,
             false
         ));
@@ -359,12 +359,12 @@ describe('useLatestPostStats', () => {
     });
 
     it('handles stats loading when both posts and stats are loading', () => {
-        mockUseBrowsePosts.mockReturnValue(createMockQueryResult<PostsResponseType>(
+        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
             {posts: [mockPost]} as PostsResponseType,
             true
         ));
 
-        mockUsePostStats.mockReturnValue(createMockQueryResult<PostStatsResponseType>(
+        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
             undefined,
             true
         ));
@@ -375,12 +375,12 @@ describe('useLatestPostStats', () => {
     });
 
     it('memoizes result correctly', async () => {
-        mockUseBrowsePosts.mockReturnValue(createMockQueryResult<PostsResponseType>(
+        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
             {posts: [mockPost]} as PostsResponseType,
             false
         ));
 
-        mockUsePostStats.mockReturnValue(createMockQueryResult<PostStatsResponseType>(
+        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
             mockStatsData as PostStatsResponseType,
             false
         ));
@@ -399,12 +399,12 @@ describe('useLatestPostStats', () => {
     });
 
     it('updates memoized result when dependencies change', async () => {
-        mockUseBrowsePosts.mockReturnValue(createMockQueryResult<PostsResponseType>(
+        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
             {posts: [mockPost]} as PostsResponseType,
             false
         ));
 
-        mockUsePostStats.mockReturnValue(createMockQueryResult<PostStatsResponseType>(
+        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
             mockStatsData as PostStatsResponseType,
             false
         ));
@@ -421,7 +421,7 @@ describe('useLatestPostStats', () => {
             }]
         };
 
-        mockUsePostStats.mockReturnValue(createMockQueryResult<PostStatsResponseType>(
+        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
             newStatsData as PostStatsResponseType,
             false
         ));

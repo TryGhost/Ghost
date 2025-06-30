@@ -1,5 +1,4 @@
 import {vi} from 'vitest';
-import type {UseQueryResult} from '@tanstack/react-query';
 
 /**
  * Mock data factories for consistent test data generation
@@ -256,46 +255,6 @@ export const createSuccessResponse = <T>(data: T) => new MockApiResponseBuilder(
 export const createLoadingResponse = <T>() => new MockApiResponseBuilder(null as unknown as T).loading().build();
 
 export const createErrorResponse = <T>(error: Error) => new MockApiResponseBuilder(null as unknown as T).withError(error).build();
-
-/**
- * Create a complete mock UseQueryResult for React Query
- */
-export function createMockQueryResult<T>(
-    data: T | undefined, 
-    isLoading: boolean = false, 
-    error: Error | null = null
-): UseQueryResult<T, Error> {
-    const isSuccess = !isLoading && !error && data !== undefined;
-    const isError = !!error;
-    
-    return {
-        data,
-        error: error as Error | null,
-        isError,
-        isIdle: false,
-        isLoading,
-        isLoadingError: isLoading && isError,
-        isRefetchError: !isLoading && isError,
-        isSuccess,
-        status: isLoading ? 'loading' : isError ? 'error' : 'success',
-        dataUpdatedAt: isSuccess ? Date.now() : 0,
-        errorUpdatedAt: isError ? Date.now() : 0,
-        failureCount: isError ? 1 : 0,
-        failureReason: error,
-        errorUpdateCount: isError ? 1 : 0,
-        isFetched: !isLoading,
-        isFetchedAfterMount: !isLoading,
-        isFetching: isLoading,
-        isPlaceholderData: false,
-        isPaused: false,
-        isPending: isLoading,
-        isRefetching: false,
-        isStale: false,
-        fetchStatus: isLoading ? 'fetching' : 'idle',
-        refetch: vi.fn().mockResolvedValue({} as unknown),
-        remove: vi.fn()
-    } as unknown as UseQueryResult<T, Error>;
-}
 
 /**
  * Newsletter-specific factories
