@@ -30,7 +30,7 @@ const AlertDialogContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
 >(({className, ...props}, ref) => (
     <AlertDialogPortal>
-        <div className='shade'>
+        <div className='shade shade-activitypub shade-stats'>
             <AlertDialogOverlay onClick={e => e.stopPropagation()} />
             <AlertDialogPrimitive.Content
                 ref={ref}
