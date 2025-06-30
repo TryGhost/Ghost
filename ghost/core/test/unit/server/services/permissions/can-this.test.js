@@ -358,6 +358,276 @@ describe('Permissions', function () {
                     .catch(done);
             });
         });
+
+        describe('Combined User + API Key permissions (staff API key scenarios)', function () {
+            // Tests for when both user and API key are present in context
+            // This is the scenario introduced by staff API keys where a user can have an associated API key
+
+            it('Current behavior: User with permission + API key with permission (should pass with current logic)', function (done) {
+                const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+                    return Promise.resolve({
+                        permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+                        roles: undefined
+                    });
+                });
+
+                const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
+                    return Promise.resolve({
+                        permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+                        roles: [testUtils.DataGenerator.Content.roles[5]] // admin api key role
+                    });
+                });
+
+                permissions
+                    .canThis({
+                        user: {id: 1},
+                        api_key: {id: 123, type: 'admin'}
+                    })
+                    .edit
+                    .tag({id: 1})
+                    .then(function (res) {
+                        userProviderStub.callCount.should.eql(1);
+                        apiKeyProviderStub.callCount.should.eql(1);
+                        should.not.exist(res);
+                        done();
+                    })
+                    .catch(done);
+            });
+
+            it('Fixed behavior: User with permission + API key without permission (now uses USER permission and passes)', function (done) {
+                const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+                    return Promise.resolve({
+                        permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+                        roles: undefined
+                    });
+                });
+
+                const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
+                    return Promise.resolve({
+                        permissions: [], // API key has no permissions
+                        roles: []
+                    });
+                });
+
+                permissions
+                    .canThis({
+                        user: {id: 1},
+                        api_key: {id: 123, type: 'admin'}
+                    })
+                    .edit
+                    .tag({id: 1})
+                    .then(function (res) {
+                        userProviderStub.callCount.should.eql(1);
+                        apiKeyProviderStub.callCount.should.eql(1);
+                        should.not.exist(res);
+                        // Fixed: Now uses USER permission instead of API key logic
+                        done();
+                    })
+                    .catch(function (err) {
+                        done(new Error(`Should have passed using USER permissions, but failed with: ${err.message}`));
+                    });
+            });
+
+            it('Fixed behavior: User without permission + API key with permission (now uses USER permission and fails)', function (done) {
+                const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+                    return Promise.resolve({
+                        permissions: [], // User has no permissions
+                        roles: undefined
+                    });
+                });
+
+                const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
+                    return Promise.resolve({
+                        permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+                        roles: [testUtils.DataGenerator.Content.roles[5]]
+                    });
+                });
+
+                permissions
+                    .canThis({
+                        user: {id: 1},
+                        api_key: {id: 123, type: 'admin'}
+                    })
+                    .edit
+                    .tag({id: 1})
+                    .then(function () {
+                        done(new Error('Should have failed using USER permissions (ignoring API key permissions)'));
+                    })
+                    .catch(function (err) {
+                        userProviderStub.callCount.should.eql(1);
+                        apiKeyProviderStub.callCount.should.eql(1);
+                        err.errorType.should.eql('NoPermissionError');
+                        // Fixed: Now uses USER permission instead of API key logic
+                        done();
+                    });
+            });
+
+            it('Current behavior: User without permission + API key without permission (should fail)', function (done) {
+                const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+                    return Promise.resolve({
+                        permissions: [],
+                        roles: undefined
+                    });
+                });
+
+                const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
+                    return Promise.resolve({
+                        permissions: [],
+                        roles: []
+                    });
+                });
+
+                permissions
+                    .canThis({
+                        user: {id: 1},
+                        api_key: {id: 123, type: 'admin'}
+                    })
+                    .edit
+                    .tag({id: 1})
+                    .then(function () {
+                        done(new Error('Should have failed due to no permissions'));
+                    })
+                    .catch(function (err) {
+                        userProviderStub.callCount.should.eql(1);
+                        apiKeyProviderStub.callCount.should.eql(1);
+                        err.errorType.should.eql('NoPermissionError');
+                        done();
+                    });
+            });
+
+            it('Current behavior: Owner user + API key without permission (owner should override)', function (done) {
+                const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+                    return Promise.resolve({
+                        permissions: [],
+                        roles: [testUtils.DataGenerator.Content.roles[3]] // owner role
+                    });
+                });
+
+                const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
+                    return Promise.resolve({
+                        permissions: [],
+                        roles: []
+                    });
+                });
+
+                permissions
+                    .canThis({
+                        user: {id: 1},
+                        api_key: {id: 123, type: 'admin'}
+                    })
+                    .edit
+                    .tag({id: 1})
+                    .then(function (res) {
+                        userProviderStub.callCount.should.eql(1);
+                        apiKeyProviderStub.callCount.should.eql(1);
+                        should.not.exist(res);
+                        done();
+                    })
+                    .catch(done);
+            });
+
+            // Tests for NEW expected behavior after fix
+            describe('Expected behavior after fix: User permissions should take precedence', function () {
+                it('Expected: User with permission + API key without permission (should use USER permission and pass)', function (done) {
+                    const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+                        return Promise.resolve({
+                            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+                            roles: undefined
+                        });
+                    });
+
+                    const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
+                        return Promise.resolve({
+                            permissions: [], // API key has no permissions
+                            roles: []
+                        });
+                    });
+
+                    permissions
+                        .canThis({
+                            user: {id: 1},
+                            api_key: {id: 123, type: 'admin'}
+                        })
+                        .edit
+                        .tag({id: 1})
+                        .then(function (res) {
+                            userProviderStub.callCount.should.eql(1);
+                            apiKeyProviderStub.callCount.should.eql(1);
+                            should.not.exist(res);
+                            done();
+                        })
+                        .catch(function (err) {
+                            done(new Error(`Should have passed using USER permissions, but failed with: ${err.message}`));
+                        });
+                });
+
+                it('Expected: User without permission + API key with permission (should use USER permission and fail)', function (done) {
+                    const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+                        return Promise.resolve({
+                            permissions: [], // User has no permissions
+                            roles: undefined
+                        });
+                    });
+
+                    const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
+                        return Promise.resolve({
+                            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+                            roles: [testUtils.DataGenerator.Content.roles[5]]
+                        });
+                    });
+
+                    permissions
+                        .canThis({
+                            user: {id: 1},
+                            api_key: {id: 123, type: 'admin'}
+                        })
+                        .edit
+                        .tag({id: 1})
+                        .then(function () {
+                            done(new Error('Should have failed using USER permissions (ignoring API key permissions)'));
+                        })
+                        .catch(function (err) {
+                            userProviderStub.callCount.should.eql(1);
+                            apiKeyProviderStub.callCount.should.eql(1);
+                            err.errorType.should.eql('NoPermissionError');
+                            done();
+                        });
+                });
+
+                it('Expected: Owner user + API key without permission (should use USER permission and pass)', function (done) {
+                    const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+                        return Promise.resolve({
+                            permissions: [],
+                            roles: [testUtils.DataGenerator.Content.roles[3]] // owner role
+                        });
+                    });
+
+                    const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
+                        return Promise.resolve({
+                            permissions: [],
+                            roles: []
+                        });
+                    });
+
+                    permissions
+                        .canThis({
+                            user: {id: 1},
+                            api_key: {id: 123, type: 'admin'}
+                        })
+                        .edit
+                        .tag({id: 1})
+                        .then(function (res) {
+                            userProviderStub.callCount.should.eql(1);
+                            apiKeyProviderStub.callCount.should.eql(1);
+                            should.not.exist(res);
+                            done();
+                        })
+                        .catch(function (err) {
+                            done(new Error(`Owner user should have permission regardless of API key, but failed with: ${err.message}`));
+                        });
+                });
+            });
+        });
     });
 
     describe('permissible (overridden)', function () {
