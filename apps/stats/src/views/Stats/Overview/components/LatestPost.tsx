@@ -216,8 +216,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                 ) : !isLoading && (
 
                     <EmptyIndicator
-                        className='w-full pb-10'
-                        description='Create your first post to see your latest post performance'
+                        className='w-full pb-10 xl:col-span-3'
                         title='No published posts yet'
                     >
                         <LucideIcon.FileText strokeWidth={1.5} />
