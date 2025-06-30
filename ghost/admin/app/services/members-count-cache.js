@@ -34,10 +34,9 @@ export default class MembersCountCacheService extends Service {
     @action
     async countString(filter = '', {knownCount, newsletter} = {}) {
         // Determine if we need to show the name of the newsletter or not
-        // TODO: replace this with a service or a settings boolean if we ever add a shortcut for this
         if (this.hasMultipleNewsletters === null) {
-            const allNewsletters = await this.store.query('newsletter', {status: 'active', limit: 'all'});
-            this.hasMultipleNewsletters = allNewsletters.length > 1;
+            const result = await this.store.query('newsletter', {status: 'active', limit: 1});
+            this.hasMultipleNewsletters = result.meta.pagination.total > 1;
         }
 
         const user = this.session.user;

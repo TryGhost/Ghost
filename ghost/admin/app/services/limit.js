@@ -98,7 +98,7 @@ export default class LimitsService extends Service {
     }
 
     async getNewslettersCount() {
-        const activeNewsletters = await this.store.query('newsletter', {filter: 'status:active', limit: 'all'});
-        return activeNewsletters.length;
+        const activeNewsletters = await this.store.query('newsletter', {filter: 'status:active', limit: 1});
+        return activeNewsletters.metadata.pagination.total;
     }
 }

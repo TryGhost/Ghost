@@ -147,7 +147,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
     const [stripeConnectAccountName, stripeConnectLivemode] = getSettingValues(settings, ['stripe_connect_display_name', 'stripe_connect_livemode']);
 
     const {refetch: fetchMembers, isFetching: isFetchingMembers} = useBrowseMembers({
-        searchParams: {filter: 'status:paid', limit: '0'},
+        searchParams: {filter: 'status:paid', limit: 1},
         enabled: false
     });
 
@@ -159,7 +159,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
         const hasActiveStripeSubscriptions = Boolean(data?.meta?.pagination.total);
 
         // const hasActiveStripeSubscriptions = false; //...
-        // this.ghostPaths.url.api('/members/') + '?filter=status:paid&limit=0';
+        // this.ghostPaths.url.api('/members/') + '?filter=status:paid&limit=1';
         NiceModal.show(ConfirmationModal, {
             title: 'Disconnect Stripe',
             prompt: (hasActiveStripeSubscriptions ? 'Cannot disconnect while there are members with active Stripe subscriptions.' : <>You&lsquo;re about to disconnect your Stripe account {stripeConnectAccountName} from this site. This will automatically turn off paid memberships on this site.</>),
