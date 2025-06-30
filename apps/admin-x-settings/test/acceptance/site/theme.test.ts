@@ -578,8 +578,12 @@ test.describe('Theme settings', async () => {
         await expect(page.getByTestId('theme-modal')).toBeVisible();
         await expect(page.getByTestId('confirmation-modal')).not.toBeVisible();
 
-        // Close the limit modal
-        await page.getByRole('button', {name: 'Cancel'}).click();
+        // Wait for the limit modal to be fully interactive before clicking
+        const limitModalCancelButton = page.getByTestId('limit-modal').getByRole('button', {name: 'Cancel'});
+        await expect(limitModalCancelButton).toBeEnabled();
+        
+        // Close the limit modal - be more specific to avoid clicking through to theme modal
+        await limitModalCancelButton.click();
 
         // Should stay on design/change-theme with the change theme modal visible
         await expect(page).toHaveURL(/#\/settings\/design\/change-theme/);
