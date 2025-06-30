@@ -20,7 +20,7 @@ export default class TagsManagerService extends Service {
     *searchTagsTask(term, {page = 1} = {}) {
         // debounce the search
         yield timeout(250);
-        const safeTerm = encodeURIComponent(term).replace(/'/g, '%27'); // encodeURIComponent doesn't escape single quotes
+        const safeTerm = term.replace(/'/g, `\\'`);
         return yield this.store.query('tag', {filter: `tags.name:~'${safeTerm}'`, limit: 100, page, order: 'name asc'});
     }
 }
