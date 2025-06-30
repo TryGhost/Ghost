@@ -151,7 +151,6 @@ export default class PostsController extends Controller {
             const tags = yield this.tagsManager.searchTagsTask.perform(this._searchedTagsQuery, {page});
             this._searchedTags.push(...this.tagsManager.sortTags(tags.toArray()));
             this._searchedTagsMeta = tags.meta;
-            return tags;
         } else {
             if (this._initialTagsMeta && this._initialTagsMeta?.pagination.pages <= this._initialTagsMeta.pagination.page) {
                 return;
@@ -159,11 +158,7 @@ export default class PostsController extends Controller {
 
             const page = this._initialTagsMeta?.pagination.page ? this._initialTagsMeta.pagination.page + 1 : 1;
             const tags = yield this.store.query('tag', {limit: 100, page, order: 'name asc'});
-            if (page === 1) {
-                this._initialTags = new TrackedArray(tags.toArray());
-            } else {
-                this._initialTags.push(...tags.toArray());
-            }
+            this._initialTags.push(...tags.toArray());
             this._initialTagsMeta = tags.meta;
         }
     }

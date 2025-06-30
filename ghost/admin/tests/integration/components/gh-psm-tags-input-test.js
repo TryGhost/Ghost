@@ -122,6 +122,23 @@ describe('Integration: Component: gh-psm-tags-input', function () {
         expect(selected[1]).to.not.have.class('tag-token--internal');
     });
 
+    it('can search for tags with single quotes', async function () {
+        server.create('tag', {name: 'O\'Nolan', slug: 'quote-test'});
+
+        this.set('post', this.store.findRecord('post', 1));
+        await settled();
+
+        await render(hbs`<GhPsmTagsInput @post={{post}} />`);
+        await clickTrigger();
+        await typeInSearch(`O'`);
+        await settled();
+
+        let options = findAll('.ember-power-select-option');
+        expect(options.length).to.equal(2);
+        expect(options[0]).to.contain.text(`Add "O'"...`);
+        expect(options[1]).to.contain.text(`O'Nolan`);
+    });
+
     describe('updateTags', function () {
         it('modifies post.tags', async function () {
             await assignPostWithTags(this, 'two', 'three');
