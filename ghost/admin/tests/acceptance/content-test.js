@@ -4,7 +4,7 @@ import windowProxy from 'ghost-admin/utils/window-proxy';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentURL, fillIn, find, findAll, triggerEvent, triggerKeyEvent, visit} from '@ember/test-helpers';
-import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
+import {clickTrigger, selectChoose, selectSearch} from 'ember-power-select/test-support/helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -301,19 +301,40 @@ describe('Acceptance: Posts / Pages', function () {
                     await visit('/posts');
                     await clickTrigger('[data-test-tag-select]');
 
+                    // defaults to "All tags"
                     let options = findAll('.ember-power-select-option');
-
-                    // check that dropdown sorts alphabetically
+                    expect(options.length, 'options count').to.equal(4); // 3 tags + "All tags", we populate the tags when opening the dropdown
                     expect(options[0].textContent.trim()).to.equal('All tags');
-                    expect(options[1].textContent.trim()).to.equal('A - First');
-                    expect(options[2].textContent.trim()).to.equal('B - Second');
-                    expect(options[3].textContent.trim()).to.equal('Z - Last');
+
+                    // search lazy-loads tags from the API, and sorts them alphabetically
+                    await selectSearch('[data-test-tag-select]', 's');
+
+                    options = findAll('.ember-power-select-option');
+                    expect(options[0].textContent.trim()).to.equal('A - First');
+                    expect(options[1].textContent.trim()).to.equal('B - Second');
+                    expect(options[2].textContent.trim()).to.equal('Z - Last');
 
                     // select one
                     await selectChoose('[data-test-tag-select]', 'B - Second');
                     // affirm request
                     let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    expect(lastRequest.queryParams.allFilter, '"tag" request filter param').to.have.string('tag:second');
+                    expect(lastRequest.queryParams.allFilter, '"posts" request filter param').to.have.string('tag:second');
+                });
+
+                it('can open with a filtered tag', async function () {
+                    const tag = this.server.create('tag', {name: 'B - Second', slug: 'second'});
+                    this.server.create('post', {authors: [admin], status: 'published', title: 'Published Post with Second tag', tags: [tag]});
+
+                    await visit('/posts?tag=second');
+
+                    // Posts list is filtered by tag
+                    const posts = findAll('[data-test-post-id]');
+                    expect(posts.length, 'all posts count').to.equal(1);
+                    expect(posts[0].querySelector('.gh-content-entry-title').textContent, 'post title').to.contain('Published Post with Second tag');
+
+                    // Filter shows selected tag
+                    const filter = find('[data-test-tag-select]');
+                    expect(filter.textContent.trim(), 'filter text').to.contain('B - Second');
                 });
             });
 
