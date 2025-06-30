@@ -88,7 +88,7 @@ export default class SearchProviderBasicService extends Service {
     async _loadSearchable(searchable, content) {
         let url;
         let query;
-        if (searchable.model === 'post') {
+        if (searchable.model === 'post' || searchable.model === 'page') {
             url = this.ghostPaths.url.api(`search-index/${pluralize(searchable.model)}`);
             query = {};
         } else {

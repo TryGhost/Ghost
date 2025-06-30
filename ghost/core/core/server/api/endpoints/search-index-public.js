@@ -12,6 +12,7 @@ const controller = {
         permissions: true,
         query() {
             const options = {
+                filter: 'type:post',
                 limit: '10000',
                 order: 'updated_at DESC',
                 columns: ['id', 'slug', 'title', 'excerpt', 'url', 'created_at', 'updated_at', 'published_at', 'visibility']
