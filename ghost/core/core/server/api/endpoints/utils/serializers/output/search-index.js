@@ -32,6 +32,31 @@ module.exports = {
         };
     },
 
+    async fetchPages(models, apiConfig, frame) {
+        debug('fetchPages');
+
+        let pages = [];
+
+        const keys = [
+            'id',
+            'url',
+            'title',
+            'status',
+            'published_at',
+            'visibility'
+        ];
+
+        for (let model of models.data) {
+            let page = await mappers.pages(model, frame, {});
+            page = _.pick(page, keys);
+            pages.push(page);
+        }
+
+        frame.response = {
+            pages
+        };
+    },
+
     async fetchAuthors(models, apiConfig, frame) {
         debug('fetchAuthors');
 

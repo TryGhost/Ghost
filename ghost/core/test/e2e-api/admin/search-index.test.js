@@ -41,4 +41,35 @@ describe('Search Index API', function () {
             assert.equal(post.plaintext, undefined);
         });
     });
+
+    describe('fetchPages', function () {
+        const searchIndexPageMatcher = {
+            id: anyString,
+            title: anyString,
+            url: anyString,
+            status: anyString,
+            published_at: anyISODateTime,
+            visibility: anyString
+        };
+
+        it('should return a list of pages', async function () {
+            const response = await agent.get('/search-index/pages')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    pages: new Array(5).fill(searchIndexPageMatcher)
+                });
+
+            // Explicitly double-check that expensive fields are not included
+            const page = response.body.pages[0];
+            assert.equal(page.excerpt, undefined);
+            assert.equal(page.html, undefined);
+            assert.equal(page.mobiledoc, undefined);
+            assert.equal(page.lexical, undefined);
+            assert.equal(page.plaintext, undefined);
+        });
+    });
 });
