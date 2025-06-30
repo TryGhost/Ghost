@@ -180,7 +180,7 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                         :
                         <EmptyIndicator
                             className='w-full py-20'
-                            title={`No content found`}
+                            title={`No visitors ${getPeriodText(range)}`}
                         >
                             <LucideIcon.FileText strokeWidth={1.5} />
                         </EmptyIndicator>

@@ -181,7 +181,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                         {(!topPostsData?.stats || topPostsData.stats.length === 0) && (
                             <EmptyIndicator
                                 className='w-full pb-10'
-                                title={`No posts found ${getPeriodText(range)}`}
+                                title={`No posts ${getPeriodText(range)}`}
                             >
                                 <LucideIcon.FileText strokeWidth={1.5} />
                             </EmptyIndicator>

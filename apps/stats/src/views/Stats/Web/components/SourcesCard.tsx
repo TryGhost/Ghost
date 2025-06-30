@@ -147,7 +147,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                 ) : (
                     <EmptyIndicator
                         className='mt-8 w-full py-20'
-                        title={`No sources found`}
+                        title={`No visitors ${getPeriodText(range)}`}
                     >
                         <LucideIcon.Globe strokeWidth={1.5} />
                     </EmptyIndicator>

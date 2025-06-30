@@ -216,13 +216,13 @@ const LatestPost: React.FC<LatestPostProps> = ({
                 ) : !isLoading && (
 
                     <EmptyIndicator
-                        actions={<Button variant='outline' onClick={() => {
+                        actions={<Button onClick={() => {
                             navigate('/editor/post', {crossApp: true});
                         }}>
                         New post</Button>}
                         className='w-full pb-10 xl:col-span-3'
-                        description='Create your first post to see your latest post performance'
-                        title='No published posts yet'
+                        description={`Once it's live, you can track performance here`}
+                        title='Publish your first post'
                     >
                         <LucideIcon.FileText strokeWidth={1.5} />
                     </EmptyIndicator>

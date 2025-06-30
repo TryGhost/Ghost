@@ -303,7 +303,7 @@ const Locations:React.FC = () => {
                                             :
                                             <EmptyIndicator
                                                 className='size-full py-20'
-                                                title={`No locations found ${getPeriodText(range)}`}
+                                                title={`No visitors ${getPeriodText(range)}`}
                                             >
                                                 <LucideIcon.MapPin strokeWidth={1.5} />
                                             </EmptyIndicator>
