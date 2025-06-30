@@ -8,12 +8,11 @@ import StatsView from '../layout/StatsView';
 import TopPosts from './components/TopPosts';
 import {GhAreaChartDataItem, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {getAudienceQueryParam} from '../components/AudienceSelect';
-import {getStatEndpointUrl} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
 import {useLatestPostStats} from '@src/hooks/useLatestPostStats';
-import {useQuery} from '@tinybirdco/charts';
+import {useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {useTopPostsViews} from '@tryghost/admin-x-framework/api/stats';
 
 interface HelpCardProps {
@@ -65,7 +64,7 @@ type GrowthChartDataItem = {
 
 const Overview: React.FC = () => {
     const {appSettings} = useAppContext();
-    const {statsConfig, isLoading: isConfigLoading, range, audience, tinybirdToken} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals, currencySymbol} = useGrowthStats(range);
     const {data: latestPostStats, isLoading: isLatestPostLoading} = useLatestPostStats();
@@ -88,9 +87,9 @@ const Overview: React.FC = () => {
         member_status: getAudienceQueryParam(audience)
     };
 
-    const {data: visitorsData, loading: isVisitorsLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: tinybirdToken,
+    const {data: visitorsData, loading: isVisitorsLoading} = useTinybirdQuery({
+        endpoint: 'api_kpis',
+        statsConfig: statsConfig || {id: ''},
         params: visitorsParams
     });
 
