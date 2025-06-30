@@ -1,4 +1,6 @@
-const searchIndexService = require('../../services/search-index');
+const models = require('../../models');
+const getPostServiceInstance = require('../../services/posts/posts-service');
+const postsService = getPostServiceInstance();
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -14,7 +16,8 @@ const controller = {
                 order: 'updated_at DESC',
                 columns: ['id', 'slug', 'title', 'excerpt', 'url', 'created_at', 'updated_at', 'published_at', 'visibility']
             };
-            return searchIndexService.fetchPosts(options);
+
+            return postsService.browsePosts(options);
         }
     },
     fetchAuthors: {
@@ -23,7 +26,13 @@ const controller = {
         },
         permissions: true,
         query() {
-            return searchIndexService.fetchAuthors();
+            const options = {
+                limit: '10000',
+                order: 'updated_at DESC',
+                columns: ['id', 'slug', 'name', 'url', 'profile_image']
+            };
+
+            return models.Author.findPage(options);
         }
     },
     fetchTags: {
@@ -32,7 +41,14 @@ const controller = {
         },
         permissions: true,
         query() {
-            return searchIndexService.fetchTags();
+            const options = {
+                limit: '10000',
+                order: 'updated_at DESC',
+                columns: ['id', 'slug', 'name', 'url'],
+                filter: 'visibility:public'
+            };
+
+            return models.Tag.findPage(options);
         }
     }
 };
