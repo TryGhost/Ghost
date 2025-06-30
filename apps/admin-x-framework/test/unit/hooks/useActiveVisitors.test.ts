@@ -1,6 +1,7 @@
 import {renderHook, act} from '@testing-library/react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {useActiveVisitors} from '../../../src/hooks/useActiveVisitors';
+import {withMockFetch} from '../../utils/mockFetch';
 import React from 'react';
 
 // Mock the @tinybirdco/charts module
@@ -516,5 +517,117 @@ describe('useActiveVisitors', () => {
 
         // Should create a new interval
         expect(setIntervalSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('should not call useQuery when token is undefined', () => {
+        // Mock useTinybirdToken to return undefined token (still loading)
+        mockUseTinybirdToken.mockReturnValue({
+            token: undefined,
+            isLoading: true,
+            error: null,
+            refetch: vi.fn()
+        });
+
+        // Clear any previous calls
+        mockUseQuery.mockClear();
+
+        // Render the hook
+        renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+
+        // EXPECTED: useQuery should not be called when token is undefined/loading
+        // This test should FAIL with current implementation and PASS after fix
+        expect(mockUseQuery).not.toHaveBeenCalled();
+    });
+
+    it('calls useQuery with token when token is available', () => {
+        // Mock useTinybirdToken to return a valid token
+        mockUseTinybirdToken.mockReturnValue({
+            token: 'valid-token',
+            isLoading: false,
+            error: null,
+            refetch: vi.fn()
+        });
+
+        // Clear any previous calls
+        mockUseQuery.mockClear();
+
+        // Render the hook
+        renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+
+        // Should call useQuery with the valid token
+        expect(mockUseQuery).toHaveBeenCalledWith(
+            expect.objectContaining({
+                token: 'valid-token'
+            })
+        );
+    });
+
+    it('transitions from undefined to valid token correctly', () => {
+        // Start with undefined token
+        mockUseTinybirdToken.mockReturnValue({
+            token: undefined,
+            isLoading: true,
+            error: null,
+            refetch: vi.fn()
+        });
+
+        // Render the hook
+        const {rerender} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+
+        // Verify first call with undefined token (due to tokenLoading: true)
+        expect(mockUseQuery).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                token: undefined
+            })
+        );
+
+        // Clear previous calls
+        mockUseQuery.mockClear();
+
+        // Now provide a valid token
+        mockUseTinybirdToken.mockReturnValue({
+            token: 'valid-token',
+            isLoading: false,
+            error: null,
+            refetch: vi.fn()
+        });
+
+        // Rerender
+        rerender();
+
+        // Should now call useQuery with the valid token
+        expect(mockUseQuery).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                token: 'valid-token'
+            })
+        );
+    });
+
+    it('shows loading state when token is loading', () => {
+        // Mock token as loading
+        mockUseTinybirdToken.mockReturnValue({
+            token: undefined,
+            isLoading: true,
+            error: null,
+            refetch: vi.fn()
+        });
+
+        // Mock useQuery to return no loading (since token loading should be considered)
+        mockUseQuery.mockReturnValue({
+            data: null,
+            loading: false,
+            error: null,
+            meta: null,
+            statistics: null,
+            endpoint: 'https://api.example.com/api_active_visitors',
+            token: undefined,
+            refresh: vi.fn()
+        });
+
+        const {result} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+
+        // Should show loading because token is loading and no lastKnownCount
+        expect(result.current.isLoading).toBe(true);
+        expect(result.current.activeVisitors).toBe(0);
     });
 });
