@@ -9,7 +9,7 @@ import TopContent from './components/TopContent';
 import WebKPIs, {KpiDataItem} from './components/WebKPIs';
 import {Card, CardContent, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
-import {Navigate, getStatEndpointUrl, getToken, useAppContext} from '@tryghost/admin-x-framework';
+import {Navigate, getStatEndpointUrl, useAppContext} from '@tryghost/admin-x-framework';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
@@ -49,7 +49,7 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
 };
 
 const Web: React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, audience, data, tinybirdToken} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {appSettings} = useAppContext();
 
@@ -79,14 +79,14 @@ const Web: React.FC = () => {
     // Get KPI data
     const {data: kpiData, loading: kpiLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
+        token: tinybirdToken,
         params
     });
 
     // Get top sources data
     const {data: sourcesData, loading: isSourcesLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
-        token: getToken(statsConfig),
+        token: tinybirdToken,
         params
     });
 

@@ -58,6 +58,9 @@
             <PowerSelect
                 @selected={{@selectedTag}}
                 @options={{@availableTags}}
+                @onOpen={{@loadInitialTags}}
+                @searchEnabled={{true}}
+                @search={{perform @searchTagsTask}}
                 @searchField="name"
                 @onChange={{@onTagChange}}
                 @triggerComponent={{component "gh-power-select/trigger"}}
@@ -65,7 +68,8 @@
                 @dropdownClass="gh-contentfilter-menu-dropdown"
                 @searchPlaceholder="Search tags"
                 @matchTriggerWidth={{false}}
-                @optionsComponent={{component "power-select-vertical-collection-options"}}
+                @optionsComponent={{component "power-select-vertical-collection-options" lastReached=this.onLastReached}}
+                @registerAPI={{this.registerTagsPowerSelect}}
                 as |tag|
             >
                 {{#if tag.name}}{{tag.name}}{{else}}<span class="red">Unknown tag</span>{{/if}}

@@ -32,6 +32,7 @@ jobs:
     env:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
       IS_DEVELOPMENT: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/5.x' || github.ref == 'refs/heads/6.x' }}
+      IS_SIX: ${{ github.ref == 'refs/heads/6.x' }}
     permissions:
       pull-requests: read
     steps:
@@ -200,6 +201,7 @@ jobs:
       base_commit: ${{ env.BASE_COMMIT }}
       is_main: ${{ env.IS_MAIN }}
       is_development: ${{ env.IS_DEVELOPMENT }}
+      is_six: ${{ env.IS_SIX }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
@@ -1050,6 +1052,7 @@ jobs:
       && needs.job_required_tests.result == 'success'
       && (
         needs.job_setup.outputs.is_main == 'true'
+        || needs.job_setup.outputs.is_six == 'true'
         || (
           github.event_name == 'pull_request'
           && (
@@ -1071,14 +1074,23 @@ jobs:
         if: github.event_name == 'pull_request'
         run: echo "branch_name=${{ github.ref }}" >> $GITHUB_ENV
 
+      - name: Set deployment parameters
+        run: |
+          if [[ "${{ needs.job_setup.outputs.is_main }}" == "true" ]]; then
+            echo "deploy_version=canary" >> $GITHUB_ENV
+          else
+            echo "deploy_version=six" >> $GITHUB_ENV
+          fi
+
       - name: Invoke build
         uses: aurelien-baudet/workflow-dispatch@v4
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           workflow: .github/workflows/deploy.yml
-          ref: 'refs/heads/main'
+          ref: 'refs/heads/main' # this is the ref of Ghost-Moya
           repo: TryGhost/Ghost-Moya
-          inputs: '{"version":"canary","environment":"staging","version_extra":"${{ env.branch_name }}"}'
+          # env.branch_name is the branch of Ghost itself
+          inputs: '{"version":"${{ env.deploy_version }}","environment":"staging","version_extra":"${{ env.branch_name }}"}'
           wait-for-completion-timeout: 25m
           wait-for-completion-interval: 30s
 
@@ -1103,8 +1115,8 @@ jobs:
           - package_name: '@tryghost/sodo-search'
             package_path: 'apps/sodo-search'
             cdn_paths: |
-              'https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/sodo-search.min.js'
-              'https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/main.css'
+              https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/sodo-search.min.js
+              https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/main.css
           - package_name: '@tryghost/comments-ui'
             package_path: 'apps/comments-ui'
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/comments-ui@~CURRENT_MINOR/umd/comments-ui.min.js'

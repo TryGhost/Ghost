@@ -90,6 +90,7 @@ export const defaultMockData = {
         data: undefined,
         site: undefined,
         statsConfig: undefined,
+        tinybirdToken: 'mock-tinybird-token',
         range: 30,
         audience: 7,
         setAudience: vi.fn(),

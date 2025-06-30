@@ -1,5 +1,5 @@
 import moment from 'moment';
-import {MemberStatusItem, MrrHistoryItem, useMemberCountHistory, useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
+import {MemberStatusItem, MrrHistoryItem, useMemberCountHistory, useMrrHistory, useSubscriptionStats} from '@tryghost/admin-x-framework/api/stats';
 import {formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getSymbol} from '@tryghost/admin-x-framework';
 import {useMemo} from 'react';
@@ -8,7 +8,7 @@ import {useMemo} from 'react';
 export type DiffDirection = 'up' | 'down' | 'same';
 
 // Calculate totals from member data
-const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem[], dateFrom: string) => {
+const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem[], dateFrom: string, memberCountTotals?: {paid: number; free: number; comped: number}) => {
     if (!memberData.length) {
         return {
             totalMembers: 0,
@@ -30,13 +30,14 @@ const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
         };
     }
 
-    // Get latest values
+    // Use current totals from API meta if available (like Ember), otherwise use latest time series data
+    const currentTotals = memberCountTotals || memberData[memberData.length - 1];
     const latest = memberData.length > 0 ? memberData[memberData.length - 1] : {free: 0, paid: 0, comped: 0};
 
     const latestMrr = mrrData.length > 0 ? mrrData[mrrData.length - 1] : {mrr: 0};
 
-    // Calculate total members
-    const totalMembers = latest.free + latest.paid + latest.comped;
+    // Calculate total members using current totals (like Ember dashboard)
+    const totalMembers = currentTotals.free + currentTotals.paid + currentTotals.comped;
 
     const totalMrr = latestMrr.mrr;
 
@@ -125,8 +126,8 @@ const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
 
     return {
         totalMembers,
-        freeMembers: latest.free,
-        paidMembers: latest.paid,
+        freeMembers: currentTotals.free,
+        paidMembers: currentTotals.paid + currentTotals.comped,
         mrr: totalMrr,
         percentChanges,
         directions
@@ -200,6 +201,9 @@ export const useGrowthStats = (range: number) => {
     });
 
     const {data: mrrHistoryResponse, isLoading: isMrrLoading} = useMrrHistory();
+
+    // Fetch subscription stats for real subscription events
+    const {data: subscriptionStatsResponse, isLoading: isSubscriptionLoading} = useSubscriptionStats();
 
     // Process member data with stable reference
     const memberData = useMemo(() => {
@@ -306,10 +310,10 @@ export const useGrowthStats = (range: number) => {
             return {mrrData: finalResult, selectedCurrency: useCurrency};
         }
         return {mrrData: [], selectedCurrency: 'usd'};
-    }, [mrrHistoryResponse, dateFrom]);
+    }, [mrrHistoryResponse, dateFrom, range]);
 
     // Calculate totals
-    const totalsData = useMemo(() => calculateTotals(memberData, mrrData, dateFrom), [memberData, mrrData, dateFrom]);
+    const totalsData = useMemo(() => calculateTotals(memberData, mrrData, dateFrom, memberCountResponse?.meta?.totals), [memberData, mrrData, dateFrom, memberCountResponse?.meta?.totals]);
 
     // Format chart data
     const chartData = useMemo(() => formatChartData(memberData, mrrData), [memberData, mrrData]);
@@ -319,7 +323,44 @@ export const useGrowthStats = (range: number) => {
         return getSymbol(selectedCurrency);
     }, [selectedCurrency]);
 
-    const isLoading = useMemo(() => isMemberCountLoading || isMrrLoading, [isMemberCountLoading, isMrrLoading]);
+    const isLoading = useMemo(() => isMemberCountLoading || isMrrLoading || isSubscriptionLoading, [isMemberCountLoading, isMrrLoading, isSubscriptionLoading]);
+
+    // Process subscription data for real subscription events (like Ember dashboard)
+    const subscriptionData = useMemo(() => {
+        if (!subscriptionStatsResponse?.stats) {
+            return [];
+        }
+
+        // Merge subscription stats by date (like Ember's mergeStatsByDate)
+        const mergedByDate = subscriptionStatsResponse.stats.reduce((acc, current) => {
+            const dateKey = current.date;
+            
+            if (!acc[dateKey]) {
+                acc[dateKey] = {
+                    date: dateKey,
+                    signups: 0,
+                    cancellations: 0
+                };
+            }
+            
+            acc[dateKey].signups += current.signups;
+            acc[dateKey].cancellations += current.cancellations;
+            
+            return acc;
+        }, {} as Record<string, {date: string; signups: number; cancellations: number}>);
+
+        // Convert to array and sort by date
+        const subscriptionArray = Object.values(mergedByDate).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+
+        // Filter to requested date range
+        const dateFromMoment = moment(dateFrom);
+        const dateToMoment = moment(endDate);
+        return subscriptionArray.filter((item) => {
+            const itemDate = moment(item.date);
+            return itemDate.isSameOrAfter(dateFromMoment) && itemDate.isSameOrBefore(dateToMoment);
+        });
+    }, [subscriptionStatsResponse, dateFrom, endDate]);
 
     return {
         isLoading,
@@ -329,6 +370,7 @@ export const useGrowthStats = (range: number) => {
         endDate,
         totals: totalsData,
         chartData,
+        subscriptionData,
         selectedCurrency,
         currencySymbol
     };

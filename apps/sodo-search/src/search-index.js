@@ -1,5 +1,4 @@
 import Flexsearch, {Charset} from 'flexsearch';
-import GhostContentAPI from '@tryghost/content-api';
 
 const cjkEncoderPresetCodepoint = {
     finalize: (terms) => {
@@ -59,16 +58,12 @@ const encoderSet = new Flexsearch.Encoder(
 
 export default class SearchIndex {
     constructor({adminUrl, apiKey, dir}) {
+        const rtl = (dir === 'rtl');
+        const tokenize = (dir === 'rtl') ? 'reverse' : 'forward';
+
         this.apiUrl = adminUrl;
         this.apiKey = apiKey;
 
-        this.api = new GhostContentAPI({
-            url: adminUrl,
-            key: apiKey,
-            version: 'v5.0'
-        });
-        const rtl = (dir === 'rtl');
-        const tokenize = (dir === 'rtl') ? 'reverse' : 'forward';
         this.postsIndex = new Flexsearch.Document({
             tokenize: tokenize,
             rtl: rtl,
@@ -79,6 +74,7 @@ export default class SearchIndex {
             },
             encoder: encoderSet
         });
+
         this.authorsIndex = new Flexsearch.Document({
             tokenize: tokenize,
             rtl: rtl,
@@ -89,6 +85,7 @@ export default class SearchIndex {
             },
             encoder: encoderSet
         });
+
         this.tagsIndex = new Flexsearch.Document({
             tokenize: tokenize,
             rtl: rtl,
@@ -132,10 +129,54 @@ export default class SearchIndex {
         });
     }
 
+    async #populateAuthorsIndex() {
+        const authors = await this.#fetchAuthors();
+
+        if (authors.length > 0) {
+            this.#updateAuthorsIndex(authors);
+        }
+    }
+
+    async #fetchAuthors() {
+        try {
+            const url = `${this.apiUrl}/ghost/api/content/search-index/authors/?key=${this.apiKey}`;
+            const response = await fetch(url);
+            const json = await response.json();
+
+            return json.authors;
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Error fetching authors:', error);
+            return [];
+        }
+    }
+
     #updateAuthorsIndex(authors) {
         authors.forEach((author) => {
             this.authorsIndex.add(author);
         });
+    }
+
+    async #populateTagsIndex() {
+        const tags = await this.#fetchTags();
+
+        if (tags.length > 0) {
+            this.#updateTagsIndex(tags);
+        }
+    }
+
+    async #fetchTags() {
+        try {
+            const url = `${this.apiUrl}/ghost/api/content/search-index/tags/?key=${this.apiKey}`;
+            const response = await fetch(url);
+            const json = await response.json();
+
+            return json.tags;
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Error fetching tags:', error);
+            return [];
+        }
     }
 
     #updateTagsIndex(tags) {
@@ -146,35 +187,8 @@ export default class SearchIndex {
 
     async init() {
         await this.#populatePostIndex();
-
-        let authors = await this.api.authors.browse({
-            limit: '10000',
-            fields: 'id,slug,name,url,profile_image',
-            order: 'updated_at DESC'
-        });
-
-        if (authors || authors.length > 0) {
-            if (!authors.length) {
-                authors = [authors];
-            }
-
-            this.#updateAuthorsIndex(authors);
-        }
-
-        let tags = await this.api.tags.browse({
-            limit: '10000',
-            fields: 'id,slug,name,url',
-            order: 'updated_at DESC',
-            filter: 'visibility:public'
-        });
-
-        if (tags || tags.length > 0) {
-            if (!tags.length) {
-                tags = [tags];
-            }
-
-            this.#updateTagsIndex(tags);
-        }
+        await this.#populateAuthorsIndex();
+        await this.#populateTagsIndex();
     }
 
     #normalizeSearchResult(result) {

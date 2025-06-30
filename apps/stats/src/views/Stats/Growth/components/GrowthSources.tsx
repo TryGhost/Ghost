@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import SortButton from '../../components/SortButton';
 import {Button, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, centsToDollars, formatNumber} from '@tryghost/shade';
-import {getFaviconDomain, getSymbol} from '@tryghost/admin-x-framework';
+import {getFaviconDomain, getSymbol, useAppContext} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
@@ -90,7 +90,8 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
 }) => {
     const {data: globalData} = useGlobalData();
     const {data: mrrHistoryResponse} = useMrrHistory();
-    
+    const {appSettings} = useAppContext();
+
     // Use external sort state if provided, otherwise use internal state
     const [internalSortBy, setInternalSortBy] = useState<SourcesOrder>('free_members desc');
     const sortBy = externalSortBy || internalSortBy;
@@ -98,7 +99,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
 
     // Convert our sort format to backend format
     const backendOrderBy = sortBy.replace('free_members', 'signups').replace('paid_members', 'paid_conversions');
-    
+
     // Use the new endpoint with server-side sorting and limiting
     const {data: referrersData, isLoading} = useTopSourcesGrowth(range, backendOrderBy, limit);
 
@@ -140,12 +141,13 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
             const iconSrc = faviconDomain
                 ? `https://www.faviconextractor.com/favicon/${faviconDomain}?larger=true`
                 : defaultSourceIconUrl;
-            const linkUrl = faviconDomain ? `https://${faviconDomain}` : undefined;
+            // Don't link Direct sources since they represent direct traffic to the site
+            const linkUrl = (faviconDomain && source !== 'Direct') ? `https://${faviconDomain}` : undefined;
 
             return {
                 source,
                 free_members: item.signups, // Backend returns 'signups', we map to 'free_members' for display
-                paid_members: item.paid_conversions, // Backend returns 'paid_conversions', we map to 'paid_members' for display  
+                paid_members: item.paid_conversions, // Backend returns 'paid_conversions', we map to 'paid_members' for display
                 mrr: item.mrr,
                 iconSrc,
                 displayName: source,
@@ -156,6 +158,33 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
 
     const title = 'Top sources';
     const description = `Where did your growth come from ${getPeriodText(range)}`;
+
+    // Return disabled state immediately if member source tracking is disabled
+    if (!appSettings?.analytics.membersTrackSources) {
+        return (
+            <TableBody>
+                <TableRow>
+                    <TableCell className='py-12 group-hover:!bg-transparent' colSpan={4}>
+                        <div className='flex flex-col items-center justify-center space-y-3 text-center'>
+                            <div className='flex size-12 items-center justify-center rounded-full bg-muted'>
+                                <svg className='size-6 text-muted-foreground' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                    <path d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' strokeLinecap='round' strokeLinejoin='round' strokeWidth={1.5} />
+                                </svg>
+                            </div>
+                            <div className='space-y-1'>
+                                <h3 className='text-sm font-medium text-foreground'>
+                                    Member sources have been disabled
+                                </h3>
+                                <p className='text-sm text-muted-foreground'>
+                                    Enable member source tracking in settings to see which content drives member growth.
+                                </p>
+                            </div>
+                        </div>
+                    </TableCell>
+                </TableRow>
+            </TableBody>
+        );
+    }
 
     if (isLoading) {
         return (
@@ -204,7 +233,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
                                     <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                                 </SheetTrigger>
                                 <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                                    <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
+                                    <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
                                         <SheetTitle>{title}</SheetTitle>
                                         <SheetDescription>{description}</SheetDescription>
                                     </SheetHeader>

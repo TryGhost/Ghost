@@ -1,7 +1,8 @@
 import {useEffect, useState} from 'react';
-import {getStatEndpointUrl, getToken} from '../utils/stats-config';
+import {getStatEndpointUrl} from '../utils/stats-config';
 import {StatsConfig} from '../providers/FrameworkProvider';
 import {useQuery} from '@tinybirdco/charts';
+import {useTinybirdToken} from './useTinybirdToken';
 
 interface UseActiveVisitorsOptions {
     postUuid?: string;
@@ -13,6 +14,7 @@ export const useActiveVisitors = (options: UseActiveVisitorsOptions = {}) => {
     const {postUuid, statsConfig, enabled = true} = options;
     const [refreshKey, setRefreshKey] = useState(0);
     const [lastKnownCount, setLastKnownCount] = useState<number | null>(null);
+    const {token, isLoading: tokenLoading} = useTinybirdToken();
 
     // Set up 60-second interval only if enabled
     useEffect(() => {
@@ -36,8 +38,8 @@ export const useActiveVisitors = (options: UseActiveVisitorsOptions = {}) => {
     };
 
     const {data, loading, error} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig || undefined, 'api_active_visitors'),
-        token: getToken(statsConfig || undefined),
+        endpoint: (enabled && !tokenLoading && token) ? getStatEndpointUrl(statsConfig || undefined, 'api_active_visitors') : undefined,
+        token: token,
         params
     });
 
@@ -52,7 +54,7 @@ export const useActiveVisitors = (options: UseActiveVisitorsOptions = {}) => {
 
     const activeVisitors = enabled ? (lastKnownCount || 0) : 0;
     // Only show loading on initial load (when we have no last known count)
-    const isInitialLoading = enabled && loading && lastKnownCount === null;
+    const isInitialLoading = enabled && (tokenLoading || loading) && lastKnownCount === null;
 
     return {
         activeVisitors,

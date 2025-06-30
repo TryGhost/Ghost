@@ -1,12 +1,15 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {Button, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {getSettingValues, isSettingReadOnly} from '@tryghost/admin-x-framework/api/settings';
 import {usePostsExports} from '@tryghost/admin-x-framework/api/posts';
 
 const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
+    const [canHaveWebAnalytics, setCanHaveWebAnalytics] = useState(true);
+    const limiter = useLimiter();
     const {
         localSettings,
         isEditing,
@@ -23,6 +26,16 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const hasTrafficAnalytics = useFeatureFlag('trafficAnalytics');
     const isEmailTrackClicksReadOnly = isSettingReadOnly(localSettings, 'email_track_clicks');
+
+    useEffect(() => {
+        if (limiter?.isLimited('limitAnalytics')) {
+            limiter.errorIfWouldGoOverLimit('limitAnalytics').catch((error) => {
+                if (error instanceof HostLimitError) {
+                    setCanHaveWebAnalytics(false);
+                }
+            });
+        }
+    }, [limiter]);
 
     const handleToggleChange = (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting(key, e.target.checked);
@@ -53,7 +66,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const inputs = (
         <SettingGroupContent className="analytics-settings !gap-y-0" columns={1}>
-            {hasTrafficAnalytics && (
+            {hasTrafficAnalytics && canHaveWebAnalytics && (
                 <>
                     <Toggle
                         checked={webAnalytics}
